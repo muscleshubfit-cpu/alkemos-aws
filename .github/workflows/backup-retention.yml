@@ -1,0 +1,106 @@
+# Weekly GFS retention prune → private musclehubeg-backups (2026-10-04).
+#
+# WHY (GD-2 — BACKUP-STRATEGY-2026-10-03.md §3.4 + §5, owner order
+# «نفّذ GD-2»): the private backup repo had NO deletion rule at all
+# (blocker BS-2 — 29 DB snapshots + 14 storage backups + 14 inventories
+# accumulating monotonically since 2026-09-05, each full copy). This job
+# prunes the working tree to the GFS keep-set — daily 7 / weekly 5
+# (Sunday-anchored) / monthly 6 — via scripts/backup-retention.mjs
+# (the exact keep laws + safety floors live in the script header).
+#
+# DELETION LAW: working tree ONLY, in ONE git commit. Git history keeps
+# every byte (BS-5 stays deferred to an explicit owner decision) — a
+# pruned copy is still recoverable from history. The three daily backup
+# jobs stay untouched (§3.1-2: no rebuilding what works).
+#
+# RACE LAW (measured 2026-10-04): the daily backup jobs are scheduled
+# 05:30–06:00 UTC but GitHub scheduler lag fired them as late as
+# 11:25 UTC — a delayed backup push CAN collide with this prune. The
+# script handles it: a rejected push re-fetches, recomputes the GFS
+# plan deterministically and retries ONCE, then fails loudly. The
+# Saturday 03:30 UTC slot (13 min after notifications-prune 03:17,
+# the documented quiet window) keeps the collision probability ~zero.
+#
+# PII LAW: the private repo checkout stays on this ephemeral runner;
+# the log prints directory NAMES and dates ONLY — file contents
+# (emails, photos, receipts) are never read, so nothing can leak.
+#
+# COLOR LAW: GREEN = prune applied + verified (or nothing-to-do, or a
+# clean dry-run). RED = missing secret/token, bad retention variable,
+# dirty/drifted checkout, push rejected twice, or post-verify mismatch.
+# An EMPTY backup repo is a deliberate RED (the daily pipeline itself
+# is broken — an honest RED beats a silently-wrong GREEN).
+#
+# TUNING: repository variables BACKUP_RETENTION_DAILY / _WEEKLY /
+# _MONTHLY (defaults 7 / 5 / 6 — clamped [1,30] / [1,26] / [1,24] by
+# the script; a non-integer value is an honest RED, never a guess).
+#
+# LANDING LAW: the push trigger that existed on the gd2-retention
+# branch was TEMPORARY (the dispatch API 404s for workflows not on the
+# default branch — measured GD-1); it was REMOVED at landing. The
+# landed form is schedule + workflow_dispatch only (this file).
+name: Backup retention (GFS prune → private musclehubeg-backups)
+
+on:
+  schedule:
+    - cron: "30 3 * * 6" # Saturday 03:30 UTC — quiet window
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry-run (report only — nothing committed/pushed)"
+        type: boolean
+        default: true
+
+concurrency:
+  group: backup-retention
+  cancel-in-progress: false
+
+permissions:
+  contents: read # main repo: script only; writes go to the private repo
+
+jobs:
+  prune:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout main repo (for the script)
+        uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Preflight — required secrets present
+        env:
+          BACKUP_REPO_TOKEN: ${{ secrets.BACKUP_REPO_TOKEN }}
+        run: |
+          echo "=== Preflight: checking required GitHub Secrets ==="
+          if [ -z "$BACKUP_REPO_TOKEN" ]; then
+            echo "❌ Missing secret: BACKUP_REPO_TOKEN (private-repo checkout credential — same one db-backup uses)"
+            exit 1
+          fi
+          echo "✓ BACKUP_REPO_TOKEN present"
+
+      - name: Checkout private backup repo
+        uses: actions/checkout@v4
+        with:
+          repository: muscleshubfit-cpu/musclehubeg-backups
+          token: ${{ secrets.BACKUP_REPO_TOKEN }}
+          path: backup-repo
+
+      - name: GFS prune (manual dispatch defaults to dry-run; the schedule always applies)
+        env:
+          RETENTION_REPO_PATH: backup-repo
+          DRY_RUN: ${{ inputs.dry_run }}
+          BACKUP_RETENTION_DAILY: ${{ vars.BACKUP_RETENTION_DAILY }}
+          BACKUP_RETENTION_WEEKLY: ${{ vars.BACKUP_RETENTION_WEEKLY }}
+          BACKUP_RETENTION_MONTHLY: ${{ vars.BACKUP_RETENTION_MONTHLY }}
+        run: node scripts/backup-retention.mjs
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "=== Backup retention (GD-2 GFS) summary ==="
+          echo "GREEN run = the keep/delete plan printed; on apply also one commit pushed (working tree only — history intact)."
+          echo "Scheduled runs ALWAYS apply (dry_run is a manual-dispatch/push safety default)."
+          echo "Keep laws + safety floors: scripts/backup-retention.mjs header · strategy §3.4/§5 GD-2."

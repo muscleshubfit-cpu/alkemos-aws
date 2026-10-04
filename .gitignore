@@ -111,6 +111,8 @@ pnpm-lock.yaml
 !/scripts/seo-p212-origin-verify.mjs
 #   scripts/notifications-prune.mjs → weekly notifications retention runner: calls the prune_notifications() RPC of migration 0100 over raw PostgREST (notifications-prune.yml, W2-1a/P-03 2026-10-03 — hit the same /scripts/* blanket trap as the geo/ family; exception added in the same frame)
 !/scripts/notifications-prune.mjs
+#   scripts/backup-retention.mjs → weekly GFS working-tree prune of the private backup repo: daily 7 / weekly 5 (Sunday-anchored) / monthly 6 with newest-always floor, one-commit deletion, git history intact (backup-retention.yml, BACKUP-STRATEGY GD-2 2026-10-04 — same /scripts/* blanket trap as the family; exception added in the same frame)
+!/scripts/backup-retention.mjs
 /skills/
 /tests/
 /examples/
