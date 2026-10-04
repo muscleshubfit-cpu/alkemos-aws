@@ -62,11 +62,11 @@
 #   push green round itself (the plan's success criterion: «دريل Drive
 #   موثق واحد أخضر»).
 #
-# LANDING LAW (the §6 green-round law): the push trigger below exists
-# TEMPORARILY on the gd4-restore-drill branch only (dispatch via API 404s
-# for workflows not registered on the default branch — measured GD-1) so
-# the measured green round can run the drill for real, and is REMOVED by
-# the landing commit. The landed form is schedule + workflow_dispatch.
+# LANDING LAW (SATISFIED — green round 37238006004, first try, 2026-10-04
+# 21:55 UTC on the gd4-restore-drill branch via the temporary push trigger;
+# dispatch via API 404s for workflows not registered on the default branch
+# — measured GD-1): the trigger was REMOVED by the landing commit. The
+# landed form is schedule + workflow_dispatch only.
 #
 # PII LAW (§3.1-5): the extracted data (user emails, photos, receipts)
 # lives ONLY in RUNNER_TEMP for the duration of the drill and is deleted by
@@ -100,8 +100,6 @@ on:
         description: "Skip the git-bundle restore proof (data archive only)"
         type: boolean
         default: false
-  push:
-    branches: [gd4-restore-drill] # TEMPORARY measured-round trigger — removed at landing (the §6 law)
 
 concurrency:
   group: offsite-restore-drill

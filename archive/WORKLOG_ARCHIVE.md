@@ -12074,3 +12074,22 @@ Stage Summary:
 - أُغلق بند Resource Audit: معاينة 28 سبتمبر (phase1-verify) محذوفة بعد إثبات العزل الكامل، والإنتاج هو الـdeployment الوحيد المتبقي؛ BLOCKLIST-1 والقواعد الثلاث حية بعد تدوير التوكن (10/10 ماسح → 403 حافّيًا)؛ كل بنود post-check خضراء؛ المؤجل الوحيد المسجل لخطة الحماية القادمة: فتحة query-string cache.
 - Push status: pushed
 
+
+<!-- rotated 2026-10-04 by scripts/worklog_rotate.py (Phase 288, ARCH-REMEDIATION): 1 entries moved verbatim from worklog.md -->
+---
+Task ID: VERCEL-BACKUP-MIGRATION-PLAN-2026-10-03
+Agent: Super Z (main)
+Task: أمر المالك 2026-10-03 «ابدأ الآن بمرحلة Audit + تجهيز خطة تنفيذ النسخة الاحتياطية فقط» — فحص قراءة-only للحساب الجديد (الفريق `aalkemos` · المشروع `alkemos`) وتوثيق خطة جاهزية النسخة الاحتياطية في `docs/VERCEL-BACKUP-MIGRATION-PLAN-2026-10-03.md` — بلا أي cutover أو فصل دومين أو تدوير secrets أو تغيير على Production/DNS/Cloudflare/Supabase/GitHub.
+
+Work Log:
+- (فحص الحساب الجديد عبر API — قراءة فقط) المشروع `alkemos` في فريق `aalkemos`: framework `nextjs` · Node 24.x مضبوط أصلًا · Git مربوط بـ `muscleshubfit-cpu/alkemos` وProduction Branch `main` و`createDeployments: enabled` · صفر deployments (`targets: {}`) · صفر env vars · صفر crons · لا integrations · النطاق التلقائي `alkemos.vercel.app` فقط — عزل مثالي الآن.
+- (تثبيت قانون منع التشغيل المزدوج) القياس: crons تسجل عند تكوّن أول Production Deployment فقط → إبقاء النسخة preview-only (فرع production عنصر نائب 6-A أو تعطيل نشر Git 6-B) يمنع double-cron كليًا؛ دفعات docs-only تحمل `[vercel skip]` فتنتشر CANCELED بلا خدمة في الحسابين.
+- (تصنيف المتغيرات — أسماء فقط، صفر قيم) §4.1 قابلة للنقل آليًا (21 اسمًا بنفس targets القديم) · §4.2 يدوية Sensitive (PayPal×5 + AdSense — لا تُقرأ عبر API إطلاقًا؛ مصادرها في RECOVERY-SECRETS-SOURCES §2.2) · §4.3 ميتة موثقة لا تُنسخ (صيغ Supabase القديمة + EVO_PARTNER_API_ENABLED المحظورة ببوابة stale-refs).
+- (توثيق المخاطر والخطط) §5 مخاطر المشروعين معًا (أخطرها progress-reminder المكرر أحد 07:00 UTC) · §7 بطارية preview verification (مرآة بطارية RESOURCE-AUDIT-CLOSE) · §8 خطوات الجاهزية دون cutover · §10 شروط الطوارئ عند Pause فقط · §11 قائمة تحقق ما قبل أي cutover مستقبلي.
+- (امتثال) إطار docs-only: بوابات docs الثابتة محليًا + صف في docs/README.md بنفس الفريم + `[vercel skip]` في الالتزام + هوية git `muscleshubfit@gmail.com` (قانون GIT-IDENTITY) + فحص خلو الملف من أي أسرار قبل الدفع.
+
+Stage Summary:
+- الناتج: خطة جاهزية النسخة الاحتياطية موثقة وملتزَمة (audit فقط — لا خطوة واحدة من الخطة نُفذت).
+- القرار الحاكم: النسخة تبقى preview-only حتى cutover معلن؛ أول Production Deployment في الجديد = لحظة تسجيل crons = ممنوع قبل يومها.
+- ما ينقص للجاهزية (يُنفذ بأمر مالك): قيم §4.2 اليدوية + نقل §4.1 + تطبيق §6 + أول preview + بطارية §7.
+
