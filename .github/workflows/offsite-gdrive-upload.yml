@@ -1,8 +1,9 @@
-# Off-site GDrive upload (GD-3) — weekly encrypted data archives + monthly
-# data archive + monthly git bundles → the owner's Google Drive (2026-10-05).
+# Off-site GDrive upload (GD-3 — landed on main 2026-10-04, green round
+# 37219099906) — weekly encrypted data archives + monthly data archive +
+# monthly git bundles → the owner's Google Drive.
 #
 # WHY (BACKUP-STRATEGY-2026-10-03.md §3.2/§3.4/§3.5 + §5 GD-3 — owner order
-# 2026-10-05 «نفّذ GD-3» with the GD-0 ③ decision made the same day: the
+# 2026-10-04 «نفّذ GD-3» with the GD-0 ③ decision made the same day: the
 # encryption key's off-site copy lives in the owner's PASSWORD MANAGER):
 # every backup so far lives INSIDE GitHub (blockers BS-1/BS-4 — one account,
 # one platform). This workflow is the survival layer: the private repo's
@@ -35,15 +36,15 @@
 #           foreign — listed, NEVER deleted.
 #
 # ENCRYPTION LAW (plan §3.5 «إلزامي قبل مغادرة GitHub» — tool decision
-# 2026-10-05: openssl AES-256 over age: PREINSTALLED on every runner and at
+# 2026-10-04: openssl AES-256 over age: PREINSTALLED on every runner and at
 # every restore site, zero extra pinned downloads at restore time; age stays
 # an acceptable future alternative — the plan names both): openssl enc
 # -aes-256-cbc -salt -pbkdf2 -iter 600000 -md sha256 (the explicit-portable
 # digest form — OpenSSL 3.5 REJECTS the bare -sha256 shortcut next to a cipher
-# name, measured 2026-10-05: «Multiple cipher or unknown options»; -md sha256
+# name, measured 2026-10-04: «Multiple cipher or unknown options»; -md sha256
 # is also the PBKDF2 default, so a decrypt WITHOUT the flag still works); key
 # from secret
-# BACKUP_ENCRYPTION_KEY (generated 2026-10-05 via the GitHub API per the
+# BACKUP_ENCRYPTION_KEY (generated 2026-10-04 via the GitHub API per the
 # GD-0 ③ decision — the OWNER'S copy lives in their password manager: losing
 # GitHub alone can never lose the key, which is the entire point of the
 # off-site layer). The key materializes ONLY as a 0600 temp file consumed
@@ -76,12 +77,15 @@
 # carries the previous tip; nothing is written to that repo here, so no
 # push-race exists on our side. The GD-2 pruner owns deletion.)
 #
-# LANDING LAW: the push trigger below exists TEMPORARILY on the gd3-offsite
-# branch only (dispatch via API 404s for workflows not registered on the
-# default branch — measured GD-1). A push-triggered run exercises the FULL
-# path (weekly + monthly + bundles) so the branch green round measures
-# everything in one run; the trigger is REMOVED by the commit that lands
-# this on main. The landed form is schedule + workflow_dispatch only.
+# LANDING LAW (satisfied 2026-10-04, run 37219099906 ALL GREEN): the push
+# trigger that existed TEMPORARILY on the gd3-offsite branch (dispatch via
+# API 404s for workflows not registered on the default branch — measured
+# GD-1) exercised the FULL path (weekly + monthly + bundles) so the branch
+# green round measured everything in one run, and was REMOVED by this
+# landing commit. The landed form is schedule + workflow_dispatch only.
+# On dispatch, the monthly path runs only with force_monthly=true; the
+# schedule self-heals the monthly decision (first Sunday that finds no
+# current-month archive does the monthly too).
 #
 # rclone is NOT preinstalled on GitHub runners (measured 2026-10-04) — the
 # pinned SHA256-gated install below is the exact GD-1-ALT mechanism. Env
@@ -89,7 +93,7 @@
 # RCLONE_<NAME> to --<name> flags; measured run 37162630012).
 # RCLONE_CONFIG is the one intentional mapping (the real --config flag).
 #
-# TEMPLATE LAW (measured 2026-10-05, run 37218458717 «Invalid workflow file
+# TEMPLATE LAW (measured 2026-10-04, run 37218458717 «Invalid workflow file
 # (Line: 202, Col: 14): Exceeded max expression length 21000»): a run: block
 # may be ARBITRARILY long only while it contains ZERO ${{ }} markers (the
 # landed 34K-char gdrive-oauth-smoke-test run block proves the size itself is
@@ -112,8 +116,6 @@ on:
         description: "Run the monthly path too (data archive + both git bundles) regardless of the calendar"
         type: boolean
         default: false
-  push:
-    branches: [gd3-offsite] # TEMPORARY measuring trigger — removed at landing (this file's own law)
 
 concurrency:
   group: offsite-gdrive-upload
@@ -176,7 +178,7 @@ jobs:
             echo "  BACKUP_REPO_TOKEN     — the fine-grained PAT the daily backups already use (since 2026-09-05)."
             echo "  GDRIVE_OAUTH_TOKEN    — owner-identity OAuth token (GD-1-ALT; scope=drive per owner decision (b); minted via scripts/gdrive/oauth-token-helper.html)."
             echo "  GDRIVE_FOLDER_ID      — the AlkemosBackups folder ID (GD-1; paste the ID or the folder URL)."
-            echo "  BACKUP_ENCRYPTION_KEY — created 2026-10-05 via the GitHub API per the owner's GD-0 ③ decision;"
+            echo "  BACKUP_ENCRYPTION_KEY — created 2026-10-04 via the GitHub API per the owner's GD-0 ③ decision;"
             echo "                          the OWNER'S copy lives in the password manager. If re-created manually:"
             echo "                          generate >= 32 chars, save it in the password manager FIRST, then update"
             echo "                          the GitHub secret — both copies must stay identical or archives become"
@@ -693,7 +695,7 @@ jobs:
               echo "| Upload + full-stream read-back | ${DRY_RUN} |"
               echo "| GFS prune on Drive | ${DRY_RUN} (keep ${KEEP_W} weekly / ${KEEP_M} monthly) |"
               echo ""
-              echo "_The key's OWNER copy lives in the password manager (GD-0 ③, 2026-10-05). Everything leaving GitHub is encrypted client-side (§3.1-5)._"
+              echo "_The key's OWNER copy lives in the password manager (GD-0 ③, 2026-10-04). Everything leaving GitHub is encrypted client-side (§3.1-5)._"
             } >> "$GITHUB_STEP_SUMMARY"
           fi
           python3 << 'PYEOF'
