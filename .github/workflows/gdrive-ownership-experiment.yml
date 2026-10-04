@@ -32,13 +32,15 @@
 #             object the SA owns (Drive v3 has no permissions field on
 #             files.create — permissions are a separate call; the recipe is
 #             applied to the letter where the API allows it).
-#             Round-2 fix (measured run 37173397141): Google REQUIRES the
-#             notification email for ownership transfers — literal 403 "The
-#             sendNotificationEmail parameter … must not be disabled for
-#             ownership transfers" — so sendNotificationEmail=false is NOT
-#             sent on the transfer call (it stays only on the A4 writer
-#             control, where it is legal); a rejected transfer sends no
-#             email anyway.
+#             Round-3 fix (runs 37173397141 + 37173573718 both measured the
+#             same literal 403: "The sendNotificationEmail parameter … must
+#             not be disabled for ownership transfers" — the round-2 commit
+#             accidentally kept the param on the transfer call, so the recipe
+#             itself was still untested): Google REQUIRES the notification
+#             email for ownership transfers, so sendNotificationEmail=false
+#             is NOT sent on the transfer call (it stays only on the A4
+#             writer control, where it is legal); a rejected transfer sends
+#             no email anyway.
 #         A4  control: the same grant as role=writer (no transfer) —
 #             isolates whether a rejection is specific to OWNERSHIP
 #             transfer or applies to permission management in general
@@ -361,8 +363,13 @@ jobs:
 
           # ---- A3 (THE EXPERIMENT) + A4 (control) ----
           if obj_id:
+              # round-3 (runs 37173397141 + 37173573718 both measured): Google
+              # 403-refuses sendNotificationEmail=false ON OWNERSHIP TRANSFERS
+              # ("must not be disabled for ownership transfers") — the param is
+              # deliberately ABSENT here so the recipe itself gets tested; it
+              # stays on the A4 writer control below, where it is legal.
               a3_status, a3_body = api("POST",
-                  "https://www.googleapis.com/drive/v3/files/" + obj_id + "/permissions?transferOwnership=true&sendNotificationEmail=false&supportsAllDrives=true",
+                  "https://www.googleapis.com/drive/v3/files/" + obj_id + "/permissions?transferOwnership=true&supportsAllDrives=true",
                   body={"role": "owner", "type": "user", "emailAddress": owner_raw},
                   tag="perm_owner", token=TOKEN)
               if a3_status in (200, 201):
