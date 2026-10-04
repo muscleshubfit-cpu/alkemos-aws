@@ -12002,3 +12002,28 @@ Stage Summary:
 - W1-5 منفذ بحرف اتجاه الإصلاح: مفتاح CheckoutView على planTier+durationMonths (المدة مطبّعة) — تغيّر الهوية بنفس المسار يعيد تركيب السطح كاملًا: إغلاق createOrder جديد + إسقاط إيصال العرض القديم — وبه تكتمل موجة W1 (فريمات 329-341). البند التالي بالخطة: W2-1a (ميجريشن 0100 — فهرس notifications + سياسة تقليم، بقانون §6 كاملًا).
 - نشر حقيقي بلا [vercel skip] (يمس src/) — سلوك المستخدم الشرعي متطابق؛ الأثر: «منتج خاطئ يُحاسب» مستحيل عبر تنقّل same-route، والنموذج اليدوي يبدأ نظيفًا مع كل عرض جديد.
 - Push status: pushed
+
+<!-- rotated 2026-10-04 by scripts/worklog_rotate.py (Phase 288, ARCH-REMEDIATION): 1 entries moved verbatim from worklog.md -->
+---
+Task ID: VERCEL-USAGE-7-2026-10-02
+Agent: Super Z (main)
+Task: أمر المالك 2026-10-02 «أعد التدقيق والإصلاح بناءً على Usage الحالي الظاهر في Vercel» — التجاوز الثلاثي: Fluid Active CPU 6h51m/4h · Fast Origin Transfer 16.82/10GB · Function Invocations 933K/1M. تحديد الأسباب الفعلية من البيانات (خصوصًا Cron/Functions/process-ai-jobs/blog generation/AI jobs/GitHub Actions وأي polling/loops) ثم إصلاح غير الضروري فقط.
+
+Work Log:
+- (القياس — الاكتشاف المنهجي) `/v2/usage?type=requests` يعمل على Hobby بصيغة ISO-مللي + `granularity=hour` (كل المحاولات السابقة فشلت بصيغ أخرى) → سلاسل يومية/ساعية كاملة؛ معايرة النافذة: مجموع 2026-09-03→10-02 = 933,221 ≈ لوحة المالك 933K بالضبط (نافذة 30 يومًا متجددة، مطابقة لتأكيد الدعم في USAGE-6).
+- (التشريح) الأرضية 25–30K invocation/يوم · 28 سبتمبر وحده = 190,042 + 1.97GB (منحنى ساعي 08–17 UTC بـ 8K–23K/ساعة = نمط يوم عمل: جلسات تدقيق الإنتاج المباشرة — تاريخ تقارير ARCHITECTURE/PERFORMANCE-AUDIT-2026-09-28) · 5–6 سبتمبر (جلسة Phase 137: «22 مسارًا ×5 + 16+ Lighthouse») · لا loop نشط اليوم (منحنى ساعي سليم 400–1,250/ساعة).
+- (ربط المنصات — طلب المالك) GHA صفر استدعاءات Vercel (process-ai-jobs/blog in-process «NO Vercel hop»؛ عدد التشغيلات ثابت ~98–118/يوم عبر الأيام العادية والشاذة) · crons = 31 استدعاء/30 يوم · Supabase بلا صلة بالثلاثة.
+- (القياس المباشر csp-report) متصفح حي: 7 POST لكل مشاهدة `/` و14 لتراكم جلستين على مقال — التقارير الملتقطة كلها للمكدس الشرعي (GA/GTM/CF-insights/AdSense-sodar/reCAPTCHA-AdSense) = أضخم مساهم بشري مفرد في Invocations.
+- (ن-1) CSP-RO whitelist (vercel.json فقط — Report-Only إضافي بحت، صفر سلوك): script-src += googletagmanager/cloudflareinsights/*.adtrafficquality.google · connect-src += *.google-analytics.com/analytics.google.com/*.adtrafficquality.google · frame-src += www.google.com/*.adtrafficquality.google → متوقع ~−7 استدعاءات/مشاهدة (~−10–15K/يوم) مع بقاء التقارير إشارة أمنية نظيفة. بلا purge عمدًا (التطهير = spike) — التفعيل تدريجي ~12 ساعة.
+- (ن-2) قاعدة كاش CF رقم 3 «alkemos sitemap-rss-llms cache» (edge TTL 3600، respect_origin) عبر Rulesets API — تحقق حي MISS→HIT على sitemap.xml وsitemap-exercises.xml؛ جلبات الزواحف تتوقف عن النقل من الأصل.
+- (قانون الميزانية) AGENTS.md §10: قانون ميزانية طلبات التدقيق (عينة ≤30/نوع · ممنوع cache-busting بالجملة · ≤1 طلب/ث · الثقيل على preview · سقف ≤5K/جلسة · قياس قبل/بعد).
+- (حدود القياس المصرّح بها) Hobby لا يوفر تفصيل CPU/Transfer لكل مسار عبر API (logs 404 بلا drains، التفصيل حكر Pro) — نسب المساهمين استنتاج من السلاسل + قياس المتصفح + الكود؛ الإجماليات مقيسة.
+- (التوثيق وفق §3.8/§5.4/§129) SECURITY.md §10 (قسم CSP-RO جديد + القاعدة 3 + تحديث الأثر المقاس) · TECH_REFERENCE §5.2/5.3 (جدول القواعد الثلاث + الأسطر) · docs/archive/VERCEL-USAGE-AUDIT-2026-09-16.md §11 (الفريم الكامل بالأدلة) · AGENTS.md §10 (القانون) · هذا المدخل.
+- (حدود النطاق) صفر تغيير src/ (لا بطارية مطلوبة) · صفر مساس بcrons/AI-jobs/blog automation/EVO chat/bells/SEO/GEO/المحتوى · مسار موافقة §129 لـ CSP-RO: أمر المالك الصريح هذا الفريم هو الموافقة.
+
+Stage Summary:
+- السبب الفعلي المُثبت للتجاوز: أعمال التدقيق المكثفة نفسها (يوم 28 سبتمبر = 20% من عداد الشهر) + أرضية csp-report البشرية (~7/مشاهدة) + البنية الديناميكية الكاملة؛ **لا loop ولا أتمتة مارقة**.
+- نُفّذ: ن-1 (CSP-RO whitelist — يخفض مدخلات Invocations ~40–50% من الحركة البشرية) + ن-2 (كاش CF للخرائط/الخلاصات) + قانون ميزانية التدقيق — دون المساس بأي وظيفة/أتمتة/جودة/SEO.
+- نشر حقيقي بلا [vercel skip] (يمس vercel.json = ترويسات) — التغيير Report-Only: صفر سلوك مستخدم متغير.
+- Push status: pushed
+

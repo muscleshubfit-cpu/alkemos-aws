@@ -4,7 +4,7 @@
   "buildCommand": "next build",
   "devCommand": "next dev -p 3000",
   "installCommand": "bun install",
-  "ignoreCommand": "git diff --quiet \"${VERCEL_GIT_PREVIOUS_SHA:-HEAD^}\" HEAD -- . ':!docs' ':!archive' ':!/AGENTS.md' ':!/CHANGELOG.md' ':!/CONTRIBUTING.md' ':!/DESIGN.md' ':!/DEVELOPER_GUIDE.md' ':!/LICENSE' ':!/README.md' ':!/SECURITY.md' ':!/STATE.md' ':!/worklog.md'",
+  "ignoreCommand": "P=\"${VERCEL_GIT_PREVIOUS_SHA:-HEAD^}\"; git cat-file -e \"$P\" 2>/dev/null || git fetch -q origin \"$P\" --depth=1 2>/dev/null || true; if git cat-file -e \"$P\" 2>/dev/null; then git diff --quiet \"$P\" HEAD -- . ':!docs' ':!archive' ':!/AGENTS.md' ':!/CHANGELOG.md' ':!/CONTRIBUTING.md' ':!/DESIGN.md' ':!/DEVELOPER_GUIDE.md' ':!/LICENSE' ':!/README.md' ':!/SECURITY.md' ':!/STATE.md' ':!/worklog.md' || exit 1; else echo \"ignoreCommand: PREV $P unresolvable (shallow clone) -> BUILD fallback\"; exit 1; fi",
   "regions": [
     "fra1"
   ],
