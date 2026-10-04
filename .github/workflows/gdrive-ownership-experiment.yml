@@ -31,7 +31,14 @@
 #             transferOwnership=true — Gemini's exact recipe, applied to an
 #             object the SA owns (Drive v3 has no permissions field on
 #             files.create — permissions are a separate call; the recipe is
-#             applied to the letter where the API allows it)
+#             applied to the letter where the API allows it).
+#             Round-2 fix (measured run 37173397141): Google REQUIRES the
+#             notification email for ownership transfers — literal 403 "The
+#             sendNotificationEmail parameter … must not be disabled for
+#             ownership transfers" — so sendNotificationEmail=false is NOT
+#             sent on the transfer call (it stays only on the A4 writer
+#             control, where it is legal); a rejected transfer sends no
+#             email anyway.
 #         A4  control: the same grant as role=writer (no transfer) —
 #             isolates whether a rejection is specific to OWNERSHIP
 #             transfer or applies to permission management in general
@@ -386,43 +393,59 @@ jobs:
               print(results["A3"])
               print(results["A4"])
 
-          # ---- cleanup: sweep leftovers (idempotent re-runs), then the probe object ----
-          sw_status, sw_body = api("GET",
-              "https://www.googleapis.com/drive/v3/files?q=" + urllib.parse.quote("name contains '%s' and trashed = false" % PREFIX)
-              + "&spaces=drive&fields=files(id,name)&pageSize=100&supportsAllDrives=true",
-              tag="sweep_list", token=TOKEN)
+          # ---- cleanup: the probe object FIRST (delete + verify), then a
+          # leftover sweep for crashed earlier runs (idempotent re-runs).
+          # Round-2 fix (run 37173397141): the sweep previously ran FIRST and
+          # deleted the probe object by name-pattern, so the explicit delete
+          # returned 404 "not found" — which is GONE, not FAILED. 404-on-delete
+          # is now accepted and verified via the read-back below.
           swept = []
-          if sw_status == 200:
-              for f in (sw_body.get("files") or []):
-                  d_st, _ = api("DELETE", "https://www.googleapis.com/drive/v3/files/" + f["id"] + "?supportsAllDrives=true",
-                                tag="sweep_delete", token=TOKEN)
-                  swept.append((f.get("name"), d_st))
-          else:
-              print("::warning::leftover sweep listing failed (HTTP %d) — continuing with the object cleanup" % sw_status)
-
+          cleanup_ok = None   # "deleted" | "trashed" | "none" | None (failed)
+          cleanup_note = None
           if obj_id:
               d_status, _ = api("DELETE", "https://www.googleapis.com/drive/v3/files/" + obj_id + "?supportsAllDrives=true",
                                 tag="folder_delete", token=TOKEN)
-              if d_status in (200, 204):
+              if d_status in (200, 204, 404):
                   v_status, v_body = api("GET", "https://www.googleapis.com/drive/v3/files/" + obj_id + "?fields=id,trashed&supportsAllDrives=true",
                                          tag="folder_get_after", token=TOKEN)
                   if v_status == 404:
-                      results["cleanup"] = "OK (probe folder deleted + verified gone; %d leftover(s) swept)" % len(swept)
+                      cleanup_ok = "deleted"   # 404-on-delete = already gone — verified gone now
                   else:
-                      results["cleanup"] = "PARTIAL (delete returned %d but the object is still visible, HTTP %d) — OWNER ACTION: remove '%s' from the backup folder" % (d_status, v_status, folder_name)
+                      cleanup_note = "PARTIAL (delete returned HTTP %d but the object is still visible, HTTP %d) — OWNER ACTION: remove '%s' from the backup folder" % (d_status, v_status, folder_name)
               elif str(results["A3"]).startswith("SUCCESS"):
                   t_status, _ = api("PATCH", "https://www.googleapis.com/drive/v3/files/" + obj_id + "?supportsAllDrives=true",
                                     body={"trashed": True}, tag="folder_trash", token=TOKEN)
                   v_status, v_body = api("GET", "https://www.googleapis.com/drive/v3/files/" + obj_id + "?fields=id,trashed&supportsAllDrives=true",
                                          tag="folder_get_after", token=TOKEN)
                   if t_status in (200, 204) and v_body.get("trashed") is True:
-                      results["cleanup"] = "TRASHED (ownership moved to %s — a writer cannot hard-delete; OWNER ACTION: empty Drive trash to remove '%s')" % (mask_email(owner_raw), folder_name)
+                      cleanup_ok = "trashed"
                   else:
-                      results["cleanup"] = "FAILED (trash HTTP %d / verify HTTP %d) — OWNER ACTION: delete '%s' from the backup folder manually" % (t_status, v_status, folder_name)
+                      cleanup_note = "FAILED (trash HTTP %d / verify HTTP %d) — OWNER ACTION: delete '%s' from the backup folder manually" % (t_status, v_status, folder_name)
               else:
-                  results["cleanup"] = "FAILED (delete HTTP %d) — OWNER ACTION: delete '%s' from the backup folder manually" % (d_status, folder_name)
+                  cleanup_note = "FAILED (delete HTTP %d) — OWNER ACTION: delete '%s' from the backup folder manually" % (d_status, folder_name)
           else:
+              cleanup_ok = "none"
+
+          sw_status, sw_body = api("GET",
+              "https://www.googleapis.com/drive/v3/files?q=" + urllib.parse.quote("name contains '%s' and trashed = false" % PREFIX)
+              + "&spaces=drive&fields=files(id,name)&pageSize=100&supportsAllDrives=true",
+              tag="sweep_list", token=TOKEN)
+          if sw_status == 200:
+              for f in (sw_body.get("files") or []):
+                  d_st, _ = api("DELETE", "https://www.googleapis.com/drive/v3/files/" + f["id"] + "?supportsAllDrives=true",
+                                tag="sweep_delete", token=TOKEN)
+                  swept.append((f.get("name"), d_st))
+          else:
+              print("::warning::leftover sweep listing failed (HTTP %d) — the probe-object cleanup above is the authoritative one" % sw_status)
+
+          if cleanup_ok == "deleted":
+              results["cleanup"] = "OK (probe folder deleted + verified gone; %d leftover(s) swept)" % len(swept)
+          elif cleanup_ok == "none":
               results["cleanup"] = "OK (no probe object existed — nothing to clean; %d leftover(s) swept)" % len(swept)
+          elif cleanup_ok == "trashed":
+              results["cleanup"] = "TRASHED (ownership moved to %s — a writer cannot hard-delete; OWNER ACTION: empty Drive trash to remove '%s'; %d leftover(s) swept)" % (mask_email(owner_raw), folder_name, len(swept))
+          else:
+              results["cleanup"] = cleanup_note + " | %d leftover(s) swept" % len(swept)
           print("cleanup: %s" % results["cleanup"])
           for name, st in swept:
               print("  swept leftover: %s (delete HTTP %d)" % (name, st))
