@@ -1,0 +1,684 @@
+# Off-site restore drill (GD-4 — the quarterly restorability proof, landed
+# green on main) — download the encrypted off-site archives back from the
+# owner's Google Drive, decrypt, verify, and dry-run the REAL restore path.
+#
+# WHY (BACKUP-STRATEGY-2026-10-03.md §3.2 step ④ + §5 GD-4 — owner order
+# 2026-10-05 «ثم ابدا تنفيذ GD-4», given after the owner confirmed the
+# GD-0 ③ key copy is saved in the password manager): GD-3 made backups
+# LEAVE GitHub as encrypted archives on the owner's Drive — but a backup
+# that cannot be pulled back and restored is not a backup. This drill
+# proves, end-to-end and measured, that the off-site layer is actually
+# USABLE at disaster time: download from Drive → decrypt with
+# BACKUP_ENCRYPTION_KEY (a decrypt failure here is the loudest possible
+# early warning — the password-manager copy and the GitHub secret have
+# diverged) → verify sha256 → dry-run the real restore scripts
+# (db-restore.mjs / storage-restore.mjs — the same tools the runbook
+# uses) → and mirror-clone the monthly git bundles as full-repo restore
+# proofs (a bundle that clones IS a restored repo — zero GitHub involved).
+#
+# WHAT RUNS (single job, two phases):
+#   Phase A (data archive): newest weekly/YYYY-Www.data.tar.gz.enc on Drive
+#           (or a dispatch-selected one) → full-stream read-back sha256 →
+#           decrypt (openssl AES-256-CBC · PBKDF2 600k · -md sha256 — the
+#           GD-3 encryption law) → tar -tzf integrity → extract → MANIFEST
+#           + exactly-one-dated-dir structure check per type →
+#           db-restore.mjs DRY-RUN (zero writes — the table/row report) →
+#           storage-restore.mjs DRY-RUN (the sha256 integrity gate: every
+#           file recomputed against manifest.json + one read-only
+#           bucket-existence check on the restore target) → inventory JSON
+#           parse + totals report.
+#   Phase B (git bundles, unless skip_bundles): newest monthly
+#           YYYY-MM.alkemos.bundle.enc + YYYY-MM.backups.bundle.enc →
+#           read-back + decrypt → `git clone --mirror` from EACH bundle
+#           (+ head/ref counts, head truncated to 12 chars — the private
+#           repo's SHAs are not public information).
+#
+# THE ZERO-WRITE LAW (this whole workflow is a READ-ONLY proof):
+#   Drive: downloads only — never uploads, deletes or renames anything.
+#   Supabase: ONE read-only bucket-list call (from storage-restore.mjs's
+#   dry-run); the DB and every production bucket are never written — the
+#   restore scripts run in their default DRY-RUN mode; --apply/--execute
+#   are never passed here. Nothing touches production, DNS, Vercel or
+#   Supabase state. There is nothing to dry-run about the drill itself.
+#
+# COLOR LAW: GREEN = archive + bundles downloaded, read-back-verified,
+#   decrypted, extracted, all three data types verified (db dry-run +
+#   storage sha256 gate + inventory parse) and both bundles mirror-cloned,
+#   temp files scrubbed. RED = any missing secret, bad/expired token,
+#   invisible folder, no archives on Drive (the off-site layer is empty —
+#   honest RED), DECRYPT FAILURE (the key pairing is broken — the drill's
+#   single most important finding; fix the secret BEFORE more archives pile
+#   up), any integrity mismatch (read-back sha256, tar, manifest sha256,
+#   extras, missing bucket on the target), newest weekly ≥45 days old (the
+#   weekly pipeline has been dead for a month+ — the ≤7-day criterion is
+#   massively violated; ≥14 days is a loud warning instead), or a missing
+#   bundle kind (the GD-3 self-healing monthly law guarantees them).
+#
+# SCHEDULE: quarterly — 07:30 UTC on Jan 7 / Apr 7 / Jul 7 / Oct 7. The
+#   7th is chosen so the quarter's first-month monthly bundle is guaranteed
+#   on Drive by then (first Sunday ≤ the 7th + the self-healing monthly
+#   law): every scheduled drill exercises a monthly bundle ≤ ~1 week old
+#   plus the freshest weekly. The FIRST documented drill is the dispatch /
+#   push green round itself (the plan's success criterion: «دريل Drive
+#   موثق واحد أخضر»).
+#
+# LANDING LAW (the §6 green-round law): the push trigger below exists
+# TEMPORARILY on the gd4-restore-drill branch only (dispatch via API 404s
+# for workflows not registered on the default branch — measured GD-1) so
+# the measured green round can run the drill for real, and is REMOVED by
+# the landing commit. The landed form is schedule + workflow_dispatch.
+#
+# PII LAW (§3.1-5): the extracted data (user emails, photos, receipts)
+# lives ONLY in RUNNER_TEMP for the duration of the drill and is deleted by
+# the always() cleanup; the log prints names, dates, counts and sizes only
+# (the printed MANIFEST is GD-3's own names/dates/counts file; the db
+# dry-run prints table names + row counts — schema metadata, not PII). The
+# backup manifests' object lists are never printed.
+#
+# rclone is NOT preinstalled on GitHub runners (measured 2026-10-04) — the
+# pinned SHA256-gated install below is the exact GD-1-ALT/GD-3 mechanism.
+# Env pins use the PINNED_RCLONE_* prefix — never bare RCLONE_* (rclone maps
+# RCLONE_<NAME> to --<name> flags; measured run 37162630012). RCLONE_CONFIG
+# is the one intentional mapping (the real --config flag).
+#
+# TEMPLATE LAW (measured 2026-10-04, run 37218458717 «Exceeded max
+# expression length 21000»): run: blocks stay free of ${{ }} markers —
+# template markers live ONLY in env:/if:/with: (WEEKLY_ARCHIVE and
+# SKIP_BUNDLES arrive via step env).
+name: Off-site restore drill (GD-4)
+
+on:
+  schedule:
+    - cron: "30 7 7 1,4,7,10 *" # 07:30 UTC · Jan 7 / Apr 7 / Jul 7 / Oct 7 (quarterly)
+  workflow_dispatch:
+    inputs:
+      weekly_archive:
+        description: "Weekly archive to drill (YYYY-Www.data.tar.gz.enc) — default: newest on Drive"
+        type: string
+        default: ""
+      skip_bundles:
+        description: "Skip the git-bundle restore proof (data archive only)"
+        type: boolean
+        default: false
+  push:
+    branches: [gd4-restore-drill] # TEMPORARY measured-round trigger — removed at landing (the §6 law)
+
+concurrency:
+  group: offsite-restore-drill
+  cancel-in-progress: false
+
+permissions: {} # zero GITHUB_TOKEN rights: the main repo checks out via BACKUP_REPO_TOKEN (Read on alkemos — measured GD-3); Drive is read-only via the OAuth token; Supabase gets one read-only bucket list
+
+env:
+  PINNED_RCLONE_VERSION: "1.75.1"
+  PINNED_RCLONE_SHA256: "982b5aa772841168f8e380f139e9e787b2a105403e32b94da8676a0e1c0a13ab"
+
+jobs:
+  drill:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout main repo (the restore scripts)
+        uses: actions/checkout@v4
+        with:
+          repository: muscleshubfit-cpu/alkemos
+          token: ${{ secrets.BACKUP_REPO_TOKEN }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Install pinned rclone (SHA256-gated)
+        run: |
+          set -euo pipefail
+          cd "$RUNNER_TEMP"
+          ZIP="rclone-v${PINNED_RCLONE_VERSION}-linux-amd64.zip"
+          echo "downloading rclone v${PINNED_RCLONE_VERSION} (pinned) from the official mirror…"
+          curl -fsSLO "https://downloads.rclone.org/v${PINNED_RCLONE_VERSION}/${ZIP}"
+          echo "${PINNED_RCLONE_SHA256}  ${ZIP}" | sha256sum -c -
+          unzip -oq "${ZIP}"
+          mkdir -p "$RUNNER_TEMP/rclone-bin"
+          mv "rclone-v${PINNED_RCLONE_VERSION}-linux-amd64/rclone" "$RUNNER_TEMP/rclone-bin/"
+          "$RUNNER_TEMP/rclone-bin/rclone" version | head -1
+          echo "$RUNNER_TEMP/rclone-bin" >> "$GITHUB_PATH"
+
+      - name: Preflight — required secrets present (honest RED + owner guide)
+        env:
+          BACKUP_REPO_TOKEN: ${{ secrets.BACKUP_REPO_TOKEN }}
+          GDRIVE_OAUTH_TOKEN: ${{ secrets.GDRIVE_OAUTH_TOKEN }}
+          GDRIVE_FOLDER_ID: ${{ secrets.GDRIVE_FOLDER_ID }}
+          BACKUP_ENCRYPTION_KEY: ${{ secrets.BACKUP_ENCRYPTION_KEY }}
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          set -euo pipefail
+          echo "=== Preflight: the six GD-4 dependencies (names only — values never printed) ==="
+          MISSING=0
+          for pair in \
+            "BACKUP_REPO_TOKEN|$BACKUP_REPO_TOKEN" \
+            "GDRIVE_OAUTH_TOKEN|$GDRIVE_OAUTH_TOKEN" \
+            "GDRIVE_FOLDER_ID|$GDRIVE_FOLDER_ID" \
+            "BACKUP_ENCRYPTION_KEY|$BACKUP_ENCRYPTION_KEY" \
+            "NEXT_PUBLIC_SUPABASE_URL|$NEXT_PUBLIC_SUPABASE_URL" \
+            "SUPABASE_SERVICE_ROLE_KEY|$SUPABASE_SERVICE_ROLE_KEY"; do
+            NAME="${pair%%|*}"; VALUE="${pair#*|}"
+            if [ -z "$VALUE" ]; then
+              echo "::error::missing GitHub secret: ${NAME}"
+              MISSING=1
+            else
+              echo "✓ ${NAME} present"
+            fi
+          done
+          if [ "$MISSING" = "1" ]; then
+            echo ""
+            echo "OWNER GUIDE (plan §5 GD-4 — the six drill dependencies):"
+            echo "  BACKUP_REPO_TOKEN        — the fine-grained PAT the daily backups already use (Read on alkemos: checks the restore scripts out)."
+            echo "  GDRIVE_OAUTH_TOKEN       — owner-identity OAuth token (GD-1-ALT; scope=drive) — the download credential."
+            echo "  GDRIVE_FOLDER_ID         — the AlkemosBackups folder ID (GD-1)."
+            echo "  BACKUP_ENCRYPTION_KEY    — the GD-3 encryption key; the OWNER copy lives in the password manager (GD-0 ③)."
+            echo "  NEXT_PUBLIC_SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY — the restore scripts' read-only bucket-existence check"
+            echo "                           (the same pair storage-restore-drill.yml already uses; dry-run only, zero writes)."
+            exit 1
+          fi
+
+      - name: The drill (download → decrypt → verify → dry-run → bundle clones)
+        env:
+          GDRIVE_OAUTH_TOKEN: ${{ secrets.GDRIVE_OAUTH_TOKEN }}
+          GDRIVE_FOLDER_ID: ${{ secrets.GDRIVE_FOLDER_ID }}
+          BACKUP_ENCRYPTION_KEY: ${{ secrets.BACKUP_ENCRYPTION_KEY }}
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          WEEKLY_ARCHIVE: ${{ inputs.weekly_archive || '' }}
+          SKIP_BUNDLES: ${{ github.event_name == 'workflow_dispatch' && inputs.skip_bundles == true }}
+        run: |
+          set -euo pipefail
+          STAGE="$RUNNER_TEMP/gd4-restore"
+          TOKEN_FILE="$RUNNER_TEMP/gd4-oauth-token.json"
+          CONF_FILE="$RUNNER_TEMP/rclone-drill.conf"
+          AT_FILE="$RUNNER_TEMP/drill.at"
+          KEY_FILE="$RUNNER_TEMP/bk.key"
+          RC_ERR="$RUNNER_TEMP/rc-drill.err"
+          SCRUB="$RUNNER_TEMP/scrub-drill.txt"
+          export STAGE TOKEN_FILE CONF_FILE AT_FILE KEY_FILE RC_ERR SCRUB
+          mkdir -p "$STAGE"
+
+          die() { echo "::error::restore drill FAILED — $1 (scrubbed error, if any, printed above)"; exit 1; }
+
+          # ---- 1. encryption key: normalize + 0600 file + scrub list (never echoed) ----
+          KEYNORM="$(printf '%s' "$BACKUP_ENCRYPTION_KEY" | tr -d '\r\n' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')"
+          LEN=${#KEYNORM}
+          [ "$LEN" -ge 32 ] || die "BACKUP_ENCRYPTION_KEY is ${LEN} chars — refusing to drill with a weak key (generate >= 32 chars, save the password-manager copy FIRST per GD-0 ③, then update the secret)"
+          [ "$LEN" -le 4096 ] || die "BACKUP_ENCRYPTION_KEY is ${LEN} chars (> 4096) — likely a paste error; fix the secret value"
+          printf '%s' "$KEYNORM" > "$KEY_FILE"
+          chmod 600 "$KEY_FILE"
+          printf '%s\n' "$KEYNORM" > "$SCRUB"
+          chmod 600 "$SCRUB"
+          echo "encryption key: present (${LEN} chars, normalized, 0600 file — value never printed; the OWNER copy lives in the password manager per GD-0 ③)"
+
+          # ---- 2. OAuth chain: token structure -> refresh -> folder probe (read-only) ----
+          printf '%s' "$GDRIVE_OAUTH_TOKEN" > "$TOKEN_FILE"
+          chmod 600 "$TOKEN_FILE"
+          export GDRIVE_FOLDER_ID
+          python3 << 'PYEOF'
+          import json, os, re, sys
+          import urllib.error, urllib.parse, urllib.request
+
+          token_file = os.environ["TOKEN_FILE"]
+          scrub_file = os.environ["SCRUB"]
+          at_file = os.environ["AT_FILE"]
+
+          def die(msg, detail=""):
+              print(f"::error::{msg}")
+              if detail:
+                  print(str(detail)[:1200], file=sys.stderr)
+              sys.exit(1)
+
+          try:
+              with open(token_file) as fh:
+                  tok = json.load(fh)
+          except Exception as e:
+              die(f"secret GDRIVE_OAUTH_TOKEN is not parseable JSON ({type(e).__name__}) — expected the helper-composed structure (scripts/gdrive/oauth-token-helper.html)", "")
+          client_id = tok.get("client_id") or ""
+          client_secret = tok.get("client_secret") or ""
+          inner = tok.get("token") or {}
+          refresh_token = inner.get("refresh_token") or tok.get("refresh_token") or ""
+          scope = (tok.get("scope") or "").strip()
+          if not client_id or not client_secret or not refresh_token:
+              die("GDRIVE_OAUTH_TOKEN is missing field(s) client_id/client_secret/token.refresh_token — re-mint with the helper and update the secret")
+          if scope != "drive":
+              die(f"token scope is '{scope}' but the decided state is 'drive' (owner fork decision (b), GD-1-ALT run 37184322424): a drive.file token CANNOT see the pre-existing pinned AlkemosBackups folder. Re-mint with scope=drive via the helper and update the secret")
+          with open(scrub_file, "a") as fh:  # the key is already line 1; OAuth values join it
+              fh.write("\n".join([client_id, client_secret, refresh_token]) + "\n")
+          print("OAuth token JSON: valid — client_id %s…%s (%d chars) · scope=%s · refresh_token present (values never printed)" % (client_id[:4], client_id[-4:], len(client_id), scope))
+
+          # folder ID: tolerant extraction + charset validation (the measured GD-1 law)
+          raw = os.environ.get("GDRIVE_FOLDER_ID", "")
+          def extract_id(v):
+              v = (v or "").strip().strip('"').strip("'").strip()
+              m = re.search(r"/folders/([A-Za-z0-9_-]{20,})", v)
+              if m:
+                  return m.group(1)
+              m = re.search(r"[?&]id=([A-Za-z0-9_-]{20,})", v)
+              if m:
+                  return m.group(1)
+              body = v.split("#", 1)[0].split("?", 1)[0]
+              tokens = re.findall(r"[A-Za-z0-9_-]{20,}", body)
+              if len(tokens) == 1:
+                  return tokens[0]
+              return None
+          fid = extract_id(raw)
+          if not fid or not re.fullmatch(r"[A-Za-z0-9_-]{20,60}", fid):
+              die("secret GDRIVE_FOLDER_ID does not contain a usable folder ID — paste ONLY the backup folder ID (28-33 chars) or its URL (https://drive.google.com/drive/folders/<id>)")
+
+          # refresh_token -> access_token (installed-app client)
+          data = urllib.parse.urlencode({
+              "client_id": client_id, "client_secret": client_secret,
+              "refresh_token": refresh_token, "grant_type": "refresh_token",
+          }).encode()
+          req = urllib.request.Request("https://oauth2.googleapis.com/token", data=data,
+                                       headers={"Content-Type": "application/x-www-form-urlencoded"})
+          try:
+              with urllib.request.urlopen(req, timeout=60) as r:
+                  body = json.loads(r.read())
+          except urllib.error.HTTPError as e:
+              err = {}
+              try:
+                  err = json.loads(e.read())
+              except Exception:
+                  pass
+              if err.get("error") == "invalid_grant":
+                  die("token refresh REJECTED (invalid_grant): the refresh token is expired or revoked — if the consent screen fell back to TESTING status Google kills refresh tokens after 7 days (plan §1.5-2); re-publish to Production, re-mint with the helper, update the secret")
+              if err.get("error") == "invalid_client":
+                  die("token refresh REJECTED (invalid_client): the client_id/client_secret pair is wrong — re-copy both from the Desktop-app OAuth client and re-mint with the helper")
+              die(f"token refresh failed (HTTP {e.code})", err)
+          access_token = body.get("access_token")
+          if not access_token:
+              die("token endpoint returned 200 without an access_token")
+          print("token refresh: OK — access token minted (never printed) · granted scope: %s · expires_in: %ss" % (body.get("scope") or scope, body.get("expires_in", "?")))
+          with open(at_file, "w") as fh:
+              fh.write(access_token)
+          os.chmod(at_file, 0o600)
+          with open(scrub_file, "a") as fh:
+              fh.write(access_token + "\n")
+
+          headers = {"Authorization": "Bearer " + access_token}
+
+          # about.get — the pool context (non-fatal, the GD-1-ALT law)
+          try:
+              rq = urllib.request.Request("https://www.googleapis.com/drive/v3/about?fields=storageQuota", headers=headers)
+              with urllib.request.urlopen(rq, timeout=60) as r:
+                  q = (json.loads(r.read()).get("storageQuota") or {})
+              def _num(v):
+                  try:
+                      return float(v) if v is not None else 0.0
+                  except (TypeError, ValueError):
+                      return 0.0
+              # Drive v3 returns storageQuota values as JSON STRINGS (measured run 37184158028) — coerce first
+              print("about.get (the identity's pool): total=%.2fGB · used=%.2fGB · headroom=%.2fGB" % (
+                  _num(q.get("limit")) / 1024**3, _num(q.get("usage")) / 1024**3,
+                  (_num(q.get("limit")) - _num(q.get("usage"))) / 1024**3))
+          except Exception:
+              print("::warning::about.get unavailable — NOT fatal (identity is proven by the refresh + the download below)")
+
+          # folder probe: must be a VISIBLE folder (this drill never writes, so
+          # canAddChildren is irrelevant here — GD-3's uploader owns writability)
+          url = "https://www.googleapis.com/drive/v3/files/" + fid + "?supportsAllDrives=true&fields=id,name,mimeType,driveId,capabilities(canAddChildren)"
+          try:
+              with urllib.request.urlopen(urllib.request.Request(url, headers=headers), timeout=60) as r:
+                  f = json.loads(r.read())
+          except urllib.error.HTTPError as e:
+              die(f"backup folder not visible under scope=drive (files.get HTTP {e.code}) — GDRIVE_FOLDER_ID is wrong, or the token's account does not own/see the folder; re-mint with the OWNING account via the helper", "")
+          if f.get("mimeType") != "application/vnd.google-apps.folder":
+              die("the pinned GDRIVE_FOLDER_ID target is not a folder — fix the secret")
+          did = f.get("driveId") or ""
+          mode = "shared-drive-root" if (did and did == fid) else ("shared-drive-folder" if did else "my-drive-folder")
+          team = fid if mode == "shared-drive-root" else (did if did else "")
+          if (f.get("capabilities") or {}).get("canAddChildren") is False:
+              print("::warning::folder canAddChildren=false — irrelevant for this READ-ONLY drill (GD-3's uploader is the writer); continuing")
+          print("folder probe: VISIBLE — name=%s · mode=%s" % (f.get("name") or "(unnamed)", mode))
+          print("folder ID: %s…%s (masked — the full ID is a secret value)" % (fid[:4], fid[-4:]))
+          env_path = os.path.join(os.path.dirname(token_file), "mode.env")
+          with open(env_path, "w") as fh:
+              fh.write("FOLDER_ID='%s'\nFOLDER_MODE='%s'\nTEAM_DRIVE='%s'\n" % (fid, mode, team))
+          PYEOF
+          # every value in mode.env is a fixed token or a charset-validated Drive ID -> sourcing is injection-safe
+          # shellcheck source=/dev/null
+          . "$RUNNER_TEMP/mode.env"
+          export FOLDER_ID FOLDER_MODE TEAM_DRIVE
+
+          # ---- 3. rclone config composed from the secret (python, 0600) — root pinned to the folder ----
+          python3 << 'PYEOF'
+          import json, os, time
+          token_file = os.environ["TOKEN_FILE"]
+          conf_file = os.environ["CONF_FILE"]
+          tok = json.load(open(token_file))
+          with open(os.environ["AT_FILE"]) as fh:
+              access_token = fh.read()
+          expiry = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(time.time() + 3500))
+          token_json = json.dumps({
+              "access_token": access_token,
+              "refresh_token": tok["token"]["refresh_token"],
+              "token_type": "Bearer",
+              "expiry": expiry,
+          })
+          lines = ["[gdrive]", "type = drive", "scope = %s" % tok.get("scope", "drive"),
+                   "token = %s" % token_json,
+                   "client_id = %s" % tok["client_id"],
+                   "client_secret = %s" % tok["client_secret"],
+                   "root_folder_id = %s" % os.environ["FOLDER_ID"]]
+          if os.environ.get("TEAM_DRIVE"):
+              lines.append("team_drive = %s" % os.environ["TEAM_DRIVE"])
+          with open(conf_file, "w") as fh:
+              fh.write("\n".join(lines) + "\n")
+          os.chmod(conf_file, 0o600)
+          print("rclone config written (0600): [gdrive] root pinned to the backup folder — token values never printed")
+          PYEOF
+          export RCLONE_CONFIG="$CONF_FILE"
+          command -v rclone >/dev/null 2>&1 || die "rclone not on PATH after the pinned-install step — infrastructure failure"
+          echo "rclone: $(rclone version | head -1)"
+
+          # synchronous scrubber (the smoke-test law: reads the scrub FILE, never argv)
+          scrub_file() {
+            python3 -c '
+          import os, re, sys
+          p = os.environ.get("SCRUB", "")
+          repl = []
+          try:
+              with open(p) as fh:
+                  repl = [l for l in fh.read().splitlines() if l]
+          except OSError:
+              pass
+          out = open(sys.argv[1], errors="replace").read() if len(sys.argv) > 1 else ""
+          for s in repl:
+              out = out.replace(s, "[REDACTED]")
+          out = re.sub(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+", "[REDACTED-EMAIL]", out)
+          sys.stdout.write(out)
+          ' "$1"
+          }
+          rc() { rclone "$@" 2>"$RC_ERR" || { scrub_file "$RC_ERR" >&2 || true; return 1; }; }
+
+          # ---- 4. size report + target selection (input-validated or newest by the §3.4 name-sort law) ----
+          SIZE_JSON="$(rc size "gdrive:" --json)" || die "backup-folder size measurement failed — is the folder visible to this token? (the probe above said yes; an rclone-side failure here is a real error, not a guess)"
+          WEEKLY_JSON="$(rc lsjson "gdrive:weekly/" --files-only 2>/dev/null || echo '[]')"
+          MONTHLY_JSON="$(rc lsjson "gdrive:monthly/" --files-only 2>/dev/null || echo '[]')"
+          export SIZE_JSON WEEKLY_JSON MONTHLY_JSON
+          python3 << 'PYEOF'
+          import json, os, re, sys
+          from datetime import datetime, timezone
+
+          def die(msg):
+              print(f"::error::{msg}")
+              sys.exit(1)
+
+          try:
+              size = json.loads(os.environ["SIZE_JSON"])
+          except Exception:
+              die("rclone size returned unparseable JSON")
+          try:
+              weekly = json.loads(os.environ.get("WEEKLY_JSON") or "[]")
+              monthly = json.loads(os.environ.get("MONTHLY_JSON") or "[]")
+          except Exception:
+              die("rclone lsjson returned unparseable JSON")
+
+          W_RE = re.compile(r"^\d{4}-W\d{2}\.data\.tar\.gz\.enc$")
+          M_RE = re.compile(r"^\d{4}-\d{2}\.data\.tar\.gz\.enc$")
+          ALK_RE = re.compile(r"^\d{4}-\d{2}\.alkemos\.bundle\.enc$")
+          BK_RE = re.compile(r"^\d{4}-\d{2}\.backups\.bundle\.enc$")
+
+          w_items = {e.get("Name", ""): e for e in weekly if W_RE.match(e.get("Name", ""))}
+          m_names = [e.get("Name", "") for e in monthly]
+          n_alk = len([n for n in m_names if ALK_RE.match(n)])
+          n_bk = len([n for n in m_names if BK_RE.match(n)])
+          n_md = len([n for n in m_names if M_RE.match(n)])
+
+          print("=== size report (the §3.5 law ب mirror — read-only) ===")
+          print(f"backup folder: {size.get('count', 0)} objects · {int(size.get('bytes') or 0) / 1024**3:.3f} GiB (internal budget 12 GiB)")
+          print(f"weekly/: {len(w_items)} data archive(s) · monthly/: {n_md} data archive(s) · {n_alk} alkemos bundle(s) · {n_bk} backups bundle(s)")
+
+          # --- target: the dispatch input (strictly validated) or the newest by name
+          want = (os.environ.get("WEEKLY_ARCHIVE") or "").strip()
+          if want:
+              if not W_RE.fullmatch(want):
+                  die(f"weekly_archive input {want!r} does not match the strict pattern YYYY-Www.data.tar.gz.enc")
+              if want not in w_items:
+                  die(f"weekly_archive {want} is not on Drive — pick from the weekly/ listing above")
+              target = want
+          else:
+              if not w_items:
+                  die("the off-site layer has NO weekly data archives on Drive — run offsite-gdrive-upload (GD-3) first; an honest RED beats a fake green proof")
+              target = sorted(w_items)[-1]  # §3.4: YYYY-Www sorts lexicographically = chronologically
+
+          # --- age from the measured ModTime (warn >=14d; RED >=45d — the weekly pipeline dead for a month+)
+          mod = (w_items[target].get("ModTime") or "").strip()
+          age = None
+          if mod:
+              try:
+                  mt = datetime.fromisoformat(mod.replace("Z", "+00:00"))
+                  age = (datetime.now(timezone.utc) - mt).total_seconds() / 86400.0
+              except ValueError:
+                  pass
+          age_s = ("%.1f" % age) if age is not None else "unknown"
+          if age is not None and age >= 45:
+              die(f"the newest weekly archive is {age:.0f} days old (uploaded {mod}) — the weekly upload pipeline has been dead for over a month and the plan's ≤7-day restorability criterion is massively violated. Fix offsite-gdrive-upload (GD-3) before drilling.")
+          if age is not None and age >= 14:
+              print(f"::warning::the drilled archive is {age:.0f} days old — the weekly upload pipeline looks stalled (age ≥ 14 days)")
+          print(f"drill target: weekly/{target} · {int(w_items[target].get('Size') or 0) / 1024 / 1024:.2f} MB · uploaded {mod} (age {age_s} days)")
+
+          # --- bundle targets (the GD-3 self-healing monthly law guarantees both kinds)
+          skip = os.environ.get("SKIP_BUNDLES") == "true"
+          alk = bk = ""
+          if not skip:
+              alks = sorted(n for n in m_names if ALK_RE.match(n))
+              bks = sorted(n for n in m_names if BK_RE.match(n))
+              missing = []
+              if not alks:
+                  missing.append("alkemos")
+              if not bks:
+                  missing.append("backups")
+              if missing:
+                  die("monthly/ is missing the " + " + ".join(missing) + " bundle kind — the GD-3 self-healing monthly law guarantees both every month; their absence means the monthly path has been failing. Run offsite-gdrive-upload with force_monthly, then re-drill.")
+              alk = alks[-1]
+              bk = bks[-1]
+              print(f"bundle proof targets: monthly/{alk} · monthly/{bk}")
+          else:
+              print("bundle proof: SKIPPED by input (the data archive is still fully verified)")
+
+          out = os.path.join(os.environ.get("RUNNER_TEMP", "/tmp"), "gd4-sel.env")
+          with open(out, "w") as fh:
+              fh.write("ARCHIVE='%s'\nAGE_DAYS='%s'\nALK_BUNDLE='%s'\nBK_BUNDLE='%s'\n" % (target, age_s, alk, bk))
+          # every written value is regex-validated ([0-9A-Za-z.\-] or 'unknown') -> sourcing is injection-safe
+          PYEOF
+          # shellcheck source=/dev/null
+          . "$RUNNER_TEMP/gd4-sel.env"
+          export ARCHIVE AGE_DAYS ALK_BUNDLE BK_BUNDLE
+
+          # ---- 5. download + full-stream read-back + decrypt + extract (the data archive) ----
+          ENC_LOCAL="$STAGE/$ARCHIVE"
+          rc copyto "gdrive:weekly/$ARCHIVE" "$ENC_LOCAL" || die "download failed for gdrive:weekly/$ARCHIVE"
+          L_SHA="$(sha256sum "$ENC_LOCAL" | cut -d' ' -f1)"
+          R_SHA="$(rc cat "gdrive:weekly/$ARCHIVE" | sha256sum | cut -d' ' -f1)" || die "full-stream read-back failed for weekly/$ARCHIVE"
+          [ "$L_SHA" = "$R_SHA" ] || die "read-back sha256 MISMATCH for weekly/$ARCHIVE — Drive is serving different bytes than the first download; re-run the drill before concluding anything"
+          echo "download + full-stream read-back: OK — weekly/$ARCHIVE · $(du -h "$ENC_LOCAL" | cut -f1) · sha256 ${L_SHA:0:16}… (byte-identical streams)"
+
+          DEC() {
+            openssl enc -d -aes-256-cbc -pbkdf2 -iter 600000 -md sha256 \
+              -in "$1" -out "$2" -pass file:"$KEY_FILE" 2>/dev/null
+          }
+          TAR_LOCAL="$STAGE/${ARCHIVE%.enc}"
+          DEC "$ENC_LOCAL" "$TAR_LOCAL" || die "DECRYPT FAILED for weekly/$ARCHIVE — the BACKUP_ENCRYPTION_KEY secret does not decrypt this archive. Either the password-manager copy and the GitHub secret have diverged (GD-0 ③ requires them identical), or the archive is damaged. Fix the secret BEFORE more archives pile up — this is the drill's loudest possible finding."
+          rm -f "$ENC_LOCAL"  # ciphertext lifetime ends here — the plaintext below is verified in place and scrubbed by cleanup
+          tar -tzf "$TAR_LOCAL" > /dev/null || die "the decrypted archive is not a valid tar.gz — structural damage inside the archive"
+          mkdir -p "$STAGE/x"
+          tar -xzf "$TAR_LOCAL" -C "$STAGE/x"
+          rm -f "$TAR_LOCAL"
+          echo "decrypt + tar integrity + extraction: OK — ${ARCHIVE} → $(find "$STAGE/x" -type f | wc -l) files on the runner (PII: temp-only, deleted by the always-cleanup)"
+
+          # ---- 6. structure check + MANIFEST + the three dated dirs (counts for the report) ----
+          python3 << 'PYEOF'
+          import json, os, re, sys
+          from datetime import datetime
+
+          def die(msg):
+              print(f"::error::{msg}")
+              sys.exit(1)
+
+          x = os.path.join(os.environ["STAGE"], "x")
+          for req in ("MANIFEST.txt", "snapshots", "storage-backups", "storage-inventory"):
+              if not os.path.exists(os.path.join(x, req)):
+                  die(f"the extracted archive is missing {req} — not the GD-3 data-archive layout")
+
+          TYPES = {"snapshots": "SNAP_DIR", "storage-backups": "BACKUP_DIR", "storage-inventory": "INV_DIR"}
+          sel = {}
+          for t in TYPES:
+              subs = []
+              for n in sorted(os.listdir(os.path.join(x, t))):
+                  if not os.path.isdir(os.path.join(x, t, n)):
+                      continue
+                  if re.fullmatch(r"\d{4}-\d{2}-\d{2}", n):
+                      try:
+                          datetime.strptime(n, "%Y-%m-%d")
+                          subs.append(n)
+                      except ValueError:
+                          pass  # phantom dates are not dated dirs
+              if len(subs) != 1:
+                  die(f"{t}/ contains {len(subs)} dated dir(s) — the GD-3 archive layout carries exactly 1 per type")
+              sel[t] = subs[0]
+          print("archive sources: snapshots/%s · storage-backups/%s · storage-inventory/%s" % (sel["snapshots"], sel["storage-backups"], sel["storage-inventory"]))
+
+          print("---- MANIFEST.txt (names/dates/counts only — the GD-3 design) ----")
+          with open(os.path.join(x, "MANIFEST.txt"), encoding="utf-8") as fh:
+              print(fh.read().rstrip())
+          print("-" * 60)
+
+          # counts + the two manifest gates (contents read on the runner, never printed)
+          snap = os.path.join(x, "snapshots", sel["snapshots"])
+          tdir = os.path.join(snap, "tables")
+          if not (os.path.isdir(tdir) and os.path.isfile(os.path.join(snap, "manifest.json"))):
+              die("the snapshot dir lacks tables/ or manifest.json — db-restore.mjs will not accept it")
+          n_tables = len([f for f in os.listdir(tdir) if f.endswith(".json")])
+
+          sb = os.path.join(x, "storage-backups", sel["storage-backups"])
+          if not os.path.isfile(os.path.join(sb, "manifest.json")):
+              die("the storage-backup dir lacks manifest.json — storage-restore.mjs will not accept it")
+          with open(os.path.join(sb, "manifest.json"), encoding="utf-8") as fh:
+              s_totals = (json.load(fh).get("totals") or {})
+
+          inv = os.path.join(x, "storage-inventory", sel["storage-inventory"])
+          inv_json = os.path.join(inv, "storage-inventory.json")
+          if not os.path.isfile(inv_json):
+              die("the inventory dir lacks storage-inventory.json (the storage-inventory workflow's fixed output name)")
+          jsons = 0
+          for f in sorted(os.listdir(inv)):
+              if not f.endswith(".json"):
+                  continue
+              try:
+                  with open(os.path.join(inv, f), encoding="utf-8") as fh:
+                      json.load(fh)
+                  jsons += 1
+              except Exception as e:
+                  die(f"inventory file {f} is not parseable JSON ({type(e).__name__}) — the census copy is damaged")
+          with open(inv_json, encoding="utf-8") as fh:
+              i_totals = (json.load(fh).get("totals") or {})
+
+          out = os.path.join(os.environ.get("RUNNER_TEMP", "/tmp"), "gd4-data.env")
+          with open(out, "w") as fh:
+              fh.write("SNAP_DIR='%s'\nBACKUP_DIR='%s'\nINV_DIR='%s'\nN_TABLES='%d'\nS_BUCKETS='%s'\nS_OBJECTS='%s'\nS_BYTES='%s'\nI_BUCKETS='%s'\nI_OBJECTS='%s'\nI_JSONS='%d'\n" % (
+                  sel["snapshots"], sel["storage-backups"], sel["storage-inventory"], n_tables,
+                  s_totals.get("buckets", "?"), s_totals.get("objects", "?"), s_totals.get("bytes", "?"),
+                  i_totals.get("buckets", "?"), i_totals.get("objects", "?"), jsons))
+          # dates + digits + '?' only -> sourcing is injection-safe
+          PYEOF
+          # shellcheck source=/dev/null
+          . "$RUNNER_TEMP/gd4-data.env"
+          export SNAP_DIR BACKUP_DIR INV_DIR N_TABLES S_BUCKETS S_OBJECTS S_BYTES I_BUCKETS I_OBJECTS I_JSONS
+
+          # ---- 7. the three dry-run verifications (zero writes — the plan's GD-4 law) ----
+          echo "=== 7a. DB dry-run (db-restore.mjs — default dry-run, --apply is never passed here) ==="
+          node scripts/db-restore.mjs "$STAGE/x/snapshots/$SNAP_DIR" || die "db-restore dry-run FAILED — the DB snapshot inside the off-site archive is not restorable (the report above shows which part)"
+
+          echo "=== 7b. Storage sha256 integrity gate (storage-restore.mjs dry-run + one read-only bucket list) ==="
+          node scripts/storage-restore.mjs "$STAGE/x/storage-backups/$BACKUP_DIR" || die "storage-restore dry-run FAILED — integrity mismatch inside the off-site archive, or the restore target lacks a bucket (see the report above)"
+
+          echo "=== 7c. Inventory census (parse + totals — verified inside step 6) ==="
+          echo "inventory: ${I_JSONS} JSON file(s) parse clean · ${I_OBJECTS} objects / ${I_BUCKETS} buckets censused (${INV_DIR})"
+
+          # ---- 8. the git-bundle restore proofs (mirror clones — zero GitHub involved) ----
+          if [ "$SKIP_BUNDLES" = "true" ]; then
+            echo "bundle proof: SKIPPED by dispatch input — the data archive above is fully verified"
+          else
+            prove_bundle() {
+              # $1 = bundle file name, $2 = label — names are regex-validated upstream ([0-9A-Za-z.\-])
+              local NAME="$1" LABEL="$2"
+              local ENC="$STAGE/$NAME"
+              local PLAIN="$STAGE/${NAME%.enc}"
+              local REPO="$STAGE/${NAME%.bundle.enc}.repo"
+              rc copyto "gdrive:monthly/$NAME" "$ENC" || die "download failed for gdrive:monthly/$NAME"
+              local L R
+              L="$(sha256sum "$ENC" | cut -d' ' -f1)"
+              R="$(rc cat "gdrive:monthly/$NAME" | sha256sum | cut -d' ' -f1)" || die "full-stream read-back failed for monthly/$NAME"
+              [ "$L" = "$R" ] || die "read-back sha256 MISMATCH for monthly/$NAME — re-run the drill before concluding anything"
+              DEC "$ENC" "$PLAIN" || die "DECRYPT FAILED for monthly/$NAME — the same key decrypted the data archive above, so this bundle specifically is damaged"
+              rm -f "$ENC"
+              git clone --quiet --mirror "$PLAIN" "$REPO" || die "git clone from $NAME FAILED — the bundle is not a self-contained repository"
+              local HEAD12 REFS
+              HEAD12="$(git -C "$REPO" rev-parse --short=12 HEAD)" || die "mirror clone of $NAME has no resolvable HEAD"
+              REFS="$(git -C "$REPO" for-each-ref --format='%(refname)' | wc -l)"
+              echo "bundle restore proof: ${LABEL} — mirror clone OK · ${REFS} refs · head ${HEAD12}… · $(du -h "$PLAIN" | cut -f1) decrypted"
+              rm -rf "$REPO" "$PLAIN"
+            }
+            prove_bundle "$ALK_BUNDLE" "alkemos (code repo, full history)"
+            prove_bundle "$BK_BUNDLE" "backups (private repo, full history)"
+          fi
+
+          # ---- 9. step summary + the machine line ----
+          if [ -n "${GITHUB_STEP_SUMMARY:-}" ]; then
+            {
+              echo "## Off-site restore drill (GD-4)"
+              echo ""
+              echo "| Step | Result |"
+              echo "|---|---|"
+              echo "| Drill target | weekly/${ARCHIVE} (age ${AGE_DAYS} days) |"
+              echo "| Download + full-stream read-back | OK — sha256 identical |"
+              echo "| Decrypt (openssl AES-256 · PBKDF2 600k) | OK — the password-manager key pairing works |"
+              echo "| tar integrity + extraction + structure | OK — MANIFEST + one dated dir per type |"
+              echo "| DB dry-run (db-restore.mjs) | OK — ${N_TABLES} tables would upsert · zero writes |"
+              echo "| Storage sha256 gate (storage-restore.mjs) | OK — ${S_OBJECTS} objects / ${S_BUCKETS} buckets byte-identical |"
+              echo "| Inventory census | OK — ${I_OBJECTS} objects / ${I_BUCKETS} buckets · ${I_JSONS} JSON parse clean |"
+              if [ "$SKIP_BUNDLES" = "true" ]; then
+                echo "| Git-bundle restore proof | SKIPPED (dispatch input) |"
+              else
+                echo "| Git-bundle restore proof | OK — mirror clones from ${ALK_BUNDLE} + ${BK_BUNDLE} |"
+              fi
+              echo ""
+              echo "_Zero-write proof: Drive read-only · Supabase one read-only bucket list · restore scripts in default DRY-RUN (§3.1-5)._"
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+          python3 << 'PYEOF'
+          import json, os
+
+          def _int(v):
+              try:
+                  return int(v)
+              except (TypeError, ValueError):
+                  return None
+
+          print(json.dumps({
+              "ok": True,
+              "job": "offsite-restore-drill",
+              "archive": os.environ["ARCHIVE"],
+              "age_days": os.environ.get("AGE_DAYS", "?"),
+              "db_tables": _int(os.environ.get("N_TABLES")),
+              "storage": {"buckets": _int(os.environ.get("S_BUCKETS")), "objects": _int(os.environ.get("S_OBJECTS")), "bytes": _int(os.environ.get("S_BYTES"))},
+              "inventory": {"buckets": _int(os.environ.get("I_BUCKETS")), "objects": _int(os.environ.get("I_OBJECTS")), "json_files": _int(os.environ.get("I_JSONS"))},
+              "bundles_proved": None if os.environ.get("SKIP_BUNDLES") == "true" else [os.environ.get("ALK_BUNDLE", ""), os.environ.get("BK_BUNDLE", "")],
+          }, ensure_ascii=False))
+          PYEOF
+          echo "OFF-SITE RESTORE DRILL: GREEN — the off-site layer is proven restorable (download → decrypt → sha256 → dry-runs → bundle mirror-clones)"
+
+      - name: Cleanup temp files (key, token, config, extracted PII, bundles)
+        if: always()
+        run: |
+          rm -f "${RUNNER_TEMP:-/tmp}/bk.key" "${RUNNER_TEMP:-/tmp}/scrub-drill.txt" "${RUNNER_TEMP:-/tmp}/gd4-oauth-token.json" "${RUNNER_TEMP:-/tmp}/rclone-drill.conf" "${RUNNER_TEMP:-/tmp}/drill.at" "${RUNNER_TEMP:-/tmp}/rc-drill.err" "${RUNNER_TEMP:-/tmp}/mode.env" "${RUNNER_TEMP:-/tmp}/gd4-sel.env" "${RUNNER_TEMP:-/tmp}/gd4-data.env" "${RUNNER_TEMP:-/tmp}"/rclone-v1.*-linux-amd64.zip || true
+          rm -rf "${RUNNER_TEMP:-/tmp}/gd4-restore" "${RUNNER_TEMP:-/tmp}/rclone-v1."*-linux-amd64 "${RUNNER_TEMP:-/tmp}/rclone-bin" || true
+          echo "temp key/credential/extracted-PII/bundle files removed (runner is ephemeral anyway)"
