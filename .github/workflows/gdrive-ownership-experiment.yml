@@ -1,0 +1,484 @@
+# GDrive ownership-transfer experiment (GD-1 — dispatch only) (2026-10-04).
+#
+# WHY (owner order 2026-10-04): the owner forwarded an external AI diagnosis
+# ("Gemini") claiming the GD-1 upload law can be bypassed by attaching an
+# ownership transfer to the upload — add a permissions grant targeting the
+# owner's personal Gmail with role 'owner' and transferOwnership: true — so
+# backup bytes would be charged to the owner's 15GB instead of the
+# quota-less SA. The owner ordered: examine it and run an experiment. It is
+# a diagnosis to verify, NOT a command to deploy.
+#
+# Pre-existing measurements (gdrive-smoke-test runs #8-#13) already break
+# the diagnosis' premise: a standalone Service Account cannot create content
+# files on a consumer Drive — 403 storageQuotaExceeded every time, even
+# inside an Editor-shared folder pinned by ID (bytes are charged to the
+# file CREATOR; the SA has no storage pool). Two things were never measured:
+#   (A) the raw Drive API response — every earlier measurement went through
+#       rclone; the diagnosis prescribes API-level code, so this experiment
+#       repeats the tiny-file create via the API itself,
+#   (B) the ownership-transfer mechanism ITSELF — permissions.create with
+#       role=owner + transferOwnership=true. Run 37168415521 measured that
+#       the SA CAN create ZERO-BYTE objects (it created a folder in its own
+#       space during name-based discovery). A zero-byte folder therefore
+#       gives the experiment an SA-owned object without touching any
+#       storage quota — the perfect probe:
+#         A1  raw-API tiny-file create  → expected: the 403 law, re-proved
+#             with no rclone in the middle
+#         A2  zero-byte folder create   → the SA-owned object the
+#             experiment needs (name prefix alkemos-gd-ownexp-)
+#         A3  THE EXPERIMENT: permissions.create {role: 'owner',
+#             type: 'user', emailAddress: GDRIVE_OWNER_EMAIL} +
+#             transferOwnership=true — Gemini's exact recipe, applied to an
+#             object the SA owns (Drive v3 has no permissions field on
+#             files.create — permissions are a separate call; the recipe is
+#             applied to the letter where the API allows it)
+#         A4  control: the same grant as role=writer (no transfer) —
+#             isolates whether a rejection is specific to OWNERSHIP
+#             transfer or applies to permission management in general
+#       Expected verdict (docs: transferOwnership requires the grantee to
+#       be in the same domain, or the transfer to involve a shared drive;
+#       the SA's domain is neither): A3 rejected with Google's literal
+#       message — measured, not assumed.
+#
+# The owner's email is a SECRET (GDRIVE_OWNER_EMAIL — owner order
+# 2026-10-04: never expose it in any file; it lives in GitHub Secrets only,
+# created via the GitHub API). It is printed masked (3 chars + domain) and
+# scrubbed from every output line together with the SA client_email /
+# project_id and the raw GDRIVE_FOLDER_ID value.
+#
+# Exit-code law (DIFFERENT from the smoke test on purpose): the run is
+# GREEN when the measurement completed AND cleanup verified — the A1/A3
+# outcomes are DATA (the answer the owner asked for), not failures. RED =
+# infrastructure failure only: missing secrets, auth failure, folder not
+# found / not shared, unexpected API errors, leftover residue.
+#
+# Safety properties (same family as gdrive-smoke-test.yml):
+#   - permissions: {} — no GITHUB_TOKEN rights at all; no checkout; no
+#     package installs (python3 + openssl stdlib only — discipline A-12).
+#   - Secrets materialize into 0600 temp files deleted by an always()
+#     step; no JSON field is ever printed; all output is scrubbed.
+#   - The ONLY Drive mutations are the lifetime of ONE zero-byte test
+#     folder (plus, only if the platform law changed, ONE tiny test file)
+#     inside the owner-provided backup folder — deleted and verified gone
+#     within the same run; a name-pattern sweep makes re-runs idempotent;
+#     existing backups are never touched.
+#   - MOCK_DRIVE_JSON is a LOCAL-ONLY dry-run hook (preseeded API responses
+#     so the full verdict/cleanup logic runs offline); NEVER set on GitHub
+#     runners — production always mints a real token.
+name: GDrive ownership-transfer experiment (GD-1 — dispatch only)
+
+on:
+  # TEMP-BRANCH-ONLY trigger (gd1-smoke-test) so the first run can start
+  # before the workflow is registered on the default branch — the exact
+  # pattern gdrive-smoke-test.yml used. The dispatch-only variant is what
+  # lands on main if this experiment is ever kept.
+  push:
+    branches: [gd1-smoke-test]
+  workflow_dispatch: {}
+
+concurrency:
+  group: gdrive-ownership-experiment
+  cancel-in-progress: false
+
+permissions: {}
+
+jobs:
+  ownership-experiment:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Ownership-transfer experiment (A1 raw upload · A2 zero-byte object · A3 transferOwnership · A4 control)
+        env:
+          SA_JSON: ${{ secrets.GOOGLE_DRIVE_SERVICE_ACCOUNT_JSON }}
+          GDRIVE_FOLDER_ID: ${{ secrets.GDRIVE_FOLDER_ID }}
+          GDRIVE_OWNER_EMAIL: ${{ secrets.GDRIVE_OWNER_EMAIL }}
+        run: |
+          set -euo pipefail
+          SA_FILE="$RUNNER_TEMP/gdrive-sa.json"
+          export SA_FILE
+          if [ -z "${SA_JSON}" ]; then
+            echo "::error::secret GOOGLE_DRIVE_SERVICE_ACCOUNT_JSON is empty or missing"
+            exit 1
+          fi
+          if [ -z "${GDRIVE_FOLDER_ID:-}" ]; then
+            echo "::error::secret GDRIVE_FOLDER_ID is empty or missing — add it (the backup folder ID or its URL), then re-run"
+            exit 1
+          fi
+          if [ -z "${GDRIVE_OWNER_EMAIL:-}" ]; then
+            echo "::error::secret GDRIVE_OWNER_EMAIL is empty or missing — add it (the owner's personal Gmail that owns the backup folder), then re-run"
+            exit 1
+          fi
+          export GDRIVE_FOLDER_ID GDRIVE_OWNER_EMAIL
+          # Materialize the secret into a 0600 temp file. NEVER echo it.
+          printf '%s' "$SA_JSON" > "$SA_FILE"
+          chmod 600 "$SA_FILE"
+          python3 << 'PYMAIN'
+          import base64, json, os, re, subprocess, sys, time
+          import urllib.error, urllib.parse, urllib.request
+
+          sa_file = os.environ["SA_FILE"]
+          owner_raw = (os.environ.get("GDRIVE_OWNER_EMAIL") or "").strip()
+          folder_secret = (os.environ.get("GDRIVE_FOLDER_ID") or "").strip()
+          mock_path = os.environ.get("MOCK_DRIVE_JSON")  # LOCAL validation only
+          TS = time.strftime("%Y%m%dT%H%M%SZ", time.gmtime())
+          PREFIX = "alkemos-gd-ownexp-"
+
+          results = {"A1": None, "A2": None, "A3": None, "A4": None, "cleanup": None}
+
+          # ---- load + validate the SA json (values never printed) ----
+          try:
+              with open(sa_file, "r", encoding="utf-8") as fh:
+                  sa = json.load(fh)
+          except Exception as e:
+              print(f"::error::secret is not parseable JSON ({type(e).__name__}) — set GOOGLE_DRIVE_SERVICE_ACCOUNT_JSON to the FULL service-account JSON file content")
+              sys.exit(1)
+          req = ["type", "project_id", "private_key", "client_email"]
+          missing = [k for k in req if not sa.get(k)]
+          if missing:
+              print(f"::error::service-account JSON is missing field(s): {', '.join(missing)}")
+              sys.exit(1)
+          if sa.get("type") != "service_account":
+              print('::error::JSON "type" is not "service_account" — refusing to use it')
+              sys.exit(1)
+          print("SA JSON structure: valid service_account — required fields present (values never printed)")
+
+          def mask_email(e):
+              if not e or "@" not in e:
+                  return "<unset>"
+              u, d = e.split("@", 1)
+              return (u[:3] + "***@" + d) if len(u) > 3 else "***@" + d
+
+          if not owner_raw or "@" not in owner_raw or "." not in owner_raw.split("@", 1)[1]:
+              print("::error::secret GDRIVE_OWNER_EMAIL is not an email address — set it to the owner's personal Gmail (the account that owns the backup folder), then re-run")
+              sys.exit(1)
+          print("owner email (masked): %s — from secret GDRIVE_OWNER_EMAIL (value never printed)" % mask_email(owner_raw))
+
+          SCRUB = [(v, "[REDACTED-SA]") for v in (sa.get("client_email"), sa.get("project_id")) if v]
+          SCRUB.append((owner_raw, mask_email(owner_raw)))
+          SCRUB.append((folder_secret, "[REDACTED-FOLDER-SECRET]"))
+
+          def scrub(s):
+              s = str(s)
+              for v, r in SCRUB:
+                  if v and len(v) >= 8:
+                      s = s.replace(v, r)
+              return s
+
+          # ---- tolerant folder-ID extraction (verbatim from gdrive-smoke-test.yml,
+          # measured run 37170955147: the owner pasted a label-embedded ID) ----
+          def extract_id(v):
+              v = (v or "").strip().strip('"').strip("'").strip()
+              m = re.search(r"/folders/([A-Za-z0-9_-]{20,})", v)
+              if m:
+                  return m.group(1), ""
+              m = re.search(r"[?&]id=([A-Za-z0-9_-]{20,})", v)
+              if m:
+                  return m.group(1), ""
+              body = v.split("#", 1)[0].split("?", 1)[0]
+              tokens = re.findall(r"[A-Za-z0-9_-]{20,}", body)
+              if len(tokens) == 1:
+                  return tokens[0], ""
+              if len(tokens) > 1:
+                  return None, "%d ID-like tokens found — paste ONLY the folder ID or its URL" % len(tokens)
+              if not v:
+                  return None, "the secret value is empty"
+              if len(v) < 20:
+                  return None, "shorter than any Drive ID (a folder NAME is not an ID)"
+              return None, "no Drive-ID-length token found"
+
+          fid, why_not = extract_id(folder_secret)
+          if not fid or not re.fullmatch(r"[A-Za-z0-9_-]{20,60}", fid):
+              print("::error::secret GDRIVE_FOLDER_ID does not contain a usable folder ID (%s) — paste ONLY the backup folder ID or its URL" % (why_not or "unknown"))
+              sys.exit(1)
+          print("folder ID extracted from GDRIVE_FOLDER_ID: %s…%s (%d chars — masked; the full value is a secret)" % (fid[:4], fid[-4:], len(fid)))
+
+          # ---- API layer (mock hook for LOCAL dry-runs only) ----
+          MOCK = json.load(open(mock_path)) if mock_path else None
+
+          def api(method, url, body=None, tag="", token=None, data=None, ctype="application/json"):
+              if MOCK is not None:
+                  ent = MOCK.get(tag)
+                  if ent is None:
+                      return 500, {"error": {"message": "MOCK missing tag: " + tag}}
+                  return int(ent.get("status", 0)), ent.get("body", {})
+              headers = {}
+              if token:
+                  headers["Authorization"] = "Bearer " + token
+              if data is not None:
+                  headers["Content-Type"] = ctype
+                  payload = data
+              elif body is not None:
+                  headers["Content-Type"] = "application/json"
+                  payload = json.dumps(body).encode()
+              else:
+                  payload = None
+              req = urllib.request.Request(url, data=payload, method=method)
+              for k, v in headers.items():
+                  req.add_header(k, v)
+              try:
+                  with urllib.request.urlopen(req, timeout=60) as r:
+                      raw = r.read()
+                      return r.status, (json.loads(raw) if raw.strip() else {})
+              except urllib.error.HTTPError as e:
+                  try:
+                      raw = e.read()
+                      return e.code, (json.loads(raw) if raw.strip() else {})
+                  except Exception:
+                      return e.code, {}
+              except Exception as e:
+                  print("::error::Drive API request failed (network): %s" % scrub(repr(e)))
+                  sys.exit(1)
+
+          # ---- token (drive scope — JWT signed via openssl, same as the smoke test) ----
+          TOKEN = None
+          if MOCK is None:
+              key_file = os.path.join(os.path.dirname(sa_file), "gdrive-sa.key")
+              with open(key_file, "w") as fh:
+                  fh.write(sa["private_key"])
+              os.chmod(key_file, 0o600)
+              def b64u(b):
+                  return base64.urlsafe_b64encode(b).rstrip(b"=").decode("ascii")
+              token_uri = sa.get("token_uri") or "https://oauth2.googleapis.com/token"
+              now = int(time.time())
+              head = b64u(json.dumps({"alg": "RS256", "typ": "JWT"}, separators=(",", ":")).encode())
+              claims = b64u(json.dumps({
+                  "iss": sa["client_email"], "scope": "https://www.googleapis.com/auth/drive",
+                  "aud": token_uri, "iat": now, "exp": now + 600,
+              }, separators=(",", ":")).encode())
+              try:
+                  sig = subprocess.run(["openssl", "dgst", "-sha256", "-sign", key_file],
+                                       input=(head + "." + claims).encode(),
+                                       capture_output=True, check=True).stdout
+              except Exception as e:
+                  print("::error::JWT signing failed — the SA private_key is not usable (%s)" % type(e).__name__)
+                  sys.exit(1)
+              body = urllib.parse.urlencode({
+                  "grant_type": "urn:ietf:params:oauth:grant-type:jwt-bearer",
+                  "assertion": head + "." + claims + "." + b64u(sig),
+              }).encode()
+              req = urllib.request.Request(token_uri, data=body, method="POST")
+              req.add_header("Content-Type", "application/x-www-form-urlencoded")
+              try:
+                  with urllib.request.urlopen(req, timeout=60) as r:
+                      TOKEN = json.loads(r.read())["access_token"]
+              except Exception as e:
+                  detail = ""
+                  if isinstance(e, urllib.error.HTTPError):
+                      detail = e.read().decode(errors="replace")[:400]
+                  print("::error::token mint failed — the SA key did not authenticate on Google: %s %s" % (type(e).__name__, scrub(detail)))
+                  sys.exit(1)
+              print("auth: OK (drive-scope token minted via JWT — the token never touches the log)")
+
+          # ---- folder probe (same diagnosis quality as the smoke test) ----
+          f_status, f_body = api("GET",
+              "https://www.googleapis.com/drive/v3/files/" + fid
+              + "?supportsAllDrives=true&fields=id,name,mimeType,driveId,shared,capabilities(canAddChildren,canEdit)",
+              tag="folder_probe", token=TOKEN)
+          if f_status == 404:
+              d_status, d_body = api("GET",
+                  "https://www.googleapis.com/drive/v3/drives/" + fid + "?fields=id,name",
+                  tag="drives_get", token=TOKEN)
+              if d_status == 200:
+                  print("folder probe: the pinned ID is a Workspace SHARED DRIVE root — SAs CAN own files there as members, so the consumer-Drive ownership law does not apply and the experiment is MOOT. Nothing was created or changed.")
+                  sys.exit(0)
+              print("::error::folder ID not found / not accessible to the SA (files.get HTTP %s, drives.get HTTP %s) — the backup folder must be shared with the SA email as Editor (client_email inside the SA secret). Nothing was created." % (f_status, d_status))
+              sys.exit(1)
+          if f_status != 200:
+              print("::error::folder probe failed (HTTP %s) — nothing was created" % f_status)
+              sys.exit(1)
+          if f_body.get("mimeType") != "application/vnd.google-apps.folder":
+              print("::error::GDRIVE_FOLDER_ID points to a non-folder (mimeType=%s) — nothing was created" % scrub(f_body.get("mimeType") or "unknown"))
+              sys.exit(1)
+          caps = f_body.get("capabilities") or {}
+          did = f_body.get("driveId") or ""
+          mode = "shared-drive-root" if did == fid else ("shared-drive-folder" if did else "my-drive-folder")
+          if mode != "my-drive-folder":
+              print("folder probe: mode=%s (Workspace shared drive) — SAs CAN own files there as members, so the ownership-transfer question is MOOT for this folder. Nothing was created." % mode)
+              sys.exit(0)
+          if caps.get("canAddChildren") is False:
+              print("::error::the folder is shared with the SA WITHOUT create permission (canAddChildren=false — Viewer/Commenter share). Re-share the folder with the SA email as EDITOR, then re-run. Nothing was created.")
+              sys.exit(1)
+          print("folder probe: name=%s · mode=my-drive-folder (consumer Drive — the experiment applies) · canAddChildren=%s · canEdit=%s" % (f_body.get("name") or "(unnamed)", caps.get("canAddChildren"), caps.get("canEdit")))
+
+          # ---- A1: raw-API tiny-file create (the law, without rclone) ----
+          file_name = PREFIX + "file-" + TS + ".txt"
+          boundary = "alkemosownexp" + TS
+          meta = json.dumps({"name": file_name, "parents": [fid]})
+          media = ("alkemos GD-1 ownership-experiment A1 raw-API upload probe " + TS).encode()
+          mp = ("--%s\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n%s\r\n--%s\r\nContent-Type: text/plain; charset=UTF-8\r\n\r\n" % (boundary, meta, boundary)).encode() + media + ("\r\n--%s--\r\n" % boundary).encode()
+          a1_status, a1_body = api("POST",
+              "https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,owners(emailAddress,me)&supportsAllDrives=true",
+              data=mp, ctype="multipart/related; boundary=" + boundary,
+              tag="create_file", token=TOKEN)
+          a1_file_id = None
+          if a1_status in (200, 201):
+              a1_file_id = a1_body.get("id")
+              results["A1"] = "UNEXPECTEDLY ALLOWED (HTTP %d) — the measured platform law CHANGED?! The file is deleted below" % a1_status
+          else:
+              err = a1_body.get("error") or {}
+              reason = ((err.get("errors") or [{}])[0]).get("reason", "")
+              msg = err.get("message", "")
+              if "storageQuotaExceeded" in (reason + msg):
+                  results["A1"] = "BLOCKED (HTTP %d storageQuotaExceeded) — the law re-proved via the RAW Drive API, no rclone in the middle: the SA cannot own content files" % a1_status
+              else:
+                  results["A1"] = "BLOCKED (HTTP %d %s) — NOT the quota law: %s" % (a1_status, reason or "?", scrub(msg)[:300])
+          print("A1 raw-API tiny-file create (~60 bytes into the backup folder): %s" % results["A1"])
+          if a1_file_id:
+              api("DELETE", "https://www.googleapis.com/drive/v3/files/" + a1_file_id + "?supportsAllDrives=true",
+                  tag="a1_delete", token=TOKEN)
+              print("A1 file deleted inside the same run (id never printed)")
+
+          # ---- A2: zero-byte folder create (the SA-owned probe object) ----
+          folder_name = PREFIX + TS
+          a2_status, a2_body = api("POST",
+              "https://www.googleapis.com/drive/v3/files?fields=id,name,owners(emailAddress,me),mimeType&supportsAllDrives=true",
+              body={"name": folder_name, "mimeType": "application/vnd.google-apps.folder", "parents": [fid]},
+              tag="create_folder", token=TOKEN)
+          obj_id = None
+          if a2_status in (200, 201):
+              obj_id = a2_body.get("id")
+              owners = a2_body.get("owners") or [{}]
+              # owner display: NEVER print any part of the SA email — the
+              # smoke-test scrub law (client_email/project_id are secrets).
+              results["A2"] = "OK (zero-byte folder created — SA-owned, no storage quota consumed; owner is the SA itself, me=%s)" % owners[0].get("me")
+          else:
+              err = a2_body.get("error") or {}
+              reason = ((err.get("errors") or [{}])[0]).get("reason", "")
+              msg = err.get("message", "")
+              if "storageQuotaExceeded" in (reason + msg):
+                  results["A2"] = "BLOCKED (HTTP %d storageQuotaExceeded) — the SA cannot create even ZERO-BYTE objects" % a2_status
+              else:
+                  print("::error::A2 folder create failed with an UNEXPECTED error (HTTP %d %s): %s — nothing to clean for A2" % (a2_status, reason, scrub(msg)[:300]))
+                  sys.exit(1)
+          print("A2 zero-byte folder create (the probe object): %s" % results["A2"])
+
+          # ---- A3 (THE EXPERIMENT) + A4 (control) ----
+          if obj_id:
+              a3_status, a3_body = api("POST",
+                  "https://www.googleapis.com/drive/v3/files/" + obj_id + "/permissions?transferOwnership=true&sendNotificationEmail=false&supportsAllDrives=true",
+                  body={"role": "owner", "type": "user", "emailAddress": owner_raw},
+                  tag="perm_owner", token=TOKEN)
+              if a3_status in (200, 201):
+                  results["A3"] = "SUCCESS (HTTP %d) — the transfer WAS accepted (unexpected for a consumer account); the folder now belongs to %s and is trashed below" % (a3_status, mask_email(owner_raw))
+              else:
+                  err = a3_body.get("error") or {}
+                  reason = ((err.get("errors") or [{}])[0]).get("reason", "")
+                  results["A3"] = "REJECTED (HTTP %d %s): %s" % (a3_status, reason or "?", scrub(err.get("message", ""))[:400])
+              print("A3 OWNERSHIP TRANSFER — Gemini's exact recipe (role=owner + transferOwnership=true to %s): %s" % (mask_email(owner_raw), results["A3"]))
+
+              a4_status, a4_body = api("POST",
+                  "https://www.googleapis.com/drive/v3/files/" + obj_id + "/permissions?sendNotificationEmail=false&supportsAllDrives=true",
+                  body={"role": "writer", "type": "user", "emailAddress": owner_raw},
+                  tag="perm_writer", token=TOKEN)
+              if a4_status in (200, 201):
+                  results["A4"] = "OK (HTTP %d) — regular permission management WORKS for the SA: the block, if any, is specific to OWNERSHIP transfer" % a4_status
+                  perm_id = a4_body.get("id")
+                  if perm_id:
+                      api("DELETE", "https://www.googleapis.com/drive/v3/files/" + obj_id + "/permissions/" + perm_id + "?supportsAllDrives=true",
+                          tag="perm_writer_delete", token=TOKEN)
+              else:
+                  err = a4_body.get("error") or {}
+                  results["A4"] = "REJECTED (HTTP %d %s): %s" % (a4_status, ((err.get("errors") or [{}])[0]).get("reason", "?"), scrub(err.get("message", ""))[:300])
+              print("A4 control (same grant as writer, no ownership transfer): %s" % results["A4"])
+          else:
+              results["A3"] = "UNTESTABLE — A2 produced no SA-owned object, so Gemini's recipe cannot even reach its own step 1 (there is nothing to transfer)"
+              results["A4"] = "SKIPPED (no object to grant on)"
+              print(results["A3"])
+              print(results["A4"])
+
+          # ---- cleanup: sweep leftovers (idempotent re-runs), then the probe object ----
+          sw_status, sw_body = api("GET",
+              "https://www.googleapis.com/drive/v3/files?q=" + urllib.parse.quote("name contains '%s' and trashed = false" % PREFIX)
+              + "&spaces=drive&fields=files(id,name)&pageSize=100&supportsAllDrives=true",
+              tag="sweep_list", token=TOKEN)
+          swept = []
+          if sw_status == 200:
+              for f in (sw_body.get("files") or []):
+                  d_st, _ = api("DELETE", "https://www.googleapis.com/drive/v3/files/" + f["id"] + "?supportsAllDrives=true",
+                                tag="sweep_delete", token=TOKEN)
+                  swept.append((f.get("name"), d_st))
+          else:
+              print("::warning::leftover sweep listing failed (HTTP %d) — continuing with the object cleanup" % sw_status)
+
+          if obj_id:
+              d_status, _ = api("DELETE", "https://www.googleapis.com/drive/v3/files/" + obj_id + "?supportsAllDrives=true",
+                                tag="folder_delete", token=TOKEN)
+              if d_status in (200, 204):
+                  v_status, v_body = api("GET", "https://www.googleapis.com/drive/v3/files/" + obj_id + "?fields=id,trashed&supportsAllDrives=true",
+                                         tag="folder_get_after", token=TOKEN)
+                  if v_status == 404:
+                      results["cleanup"] = "OK (probe folder deleted + verified gone; %d leftover(s) swept)" % len(swept)
+                  else:
+                      results["cleanup"] = "PARTIAL (delete returned %d but the object is still visible, HTTP %d) — OWNER ACTION: remove '%s' from the backup folder" % (d_status, v_status, folder_name)
+              elif str(results["A3"]).startswith("SUCCESS"):
+                  t_status, _ = api("PATCH", "https://www.googleapis.com/drive/v3/files/" + obj_id + "?supportsAllDrives=true",
+                                    body={"trashed": True}, tag="folder_trash", token=TOKEN)
+                  v_status, v_body = api("GET", "https://www.googleapis.com/drive/v3/files/" + obj_id + "?fields=id,trashed&supportsAllDrives=true",
+                                         tag="folder_get_after", token=TOKEN)
+                  if t_status in (200, 204) and v_body.get("trashed") is True:
+                      results["cleanup"] = "TRASHED (ownership moved to %s — a writer cannot hard-delete; OWNER ACTION: empty Drive trash to remove '%s')" % (mask_email(owner_raw), folder_name)
+                  else:
+                      results["cleanup"] = "FAILED (trash HTTP %d / verify HTTP %d) — OWNER ACTION: delete '%s' from the backup folder manually" % (t_status, v_status, folder_name)
+              else:
+                  results["cleanup"] = "FAILED (delete HTTP %d) — OWNER ACTION: delete '%s' from the backup folder manually" % (d_status, folder_name)
+          else:
+              results["cleanup"] = "OK (no probe object existed — nothing to clean; %d leftover(s) swept)" % len(swept)
+          print("cleanup: %s" % results["cleanup"])
+          for name, st in swept:
+              print("  swept leftover: %s (delete HTTP %d)" % (name, st))
+
+          # ---- verdict composition ----
+          a3 = results["A3"] or ""
+          if a3.startswith("REJECTED"):
+              gemini = "REJECTED BY GOOGLE at the permissions.create step — the recipe cannot attach ownership to an SA-owned object on a consumer account (literal message in A3)."
+          elif a3.startswith("SUCCESS"):
+              gemini = "ACCEPTED — but it does NOT unlock backups: A1 still gates content-file creation; only if A1 also changed would this path matter."
+          elif a3.startswith("UNTESTABLE"):
+              gemini = "UNTESTABLE — the SA cannot create even a zero-byte object (A2), so the recipe has no object to work on."
+          else:
+              gemini = "not reached."
+          print("")
+          print("================ OWNERSHIP-TRANSFER EXPERIMENT VERDICT ================")
+          print("Gemini's diagnosis says: upload, then transfer ownership to the owner's")
+          print("personal Gmail so the bytes are charged to the owner's 15GB. Measured:")
+          print("  1. premise (upload succeeds first): A1 = %s" % (results["A1"] or "?"))
+          print("  2. recipe (role=owner + transferOwnership=true): A3 = %s" % (results["A3"] or "?"))
+          print("  3. control (role=writer, same grantee): A4 = %s" % (results["A4"] or "?"))
+          print("  => %s" % gemini)
+          print("  NOTE: Drive v3 files.create has no permissions field — permissions are")
+          print("  a separate call; the recipe above was applied exactly where the API allows.")
+          print("  The INTENT (bytes charged to the owner's 15GB) is achievable the way")
+          print("  Google supports: create the files AS the owner from the start — OAuth")
+          print("  user-token (plan §5 GD-1-ALT), which also removes the 403 entirely.")
+          print("OWNER DECISION required — unchanged unless A3 succeeded AND A1 changed:")
+          print("  (1) OAuth user-account token (plan §5 GD-1-ALT): $0, refresh-token secret,")
+          print("      publish the OAuth consent screen to production (7-day testing expiry).")
+          print("  (2) Workspace shared drive (paid): SAs write as members.")
+          print("  (3) Cloudflare R2 (plan §3.6 conditional path): free 10GB, needs a billing card.")
+          print("========================================================================")
+
+          if os.environ.get("GITHUB_STEP_SUMMARY"):
+              with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as fh:
+                  fh.write("## GDrive ownership-transfer experiment (GD-1)\n\n")
+                  fh.write("| Step | Measured result |\n|---|---|\n")
+                  fh.write("| A1 · raw-API tiny-file create (no rclone) | %s |\n" % (results["A1"] or "?"))
+                  fh.write("| A2 · zero-byte folder create (probe object) | %s |\n" % (results["A2"] or "?"))
+                  fh.write("| A3 · **ownership transfer** (Gemini's exact recipe) | %s |\n" % (results["A3"] or "?"))
+                  fh.write("| A4 · control: same grant as writer | %s |\n" % (results["A4"] or "?"))
+                  fh.write("| cleanup | %s |\n" % (results["cleanup"] or "?"))
+                  fh.write("\n**Verdict:** %s\n\n" % gemini)
+                  fh.write("The INTENT (charge the owner's 15GB) is achievable the way Google supports: create files AS the owner — OAuth user-token, plan §5 GD-1-ALT.\n")
+                  fh.write("Green here = measurement captured + cleanup verified; the A1/A3 outcomes are the DATA the owner asked for. GD-2/GD-3 remain owner-gated.\n")
+
+          if not (results["cleanup"].startswith("OK") or results["cleanup"].startswith("TRASHED")):
+              print("::error::experiment completed but cleanup left residue — see the cleanup line above")
+              sys.exit(1)
+          print("EXPERIMENT COMPLETE — verdict above. Green = measurement captured + cleanup verified (the A1/A3 outcomes are data, not failures).")
+          sys.exit(0)
+          PYMAIN
+
+      - name: Cleanup temp files (credentials, key)
+        if: always()
+        run: |
+          rm -f "${RUNNER_TEMP:-/tmp}/gdrive-sa.json" "${RUNNER_TEMP:-/tmp}/gdrive-sa.key" "${RUNNER_TEMP:-/tmp}/rc.err" || true
+          echo "temp credential files removed (runner is ephemeral anyway)"
