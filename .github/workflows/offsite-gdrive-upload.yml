@@ -88,6 +88,15 @@
 # pins use the PINNED_RCLONE_* prefix — never bare RCLONE_* (rclone maps
 # RCLONE_<NAME> to --<name> flags; measured run 37162630012).
 # RCLONE_CONFIG is the one intentional mapping (the real --config flag).
+#
+# TEMPLATE LAW (measured 2026-10-05, run 37218458717 «Invalid workflow file
+# (Line: 202, Col: 14): Exceeded max expression length 21000»): a run: block
+# may be ARBITRARILY long only while it contains ZERO ${{ }} markers (the
+# landed 34K-char gdrive-oauth-smoke-test run block proves the size itself is
+# fine); embedding even ONE ${{ }} turns the whole script into a template and
+# the 21,000-char expression cap applies. Therefore this file's law: template
+# markers live ONLY in env:/if:/with:/outputs: — never inside a run script
+# (WEEK/MONTH arrive via step env).
 name: Off-site GDrive upload (GD-3)
 
 on:
@@ -199,6 +208,8 @@ jobs:
           FORCE_MONTHLY: ${{ github.event_name == 'workflow_dispatch' && inputs.force_monthly == true }}
           OFFSITE_KEEP_WEEKLY: ${{ vars.OFFSITE_KEEP_WEEKLY }}
           OFFSITE_KEEP_MONTHLY: ${{ vars.OFFSITE_KEEP_MONTHLY }}
+          WEEK: ${{ steps.names.outputs.week }}
+          MONTH: ${{ steps.names.outputs.month }}
         run: |
           set -euo pipefail
           REPO_DIR="$GITHUB_WORKSPACE/backup-repo"
@@ -211,8 +222,8 @@ jobs:
           SCRUB="$RUNNER_TEMP/scrub-offsite.txt"
           export REPO_DIR STAGE TOKEN_FILE CONF_FILE AT_FILE KEY_FILE RC_ERR SCRUB
           mkdir -p "$STAGE"
-          WEEK="${{ steps.names.outputs.week }}"
-          MONTH="${{ steps.names.outputs.month }}"
+          WEEK="${WEEK:-$(date -u +'%G-W%V')}"
+          MONTH="${MONTH:-$(date -u +'%Y-%m')}"
           export WEEK MONTH
 
           die() { echo "::error::off-site upload FAILED — $1 (scrubbed error, if any, printed above)"; exit 1; }
