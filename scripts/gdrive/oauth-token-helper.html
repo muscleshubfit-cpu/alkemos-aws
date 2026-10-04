@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<!--
+  oauth-token-helper.html — Alkemos GD-1-ALT one-time OAuth token minter (2026-10-04).
+
+  WHY: the backup path picked by the owner (plan §5 GD-1-ALT,
+  docs/BACKUP-STRATEGY-2026-10-03.md) uploads backups AS THE OWNER via an
+  OAuth user token — the file creator is the owner, so the bytes charge to
+  the owner's real 15 GB pool (the SA path measured this impossible: a
+  standalone Service Account has zero storage quota — 403
+  storageQuotaExceeded, runs 37168415521/37168880937/37169086366/37171157963
+  — and ownership transfer is rejected too, runs 37173397141/37173573718/
+  37173684908). This page mints the token ONCE, locally, and composes the
+  exact JSON the GDRIVE_OAUTH_TOKEN GitHub secret expects.
+
+  SECURITY MODEL:
+  - This file contains ZERO secrets — it is a generic tool. Open it
+    locally (double-click); it never leaves your machine except for TWO
+    Google endpoints (the consent screen you open, and
+    oauth2.googleapis.com for the code exchange — the standard OAuth
+    installed-app flow, rclone's own model).
+  - The client_secret of a "Desktop app" OAuth client is NON-CONFIDENTIAL
+    by Google's installed-app design (it is embedded in distributed
+    desktop apps by design); the value that matters is the refresh_token,
+    which must live ONLY in the GitHub secret afterwards.
+  - After pasting the final JSON into GitHub, close this page (it holds
+    the values in memory). Nothing is stored — no localStorage, no
+    cookies, no network calls except Google's two endpoints.
+  - SEPARATION (owner order 2026-10-04): this client is ONLY for the
+    backup workflow. The project's Google Login (Supabase Auth Google
+    provider) is a different credential, dashboard-configured, untouched.
+-->
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Alkemos — أداة توليد توكن Google Drive الاحتياطي (مرة واحدة)</title>
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; }
+  body { font-family: system-ui, "Segoe UI", Tahoma, sans-serif; background: #f5f7fa; color: #1f2933; margin: 0; padding: 24px; line-height: 1.7; }
+  .wrap { max-width: 860px; margin: 0 auto; }
+  h1 { font-size: 1.45rem; margin: 0 0 6px; }
+  h2 { font-size: 1.1rem; margin: 28px 0 10px; color: #0b5394; }
+  .sub { color: #52606d; margin: 0 0 18px; font-size: .95rem; }
+  .card { background: #fff; border: 1px solid #d9e2ec; border-radius: 12px; padding: 18px 20px; margin: 14px 0; box-shadow: 0 1px 2px rgba(0,0,0,.04); }
+  .steps { counter-reset: s; padding: 0; margin: 0; list-style: none; }
+  .steps li { counter-increment: s; margin: 10px 0; padding-right: 44px; position: relative; }
+  .steps li::before { content: counter(s); position: absolute; right: 0; top: 2px; width: 30px; height: 30px; border-radius: 50%; background: #0b5394; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: .9rem; }
+  code, .mono { font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; direction: ltr; unicode-bidi: embed; background: #eef2f7; border: 1px solid #d9e2ec; border-radius: 6px; padding: 1px 6px; font-size: .9em; }
+  a { color: #0b5394; }
+  label { display: block; font-weight: 600; margin: 14px 0 4px; font-size: .95rem; }
+  input[type=text], input[type=password], select, textarea { width: 100%; padding: 9px 12px; border: 1px solid #cbd2d9; border-radius: 8px; font-family: inherit; font-size: .95rem; background: #fff; }
+  input, select, textarea { direction: ltr; text-align: left; }
+  textarea { min-height: 90px; font-family: ui-monospace, Consolas, monospace; font-size: .85rem; }
+  button { background: #0b5394; color: #fff; border: 0; border-radius: 8px; padding: 11px 22px; font-size: 1rem; font-weight: 600; cursor: pointer; margin: 14px 6px 0 0; font-family: inherit; }
+  button.ghost { background: #eef2f7; color: #0b5394; border: 1px solid #cbd2d9; }
+  .hint { font-size: .85rem; color: #52606d; margin-top: 4px; }
+  .ok { color: #0e8345; font-weight: 700; }
+  .err { color: #c0392b; font-weight: 700; }
+  .warn { background: #fff8e1; border: 1px solid #f0d264; border-radius: 8px; padding: 10px 14px; font-size: .9rem; margin: 10px 0; }
+  .note { background: #eef6fd; border: 1px solid #bcdcf5; border-radius: 8px; padding: 10px 14px; font-size: .9rem; margin: 10px 0; }
+  .out { width: 100%; min-height: 130px; }
+  .hidden { display: none; }
+  .small { font-size: .85rem; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>أداة توليد توكن Google Drive الاحتياطي — لمرة واحدة</h1>
+  <p class="sub">مسار GD-1-ALT من خطة النسخ الاحتياطي (OAuth بصفة المالك — $0). كل الخطوات على جهازك فقط؛ لا شيء يُرسل إلا إلى Google نفسها.</p>
+
+  <div class="card">
+    <h2 style="margin-top:0">الخطوة أ — تجهيز Google Cloud Console (يدوي، ~3 دقائق)</h2>
+    <ol class="steps">
+      <li>افتح <a href="https://console.cloud.google.com/apis/credentials/consent" target="_blank" rel="noopener">شاشة موافقة OAuth</a> — <b>على نفس مشروع Google Cloud الذي أنشأتَه لحساب الخدمة (Service Account)</b> (مشروع Drive API مفعّلة فيه أصلًا).</li>
+      <li>اختر نوع المستخدم <b>External</b>، ثم املك الحد الأدنى: اسم تطبيق (مثل <code>Alkemos Backup</code>) + بريد الدعم + بريد المطور (بريدك). لا تحتاج أي Scopes ولا Test users.</li>
+      <li><b>انشر التطبيق إلى Production</b> (زر Publish App). ستظهر لاحقًا شاشة «تطبيق غير موثّق» عند الموافقة — <b>هذا طبيعي ومقبول</b> لاستخدام شخصي واحد: التوكن الذي يولّد في وضع Testing يموت بعد 7 أيام فقط، أما مع النشر فيدوم (قيود الخطة §1.5-2).</li>
+      <li>افتح <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener">Credentials</a> ← <b>Create credentials</b> ← <b>OAuth client ID</b> ← نوع التطبيق: <b>Desktop app</b> ← أنشئه ثم انسخ <b>Client ID</b> و<b>Client Secret</b>.</li>
+    </ol>
+    <div class="note">هذا العميل OAuth <b>منفصل تمامًا</b> عن Google Login الخاص بالموقع (ذاك يُدار عبر Supabase ولا يُمس هنا إطلاقًا).</div>
+  </div>
+
+  <div class="card">
+    <h2 style="margin-top:0">الخطوة ب — توليد التوكن (أدناه)</h2>
+    <label for="cid">Client ID</label>
+    <input type="text" id="cid" placeholder="123456789012-xxxxxxxx.apps.googleusercontent.com" autocomplete="off">
+    <label for="cs">Client Secret</label>
+    <input type="password" id="cs" placeholder="GOCSPX-…" autocomplete="off">
+    <label for="scope">النطاق (Scope)</label>
+    <select id="scope">
+      <option value="drive.file" selected>drive.file — الأقل صلاحية (موصى به: التطبيق يرى ملفاته التي أنشأها فقط)</option>
+      <option value="drive">drive — كامل (يرى كل ملفات Drive — يسمح باستخدام فولدر AlkemosBackups الحالي)</option>
+    </select>
+    <p class="hint" id="scopeHint">الافتراضي «الأقل صلاحية» هو ما توصي به الخطة. إن اخترت لاحقًا استخدام الفولدر القائم فستُعاد هذه الخطوة بالنطاق الكامل.</p>
+
+    <button id="authBtn">① افتح صفحة موافقة Google</button>
+    <p class="hint">ستفتح نافذة Google: اختر حسابك ← إن ظهر تحذير «تطبيق غير موثّق» اضغط Advanced ← Go to Alkemos Backup ← اسمح. بعدها سينقلك المتصفح إلى صفحة <b>لن تفتح (http://localhost:1) — هذا متوقع تمامًا</b>: انسخ الرابط من شريط العنوان كاملًا أو انسخ قيمة <code>code</code> منه فقط، والصقه بالأسفل.</p>
+
+    <label for="code">الرمز (code) — من رابط localhost الذي فشل فتحه</label>
+    <input type="text" id="code" placeholder="http://localhost:1/?code=4/0A…  أو  4/0A…" autocomplete="off">
+    <button id="exBtn">② استبدل الرمز بالتوكن</button>
+
+    <div id="exStatus"></div>
+
+    <div id="manualBox" class="hidden">
+      <div class="warn">إن فشل الاستبدال المباشر من المتصفح (بعض المتصفحات تمنعه): شغّل الأمر التالي في أي طرفية (Terminal / PowerShell) ثم الصق استجابة JSON كاملة بالمربع التالي.</div>
+      <pre id="curlCmd" class="mono small" style="white-space:pre-wrap; background:#eef2f7; border:1px solid #d9e2ec; border-radius:8px; padding:10px 12px; direction:ltr; text-align:left"></pre>
+      <button class="ghost small" id="curlCopyBtn">انسخ الأمر</button>
+      <label for="manualJson">استجابة التوكن (JSON كاملة)</label>
+      <textarea id="manualJson" placeholder='{"access_token": "…", "expires_in": 3599, "refresh_token": "…", "scope": "…", "token_type": "Bearer"}'></textarea>
+      <button id="manBtn">ركّب التوكن من الاستجابة</button>
+    </div>
+  </div>
+
+  <div class="card hidden" id="outCard">
+    <h2 style="margin-top:0">الخطوة ج — انسخ هذا إلى GitHub Secret</h2>
+    <p class="ok" id="okMsg"></p>
+    <textarea id="out" class="out" readonly></textarea>
+    <button id="copyBtn">انسخ القيمة كاملة</button>
+    <p class="hint">افتح <a href="https://github.com/muscleshubfit-cpu/alkemos/settings/secrets/actions" target="_blank" rel="noopener">GitHub → Settings → Secrets and variables → Actions</a> ← <b>New repository secret</b> ← الاسم: <code>GDRIVE_OAUTH_TOKEN</code> ← القيمة: الصق ما نسختَه للتو ← Add secret.</p>
+    <div class="note">القيمة تحتوي على <b>refresh_token</b> — لا تضعها في أي ملف أو رسالة؛ موضعها الوحيد هو GitHub Secrets. بعد اللصق أغلق هذه الصفحة.</div>
+  </div>
+
+  <p class="small" style="color:#7b8794">Alkemos · scripts/gdrive/oauth-token-helper.html · مسار GD-1-ALT · لا يحفظ شيئًا ولا يرسل شيئًا إلا إلى accounts.google.com و oauth2.googleapis.com</p>
+</div>
+
+<script>
+"use strict";
+var $ = function (id) { return document.getElementById(id); };
+var REDIRECT_URI = "http://localhost:1";
+var AUTH_ENDPOINT = "https://accounts.google.com/o/oauth2/v2/auth";
+var TOKEN_ENDPOINT = "https://oauth2.googleapis.com/token";
+
+function selectedScope() { return $("scope").value; }
+
+function authUrl() {
+  var p = new URLSearchParams({
+    client_id: $("cid").value.trim(),
+    redirect_uri: REDIRECT_URI,
+    response_type: "code",
+    scope: "https://www.googleapis.com/auth/" + selectedScope(),
+    access_type: "offline",
+    prompt: "consent"
+  });
+  return AUTH_ENDPOINT + "?" + p.toString();
+}
+
+$("scope").addEventListener("change", function () {
+  $("scopeHint").textContent = selectedScope() === "drive.file"
+    ? "الافتراضي «الأقل صلاحية» هو ما توصي به الخطة. إن اخترت لاحقًا استخدام الفولدر القائم فستُعاد هذه الخطوة بالنطاق الكامل."
+    : "النطاق الكامل يرى كل ملفات Drive — يسمح باستخدام فولدر AlkemosBackups الحالي مباشرة مقابل صلاحية أوسع.";
+});
+
+$("authBtn").addEventListener("click", function () {
+  var cid = $("cid").value.trim();
+  if (!cid || cid.indexOf(".apps.googleusercontent.com") === -1) {
+    alert("الصق Client ID كاملًا (ينتهي بـ .apps.googleusercontent.com)");
+    return;
+  }
+  if (!$("cs").value.trim()) { alert("الصق Client Secret."); return; }
+  var u = authUrl();
+  var w = window.open(u, "_blank");
+  if (!w) { alert("المتصفح منع فتح النافذة — اسمح بالنوافذ المنبثقة ثم أعد المحاولة، أو انسخ الرابط وافتحه يدويًا:\n" + u); }
+  $("authBtn").textContent = "① أعد فتح صفحة الموافقة (إن لزم)";
+});
+
+function extractCode(raw) {
+  raw = (raw || "").trim();
+  if (!raw) return "";
+  if (raw.indexOf("code=") !== -1) {
+    try {
+      var q = raw.indexOf("?") !== -1 ? raw.slice(raw.indexOf("?") + 1) : raw;
+      var v = new URLSearchParams(q).get("code");
+      if (v) return v;
+    } catch (e) { /* fall through to regex */ }
+    var m = raw.match(/code=([^&\s]+)/);
+    if (m) return m[1];
+  }
+  return raw;
+}
+
+function composeFinal(tokenResp) {
+  return {
+    client_id: $("cid").value.trim(),
+    client_secret: $("cs").value.trim(),
+    scope: selectedScope(),
+    token: {
+      access_token: tokenResp.access_token || "",
+      refresh_token: tokenResp.refresh_token || "",
+      token_type: tokenResp.token_type || "Bearer"
+    }
+  };
+}
+
+function showFinal(tokenResp) {
+  if (!tokenResp || !tokenResp.refresh_token) {
+    $("exStatus").innerHTML = '<span class="err">الاستجابة لا تحتوي refresh_token — أعد فتح صفحة الموافقة (الزر ①) ثم أعد الخطوة ② بنفس الجلسة.</span>';
+    $("manualBox").classList.remove("hidden");
+    return;
+  }
+  $("out").value = JSON.stringify(composeFinal(tokenResp), null, 2);
+  $("okMsg").textContent = "تم التوليد بنجاح — refresh_token حاضر داخل القيمة النهائية التي ستلصقها بنفسك في GitHub.";
+  $("outCard").classList.remove("hidden");
+  $("exStatus").innerHTML = '<span class="ok">استُبدل الرمز بنجاح ✓</span>';
+  $("outCard").scrollIntoView({ behavior: "smooth" });
+}
+
+$("exBtn").addEventListener("click", function () {
+  var code = extractCode($("code").value);
+  if (!code) { alert("الصق الرمز (code) أو رابط localhost كاملًا."); return; }
+  $("exStatus").textContent = "جارٍ الاستبدال مع Google…";
+  fetch(TOKEN_ENDPOINT, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      code: code,
+      client_id: $("cid").value.trim(),
+      client_secret: $("cs").value.trim(),
+      redirect_uri: REDIRECT_URI,
+      grant_type: "authorization_code"
+    }).toString()
+  }).then(function (r) {
+    return r.json().then(function (j) { return { status: r.status, body: j }; });
+  }).then(function (res) {
+    if (res.status === 200 && res.body.refresh_token) {
+      showFinal(res.body);
+    } else {
+      var msg = (res.body && (res.body.error_description || res.body.error)) || ("HTTP " + res.status);
+      $("exStatus").innerHTML = '<span class="err">فشل الاستبدال: </span><code class="mono" id="errMsg"></code>';
+      $("errMsg").textContent = String(msg).slice(0, 300);
+      $("manualBox").classList.remove("hidden");
+      buildCurlCmd(code);
+    }
+  }).catch(function () {
+    $("exStatus").innerHTML = '<span class="err">المتصفح منع الطلب المباشر (CORS/شبكة) — استخدم التبديل اليدوي بالأسفل.</span>';
+    $("manualBox").classList.remove("hidden");
+    buildCurlCmd(code);
+  });
+});
+
+function buildCurlCmd(code) {
+  code = code || extractCode($("code").value);
+  var cid = $("cid").value.trim();
+  var cs = $("cs").value.trim();
+  var curl = "curl -s -X POST https://oauth2.googleapis.com/token \\\n"
+    + "  -d code=" + (code || "PASTE_CODE_HERE") + " \\\n"
+    + "  -d client_id=" + (cid || "PASTE_CLIENT_ID") + " \\\n"
+    + "  -d client_secret=" + (cs || "PASTE_CLIENT_SECRET") + " \\\n"
+    + "  -d redirect_uri=" + REDIRECT_URI + " \\\n"
+    + "  -d grant_type=authorization_code";
+  var ps = "$params = @{\n"
+    + "  code = '" + (code || "PASTE_CODE_HERE") + "'\n"
+    + "  client_id = '" + (cid || "PASTE_CLIENT_ID") + "'\n"
+    + "  client_secret = '" + (cs || "PASTE_CLIENT_SECRET") + "'\n"
+    + "  redirect_uri = '" + REDIRECT_URI + "'\n"
+    + "  grant_type = 'authorization_code'\n"
+    + "}\n"
+    + "Invoke-RestMethod -Method Post -Uri https://oauth2.googleapis.com/token -Body $params | ConvertTo-Json";
+  $("curlCmd").textContent = "bash / curl:\n" + curl + "\n\nPowerShell:\n" + ps;
+}
+
+$("curlCopyBtn").addEventListener("click", function () {
+  navigator.clipboard.writeText($("curlCmd").textContent);
+});
+
+$("manBtn").addEventListener("click", function () {
+  var txt = $("manualJson").value.trim();
+  if (!txt) { alert("الصق استجابة JSON كاملة."); return; }
+  try {
+    showFinal(JSON.parse(txt));
+  } catch (e) {
+    alert("JSON غير صالح: " + e.message);
+  }
+});
+
+$("copyBtn").addEventListener("click", function () {
+  $("out").select();
+  navigator.clipboard.writeText($("out").value);
+});
+</script>
+</body>
+</html>

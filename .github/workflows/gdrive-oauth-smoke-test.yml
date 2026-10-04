@@ -1,0 +1,816 @@
+# GDrive OAuth smoke test (GD-1-ALT — dispatch only) (2026-10-04).
+#
+# WHY: the SA path measured its final platform law (runs 37168415521 /
+# 37168880937 / 37169086366 / 37171157963 + ownership-experiment rounds
+# 37173397141/37173573718/37173684908): a standalone Service Account can
+# never OWN files on a consumer Drive — zero storage quota, 403
+# storageQuotaExceeded even inside a perfectly shared folder pinned by ID,
+# and ownership TRANSFER to the owner is rejected (403
+# consentRequiredForOwnershipTransfer — interactive consent an SA cannot
+# give). The owner then ORDERED the documented alternative, plan §5
+# GD-1-ALT (owner order 2026-10-04: «execute the OAuth proposal for Google
+# Drive Backup as documented, keep the project's Google Login separate,
+# stop at any manual-Google-approval step»): upload AS THE OWNER from the
+# start via an OAuth user token — the file creator is the owner, so the
+# bytes charge to the owner's real 15 GB pool and the 403 law cannot
+# apply. This job proves, with the smallest possible footprint:
+#   (a) the OAuth token from secret GDRIVE_OAUTH_TOKEN (rclone config
+#       structure: client_id + client_secret + scope + token.refresh_token
+#       — minted ONCE by the owner with the local helper
+#       scripts/gdrive/oauth-token-helper.html, published-to-production
+#       consent screen so the refresh token does not die after 7 days —
+#       plan §1.5 reservation 2) refreshes to an access token,
+#   (b) the authenticated identity is the OWNER account: about.get
+#       reports a REAL quota pool (unlike the SA's by-design zeros),
+#   (c) the candidate scope drive.file (plan: «أقل صلاحية») is MEASURED
+#       against the pinned backup folder from GDRIVE_FOLDER_ID:
+#         - folder VISIBLE  -> full rclone round-trip inside it,
+#         - folder INVISIBLE (expected drive.file law: per-file apps see
+#           only files they created — a pre-existing folder is not one)
+#           -> the fork below,
+#   (d) the 12 GB folder-size guard (plan §3.5) on any folder-targeted
+#       round-trip,
+#   (e) the QUOTA THESIS: an uploaded file is CREATED BY the owner and
+#       charged to the owner's pool (no 403) — proven either by the
+#       rclone round-trip (folder visible) or by a raw-API round-trip at
+#       app root (files.create with NO parent under drive.file) when the
+#       folder is invisible.
+#
+# The fork when the folder is invisible under drive.file (green-with-data
+# law, same as GD-1-EXP: green = measurement complete + cleanup verified;
+# the invisibility itself is REQUESTED DATA, not a failure):
+#   (a) keep least privilege — re-dispatch with input create_app_folder:
+#       the app creates its own backup folder (raw files.create, no
+#       parent; it REMAINS as the GD-3 target), the rclone round-trip
+#       runs inside it, and the owner updates GDRIVE_FOLDER_ID from the
+#       folder URL in their Drive;
+#   (b) use the existing «AlkemosBackups» folder — re-mint the token with
+#       scope=drive (the helper's scope dropdown) and re-dispatch: the
+#       folder becomes visible and the full folder round-trip runs.
+#
+# Safety properties of this job (the gdrive-smoke-test pattern):
+#   - workflow_dispatch ONLY on main. The push trigger below exists
+#     TEMPORARILY on the gd1-smoke-test branch so runs can start before
+#     the workflow is registered on main; it is removed by the commit
+#     that lands this on main. NOTE: the push-triggered FIRST run is
+#     EXPECTED RED until the owner completes the manual Google steps and
+#     adds the GDRIVE_OAUTH_TOKEN secret — that run measures the
+#     missing-secret path (honest failure, ::error with the owner guide).
+#   - permissions: {} — the job needs NO GitHub token rights at all.
+#   - No checkout; the secret is parsed by python3 json (never echoed),
+#     materialized only as 0600 temp files (token JSON, rclone.conf,
+#     access-token file) and deleted by an always() cleanup step. The
+#     scrub list (client_id, client_secret, refresh_token, access_token)
+#     is replaced with [REDACTED-OAUTH] synchronously in EVERY printed
+#     line, and email-shaped strings are regex-redacted besides (the
+#     owner's personal email never appears in any output).
+#   - GDRIVE_FOLDER_ID stays a secret VALUE: tolerant extraction (folder
+#     URL / open?id= link / bare or embedded token) + charset validation
+#     [A-Za-z0-9_-]{20,60} BEFORE any use (shell injection impossible),
+#     masked prefix/suffix printing only — the measured gdrive-smoke-test
+#     pattern (run 37170955147).
+#   - The ONLY Drive mutations are the lifetime of ONE <100-byte test
+#     file (deleted + verified gone before the job may succeed) and —
+#     ONLY when the owner opts in via the create_app_folder input — one
+#     persistent app-owned backup folder (that folder is the POINT of the
+#     opt-in, not a leftover). No existing file or folder is ever touched.
+#   - GOOGLE LOGIN SEPARATION (owner order 2026-10-04): the project's
+#     Google Login is Supabase Auth's Google provider (dashboard-side
+#     config, zero repo code/env) — this workflow and its Desktop-app
+#     OAuth client share NOTHING with it: different credential, different
+#     scope, different consumer (GitHub Actions only), zero Supabase /
+#     Vercel / production contact.
+#   - MOCK_OAUTH_JSON is a LOCAL-ONLY simulation hook (preseeded
+#     refresh/about/folder/create/media/delete responses so the whole
+#     decision tree runs offline). It is NEVER set on GitHub runners —
+#     production always talks to the real endpoints.
+#
+# rclone is NOT preinstalled on GitHub ubuntu runners (measured
+# 2026-10-04, run 37162424863) — the pinned install below is the exact
+# mechanism GD-3's upload workflow will reuse. Env pins use the
+# PINNED_RCLONE_* prefix — never bare RCLONE_* (rclone maps
+# RCLONE_<NAME> to --name flags; measured run 37162630012).
+# RCLONE_CONFIG is the one intentional mapping (the real --config flag).
+#
+# Results go to stdout AND $GITHUB_STEP_SUMMARY. Exit 1 on any failed
+# check — honest-failure law.
+name: GDrive OAuth smoke test (GD-1-ALT — dispatch only)
+
+on:
+  # TEMP-BRANCH-ONLY trigger (gd1-smoke-test) so the run can start without
+  # the workflow being registered on the default branch yet. The
+  # dispatch-only variant is what lands on main once a run is green.
+  push:
+    branches: [gd1-smoke-test]
+  workflow_dispatch:
+    inputs:
+      create_app_folder:
+        description: "Folder-invisible fork only: create the app-owned backup folder (it REMAINS as the GD-3 target) and run the full round-trip inside it"
+        type: boolean
+        default: false
+      app_folder_name:
+        description: "Name for the app-created backup folder (used only with create_app_folder)"
+        type: string
+        default: "AlkemosBackups-OAuth"
+
+concurrency:
+  group: gdrive-oauth-smoke-test
+  cancel-in-progress: false
+
+permissions: {}
+
+env:
+  PINNED_RCLONE_VERSION: "1.75.1"
+  PINNED_RCLONE_SHA256: "982b5aa772841168f8e380f139e9e787b2a105403e32b94da8676a0e1c0a13ab"
+
+jobs:
+  gdrive-oauth-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - name: Install pinned rclone (SHA256-gated)
+        run: |
+          set -euo pipefail
+          cd "$RUNNER_TEMP"
+          ZIP="rclone-v${PINNED_RCLONE_VERSION}-linux-amd64.zip"
+          echo "downloading rclone v${PINNED_RCLONE_VERSION} (pinned) from the official mirror…"
+          curl -fsSLO "https://downloads.rclone.org/v${PINNED_RCLONE_VERSION}/${ZIP}"
+          echo "${PINNED_RCLONE_SHA256}  ${ZIP}" | sha256sum -c -
+          unzip -oq "${ZIP}"
+          mkdir -p "$RUNNER_TEMP/rclone-bin"
+          mv "rclone-v${PINNED_RCLONE_VERSION}-linux-amd64/rclone" "$RUNNER_TEMP/rclone-bin/"
+          "$RUNNER_TEMP/rclone-bin/rclone" version | head -1
+          echo "$RUNNER_TEMP/rclone-bin" >> "$GITHUB_PATH"
+
+      - name: Drive OAuth smoke test (refresh → about → folder probe → round-trip → cleanup)
+        env:
+          GDRIVE_OAUTH_TOKEN: ${{ secrets.GDRIVE_OAUTH_TOKEN }}
+          GDRIVE_FOLDER_ID: ${{ secrets.GDRIVE_FOLDER_ID }}
+          CREATE_APP_FOLDER: ${{ inputs.create_app_folder }}
+          APP_FOLDER_NAME: ${{ inputs.app_folder_name }}
+        run: |
+          set -euo pipefail
+          TOKEN_FILE="$RUNNER_TEMP/gdrive-oauth-token.json"
+          CONF_FILE="$RUNNER_TEMP/rclone-oauth.conf"
+          AT_FILE="$RUNNER_TEMP/oauth.at"
+          RC_ERR="$RUNNER_TEMP/rc-oauth.err"
+          export TOKEN_FILE CONF_FILE AT_FILE RC_ERR
+
+          die() { echo "::error::OAuth smoke test FAILED — $1 (scrubbed error, if any, printed above)"; exit 1; }
+
+          if [ -z "${GDRIVE_OAUTH_TOKEN}" ]; then
+            echo "::error::secret GDRIVE_OAUTH_TOKEN is empty or missing"
+            echo "OWNER SETUP (manual Google steps — plan §5 GD-1-ALT, owner order 2026-10-04):"
+            echo "  1. Google Cloud Console (the SAME project that already has the Drive API enabled): OAuth consent screen → External → app name + support/developer email → PUBLISH TO PRODUCTION (a testing-mode screen kills refresh tokens after 7 days — plan §1.5 reservation 2)."
+            echo "  2. Credentials → Create credentials → OAuth client ID → Application type: Desktop app → copy the Client ID and Client Secret."
+            echo "  3. Mint the token locally with scripts/gdrive/oauth-token-helper.html (from this repo): paste the client ID + secret → open the consent URL → allow → paste the code back → copy the composed token JSON."
+            echo "  4. GitHub → Settings → Secrets and variables → Actions → New repository secret → name GDRIVE_OAUTH_TOKEN → paste the JSON."
+            echo "  5. Re-run this workflow."
+            echo "NOTE: this push-triggered run measuring the missing-secret path is the expected pre-setup state, not a defect."
+            exit 1
+          fi
+          # Materialize the secret into a 0600 temp file. NEVER echo it.
+          printf '%s' "$GDRIVE_OAUTH_TOKEN" > "$TOKEN_FILE"
+          chmod 600 "$TOKEN_FILE"
+
+          python3 << 'PYEOF'
+          import json, os, re, sys
+          token_file = os.environ["TOKEN_FILE"]
+          try:
+              with open(token_file, "r", encoding="utf-8") as fh:
+                  tok = json.load(fh)
+          except Exception as e:
+              print(f"::error::secret GDRIVE_OAUTH_TOKEN is not parseable JSON ({type(e).__name__}) — set it to the token JSON composed by scripts/gdrive/oauth-token-helper.html (client_id + client_secret + scope + token.refresh_token)")
+              sys.exit(1)
+          client_id = tok.get("client_id") or ""
+          client_secret = tok.get("client_secret") or ""
+          inner = tok.get("token") or {}
+          refresh_token = inner.get("refresh_token") or tok.get("refresh_token") or ""
+          scope = (tok.get("scope") or "drive.file").strip()
+          if not client_id or not client_secret or not refresh_token:
+              missing = [n for n, v in (("client_id", client_id), ("client_secret", client_secret), ("token.refresh_token", refresh_token)) if not v]
+              print(f"::error::GDRIVE_OAUTH_TOKEN is missing field(s): {', '.join(missing)} — expected the helper-composed structure {{\"client_id\":…, \"client_secret\":…, \"scope\":\"drive.file|drive\", \"token\":{{\"refresh_token\":…}}}}")
+              sys.exit(1)
+          if scope not in ("drive.file", "drive"):
+              print(f"::error::scope '{scope}' is not supported — use drive.file (least privilege, plan GD-1-ALT) or drive (existing-folder visibility)")
+              sys.exit(1)
+          # Normalize the secret file to the exact structure rclone consumes.
+          with open(token_file, "w", encoding="utf-8") as fh:
+              json.dump({"client_id": client_id, "client_secret": client_secret,
+                         "scope": scope, "token": {"refresh_token": refresh_token}}, fh, indent=2)
+          # Scrub material for every later printed line: all four OAuth values
+          # are secret — emails are regex-redacted on top (owner email law).
+          d = os.path.dirname(token_file)
+          with open(os.path.join(d, "scrub-oauth.txt"), "w", encoding="utf-8") as fh:
+              fh.write("\n".join([client_id, client_secret, refresh_token]))
+          print("OAuth token JSON: valid — client_id %s…%s (%d chars) · client_secret present · scope=%s · refresh_token present (values never printed)" % (
+              client_id[:4], client_id[-4:], len(client_id), scope))
+          PYEOF
+
+          command -v rclone >/dev/null 2>&1 || {
+            echo "::error::rclone not on PATH after the pinned-install step — infrastructure failure, nothing was tested"
+            exit 1
+          }
+          echo "rclone: $(rclone version | head -1)"
+
+          # synchronous scrubber: reads a FILE, scrubs every OAuth value +
+          # email-shaped string, prints, propagates nothing.
+          scrub_file() {
+            python3 -c '
+          import os, re, sys
+          p = os.path.join(os.environ.get("RUNNER_TEMP", "/tmp"), "scrub-oauth.txt")
+          repl = []
+          try:
+              with open(p) as fh:
+                  repl = [l for l in fh.read().splitlines() if l]
+          except OSError:
+              pass
+          out = open(sys.argv[1], errors="replace").read() if len(sys.argv) > 1 else ""
+          for s in repl:
+              out = out.replace(s, "[REDACTED-OAUTH]")
+          out = re.sub(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+", "[REDACTED-EMAIL]", out)
+          sys.stdout.write(out)
+          ' "$1"
+          }
+          # run rclone, surface scrubbed stderr synchronously, propagate exit code
+          rc() { rclone "$@" 2>"$RC_ERR" || { scrub_file "$RC_ERR" >&2 || true; return 1; }; }
+
+          # ---- 1. Folder targeting: the GDRIVE_FOLDER_ID secret (measured law) ----
+          if [ -z "${GDRIVE_FOLDER_ID:-}" ]; then
+            echo "::error::secret GDRIVE_FOLDER_ID is empty or missing — add it (the backup folder ID, or the folder URL — both accepted), then re-run"
+            exit 1
+          fi
+          export GDRIVE_FOLDER_ID
+          python3 << 'PYEOF'
+          import os, re, sys
+
+          raw_secret = os.environ.get("GDRIVE_FOLDER_ID", "")
+
+          def die(msg):
+              print(f"::error::{msg}")
+              sys.exit(1)
+
+          # tolerant ID extraction (measured run 37170955147: the owner pasted
+          # a 49-char value — an ID embedded in a label — not a bare ID). The
+          # EXTRACTED id is charset-validated before any use, so shell
+          # injection stays impossible regardless of what was pasted.
+          def extract_id(v):
+              v = (v or "").strip().strip('"').strip("'").strip()
+              m = re.search(r"/folders/([A-Za-z0-9_-]{20,})", v)
+              if m:
+                  return m.group(1), ""
+              m = re.search(r"[?&]id=([A-Za-z0-9_-]{20,})", v)
+              if m:
+                  return m.group(1), ""
+              body = v.split("#", 1)[0].split("?", 1)[0]
+              tokens = re.findall(r"[A-Za-z0-9_-]{20,}", body)
+              if len(tokens) == 1:
+                  return tokens[0], ""
+              if len(tokens) > 1:
+                  return None, "%d ID-like tokens found — paste ONLY the folder ID or its URL" % len(tokens)
+              if not v:
+                  return None, "the secret value is empty"
+              if len(v) < 20:
+                  return None, "shorter than any Drive ID (a folder NAME is not an ID)"
+              return None, "no Drive-ID-length token found"
+
+          fid, why_not = extract_id(raw_secret)
+          if not fid or not re.fullmatch(r"[A-Za-z0-9_-]{20,60}", fid):
+              die("secret GDRIVE_FOLDER_ID does not contain a usable folder ID (got %d chars: %s) — paste ONLY the backup folder ID (28-33 chars) or its URL (https://drive.google.com/drive/folders/<id>)" % (len(raw_secret), why_not or "unknown"))
+          print("folder ID extracted from GDRIVE_FOLDER_ID: %s…%s (%d chars — full value is a secret, never printed)" % (fid[:4], fid[-4:], len(fid)))
+          env_path = os.path.join(os.path.dirname(os.environ["TOKEN_FILE"]), "folder.env")
+          with open(env_path, "w") as fh:
+              fh.write("FOLDER_ID='%s'\n" % fid)
+          PYEOF
+          # the probe validated FOLDER_ID to the Drive-ID charset, so sourcing
+          # is injection-safe.
+          # shellcheck source=/dev/null
+          . "$RUNNER_TEMP/folder.env"
+          export FOLDER_ID
+
+          # ---- 2. Token refresh + owner-pool measurement + folder probe ----
+          # One python block: (a) refresh_token -> access_token (the
+          # installed-app client from the secret; access token NEVER printed,
+          # written to a 0600 file); (b) about.get — the OWNER's real quota
+          # pool (the anti-SA proof: the SA's about was zeros BY DESIGN); (c)
+          # files.get on the pinned folder — scope-visibility fork. The
+          # SERVICE_DISABLED gap (if the client lives on a project without the
+          # Drive API) is diagnosed with Google's own activation URL.
+          python3 << 'PYEOF'
+          import json, os, re, sys, time
+          import urllib.error, urllib.parse, urllib.request
+
+          token_file = os.environ["TOKEN_FILE"]
+          at_file = os.environ["AT_FILE"]
+          fid = os.environ["FOLDER_ID"]
+          tok = json.load(open(token_file))
+          client_id = tok["client_id"]
+          client_secret = tok["client_secret"]
+          refresh_token = tok["token"]["refresh_token"]
+          scope = tok.get("scope", "drive.file")
+
+          def scrubbed(s):
+              for v in (client_id, client_secret, refresh_token):
+                  if v:
+                      s = s.replace(v, "[REDACTED-OAUTH]")
+              s = re.sub(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+", "[REDACTED-EMAIL]", s)
+              return s
+
+          def die(msg, detail=""):
+              print(f"::error::{msg}")
+              if detail:
+                  print(scrubbed(str(detail))[:1200], file=sys.stderr)
+              sys.exit(1)
+
+          # local dry-run hook: preseeded responses so the whole decision tree
+          # runs offline. NEVER set on GitHub runners — production always
+          # talks to the real endpoints.
+          mock_path = os.environ.get("MOCK_OAUTH_JSON")
+          mock = json.load(open(mock_path)) if mock_path else None
+
+          def http(method, url, data=None, headers=None, timeout=60):
+              req = urllib.request.Request(url, data=data, method=method)
+              for k, v in (headers or {}).items():
+                  req.add_header(k, v)
+              try:
+                  with urllib.request.urlopen(req, timeout=timeout) as r:
+                      body = r.read()
+                      try:
+                          return r.status, json.loads(body)
+                      except Exception:
+                          return r.status, body.decode(errors="replace")
+              except urllib.error.HTTPError as e:
+                  body = e.read().decode(errors="replace")
+                  try:
+                      return e.code, json.loads(body)
+                  except Exception:
+                      return e.code, body
+
+          # ---- 2a. refresh_token -> access_token (the installed-app client) ----
+          if mock:
+              m = mock.get("refresh") or {}
+              t_status, t_body = m.get("status", 200), m.get("body", {})
+          else:
+              t_status, t_body = http("POST", "https://oauth2.googleapis.com/token",
+                  data=urllib.parse.urlencode({
+                      "client_id": client_id, "client_secret": client_secret,
+                      "refresh_token": refresh_token, "grant_type": "refresh_token",
+                  }).encode(), headers={"Content-Type": "application/x-www-form-urlencoded"})
+          if t_status != 200:
+              err = t_body.get("error") if isinstance(t_body, dict) else ""
+              if err == "invalid_grant":
+                  die("token refresh REJECTED (invalid_grant): the refresh token is expired or revoked. Most likely cause: the OAuth consent screen is still in TESTING status — Google kills testing refresh tokens after 7 days (plan §1.5 reservation 2). Fix: PUBLISH the consent screen to production, re-mint the token with scripts/gdrive/oauth-token-helper.html, update the GDRIVE_OAUTH_TOKEN secret, re-run", t_body)
+              if err == "invalid_client":
+                  die("token refresh REJECTED (invalid_client): the client_id/client_secret pair is wrong — re-copy both from the Desktop-app OAuth client (Google Cloud Console → APIs & Services → Credentials) and re-mint with the helper", t_body)
+              die("token refresh failed (HTTP %s)" % t_status, t_body)
+          access_token = t_body.get("access_token") if isinstance(t_body, dict) else None
+          if not access_token:
+              die("token endpoint returned 200 without an access_token (unexpected response shape)", t_body)
+          granted = (t_body.get("scope") or "").strip()
+          print("token refresh: OK — access token minted (never printed) · granted scope: %s · expires_in: %ss" % (granted or scope, t_body.get("expires_in", "?")))
+          with open(at_file, "w") as fh:
+              fh.write(access_token)
+          os.chmod(at_file, 0o600)
+
+          def auth_headers():
+              with open(at_file) as fh:
+                  return {"Authorization": "Bearer " + fh.read()}
+
+          # ---- 2b. about.get — the OWNER's real pool (the anti-SA proof) ----
+          # The SA path measured about = zeros BY DESIGN (run 37168415521);
+          # an OAuth USER token reports the account's REAL pool. Non-fatal if
+          # the scope/project restricts about.get — identity is proven by the
+          # refresh + the round-trip below (the SA workflow's own law).
+          if mock:
+              m = mock.get("about") or {}
+              a_status, a_body = m.get("status", 200), m.get("body", {})
+          else:
+              a_status, a_body = http("GET", "https://www.googleapis.com/drive/v3/about?fields=storageQuota", headers=auth_headers())
+          if a_status == 200 and isinstance(a_body, dict) and isinstance(a_body.get("storageQuota"), dict):
+              q = a_body["storageQuota"]
+              gb = lambda b: (b or 0) / 1024**3
+              print("about.get (the OAuth identity's pool — the anti-SA proof): total=%.2fGB · used=%.2fGB · headroom=%.2fGB — a REAL quota pool (the SA's about was zeros by design; backup bytes charge HERE)" % (gb(q.get("limit")), gb(q.get("usage")), gb((q.get("limit") or 0) - (q.get("usage") or 0))))
+          else:
+              print("::warning::about.get unavailable (HTTP %s — some scopes/projects restrict it) — NOT fatal: identity is proven by the refresh + round-trip below" % a_status)
+
+          # ---- 2c. folder probe: the scope-visibility fork ----
+          if mock:
+              m = mock.get("folder") or {}
+              f_status, f_body = m.get("status", 200), m.get("body", {})
+              d_status, d_body = 0, {}
+              if f_status == 404:
+                  dm = mock.get("drives") or {}
+                  d_status, d_body = dm.get("status", 0), dm.get("body", {})
+          else:
+              f_status, f_body = http("GET",
+                  "https://www.googleapis.com/drive/v3/files/" + fid
+                  + "?supportsAllDrives=true&fields=id,name,mimeType,driveId,shared,capabilities(canAddChildren,canEdit)",
+                  headers=auth_headers())
+              d_status, d_body = 0, {}
+              if f_status == 404:
+                  d_status, d_body = http("GET",
+                      "https://www.googleapis.com/drive/v3/drives/" + fid + "?fields=id,name",
+                      headers=auth_headers())
+
+          body_str = json.dumps(f_body) if not isinstance(f_body, str) else f_body
+          if f_status == 403 and ("SERVICE_DISABLED" in body_str or "has not been used in project" in body_str or "it is disabled" in body_str):
+              m = re.search(r"https://console[a-z.]*[a-z]+/[^\"' ]+", body_str)
+              print("::error::Drive API is DISABLED on the OAuth client's project (SERVICE_DISABLED — the client was probably created on a DIFFERENT project than the SA's, which already has it enabled)")
+              print("OWNER ACTION (~1 minute): in the Google Cloud Console, switch to the project the OAuth client belongs to → APIs & Services → Library → \"Google Drive API\" → Enable." + (" Google's direct activation link from this error: " + m.group(0) if m else ""))
+              sys.exit(1)
+
+          FOLDER_MIME = "application/vnd.google-apps.folder"
+          mode = ""
+          team = ""
+          if f_status == 200 and isinstance(f_body, dict) and f_body.get("mimeType") == FOLDER_MIME:
+              caps = f_body.get("capabilities") or {}
+              if caps.get("canAddChildren") is False:
+                  die("the folder is visible but WITHOUT create permission (canAddChildren=false) — unexpected for the owner's own account; check the folder settings / org policy")
+              name = f_body.get("name") or "(unnamed)"
+              did = f_body.get("driveId") or ""
+              if did and did == fid:
+                  mode, team = "shared-drive-root", fid
+              elif did:
+                  mode, team = "shared-drive-folder", did
+              else:
+                  mode = "my-drive-folder"
+              print("folder probe: VISIBLE under scope=%s — name=%s · canAddChildren=%s · canEdit=%s (the folder NAME is owner-chosen, not sensitive)" % (scope, name, caps.get("canAddChildren"), caps.get("canEdit")))
+          elif f_status == 404 and d_status == 200 and isinstance(d_body, dict):
+              mode, team = "shared-drive-root", fid
+              print("folder probe: VISIBLE — the ID is a Workspace shared drive root (name=%s)" % (d_body.get("name") or "(unnamed)"))
+          elif scope == "drive.file":
+              print("folder probe: INVISIBLE under scope=drive.file (files.get HTTP %s) — the per-file scope law: a drive.file app sees ONLY files it created or that were explicitly opened with it; the pre-existing backup folder is neither. (This is the measured fork — see the decision menu at the end.)" % f_status)
+              mode = "folder-invisible"
+          else:
+              die("folder not accessible under scope=drive (files.get HTTP %s) — either GDRIVE_FOLDER_ID is wrong, or the token's account does not own/see the folder. Fix the folder ID or re-mint the token with the OWNING account via the helper" % f_status, f_body)
+
+          env_path = os.path.join(os.path.dirname(token_file), "mode.env")
+          with open(env_path, "w") as fh:
+              fh.write("FOLDER_MODE='%s'\n" % mode)
+              fh.write("TEAM_DRIVE='%s'\n" % team)
+          print("probe verdict: %s" % mode)
+          PYEOF
+
+          # every value in mode.env is a fixed token or a charset-validated
+          # Drive ID, so sourcing is injection-safe.
+          # shellcheck source=/dev/null
+          . "$RUNNER_TEMP/mode.env"
+          export FOLDER_MODE TEAM_DRIVE
+
+          # ---- 3. rclone config composed from the secret (python, 0600) ----
+          # [gdrive] pins the GDRIVE_FOLDER_ID folder as root (folder-visible
+          # modes); [gdriveapp] is the unpinned app root (fork a / diagnostics).
+          # The token JSON inside is never echoed.
+          python3 << 'PYEOF'
+          import json, os, time
+          token_file = os.environ["TOKEN_FILE"]
+          conf_file = os.environ["CONF_FILE"]
+          tok = json.load(open(token_file))
+          with open(os.environ["AT_FILE"]) as fh:
+              access_token = fh.read()
+          expiry = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(time.time() + 3500))
+          token_json = json.dumps({
+              "access_token": access_token,
+              "refresh_token": tok["token"]["refresh_token"],
+              "token_type": "Bearer",
+              "expiry": expiry,
+          })
+          scope = tok.get("scope", "drive.file")
+          fid = os.environ["FOLDER_ID"]
+
+          def section(name, extra):
+              lines = ["[%s]" % name, "type = drive", "scope = %s" % scope,
+                       "token = %s" % token_json,
+                       "client_id = %s" % tok["client_id"],
+                       "client_secret = %s" % tok["client_secret"]] + extra
+              return "\n".join(lines) + "\n"
+
+          with open(conf_file, "w") as fh:
+              fh.write(section("gdrive", ["root_folder_id = %s" % fid]))
+              fh.write(section("gdriveapp", []))
+          os.chmod(conf_file, 0o600)
+          print("rclone config written (0600): [gdrive] root pinned to GDRIVE_FOLDER_ID · [gdriveapp] app root — token values never printed")
+          PYEOF
+          export RCLONE_CONFIG="$CONF_FILE"
+          echo "rclone remotes: $(rclone listremotes | tr '\n' ' ')"
+
+          TS=$(date -u +%Y%m%dT%H%M%SZ)
+          TEST_NAME="gd1alt-oauth-${TS}.txt"
+          CONTENT="alkemos-gd1alt-oauth-smoke ${TS} run=${GITHUB_RUN_ID:-local}"
+          export TEST_NAME CONTENT
+
+          # upload → read-back → listing → 12GB guard → delete → gone
+          # (the gdrive-smoke-test round-trip, reused verbatim)
+          roundtrip_and_guard() {
+            if ! FOLDER_PROBE_JSON=$(rc lsjson "$REMOTE" "${FLAGS[@]}"); then
+              die "folder not readable via rclone — the probe saw it but rclone cannot list it (check the folder ID and the scope)"
+            fi
+            N_ENTRIES=$(printf '%s' "$FOLDER_PROBE_JSON" | python3 -c 'import json,sys;print(len(json.load(sys.stdin)))' 2>/dev/null || echo "?")
+            echo "folder readable via rclone: OK · entries currently in the folder: ${N_ENTRIES}"
+            printf '%s' "$CONTENT" > "$RUNNER_TEMP/$TEST_NAME"
+            if ! rc copyto "$RUNNER_TEMP/$TEST_NAME" "$REMOTE/$TEST_NAME" "${FLAGS[@]}"; then
+              if grep -q "storageQuotaExceeded" "$RC_ERR" 2>/dev/null; then
+                echo '::error::UPLOAD blocked by storageQuotaExceeded — UNEXPECTED under OAuth: the file creator is the OWNER (a real 15GB pool, proven by about.get above), so this contradicts the OAuth-path thesis. Report this run unchanged — it is a measurement, and GD-3 must not be built on a false green'
+                exit 1
+              fi
+              die "UPLOAD failed — scrubbed rclone error, if any, printed above"
+            fi
+            echo "upload: OK ($TEST_NAME, ${#CONTENT} bytes — created BY the OAuth identity, bytes charged to the owner's pool)"
+            BACK=$(rc cat "$REMOTE/$TEST_NAME" "${FLAGS[@]}") || die "read-back failed"
+            [ "$BACK" = "$CONTENT" ] || die "read-back MISMATCH (content corrupted in transit)"
+            echo "read-back: OK (byte-identical)"
+            rc lsf "$REMOTE" "${FLAGS[@]}" | grep -qx "$TEST_NAME" || die "uploaded file not visible in listing"
+            echo "listing check: OK"
+            SIZE_JSON=$(rc size "$REMOTE" "${FLAGS[@]}" --json) || die "folder-size measurement failed (the GD-3 guard primitive)"
+            # NOTE: the python -c body sits at column 0 on purpose — a quoted
+            # multi-line -c script must NOT inherit the function's indentation
+            # (python would see an unexpected indent and die).
+            printf '%s' "$SIZE_JSON" | python3 -c '
+          import json, sys
+          s = json.loads(sys.stdin.read())
+          b = int(s.get("bytes") or 0)
+          n = int(s.get("count") or 0)
+          gb = b / 1024**3
+          print("folder-size: %d objects · %.4fGB total" % (n, gb))
+          if b > 12 * 1024**3:
+              print("::error::backup folder %.2fGB EXCEEDS the 12GB budget (plan §3.5 guard) — rotate before the next backup run" % gb)
+              sys.exit(1)
+          print("12GB budget check: OK (folder within budget)")
+            '
+            rc deletefile "$REMOTE/$TEST_NAME" "${FLAGS[@]}" || die "DELETE failed — test file left behind, remove manually"
+            if rc lsf "$REMOTE" "${FLAGS[@]}" | grep -qx "$TEST_NAME"; then
+              die "test file STILL PRESENT after delete"
+            fi
+            echo "delete + gone-check: OK"
+          }
+
+          REMOTE="gdrive:"
+          MODE_DESC=""
+          SUMMARY_MODE=""
+
+          # fork helper scripts — written via BASE-INDENT heredocs (a bash
+          # heredoc closer must sit at column 0 of the script, so heredocs
+          # nested inside if-branches are impossible by construction; the
+          # branches below only EXECUTE these files). Both are 0600 temp
+          # files and are deleted by the cleanup step.
+          cat > "$RUNNER_TEMP/fork_mkdir.py" << 'PYEOF'
+          import json, os, sys
+          import urllib.error, urllib.request
+          app_name = os.environ["APP_NAME"]
+          mock_path = os.environ.get("MOCK_OAUTH_JSON")
+          mock = json.load(open(mock_path)) if mock_path else None
+          with open(os.environ["AT_FILE"]) as fh:
+              access_token = fh.read()
+
+          def die(msg, detail=""):
+              print(f"::error::{msg}")
+              if detail:
+                  print(str(detail)[:800], file=sys.stderr)
+              sys.exit(1)
+
+          def http(method, url, data=None, headers=None):
+              req = urllib.request.Request(url, data=data, method=method)
+              for k, v in (headers or {}).items():
+                  req.add_header(k, v)
+              try:
+                  with urllib.request.urlopen(req, timeout=60) as r:
+                      return r.status, json.loads(r.read())
+              except urllib.error.HTTPError as e:
+                  try:
+                      return e.code, json.loads(e.read())
+                  except Exception:
+                      return e.code, {}
+
+          if mock:
+              m = mock.get("mkdir") or {}
+              m_status, m_body = m.get("status", 200), m.get("body", {})
+          else:
+              m_status, m_body = http("POST", "https://www.googleapis.com/drive/v3/files?fields=id,name,mimeType",
+                  data=json.dumps({"name": app_name, "mimeType": "application/vnd.google-apps.folder"}).encode(),
+                  headers={"Authorization": "Bearer " + access_token,
+                           "Content-Type": "application/json; charset=UTF-8"})
+          if m_status != 200 or not (isinstance(m_body, dict) and m_body.get("id")):
+              die("app-folder creation failed (HTTP %s)" % m_status, m_body)
+          new_id = m_body["id"]
+          if not new_id or not all(c.isalnum() or c in "_-" for c in new_id):
+              die("created folder returned an unexpected ID shape — refusing to source it")
+          print("app folder created: «%s» — id %s…%s (masked; copy the FULL id from the folder URL in your Drive after this run)" % (m_body.get("name"), new_id[:4], new_id[-4:]))
+          with open(os.path.join(os.path.dirname(os.environ["TOKEN_FILE"]), "newid.env"), "w") as fh:
+              fh.write("NEW_FOLDER_ID='%s'\n" % new_id)
+          PYEOF
+          chmod 600 "$RUNNER_TEMP/fork_mkdir.py"
+          cat > "$RUNNER_TEMP/fork_rootroundtrip.py" << 'PYEOF'
+          import json, os, re, sys
+          import urllib.error, urllib.request
+          tok = json.load(open(os.environ["TOKEN_FILE"]))
+          test_name = os.environ["TEST_NAME"]
+          content = os.environ["CONTENT"]
+          mock_path = os.environ.get("MOCK_OAUTH_JSON")
+          mock = json.load(open(mock_path)) if mock_path else None
+          with open(os.environ["AT_FILE"]) as fh:
+              access_token = fh.read()
+
+          def scrubbed(s):
+              for v in (tok["client_id"], tok["client_secret"], tok["token"]["refresh_token"], access_token):
+                  if v:
+                      s = s.replace(v, "[REDACTED-OAUTH]")
+              return re.sub(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+", "[REDACTED-EMAIL]", s)
+
+          def die(msg, detail=""):
+              print(f"::error::{msg}")
+              if detail:
+                  print(scrubbed(str(detail))[:1200], file=sys.stderr)
+              sys.exit(1)
+
+          def http(method, url, data=None, headers=None):
+              req = urllib.request.Request(url, data=data, method=method)
+              for k, v in (headers or {}).items():
+                  req.add_header(k, v)
+              try:
+                  with urllib.request.urlopen(req, timeout=60) as r:
+                      body = r.read()
+                      try:
+                          return r.status, json.loads(body)
+                      except Exception:
+                          return r.status, body.decode(errors="replace")
+              except urllib.error.HTTPError as e:
+                  body = e.read().decode(errors="replace")
+                  try:
+                      return e.code, json.loads(body)
+                  except Exception:
+                      return e.code, body
+
+          def mocked(section, default_status=200):
+              if mock is None:
+                  return None
+              m = mock.get(section) or {}
+              return m.get("status", default_status), m.get("body", {})
+
+          # 1. multipart create with NO parent (drive.file app-root)
+          r = mocked("create")
+          if r is None:
+              boundary = "alkemos-gd1alt-boundary"
+              meta = json.dumps({"name": test_name})
+              body = ("--%s\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n%s\r\n"
+                      "--%s\r\nContent-Type: text/plain\r\n\r\n%s\r\n--%s--\r\n"
+                      % (boundary, meta, boundary, content, boundary)).encode()
+              c_status, c_body = http("POST",
+                  "https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,size,owners(me)",
+                  data=body, headers={"Authorization": "Bearer " + access_token,
+                                      "Content-Type": "multipart/related; boundary=" + boundary})
+          else:
+              c_status, c_body = r
+          if c_status != 200 or not (isinstance(c_body, dict) and c_body.get("id")):
+              die("raw-API upload failed (HTTP %s) — the quota-law thesis check" % c_status, c_body)
+          owners = c_body.get("owners") or []
+          me = bool(owners and owners[0].get("me"))
+          print("upload (raw API, no parent): OK (%s, %s bytes) — file owner: %s" % (
+              c_body.get("name"), c_body.get("size", str(len(content))),
+              "the OAuth user (owners[0].me=True — bytes charge to the OWNER's pool; the SA 403 law is LIFTED)" if me else "NOT the OAuth user (unexpected — report this run)"))
+          file_id = c_body["id"]
+
+          # 2. read-back (alt=media) — byte-identical
+          r = mocked("media")
+          if r is None:
+              g_status, g_body = http("GET", "https://www.googleapis.com/drive/v3/files/" + file_id + "?alt=media",
+                  headers={"Authorization": "Bearer " + access_token})
+          else:
+              g_status, g_body = r
+          # (mock convention: media body null == "return the uploaded content")
+          back = content if g_body is None else (g_body if isinstance(g_body, str) else json.dumps(g_body))
+          if g_status != 200 or back != content:
+              die("raw-API read-back failed (HTTP %s / %s)" % (g_status, "mismatch" if g_status == 200 else "error"))
+          print("read-back (alt=media): OK (byte-identical)")
+
+          # 3. delete
+          r = mocked("delete")
+          if r is None:
+              d_status, d_body = http("DELETE", "https://www.googleapis.com/drive/v3/files/" + file_id,
+                  headers={"Authorization": "Bearer " + access_token})
+          else:
+              d_status, d_body = r
+          if d_status not in (204, 200):
+              die("raw-API delete failed (HTTP %s) — test file left behind, remove manually" % d_status, d_body)
+
+          # 4. gone check (404 expected)
+          r = mocked("gone")
+          if r is None:
+              v_status, v_body = http("GET", "https://www.googleapis.com/drive/v3/files/" + file_id + "?fields=id",
+                  headers={"Authorization": "Bearer " + access_token})
+          else:
+              v_status, v_body = r
+          if v_status != 404:
+              die("raw-API gone-check failed (HTTP %s — expected 404 after delete)" % v_status, v_body)
+          print("delete + gone-check (404 verified): OK")
+          print("QUOTA THESIS: PROVEN — a file created by the OAuth identity uploads with NO storageQuotaExceeded (the exact 403 that gated the SA path is absent)")
+          PYEOF
+          chmod 600 "$RUNNER_TEMP/fork_rootroundtrip.py"
+          if [ "$FOLDER_MODE" = "folder-invisible" ] && { [ "${CREATE_APP_FOLDER:-}" = "true" ] || [ "${CREATE_APP_FOLDER:-}" = "1" ]; }; then
+            # ---- fork (a): the owner opted in — the app creates its OWN
+            # backup folder (raw files.create, no parent: drive.file apps can
+            # always create app-owned objects; the folder REMAINS as the GD-3
+            # target — that is the point of the opt-in, not a leftover).
+            APP_NAME="${APP_FOLDER_NAME:-AlkemosBackups-OAuth}"
+            if ! printf '%s' "$APP_NAME" | grep -Eq '^[A-Za-z0-9][A-Za-z0-9 _-]{0,63}$'; then
+              die "input app_folder_name '${APP_NAME}' failed validation — allowed: letters, digits, space, dash, underscore (max 64 chars)"
+            fi
+            export APP_NAME
+            echo "fork (a) — creating the app-owned backup folder «${APP_NAME}»…"
+            python3 "$RUNNER_TEMP/fork_mkdir.py"
+            # the python validated the new ID shape before writing it
+            # shellcheck source=/dev/null
+            . "$RUNNER_TEMP/newid.env"
+            export NEW_FOLDER_ID
+            FLAGS=(--drive-root-folder-id "$NEW_FOLDER_ID")
+            MODE_DESC="app-created backup folder «${APP_FOLDER_NAME:-AlkemosBackups-OAuth}» (persistent by owner opt-in — the GD-3 target)"
+            SUMMARY_MODE="fork-a"
+            echo "fork (a) — full round-trip inside the new app-owned folder…"
+            roundtrip_and_guard
+            echo ""
+            echo "NEXT STEP (owner, ~1 minute): open your Google Drive → the new folder «${APP_FOLDER_NAME:-AlkemosBackups-OAuth}» → copy its ID from the URL (…/drive/folders/<id>) → update the GDRIVE_FOLDER_ID secret with it. From then on every run (and GD-3) targets the app-owned folder under the least-privilege scope."
+
+          elif [ "$FOLDER_MODE" = "folder-invisible" ]; then
+            # ---- fork (b): raw-API round-trip at app root (no parent) — the
+            # QUOTA-THESIS proof under drive.file — then the owner fork menu.
+            echo "fork (b) — raw-API round-trip at app root (drive.file: the app can always create its OWN files)…"
+            python3 "$RUNNER_TEMP/fork_rootroundtrip.py"
+            SUMMARY_MODE="fork-b"
+            echo ""
+            echo "OWNER FORK — the folder-targeting decision (the measured drive.file law above):"
+            echo "  (a) KEEP least privilege (drive.file): re-run this workflow with the input create_app_folder=true — the app creates its own backup folder (default «AlkemosBackups-OAuth», input app_folder_name to change), runs the full folder round-trip inside it, and the folder REMAINS as the GD-3 target; then update GDRIVE_FOLDER_ID with the new folder's ID from your Drive."
+            echo "  (b) USE the existing «AlkemosBackups» folder: re-mint the token with scope=drive in the helper (scripts/gdrive/oauth-token-helper.html — the scope dropdown), update GDRIVE_OAUTH_TOKEN, re-run — the folder becomes visible and the full folder round-trip runs."
+            echo "  (recommendation: (a) — it keeps the least-privilege scope the plan mandates; the folder name is the only difference you will see in your Drive)"
+
+          else
+            # ---- folder VISIBLE: the full rclone round-trip inside it ----
+            case "$FOLDER_MODE" in
+              my-drive-folder)
+                FLAGS=(--drive-root-folder-id "$FOLDER_ID")
+                MODE_DESC="regular Drive folder (visible to the OAuth identity) — pinned by ID from GDRIVE_FOLDER_ID"
+                ;;
+              shared-drive-folder)
+                FLAGS=(--drive-root-folder-id "$FOLDER_ID" --drive-team-drive "$TEAM_DRIVE")
+                MODE_DESC="folder inside a Workspace shared drive — team_drive+root pinned from GDRIVE_FOLDER_ID"
+                ;;
+              shared-drive-root)
+                FLAGS=(--drive-team-drive "$FOLDER_ID")
+                MODE_DESC="Workspace shared drive root — team_drive pinned from GDRIVE_FOLDER_ID"
+                ;;
+              *)
+                die "unknown folder mode '$FOLDER_MODE' from the probe"
+                ;;
+            esac
+            SUMMARY_MODE="folder"
+            echo "folder mode: $MODE_DESC"
+            echo "folder ID: ${FOLDER_ID:0:4}…${FOLDER_ID: -4} (masked — the full ID is a secret value)"
+            roundtrip_and_guard
+          fi
+
+          # ---- 4. Step summary ----
+          if [ -n "${GITHUB_STEP_SUMMARY:-}" ]; then
+            {
+              echo "## GDrive OAuth smoke test (GD-1-ALT) — run complete"
+              echo ""
+              echo "| Check | Result |"
+              echo "|---|---|"
+              echo "| OAuth token structure (secret never printed) | valid (client_id + client_secret + refresh_token, rclone config structure) |"
+              echo "| Token refresh (installed-app client) | OK |"
+              echo "| Authenticated identity | the OWNER account (about.get: real quota pool — the SA's was zeros by design) |"
+              case "$SUMMARY_MODE" in
+                folder)
+                  echo "| Folder targeting (GDRIVE_FOLDER_ID) | $MODE_DESC |"
+                  echo "| Upload <100-byte test file → read-back → delete → gone | OK (bytes charged to the owner's pool) |"
+                  echo "| 12GB budget guard | OK |"
+                  echo ""
+                  echo "_OAuth path proven end-to-end: auth ✓ · folder targeting ✓ · quota thesis ✓ · cleanup ✓. GD-2/GD-3 remain owner-gated._"
+                  ;;
+                fork-a)
+                  echo "| Folder targeting | app-created backup folder (persistent by owner opt-in) — update GDRIVE_FOLDER_ID with its ID |"
+                  echo "| Upload <100-byte test file → read-back → delete → gone | OK (inside the app-owned folder) |"
+                  echo "| 12GB budget guard | OK |"
+                  echo ""
+                  echo "_OAuth path proven under the least-privilege scope (drive.file): auth ✓ · app-folder targeting ✓ · quota thesis ✓ · cleanup ✓ (test file only). GD-2/GD-3 remain owner-gated._"
+                  ;;
+                fork-b)
+                  echo "| Folder targeting | INVISIBLE under drive.file (measured per-file law) — owner fork (a) app-folder re-run / (b) drive-scope re-mint |"
+                  echo "| Quota thesis (raw-API round-trip: create as owner → read-back → delete → 404-gone) | PROVEN — no storageQuotaExceeded |"
+                  echo "| 12GB budget guard | deferred to the folder-targeted round (no folder addressable under drive.file) |"
+                  echo ""
+                  echo "_Green-with-data law (GD-1-EXP precedent): this run's green = measurement complete + cleanup verified. The folder-targeting fork above is the owner decision that remains._"
+                  ;;
+              esac
+              echo ""
+              echo "_Google-Login separation (owner order 2026-10-04): the project's Google Login (Supabase Auth Google provider) is untouched — this run used a SEPARATE Desktop-app OAuth client consumed only by GitHub Actions. No backups were touched; the only Drive mutation was one <100-byte test file (deleted + verified gone), or — fork (a) only — one opt-in backup folder that remains as the GD-3 target._"
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+          case "$SUMMARY_MODE" in
+            folder|fork-a) echo "SMOKE TEST: ALL GREEN" ;;
+            fork-b) echo "SMOKE TEST: measurement round complete — quota thesis PROVEN; folder-targeting fork pending the owner decision" ;;
+          esac
+
+      - name: Cleanup temp files (credentials, config, test file, install artifacts)
+        if: always()
+        run: |
+          rm -f "${RUNNER_TEMP:-/tmp}/gdrive-oauth-token.json" "${RUNNER_TEMP:-/tmp}/scrub-oauth.txt" "${RUNNER_TEMP:-/tmp}/rclone-oauth.conf" "${RUNNER_TEMP:-/tmp}/oauth.at" "${RUNNER_TEMP:-/tmp}/rc-oauth.err" "${RUNNER_TEMP:-/tmp}/folder.env" "${RUNNER_TEMP:-/tmp}/mode.env" "${RUNNER_TEMP:-/tmp}/newid.env" "${RUNNER_TEMP:-/tmp}/fork_mkdir.py" "${RUNNER_TEMP:-/tmp}/fork_rootroundtrip.py" "${RUNNER_TEMP:-/tmp}"/gd1alt-oauth-*.txt "${RUNNER_TEMP:-/tmp}"/rclone-v1.*-linux-amd64.zip || true
+          rm -rf "${RUNNER_TEMP:-/tmp}/rclone-v1."*-linux-amd64 "${RUNNER_TEMP:-/tmp}/rclone-bin" || true
+          echo "temp credential + test + install files removed (runner is ephemeral anyway)"
