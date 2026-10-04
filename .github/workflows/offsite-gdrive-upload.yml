@@ -1,0 +1,1171 @@
+# Off-site GDrive upload (GD-3) — weekly encrypted data archives + monthly
+# data archive + monthly git bundles → the owner's Google Drive (2026-10-05).
+#
+# WHY (BACKUP-STRATEGY-2026-10-03.md §3.2/§3.4/§3.5 + §5 GD-3 — owner order
+# 2026-10-05 «نفّذ GD-3» with the GD-0 ③ decision made the same day: the
+# encryption key's off-site copy lives in the owner's PASSWORD MANAGER):
+# every backup so far lives INSIDE GitHub (blockers BS-1/BS-4 — one account,
+# one platform). This workflow is the survival layer: the private repo's
+# newest data leaves GitHub as ENCRYPTED archives on the owner's Drive
+# (15 GB pool, bytes charged to the owner — the OAuth upload mechanism
+# proven green by GD-1-ALT run 37184322424).
+#
+# WHAT RUNS (plan §3.5 layout):
+#   weekly  (every Sunday 06:30 UTC, after that morning's daily trio):
+#           AlkemosBackups/weekly/YYYY-Www.data.tar.gz.enc = the NEWEST copy
+#           of each of the three backup types (snapshots/ + storage-backups/
+#           + storage-inventory/ latest date-dir — the GD-2 floor law: the
+#           newest of every type is always in the archive) + MANIFEST.txt
+#           (names/dates/counts only — zero PII in any log line).
+#   monthly (self-healing first-Sunday law: a scheduled run does the monthly
+#           path too whenever monthly/ has NO YYYY-MM.data archive for the
+#           current month — a failed or lagged first Sunday can never silently
+#           skip a month): AlkemosBackups/monthly/YYYY-MM.data.tar.gz.enc
+#           (same content as that run's weekly) + YYYY-MM.alkemos.bundle.enc
+#           (git bundle --all of the PUBLIC code repo — anonymous-readable,
+#           full history) + YYYY-MM.backups.bundle.enc (git bundle of the
+#           private backup repo, FULL history — BS-5 deliberately INCLUDED:
+#           the bundle is the only artifact carrying git history off-site).
+#   GFS prune on Drive (§3.4 «على Google Drive»): weekly/ keeps the newest
+#           OFFSITE_KEEP_WEEKLY (default 8) · monthly/ data keeps
+#           OFFSITE_KEEP_MONTHLY (6) · EACH bundle kind keeps
+#           OFFSITE_KEEP_BUNDLES (6). Settings-tunable, clamped
+#           [1,26]/[1,24]/[1,24], non-integer = honest RED (the GD-2
+#           variable law). Files NOT matching our strict name patterns are
+#           foreign — listed, NEVER deleted.
+#
+# ENCRYPTION LAW (plan §3.5 «إلزامي قبل مغادرة GitHub» — tool decision
+# 2026-10-05: openssl AES-256 over age: PREINSTALLED on every runner and at
+# every restore site, zero extra pinned downloads at restore time; age stays
+# an acceptable future alternative — the plan names both): openssl enc
+# -aes-256-cbc -salt -pbkdf2 -iter 600000 -md sha256 (the explicit-portable
+# digest form — OpenSSL 3.5 REJECTS the bare -sha256 shortcut next to a cipher
+# name, measured 2026-10-05: «Multiple cipher or unknown options»; -md sha256
+# is also the PBKDF2 default, so a decrypt WITHOUT the flag still works); key
+# from secret
+# BACKUP_ENCRYPTION_KEY (generated 2026-10-05 via the GitHub API per the
+# GD-0 ③ decision — the OWNER'S copy lives in their password manager: losing
+# GitHub alone can never lose the key, which is the entire point of the
+# off-site layer). The key materializes ONLY as a 0600 temp file consumed
+# via `-pass file:`, joins the scrub list, and is NEVER echoed. Every
+# archive is decrypt-verified ON THE RUNNER before upload (sha256 of the
+# decrypted output == the plaintext archive) — no un-restorable ciphertext
+# ever leaves GitHub.
+#
+# THE 12GB GUARD (plan §3.5 law د): measured on the backup folder's OWN size
+# (rclone size, recursive — NOT about.get, which reads zeros for some
+# identities by design — measured GD-1), BEFORE every upload, counting the
+# pending uploads: current + pending > 12 GiB = LOUD RED. A size report
+# prints on EVERY run (the §3.5 law ب size report). A code bundle > 400 MB
+# warns loudly (law ج → GD-5 decision).
+#
+# PII LAW (§3.1-5): everything leaving GitHub is encrypted client-side; the
+# log prints NAMES, DATES and SIZES only — file contents (emails, photos,
+# receipts) are never read into any output line.
+#
+# COLOR LAW: GREEN = composed + encrypted + decrypt-verified + uploaded +
+# full-stream read-back verified (sha256) + prune applied + temp files
+# cleaned (or the clean dry-run report). RED = missing secret, weak/oversized
+# key, bad token, invisible/unwritable folder, ANY empty backup type (the
+# daily pipeline is broken — an honest RED beats a green that ships an
+# incomplete archive), stale sources warning only (never a silent skip),
+# 12GB guard, non-integer retention knob, upload/read-back/decrypt failure.
+#
+# RACE LAW: read-only on the private repo (latest-of-each-type snapshot at
+# checkout time — a daily backup pushing mid-run just means the archive
+# carries the previous tip; nothing is written to that repo here, so no
+# push-race exists on our side. The GD-2 pruner owns deletion.)
+#
+# LANDING LAW: the push trigger below exists TEMPORARILY on the gd3-offsite
+# branch only (dispatch via API 404s for workflows not registered on the
+# default branch — measured GD-1). A push-triggered run exercises the FULL
+# path (weekly + monthly + bundles) so the branch green round measures
+# everything in one run; the trigger is REMOVED by the commit that lands
+# this on main. The landed form is schedule + workflow_dispatch only.
+#
+# rclone is NOT preinstalled on GitHub runners (measured 2026-10-04) — the
+# pinned SHA256-gated install below is the exact GD-1-ALT mechanism. Env
+# pins use the PINNED_RCLONE_* prefix — never bare RCLONE_* (rclone maps
+# RCLONE_<NAME> to --<name> flags; measured run 37162630012).
+# RCLONE_CONFIG is the one intentional mapping (the real --config flag).
+name: Off-site GDrive upload (GD-3)
+
+on:
+  schedule:
+    - cron: "30 6 * * 0" # Sunday 06:30 UTC (plan §5 GD-3 — after the 05:30–06:00 daily trio)
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry-run (compose + encrypt + decrypt-verify + report only — nothing uploaded/pruned)"
+        type: boolean
+        default: true
+      force_monthly:
+        description: "Run the monthly path too (data archive + both git bundles) regardless of the calendar"
+        type: boolean
+        default: false
+  push:
+    branches: [gd3-offsite] # TEMPORARY measuring trigger — removed at landing (this file's own law)
+
+concurrency:
+  group: offsite-gdrive-upload
+  cancel-in-progress: false
+
+permissions: {} # zero GITHUB_TOKEN rights: the private repo checks out via BACKUP_REPO_TOKEN (PAT), the code repo via the same PAT (Read on alkemos — measured); nothing else is touched
+
+env:
+  PINNED_RCLONE_VERSION: "1.75.1"
+  PINNED_RCLONE_SHA256: "982b5aa772841168f8e380f139e9e787b2a105403e32b94da8676a0e1c0a13ab"
+
+jobs:
+  weekly-data:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    outputs:
+      monthly_due: ${{ steps.decide.outputs.monthly_due }}
+      month: ${{ steps.names.outputs.month }}
+    steps:
+      - name: Install pinned rclone (SHA256-gated)
+        run: |
+          set -euo pipefail
+          cd "$RUNNER_TEMP"
+          ZIP="rclone-v${PINNED_RCLONE_VERSION}-linux-amd64.zip"
+          echo "downloading rclone v${PINNED_RCLONE_VERSION} (pinned) from the official mirror…"
+          curl -fsSLO "https://downloads.rclone.org/v${PINNED_RCLONE_VERSION}/${ZIP}"
+          echo "${PINNED_RCLONE_SHA256}  ${ZIP}" | sha256sum -c -
+          unzip -oq "${ZIP}"
+          mkdir -p "$RUNNER_TEMP/rclone-bin"
+          mv "rclone-v${PINNED_RCLONE_VERSION}-linux-amd64/rclone" "$RUNNER_TEMP/rclone-bin/"
+          "$RUNNER_TEMP/rclone-bin/rclone" version | head -1
+          echo "$RUNNER_TEMP/rclone-bin" >> "$GITHUB_PATH"
+
+      - name: Preflight — required secrets present (honest RED + owner guide)
+        env:
+          BACKUP_REPO_TOKEN: ${{ secrets.BACKUP_REPO_TOKEN }}
+          GDRIVE_OAUTH_TOKEN: ${{ secrets.GDRIVE_OAUTH_TOKEN }}
+          GDRIVE_FOLDER_ID: ${{ secrets.GDRIVE_FOLDER_ID }}
+          BACKUP_ENCRYPTION_KEY: ${{ secrets.BACKUP_ENCRYPTION_KEY }}
+        run: |
+          set -euo pipefail
+          echo "=== Preflight: the four GD-3 dependencies (names only — values never printed) ==="
+          MISSING=0
+          for pair in \
+            "BACKUP_REPO_TOKEN|$BACKUP_REPO_TOKEN" \
+            "GDRIVE_OAUTH_TOKEN|$GDRIVE_OAUTH_TOKEN" \
+            "GDRIVE_FOLDER_ID|$GDRIVE_FOLDER_ID" \
+            "BACKUP_ENCRYPTION_KEY|$BACKUP_ENCRYPTION_KEY"; do
+            NAME="${pair%%|*}"; VALUE="${pair#*|}"
+            if [ -z "$VALUE" ]; then
+              echo "::error::missing GitHub secret: ${NAME}"
+              MISSING=1
+            else
+              echo "✓ ${NAME} present"
+            fi
+          done
+          if [ "$MISSING" = "1" ]; then
+            echo ""
+            echo "OWNER GUIDE (plan §3.5 — the four GD-3 dependencies):"
+            echo "  BACKUP_REPO_TOKEN     — the fine-grained PAT the daily backups already use (since 2026-09-05)."
+            echo "  GDRIVE_OAUTH_TOKEN    — owner-identity OAuth token (GD-1-ALT; scope=drive per owner decision (b); minted via scripts/gdrive/oauth-token-helper.html)."
+            echo "  GDRIVE_FOLDER_ID      — the AlkemosBackups folder ID (GD-1; paste the ID or the folder URL)."
+            echo "  BACKUP_ENCRYPTION_KEY — created 2026-10-05 via the GitHub API per the owner's GD-0 ③ decision;"
+            echo "                          the OWNER'S copy lives in the password manager. If re-created manually:"
+            echo "                          generate >= 32 chars, save it in the password manager FIRST, then update"
+            echo "                          the GitHub secret — both copies must stay identical or archives become"
+            echo "                          un-decryptable (the off-site layer's whole point is surviving GitHub loss)."
+            exit 1
+          fi
+
+      - name: Checkout private backup repo (read-only snapshot)
+        uses: actions/checkout@v4
+        with:
+          repository: muscleshubfit-cpu/musclehubeg-backups
+          token: ${{ secrets.BACKUP_REPO_TOKEN }}
+          path: backup-repo
+
+      - name: Names (ISO week + month)
+        id: names
+        run: |
+          echo "week=$(date -u +'%G-W%V')" >> "$GITHUB_OUTPUT"
+          echo "month=$(date -u +'%Y-%m')" >> "$GITHUB_OUTPUT"
+          echo "run date: $(date -u +'%Y-%m-%dT%H:%M:%SZ') · week $(date -u +'%G-W%V') · month $(date -u +'%Y-%m')"
+
+      - name: Compose + encrypt + upload (the GD-3 data path)
+        id: decide
+        env:
+          GDRIVE_OAUTH_TOKEN: ${{ secrets.GDRIVE_OAUTH_TOKEN }}
+          GDRIVE_FOLDER_ID: ${{ secrets.GDRIVE_FOLDER_ID }}
+          BACKUP_ENCRYPTION_KEY: ${{ secrets.BACKUP_ENCRYPTION_KEY }}
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run == true }}
+          FORCE_MONTHLY: ${{ github.event_name == 'workflow_dispatch' && inputs.force_monthly == true }}
+          OFFSITE_KEEP_WEEKLY: ${{ vars.OFFSITE_KEEP_WEEKLY }}
+          OFFSITE_KEEP_MONTHLY: ${{ vars.OFFSITE_KEEP_MONTHLY }}
+        run: |
+          set -euo pipefail
+          REPO_DIR="$GITHUB_WORKSPACE/backup-repo"
+          STAGE="$RUNNER_TEMP/gd3-stage"
+          TOKEN_FILE="$RUNNER_TEMP/gd3-oauth-token.json"
+          CONF_FILE="$RUNNER_TEMP/rclone-offsite.conf"
+          AT_FILE="$RUNNER_TEMP/offsite.at"
+          KEY_FILE="$RUNNER_TEMP/bk.key"
+          RC_ERR="$RUNNER_TEMP/rc-offsite.err"
+          SCRUB="$RUNNER_TEMP/scrub-offsite.txt"
+          export REPO_DIR STAGE TOKEN_FILE CONF_FILE AT_FILE KEY_FILE RC_ERR SCRUB
+          mkdir -p "$STAGE"
+          WEEK="${{ steps.names.outputs.week }}"
+          MONTH="${{ steps.names.outputs.month }}"
+          export WEEK MONTH
+
+          die() { echo "::error::off-site upload FAILED — $1 (scrubbed error, if any, printed above)"; exit 1; }
+
+          # ---- 1. encryption key: normalize + 0600 file + scrub list (never echoed) ----
+          KEYNORM="$(printf '%s' "$BACKUP_ENCRYPTION_KEY" | tr -d '\r\n' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')"
+          LEN=${#KEYNORM}
+          [ "$LEN" -ge 32 ] || die "BACKUP_ENCRYPTION_KEY is ${LEN} chars — refusing to encrypt with a weak key (generate >= 32 chars, save the password-manager copy FIRST per GD-0 ③, then update the secret)"
+          [ "$LEN" -le 4096 ] || die "BACKUP_ENCRYPTION_KEY is ${LEN} chars (> 4096) — likely a paste error; fix the secret value"
+          printf '%s' "$KEYNORM" > "$KEY_FILE"
+          chmod 600 "$KEY_FILE"
+          printf '%s\n' "$KEYNORM" > "$SCRUB"
+          chmod 600 "$SCRUB"
+          echo "encryption key: present (${LEN} chars, normalized, 0600 file — value never printed; the OWNER copy lives in the password manager per GD-0 ③)"
+
+          # ---- 2. source selection: newest of each type (the GD-2 floor law) ----
+          python3 << 'PYEOF'
+          import os, re, sys
+          from datetime import datetime, timezone
+
+          repo = os.environ["REPO_DIR"]
+          TYPES = {"snapshots": "SNAP_DIR", "storage-backups": "BACKUP_DIR", "storage-inventory": "INV_DIR"}
+          DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+
+          def parse_day(s):
+              if not DATE_RE.match(s):
+                  return None
+              try:
+                  return datetime.strptime(s, "%Y-%m-%d").date()
+              except ValueError:
+                  return None  # phantom dates like 2026-13-45
+
+          today = datetime.now(timezone.utc).date()
+          selected = {}
+          for t, env_name in TYPES.items():
+              d = os.path.join(repo, t)
+              if not os.path.isdir(d):
+                  print(f"::error::dir {t}/ is MISSING from the private backup repo checkout — the daily pipeline for it never ran or the checkout is broken")
+                  sys.exit(1)
+              names = [n for n in sorted(os.listdir(d)) if os.path.isdir(os.path.join(d, n)) and parse_day(n)]
+              if not names:
+                  print(f"::error::dir {t}/ has NO dated copies — the daily backup pipeline is broken; an honest RED beats shipping an incomplete archive (the GD-2 empty-repo law)")
+                  sys.exit(1)
+              latest = names[-1]
+              age = (today - parse_day(latest)).days
+              selected[t] = latest
+              if age >= 14:
+                  print(f"::warning::{t}: newest copy {latest} is {age} days old — the daily pipeline may be stalled (this archive still ships it; the stale source is the pipeline's problem, not the uploader's)")
+          out = os.path.join(os.environ.get("RUNNER_TEMP", "/tmp"), "sources.env")
+          with open(out, "w") as fh:
+              for t, env_name in TYPES.items():
+                  fh.write("%s='%s'\n" % (env_name, selected[t]))
+          print("selected sources (newest of each type — the GD-2 floor law):")
+          for t in TYPES:
+              print(f"  {t}/{selected[t]}")
+          # values are charset-validated real dates ([0-9-] only) -> sourcing is injection-safe
+          PYEOF
+          # shellcheck source=/dev/null
+          . "$RUNNER_TEMP/sources.env"
+          export SNAP_DIR BACKUP_DIR INV_DIR
+
+          # ---- 3. OAuth chain: token structure -> refresh -> folder probe (the GD-1-ALT proven code) ----
+          printf '%s' "$GDRIVE_OAUTH_TOKEN" > "$TOKEN_FILE"
+          chmod 600 "$TOKEN_FILE"
+          export GDRIVE_FOLDER_ID
+          python3 << 'PYEOF'
+          import json, os, re, sys
+          import urllib.error, urllib.parse, urllib.request
+
+          token_file = os.environ["TOKEN_FILE"]
+          scrub_file = os.environ["SCRUB"]
+          at_file = os.environ["AT_FILE"]
+
+          def die(msg, detail=""):
+              print(f"::error::{msg}")
+              if detail:
+                  print(str(detail)[:1200], file=sys.stderr)
+              sys.exit(1)
+
+          try:
+              with open(token_file) as fh:
+                  tok = json.load(fh)
+          except Exception as e:
+              die(f"secret GDRIVE_OAUTH_TOKEN is not parseable JSON ({type(e).__name__}) — expected the helper-composed structure (scripts/gdrive/oauth-token-helper.html)", "")
+          client_id = tok.get("client_id") or ""
+          client_secret = tok.get("client_secret") or ""
+          inner = tok.get("token") or {}
+          refresh_token = inner.get("refresh_token") or tok.get("refresh_token") or ""
+          scope = (tok.get("scope") or "").strip()
+          if not client_id or not client_secret or not refresh_token:
+              die("GDRIVE_OAUTH_TOKEN is missing field(s) client_id/client_secret/token.refresh_token — re-mint with the helper and update the secret")
+          if scope != "drive":
+              die(f"token scope is '{scope}' but the decided GD-3 state is 'drive' (owner fork decision (b), GD-1-ALT run 37184322424): a drive.file token CANNOT see the pre-existing pinned AlkemosBackups folder (the measured per-file scope law, 404). Re-mint with scope=drive via the helper and update the secret")
+          with open(scrub_file, "a") as fh:  # the key is already line 1; OAuth values join it
+              fh.write("\n".join([client_id, client_secret, refresh_token]) + "\n")
+          print("OAuth token JSON: valid — client_id %s…%s (%d chars) · scope=%s · refresh_token present (values never printed)" % (client_id[:4], client_id[-4:], len(client_id), scope))
+
+          # folder ID: tolerant extraction + charset validation (the measured GD-1 law)
+          raw = os.environ.get("GDRIVE_FOLDER_ID", "")
+          def extract_id(v):
+              v = (v or "").strip().strip('"').strip("'").strip()
+              m = re.search(r"/folders/([A-Za-z0-9_-]{20,})", v)
+              if m:
+                  return m.group(1)
+              m = re.search(r"[?&]id=([A-Za-z0-9_-]{20,})", v)
+              if m:
+                  return m.group(1)
+              body = v.split("#", 1)[0].split("?", 1)[0]
+              tokens = re.findall(r"[A-Za-z0-9_-]{20,}", body)
+              if len(tokens) == 1:
+                  return tokens[0]
+              return None
+          fid = extract_id(raw)
+          if not fid or not re.fullmatch(r"[A-Za-z0-9_-]{20,60}", fid):
+              die("secret GDRIVE_FOLDER_ID does not contain a usable folder ID — paste ONLY the backup folder ID (28-33 chars) or its URL (https://drive.google.com/drive/folders/<id>)")
+
+          # refresh_token -> access_token (installed-app client)
+          data = urllib.parse.urlencode({
+              "client_id": client_id, "client_secret": client_secret,
+              "refresh_token": refresh_token, "grant_type": "refresh_token",
+          }).encode()
+          req = urllib.request.Request("https://oauth2.googleapis.com/token", data=data,
+                                       headers={"Content-Type": "application/x-www-form-urlencoded"})
+          try:
+              with urllib.request.urlopen(req, timeout=60) as r:
+                  body = json.loads(r.read())
+          except urllib.error.HTTPError as e:
+              err = {}
+              try:
+                  err = json.loads(e.read())
+              except Exception:
+                  pass
+              if err.get("error") == "invalid_grant":
+                  die("token refresh REJECTED (invalid_grant): the refresh token is expired or revoked — if the consent screen fell back to TESTING status Google kills refresh tokens after 7 days (plan §1.5-2); re-publish to Production, re-mint with the helper, update the secret")
+              if err.get("error") == "invalid_client":
+                  die("token refresh REJECTED (invalid_client): the client_id/client_secret pair is wrong — re-copy both from the Desktop-app OAuth client and re-mint with the helper")
+              die(f"token refresh failed (HTTP {e.code})", err)
+          access_token = body.get("access_token")
+          if not access_token:
+              die("token endpoint returned 200 without an access_token")
+          print("token refresh: OK — access token minted (never printed) · granted scope: %s · expires_in: %ss" % (body.get("scope") or scope, body.get("expires_in", "?")))
+          with open(at_file, "w") as fh:
+              fh.write(access_token)
+          os.chmod(at_file, 0o600)
+          with open(scrub_file, "a") as fh:
+              fh.write(access_token + "\n")
+
+          headers = {"Authorization": "Bearer " + access_token}
+
+          # about.get — the size report context (non-fatal, the GD-1-ALT law)
+          try:
+              rq = urllib.request.Request("https://www.googleapis.com/drive/v3/about?fields=storageQuota", headers=headers)
+              with urllib.request.urlopen(rq, timeout=60) as r:
+                  q = (json.loads(r.read()).get("storageQuota") or {})
+              def _num(v):
+                  try:
+                      return float(v) if v is not None else 0.0
+                  except (TypeError, ValueError):
+                      return 0.0
+              # Drive v3 returns storageQuota values as JSON STRINGS (measured run 37184158028) — coerce first
+              print("about.get (the identity's pool): total=%.2fGB · used=%.2fGB · headroom=%.2fGB (the off-site bytes charge here)" % (
+                  _num(q.get("limit")) / 1024**3, _num(q.get("usage")) / 1024**3,
+                  (_num(q.get("limit")) - _num(q.get("usage"))) / 1024**3))
+          except Exception:
+              print("::warning::about.get unavailable — NOT fatal (identity is proven by the refresh + the upload below)")
+
+          # folder probe: must be a visible, child-writable folder
+          url = "https://www.googleapis.com/drive/v3/files/" + fid + "?supportsAllDrives=true&fields=id,name,mimeType,driveId,capabilities(canAddChildren,canEdit)"
+          try:
+              with urllib.request.urlopen(urllib.request.Request(url, headers=headers), timeout=60) as r:
+                  f = json.loads(r.read())
+          except urllib.error.HTTPError as e:
+              die(f"backup folder not visible under scope=drive (files.get HTTP {e.code}) — GDRIVE_FOLDER_ID is wrong, or the token's account does not own/see the folder; re-mint with the OWNING account via the helper", "")
+          if f.get("mimeType") != "application/vnd.google-apps.folder":
+              die("the pinned GDRIVE_FOLDER_ID target is not a folder — fix the secret")
+          caps = f.get("capabilities") or {}
+          if caps.get("canAddChildren") is False:
+              die("the backup folder is visible but WITHOUT create permission (canAddChildren=false) — check the folder settings / org policy")
+          did = f.get("driveId") or ""
+          mode = "shared-drive-root" if (did and did == fid) else ("shared-drive-folder" if did else "my-drive-folder")
+          team = fid if mode == "shared-drive-root" else (did if did else "")
+          print("folder probe: VISIBLE — name=%s · canAddChildren=%s · canEdit=%s · mode=%s" % (f.get("name") or "(unnamed)", caps.get("canAddChildren"), caps.get("canEdit"), mode))
+          print("folder ID: %s…%s (masked — the full ID is a secret value)" % (fid[:4], fid[-4:]))
+          env_path = os.path.join(os.path.dirname(token_file), "mode.env")
+          with open(env_path, "w") as fh:
+              fh.write("FOLDER_ID='%s'\nFOLDER_MODE='%s'\nTEAM_DRIVE='%s'\n" % (fid, mode, team))
+          PYEOF
+          # every value in mode.env is a fixed token or a charset-validated Drive ID -> sourcing is injection-safe
+          # shellcheck source=/dev/null
+          . "$RUNNER_TEMP/mode.env"
+          export FOLDER_ID FOLDER_MODE TEAM_DRIVE
+
+          # ---- 4. rclone config composed from the secret (python, 0600) — root pinned to the folder ----
+          python3 << 'PYEOF'
+          import json, os, time
+          token_file = os.environ["TOKEN_FILE"]
+          conf_file = os.environ["CONF_FILE"]
+          tok = json.load(open(token_file))
+          with open(os.environ["AT_FILE"]) as fh:
+              access_token = fh.read()
+          expiry = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(time.time() + 3500))
+          token_json = json.dumps({
+              "access_token": access_token,
+              "refresh_token": tok["token"]["refresh_token"],
+              "token_type": "Bearer",
+              "expiry": expiry,
+          })
+          lines = ["[gdrive]", "type = drive", "scope = %s" % tok.get("scope", "drive"),
+                   "token = %s" % token_json,
+                   "client_id = %s" % tok["client_id"],
+                   "client_secret = %s" % tok["client_secret"],
+                   "root_folder_id = %s" % os.environ["FOLDER_ID"]]
+          if os.environ.get("TEAM_DRIVE"):
+              lines.append("team_drive = %s" % os.environ["TEAM_DRIVE"])
+          with open(conf_file, "w") as fh:
+              fh.write("\n".join(lines) + "\n")
+          os.chmod(conf_file, 0o600)
+          print("rclone config written (0600): [gdrive] root pinned to the backup folder — token values never printed")
+          PYEOF
+          export RCLONE_CONFIG="$CONF_FILE"
+          command -v rclone >/dev/null 2>&1 || die "rclone not on PATH after the pinned-install step — infrastructure failure"
+          echo "rclone: $(rclone version | head -1)"
+
+          # synchronous scrubber (the smoke-test law: reads the scrub FILE, never argv)
+          scrub_file() {
+            python3 -c '
+          import os, re, sys
+          p = os.environ.get("SCRUB", "")
+          repl = []
+          try:
+              with open(p) as fh:
+                  repl = [l for l in fh.read().splitlines() if l]
+          except OSError:
+              pass
+          out = open(sys.argv[1], errors="replace").read() if len(sys.argv) > 1 else ""
+          for s in repl:
+              out = out.replace(s, "[REDACTED]")
+          out = re.sub(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+", "[REDACTED-EMAIL]", out)
+          sys.stdout.write(out)
+          ' "$1"
+          }
+          rc() { rclone "$@" 2>"$RC_ERR" || { scrub_file "$RC_ERR" >&2 || true; return 1; }; }
+
+          # ---- 5. compose the data archive (names/dates/counts only in the log) ----
+          REPO_HEAD="$(git -C "$REPO_DIR" rev-parse HEAD 2>/dev/null || echo unknown)"
+          {
+            echo "alkemos off-site data archive (GD-3)"
+            echo "week: ${WEEK}"
+            echo "month: ${MONTH}"
+            echo "created_utc: $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+            echo "backup_repo_head: ${REPO_HEAD}"
+            echo "sources:"
+            echo "  snapshots/${SNAP_DIR} ($(find "$REPO_DIR/snapshots/$SNAP_DIR" -type f | wc -l) files)"
+            echo "  storage-backups/${BACKUP_DIR} ($(find "$REPO_DIR/storage-backups/$BACKUP_DIR" -type f | wc -l) files)"
+            echo "  storage-inventory/${INV_DIR} ($(find "$REPO_DIR/storage-inventory/$INV_DIR" -type f | wc -l) files)"
+            echo "retention_law: docs/BACKUP-STRATEGY-2026-10-03.md (GFS 7/5/6 in GitHub · 8/6/6 on Drive)"
+          } > "$STAGE/MANIFEST.txt"
+          DATA_TAR="$STAGE/${MONTH}.data.tar.gz"
+          tar -czf "$DATA_TAR" -C "$STAGE" MANIFEST.txt -C "$REPO_DIR" \
+            "snapshots/${SNAP_DIR}" "storage-backups/${BACKUP_DIR}" "storage-inventory/${INV_DIR}"
+          echo "data archive composed: ${MONTH}.data.tar.gz — $(du -h "$DATA_TAR" | cut -f1) · sources: snapshots/${SNAP_DIR} + storage-backups/${BACKUP_DIR} + storage-inventory/${INV_DIR} + MANIFEST.txt"
+
+          # ---- 6. remote state: folder size + existing archives + the monthly decision ----
+          SIZE_JSON="$(rc size "gdrive:" --json)" || die "backup-folder size measurement failed — is the folder visible to this token? (the probe above said yes; an rclone-side failure here is a real error, not a guess)"
+          WEEKLY_LIST="$(rc lsf "gdrive:weekly/" --files-only 2>/dev/null || true)"
+          MONTHLY_LIST="$(rc lsf "gdrive:monthly/" --files-only 2>/dev/null || true)"
+          export SIZE_JSON WEEKLY_LIST MONTHLY_LIST
+          python3 << 'PYEOF'
+          import os, sys
+
+          week = os.environ["WEEK"]
+          month = os.environ["MONTH"]
+          event = os.environ.get("GITHUB_EVENT_NAME", "")
+          force = os.environ.get("FORCE_MONTHLY") == "true"
+          weekly_list = [l.strip() for l in os.environ.get("WEEKLY_LIST", "").splitlines() if l.strip()]
+          monthly_list = [l.strip() for l in os.environ.get("MONTHLY_LIST", "").splitlines() if l.strip()]
+
+          def knob(name, lo, hi, default):
+              raw = (os.environ.get(name) or "").strip()
+              if raw == "":
+                  return default
+              try:
+                  n = int(raw)
+              except ValueError:
+                  print(f"::error::variable {name} is not an integer: {raw!r} — honest RED, never a guess (the GD-2 variable law)")
+                  sys.exit(1)
+              if not (lo <= n <= hi):
+                  print(f"::error::variable {name}={n} is outside [{lo},{hi}] — fix it in Settings → Variables")
+                  sys.exit(1)
+              return n
+
+          keep_w = knob("OFFSITE_KEEP_WEEKLY", 1, 26, 8)
+          keep_m = knob("OFFSITE_KEEP_MONTHLY", 1, 24, 6)
+
+          # the self-healing monthly law: push (green round) exercises the full
+          # path; dispatch follows force_monthly; schedule does monthly when
+          # this month's data archive is not there yet (a failed/lagged first
+          # Sunday never silently skips a month).
+          if event == "push":
+              due = True
+          elif event == "workflow_dispatch":
+              due = force
+          else:
+              due = f"{month}.data.tar.gz.enc" not in monthly_list
+
+          print(f"remote state: weekly/ has {len(weekly_list)} file(s) · monthly/ has {len(monthly_list)} file(s)")
+          print(f"monthly decision: {'DUE — this run also uploads the monthly data archive' if due else 'not due (already present or not requested)'}")
+          out = os.path.join(os.environ.get("RUNNER_TEMP", "/tmp"), "monthly.env")
+          with open(out, "w") as fh:
+              fh.write("MONTHLY_DUE='%s'\nKEEP_W='%d'\nKEEP_M='%d'\n" % ("true" if due else "false", keep_w, keep_m))
+          gha = os.environ.get("GITHUB_OUTPUT")
+          if gha:
+              with open(gha, "a") as fh:
+                  fh.write("monthly_due=%s\n" % ("true" if due else "false"))
+          PYEOF
+          # shellcheck source=/dev/null
+          . "$RUNNER_TEMP/monthly.env"
+          export MONTHLY_DUE KEEP_W KEEP_M
+
+          # ---- 7. encrypt (+ the monthly twin) + decrypt-verify BEFORE any upload ----
+          ENC() {
+            openssl enc -aes-256-cbc -salt -pbkdf2 -iter 600000 -md sha256 \
+              -in "$1" -out "$2" -pass file:"$KEY_FILE" 2>/dev/null
+          }
+          DEC() {
+            openssl enc -d -aes-256-cbc -pbkdf2 -iter 600000 -md sha256 \
+              -in "$1" -out "$2" -pass file:"$KEY_FILE" 2>/dev/null
+          }
+          sha_of() { sha256sum "$1" | cut -d' ' -f1; }
+          enc_and_verify() {
+            # $1 = plaintext, $2 = .enc output — no un-restorable ciphertext ever leaves GitHub
+            ENC "$1" "$2" || die "openssl encrypt failed for $(basename "$2")"
+            DEC "$2" "$1.verify" || die "decrypt-verify failed for $(basename "$2") — the key/file pairing is broken; NOTHING was uploaded"
+            [ "$(sha_of "$1")" = "$(sha_of "$1.verify")" ] || die "decrypt-verify sha256 MISMATCH for $(basename "$2") — refusing to upload un-restorable ciphertext"
+            rm -f "$1.verify"
+            echo "encrypted + decrypt-verified: $(basename "$2") — $(du -h "$2" | cut -f1) · sha256 $(sha_of "$2" | cut -c1-16)…"
+          }
+          WEEK_ENC="$STAGE/${WEEK}.data.tar.gz.enc"
+          enc_and_verify "$DATA_TAR" "$WEEK_ENC"
+          MONTH_ENC=""
+          if [ "$MONTHLY_DUE" = "true" ]; then
+            MONTH_ENC="$STAGE/${MONTH}.data.tar.gz.enc"
+            enc_and_verify "$DATA_TAR" "$MONTH_ENC"
+          fi
+          rm -f "$DATA_TAR"  # plaintext lifetime ends here — only ciphertext remains on the runner
+
+          # ---- 8. the 12GB guard (plan §3.5 law د): current + pending, LOUD RED ----
+          python3 << 'PYEOF'
+          import json, os, sys
+
+          size = json.loads(os.environ["SIZE_JSON"])
+          current = int(size.get("bytes") or 0)
+          stage = os.environ["STAGE"]
+          pending = sum(os.path.getsize(os.path.join(stage, f))
+                        for f in os.listdir(stage) if f.endswith(".enc"))
+          total = current + pending
+          gib = lambda b: b / 1024**3
+          budget = 12 * 1024**3
+          print("=== size report (plan §3.5 law ب — prints on EVERY run) ===")
+          print(f"backup folder now: {size.get('count', 0)} objects · {gib(current):.3f} GiB")
+          print(f"pending uploads this run: {gib(pending):.3f} GiB")
+          print(f"projected after this run: {gib(total):.3f} GiB / 12 GiB internal budget (15 GB account pool)")
+          if total > budget:
+              print(f"::error::12GB GUARD: projected {gib(total):.2f} GiB exceeds the internal 12 GiB budget — the upload is REFUSED before it can fill the pool (plan §3.5 law د). Rotate/prune the Drive folder first.")
+              sys.exit(1)
+          print("12GB guard: OK")
+          PYEOF
+
+          # ---- 9. upload + full-stream read-back (sha256) — or the dry-run report ----
+          UPLOADED="[]"
+          if [ "$DRY_RUN" = "true" ]; then
+            echo ""
+            echo "DRY-RUN — nothing uploaded, nothing pruned. Would upload:"
+            echo "  gdrive:weekly/${WEEK}.data.tar.gz.enc ($(du -h "$WEEK_ENC" | cut -f1))"
+            if [ -n "$MONTH_ENC" ]; then
+              echo "  gdrive:monthly/${MONTH}.data.tar.gz.enc ($(du -h "$MONTH_ENC" | cut -f1))"
+            fi
+            echo "(the archives above were REALLY composed, encrypted and decrypt-verified locally — only the Drive writes are skipped)"
+          else
+            rc mkdir "gdrive:weekly" || die "cannot create/see gdrive:weekly"
+            rc copyto "$WEEK_ENC" "gdrive:weekly/${WEEK}.data.tar.gz.enc" || die "weekly upload failed"
+            rc lsf "gdrive:weekly/" --files-only | grep -qx "${WEEK}.data.tar.gz.enc" || die "weekly upload not visible in listing"
+            L_SHA="$(sha_of "$WEEK_ENC")"
+            R_SHA="$(rc cat "gdrive:weekly/${WEEK}.data.tar.gz.enc" | sha256sum | cut -d' ' -f1)" || die "weekly read-back failed"
+            [ "$L_SHA" = "$R_SHA" ] || die "weekly read-back sha256 MISMATCH — the Drive copy differs from the local ciphertext"
+            echo "weekly upload: OK — gdrive:weekly/${WEEK}.data.tar.gz.enc · full-stream read-back sha256 identical (${#L_SHA} hex chars)"
+            if [ "$MONTHLY_DUE" = "true" ] && [ -n "$MONTH_ENC" ]; then
+              rc mkdir "gdrive:monthly" || die "cannot create/see gdrive:monthly"
+              rc copyto "$MONTH_ENC" "gdrive:monthly/${MONTH}.data.tar.gz.enc" || die "monthly data upload failed"
+              rc lsf "gdrive:monthly/" --files-only | grep -qx "${MONTH}.data.tar.gz.enc" || die "monthly upload not visible in listing"
+              L_SHA="$(sha_of "$MONTH_ENC")"
+              R_SHA="$(rc cat "gdrive:monthly/${MONTH}.data.tar.gz.enc" | sha256sum | cut -d' ' -f1)" || die "monthly read-back failed"
+              [ "$L_SHA" = "$R_SHA" ] || die "monthly read-back sha256 MISMATCH"
+              echo "monthly data upload: OK — gdrive:monthly/${MONTH}.data.tar.gz.enc · full-stream read-back sha256 identical"
+            fi
+            UPLOADED="[${WEEK}.data.tar.gz.enc"
+            if [ "$MONTHLY_DUE" = "true" ] && [ -n "$MONTH_ENC" ]; then
+              UPLOADED="$UPLOADED, ${MONTH}.data.tar.gz.enc"
+            fi
+            UPLOADED="$UPLOADED]"
+          fi
+          export UPLOADED
+
+          # ---- 10. GFS prune on Drive (foreign files NEVER touched) ----
+          python3 << 'PYEOF'
+          import os, re, sys
+
+          weekly_list = [l.strip() for l in os.environ.get("WEEKLY_LIST", "").splitlines() if l.strip()]
+          monthly_list = [l.strip() for l in os.environ.get("MONTHLY_LIST", "").splitlines() if l.strip()]
+          keep_w = int(os.environ["KEEP_W"])
+          keep_m = int(os.environ["KEEP_M"])
+          dry = os.environ.get("DRY_RUN") == "true"
+          uploaded = [u.strip().strip('"') for u in os.environ.get("UPLOADED", "[]").strip("[]").split(",") if u.strip().strip('"')]
+
+          W_RE = re.compile(r"^\d{4}-W\d{2}\.data\.tar\.gz\.enc$")
+          M_RE = re.compile(r"^\d{4}-\d{2}\.data\.tar\.gz\.enc$")
+
+          def plan(names, pattern, keep, label):
+              ours = sorted(set(n for n in names if pattern.match(n)) | set(u for u in uploaded if pattern.match(u)))
+              foreign = sorted(set(n for n in names if not pattern.match(n)))
+              keep_set = set(ours[-keep:] if keep > 0 else [])
+              delete = [n for n in ours if n not in keep_set]
+              print(f"{label}: {len(ours)} of ours on Drive (+{len([u for u in uploaded if pattern.match(u)])} just uploaded) · keep newest {keep} · delete {len(delete)}")
+              for n in delete:
+                  print(f"  delete {n}")
+              if foreign:
+                  print(f"  foreign files (NEVER touched): {', '.join(foreign)}")
+              return delete
+
+          del_w = plan(weekly_list, W_RE, keep_w, "prune weekly/")
+          del_m = plan(monthly_list, M_RE, keep_m, "prune monthly/ (data)")
+          out = os.path.join(os.environ.get("RUNNER_TEMP", "/tmp"), "prune.env")
+          with open(out, "w") as fh:
+              fh.write("DEL_WEEKLY='%s'\nDEL_MONTHLY='%s'\n" % (" ".join(del_w), " ".join(del_m)))
+          if dry:
+              print("(dry-run: the deletes above are predictions only)")
+          PYEOF
+          # shellcheck source=/dev/null
+          . "$RUNNER_TEMP/prune.env"
+          if [ "$DRY_RUN" != "true" ]; then
+            PRUNED_W=0; PRUNED_M=0
+            # names inside DEL_* are pattern-validated ([A-Za-z0-9.\-] only) -> word-splitting is injection-safe
+            for f in $DEL_WEEKLY; do
+              rc deletefile "gdrive:weekly/$f" || die "prune failed on gdrive:weekly/$f — re-run; prune is idempotent"
+              PRUNED_W=$((PRUNED_W + 1))
+            done
+            for f in $DEL_MONTHLY; do
+              rc deletefile "gdrive:monthly/$f" || die "prune failed on gdrive:monthly/$f — re-run; prune is idempotent"
+              PRUNED_M=$((PRUNED_M + 1))
+            done
+            echo "prune applied: weekly ${PRUNED_W} deleted · monthly(data) ${PRUNED_M} deleted (Drive keep-set: weekly ${KEEP_W} / monthly ${KEEP_M})"
+          fi
+
+          # ---- 11. step summary + the machine line ----
+          AFTER_SIZE_JSON="$(rc size "gdrive:" --json 2>/dev/null || printf '%s' "$SIZE_JSON")"
+          export AFTER_SIZE_JSON
+          if [ -n "${GITHUB_STEP_SUMMARY:-}" ]; then
+            {
+              echo "## Off-site GDrive upload (GD-3) — data path"
+              echo ""
+              echo "| Step | Result |"
+              echo "|---|---|"
+              echo "| Sources (newest of each type) | snapshots/${SNAP_DIR} · storage-backups/${BACKUP_DIR} · storage-inventory/${INV_DIR} |"
+              echo "| Archive composed + encrypted (openssl AES-256, PBKDF2 600k) | ${MONTH}.data.tar.gz → ${WEEK}.data.tar.gz.enc${MONTHLY_DUE:+ + ${MONTH}.data.tar.gz.enc} |"
+              echo "| Decrypt-verify on the runner | OK (sha256 round-trip before any upload) |"
+              echo "| 12GB guard | OK |"
+              echo "| Upload + full-stream read-back | ${DRY_RUN} |"
+              echo "| GFS prune on Drive | ${DRY_RUN} (keep ${KEEP_W} weekly / ${KEEP_M} monthly) |"
+              echo ""
+              echo "_The key's OWNER copy lives in the password manager (GD-0 ③, 2026-10-05). Everything leaving GitHub is encrypted client-side (§3.1-5)._"
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+          python3 << 'PYEOF'
+          import json, os
+          before = json.loads(os.environ["SIZE_JSON"])
+          after = json.loads(os.environ["AFTER_SIZE_JSON"])
+          print(json.dumps({
+              "ok": True,
+              "job": "weekly-data",
+              "dry_run": os.environ.get("DRY_RUN") == "true",
+              "week": os.environ["WEEK"],
+              "month": os.environ["MONTH"],
+              "monthly_due": os.environ.get("MONTHLY_DUE") == "true",
+              "sources": {"snapshots": os.environ["SNAP_DIR"], "storage-backups": os.environ["BACKUP_DIR"], "storage-inventory": os.environ["INV_DIR"]},
+              "folder_bytes_before": int(before.get("bytes") or 0),
+              "folder_bytes_after": int(after.get("bytes") or 0),
+          }, ensure_ascii=False))
+          PYEOF
+          [ "$DRY_RUN" = "true" ] && echo "DRY-RUN complete — nothing uploaded, nothing pruned" || echo "OFF-SITE DATA PATH: GREEN (uploaded + read-back verified + decrypt-verified + pruned)"
+
+      - name: Cleanup temp files (key, token, config, archives)
+        if: always()
+        run: |
+          rm -f "${RUNNER_TEMP:-/tmp}/bk.key" "${RUNNER_TEMP:-/tmp}/scrub-offsite.txt" "${RUNNER_TEMP:-/tmp}/gd3-oauth-token.json" "${RUNNER_TEMP:-/tmp}/rclone-offsite.conf" "${RUNNER_TEMP:-/tmp}/offsite.at" "${RUNNER_TEMP:-/tmp}/rc-offsite.err" "${RUNNER_TEMP:-/tmp}/sources.env" "${RUNNER_TEMP:-/tmp}/mode.env" "${RUNNER_TEMP:-/tmp}/monthly.env" "${RUNNER_TEMP:-/tmp}/prune.env" "${RUNNER_TEMP:-/tmp}"/rclone-v1.*-linux-amd64.zip || true
+          rm -rf "${RUNNER_TEMP:-/tmp}/gd3-stage" "${RUNNER_TEMP:-/tmp}/rclone-v1."*-linux-amd64 "${RUNNER_TEMP:-/tmp}/rclone-bin" || true
+          echo "temp key/credential/archive files removed (runner is ephemeral anyway)"
+
+  monthly-bundles:
+    # The monthly path's second half: git bundles of BOTH repos (§3.5) — the
+    # only artifact carrying git HISTORY off-site (BS-5 deliberately
+    # included). Runs only when weekly-data decided monthly is DUE and
+    # succeeded — never ship bundles on a broken data path.
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    needs: weekly-data
+    if: needs.weekly-data.outputs.monthly_due == 'true'
+    steps:
+      - name: Preflight — required secrets present (honest RED + owner guide)
+        env:
+          BACKUP_REPO_TOKEN: ${{ secrets.BACKUP_REPO_TOKEN }}
+          GDRIVE_OAUTH_TOKEN: ${{ secrets.GDRIVE_OAUTH_TOKEN }}
+          GDRIVE_FOLDER_ID: ${{ secrets.GDRIVE_FOLDER_ID }}
+          BACKUP_ENCRYPTION_KEY: ${{ secrets.BACKUP_ENCRYPTION_KEY }}
+        run: |
+          set -euo pipefail
+          echo "=== Preflight (monthly bundles): the four GD-3 dependencies ==="
+          MISSING=0
+          for pair in \
+            "BACKUP_REPO_TOKEN|$BACKUP_REPO_TOKEN" \
+            "GDRIVE_OAUTH_TOKEN|$GDRIVE_OAUTH_TOKEN" \
+            "GDRIVE_FOLDER_ID|$GDRIVE_FOLDER_ID" \
+            "BACKUP_ENCRYPTION_KEY|$BACKUP_ENCRYPTION_KEY"; do
+            NAME="${pair%%|*}"; VALUE="${pair#*|}"
+            if [ -z "$VALUE" ]; then
+              echo "::error::missing GitHub secret: ${NAME}"
+              MISSING=1
+            else
+              echo "✓ ${NAME} present"
+            fi
+          done
+          if [ "$MISSING" = "1" ]; then
+            echo "OWNER GUIDE: same four dependencies as the weekly-data job (see its preflight output above)."
+            exit 1
+          fi
+
+      - name: Checkout code repo (FULL history — the bundle source)
+        uses: actions/checkout@v4
+        with:
+          repository: muscleshubfit-cpu/alkemos
+          token: ${{ secrets.BACKUP_REPO_TOKEN }}
+          fetch-depth: 0
+          path: gd3-alkemos
+
+      - name: Checkout private backup repo (FULL history)
+        uses: actions/checkout@v4
+        with:
+          repository: muscleshubfit-cpu/musclehubeg-backups
+          token: ${{ secrets.BACKUP_REPO_TOKEN }}
+          fetch-depth: 0
+          path: backup-repo
+
+      - name: Install pinned rclone (SHA256-gated)
+        run: |
+          set -euo pipefail
+          cd "$RUNNER_TEMP"
+          ZIP="rclone-v${PINNED_RCLONE_VERSION}-linux-amd64.zip"
+          echo "downloading rclone v${PINNED_RCLONE_VERSION} (pinned) from the official mirror…"
+          curl -fsSLO "https://downloads.rclone.org/v${PINNED_RCLONE_VERSION}/${ZIP}"
+          echo "${PINNED_RCLONE_SHA256}  ${ZIP}" | sha256sum -c -
+          unzip -oq "${ZIP}"
+          mkdir -p "$RUNNER_TEMP/rclone-bin"
+          mv "rclone-v${PINNED_RCLONE_VERSION}-linux-amd64/rclone" "$RUNNER_TEMP/rclone-bin/"
+          "$RUNNER_TEMP/rclone-bin/rclone" version | head -1
+          echo "$RUNNER_TEMP/rclone-bin" >> "$GITHUB_PATH"
+
+      - name: Bundle + encrypt + upload (the GD-3 monthly bundles)
+        env:
+          GDRIVE_OAUTH_TOKEN: ${{ secrets.GDRIVE_OAUTH_TOKEN }}
+          GDRIVE_FOLDER_ID: ${{ secrets.GDRIVE_FOLDER_ID }}
+          BACKUP_ENCRYPTION_KEY: ${{ secrets.BACKUP_ENCRYPTION_KEY }}
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run == true }}
+          OFFSITE_KEEP_BUNDLES: ${{ vars.OFFSITE_KEEP_BUNDLES }}
+          MONTH: ${{ needs.weekly-data.outputs.month }}
+        run: |
+          set -euo pipefail
+          STAGE="$RUNNER_TEMP/gd3-stage"
+          TOKEN_FILE="$RUNNER_TEMP/gd3-oauth-token.json"
+          CONF_FILE="$RUNNER_TEMP/rclone-offsite.conf"
+          AT_FILE="$RUNNER_TEMP/offsite.at"
+          KEY_FILE="$RUNNER_TEMP/bk.key"
+          RC_ERR="$RUNNER_TEMP/rc-offsite.err"
+          SCRUB="$RUNNER_TEMP/scrub-offsite.txt"
+          export STAGE TOKEN_FILE CONF_FILE AT_FILE KEY_FILE RC_ERR SCRUB
+          mkdir -p "$STAGE"
+          MONTH="${MONTH:-$(date -u +'%Y-%m')}"
+          export MONTH
+
+          die() { echo "::error::monthly bundles FAILED — $1 (scrubbed error, if any, printed above)"; exit 1; }
+
+          # ---- 1. encryption key: normalize + 0600 file + scrub list (never echoed) ----
+          KEYNORM="$(printf '%s' "$BACKUP_ENCRYPTION_KEY" | tr -d '\r\n' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')"
+          LEN=${#KEYNORM}
+          [ "$LEN" -ge 32 ] || die "BACKUP_ENCRYPTION_KEY is ${LEN} chars — refusing to encrypt with a weak key (the password-manager copy per GD-0 ③ must stay identical)"
+          [ "$LEN" -le 4096 ] || die "BACKUP_ENCRYPTION_KEY is ${LEN} chars (> 4096) — likely a paste error; fix the secret value"
+          printf '%s' "$KEYNORM" > "$KEY_FILE"
+          chmod 600 "$KEY_FILE"
+          printf '%s\n' "$KEYNORM" > "$SCRUB"
+          chmod 600 "$SCRUB"
+          echo "encryption key: present (${LEN} chars, normalized, 0600 file — value never printed)"
+
+          # ---- 2. git bundles of BOTH repos (full history — BS-5 included BY DESIGN) ----
+          ALK_BUNDLE="$STAGE/${MONTH}.alkemos.bundle"
+          BK_BUNDLE="$STAGE/${MONTH}.backups.bundle"
+          git -C "$GITHUB_WORKSPACE/gd3-alkemos" bundle create "$ALK_BUNDLE" --all -q
+          git bundle verify -q "$ALK_BUNDLE" 2>/dev/null || die "alkemos bundle failed integrity verify"
+          git -C "$GITHUB_WORKSPACE/backup-repo" bundle create "$BK_BUNDLE" --all -q
+          git bundle verify -q "$BK_BUNDLE" 2>/dev/null || die "backups bundle failed integrity verify"
+          ALK_BYTES=$(stat -c%s "$ALK_BUNDLE")
+          BK_BYTES=$(stat -c%s "$BK_BUNDLE")
+          echo "bundles composed + integrity-verified: ${MONTH}.alkemos.bundle — $(du -h "$ALK_BUNDLE" | cut -f1) (full code-repo history) · ${MONTH}.backups.bundle — $(du -h "$BK_BUNDLE" | cut -f1) (full backup-repo history)"
+          if [ "$ALK_BYTES" -gt $((400 * 1024 * 1024)) ]; then
+            echo "::warning::the code bundle is $((ALK_BYTES / 1024 / 1024)) MB > 400 MB — plan §3.5 law ج: the monthly bundle count should shrink to 3 or switch to incremental bundles (a GD-5 owner decision)"
+          fi
+
+          # ---- 3. encrypt + decrypt-verify BEFORE any upload ----
+          ENC() {
+            openssl enc -aes-256-cbc -salt -pbkdf2 -iter 600000 -md sha256 \
+              -in "$1" -out "$2" -pass file:"$KEY_FILE" 2>/dev/null
+          }
+          DEC() {
+            openssl enc -d -aes-256-cbc -pbkdf2 -iter 600000 -md sha256 \
+              -in "$1" -out "$2" -pass file:"$KEY_FILE" 2>/dev/null
+          }
+          sha_of() { sha256sum "$1" | cut -d' ' -f1; }
+          enc_and_verify() {
+            ENC "$1" "$2" || die "openssl encrypt failed for $(basename "$2")"
+            DEC "$2" "$1.verify" || die "decrypt-verify failed for $(basename "$2") — the key/file pairing is broken; NOTHING was uploaded"
+            [ "$(sha_of "$1")" = "$(sha_of "$1.verify")" ] || die "decrypt-verify sha256 MISMATCH for $(basename "$2") — refusing to upload un-restorable ciphertext"
+            rm -f "$1.verify"
+            echo "encrypted + decrypt-verified: $(basename "$2") — $(du -h "$2" | cut -f1) · sha256 $(sha_of "$2" | cut -c1-16)…"
+          }
+          ALK_ENC="$STAGE/${MONTH}.alkemos.bundle.enc"
+          BK_ENC="$STAGE/${MONTH}.backups.bundle.enc"
+          enc_and_verify "$ALK_BUNDLE" "$ALK_ENC"
+          enc_and_verify "$BK_BUNDLE" "$BK_ENC"
+          rm -f "$ALK_BUNDLE" "$BK_BUNDLE"  # plaintext lifetime ends here
+
+          # ---- 4. OAuth chain + rclone config (the GD-1-ALT proven code, self-contained) ----
+          printf '%s' "$GDRIVE_OAUTH_TOKEN" > "$TOKEN_FILE"
+          chmod 600 "$TOKEN_FILE"
+          export GDRIVE_FOLDER_ID
+          python3 << 'PYEOF'
+          import json, os, re, sys
+          import urllib.error, urllib.parse, urllib.request
+
+          token_file = os.environ["TOKEN_FILE"]
+          scrub_file = os.environ["SCRUB"]
+          at_file = os.environ["AT_FILE"]
+
+          def die(msg, detail=""):
+              print(f"::error::{msg}")
+              if detail:
+                  print(str(detail)[:1200], file=sys.stderr)
+              sys.exit(1)
+
+          try:
+              with open(token_file) as fh:
+                  tok = json.load(fh)
+          except Exception as e:
+              die(f"secret GDRIVE_OAUTH_TOKEN is not parseable JSON ({type(e).__name__}) — expected the helper-composed structure (scripts/gdrive/oauth-token-helper.html)", "")
+          client_id = tok.get("client_id") or ""
+          client_secret = tok.get("client_secret") or ""
+          inner = tok.get("token") or {}
+          refresh_token = inner.get("refresh_token") or tok.get("refresh_token") or ""
+          scope = (tok.get("scope") or "").strip()
+          if not client_id or not client_secret or not refresh_token:
+              die("GDRIVE_OAUTH_TOKEN is missing field(s) client_id/client_secret/token.refresh_token — re-mint with the helper and update the secret")
+          if scope != "drive":
+              die(f"token scope is '{scope}' but the decided GD-3 state is 'drive' (owner fork decision (b)): a drive.file token CANNOT see the pre-existing pinned folder. Re-mint with scope=drive via the helper and update the secret")
+          with open(scrub_file, "a") as fh:
+              fh.write("\n".join([client_id, client_secret, refresh_token]) + "\n")
+          print("OAuth token JSON: valid — client_id %s…%s · scope=%s (values never printed)" % (client_id[:4], client_id[-4:], scope))
+
+          raw = os.environ.get("GDRIVE_FOLDER_ID", "")
+          def extract_id(v):
+              v = (v or "").strip().strip('"').strip("'").strip()
+              m = re.search(r"/folders/([A-Za-z0-9_-]{20,})", v)
+              if m:
+                  return m.group(1)
+              m = re.search(r"[?&]id=([A-Za-z0-9_-]{20,})", v)
+              if m:
+                  return m.group(1)
+              body = v.split("#", 1)[0].split("?", 1)[0]
+              tokens = re.findall(r"[A-Za-z0-9_-]{20,}", body)
+              if len(tokens) == 1:
+                  return tokens[0]
+              return None
+          fid = extract_id(raw)
+          if not fid or not re.fullmatch(r"[A-Za-z0-9_-]{20,60}", fid):
+              die("secret GDRIVE_FOLDER_ID does not contain a usable folder ID — paste ONLY the backup folder ID or its URL")
+
+          data = urllib.parse.urlencode({
+              "client_id": client_id, "client_secret": client_secret,
+              "refresh_token": refresh_token, "grant_type": "refresh_token",
+          }).encode()
+          req = urllib.request.Request("https://oauth2.googleapis.com/token", data=data,
+                                       headers={"Content-Type": "application/x-www-form-urlencoded"})
+          try:
+              with urllib.request.urlopen(req, timeout=60) as r:
+                  body = json.loads(r.read())
+          except urllib.error.HTTPError as e:
+              err = {}
+              try:
+                  err = json.loads(e.read())
+              except Exception:
+                  pass
+              if err.get("error") == "invalid_grant":
+                  die("token refresh REJECTED (invalid_grant) — expired or revoked; if the consent screen fell back to TESTING, refresh tokens die after 7 days (plan §1.5-2): re-publish to Production, re-mint, update the secret")
+              if err.get("error") == "invalid_client":
+                  die("token refresh REJECTED (invalid_client) — the client_id/client_secret pair is wrong; re-copy both and re-mint with the helper")
+              die(f"token refresh failed (HTTP {e.code})", err)
+          access_token = body.get("access_token")
+          if not access_token:
+              die("token endpoint returned 200 without an access_token")
+          print("token refresh: OK — access token minted (never printed)")
+          with open(at_file, "w") as fh:
+              fh.write(access_token)
+          os.chmod(at_file, 0o600)
+          with open(scrub_file, "a") as fh:
+              fh.write(access_token + "\n")
+
+          headers = {"Authorization": "Bearer " + access_token}
+          url = "https://www.googleapis.com/drive/v3/files/" + fid + "?supportsAllDrives=true&fields=id,name,mimeType,driveId,capabilities(canAddChildren)"
+          try:
+              with urllib.request.urlopen(urllib.request.Request(url, headers=headers), timeout=60) as r:
+                  f = json.loads(r.read())
+          except urllib.error.HTTPError as e:
+              die(f"backup folder not visible (files.get HTTP {e.code}) — fix GDRIVE_FOLDER_ID or re-mint with the OWNING account", "")
+          if f.get("mimeType") != "application/vnd.google-apps.folder":
+              die("the pinned GDRIVE_FOLDER_ID target is not a folder — fix the secret")
+          if (f.get("capabilities") or {}).get("canAddChildren") is False:
+              die("the backup folder is visible but WITHOUT create permission (canAddChildren=false)")
+          did = f.get("driveId") or ""
+          mode = "shared-drive-root" if (did and did == fid) else ("shared-drive-folder" if did else "my-drive-folder")
+          team = fid if mode == "shared-drive-root" else (did if did else "")
+          print("folder probe: VISIBLE — name=%s · mode=%s" % (f.get("name") or "(unnamed)", mode))
+          env_path = os.path.join(os.path.dirname(token_file), "mode.env")
+          with open(env_path, "w") as fh:
+              fh.write("FOLDER_ID='%s'\nFOLDER_MODE='%s'\nTEAM_DRIVE='%s'\n" % (fid, mode, team))
+          PYEOF
+          # shellcheck source=/dev/null
+          . "$RUNNER_TEMP/mode.env"
+          export FOLDER_ID FOLDER_MODE TEAM_DRIVE
+
+          python3 << 'PYEOF'
+          import json, os, time
+          token_file = os.environ["TOKEN_FILE"]
+          conf_file = os.environ["CONF_FILE"]
+          tok = json.load(open(token_file))
+          with open(os.environ["AT_FILE"]) as fh:
+              access_token = fh.read()
+          expiry = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(time.time() + 3500))
+          token_json = json.dumps({
+              "access_token": access_token,
+              "refresh_token": tok["token"]["refresh_token"],
+              "token_type": "Bearer",
+              "expiry": expiry,
+          })
+          lines = ["[gdrive]", "type = drive", "scope = %s" % tok.get("scope", "drive"),
+                   "token = %s" % token_json,
+                   "client_id = %s" % tok["client_id"],
+                   "client_secret = %s" % tok["client_secret"],
+                   "root_folder_id = %s" % os.environ["FOLDER_ID"]]
+          if os.environ.get("TEAM_DRIVE"):
+              lines.append("team_drive = %s" % os.environ["TEAM_DRIVE"])
+          with open(conf_file, "w") as fh:
+              fh.write("\n".join(lines) + "\n")
+          os.chmod(conf_file, 0o600)
+          print("rclone config written (0600): [gdrive] root pinned to the backup folder")
+          PYEOF
+          export RCLONE_CONFIG="$CONF_FILE"
+          command -v rclone >/dev/null 2>&1 || die "rclone not on PATH after the pinned-install step"
+          echo "rclone: $(rclone version | head -1)"
+
+          scrub_file() {
+            python3 -c '
+          import os, re, sys
+          p = os.environ.get("SCRUB", "")
+          repl = []
+          try:
+              with open(p) as fh:
+                  repl = [l for l in fh.read().splitlines() if l]
+          except OSError:
+              pass
+          out = open(sys.argv[1], errors="replace").read() if len(sys.argv) > 1 else ""
+          for s in repl:
+              out = out.replace(s, "[REDACTED]")
+          out = re.sub(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+", "[REDACTED-EMAIL]", out)
+          sys.stdout.write(out)
+          ' "$1"
+          }
+          rc() { rclone "$@" 2>"$RC_ERR" || { scrub_file "$RC_ERR" >&2 || true; return 1; }; }
+
+          # ---- 5. remote state + the 12GB guard (current counts job1's fresh uploads) ----
+          SIZE_JSON="$(rc size "gdrive:" --json)" || die "backup-folder size measurement failed"
+          MONTHLY_LIST="$(rc lsf "gdrive:monthly/" --files-only 2>/dev/null || true)"
+          export SIZE_JSON MONTHLY_LIST
+          python3 << 'PYEOF'
+          import json, os, sys
+
+          keep_b = (os.environ.get("OFFSITE_KEEP_BUNDLES") or "").strip()
+          if keep_b == "":
+              keep_b = 6
+          else:
+              try:
+                  keep_b = int(keep_b)
+              except ValueError:
+                  print(f"::error::variable OFFSITE_KEEP_BUNDLES is not an integer: {keep_b!r} — honest RED (the GD-2 variable law)")
+                  sys.exit(1)
+              if not (1 <= keep_b <= 24):
+                  print(f"::error::variable OFFSITE_KEEP_BUNDLES={keep_b} is outside [1,24] — fix it in Settings → Variables")
+                  sys.exit(1)
+
+          size = json.loads(os.environ["SIZE_JSON"])
+          current = int(size.get("bytes") or 0)
+          stage = os.environ["STAGE"]
+          pending = sum(os.path.getsize(os.path.join(stage, f))
+                        for f in os.listdir(stage) if f.endswith(".enc"))
+          total = current + pending
+          gib = lambda b: b / 1024**3
+          print(f"backup folder now (incl. the data path's fresh uploads): {size.get('count', 0)} objects · {gib(current):.3f} GiB")
+          print(f"pending bundles this run: {gib(pending):.3f} GiB · projected: {gib(total):.3f} GiB / 12 GiB")
+          if total > 12 * 1024**3:
+              print(f"::error::12GB GUARD: projected {gib(total):.2f} GiB exceeds the internal 12 GiB budget — the bundle upload is REFUSED (plan §3.5 law د)")
+              sys.exit(1)
+          print("12GB guard: OK")
+          out = os.path.join(os.environ.get("RUNNER_TEMP", "/tmp"), "keepb.env")
+          with open(out, "w") as fh:
+              fh.write("KEEP_B='%d'\n" % keep_b)
+          PYEOF
+          # shellcheck source=/dev/null
+          . "$RUNNER_TEMP/keepb.env"
+          export KEEP_B
+
+          # ---- 6. upload + full-stream read-back — or the dry-run report ----
+          UPLOADED="[]"
+          if [ "$DRY_RUN" = "true" ]; then
+            echo ""
+            echo "DRY-RUN — nothing uploaded, nothing pruned. Would upload:"
+            echo "  gdrive:monthly/${MONTH}.alkemos.bundle.enc ($(du -h "$ALK_ENC" | cut -f1))"
+            echo "  gdrive:monthly/${MONTH}.backups.bundle.enc ($(du -h "$BK_ENC" | cut -f1))"
+          else
+            rc mkdir "gdrive:monthly" || die "cannot create/see gdrive:monthly"
+            rc copyto "$ALK_ENC" "gdrive:monthly/${MONTH}.alkemos.bundle.enc" || die "alkemos bundle upload failed"
+            L_SHA="$(sha_of "$ALK_ENC")"
+            R_SHA="$(rc cat "gdrive:monthly/${MONTH}.alkemos.bundle.enc" | sha256sum | cut -d' ' -f1)" || die "alkemos bundle read-back failed"
+            [ "$L_SHA" = "$R_SHA" ] || die "alkemos bundle read-back sha256 MISMATCH"
+            echo "alkemos bundle upload: OK — $(du -h "$ALK_ENC" | cut -f1) · full-stream read-back sha256 identical"
+            rc copyto "$BK_ENC" "gdrive:monthly/${MONTH}.backups.bundle.enc" || die "backups bundle upload failed"
+            L_SHA="$(sha_of "$BK_ENC")"
+            R_SHA="$(rc cat "gdrive:monthly/${MONTH}.backups.bundle.enc" | sha256sum | cut -d' ' -f1)" || die "backups bundle read-back failed"
+            [ "$L_SHA" = "$R_SHA" ] || die "backups bundle read-back sha256 MISMATCH"
+            echo "backups bundle upload: OK — $(du -h "$BK_ENC" | cut -f1) · full-stream read-back sha256 identical"
+            rc lsf "gdrive:monthly/" --files-only | grep -qx "${MONTH}.alkemos.bundle.enc" || die "alkemos bundle not visible in listing"
+            rc lsf "gdrive:monthly/" --files-only | grep -qx "${MONTH}.backups.bundle.enc" || die "backups bundle not visible in listing"
+            UPLOADED="[${MONTH}.alkemos.bundle.enc, ${MONTH}.backups.bundle.enc]"
+          fi
+          export UPLOADED
+
+          # ---- 7. GFS prune on Drive (each bundle kind keeps its own KEEP_B; foreign NEVER touched) ----
+          python3 << 'PYEOF'
+          import os, re, sys
+
+          monthly_list = [l.strip() for l in os.environ.get("MONTHLY_LIST", "").splitlines() if l.strip()]
+          keep_b = int(os.environ["KEEP_B"])
+          dry = os.environ.get("DRY_RUN") == "true"
+          uploaded = [u.strip().strip('"') for u in os.environ.get("UPLOADED", "[]").strip("[]").split(",") if u.strip().strip('"')]
+
+          ALK_RE = re.compile(r"^\d{4}-\d{2}\.alkemos\.bundle\.enc$")
+          BK_RE = re.compile(r"^\d{4}-\d{2}\.backups\.bundle\.enc$")
+
+          def plan(names, pattern, keep, label):
+              ours = sorted(set(n for n in names if pattern.match(n)) | set(u for u in uploaded if pattern.match(u)))
+              foreign = sorted(set(n for n in names if not (ALK_RE.match(n) or BK_RE.match(n) or re.match(r"^\d{4}-\d{2}\.data\.tar\.gz\.enc$", n))))
+              keep_set = set(ours[-keep:] if keep > 0 else [])
+              delete = [n for n in ours if n not in keep_set]
+              print(f"{label}: {len(ours)} of ours on Drive (+{len([u for u in uploaded if pattern.match(u)])} just uploaded) · keep newest {keep} · delete {len(delete)}")
+              for n in delete:
+                  print(f"  delete {n}")
+              if foreign:
+                  print(f"  foreign/other-kind files (NEVER touched by this job): {', '.join(foreign)}")
+              return delete
+
+          del_a = plan(monthly_list, ALK_RE, keep_b, "prune monthly/ (alkemos bundles)")
+          del_b = plan(monthly_list, BK_RE, keep_b, "prune monthly/ (backups bundles)")
+          out = os.path.join(os.environ.get("RUNNER_TEMP", "/tmp"), "pruneb.env")
+          with open(out, "w") as fh:
+              fh.write("DEL_ALK='%s'\nDEL_BK='%s'\n" % (" ".join(del_a), " ".join(del_b)))
+          if dry:
+              print("(dry-run: the deletes above are predictions only)")
+          PYEOF
+          # shellcheck source=/dev/null
+          . "$RUNNER_TEMP/pruneb.env"
+          if [ "$DRY_RUN" != "true" ]; then
+            PRUNED=0
+            # names inside DEL_* are pattern-validated ([A-Za-z0-9.\-] only) -> word-splitting is injection-safe
+            for f in $DEL_ALK; do
+              rc deletefile "gdrive:monthly/$f" || die "prune failed on gdrive:monthly/$f — re-run; prune is idempotent"
+              PRUNED=$((PRUNED + 1))
+            done
+            for f in $DEL_BK; do
+              rc deletefile "gdrive:monthly/$f" || die "prune failed on gdrive:monthly/$f — re-run; prune is idempotent"
+              PRUNED=$((PRUNED + 1))
+            done
+            echo "prune applied: ${PRUNED} bundle(s) deleted (keep ${KEEP_B} per kind)"
+          fi
+
+          # ---- 8. step summary + the machine line ----
+          AFTER_SIZE_JSON="$(rc size "gdrive:" --json 2>/dev/null || printf '%s' "$SIZE_JSON")"
+          export AFTER_SIZE_JSON
+          if [ -n "${GITHUB_STEP_SUMMARY:-}" ]; then
+            {
+              echo "## Off-site GDrive upload (GD-3) — monthly bundles"
+              echo ""
+              echo "| Step | Result |"
+              echo "|---|---|"
+              echo "| git bundles (full history, integrity-verified) | ${MONTH}.alkemos.bundle $(du -h "$ALK_ENC" | cut -f1) · ${MONTH}.backups.bundle $(du -h "$BK_ENC" | cut -f1) |"
+              echo "| Encrypt (openssl AES-256, PBKDF2 600k) + decrypt-verify | OK (before any upload) |"
+              echo "| 12GB guard | OK |"
+              if [ "$DRY_RUN" = "true" ]; then
+                echo "| Upload + full-stream read-back | SKIPPED (dry-run) |"
+                echo "| GFS prune | SKIPPED (dry-run) — keep ${KEEP_B} per bundle kind |"
+              else
+                echo "| Upload + full-stream read-back | OK (sha256 identical on the full ciphertext stream) |"
+                echo "| GFS prune | applied (keep ${KEEP_B} per bundle kind) |"
+              fi
+              echo ""
+              echo "_The bundles carry FULL git history off-site (BS-5 included by design — the only artifact that does)._"
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+          python3 << 'PYEOF'
+          import json, os
+          before = json.loads(os.environ["SIZE_JSON"])
+          after = json.loads(os.environ["AFTER_SIZE_JSON"])
+          print(json.dumps({
+              "ok": True,
+              "job": "monthly-bundles",
+              "dry_run": os.environ.get("DRY_RUN") == "true",
+              "month": os.environ["MONTH"],
+              "folder_bytes_before": int(before.get("bytes") or 0),
+              "folder_bytes_after": int(after.get("bytes") or 0),
+          }, ensure_ascii=False))
+          PYEOF
+          if [ "$DRY_RUN" = "true" ]; then
+            echo "DRY-RUN complete — nothing uploaded, nothing pruned"
+          else
+            echo "OFF-SITE MONTHLY BUNDLES: GREEN (uploaded + read-back verified + decrypt-verified + pruned)"
+          fi
+
+      - name: Cleanup temp files (key, token, config, bundles)
+        if: always()
+        run: |
+          rm -f "${RUNNER_TEMP:-/tmp}/bk.key" "${RUNNER_TEMP:-/tmp}/scrub-offsite.txt" "${RUNNER_TEMP:-/tmp}/gd3-oauth-token.json" "${RUNNER_TEMP:-/tmp}/rclone-offsite.conf" "${RUNNER_TEMP:-/tmp}/offsite.at" "${RUNNER_TEMP:-/tmp}/rc-offsite.err" "${RUNNER_TEMP:-/tmp}/mode.env" "${RUNNER_TEMP:-/tmp}/keepb.env" "${RUNNER_TEMP:-/tmp}/pruneb.env" "${RUNNER_TEMP:-/tmp}"/rclone-v1.*-linux-amd64.zip || true
+          rm -rf "${RUNNER_TEMP:-/tmp}/gd3-stage" "${RUNNER_TEMP:-/tmp}/rclone-v1."*-linux-amd64 "${RUNNER_TEMP:-/tmp}/rclone-bin" || true
+          echo "temp key/credential/bundle files removed (runner is ephemeral anyway)"
+
