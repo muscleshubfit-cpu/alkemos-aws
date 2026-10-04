@@ -70,6 +70,7 @@ pnpm-lock.yaml
 #   scripts/geo/ → GEO answer-visibility probe (AUDIT §9-2.4, 2026-09-29 — the monthly AI-answers visibility measurement riding the free model chain; hit the same /scripts/* blanket trap as worklog_rotate in 288 — exception added in the same frame)
 #   scripts/worklog_rotate.py → hard-capped worklog-window rotation (ARCH-REMEDIATION-288, 2026-09-28 — hit the same /scripts/* blanket trap: committed-untracked in 288, the registry row failed CI until the 290-FIXUP exception; docs_audit check M now derives its truth set from git so the class fails locally too)
 #   scripts/gdrive/oauth-token-helper.html → one-time LOCAL OAuth token minter for the backup owner (GD-1-ALT, BACKUP-STRATEGY-2026-10-03 §5 — gdrive-oauth-smoke-test.yml + the GDRIVE_OAUTH_TOKEN secret source; hit the same /scripts/* blanket trap as geo/ — exception added in the same frame)
+#   scripts/vercel/ignore-step.sh → Vercel Ignored Build Step law carrier (VERCEL-IGNORE-HARDENING-2026-10-04 — vercel.json ignoreCommand delegates here because the inline field is hard-capped at 256 chars by Vercel's schema; hit the same /scripts/* blanket trap as gdrive/ — exception added in the same frame)
 /scripts/*
 !/scripts/blog-runner/
 !/scripts/ai-jobs-runner/
@@ -95,6 +96,7 @@ pnpm-lock.yaml
 !/scripts/geo/
 !/scripts/external-mirror/
 !/scripts/gdrive/
+!/scripts/vercel/
 #   scripts/seo-meta-live-audit.mjs → production meta-description length auditor over the sitemaps (SEO-P2-10, 2026-10-01 — the re-measurement tool for the owner's GSC re-audit window 2026-10-30→11-29; hit the same /scripts/* blanket trap as geo/ in 290 — exception added in the same frame)
 #   scripts/seo-p210-smoke.mjs → P2-10 local smoke: next-start description-length sweep over all trimmed surfaces (SEO-P2-10, 2026-10-01)
 #   scripts/seo-p210-origin-verify.mjs → P2-10 production origin verify with cache-bust (SEO-P2-10, 2026-10-01 — bypasses the CF edge window to prove the deployed build)
