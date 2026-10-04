@@ -388,8 +388,18 @@ jobs:
               a_status, a_body = http("GET", "https://www.googleapis.com/drive/v3/about?fields=storageQuota", headers=auth_headers())
           if a_status == 200 and isinstance(a_body, dict) and isinstance(a_body.get("storageQuota"), dict):
               q = a_body["storageQuota"]
-              gb = lambda b: (b or 0) / 1024**3
-              print("about.get (the OAuth identity's pool — the anti-SA proof): total=%.2fGB · used=%.2fGB · headroom=%.2fGB — a REAL quota pool (the SA's about was zeros by design; backup bytes charge HERE)" % (gb(q.get("limit")), gb(q.get("usage")), gb((q.get("limit") or 0) - (q.get("usage") or 0))))
+              # Drive v3 returns storageQuota values as JSON STRINGS (e.g.
+              # "16106127360") — measured live in run 37184158028: str/int
+              # TypeError crashed the first owner round right here, BEFORE any
+              # Drive call (the SA path never hit it: its about is zeros by
+              # design). Coerce before arithmetic.
+              def _num(v):
+                  try:
+                      return float(v) if v is not None else 0.0
+                  except (TypeError, ValueError):
+                      return 0.0
+              gb = lambda b: _num(b) / 1024**3
+              print("about.get (the OAuth identity's pool — the anti-SA proof): total=%.2fGB · used=%.2fGB · headroom=%.2fGB — a REAL quota pool (the SA's about was zeros by design; backup bytes charge HERE)" % (gb(q.get("limit")), gb(q.get("usage")), gb(_num(q.get("limit")) - _num(q.get("usage")))))
           else:
               print("::warning::about.get unavailable (HTTP %s — some scopes/projects restrict it) — NOT fatal: identity is proven by the refresh + round-trip below" % a_status)
 
