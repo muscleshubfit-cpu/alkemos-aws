@@ -825,12 +825,17 @@ jobs:
           echo "encryption key: present (${LEN} chars, normalized, 0600 file — value never printed)"
 
           # ---- 2. git bundles of BOTH repos (full history — BS-5 included BY DESIGN) ----
+          # FLAG LAW (measured run 37218759258, git 2.55: «unrecognized argument: -q»):
+          # bundle create's -q must PRECEDE the file path (anything after the
+          # rev-list args belongs to rev-list, which has no -q); bundle verify
+          # takes NO -q and needs A REPOSITORY CONTEXT — so each verify runs
+          # from inside its own checkout (-C). 'X is okay' prints on stderr.
           ALK_BUNDLE="$STAGE/${MONTH}.alkemos.bundle"
           BK_BUNDLE="$STAGE/${MONTH}.backups.bundle"
-          git -C "$GITHUB_WORKSPACE/gd3-alkemos" bundle create "$ALK_BUNDLE" --all -q
-          git bundle verify -q "$ALK_BUNDLE" 2>/dev/null || die "alkemos bundle failed integrity verify"
-          git -C "$GITHUB_WORKSPACE/backup-repo" bundle create "$BK_BUNDLE" --all -q
-          git bundle verify -q "$BK_BUNDLE" 2>/dev/null || die "backups bundle failed integrity verify"
+          git -C "$GITHUB_WORKSPACE/gd3-alkemos" bundle create -q "$ALK_BUNDLE" --all
+          git -C "$GITHUB_WORKSPACE/gd3-alkemos" bundle verify "$ALK_BUNDLE" >/dev/null || die "alkemos bundle failed integrity verify"
+          git -C "$GITHUB_WORKSPACE/backup-repo" bundle create -q "$BK_BUNDLE" --all
+          git -C "$GITHUB_WORKSPACE/backup-repo" bundle verify "$BK_BUNDLE" >/dev/null || die "backups bundle failed integrity verify"
           ALK_BYTES=$(stat -c%s "$ALK_BUNDLE")
           BK_BYTES=$(stat -c%s "$BK_BUNDLE")
           echo "bundles composed + integrity-verified: ${MONTH}.alkemos.bundle — $(du -h "$ALK_BUNDLE" | cut -f1) (full code-repo history) · ${MONTH}.backups.bundle — $(du -h "$BK_BUNDLE" | cut -f1) (full backup-repo history)"
