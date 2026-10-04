@@ -77,12 +77,10 @@
 name: GDrive ownership-transfer experiment (GD-1 — dispatch only)
 
 on:
-  # TEMP-BRANCH-ONLY trigger (gd1-smoke-test) so the first run can start
-  # before the workflow is registered on the default branch — the exact
-  # pattern gdrive-smoke-test.yml used. The dispatch-only variant is what
-  # lands on main if this experiment is ever kept.
-  push:
-    branches: [gd1-smoke-test]
+  # Dispatch-only since the 2026-10-04 landing on main. The experiment is
+  # CONCLUDED (runs 37173397141/37173573718/37173684908): the external
+  # transfer-ownership recipe is disproven on both ends — kept on main as
+  # reproducible evidence of the measured verdict, dispatch-only.
   workflow_dispatch: {}
 
 concurrency:

@@ -97,11 +97,11 @@
 name: GDrive OAuth smoke test (GD-1-ALT — dispatch only)
 
 on:
-  # TEMP-BRANCH-ONLY trigger (gd1-smoke-test) so the run can start without
-  # the workflow being registered on the default branch yet. The
-  # dispatch-only variant is what lands on main once a run is green.
-  push:
-    branches: [gd1-smoke-test]
+  # Dispatch-only since the 2026-10-04 landing on main (the green round is
+  # measured: re-run 37184322424 — scope=drive per owner fork decision (b),
+  # existing «AlkemosBackups» folder visible, full rclone round-trip + 12GB
+  # guard, ALL GREEN). The temp-branch push trigger served its one-time
+  # registration purpose and was removed at landing, per the file's own law.
   workflow_dispatch:
     inputs:
       create_app_folder:

@@ -108,11 +108,12 @@
 name: GDrive smoke test (GD-1 — dispatch only)
 
 on:
-  # TEMP-BRANCH-ONLY trigger (gd1-smoke-test) so the run can start without the
-  # workflow being registered on the default branch yet. The dispatch-only
-  # variant is what lands on main once this run is green.
-  push:
-    branches: [gd1-smoke-test]
+  # Dispatch-only since the 2026-10-04 landing on main. The SA path is a
+  # MEASURED dead end on consumer Drive (403 storageQuotaExceeded — the
+  # file-ownership law, runs 37168415521/37168880937/37169086366/37171157963);
+  # the OAuth path (gdrive-oauth-smoke-test.yml, GD-1-ALT) is the verified
+  # mechanism. This workflow is kept as the auto-detecting Workspace
+  # shared-drive probe should that path ever be activated (§5).
   workflow_dispatch: {}
 
 concurrency:
