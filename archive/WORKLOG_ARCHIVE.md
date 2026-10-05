@@ -12133,3 +12133,28 @@ Stage Summary:
 - Retention النهائي: يومي 7 (GitHub) · أسبوعي 8 على Drive (~شهرين) · شهري 6 على Drive + bundles (أفق 6 أشهر).
 - Push status: pushed (docs-only بـ `[vercel skip]` — BACKUP-STRATEGY-GDRIVE)
 
+<!-- rotated 2026-10-05 by scripts/worklog_rotate.py (Phase 288, ARCH-REMEDIATION): 1 entries moved verbatim from worklog.md -->
+---
+Task ID: GD1-DRIVE-SETUP-2026-10-04
+Agent: Super Z (main)
+Task: أمر المالك 2026-10-04 «نفّذ الآن مرحلة GD-0 ثم GD-1 من الخطة docs/BACKUP-STRATEGY-2026-10-03.md» — Service Account عبر السر GOOGLE_DRIVE_SERVICE_ACCOUNT_JSON (قيمته = ملف JSON الكامل، لا يُطبع أي حقل منه أبدًا) · حارس الحصة 12GB بدل 8GB (حد الحساب الفعلي 15GB) · إعداد Drive بأمان واستقرار وأقل صلاحيات · اختبار مصادقة + رفع ملف صغير ثم حذفه · لا حذف للنسخ القائمة ولا مساس Production/DNS/Vercel/Supabase · التوثيق وفق القوانين ثم commit واحد بـ [vercel skip] عند خضرة كل البوابات.
+
+Work Log:
+- القوانين أولًا: AGENTS.md §3.2/§3.5/§3.7/§3.8/§10/§12.5 · فحوص docs_audit (M/N/H5) + docs_parity + دوران worklog · التحقق من origin/main (SYNCED على 52583e8 قبل أي تعديل).
+- قياس السر: GOOGLE_DRIVE_SERVICE_ACCOUNT_JSON موجود في Actions Secrets (أُنشئ 2026-10-03T23:16Z — الإجمالي 16 سرًا). قيمته غير قابلة للقراءة API بالتصميم → الاختبار لا يكون إلا داخل عدّاء Actions.
+- بناء ‎.github/workflows/gdrive-smoke-test.yml بنمط gsc-connection-test الأمني: dispatch-only · permissions: {} (صفر صلاحية GITHUB_TOKEN) · بلا checkout · السر إلى ملف مؤقت 0600 يُحذف دائمًا (always) · معقّم متزامن لكل مخرجات rclone (client_email/project_id لا يظهران في أي سطر) · rclone v1.75.1 بإصدار مقيد + بوابة SHA256 الرسمية (982b5aa7…).
+- قياسان معماريان اكتُشفا بالتشغيل وحُلّا: rclone ليست مسبقة التثبيت على عدّاءات GitHub (→ خطوة تثبيت مقيدة بالبصمة — نفس ما سيحتاجه GD-3)، ومتغير RCLONE_VERSION يُفسَّر كعلم ‎--version (→ بادئة PINNED_RCLONE_*).
+- تحقق محلي قبل أي دفع: فحص YAML + bash -n + سينتاكس python لكل heredocs + محاكاة كاملة بمحرك rclone وهمي (إنشاء مجلد → رفع → تحقق عكسي → حذف → تنظيف) — كلها خضراء (أداتا التحقق والمحاكاة محليتان فقط، لم تُحفظا في الريبو).
+- آلية الاختبار قبل main: فرع مؤقت gd1-smoke-test يضم الـ workflow وحده + محفّز push مؤقت خاص بالفرع (قياس: workflow_dispatch يرفض 404 أي ملف غير مسجل على الفرع الافتراضي) — لا شيء يهبط على main قبل جولة خضراء.
+- سلسلة الجولات المقيسة على الفرع المؤقت: 37162424863 (rclone غير موجودة → أُضيف التثبيت المقيّد) · 37162630012 (تصادم RCLONE_VERSION) · 37162689176 (‏403 SERVICE_DISABLED من Drive، وسجل التشخيص كان يسبقه exit — أُصلح التقاط stderr ليصبح متزامنًا) · 37163067607 (محاولة تفعيل Drive API آليًا ببيانات الـ SA نفسها → PERMISSION_DENIED = الوضع السليم لأقل الصلاحيات؛ **السر سليم وJWT يتصديق على Google بنجاح**) · 37163172647 (نافذة انتظار ~12 دقيقة تُكمل ذاتيًا لحظة تفعيل المالك).
+- النتيجة النهائية لجولة التحقق الكاملة: انظر Stage Summary — قيد واحد مقيس فقط يقف بين الحالة الراهنة والخضرة الكاملة: **تفعيل Google Drive API على مشروع GCP صاحب الـ SA (خطوة كونسول واحدة لدى المالك)** — الوصول الكامل (مجلد → رفع → تحقق → حذف) يُثبت تلقائيًا فور التفعيل بإعادة تشغيل الـ workflow.
+- تحديث الخطة docs/BACKUP-STRATEGY-2026-10-03.md: حارس 12GB في §1.5/§3.1/§3.3/§3.5/§3.6/§4/§5 (مع إبقاء حد 15GB و~3GB ذروة أمان) · توثيق قرار GD-0 (SA) والقياسات الحية ومتطلب التفعيل وقانون تسمية PINNED_RCLONE_* وإلغاء اسم GDRIVE_RCLONE_CONFIG البديل · §5: صفوف GD-0/GD-1 نُفّذا · §6: نطاق الإطار الجديد.
+- توثيق الأطر: صف الـ workflow في docs/CI_GATES.md · صف السر في docs/RECOVERY-SECRETS-SOURCES.md §2.1 (اسم ومصدر فقط — صفر قيم) · صف السجل في docs/README.md أُعيد بناؤه بحالة GD-0/GD-1 · STATE.md لم يُمس (إطار توثيقي بحت — نمط إطاري الخطة السابقين).
+- البوابات المحلية بعد التعديل: docs_parity ✓ · docs_audit ✓ صفر انتهاكات · migration_audit ✓ · دوران worklog بعد الإضافة (13→12 إدخالًا داخل نافذة H5).
+
+Stage Summary:
+- Service Account: السر موجود ✓ · بنية JSON سليمة ✓ · المصادقة على Google تنجح (JWT RS256) ✓ · الصلاحية محصورة بمشاركات المجلدات (صفر أدوار IAM) ✓ · العائق الوحيد المقيس: Drive API معطلة على مشروع SA (SERVICE_DISABLED) — تفعيلها بيد المالك وحده (حاولنا آليًا فرفض Google بأمان).
+- اختبار Drive: الجولة الكاملة (مجلد → رفع → تحقق → حذف) جاهزة ومثبتة البنية عبر 5 جولات تشغيل متتالية صقلتها؛ تكتمل الخضرة فور تفعيل المالك للـ API بإعادة تشغيل gdrive-smoke-test — لا شيء آخر مفقود.
+- الحصة المعتمدة: حارس 12GB (كان 8GB) مقابل حد الحساب الفعلي 15GB — موثق في الخطة والسجل والـ workflow.
+- Files: .github/workflows/gdrive-smoke-test.yml (جديد) · docs/BACKUP-STRATEGY-2026-10-03.md · docs/CI_GATES.md · docs/RECOVERY-SECRETS-SOURCES.md · docs/README.md · worklog.md (+archive/WORKLOG_ARCHIVE.md بالدوران).
+- Push status: not-pushed إلى main (قيد أمر المالك: الدفعة مشروطة بجولة اختبار خضراء كاملة — محجوزة لما بعد تفعيل Drive API وإعادة التشغيل الناجحة) · الحفظ الباقي: كل العمل مدفوع على الفرع المؤقت gd1-smoke-test (workflow + توثيق كامل — survival law §3.6)
