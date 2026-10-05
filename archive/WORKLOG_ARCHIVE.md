@@ -12114,3 +12114,22 @@ Stage Summary:
 - كل القيود الصارمة تحققت مقيسًا: لا Production Deployment · لا DNS · لا cutover · لا Cloudflare · لا Supabase · لا تعديل كود · القديم لم يُمس.
 - Push status: pushed (docs-only بـ `[vercel skip]` — VERCEL-USAGE-6)
 
+
+<!-- rotated 2026-10-05 by scripts/worklog_rotate.py (Phase 288, ARCH-REMEDIATION): 1 entries moved verbatim from worklog.md -->
+---
+Task ID: BACKUP-STRATEGY-GDRIVE-2026-10-04
+Agent: Super Z (main)
+Task: أمر المالك مساء 2026-10-03 «راجع خطة النسخ الاحتياطي في docs/BACKUP-STRATEGY-2026-10-03.md وأضف معلومة Google Drive بسعة 15GB كوجهة Off-site مجانية» — قراءة/تعديل الخطة فقط: إعادة تقييم Drive مقابل R2 + حساب السعة + Retention مانع لامتلاء الـ15GB. قيود صارمة: لا تنفيذ backup · لا اتصال بـ Google Drive · لا تغيير Secrets/Workflows · لا مساس Production/DNS.
+
+Work Log:
+- (إعادة التقييم) Google Drive 15GB: $0 بلا وسيلة دفع (ميزة حاسمة على R2) · rclone مدعوم أولًا-بأول (نفس طبقة الأرشفة/التشفير/GFS — التبديل بين الوجهات = secret واحد) · تحفظان موثقان: الحصة مشتركة مع Gmail/Photos → ميزانية داخلية ≤8GB، ومصادقة OAuth تتطلب نشر شاشة الموافقة للإنتاج (وإلا انتهى refresh token بعد 7 أيام) أو Service Account بديلًا.
+- (السعة) بحساب أساس مقيس (لقطة DB 9.5MB→~2MB مضغوطًا · ملفات 4.5MB · bundle alkemos ~286MB): GFS كامل (8 أسبوعية بيانات + 6 شهرية بيانات + 6 bundles شهرية) = **~2.0GB مستقرة ≈ 13% من 15GB**؛ أسوأ سيناريو نمو ~3.7GB — آمن مع سقف 8GB الصاخب + تقرير حجم شهري + تقليص bundles عند ~400MB/نسخة.
+- (القرار) Drive يصبح المسار الأساسي ويغلق BS-1/BS-4؛ **R2 لا يُلغى** — يتحول لمسار ترقية مشروط (§3.6: >8GB · هشاشة OAuth · SLA)؛ git mirror يبقى خطة بديلة. المراحل أعيدت تسميتها GD-0..GD-5 بقرارات مالك؛ GFS 7/5/6 والتشفير والطبقة اليومية والـ$0 — كلها كما هي بلا تغيير.
+- (التعديلات) تحديث الخطة (§1.5 جديد · §3.3/§3.5/§4/§5/§6 معاد صياغتها) + صفها في docs/README.md (إصلاح رجعي لفشل فحص M/registry-coverage على الدفعة `2671e6a` — قانون born-archived) + دوران H5 (worklog 13 → 12 + أرشيف).
+- (البوابات — مقيسة محليًا قبل الدفع) docs_parity ✓ · docs_audit ✓ (صفر انتهاكات بعد الإصلاح) · migration_audit ✓.
+
+Stage Summary:
+- Google Drive 15GB كافية بفاعلية (~2.0GB متوقع · ميزانية ≤8GB) — المسار الأساسي الآن بلا بطاقة دفع؛ R2 ترقية مشروطة لا إلغاء.
+- Retention النهائي: يومي 7 (GitHub) · أسبوعي 8 على Drive (~شهرين) · شهري 6 على Drive + bundles (أفق 6 أشهر).
+- Push status: pushed (docs-only بـ `[vercel skip]` — BACKUP-STRATEGY-GDRIVE)
+

@@ -1,4 +1,25 @@
 ---
+Task ID: ZERO-LIVE-SURFACE-CLEANUP-2026-10-05
+Agent: Super Z (main)
+Task: أمر المالك «نفّذ الآن التصحيح النهائي لحساب Vercel الاحتياطي وفق نتائج الـAudit الأخيرة» (2026-10-05) — True Cold Standby / Zero Live Surface: حذف كل النشرات بلا استثناء الأخير + إزالة أي Cron/Alias/Surface + إبقاء كل متغيرات البيئة كمخزون محمي + توثيق الوثيقة الحاكمة + commit واحد docs-only بعلامة [vercel skip].
+
+Work Log:
+- (قياس قبلي مباشر 00:43 UTC — الحساب الاحتياطي فريق `aalkemos`): 16 نشرة (11 جاهزة: 5 Production من main + 6 Preview · 5 CANCELED) · crons نشطة (تعريفان ضد dpl_B4bkpHdP) · `alkemos.vercel.app` = HTTP 200 حي (مرآة علنية) · متغيرات 29/25 · link=null · createDeployments=disabled.
+- (التنفيذ — كل خطوة مقيسة): `DELETE /v13/deployments/{uid}?urls=1` بترتيب تصاعدي (الأقدم أولًا — عند حذف الأحدث أخيرًا لا يوجد Production أقدم يرتد إليه النطاق) — **16/16 HTTP 200 · صفر إخفاق · صفر إعادة محاولة**؛ `urls=1` أزالت كل aliases المرتبطة بالنشرات.
+- (اكتشاف جانبي ومعالجة): مسح aliases الفريق (GET /v3/aliases) كشف alias متبقيًا من فرع gd1-smoke-test القديم (كان 410 GONE لأن نشره الهدف محذوف لكن سجله قائم) → `DELETE /v2/aliases/{uid}` HTTP 200 → **صفر aliases على مستوى الفريق**.
+- (قياس بعدي 00:45–00:48 UTC): **صفر نشرات · targets {} · crons definitions=[] (إلغاء تلقائي — قانون §6 تحقق حرفيًا بحذف آخر Production) · كل الأسطح الثمانية 404 DEPLOYMENT_NOT_FOUND** (الجذر · /ar · /api/build-info · robots.txt · 3 URLs نشر قديمة · alias المحذوف — كلها كانت 200 قبليًا) · **متغيرات 29/25 مطابقة عنصر-بالعنصر (مفتاح/أهداف/نوع) — صفر تغيير** · link يظل null (GitHub غير موصول حتى الطوارئ — إعادة الوصل يدوية وقت Recovery فقط).
+- (قرار تصميمي موثق §14.4): النطاق `alkemos.vercel.app` يبقى verified **خاملًا** (يقدم 404) — أسرع مسار Recovery بلا أي محتوى حي؛ حذفه كان سيؤخر الاستعادة بلا مكسب أمني.
+- (قاعدة مالك جديدة §14.7-2): كل متغيرات الاحتياطي — الحية والميتة ومداخل development — **مخزون محمي لا يُحذف ولا يُقلّص**؛ سُحب عرض التنظيف الاختياري (§13.6-3 القديم).
+- (التوثيق): ترويسة الوثيقة الحاكمة + §2 + §3-A2/A5 + §6-B + §8-3/§8-7 + §13.5 (نُفّذ موسّعًا) + §13.6 (البند 1 نُفّذ · البند 3 سُحب) + **§14 كاملًا** (قياس قبلي/تنفيذ/قياس بعدي/قرار النطاق/التخزين/معيار اختبار عدم النشر/اليدوي الباقي/مسار Recovery) + صف docs/README + هذا الإدخال.
+- (حدود موثقة): التخزين — مستهلكوه صفر الآن (كل الجاهزة حُذفت) والرقم الدقيق على لوحة المالك (API محصور Pro/Enterprise — مقيس §13.5) · endpoint crons العام not-found (حد API موثق).
+
+Stage Summary:
+- **الحساب الاحتياطي الآن True Cold Standby / Zero Live Surface مقيسًا من الطرفين**: صفر نشرات · صفر crons (definitions=[]) · صفر aliases · كل العناوين 404 · النطاق خامل verified · **المتغيرات 29/25 كاملة محمية (لم تُقرأ قيمها إطلاقًا — metadata فقط)** · GitHub مفصول (link=null) — أي نشر مستقبلي يدوي صريح فقط.
+- التخزين: كل مستهلكيه حُذفوا (11 جاهزة ~350MB+ لكل نشر + 5 سجلات CANCELED صفيرة) — **لا تراكم جديد ممكن** (link=null).
+- صفر مساس: متغيرات/أسرار GitHub/Production الأساسي/DNS/Cloudflare/Supabase/GitHub Actions التشغيلية/كود — الأساسي قراءة-فقط طوال الفريم · لا cutover · لا نشر.
+- Push status: commit واحد docs-only بعلامة `[vercel skip]` — دفعته نفسها هي اختبار §14.6 (معيار النجاح المعلن مسبقًا: يبقى عدد نشرات الاحتياطي 0 ولا يظهر أي سجل جديد ولا حتى CANCELED — القياس البعدي يُعلن في التقرير النهائي للمالك؛ الأساسي ينتج CANCELED المعتاد بلا بناء من ignore-step).
+
+---
 Task ID: COLD-STANDBY-AUDIT-2026-10-05
 Agent: Super Z (main)
 Task: أمر المالك «نفّذ الآن Audit + تعديل خطة حساب Vercel الاحتياطي فقط» (2026-10-05) — اعتماد Cold Standby / §6-B بدل Warm Standby / §6-A مع audit كامل (متغيرات/أسرار/نشرات/تخزين) وتوثيق كل شيء قبل أي تغيير حساس.
@@ -226,20 +247,3 @@ Stage Summary:
 - الحصة المعتمدة: حارس 12GB (كان 8GB) مقابل حد الحساب الفعلي 15GB — موثق في الخطة والسجل والـ workflow.
 - Files: .github/workflows/gdrive-smoke-test.yml (جديد) · docs/BACKUP-STRATEGY-2026-10-03.md · docs/CI_GATES.md · docs/RECOVERY-SECRETS-SOURCES.md · docs/README.md · worklog.md (+archive/WORKLOG_ARCHIVE.md بالدوران).
 - Push status: not-pushed إلى main (قيد أمر المالك: الدفعة مشروطة بجولة اختبار خضراء كاملة — محجوزة لما بعد تفعيل Drive API وإعادة التشغيل الناجحة) · الحفظ الباقي: كل العمل مدفوع على الفرع المؤقت gd1-smoke-test (workflow + توثيق كامل — survival law §3.6)
----
-Task ID: BACKUP-STRATEGY-GDRIVE-2026-10-04
-Agent: Super Z (main)
-Task: أمر المالك مساء 2026-10-03 «راجع خطة النسخ الاحتياطي في docs/BACKUP-STRATEGY-2026-10-03.md وأضف معلومة Google Drive بسعة 15GB كوجهة Off-site مجانية» — قراءة/تعديل الخطة فقط: إعادة تقييم Drive مقابل R2 + حساب السعة + Retention مانع لامتلاء الـ15GB. قيود صارمة: لا تنفيذ backup · لا اتصال بـ Google Drive · لا تغيير Secrets/Workflows · لا مساس Production/DNS.
-
-Work Log:
-- (إعادة التقييم) Google Drive 15GB: $0 بلا وسيلة دفع (ميزة حاسمة على R2) · rclone مدعوم أولًا-بأول (نفس طبقة الأرشفة/التشفير/GFS — التبديل بين الوجهات = secret واحد) · تحفظان موثقان: الحصة مشتركة مع Gmail/Photos → ميزانية داخلية ≤8GB، ومصادقة OAuth تتطلب نشر شاشة الموافقة للإنتاج (وإلا انتهى refresh token بعد 7 أيام) أو Service Account بديلًا.
-- (السعة) بحساب أساس مقيس (لقطة DB 9.5MB→~2MB مضغوطًا · ملفات 4.5MB · bundle alkemos ~286MB): GFS كامل (8 أسبوعية بيانات + 6 شهرية بيانات + 6 bundles شهرية) = **~2.0GB مستقرة ≈ 13% من 15GB**؛ أسوأ سيناريو نمو ~3.7GB — آمن مع سقف 8GB الصاخب + تقرير حجم شهري + تقليص bundles عند ~400MB/نسخة.
-- (القرار) Drive يصبح المسار الأساسي ويغلق BS-1/BS-4؛ **R2 لا يُلغى** — يتحول لمسار ترقية مشروط (§3.6: >8GB · هشاشة OAuth · SLA)؛ git mirror يبقى خطة بديلة. المراحل أعيدت تسميتها GD-0..GD-5 بقرارات مالك؛ GFS 7/5/6 والتشفير والطبقة اليومية والـ$0 — كلها كما هي بلا تغيير.
-- (التعديلات) تحديث الخطة (§1.5 جديد · §3.3/§3.5/§4/§5/§6 معاد صياغتها) + صفها في docs/README.md (إصلاح رجعي لفشل فحص M/registry-coverage على الدفعة `2671e6a` — قانون born-archived) + دوران H5 (worklog 13 → 12 + أرشيف).
-- (البوابات — مقيسة محليًا قبل الدفع) docs_parity ✓ · docs_audit ✓ (صفر انتهاكات بعد الإصلاح) · migration_audit ✓.
-
-Stage Summary:
-- Google Drive 15GB كافية بفاعلية (~2.0GB متوقع · ميزانية ≤8GB) — المسار الأساسي الآن بلا بطاقة دفع؛ R2 ترقية مشروطة لا إلغاء.
-- Retention النهائي: يومي 7 (GitHub) · أسبوعي 8 على Drive (~شهرين) · شهري 6 على Drive + bundles (أفق 6 أشهر).
-- Push status: pushed (docs-only بـ `[vercel skip]` — BACKUP-STRATEGY-GDRIVE)
-
