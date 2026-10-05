@@ -1,4 +1,24 @@
 ---
+Task ID: COLD-STANDBY-AUDIT-2026-10-05
+Agent: Super Z (main)
+Task: أمر المالك «نفّذ الآن Audit + تعديل خطة حساب Vercel الاحتياطي فقط» (2026-10-05) — اعتماد Cold Standby / §6-B بدل Warm Standby / §6-A مع audit كامل (متغيرات/أسرار/نشرات/تخزين) وتوثيق كل شيء قبل أي تغيير حساس.
+
+Work Log:
+- (القياس — الحساب الاحتياطي فريق `aalkemos` عبر API قراءة-فقط): انكسار عزلة §6 الموثقة 10-03 — **15 نشرة كلها GitHub App** خلال 10-04 وحده (07:32–22:05 UTC): 11 جاهزة (6 Preview من فروع gd2/gd3/gd4 المؤقتة + **5 Production من main**) و4 CANCELED؛ أول Production (dpl_DPucaBSTiq · afc4d40a) سجّل **crons نشطة** (enabledAt 07:26 UTC) → **خطر §5-1 Double Cron متحقق فعليًا** (نافذة 23:40 الأولى ليلة 10-04: قياس GitHub أظهر dispatch واحدًا لكل workflow — بوابات coverage صدّت التكرار تلك الليلة) · `alkemos.vercel.app` يقدم مرآة علنية حية HTTP 200 بنفس commit الإنتاج 00e37ba8 (مقيس `/api/build-info` في الحسابين) · السبب الجذري للبناء رغم وسم `[vercel skip]`: `ignore-step.sh` قاعدة مسارات (الدفعات التي لمست .github/scripts بُنيت — مقيس).
+- (توكنات الحسابات موثقة): `vcp_2DxS…` = فريق aalkemos (الاحتياطي) · `vcp_5GKJ…` = مالك muscleshubfit (الأساسي — قراءة فقط طوال الفريم) · `vcp_7Hxo…` = project-scoped للمشروع القديم (هو نفسه دور سر VERCEL_TOKEN).
+- (التخزين): لوحة المالك 10.62/10GB — السبب المقيس: createDeployments enabled + قاعدة المسارات + **لا منظّف يستهدف الاحتياطي** (توكن vercel-cleanup project-scoped للقديم — مقيس 403 على aalkemos)؛ حد القياس موثق (endpoint الملفات 404 · usage API Pro-only).
+- (audit المتغيرات — 29 مدخلًا/25 مفتاحًا): تصنيف كامل بمصادر مقيسة (§13.3): 21 حية (أساسية runtime/build-time — منها 8 تخدم GitHub Actions بworkflows مسماة: NEXT_PUBLIC_SUPABASE_URL في 23 · SUPABASE_SERVICE_ROLE_KEY في 22 · مفاتيح AI الستة في 6 … إلخ) · `SUPABASE_URL` alias تشغيلي fallback · **4 ميتة** (EVO_PARTNER_API_ENABLED + ثلاث Supabase القديمة) · 8 Sensitive غائبة (MANUAL_REQUIRED §12.2) · أسرار GitHub موجودة بلا أي مرجع فعلي (BREVO/UPSTASH×2/REPO_ACCESS_TOKEN) · **VERCEL_TOKEN يستخدمه vercel-cleanup.yml وحده** (تنظيف نشرات الأساسي — لم يُمس ولم يُنقل ولم يُحذف أي سر).
+- (التنفيذ — التغيير الآمن الوحيد المطلوب): `PATCH /v9/projects/prj_ILK40…` → `gitProviderOptions.createDeployments: disabled` — تحقق بعدي GET يعرض disabled · عدد النشرات قبل/بعد 15 (صفر بناء أُشعل) · صفر مساس للأساسي/DNS/Cloudflare/Supabase/GitHub · لا cutover.
+- (حدود التنفيذ الموثقة): لا يمكن تعطيل الـ crons المسجلة عبر API عام (PATCH يرفض الحقل · endpoints الـ crons not-found — مقيس) → الحل الموثق بالخيارات في §13.5 (حذف كل Production يلغيها تلقائيًا — الخيار (أ) الموصى به — أو تعطيل يدوي من اللوحة).
+- (التوثيق): ترويسة الخطة + §2 تحديث + §3-A2/A5 + §6 (اعتماد 6-B رسميًا واستبعاد 6-A) + §8-3/§8-7 + §11 + **§13 كاملًا** (الاكتشاف/التنفيذ/التصنيف/العلاقات/التخزين/الموافقات) + صف docs/README + هذا الإدخال + دوران H5.
+
+Stage Summary:
+- **Cold Standby (§6-B) معتمد ومنفّذ مقيسًا**: النشر التلقائي من Git معطل في الاحتياطي — لا Production متزامن ولا تحديثات من main بعد الآن؛ المشروع جاهز للنشر اليدوي وقت الطوارئ فقط.
+- **أهم اكتشاف**: Double Cron حي منذ 10-04 (crons الاحتياطي مسجلة ضد dpl_B4bkpHdP) + مرآة علنية حية + تجاوز تخزين 10.62/10GB — المعالجة الثلاثية موثقة بانتظار أمر مالك واحد (§13.5: حذف 11 = يلغي الـ crons ويحرر التخزين معًا).
+- صفر حذف (متغيرات/أسرار/نشرات) · صفر قيم معروضة · الأساسي قراءة-فقط · cutover/DNS/CF/Supabase/GitHub Actions لم تُمس.
+- Push status: دفعة docs واحدة إلى main بعلامة `[vercel skip]` (قانون VERCEL-USAGE-6) — لا نشر في الاحتياطي البارد أصلًا بعد التعطيل، والأساسي سينتج CANCELED بلا بناء (قاعدة المسارات).
+
+---
 Task ID: GD4-RESTORE-DRILL-EXECUTION-2026-10-05
 Agent: Super Z (main)
 Task: أمر المالك «تم حفظ المفتاح يمكنك حذف الملف من مجلد التنزيلات، ثم ابدا تنفيذ GD-4» (2026-10-05) — حذف ملف تسليم مفتاح التشفير بعد تأكيد حفظه في مديم كلمات المرور، ثم تنفيذ مرحلة الإثبات GD-4 كاملة (دريل الاستعادة الربعي من Drive) بجولة خضراء مقيسة على الفرع قبل الهبوط (قانون §6).
@@ -220,23 +240,4 @@ Stage Summary:
 - Google Drive 15GB كافية بفاعلية (~2.0GB متوقع · ميزانية ≤8GB) — المسار الأساسي الآن بلا بطاقة دفع؛ R2 ترقية مشروطة لا إلغاء.
 - Retention النهائي: يومي 7 (GitHub) · أسبوعي 8 على Drive (~شهرين) · شهري 6 على Drive + bundles (أفق 6 أشهر).
 - Push status: pushed (docs-only بـ `[vercel skip]` — BACKUP-STRATEGY-GDRIVE)
-
----
-Task ID: ENV-TRANSFER-BACKUP-2026-10-03
-Agent: Super Z (main)
-Task: أمر المالك 2026-10-03 «نفّذ الآن فقط البندين التاليين»: (1) نقل Environment Variables من مشروع Vercel القديم إلى المشروع الاحتياطي الجديد `alkemos` (فريق `aalkemos`) — القيم القابلة للقراءة آليًا فقط بنفس الأسماء/الأهداف/الأنواع؛ الـ Sensitive تسجَّل MANUAL_REQUIRED بلا تخمين ولا بدائل؛ (2) تحديث خطة النسخة بنتائج النقل. قيود صارمة: لا Production Deployment · لا DNS · لا Cutover · لا Cloudflare · لا Supabase · لا تعديل كود.
-
-Work Log:
-- (النقل — البند §8-2 من الخطة) قراءة آلية للقديم: 37 مدخلًا → 29 قابلًا للقراءة (فك تشفير per-env عبر Vercel API) + 8 Sensitive غير مقروءة. إنشاء 29/29 مدخلًا في الجديد (HTTP 201 لكل مدخل) بنفس المفتاح/targets/النوع حرفيًا — 25 مفتاحًا فريدًا (اكتشاف موثق §12.4-1: ‎`NEXT_PUBLIC_SUPABASE_URL`/`ANON_KEY` كل منهما 3 مداخل منفصلة لا مدخل واحد متعدد الأهداف).
-- (تجاوز موثق §12.4-2) أمر المالك «انقل جميع القيم التي يمكن قراءتها آليًا» شمل 4 مفاتيح §4.3 الميتة القابلة للقراءة (`EVO_PARTNER_API_ENABLED` · `SUPABASE_ANON_KEY` · `SUPABASE_PUBLISHABLE_KEY` · `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`) — أثر صفر على سلوك الكود؛ النسخة صارت مرآة كاملة بدل النسخة النظيفة.
-- (التحقق — كله مقيس) أسماء 29/29 · أهداف 29/29 مجموعة-بمجموعة · أنواع مطابقة (‎`NEXT_PUBLIC_SITE_URL` نقلت plain كما هي؛ البقية encrypted؛ صفر مداخل sensitive أُنشئت — لا تخمين) · **القيم 29/29: فُكّ تشفير كل مدخل من الجديد نفسه وقورن بالقديم → متطابقة** · صفر ناقص/متعارض/دخيل.
-- (المشروع القديم لم يُمس) بصمة الـ37 مدخلًا ‏(id/key/target/type/updatedAt) متطابقة قبل/بعد — القراءة فقط؛ القياس البعدي المستقل: 37 كما هي (8 Sensitive + 29 مقروءة) · hiddenProductionEnvCount=0.
-- (صفر أثر نشر) إنشاء env لا يشعل بناءً: آخر نشر الجديد ما زال CANCELED (دفعة docs ‏`ec6977a5`) · endpoint crons يرد not_found (صفر crons — عزلة §6 قائمة) · لا مساس DNS/CF/Supabase/كود.
-- (التوثيق) قسم §12 جديد بالخطة (12.1 المنقول · 12.2 الـ MANUAL_REQUIRED الثماني — بينها ‏`SUPABASE_JWT_SECRET`/`SUPABASE_SECRET_KEY` بترتيب §4.3 عدم الإدخال · 12.3 التحقق · 12.4 الاختلافات الست) + تحديث §2/§3-A1/§8-2/§11 + صف docs/README.md — صفر أسرار: أسماء/أهداف/عدادات فقط؛ التقرير الكامل بالقيم محلي خارج المستودع.
-- (بوابات) docs_parity ✓ · docs_audit ✓ (دوران H5 عبر worklog_rotate — نافذة 12) · فحص أنماط التوكنات على الملفات المضافة = صفر.
-
-Stage Summary:
-- النسخة الاحتياطية تحمل الآن 29/29 متغيرًا قابلًا للقراءة (قيمًا وأهدافًا وأنواعًا)؛ الباقي 8 قيم MANUAL_REQUIRED يدوية (PayPal ×5 · AdSense · ‏`SUPABASE_JWT_SECRET` · `SUPABASE_SECRET_KEY` — الأخيرتان بتوصية §4.3).
-- كل القيود الصارمة تحققت مقيسًا: لا Production Deployment · لا DNS · لا cutover · لا Cloudflare · لا Supabase · لا تعديل كود · القديم لم يُمس.
-- Push status: pushed (docs-only بـ `[vercel skip]` — VERCEL-USAGE-6)
 

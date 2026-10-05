@@ -5,6 +5,7 @@
 > **قانون الأسرار (§7 + `docs/RECOVERY-SECRETS-SOURCES.md`):** هذا الملف يحمل أسماء ومصادر فقط — **صفر قيم**. أي متغير مستقبلي يُضاف للنسخة يوثَّق مصدره في `RECOVERY-SECRETS-SOURCES.md` بنفس الفريم.
 > **المرجعية عند التعارض:** الواقع المقيس عبر API في تاريخ هذا الفريم هو الحاكم (ملاحظة B9 مثالًا: `serverlessFunctionRegion` في API يعرض `iad1` بينما `vercel.json` هو المرجع الحاكم `fra1`).
 > **سجل التنفيذ:** البند §8-2 (نقل متغيرات البيئة القابلة للقراءة آليًا) نُفّذ بأمر المالك 2026-10-03 «نفّذ الآن فقط البندين» — سجل التنفيذ والتحقق في §12. كل خطوة أخرى في هذه الخطة ما زالت تنتظر أمر مالك.
+> **تحديث فريم COLD-STANDBY-AUDIT-2026-10-05 (أمر المالك «اعتماد Cold Standby / §6-B»):** المسار المعتمد صار §6-B (النسخة الباردة) بدل §6-A، **ونُفّذ فورًا** (تعطيل نشر Git تلقائيًا — مقيس §13.2). حالة العزل المثالية الموثقة في §2 انكسرت جزئيًا بين 10-04 و10-05 (نشرات Production + crons مزدوجة — الاكتشاف والقياس §13.1) · audit كامل للمتغيرات/الأسرار/التخزين موثق (§13.3–§13.5) · **كل حذف أو تغيير حساس ينتظر أمر مالك** (§13.6).
 
 ---
 
@@ -32,15 +33,17 @@
 - **الحالة الحالية المثالية للعزل**: صفر deployments جاهزة (`targets: {}` — النشر الوحيد CANCELED من دفعة docs) · متغيرات البيئة: **نُقل 29/29 مدخلًا قابلًا للقراءة آليًا (§12) وبقيت 8 يدوية (MANUAL_REQUIRED — §12.2)** · صفر crons مسجلة (endpoint يرد not_found) · **لا integrations مثبتة على الفريق الجديد** (واجهة Vercel تعرض اقتراح ربط Supabase — **لا تُفعّل**؛ انظر §3-B7).
 - نطاق المشروع التلقائي: `alkemos.vercel.app` (متاح ومحجوز للمشروع الجديد) · لا نطاقات مخصصة · لا team domains.
 
+> **تحديث 2026-10-05 (قياس §13.1):** حالة «العزل المثالي» أعلاه كانت صحيحة يوم 10-03 فقط — بين 10-04 07:32 و22:05 UTC رُصدت **15 نشرة** كلها من GitHub App (منها 5 Production جاهزة من main) وسُجّلت الـ crons في الاحتياطي، وصار `alkemos.vercel.app` يقدم نسخة حية **علنية** بنفس commit الإنتاج (00e37ba8 — مقيس HTTP 200). عُولج المصدر (النشر التلقائي من Git) بـ §6-B/§13.2؛ الـ crons المسجلة والنشرات القائمة تنتظر قرار المالك (§13.5/§13.6).
+
 ## 3. ما ينقص قبل أن تصبح النسخة قابلة للتشغيل والتحقق
 
 | # | البند | التفصيل |
 |---|---|---|
 | A1 | **Environment Variables** (الجدول §4) | **منفّذ جزئيًا 2026-10-03 (§12)**: 29/29 مدخلًا قابلًا للقراءة نُقل آليًا بنفس الأسماء/الأهداف/الأنواع وتحقق قيم 29/29 (فك تشفير من الجديد نفسه ومقارنة). الباقي: 8 قيم Sensitive يدوية (§12.2). **شرط البناء**: `NEXT_PUBLIC_*` تُدمج وقت البناء — أول نشر كامل الميزات ينتظر الإدخال اليدوي لـ `NEXT_PUBLIC_PAYPAL_CLIENT_ID` و`NEXT_PUBLIC_ADSENSE_CLIENT` (GA وSupabase العام نُقلا آليًا) |
-| A2 | **إستراتيجية منع نشر Production تلقائيًا** | مع `createDeployments: enabled` + Production Branch `main`: أول دفعة كود إلى main تنشئ أول Production Deployment في الحساب الجديد → **تسجيل الـ crons → خطر التشغيل المزدوج** (التفصيل والحل في §6) |
+| A2 | **إستراتيجية منع نشر Production تلقائيًا** | مع `createDeployments: enabled` + Production Branch `main`: أول دفعة كود إلى main تنشئ أول Production Deployment في الحساب الجديد → **تسجيل الـ crons → خطر التشغيل المزدوج** (التفصيل والحل في §6) — **منفّذ 2026-10-05 بصيغة §6-B** (createDeployments=disabled — مقيس §13.2)؛ لكن الخطر تحقق قبل التنفيذ: الـ crons مسجلة نشطة منذ 10-04 07:26 UTC (§13.1) ومعالجتها تنتظر أمر المالك (§13.5/§13.6) |
 | A3 | **أول Preview Deployment + بطارية تحقق** | §7 — لم يحدث أي نشر بعد |
 | A4 | **Web Analytics** | غير مفعّل في المشروع الجديد (بيانات التحليلات لا تنتقل — تبدأ من صفر عند التفعيل؛ يُوصى بها وقت cutover لا قبله) |
-| A5 | **مؤشر استخدام الحساب الجديد** | النسخ الاحتياطية اليومية تتراكم (Hobby 10GB · ~350MB/نشر · انتهاء تلقائي 30 يومًا + الاحتفاظ بـ10) — يُراقب ولا يُعدّل شيء الآن |
+| A5 | **مؤشر استخدام الحساب الجديد** | النسخ الاحتياطية اليومية تتراكم (Hobby 10GB · ~350MB/نشر · انتهاء تلقائي 30 يومًا + الاحتفاظ بـ10) — يُراقب ولا يُعدّل شيء الآن — **مقيس 10-05: تجاوز فعلي (10.62/10GB) ب11 نشرًا جاهزًا متراكمًا خلال يوم واحد بلا أي منظّف يستهدف الاحتياطي** (السبب وقائمة التنظيف الآمنة §13.5 — بانتظار أمر مالك) |
 | B1 | **قيم PayPal اليدوية** | `PAYPAL_CLIENT_ID` · `PAYPAL_CLIENT_SECRET` · `PAYPAL_WEBHOOK_ID` · `PAYPAL_MODE` · `NEXT_PUBLIC_PAYPAL_CLIENT_ID` — من لوحة PayPal Developer (مصادرها في `RECOVERY-SECRETS-SOURCES.md` §2.2) |
 | B2 | **قيمة AdSense اليدوية** | `NEXT_PUBLIC_ADSENSE_CLIENT` — من لوحة AdSense |
 | B3 | (مؤجل بقرار المالك — **لا يُنفذ الآن**) تحديث `redirect_allow_list` في Supabase | إضافة نمط الفريق الجديد `https://alkemos-*-aalkemos.vercel.app/**` (+ `https://alkemos.vercel.app/**`) — شرط اختبار auth على preview؛ Production غير متأثر |
@@ -85,8 +88,8 @@
 
 > **القاعدة المقيسة:** Crons تُسجَّل وتعمل ضد **آخر Production Deployment** للمشروع. المشروع الجديد الآن `targets: {}` (صفر Production Deployments) → **صفر crons ممكنة**. Preview Deployments **لا** تنشئ Production Deployment → **لا تسجل crons**.
 
-- **6-A (المسار الموصى به — «نسخة دافئة»):** ضبط Production Branch للمشروع الجديد على فرع عنصر نائب (مثل `backup-staging` — يُنشأ من main ولا يستقبل أي كود) → كل دفعة إلى main تنشر **Preview** في الجديد (تبقى النسخة متزامنة مع كل تغيير Production) بينما Production يبقى حصريًا للقديم → **لا crons إطلاقًا**.
-- **6-B (البديل — «نسخة باردة»):** تعطيل نشر Git على المشروع الجديد (`gitProviderOptions.createDeployments: disabled` من إعدادات المشروع) → لا نشر تلقائي إطلاقًا؛ النشر يدوي فقط (`vercel deploy` preview) وقت التحقق الدوري.
+- **6-A (المسار المستبعد بقرار المالك 2026-10-05 — «نسخة دافئة»):** ضبط Production Branch للمشروع الجديد على فرع عنصر نائب (مثل `backup-staging` — يُنشأ من main ولا يستقبل أي كود) → كل دفعة إلى main تنشر **Preview** في الجديد (تبقى النسخة متزامنة مع كل تغيير Production) بينما Production يبقى حصريًا للقديم → **لا crons إطلاقًا** — *لم يُطبق قط؛ انحرف الحساب إلى حالة «دافئة بالخطأ» عبر main نفسه (§13.1) قبل اعتماد 6-B.*
+- **6-B (المعتمد والمنفّذ 2026-10-05 بأمر المالك — «نسخة باردة»):** تعطيل نشر Git على المشروع الجديد (`gitProviderOptions.createDeployments: disabled` — **منفّذ مقيسًا §13.2**) → لا نشر تلقائي إطلاقًا من أي فرع (main أو المؤقتة)؛ النشر يدوي فقط (`vercel deploy` preview) وقت التحقق الدوري أو الطوارئ — الحساب الاحتياطي **لا يكون Production متزامنًا ولا يستقبل تحديثات تلقائية من main**.
 - **قوانين صارمة مكملة (أي مسار):**
   1. **ممنوع `vercel --prod`** أو «Redeploy» كـ Production أو أي دفعة إلى فرع الـ Production للمشروع الجديد قبل يوم cutover معلن.
   2. دفعات docs-only تحمل `[vercel skip]` (قانون VERCEL-USAGE-6) → نشر CANCELED بلا خدمة في **الحسابين** (شاهد مقيس: آخر docs-commit أنتج CANCELED في القديم).
@@ -108,11 +111,11 @@
 
 1. إدخال قيم §4.2 يدويًا من اللوحات (المالك).
 2. نقل §4.1 — **منفّذ 2026-10-03 (§12)**: المسار (ب) وكيل بأمر مالك عبر API (نقل آلي 29/29 مدخلًا + تحقق قيم — شمل بأمر المالك مفاتيح §4.3 القابلة للقراءة أيضًا؛ انظر §12.4-2).
-3. تطبيق §6 (6-A موصى به).
+3. تطبيق §6 — **منفّذ 2026-10-05 بصيغة 6-B (Cold Standby) بأمر المالك** (§13.2)؛ بقيت معالجة أثر ما قبل التنفيذ (النشرات/crons — §13.5/§13.6).
 4. أول preview deployment + بطارية §7 كاملة + توثيق نتيجتها في worklog وتحديث عمود حالة هذا الملف في `docs/README.md`.
 5. (اختياري وقت cutover لا قبله) تفعيل Web Analytics.
 6. **المراقبة الدورية:** صفر crons · صفر production targets في الجديد · Production القديم يخدم `alkemos.com` كالمعتاد · usage الحسابين سليم.
-7. النسخة تبقى «دافئة»: كل push إلى main يحدّث preview الجديد تلقائيًا (مسار 6-A) — جاهزية دائمة دون أي تدخل.
+7. النسخة «باردة» (6-B المعتمد): **لا مزامنة تلقائية مع main** — الجاهزية تُثبت دوريًا بنشر preview يدوي (§7)، وأي تحديث وقت الطوارئ يدوي صريح؛ مسار 6-A أعلاه مستبعد بقرار المالك 2026-10-05.
 
 ## 9. خطة Rollback لهذه المرحلة
 
@@ -136,7 +139,8 @@
 
 - [ ] §4.1 ✓ منفّذ (§12: 29/29 بنفس الأسماء والأهداف والقيم) + §4.2 إدخال يدوي بالمالك (8 قيم MANUAL_REQUIRED — §12.2) — البند يكتمل بإدخالها.
 - [ ] بطارية §7 خضراء على آخر commit Production.
-- [ ] §6 ما زال مطبقًا (صفر crons/production في الجديد) حتى لحظة الـ cutover نفسها.
+- [ ] §6 ما زال مطبقًا (صفر crons/production في الجديد) حتى لحظة الـ cutover نفسها — يتطلب أولًا تنفيذ قرار §13.5 (تنظيف نشرات الاحتياطي/إلغاء الـ crons القائمة منذ 10-04).
+- [ ] قرار تنظيف نشرات الاحتياطي (§13.5: الخيار أ الموصى به = حذف الكل فيتحقق صفر-crons تلقائيًا، أو الخيار ب = إبقاء آخر نشر + تعطيل يدوي للـ crons من اللوحة) منفّذ وموثّق.
 - [ ] نافذة زمنية بعيدة عن جدولا الـ crons.
 - [ ] `redirect_allow_list` (Supabase) محدث بنمط الفريق الجديد (عند الحاجة للـ previews).
 - [ ] نسخة احتياطية من آخر deployment قديم جاهزة للعودة (`4cf5c4bc` أو أحدث) + خطة عكس الخطوات موثقة.
@@ -195,7 +199,107 @@
 5. **بوابة أول نشر كامل الميزات:** `NEXT_PUBLIC_PAYPAL_CLIENT_ID` و`NEXT_PUBLIC_ADSENSE_CLIENT` يدمرج مع البناء — أول نشر للنسخة قبل إدخالهما اليدوي يعمل لكن بلا مكونات PayPal/AdSense (بينما GA وSupabase العام نُقلا آليًا) — يرفع أهمية ترتيب §8: الإدخال اليدوي (الخطوة 1) قبل أول preview كامل الميزات.
 6. **`hiddenProductionEnvCount = 0`** في القديم — لا متغيرات مخفية إضافية وراء العداد؛ الـ 37 هي الكل.
 
+## 13. سجل تحويل Cold Standby + الـ Audit الكامل (2026-10-05 — أمر المالك «اعتماد Cold Standby / §6-B»)
+
+> **نطاق هذا الفريم:** audit قراءة-فقط عبر API على الحساب الاحتياطي (فريق `aalkemos`) + تنفيذ التغيير الآمن الوحيد المطلوب (تعطيل نشر Git) + هذا التوثيق. **صفر حذف** (متغيرات/أسرار/نشرات) · صفر مساس Production القديم/DNS/Cloudflare/Supabase/GitHub Actions التشغيلية · لا cutover · لا نشر Production في الاحتياطي · لا تخمين أو عرض أي قيمة سرية (أسماء فقط طوال القسم).
+
+### 13.1 الوضع المكتشف (قياس API مباشر 2026-10-04/05 — الواقع الحاكم عند التعارض)
+
+انكسرت عزلة §6 الموثقة يوم 10-03 خلال يوم واحد — الأخطر أن خطر **§5-1 (Double Cron) تحقق فعليًا**:
+
+| البند | الحالة المقيسة |
+|---|---|
+| النشرات في الاحتياطي | **15 deployment كلها مصدرها GitHub App** (meta.githubDeployment=1 — لا CLI ولا workflow): **11 جاهزة** (6 Preview من الفروع المؤقتة `gd2-retention`/`gd3-offsite`/`gd4-restore-drill` + **5 Production من `main`**) + 4 CANCELED (دفعات docs-only) — كلها بين 10-04 07:32 و22:05 UTC |
+| أول Production Deployment | `dpl_DPucaBSTiq` (afc4d40a · 07:32 UTC) → سجّل الـ crons فورًا (enabledAt 07:26 UTC) — «صفر production» في §6 انكسر |
+| Crons الاحتياطي | **نشطة**: تعريفان (`dispatch-pipelines` يوميًا 23:40 UTC · `progress-reminder` أحدًا 07:00 UTC) ضد آخر Production `dpl_B4bkpHdP` (00e37ba8) — **Double Cron حي منذ 10-04** |
+| قياس نافذة 23:40 UTC (10-04) | dispatch واحد فقط لكل workflow (`37244856253` EN · `37244857704` AR · `37244859175` ai-jobs) — بوابات coverage صدّت التكرار هذه الليلة؛ نافذة السباق (§5-1) تبقى قائمة حتى المعالجة |
+| النطاق التلقائي | `alkemos.vercel.app` مخصص للمشروع ويخدم **علنًا** HTTP 200 بنفس commit الإنتاج `00e37ba8` (مقيس `/api/build-info` في الحسابين) — مرآة دافئة حية كاملة |
+| لماذا لم يمنع `[vercel skip]`؟ | `ignoreCommand` (`scripts/vercel/ignore-step.sh`) هو الحاكم لا وسم الرسالة: قاعدة مسارات — الدفعات التي لمست `.github/` أو `scripts/` **بُنيت رغم الوسم** (مقيس: afc4d40a · 02cea8a4 · 4fddbe24 · 97dadd0d · 00e37ba8 جاهزة؛ docs-only فقط أُلغيت) |
+| Web Analytics | `id` محجوز (`Bxt53V…`) بلا بيانات (speedInsights hasData=false) — يظل بند A4 كما هو |
+| مصدر «التحديث التلقائي من main» | **GitHub App وحده** (كل النشرات Git-App) — لا يوجد أي GitHub Action ينشر إلى الاحتياطي، فلا حاجة لتعطيل أي workflow لتحقيق البرودة |
+
+### 13.2 ما نُفّذ فعليًا (التغيير الآمن الوحيد — تنفيذًا حرفيًا لأمر المالك)
+
+- **`PATCH /v9/projects/prj_ILK40M1oXXrfPspR676sqDKgoV6v`** (توكن فريق aalkemos): `gitProviderOptions.createDeployments: enabled → disabled` — **تحقق بعدي مقيس**: GET يعرض `disabled`. هذا هو §6-B حرفيًا: لا نشر تلقائي من أي فرع (main أو المؤقتة)؛ المشروع جاهز للنشر اليدوي فقط (`vercel deploy` أو API) وقت الطوارئ أو التحقق الدوري.
+- **أثر جانبي صفري مقيس**: عدد النشرات قبل/بعد = 15 (لا بناء أُشعل بتعديل الإعداد) · المشروع القديم لم يُمس طوال الفريم (قراءة فقط) · لا DNS/دومين/Cloudflare/Supabase/GitHub · **Environment Variables لم تحذف ولم تعدّل** (الـ 29 كما نُقلت في §12).
+- **حدود التعطيل**: النشرات القائمة (11 جاهزة) والـ crons المسجلة لا يزيلها التعطيل — معالجتها §13.5/§13.6 (بانتظار أمر مالك).
+
+### 13.3 تصنيف Environment Variables الاحتياطية — 29 مدخلًا (25 مفتاحًا) — أسماء فقط، صفر قيم
+
+> **المنهجية (قياس لا تخمين):** grep مقيس للكود المُنشأ (`src/`) + مسح 31 ملف workflow في `.github/workflows/` + قائمة أسرار GitHub عبر API (أسماء فقط، 20 سرًا). **وجود السر في GitHub Secrets ليس دليل استخدام** — الاستخدام يُثبت بمرجع `secrets.NAME` فعلي داخل workflow محدد.
+
+| المفتاح | الكود `src/` (الموقع المقيس) | GitHub Actions (workflow + الغرض) | الحكم |
+|---|---|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL` | ✓ 42 مرجعًا (عميل Supabase) | ✓ **23 workflow** (blog-post-ar/en · process-ai-jobs · db-backup · storage-backup/inventory/restore-drill · offsite-restore-drill · remediations الخمس · notifications-prune · retro-pair-blog · evo-weekly-learning/eval · legacy-ar-cleanup — اتصال Supabase) | **أساسية · build-time + runtime + Actions** |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | ✓ 20 (عميل المتصفح) | — (الworkflows تمرر سر URL فقط) | **أساسية · build-time** |
+| `SUPABASE_SERVICE_ROLE_KEY` | ✓ 29 (admin) | ✓ **22 workflow** (كل ما أعلاه) | **أساسية** |
+| `CRON_SECRET` | ✓ (بوابات `src/lib/cron-auth.ts` لكل `/api/cron/*`) | ✓ blog-post-ar/en (نداء API الموقع من الـ runner) | **أساسية** |
+| `GITHUB_DISPATCH_TOKEN` | ✓ 11 (`/api/cron/dispatch-pipelines` · `src/lib/blog-pipeline-dispatch.ts` · `ai-runner-dispatch`) | — | **أساسية** (محرك الـ backstop) |
+| `PEXELS_API_KEY` | ✓ (blog-images + `/api/blog/*`) | ✓ 4 (blog-post-ar/en · process-ai-jobs · remediate-blog-images — جلب الصور) | **أساسية** |
+| `OPENROUTER_API` | ✓ (endpoint مزوّد AI) | ✓ 6 (blog-post-ar/en · process-ai-jobs · evo-weekly-eval · geo-answer-visibility · legacy-ar-cleanup) | **أساسية** |
+| `OPENROUTER_API_KEY` | ✓ | ✓ نفس الستة | **أساسية** |
+| `GROQ_API_KEY` | ✓ | ✓ نفس الستة | **أساسية** |
+| `NVIDIA_API_KEY` | ✓ | ✓ نفس الستة | **أساسية** |
+| `BREVO_API_KEY` | ✓ (send-email · evo-followup · coach invite/resend) | **لا** — السر موجود في GitHub **بلا أي مرجع في أي workflow** (مقيس) | **runtime فقط** |
+| `EMAIL_FROM` | ✓ (send-email · invite) | — | **runtime فقط** |
+| `EMAIL_REPLY_TO` | ✓ (send-email) | — | **runtime فقط** |
+| `UPSTASH_REDIS_REST_URL` | ✓ (`src/lib/rate-limit.ts`) | **لا** — السر في GitHub بلا أي مرجع (مقيس) | **runtime فقط** |
+| `UPSTASH_REDIS_REST_TOKEN` | ✓ (نفس الملف) | **لا** — كذلك | **runtime فقط** |
+| `NEXT_PUBLIC_GA_ID` | ✓ (`src/components/root-shell.tsx` — وسم GA) | — | **build-time** |
+| `NEXT_PUBLIC_SITE_URL` | ✓ 9 | — | **build-time (plain)** |
+| `EVO_CRON_SECRET` | ✓ (`/api/evo/followup/dispatch`) | — | **runtime فقط** |
+| `EVO_FOLLOWUP_ENABLED` | ✓ (نفس المسار) | — | **runtime فقط** |
+| `EVO_FOLLOWUP_FROM` | ✓ (نفس المسار) | — | **runtime فقط** |
+| `SUPABASE_URL` | **—** (التطبيق المنشأ لا يقرؤه) | سكربتات تشغيل فقط كـ fallback: `scripts/db-backup.mjs` · `storage-backup.mjs` · `storage-inventory.mjs` · `storage-restore.mjs` · `db-restore.mjs` · `notifications-prune.mjs` (`SUPABASE_URL \|\| NEXT_PUBLIC_SUPABASE_URL` — والworkflows تمرر `NEXT_PUBLIC_*`) | **alias تشغيلي** — يبقى لمرآة التطابق مع القديم |
+| `EVO_PARTNER_API_ENABLED` | **صفر استخدام** | صفر | **ميتة** (§4.3 — ضمن نمط guard-stale-refs) |
+| `SUPABASE_ANON_KEY` | **صفر** (الكود يستخدم `NEXT_PUBLIC_SUPABASE_ANON_KEY`) | صفر | **ميتة** (§4.3) |
+| `SUPABASE_PUBLISHABLE_KEY` | **صفر** | صفر | **ميتة** (§4.3) |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | **صفر** | صفر | **ميتة** (§4.3) |
+
+- **مفاتيح build-time `NEXT_PUBLIC_*` (تُدمج في الـ bundle وقت البناء):** المتوفرة `NEXT_PUBLIC_SUPABASE_URL` · `NEXT_PUBLIC_SUPABASE_ANON_KEY` · `NEXT_PUBLIC_SITE_URL` · `NEXT_PUBLIC_GA_ID` — والمفقودة (تحتاج إدخالًا يدويًا قبل أي نشر كامل الميزات): `NEXT_PUBLIC_PAYPAL_CLIENT_ID` · `NEXT_PUBLIC_ADSENSE_CLIENT` (§12.2).
+- **الـ 8 Sensitive الغائبة (MANUAL_REQUIRED — §12.2) لا تزال غائبة**: `PAYPAL_CLIENT_ID` · `PAYPAL_CLIENT_SECRET` · `PAYPAL_MODE` · `PAYPAL_WEBHOOK_ID` · `NEXT_PUBLIC_PAYPAL_CLIENT_ID` · `NEXT_PUBLIC_ADSENSE_CLIENT` + توصية §4.3 بعدم إدخال `SUPABASE_JWT_SECRET`/`SUPABASE_SECRET_KEY` إطلاقًا.
+- **مكررة/غير ضرورية للـ rescue:** مداخل `development` الخمسة (على `NEXT_PUBLIC_SUPABASE_URL`/`ANON`/`SUPABASE_SERVICE_ROLE_KEY`/`CRON_SECRET`/`PEXELS_API_KEY`) — خاصة بـ `vercel dev` المحلي لا بالاستعادة؛ **تبقى** (مرآة تطابق مع القديم، بلا أي أثر تشغيلي) والمفاتيح الأربعة الميتة أعلاه (ميراث §12.4-2 الموثق — استبعادها قرار مالك §13.6).
+- **مقارنة الأساسي ↔ الاحتياطي (مقيسة):** 37 مدخلًا في القديم = 29 منقولة (متطابقة أسماء/أهداف/أنواع — §12.3) + 8 Sensitive غائبة. **كل ما يجب أن يبقى في الاحتياطي موجود**؛ الوحيدة القابلة للاستبعاد مستقبلًا بلا أي أثر: المفاتيح الأربعة الميتة + (اختياريًا) مداخل development — كلاهما بانتظار أمر مالك.
+
+### 13.4 علاقة Vercel Environment Variables ↔ GitHub Actions Secrets (طلب صريح من المالك)
+
+- سر GitHub **`VERCEL_TOKEN`** (موجود منذ 2026-09-07): يستخدمه **workflow واحد فقط: `vercel-cleanup.yml`** (مرجعان فيه: preflight + خطوة التنظيف) — **الغرض: حذف النشرات القديمة في الحساب الأساسي حصرًا** (توكن project-scoped للمشروع القديم `prj_y4pHM9…` في فريق `muscleshubfit-2941s` — مقيس: لا يرى فريق `aalkemos` إطلاقًا 403). لا ينشر كودًا ولا يمس الاحتياطي. **لم يُلمس ولن يُلمس** (لا نقل/حذف/تدوير — الاستبدال بند B4 وقت cutover فقط).
+- **لا يحتاج أي تغيير الآن**: استمرار `vercel-cleanup` في تنظيف الأساسي هو المطلوب (وهو الحل الموثق لتجاوز 10GB في الأساسي).
+- **أسرار GitHub موجودة بلا أي مرجع فعلي في workflows (مقيس):** `BREVO_API_KEY` · `UPSTASH_REDIS_REST_URL` · `UPSTASH_REDIS_REST_TOKEN` · `REPO_ACCESS_TOKEN` — لا تُمس (قرار تنظيفها للمالك؛ القيم غير قابلة للقراءة عبر API أصلًا).
+- **المتغيرات المشتركة بالتصميم**: `CRON_SECRET` ومفاتيح Supabase موجودة في Vercel (الجهتين) وGitHub Secrets معًا — كل جهة تستهلكها مستقلة؛ لا علاقة مزامنة بينهما.
+- **قاعدة هذا الفريم:** صفر قراءة قيم · صفر نقل · صفر حذف · صفر تعديل لأي Secret من GitHub (قائمة الأسماء فقط عبر API للقراءة).
+
+### 13.5 سبب Deployment Storage + التنظيف الآمن المقترح (لا شيء نُفّذ — كله بانتظار أمر مالك)
+
+**السبب المقيس (ثلاثة عوامل تضافرت خلال 10-04 وحده):**
+1. `createDeployments: enabled` + Production Branch `main` → كل دفعة إلى main بنت نشرًا Production، وكل دفعة إلى الفروع المؤقتة بنت Preview — **15 نشرة في ~15 ساعة**.
+2. قاعدة مسارات `ignore-step.sh` → الدفعات التي لمست `.github/`/`scripts/` بُنيت **رغم وسم `[vercel skip]`** (5 Production جاهزة منها).
+3. **لا آلية تنظيف تستهدف الاحتياطي إطلاقًا**: `vercel-cleanup` (التوكن الوحيد المتاح لـ GitHub) project-scoped للقديم — مقيس 403 على فريق `aalkemos` — بينما انتهاء الـ 30 يومًا التلقائي بعيد (نشرات 10-04) → **11 نشرة جاهزة تراكمت فوق حصة Hobby 10GB** (لوحة المالك: **10.62 GB / 10 GB**).
+
+**حدود القياس (موثقة بشفافية):** أحجام البايت لكل نشر غير قابلة للقراءة بتوكنات هذا الفريم (endpoint ملفات النشرة 404 · usage API محصور في Pro/Enterprise — مقيس) — القياس المرجعي الموثق في `vercel-cleanup.yml`: ~350MB+ للنشر (مكتبة صور كبيرة) — 11 جاهزة ≈ استنفاد الحصة، متسقًا مع رقم اللوحة.
+
+**قائمة التنظيف المقترحة (كلها قابلة لإعادة الإنتاج من git — الحذف حصرًا بأمر مالك):**
+
+| المجموعة | النشرات | الأمان |
+|---|---|---|
+| **آمنة حتمًا (10)** | 6 Previews: `dpl_GUqorFCv` · `dpl_8R3RsUA8` · `dpl_7JV7FRTm` · `dpl_ZZtkgP6G` · `dpl_BemTGzhc` (من `gd3-offsite`/`gd4-restore-drill`) · `dpl_8XhNUn91` (من `gd2-retention`) — الفروع موجودة | لا aliases · قابلة لإعادة البناء من الفروع |
+| | 4 Production متجاوزة: `dpl_Ges29CBi` · `dpl_9U2iBfbx` · `dpl_7FVrsvkB` · `dpl_DPucaBSTiq` — كلها قبل آخر جاهز | لا تخدم أي اسم (الاسم على الأحدث) |
+| **قرار المالك (1)** | آخر Production الجاهز `dpl_B4bkpHdP` (00e37ba8 — يخدم `alkemos.vercel.app` وتسجل عليه الـ crons) | انظر الخيارين أدناه |
+
+- **الخيار (أ) — الموصى به لنسخة باردة حقيقية:** حذفه هو أيضًا → يتحقق قانون §6 حرفيًا: **صفر Production → الـ crons تُلغى تلقائيًا** (القاعدة المقيسة: الـ crons تعمل ضد آخر Production) → الحساب بارد تمامًا + التخزين يُحرَّر بالكامل (~الحد الأقصى المتاح) + `alkemos.vercel.app` يتوقف عن التقديم العلني (مطلوب لبرودة كاملة؛ النشر قابل لإعادة الإنتاج من `00e37ba8` في أي لحظة).
+- **الخيار (ب):** إبقاؤه نسخة قابلة للتصفح + **تعطيل الـ crons يدويًا من لوحة Vercel** (Project ▸ Settings ▸ Cron Jobs — لا يوجد API عام لتعطيل الـ crons المسجلة؛ قِست المحاولات: PATCH يرفض الحقل وendpoints الـ crons ترجع not-found) → يبقى نشر علني حي + **التخزين يظل فوق الحدة** (قد يمنع أي نشر طوارئ — عكس هدف الجاهزية) — لهذا لا يُوصى به.
+- **إعادة توجيه `vercel-cleanup` للاحتياطي: غير مطلوب ولا موصى به** بعد التنظيف (باردة = لا تراكم جديد بعد تعطيل النشر التلقائي §13.2).
+
+### 13.6 ما ينتظر أمر المالك (لا شيء منها نُفّذ في هذا الفريم)
+
+1. **تنظيف النشرات** (§13.5): الخيار (أ) الموصى به (حذف 11) أو (ب) (حذف 10 + إبقاء الأخير + تعطيل يدوي للـ crons من اللوحة).
+2. **إدخال الـ 8 قيم MANUAL_REQUIRED** (§12.2) من لوحات PayPal/AdSense (وقت الحاجة لنشر كامل الميزات — لا للاستعادة الأساسية).
+3. (اختياري، بلا أثر تشغيلي) حذف المفاتيح الأربعة الميتة ومداخل development من الاحتياطي (§13.3).
+4. (لاحقًا، للتحقق الدوري) أول preview يدوي + بطارية §7 — بعد استقرار التخزين.
+5. (ثابت) كل ما عدا ذلك في الخطة يبقى كما هو — لا cutover ولا DNS ولا أي مساس بالأساسي.
+
 ---
 
 > **امتثال:** إطار docs-only (§79 — بوابات docs الثابتة فقط محليًا) · `[vercel skip]` في الالتزام (VERCEL-USAGE-6) · لا أسرار ولا قيم (§7) · صف في `docs/README.md` بنفس الفريم · مدخل `worklog.md` أعلى الملف · المصادر أحادية: أسماء/مصادر env من `RECOVERY-SECRETS-SOURCES.md`، حالة Production من القياس الحي، حالة الجديد من API الفريق الجديد (قراءة فقط).
 > **تحديث فريم ENV-TRANSFER-BACKUP-2026-10-03 (أمر المالك «نفّذ الآن فقط البندين»):** أُضيف §12 (سجل نقل المتغيرات المنفّذ) وحُدّثت §2/§3-A1/§8-2/§11 — **القيم المنقولة لم تُخزَّن في أي ملف داخل المستودع** (أسماء/أهداف/عدادات فقط؛ التقرير الكامل بالقيم محلي خارج المستودع). ما نُفّذ: البند §8-2 وحده؛ عزلة §6 ما زالت قائمة (صفر deployments جاهزة · صفر crons).
+> **تحديث فريم COLD-STANDBY-AUDIT-2026-10-05 (أمر المالك «نفّذ الآن Audit + تعديل خطة حساب Vercel الاحتياطي فقط»):** أُضيف §13 (سجل الاكتشاف والتنفيذ والتصنيف) وحُدّثت الترويسة/§2/§3-A2-A5/§6/§8-3/§8-7/§11. ما نُفّذ فعليًا: **التغيير الآمن الوحيد** (`createDeployments: enabled → disabled` — مقيس §13.2) — كل ما عداه توثيق ينتظر أمر مالك (§13.6)؛ صفر حذف · صفر قيم · الأساسي/DNS/Cloudflare/Supabase/GitHub Actions لم تُمس (الأساسي قراءة-فقط طوال الفريم — آخر نشر جاهز فيه 00e37ba8 كما هو).

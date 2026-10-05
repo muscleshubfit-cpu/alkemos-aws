@@ -12093,3 +12093,24 @@ Stage Summary:
 - القرار الحاكم: النسخة تبقى preview-only حتى cutover معلن؛ أول Production Deployment في الجديد = لحظة تسجيل crons = ممنوع قبل يومها.
 - ما ينقص للجاهزية (يُنفذ بأمر مالك): قيم §4.2 اليدوية + نقل §4.1 + تطبيق §6 + أول preview + بطارية §7.
 
+
+<!-- rotated 2026-10-05 by scripts/worklog_rotate.py (Phase 288, ARCH-REMEDIATION): 1 entries moved verbatim from worklog.md -->
+---
+Task ID: ENV-TRANSFER-BACKUP-2026-10-03
+Agent: Super Z (main)
+Task: أمر المالك 2026-10-03 «نفّذ الآن فقط البندين التاليين»: (1) نقل Environment Variables من مشروع Vercel القديم إلى المشروع الاحتياطي الجديد `alkemos` (فريق `aalkemos`) — القيم القابلة للقراءة آليًا فقط بنفس الأسماء/الأهداف/الأنواع؛ الـ Sensitive تسجَّل MANUAL_REQUIRED بلا تخمين ولا بدائل؛ (2) تحديث خطة النسخة بنتائج النقل. قيود صارمة: لا Production Deployment · لا DNS · لا Cutover · لا Cloudflare · لا Supabase · لا تعديل كود.
+
+Work Log:
+- (النقل — البند §8-2 من الخطة) قراءة آلية للقديم: 37 مدخلًا → 29 قابلًا للقراءة (فك تشفير per-env عبر Vercel API) + 8 Sensitive غير مقروءة. إنشاء 29/29 مدخلًا في الجديد (HTTP 201 لكل مدخل) بنفس المفتاح/targets/النوع حرفيًا — 25 مفتاحًا فريدًا (اكتشاف موثق §12.4-1: ‎`NEXT_PUBLIC_SUPABASE_URL`/`ANON_KEY` كل منهما 3 مداخل منفصلة لا مدخل واحد متعدد الأهداف).
+- (تجاوز موثق §12.4-2) أمر المالك «انقل جميع القيم التي يمكن قراءتها آليًا» شمل 4 مفاتيح §4.3 الميتة القابلة للقراءة (`EVO_PARTNER_API_ENABLED` · `SUPABASE_ANON_KEY` · `SUPABASE_PUBLISHABLE_KEY` · `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`) — أثر صفر على سلوك الكود؛ النسخة صارت مرآة كاملة بدل النسخة النظيفة.
+- (التحقق — كله مقيس) أسماء 29/29 · أهداف 29/29 مجموعة-بمجموعة · أنواع مطابقة (‎`NEXT_PUBLIC_SITE_URL` نقلت plain كما هي؛ البقية encrypted؛ صفر مداخل sensitive أُنشئت — لا تخمين) · **القيم 29/29: فُكّ تشفير كل مدخل من الجديد نفسه وقورن بالقديم → متطابقة** · صفر ناقص/متعارض/دخيل.
+- (المشروع القديم لم يُمس) بصمة الـ37 مدخلًا ‏(id/key/target/type/updatedAt) متطابقة قبل/بعد — القراءة فقط؛ القياس البعدي المستقل: 37 كما هي (8 Sensitive + 29 مقروءة) · hiddenProductionEnvCount=0.
+- (صفر أثر نشر) إنشاء env لا يشعل بناءً: آخر نشر الجديد ما زال CANCELED (دفعة docs ‏`ec6977a5`) · endpoint crons يرد not_found (صفر crons — عزلة §6 قائمة) · لا مساس DNS/CF/Supabase/كود.
+- (التوثيق) قسم §12 جديد بالخطة (12.1 المنقول · 12.2 الـ MANUAL_REQUIRED الثماني — بينها ‏`SUPABASE_JWT_SECRET`/`SUPABASE_SECRET_KEY` بترتيب §4.3 عدم الإدخال · 12.3 التحقق · 12.4 الاختلافات الست) + تحديث §2/§3-A1/§8-2/§11 + صف docs/README.md — صفر أسرار: أسماء/أهداف/عدادات فقط؛ التقرير الكامل بالقيم محلي خارج المستودع.
+- (بوابات) docs_parity ✓ · docs_audit ✓ (دوران H5 عبر worklog_rotate — نافذة 12) · فحص أنماط التوكنات على الملفات المضافة = صفر.
+
+Stage Summary:
+- النسخة الاحتياطية تحمل الآن 29/29 متغيرًا قابلًا للقراءة (قيمًا وأهدافًا وأنواعًا)؛ الباقي 8 قيم MANUAL_REQUIRED يدوية (PayPal ×5 · AdSense · ‏`SUPABASE_JWT_SECRET` · `SUPABASE_SECRET_KEY` — الأخيرتان بتوصية §4.3).
+- كل القيود الصارمة تحققت مقيسًا: لا Production Deployment · لا DNS · لا cutover · لا Cloudflare · لا Supabase · لا تعديل كود · القديم لم يُمس.
+- Push status: pushed (docs-only بـ `[vercel skip]` — VERCEL-USAGE-6)
+
