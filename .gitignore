@@ -113,6 +113,8 @@ pnpm-lock.yaml
 !/scripts/notifications-prune.mjs
 #   scripts/backup-retention.mjs → weekly GFS working-tree prune of the private backup repo: daily 7 / weekly 5 (Sunday-anchored) / monthly 6 with newest-always floor, one-commit deletion, git history intact (backup-retention.yml, BACKUP-STRATEGY GD-2 2026-10-04 — same /scripts/* blanket trap as the family; exception added in the same frame)
 !/scripts/backup-retention.mjs
+#   scripts/gemini-usage-report.mjs → Gemini weekly usage report generator over the Upstash per-tag counters: SCAN+GET last 7 full days, per-tag + daily aggregation (gemini-weekly-usage-report.yml, Phase 343 2026-10-06 — hit the same /scripts/* blanket trap as the family: committed-untracked in 343 and the smoke dispatch failed "Cannot find module"; exception added in the 343-FIXUP frame)
+!/scripts/gemini-usage-report.mjs
 /skills/
 /tests/
 /examples/

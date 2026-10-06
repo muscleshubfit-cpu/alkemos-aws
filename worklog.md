@@ -11,10 +11,12 @@ Work Log:
 - (أسلاك البيئة): GEMINI_API_KEY + زوج Upstash أُضيفا اختياريًا (بلا أي preflight إضافي — الأرضية الصلبة GROQ+NVIDIA كما هي) إلى blog-post-ar.yml · blog-post-en.yml · process-ai-jobs.yml — مدونة/خطط/queue يشغلوا نفس route handlers بالـGHA فورًا مع gemini-first.
 - (الحوكمة بنفس الكوميت): AGENTS §8 PROVIDER LAYER + PROVIDER BALANCE (قانون gemini-first 343) · STATE 343 (ضغط 342 للحفاظ على سقف 32KB) · صف CI_GATES (N) + صف docs/README (§3.8) · .env.example · metadata.json · DEVELOPER_GUIDE · TECH_REFERENCE (EVO-5: بند «NO 4th provider» مجمع بنص الأمر) · EVO-MASTER-PLAN · تعليقا external-search.ts (منع الاستدعاء المباشر للعميل قائم) وplan-generator.ts · تدوير H5 (13→12).
 - (الاختبارات): src/lib/__tests__/ai-provider-gemini.test.ts جديد (17 كاناري — بيئة node: URL/هيدر/جسم الترجمة · thought-skip · jsonMode · خطأ 429 صادق · SSE deltas حقيقية عبر ReadableStream · تصنيف الأخطاء · شكل المفاتيح · fail-soft · pipeline payload) + تحديث pins ai-provider.test.ts (registry أربعة · السلسلتان lead=gemini · أربعة مزودين ممثلين) — باقي 137 ملف اختبار لم يُمس.
+- (343-FIXUP — نفس اليوم): جولة dispatch دخانية للـ workflow الأسبوعي (تشغيل 37393122234 بعد هبوط PR #6) كشفت مصيدة `/scripts/*` الشهيرة (فئة Ph 189/288/290): scripts/gemini-usage-report.mjs كان committed-untracked وفشل التشغيل بـ«Cannot find module» بينما الـ preflight أخضر — الفكساب بالكوميت ذاته: استثناء `!/scripts/gemini-usage-report.mjs` + سطر توثيقي بالهيدر؛ إعادة dispatch للتأكيد فور هبوط هذا الكوميت ([vercel skip] — workflow-only، التطبيق لم يُمس).
 
 Stage Summary:
 - Gemini رابع المزودين والخيار الأول فعليًا للمدونة بكل خطواتها والخطط ومحادثات EVO بمفتاح مجاني، والسلّم بعد gemini والـfallback/الـqueue/الـrotation-without-key بحروفها ما قبل 343 — الرجوع الطارئ = إزالة GEMINI_API_KEY من Vercel/GHA بلا أي كود.
 - المراقبة الأسبوعية مسلحة: عدادات لكل وسم → تقرير docs/ai/gemini-weekly-usage-report.md يتحدث آليًا كل اثنين 00:15 بتوقيت القاهرة؛ الأثر الحرفي لكل محاولة سطر [gemini-usage] بلوجات Vercel/GHA.
+- FIXUP 343: مصيدة /scripts/* أُصلحت بنفس اليوم (استثناء + هيدر) — أول تقرير أتمتي متوقع 2026-10-12 ودخان إعادة الـ dispatch هو التأكيد النهائي.
 
 ---
 Task ID: AWS-COST-AUDIT-2026-10-05
