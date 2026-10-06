@@ -47,6 +47,7 @@ jobs:
           exit $missing
 
       - name: Generate weekly usage report
+        timeout-minutes: 3 # honest red beats a silent hang (343-FIXUP-2)
         env:
           UPSTASH_REDIS_REST_URL: ${{ secrets.UPSTASH_REDIS_REST_URL }}
           UPSTASH_REDIS_REST_TOKEN: ${{ secrets.UPSTASH_REDIS_REST_TOKEN }}

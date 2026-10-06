@@ -8,6 +8,22 @@
  * for the LAST 7 FULL DAYS and updates docs/ai/gemini-weekly-usage-report.md
  * (newest week on top, 8-week retention — older weeks live in git history).
  *
+ * 343-FIXUP-2 (2026-10-06): the first smoke dispatch (run 37393414575) hung
+ * silently for the whole 10-minute job timeout. ROOT CAUSE (reproduced on a
+ * local mock-Upstash): pipeline() returns ONE entry per command, but the SCAN
+ * result was destructured one level too high — `const [next, batch] = await
+ * pipeline([...SCAN])` bound next = the WHOLE [cursor, keys] array, so cursor
+ * became String([...]) (e.g. "0,") which NEVER equals "0" → an unbounded loop
+ * of SUCCESSFUL SCANs (no error ever thrown, zero output). Hardened here:
+ *   * correct one-level destructuring + result-shape guard,
+ *   * ONE global SCAN over `gemini:usage:*` (was 7 per-day scans), bucketed
+ *     locally from the key itself,
+ *   * HARD page cap (2000) + wall-clock budget (90s) — beyond either, an
+ *     HONEST red with the measured page/key counts, never a silent hang,
+ *   * progress line every 25 pages on stderr (pages/cursor/keys so far),
+ *   * pipeline responses carrying an `error` field (and null SCAN cursor)
+ *     now throw with the command + message instead of poisoning the cursor.
+ *
  * This script NEVER commits by itself — the workflow step commits with the
  * owner identity (GIT-IDENTITY law: muscleshubfit@gmail.com, [vercel skip]).
  * Fails honestly (exit 1) when the Upstash secrets are missing.
@@ -28,6 +44,11 @@ const REPORT_PATH = "docs/ai/gemini-weekly-usage-report.md";
 const WINDOW_DAYS = 7;
 const MAX_SECTIONS = 8;
 const MARKER = "<!-- AUTO-WEEKLY-START -->";
+const SCAN_PATTERN = "gemini:usage:*";
+const SCAN_COUNT = 1000; // hint — keys per SCAN page
+const MAX_PAGES = 2000; // hard cap: 2000 × 1000 = 2M keys scanned max
+const SCAN_BUDGET_MS = 90_000; // wall-clock budget for the whole scan phase
+const PROGRESS_EVERY = 25;
 const METRICS = [
   "calls",
   "ok",
@@ -51,31 +72,74 @@ function dayKey(offsetDays) {
 }
 
 async function pipeline(cmds) {
-  const res = await fetch(`${UPSTASH_URL}/pipeline`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${UPSTASH_TOKEN}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(cmds),
-    signal: AbortSignal.timeout(10_000),
-  });
+  let res;
+  try {
+    res = await fetch(`${UPSTASH_URL}/pipeline`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${UPSTASH_TOKEN}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(cmds),
+      signal: AbortSignal.timeout(10_000),
+    });
+  } catch (e) {
+    throw new Error(`Upstash pipeline network failure: ${e && e.message ? e.message : e}`);
+  }
   if (!res.ok) throw new Error(`Upstash pipeline HTTP ${res.status}`);
   const data = await res.json();
-  if (!Array.isArray(data)) throw new Error("Upstash pipeline: unexpected response");
-  return data.map((r) => r.result);
+  if (!Array.isArray(data) || data.length !== cmds.length) {
+    throw new Error(`Upstash pipeline: unexpected response shape (${typeof data})`);
+  }
+  data.forEach((r, i) => {
+    if (r && r.error) {
+      throw new Error(`Upstash pipeline: command ${cmds[i][0]} failed: ${r.error}`);
+    }
+  });
+  return data.map((r) => (r ? r.result : null));
 }
 
-async function scanKeys(pattern) {
+async function scanAllKeys(pattern) {
   let cursor = "0";
   const keys = [];
+  const started = Date.now();
+  let pages = 0;
   do {
-    const [next, batch] = await pipeline([
-      ["SCAN", cursor, "MATCH", pattern, "COUNT", "500"],
+    // pipeline() returns ONE entry per command; SCAN's own result is
+    // [nextCursor, keysBatch] — destructuring the pipeline array directly
+    // was the 343-FIXUP-2 silent-hang bug (cursor became String([...]) and
+    // never equaled "0" → unbounded loop of successful SCANs).
+    const results = await pipeline([
+      ["SCAN", cursor, "MATCH", pattern, "COUNT", String(SCAN_COUNT)],
     ]);
+    const scanResult = results[0];
+    if (!Array.isArray(scanResult) || scanResult.length < 2) {
+      throw new Error(`Upstash SCAN: unexpected result shape after ${pages} pages (honest red)`);
+    }
+    const [next, batch] = scanResult;
+    if (next === null || next === undefined) {
+      throw new Error(`Upstash SCAN returned a null cursor after ${pages} pages (honest red)`);
+    }
     cursor = String(next);
     if (Array.isArray(batch)) keys.push(...batch);
+    pages++;
+    if (pages % PROGRESS_EVERY === 0) {
+      console.error(
+        `[scan] pages=${pages} cursor=${cursor} keys=${keys.length} elapsed=${Math.round((Date.now() - started) / 1000)}s`,
+      );
+    }
+    if (pages > MAX_PAGES) {
+      throw new Error(
+        `Upstash SCAN page cap exceeded: >${MAX_PAGES} pages for pattern ${pattern} (keyspace too large / cursor not converging — honest red, no silent hang)`,
+      );
+    }
+    if (Date.now() - started > SCAN_BUDGET_MS) {
+      throw new Error(
+        `Upstash SCAN budget exceeded: ${Math.round((Date.now() - started) / 1000)}s for pattern ${pattern} after ${pages} pages, ${keys.length} keys (honest red, no silent hang)`,
+      );
+    }
   } while (cursor !== "0");
+  console.error(`[scan] done: pages=${pages} keys=${keys.length} in ${Math.round((Date.now() - started) / 1000)}s`);
   return keys;
 }
 
@@ -84,36 +148,63 @@ function fmt(n) {
 }
 
 function main() {
+  // window = the last 7 FULL UTC days (today excluded)
+  const window = new Map(); // date -> calls
+  for (let i = 1; i <= WINDOW_DAYS; i++) {
+    window.set(dayKey(i), 0);
+  }
+  const windowSet = new Set(window.keys());
+
   // feature -> metric -> total
   const perFeature = new Map();
-  const perDay = new Map();
+  const perDay = new Map(window);
 
-  for (let i = 1; i <= WINDOW_DAYS; i++) {
-    const date = dayKey(i); // the last 7 FULL UTC days (today excluded)
-    perDay.set(date, 0);
-    // Note: SCAN per day keeps memory flat and lets us attribute calls.
-  }
-
-  // One SCAN per day (7 scans) → GET all matched keys in one pipeline.
   (async () => {
-    for (const [date] of perDay) {
-      const keys = await scanKeys(`gemini:usage:${date}:*`);
-      if (keys.length === 0) continue;
-      const values = await pipeline(keys.map((k) => ["GET", k]));
-      keys.forEach((key, idx) => {
-        const parts = String(key).split(":");
-        const feature = parts[3] || "unknown";
-        const metric = parts[4] || "unknown";
-        const v = Number(values[idx] || 0);
-        if (!perFeature.has(feature)) {
-          perFeature.set(feature, Object.fromEntries(METRICS.map((m) => [m, 0])));
-        }
-        const row = perFeature.get(feature);
-        if (!(metric in row)) row[metric] = 0; // unknown metric — kept honest
-        row[metric] += v;
-        if (metric === "calls") perDay.set(date, (perDay.get(date) || 0) + v);
-      });
+    const keys = await scanAllKeys(SCAN_PATTERN);
+
+    // Bucket strictly from the key shape: gemini:usage:{date}:{feature}:{metric}
+    // (the tracker sanitizes ":" inside feature/metric, so the shape holds).
+    let outOfWindow = 0;
+    const gets = [];
+    const metas = [];
+    for (const key of keys) {
+      const parts = String(key).split(":");
+      if (parts.length < 5 || parts[0] !== "gemini" || parts[1] !== "usage") {
+        outOfWindow++; // foreign key caught by the pattern — never counted
+        continue;
+      }
+      const date = parts[2];
+      if (!windowSet.has(date)) {
+        outOfWindow++; // today's partial keys + stale days outside the window
+        continue;
+      }
+      gets.push(["GET", key]);
+      metas.push({ date, feature: parts[3], metric: parts.slice(4).join(":") });
     }
+
+    if (gets.length > 0) {
+      const CHUNK = 500;
+      for (let i = 0; i < gets.length; i += CHUNK) {
+        const slice = gets.slice(i, i + CHUNK);
+        const metaSlice = metas.slice(i, i + CHUNK);
+        const values = await pipeline(slice);
+        metaSlice.forEach((meta, idx) => {
+          const v = Number(values[idx] || 0);
+          if (!perFeature.has(meta.feature)) {
+            perFeature.set(meta.feature, Object.fromEntries(METRICS.map((m) => [m, 0])));
+          }
+          const row = perFeature.get(meta.feature);
+          if (!(meta.metric in row)) row[meta.metric] = 0; // unknown metric — kept honest
+          row[meta.metric] += v;
+          if (meta.metric === "calls") {
+            perDay.set(meta.date, (perDay.get(meta.date) || 0) + v);
+          }
+        });
+      }
+    }
+    console.error(
+      `[bucket] window-keys=${gets.length} out-of-window=${outOfWindow} features=${perFeature.size}`,
+    );
 
     const from = dayKey(WINDOW_DAYS);
     const to = dayKey(1);
@@ -153,7 +244,7 @@ function main() {
     lines.push("");
     lines.push("| UTC day | Calls |");
     lines.push("|---|---:|");
-    for (const [date] of perDay) lines.push(`| ${date} | ${fmt(perDay.get(date) || 0)} |`);
+    for (const [date] of window) lines.push(`| ${date} | ${fmt(perDay.get(date) || 0)} |`);
     lines.push("");
     lines.push(
       "> **التفسير الثابت:** fail_quota (429/402/403) على الخطة المجانية = سلوك متوقع — السلسلة تكمل بالمزودين الثلاثة الآخرين بنفس الترتيب (قانون الـ fallback لم يُمس). fail_server (5xx) = ضغط مؤقت على الموديل. المصدر: عدادات `gemini:usage:*` (TTL 30 يومًا) من `src/lib/ai-usage-gemini.ts` — سطر `[gemini-usage]` في لوجات Vercel/GHA هو الأثر الحرفي لكل محاولة.",
