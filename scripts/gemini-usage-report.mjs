@@ -269,12 +269,22 @@ function main() {
     const tail = doc.slice(headEnd);
 
     // Existing weekly sections (each starts with "## Week of") — newest first,
-    // Week-0 baseline included; hard cap MAX_SECTIONS.
+    // Week-0 baseline included; hard cap MAX_SECTIONS. 343-FIXUP-4: a section
+    // re-generated for the SAME week range REPLACES its older copy instead of
+    // stacking duplicates (repeated manual dispatches exposed this).
     const sections = tail
       .split(/\n(?=## Week )/)
       .map((s) => s.replace(/^\n+/, "").replace(/\s+$/, ""))
       .filter(Boolean);
-    const kept = [section, ...sections].slice(0, MAX_SECTIONS);
+    const rangeRe = /^## Week of (\S+) → (\S+)/;
+    const newRange = (section.match(rangeRe) || [])[0];
+    const deduped = sections.filter((s) => !newRange || (s.match(rangeRe) || [])[0] !== newRange);
+    if (deduped.length !== sections.length) {
+      console.error(
+        `[dedup] replaced ${sections.length - deduped.length} existing section(s) for ${newRange}`,
+      );
+    }
+    const kept = [section, ...deduped].slice(0, MAX_SECTIONS);
 
     const out = `${head}\n\n${kept.join("\n\n")}\n`;
     writeFileSync(REPORT_PATH, out, "utf8");
