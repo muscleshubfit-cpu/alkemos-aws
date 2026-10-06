@@ -8,20 +8,32 @@
  * bilingual pair (pair_id + sharedBrief), but each research artifact is
  * still produced by its own single-language run with its own dedup —
  * the two language pipelines keep their independent schedules
- * (AR 05:00 UTC · EN 22:00 UTC). Uses the strongest free models first
- * (INTERLEAVED_STRONGEST_CHAIN: OpenRouter + Groq, strongest-first,
- * automatic fall-through to the next model on failure) to produce, for
- * that ONE language:
+ * (AR 05:00 UTC · EN 22:00 UTC). For that ONE language it produces:
  *   • top 10 search keywords (with estimated search volume)
  *   • top 10 common questions with short answers
  *   • 5 article topic suggestions based on the analysis
  *
+ * PHASE 344 (owner order 2026-10-06 «نفّذ إصلاح P0 بحيث يستخدم بحثًا
+ * خارجيًا حقيقيًا [Google Search grounding] وتدخل نتائج البحث الفعلية
+ * في عملية توليد المقال، مع إزالة الاعتماد على محاكاة البحث أو الـ
+ * curated fallback كبديل للبحث الحقيقي»): P0 now runs ONE REAL grounded
+ * Gemini call (callGeminiGroundedSearch — tools:[{googleSearch:{}}]) and
+ * the live evidence (webSearchQueries + grounded result pages) is stored
+ * on the artifact (searchedQueries + sources) and flows into P1/P2
+ * prompts (blog-pipeline researchDigest + VERIFIED SEARCH CONTEXT).
+ * There is NO substitute anymore: the old chain-of-LLs "research from
+ * training knowledge" and the deterministic curated fallback are RETIRED
+ * as runtime paths — a failed/ungrounded attempt fails the step HONESTLY
+ * and the GHA runner's step-level retry (×3) rides out transient overload;
+ * after that the run dies red instead of silently publishing model memory
+ * or the static pool as "research" (the 2026-10-06 review: run 37390233779
+ * silently fell to curated-fallback). fallbackResearch() below survives
+ * as a TEST FIXTURE ONLY (blog-*-tests import it), never called at runtime.
+ *
  * The niche is fixed: fitness / nutrition / workouts / health.
  * Output is stored on the queue row inside `article_bundle.research0`.
- * A deterministic curated fallback keeps the pipeline alive when every
- * model fails (never blocks the run).
  */
-import { callFreeAIFallbackChain, parseJSON } from "./ai-provider";
+import { callGeminiGroundedSearch, parseJSON } from "./ai-provider";
 import {
   getRecentPostsByLanguage,
   getRecentGeneratedTopics,
@@ -33,10 +45,20 @@ import {
 export type ResearchKeyword = { keyword: string; searchVolume: string };
 export type ResearchFaq = { question: string; answer: string };
 
+/** PHASE 344: a REAL search result page the research was grounded on
+ *  (title + live URL from Gemini groundingMetadata — never fabricated). */
+export type ResearchSource = { title: string; url: string };
+
 export type LanguageResearch = {
   keywords: ResearchKeyword[];
   faqs: ResearchFaq[];
   topics: string[];
+  /** PHASE 344 (owner order — بحث خارجي حقيقي): the Google-Search
+   *  queries the model actually ran + the live result pages it grounded
+   *  on. Optional → legacy bundle rows (pre-344) simply lack the fields
+   *  and downstream prompts stay byte-identical for them. */
+  searchedQueries?: string[];
+  sources?: ResearchSource[];
 };
 
 export type Phase0Result = {
@@ -103,13 +125,39 @@ function normalizeResearch(rawInput: unknown): LanguageResearch {
         .slice(0, 10)
     : [];
 
-  return { keywords, faqs, topics: asStringArray(raw.topics, 5) };
+  // PHASE 344: defensive coercion of the grounding-evidence fields when
+  // the model echoes them inside its JSON (the authoritative values are
+  // attached from groundingMetadata by the caller — model echoes never
+  // fabricate evidence).
+  const searchedQueries = Array.isArray(raw.searchedQueries)
+    ? (raw.searchedQueries as unknown[]).map((q) => String(q ?? "").trim()).filter(Boolean).slice(0, 10)
+    : [];
+  const sources: ResearchSource[] = Array.isArray(raw.sources)
+    ? (raw.sources as unknown[])
+        .map((s): ResearchSource => {
+          const r = (typeof s === "object" && s !== null ? s : {}) as Record<string, unknown>;
+          return { title: String(r.title ?? "").trim(), url: String(r.url ?? "").trim() };
+        })
+        .filter((s: ResearchSource) => s.url.length > 7)
+        .slice(0, 12)
+    : [];
+
+  return {
+    keywords,
+    faqs,
+    topics: asStringArray(raw.topics, 5),
+    ...(searchedQueries.length ? { searchedQueries } : {}),
+    ...(sources.length ? { sources } : {}),
+  };
 }
 
 /**
- * Deterministic curated fallback (pipeline never dies on provider outage).
- * VARIETY FIX (Phase 62): topics ROTATE per run (random offset) and
- * non-duplicate topics against the provided recent titles are preferred.
+ * Deterministic curated pool — TEST FIXTURE ONLY since Phase 344 (owner
+ * order «إزالة الاعتماد على... الـ curated fallback كبديل للبحث
+ * الحقيقي»): nothing at runtime calls this anymore; blog-*-tests import
+ * it to build LanguageResearch fixtures. The pools + concept-freshness
+ * rotation stay verbatim for those fixtures. VARIETY FIX (Phase 62) and
+ * PHASE 176 concept-tag freshness history preserved below.
  *
  * PHASE 176 (owner report «التعديلات الجديدة اختفت مرة أخرى» — live
  * evidence, 09-11: the AR dispatch fell back to the pool and published a
@@ -123,9 +171,7 @@ function normalizeResearch(rawInput: unknown): LanguageResearch {
  * one either: "calorie" matches "calories"). A concept-level repeat
  * with different wording was exactly the 09-11 failure («الاستشفاء
  * والنوم: المفتاح المنسي» vs «كم ساعة نوم يحتاج الرياضي» shared the
- * نوم/استشفاء concepts but only 1-2 exact words). Fewer than 2 fresh
- * topics → the rotated full pool (same degraded semantics as before —
- * the pipeline never dies, P1/P5 guards stay the backstop).
+ * نوم/استشفاء concepts but only 1-2 exact words).
  */
 interface CuratedTopic {
   topic: string;
@@ -333,9 +379,11 @@ export function fallbackResearch(lang: "en" | "ar", recentTitles: string[] = [])
 }
 
 /**
- * PHASE 0 — one chain call per language, strongest free models first,
- * auto fall-through to next model on failure. Returns normalized data;
- * falls back to curated pools only after the whole chain fails.
+ * PHASE 0 — ONE REAL grounded Gemini search per language (owner order
+ * 2026-10-06 Phase 344). No chain, no simulation, no curated substitute:
+ * a failed or ungrounded attempt THROWS (the route's 500 → the runner's
+ * step-level ×3 retry rides out transient overload; a final failure dies
+ * red instead of silently publishing fake research).
  */
 async function researchLanguage(lang: "en" | "ar"): Promise<{ data: LanguageResearch; source: string }> {
   const niche = lang === "ar" ? NICHE_AR : NICHE_EN;
@@ -383,9 +431,9 @@ RECENT ARTICLES' ACTUAL COVERAGE (focus keyword + section structure already used
 ${digestBlock}` : ""}`
     : "";
 
-  const prompt = `You are an SEO research analyst. Niche: ${niche}.
+  const prompt = `You are an SEO research analyst equipped with LIVE Google Search. Niche: ${niche}.
 ${outLang}
-Produce REALISTIC SEO research for a fitness/nutrition blog (use your training knowledge of what people search in this niche; volume labels are estimates like "high/medium/low").
+USE YOUR GOOGLE SEARCH TOOL to ground this research in what people ACTUALLY search RIGHT NOW in this niche (query volume patterns, currently-ranking questions, real People-Also-Ask entries, fresh SERP angles) — model memory alone is NOT acceptable as the evidence base. Volume labels remain estimates ("high/medium/low") informed by what the search results indicate.
 ${recentBlock}
 
 LONG-TAIL KEYWORD LAW (owner directive 2026-09-01):
@@ -399,27 +447,38 @@ Return STRICT JSON only, no markdown fences:
   "topics":   [ "..." ]   // exactly 5 specific, non-generic article topic suggestions NOT overlapping with the recent titles above; EACH must target a long-tail keyword above; VARY the article types across the 5 (guide / myth-busting / comparison / step-by-step plan / science deep-dive); suggestions must differ from the recent coverage at the SEARCH-INTENT and ANGLE level (different reader goal, not just different wording)
 }`;
 
+  // PHASE 344: the REAL grounded call — gemini only (only it can search);
+  // jsonMode is intentionally omitted: the adapter suppresses the JSON
+  // mime-type with tools anyway (REST rejects JSON-mode + tool use), so
+  // the STRICT-JSON instruction above + the 161.5-hardened parseJSON
+  // carry the contract (the Groq Phase 177 pattern).
   try {
-    const { text, model, provider } = await callFreeAIFallbackChain(prompt, {
+    const { text, model, grounding, provider } = await callGeminiGroundedSearch(prompt, {
       tag: "blog:research",
       temperature: 0.7,
       maxTokens: 2_500,
-      jsonMode: true,
-      // Native GHA budget override gives us room; still self-clamped by ai-provider.
       timeoutMs: 55_000,
-      maxModels: 3,
     });
     const parsed = parseJSON<Record<string, unknown>>(text);
     const data = parsed ? normalizeResearch(parsed) : null;
     if (data && data.topics.length > 0 && data.keywords.length >= 5) {
-      console.log(`[blog-research] P0 ${lang} done (${provider}:${model}, kw:${data.keywords.length} faq:${data.faqs.length} topics:${data.topics.length})`);
+      // Attach the AUTHORITATIVE live-search evidence from groundingMetadata
+      // (real queries + real result pages) — model JSON never fabricates it.
+      data.searchedQueries = grounding.searchQueries;
+      data.sources = grounding.sources;
+      console.log(`[blog-research] P0 ${lang} done (${provider}:${model}+googleSearch, kw:${data.keywords.length} faq:${data.faqs.length} topics:${data.topics.length} queries:${grounding.searchQueries.length} sources:${grounding.sources.length})`);
       return { data, source: `${provider}:${model}` };
     }
-    console.error(`[blog-research] P0 ${lang} invalid shape from ${provider}:${model} — using fallback`);
+    throw new Error(
+      `P0 ${lang}: invalid research JSON shape from ${provider}:${model} (topics:${data?.topics.length ?? 0} keywords:${data?.keywords.length ?? 0}) — no substitute allowed`,
+    );
   } catch (e) {
-    console.error(`[blog-research] P0 ${lang} chain failed: ${e instanceof Error ? e.message : e}`);
+    // HONEST FAILURE (owner order 2026-10-06): no simulated search, no
+    // curated fallback — the error propagates, the route returns 500, and
+    // the GHA runner's step-level retry (×3) draws a fresh attempt.
+    console.error(`[blog-research] P0 ${lang} grounded search failed: ${e instanceof Error ? e.message : e}`);
+    throw e;
   }
-  return { data: fallbackResearch(lang, recentTitles), source: "curated-fallback" };
 }
 
 /**
@@ -428,9 +487,12 @@ Return STRICT JSON only, no markdown fences:
  * from the STATIC curated pool (C3) — the root of the cannibalization
  * clusters. The GSC part of the item is owner-blocked (needs the owner's
  * Search Console API credentials — external service, owner decision);
- * what ships NOW is the honest marking: every queue row's bundle carries
- * researchSource: "fallback" | "model", the P0 route ALERTS (no silent
- * fallback), and the admin queue-health panel surfaces it.
+ * what shipped then was the honest marking: every queue row's bundle
+ * carries researchSource: "fallback" | "model", the P0 route ALERTS (no
+ * silent fallback), and the admin queue-health panel surfaces it.
+ * PHASE 344 note: for NEW runs this can never fire — the curated
+ * substitution was removed by owner order; the detector stays for LEGACY
+ * rows/stamps and the panel's historical visibility.
  */
 export function researchUsedFallback(p0Source: string): boolean {
   return p0Source.includes("curated-fallback");

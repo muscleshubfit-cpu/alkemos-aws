@@ -82,11 +82,21 @@ export type InternalLinkCandidate = { slug: string; title: string };
 // archive/PROMPT-LAW-HISTORY.md.
 export const LANG_RULE: Record<"en" | "ar", string> = EDITORIAL_LANG_RULE;
 
-/** Compact JSON view of research fed to prompts (keeps token cost sane). */
+/** Compact JSON view of research fed to prompts (keeps token cost sane).
+ *  PHASE 344 (owner order «تدخل نتائج البحث الفعلية في عملية توليد
+ *  المقال»): the REAL Google-Search evidence (searchedQueries + grounded
+ *  result pages) rides the digest into the P1 outline prompt — empty for
+ *  pre-344 bundle rows, whose digest stays byte-identical to before. */
 function researchDigest(r: LanguageResearch): string {
   const kws = r.keywords.map((k) => `${k.keyword} (${k.searchVolume || "?"})`).join("; ");
   const faqs = r.faqs.map((f) => `Q: ${f.question}`).join(" | ");
-  return `KEYWORDS: ${kws}\nCOMMON QUESTIONS: ${faqs}`;
+  const queries = (r.searchedQueries ?? []).length
+    ? `\nLIVE SEARCH QUERIES (real Google Search this research ran): ${(r.searchedQueries ?? []).join(" | ")}`
+    : "";
+  const srcs = (r.sources ?? []).length
+    ? `\nTOP LIVE SEARCH RESULTS (real pages the research grounded on — title + URL):\n${(r.sources ?? []).slice(0, 8).map((s) => `- ${s.title || "(untitled)"} — ${s.url}`).join("\n")}`
+    : "";
+  return `KEYWORDS: ${kws}\nCOMMON QUESTIONS: ${faqs}${queries}${srcs}`;
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -448,6 +458,16 @@ export async function generateFullArticle(
   const variationSeed =
     VARIATION_SEEDS[lang][Math.floor(Math.random() * VARIATION_SEEDS[lang].length)];
 
+  // PHASE 344 (owner order «تدخل نتائج البحث الفعلية في عملية توليد
+  // المقال»): the writer sees the REAL search pages the research stage
+  // grounded on — facts align with the live SERP coverage instead of
+  // model memory alone. Empty for pre-344 bundles → byte-identical
+  // prompt. The FACT GUARD citation law below is UNCHANGED (owner scope:
+  // feed the results, not rewrite the citation rules).
+  const searchContextBlock = (research.sources ?? []).length
+    ? `\nVERIFIED SEARCH CONTEXT — live Google-Search results the research stage grounded on (use their findings as your factual baseline for numbers, claims and current guidance; the citation law above is unchanged):\n${(research.sources ?? []).slice(0, 8).map((s) => `- ${s.title || "(untitled)"} — ${s.url}`).join("\n")}\n`
+    : "";
+
   // AUDIT_REPORT §9-المرحلة 1, item 2 (2026-09-29): the five writing
   // laws now come from the shared editorial constitution
   // (blog-editorial-law.ts) — byte-exact (asserted at extraction),
@@ -466,6 +486,7 @@ TITLE: ${outline.title}
 SUBTITLE: ${outline.subtitle}
 MAIN KEYWORDS TO COVER NATURALLY: ${research.keywords.slice(0, 6).map((k) => k.keyword).join("; ")}
 LSI KEYWORDS: ${outline.lsiKeywords.join("; ")}
+${searchContextBlock}
 
 LONG-TAIL RULE: the keywords above are LONG-TAIL search phrases — include
 them VERBATIM (or a natural near-verbatim phrasing) inside H2 headings and

@@ -23,6 +23,19 @@
  * (src/lib/ai-usage-gemini.ts) feeding docs/ai/gemini-weekly-usage-report.md
  * (weekly workflow gemini-weekly-usage-report.yml).
  *
+ * PHASE 344 (owner order 2026-10-06 «بحث خارجي حقيقي [Google Search
+ * grounding] يدخل نتائج البحث الفعلية في توليد المقال» + «تبديل إصدار
+ * نموذج Gemini»): (a) the native arm gains GOOGLE SEARCH GROUNDING —
+ * tools:[{googleSearch:{}}] rides generateContent and the response's
+ * groundingMetadata (webSearchQueries + groundingChunks web uri/title)
+ * is extracted as REAL search evidence; the P0 research step calls the
+ * new callGeminiGroundedSearch() directly (no chain substitute — only
+ * gemini can ground, and an ungrounded answer fails honestly). (b) the
+ * default model switches gemini-3.8-flash → gemini-3.5-flash (measured
+ * free-tier 503 «The model is overloaded» on 3.8-flash; 3.5-flash is the
+ * same-tier prior stable version on the free plan) — GEMINI_MODEL still
+ * overrides at runtime and the ladder/fallback after gemini is untouched.
+ *
  * The 2026-08-27 removal banned CONSUMER-side provider fetches and the
  * Gemini SDK; it is superseded for THIS file only by the explicit owner
  * order above. The law that consumers never fetch provider URLs themselves
@@ -134,7 +147,13 @@ export const AI_PROVIDERS: Record<
   gemini: {
     label: "Google Gemini",
     baseUrl: "https://generativelanguage.googleapis.com/v1beta",
-    defaultModel: "gemini-3.8-flash",
+    // PHASE 344 (owner order «تبديل إصدار نموذج Gemini»): default switched
+    // 3.8-flash → 3.5-flash — the 2026-10-06 production review measured
+    // transient free-tier 503 «The model is overloaded. Please try again
+    // later.» on 3.8-flash while the key itself was healthy (live EVO 4/5
+    // + GHA 200); 3.5-flash is the same-tier prior stable version on the
+    // free plan. GEMINI_MODEL still swaps it without a deploy.
+    defaultModel: "gemini-3.5-flash",
     envKey: "GEMINI_API_KEY",
     docsUrl: "https://aistudio.google.com/app/apikey",
     keyPrefix: "AIza",
@@ -284,6 +303,17 @@ export type CallAIOptions = {
    *  ([gemini-usage] logs + Upstash → weekly report). NEVER changes model
    *  ordering or fallback policy. */
   tag?: string;
+  /** GOOGLE SEARCH GROUNDING (Phase 344, owner order «بحث خارجي حقيقي"):
+   *  honored ONLY by the gemini native arm — the request then carries
+   *  tools:[{googleSearch:{}}] so the answer is grounded in LIVE Google
+   *  Search results (groundingMetadata in the response). Other providers
+   *  ignore the flag (they have no search capability). When set, the gemini
+   *  arm also SUPPRESSES responseMimeType: the REST API rejects JSON-mode
+   *  combined with tool use, so STRICT-JSON prompt instructions + the
+   *  161.5-hardened parseJSON carry the contract (the same pattern as the
+   *  Groq Phase 177 json guard). Grounding evidence is consumed via
+   *  callGeminiGroundedSearch() below. */
+  googleSearch?: boolean;
 };
 
 /* ───────────────────────────────────────────────────────────────────────
@@ -300,6 +330,9 @@ type GeminiGenerateResponse = {
   candidates?: Array<{
     content?: { parts?: GeminiPart[] } | null;
     finishReason?: string;
+    /** PHASE 344: present when the request carried tools:[{googleSearch:{}}]
+     *  — the REAL search evidence the answer was grounded on. */
+    groundingMetadata?: GeminiGroundingMetadataRaw | null;
   }> | null;
   promptFeedback?: { blockReason?: string } | null;
   usageMetadata?: {
@@ -308,6 +341,48 @@ type GeminiGenerateResponse = {
     totalTokenCount?: number;
   } | null;
 };
+
+/** Raw REST shape of candidates[0].groundingMetadata (Phase 344). */
+type GeminiGroundingMetadataRaw = {
+  webSearchQueries?: string[] | null;
+  groundingChunks?: Array<{ web?: { uri?: string; title?: string } | null } | null> | null;
+};
+
+/** PHASE 344 — normalized REAL search evidence extracted from a grounded
+ *  response: the queries the model actually ran + the live result pages. */
+export type GeminiGroundingSource = { title: string; url: string };
+export type GeminiGrounding = {
+  searchQueries: string[];
+  sources: GeminiGroundingSource[];
+};
+
+function emptyGeminiGrounding(): GeminiGrounding {
+  return { searchQueries: [], sources: [] };
+}
+
+/** Normalize groundingMetadata → searchQueries (≤10) + sources (≤12,
+ *  deduped by URL). Missing/malformed metadata → empty evidence. */
+function geminiGroundingFromMetadata(
+  meta: GeminiGroundingMetadataRaw | null | undefined,
+): GeminiGrounding {
+  if (!meta) return emptyGeminiGrounding();
+  const searchQueries = Array.isArray(meta.webSearchQueries)
+    ? meta.webSearchQueries.map((q) => String(q ?? "").trim()).filter(Boolean).slice(0, 10)
+    : [];
+  const sources: GeminiGroundingSource[] = [];
+  const seen = new Set<string>();
+  if (Array.isArray(meta.groundingChunks)) {
+    for (const chunk of meta.groundingChunks) {
+      const web = chunk?.web;
+      const url = typeof web?.uri === "string" ? web.uri.trim() : "";
+      if (!url || seen.has(url)) continue;
+      seen.add(url);
+      sources.push({ title: typeof web?.title === "string" ? web.title.trim() : "", url });
+      if (sources.length >= 12) break;
+    }
+  }
+  return { searchQueries, sources };
+}
 
 /** Concatenate non-thought text parts (thought summaries are model CoT —
  *  never user-facing; mirrors callAI's reasoning-delta buffering law). */
@@ -330,7 +405,11 @@ function geminiBuildBody(
     temperature: options.temperature ?? 0.7,
     maxOutputTokens: options.maxTokens ?? 4096,
   };
-  if (options.jsonMode) {
+  // PHASE 344: JSON-mode mime is suppressed when googleSearch is set — the
+  // REST API rejects responseMimeType combined with tool use, so STRICT-JSON
+  // prompt instructions + the hardened parseJSON carry the contract (the
+  // Groq Phase 177 json guard pattern).
+  if (options.jsonMode && !options.googleSearch) {
     // Native mime-type JSON mode — Gemini does NOT server-validate output
     // (unlike Groq's json_object 400s, Phase 177); parseJSON still guards.
     generationConfig.responseMimeType = "application/json";
@@ -341,6 +420,7 @@ function geminiBuildBody(
       : {}),
     contents: [{ role: "user", parts: [{ text: prompt }] }],
     generationConfig,
+    ...(options.googleSearch ? { tools: [{ googleSearch: {} }] } : {}),
   };
 }
 
@@ -358,12 +438,13 @@ function isAbortError(e: unknown): boolean {
   );
 }
 
-/** Non-streaming: POST /models/{model}:generateContent → joined text. */
+/** Non-streaming: POST /models/{model}:generateContent → joined text +
+ *  (Phase 344) normalized grounding evidence when the request was grounded. */
 async function callGeminiGenerate(
   cfg: AIConfig,
   prompt: string,
   options: CallAIOptions,
-): Promise<string> {
+): Promise<{ text: string; grounding: GeminiGrounding }> {
   const started = Date.now();
   const controller = new AbortController();
   const timeoutMs = options.timeoutMs ?? 60_000;
@@ -396,7 +477,17 @@ async function callGeminiGenerate(
     const blockReason = data.promptFeedback?.blockReason;
     const finishReason = data.candidates?.[0]?.finishReason;
     const text = geminiTextFromParts(data.candidates?.[0]?.content?.parts);
-    if (!text) {
+    const grounding = geminiGroundingFromMetadata(
+      data.candidates?.[0]?.groundingMetadata,
+    );
+    // PHASE 344 — HONEST GROUNDING GATE: a googleSearch request whose answer
+    // carries NO grounding evidence was not built on live search; it must
+    // fail (counted isEmpty) instead of passing model memory off as research.
+    const ungrounded =
+      options.googleSearch === true &&
+      grounding.searchQueries.length === 0 &&
+      grounding.sources.length === 0;
+    if (!text || ungrounded) {
       await trackGeminiUsage({
         tag: options.tag,
         model: cfg.model,
@@ -407,11 +498,13 @@ async function callGeminiGenerate(
       }).catch(() => {});
       tracked = true;
       throw new Error(
-        `AI provider ${cfg.provider} returned an empty response` +
-          (blockReason ? ` (blockReason: ${blockReason})` : "") +
-          (finishReason && finishReason !== "STOP"
-            ? ` (finishReason: ${finishReason})`
-            : ""),
+        ungrounded
+          ? `AI provider ${cfg.provider} returned no Google-Search grounding evidence (empty webSearchQueries + groundingChunks) — the answer was not built on live search`
+          : `AI provider ${cfg.provider} returned an empty response` +
+              (blockReason ? ` (blockReason: ${blockReason})` : "") +
+              (finishReason && finishReason !== "STOP"
+                ? ` (finishReason: ${finishReason})`
+                : ""),
       );
     }
 
@@ -424,7 +517,7 @@ async function callGeminiGenerate(
       completionTokens: data.usageMetadata?.candidatesTokenCount,
     }).catch(() => {});
     tracked = true;
-    return text.trim();
+    return { text: text.trim(), grounding };
   } catch (e) {
     if (!tracked) {
       const abort = isAbortError(e);
@@ -583,6 +676,52 @@ async function callGeminiStream(
   }
 }
 
+/* ───────────────────────────────────────────────────────────────────────
+ * GOOGLE SEARCH GROUNDED CALL (Phase 344, owner order 2026-10-06 «بحث
+ * خارجي حقيقي [Google Search grounding]... مع إزالة الاعتماد على محاكاة
+ * البحث أو الـ curated fallback كبديل للبحث الحقيقي»)
+ * One DIRECT native gemini generateContent with tools:[{googleSearch:{}}].
+ * Deliberately NOT routed through callFreeAIFallbackChain: only the gemini
+ * arm can ground, and a non-grounded model's output must never masquerade
+ * as search results — a failure here is HONEST (thrown; the ungrounded
+ * gate above also rejects 200-without-evidence answers), and the caller's
+ * step-level retry (the runner's ×3 law) rides out transient 5xx/overload.
+ * Model: GEMINI_MODEL override or the registry default (3.5-flash since
+ * 344). Every attempt is tracked per-tag exactly like the other arms.
+ * ─────────────────────────────────────────────────────────────────────── */
+
+export type GeminiGroundedSearchResult = {
+  text: string;
+  provider: "gemini";
+  model: string;
+  grounding: GeminiGrounding;
+};
+
+export async function callGeminiGroundedSearch(
+  prompt: string,
+  options: CallAIOptions = {},
+): Promise<GeminiGroundedSearchResult> {
+  const apiKey = getGeminiKey();
+  if (!apiKey) {
+    throw new Error(
+      "callGeminiGroundedSearch: GEMINI_API_KEY is not configured — real Google-Search grounding is unavailable, and no simulated/curated substitute is allowed (owner order 2026-10-06).",
+    );
+  }
+  const model =
+    (process.env.GEMINI_MODEL || "").trim() || AI_PROVIDERS.gemini.defaultModel;
+  const cfg: AIConfig = {
+    provider: "gemini",
+    apiKey,
+    model,
+    baseUrl: AI_PROVIDERS.gemini.baseUrl,
+  };
+  const { text, grounding } = await callGeminiGenerate(cfg, prompt, {
+    ...options,
+    googleSearch: true,
+  });
+  return { text, provider: "gemini", model, grounding };
+}
+
 /**
  * Core: call any OpenAI-compatible chat completion endpoint.
  * Returns the assistant message text.
@@ -610,8 +749,11 @@ export async function callAI(
 
   // GEMINI NATIVE ARM (Phase 343): translate to generativelanguage REST —
   // every other provider keeps the OpenAI-compatible path untouched.
+  // (Phase 344: the grounding evidence, when requested, is consumed via
+  // callGeminiGroundedSearch below — callAI's text-only contract is intact.)
   if (cfg.provider === "gemini") {
-    return callGeminiGenerate(cfg, prompt, options);
+    const { text } = await callGeminiGenerate(cfg, prompt, options);
+    return text;
   }
 
   const messages: Array<{ role: string; content: string }> = [];
@@ -1181,7 +1323,12 @@ export const INTERLEAVED_STRONGEST_CHAIN: Array<{ provider: AIProvider; model: s
   // the owner key (run 37384032599: v1beta/gemini-3.8-flash → 200 "OK").
   // With no key the entry is skipped without consuming attempt budget and
   // the pre-343 ladder below runs byte-identically.
-  { provider: "gemini", model: "gemini-3.8-flash" },
+  // PHASE 344 (owner order «تبديل إصدار نموذج Gemini»): the leading model
+  // switched 3.8-flash → 3.5-flash — the 2026-10-06 production review
+  // measured transient free-tier 503 "model overloaded" on 3.8-flash;
+  // 3.5-flash is the same-tier prior stable version on the free plan.
+  // GEMINI_MODEL still overrides at runtime; the ladder below is untouched.
+  { provider: "gemini", model: "gemini-3.5-flash" },
   { provider: "openrouter", model: "nvidia/nemotron-3-ultra-550b-a55b:free" },
   { provider: "groq", model: "openai/gpt-oss-120b" },
   { provider: "nvidia", model: "nvidia/nemotron-3-super-120b-a12b" },
@@ -1219,7 +1366,9 @@ export const INTERLEAVED_FAST_CHAIN: Array<{ provider: AIProvider; model: string
   // Gemini first when GEMINI_API_KEY is configured (streamGenerateContent
   // SSE — TTFT comparable to Groq's LPU in live smoke). Fallback ladder
   // below is untouched; no key → entry skipped, groq leads as before.
-  { provider: "gemini", model: "gemini-3.8-flash" },
+  // PHASE 344: model switched 3.8-flash → 3.5-flash with the strongest
+  // chain (same measured 503-overload evidence; GEMINI_MODEL still wins).
+  { provider: "gemini", model: "gemini-3.5-flash" },
   { provider: "groq", model: "openai/gpt-oss-20b" }, // smallest — usually <1s TTFT (82.6% live)
   { provider: "groq", model: "openai/gpt-oss-120b" }, // quality slot, still LPU-fast (85.3% live)
   { provider: "nvidia", model: "nvidia/nemotron-3.5-lightning-30b-a3b" }, // NIM fast (3B active — 33.3% live)
@@ -1312,7 +1461,7 @@ export async function callFreeAIFallbackChain(
       // the key restores the pre-343 rotation verbatim (chainCallSeq keeps
       // counting so the rotation resumes in phase).
       console.log(
-        `${LP} gemini-first (owner 2026-10-06): ${process.env.GEMINI_MODEL || "gemini-3.8-flash"} leads, rotation suspended (call #${chainCallSeq}, orKeys=${openrouterKeys.length})`,
+        `${LP} gemini-first (owner 2026-10-06): ${process.env.GEMINI_MODEL || "gemini-3.5-flash"} leads, rotation suspended (call #${chainCallSeq}, orKeys=${openrouterKeys.length})`,
       );
     } else {
       const LEAD_SEQ: AIProvider[] = ["openrouter", "groq", "nvidia"];

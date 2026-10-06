@@ -230,7 +230,7 @@ describe("Phase 177 — dead-model purge (14-day live audit, owner order «ال�
 
     it("GEMINI-FIRST law (Phase 343, owner order 2026-10-06) — gemini leads the strongest chain", () => {
       expect(INTERLEAVED_STRONGEST_CHAIN[0].provider).toBe("gemini");
-      expect(INTERLEAVED_STRONGEST_CHAIN[0].model).toBe("gemini-3.8-flash");
+      expect(INTERLEAVED_STRONGEST_CHAIN[0].model).toBe("gemini-3.5-flash");
     });
 
     it("strongest-first law intact below gemini — openrouter ultra-550b is slot 2", () => {
@@ -283,7 +283,7 @@ describe("Phase 177 — dead-model purge (14-day live audit, owner order «ال�
 
     it("GEMINI-FIRST law (Phase 343) — gemini leads the fast chain (EVO) too", () => {
       expect(INTERLEAVED_FAST_CHAIN[0].provider).toBe("gemini");
-      expect(INTERLEAVED_FAST_CHAIN[0].model).toBe("gemini-3.8-flash");
+      expect(INTERLEAVED_FAST_CHAIN[0].model).toBe("gemini-3.5-flash");
     });
 
     it("speed law intact below gemini — gpt-oss-20b (fastest TTFT) is slot 2", () => {

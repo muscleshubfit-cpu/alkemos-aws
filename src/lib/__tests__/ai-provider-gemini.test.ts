@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import {
   callAI,
   callAIStream,
+  callGeminiGroundedSearch,
   getEnvConfig,
   getGeminiKey,
 } from "@/lib/ai-provider";
@@ -19,6 +20,13 @@ import {
  * x-goog-api-key auth, request/response mapping, thought-part filtering,
  * jsonMode mime-type, honest error carrying, SSE streaming deltas, and the
  * fail-soft per-tag usage counters that feed the weekly report.
+ *
+ * Phase 344 — GOOGLE SEARCH GROUNDING contract (owner order «بحث خارجي
+ * حقيقي [Google Search grounding]... مع إزالة الاعتماد على محاكاة البحث
+ * أو الـ curated fallback كبديل للبحث الحقيقي»): tools:[{googleSearch:{}}]
+ * rides the request, JSON-mode mime is suppressed with tools, the response's
+ * groundingMetadata is extracted as REAL evidence (queries + pages), and an
+ * ungrounded 200 answer FAILS honestly instead of passing as research.
  */
 
 const ENV_KEYS = [
@@ -38,7 +46,7 @@ function cleanEnv() {
 const GEMINI_OVERRIDE = {
   provider: "gemini" as const,
   apiKey: "AIza-test-key-0000",
-  model: "gemini-3.8-flash",
+  model: "gemini-3.5-flash",
   baseUrl: "https://generativelanguage.googleapis.com/v1beta",
 };
 
@@ -92,7 +100,7 @@ describe("Phase 343 — Gemini registry + env resolution", () => {
     const cfg = getEnvConfig();
     expect(cfg?.provider).toBe("gemini");
     expect(cfg?.baseUrl).toBe("https://generativelanguage.googleapis.com/v1beta");
-    expect(cfg?.model).toBe("gemini-3.8-flash");
+    expect(cfg?.model).toBe("gemini-3.5-flash");
   });
 
   it("openrouter stays the single-call default when no AI_PROVIDER is set", () => {
@@ -124,7 +132,7 @@ describe("Phase 343 — callAI gemini translation (generateContent)", () => {
     );
     expect(text).toBe("PONG");
     expect(captured.url).toBe(
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent",
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent",
     );
     expect(captured.headers?.["x-goog-api-key"]).toBe("AIza-test-key-0000");
     expect(captured.headers?.["authorization"]).toBeUndefined();
@@ -191,6 +199,103 @@ describe("Phase 343 — callAI gemini translation (generateContent)", () => {
     });
     await expect(callAI("hi", {}, GEMINI_OVERRIDE)).rejects.toThrow(
       /empty response[\s\S]*SAFETY/,
+    );
+  });
+});
+
+describe("Phase 344 — Google Search grounding translation (tools + evidence extraction)", () => {
+  it("googleSearch:true → body carries tools:[{googleSearch:{}}] and SUPPRESSES responseMimeType (JSON-mode + tools is rejected by the REST API)", async () => {
+    const captured: Captured = {};
+    stubGeminiFetch(captured, {
+      candidates: [
+        {
+          content: { parts: [{ text: "{}" }] },
+          groundingMetadata: { webSearchQueries: ["q"], groundingChunks: [{ web: { uri: "https://x", title: "X" } }] },
+        },
+      ],
+    });
+    await callAI("research?", { jsonMode: true, googleSearch: true }, GEMINI_OVERRIDE);
+    expect(captured.body?.tools).toEqual([{ googleSearch: {} }]);
+    expect((captured.body?.generationConfig as Record<string, unknown>)?.responseMimeType).toBeUndefined();
+  });
+
+  it("without the flag → no tools in the body (non-grounded calls unchanged)", async () => {
+    const captured: Captured = {};
+    stubGeminiFetch(captured, {
+      candidates: [{ content: { parts: [{ text: "ok" }] } }],
+    });
+    await callAI("hi", {}, GEMINI_OVERRIDE);
+    expect(captured.body?.tools).toBeUndefined();
+  });
+
+  it("callGeminiGroundedSearch — URL/default model, returns text + normalized grounding (queries + deduped sources)", async () => {
+    process.env.GEMINI_API_KEY = "AIza-grounded-key";
+    const captured: Captured = {};
+    stubGeminiFetch(captured, {
+      candidates: [
+        {
+          content: { parts: [{ text: '{"keywords":[]}' }] },
+          groundingMetadata: {
+            webSearchQueries: ["how much protein per day", "protein timing"],
+            groundingChunks: [
+              { web: { uri: "https://healthline.com/nutrition/protein", title: "How Much Protein" } },
+              { web: { uri: "https://healthline.com/nutrition/protein", title: "dup — same URL" } },
+              { web: { uri: "https://examine.com/protein", title: "Protein — Examine" } },
+              { web: { title: "no uri — skipped" } },
+            ],
+          },
+        },
+      ],
+    });
+    const out = await callGeminiGroundedSearch("research", { tag: "blog:research" });
+    expect(captured.url).toBe(
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent",
+    );
+    expect(captured.body?.tools).toEqual([{ googleSearch: {} }]);
+    expect(out.provider).toBe("gemini");
+    expect(out.model).toBe("gemini-3.5-flash");
+    expect(out.text).toBe('{"keywords":[]}');
+    expect(out.grounding.searchQueries).toEqual([
+      "how much protein per day",
+      "protein timing",
+    ]);
+    expect(out.grounding.sources).toEqual([
+      { title: "How Much Protein", url: "https://healthline.com/nutrition/protein" },
+      { title: "Protein — Examine", url: "https://examine.com/protein" },
+    ]);
+  });
+
+  it("GEMINI_MODEL override wins for the grounded call", async () => {
+    process.env.GEMINI_API_KEY = "AIza-grounded-key";
+    process.env.GEMINI_MODEL = "gemini-2.5-flash";
+    const captured: Captured = {};
+    stubGeminiFetch(captured, {
+      candidates: [
+        {
+          content: { parts: [{ text: "ok" }] },
+          groundingMetadata: { webSearchQueries: ["q"] },
+        },
+      ],
+    });
+    const out = await callGeminiGroundedSearch("x");
+    expect(out.model).toBe("gemini-2.5-flash");
+    expect(captured.url).toContain("/models/gemini-2.5-flash:generateContent");
+  });
+
+  it("200 WITHOUT grounding evidence → HONEST failure (model memory may not masquerade as research)", async () => {
+    process.env.GEMINI_API_KEY = "AIza-grounded-key";
+    const captured: Captured = {};
+    stubGeminiFetch(captured, {
+      candidates: [{ content: { parts: [{ text: "answers from memory" }] } }],
+    });
+    await expect(callGeminiGroundedSearch("research")).rejects.toThrow(
+      /no Google-Search grounding evidence[\s\S]*not built on live search/,
+    );
+  });
+
+  it("no GEMINI_API_KEY → honest configuration error (no substitute allowed)", async () => {
+    await expect(callGeminiGroundedSearch("research")).rejects.toThrow(
+      /GEMINI_API_KEY is not configured[\s\S]*no simulated\/curated substitute/,
     );
   });
 });
@@ -277,7 +382,7 @@ describe("Phase 343 — gemini usage tracker (fail-soft, per-tag counters)", () 
 
   it("resolves without throwing when Upstash is not configured (fail-soft)", async () => {
     await expect(
-      trackGeminiUsage({ tag: "evo-chat", model: "gemini-3.8-flash", ok: true }),
+      trackGeminiUsage({ tag: "evo-chat", model: "gemini-3.5-flash", ok: true }),
     ).resolves.toBeUndefined();
   });
 
@@ -298,7 +403,7 @@ describe("Phase 343 — gemini usage tracker (fail-soft, per-tag counters)", () 
     );
     await trackGeminiUsage({
       tag: "blog:content-ar",
-      model: "gemini-3.8-flash",
+      model: "gemini-3.5-flash",
       ok: true,
       promptTokens: 120,
       completionTokens: 45,
@@ -338,7 +443,7 @@ describe("Phase 343 — gemini usage tracker (fail-soft, per-tag counters)", () 
     );
     await trackGeminiUsage({
       tag: "evo-chat",
-      model: "gemini-3.8-flash",
+      model: "gemini-3.5-flash",
       ok: false,
       status: 429,
     });
@@ -357,7 +462,7 @@ describe("Phase 343 — gemini usage tracker (fail-soft, per-tag counters)", () 
       }),
     );
     await expect(
-      trackGeminiUsage({ tag: "evo-chat", model: "gemini-3.8-flash", ok: true }),
+      trackGeminiUsage({ tag: "evo-chat", model: "gemini-3.5-flash", ok: true }),
     ).resolves.toBeUndefined();
   });
 });
