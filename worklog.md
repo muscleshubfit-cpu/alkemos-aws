@@ -1,4 +1,22 @@
 ---
+Task ID: GEMINI-PROVIDER-ROLLOUT-2026-10-06
+Agent: Super Z (main)
+Task: أمر المالك (2026-10-06): «أضف Gemini كمزود AI جديد مع المزودين الحاليين، واجعله الاختيار الأول في: المدونة بكل خطوات توليدها، توليد خطط الذكاء الاصطناعي، محادثات EVO — مع مراقبة استهلاك Gemini لمدة أسبوع، وإنشاء تقرير المراقبة الأسبوعية في /docs/ai/gemini-weekly-usage-report.md — بدون تغيير أي شيء في سير العمل الحالي أو آلية الـ fallback أو الـ queue — مع العلم مفتاح جيميناي مجاني وليس مدفوع» — موافقة §7 الصريحة على سطح ai-provider.ts (نفس الأمر).
+
+Work Log:
+- (التحقق الحي للمفتاح قبل الربط — جلسة اختبار 2026-10-05/06 بتشغيل Actions مؤقت اتنظف كاملًا): المفتاح الجديد (AI Studio auth-key مربوط بحساب خدمة) صالح — ListModels 200 · Interactions v1beta/gemini-3.8-flash رجّع 200 بالنص «OK» حرفيًا (تشغيل 37384032599) بعد ما حاجز الفوترة 402 (prepayment credits) اتحل من المالك؛ القديم 53-حرف كان 401 مؤكدًا سابقًا.
+- (النواة — src/lib/ai-provider.ts فريم 343): نوع AIProvider +gemini · مفتاح getGeminiKey · registry رابع (baseUrl generativelanguage/v1beta · defaultModel gemini-3.8-flash · AIza) · مهايئ native وحيد بالمنصة: callGeminiGenerate + callGeminiStream (streamGenerateContent?alt=sse) بترجمة كاملة (systemInstruction · generationConfig.maxOutputTokens · responseMimeType للـjsonMode بلا أي تحقق خادمي · تصفية thought-parts · أخطاء صادقة بنفس شكل «AI API error {status} from gemini» عشان looksLikeQuota يظل صادقًا) · GEMINI-FIRST LAW: مدخل gemini يقع أول السلسلتين INTERLEAVED_STRONGEST_CHAIN (المدونة + الخطط) وINTERLEAVED_FAST_CHAIN (EVO) ويقودهما كل نداء عند توفر GEMINI_API_KEY مع تعليق تدوير الرائد الثلاثي؛ بلا مفتاح = تخطي المدخلين بلا استهلاك ميزانية المحاولات وسلوك ما قبل 343 حرفيًا · GEMINI_MODEL = مقبض تشغيلي يبدّل الموديل بلا نشر · PROVIDER_PRIORITY تبقى openrouter أولًا للمكالمات المفردة (نطاق أمر المالك: السلاسل فقط) · الـtag بقت تمر داخل CallAIOptions — صفر مساس بالـdual-key pool أو R3 clamp أو empty-retry أو ميزانية 52s أو queue.
+- (المراقبة — src/lib/ai-usage-gemini.ts جديد): عدادات Upstash يومية لكل وسم `gemini:usage:{UTC-date}:{feature}:{metric}` (calls/ok/empty/fail/fail_quota/fail_server/fail_auth/fail_bad_request/fail_timeout/fail_network/tokens_in/tokens_out — TTL 30ي EXPIRE NX عبر pipeline واحدة) · fail-soft بالبناء (بلا Upstash = console فقط؛ صفر schema جديد وصفر ميجريشن) · سطر [gemini-usage] منظم مع كل محاولة.
+- (التقرير الأسبوعي): scripts/gemini-usage-report.mjs (Node22 صفر تبعيات — SCAN+GET عبر pipeline لآخر 7 أيام كاملة، تجميع لكل وسم + يومي، أحدث أسبوع أولًا بحد 8 أسابيع، فشل صادق) + .github/workflows/gemini-weekly-usage-report.yml (أحد 21:15UTC = اثنين 00:15 القاهرة + workflow_dispatch · preflight يسمي الناقص · نشر $GITHUB_STEP_SUMMARY دائمًا · كوميت بهوية المالك muscleshubfit@gmail.com و[vercel skip] عبر REPO_ACCESS_TOKEN مع رسالة واضحة لو التوكن غايب) + docs/ai/gemini-weekly-usage-report.md (Week-0 baseline: التسليح 2026-10-06 · أول تقرير متوقع 2026-10-12).
+- (أسلاك البيئة): GEMINI_API_KEY + زوج Upstash أُضيفا اختياريًا (بلا أي preflight إضافي — الأرضية الصلبة GROQ+NVIDIA كما هي) إلى blog-post-ar.yml · blog-post-en.yml · process-ai-jobs.yml — مدونة/خطط/queue يشغلوا نفس route handlers بالـGHA فورًا مع gemini-first.
+- (الحوكمة بنفس الكوميت): AGENTS §8 PROVIDER LAYER + PROVIDER BALANCE (قانون gemini-first 343) · STATE 343 (ضغط 342 للحفاظ على سقف 32KB) · صف CI_GATES (N) + صف docs/README (§3.8) · .env.example · metadata.json · DEVELOPER_GUIDE · TECH_REFERENCE (EVO-5: بند «NO 4th provider» مجمع بنص الأمر) · EVO-MASTER-PLAN · تعليقا external-search.ts (منع الاستدعاء المباشر للعميل قائم) وplan-generator.ts · تدوير H5 (13→12).
+- (الاختبارات): src/lib/__tests__/ai-provider-gemini.test.ts جديد (17 كاناري — بيئة node: URL/هيدر/جسم الترجمة · thought-skip · jsonMode · خطأ 429 صادق · SSE deltas حقيقية عبر ReadableStream · تصنيف الأخطاء · شكل المفاتيح · fail-soft · pipeline payload) + تحديث pins ai-provider.test.ts (registry أربعة · السلسلتان lead=gemini · أربعة مزودين ممثلين) — باقي 137 ملف اختبار لم يُمس.
+
+Stage Summary:
+- Gemini رابع المزودين والخيار الأول فعليًا للمدونة بكل خطواتها والخطط ومحادثات EVO بمفتاح مجاني، والسلّم بعد gemini والـfallback/الـqueue/الـrotation-without-key بحروفها ما قبل 343 — الرجوع الطارئ = إزالة GEMINI_API_KEY من Vercel/GHA بلا أي كود.
+- المراقبة الأسبوعية مسلحة: عدادات لكل وسم → تقرير docs/ai/gemini-weekly-usage-report.md يتحدث آليًا كل اثنين 00:15 بتوقيت القاهرة؛ الأثر الحرفي لكل محاولة سطر [gemini-usage] بلوجات Vercel/GHA.
+
+---
 Task ID: AWS-COST-AUDIT-2026-10-05
 Agent: Super Z (main)
 Task: أمر المالك (2026-10-05): «نفّذ Audit قراءة فقط (بدون أي تعديل أو كود) لتقدير تكلفة تشغيل Alkemos على بنية تعتمد على AWS، مع مقارنة استخدام موارد AWS بموارد خارجية ومكونات Open Source مثل SST Ion» — 3 سيناريوهات زمنية (الحالي / 3–6 أشهر / 1–3 سنوات) بالبنية الفعلية من المستودع لا افتراضات، مع Min/Expected/High ومصادر التكلفة وما يُبقى خارج AWS وتكاليف Bill Shock وتقدير تكلفة الانتقال دون تنفيذه، وتقرير مختصر داخل docs/ وكوميت واحد.
@@ -222,22 +240,3 @@ Stage Summary:
 - دروس هامشية مقيسة وثّقت في الـ workflow: Drive v3 لا يقبل permissions ضمن files.create · sendNotificationEmail=false ممنوع مع نقل الملكية (403 حرفي).
 - البريد الشخصي: في GitHub Secrets فقط — صفر ظهور في أي ملف بالريبو (طلب المالك محقق كاملًا).
 - كل العمل على الفرع gd1-smoke-test — **main بلا أي تغيير (52583e8)**: قرار مسار الرفع (OAuth / Workspace / R2) لا يزال بيد المالك.
----
-Task ID: GD1-FOLDERID-VERDICT-2026-10-04
-Agent: Super Z (main)
-Task: رسالة المالك (2026-10-04، بعد قانون المنصة): «أضفت folder id في سر GDRIVE_FOLDER_ID — استخدمه وسوف يحل مشكلة quota، و الفولدر أُعيدت تسميته AlkemosBackups» — توجيه اختبار الدخان بالمعرف المُثبَّت وقياس أثره على قانون الحصة، والدفع إلى main يبقى مشروطًا بجولة خضراء (شرط المالك الأصلي).
-
-Work Log:
-- إعادة بناء الاستهداف في `gdrive-smoke-test.yml` (دفع cee4e2d): فحص `files.get` عبر JWT/openssl (التوكن لا يظهر في أي سجل) يقرأ اسم المجلد ونوعه وdriveId وcapabilities قبل أي محاولة رفع — اختيار الوضع تلقائيًا (مجلد عادي مشترك / مجلد داخل Workspace shared drive / جذر shared drive)، ومشاركة Viewer تُشخَّص سابقًا للرفع بدل التخمين، والمعرف لا يُطبع إلا مقنّعًا (4+4 أحرف) لأنه قيمة سر.
-- التشغيل #12 = 37170955147: قيمة السر 49 حرفًا بعد التطبيع — معرف مضمّن في نص ملصوق لا معرف مجرد → فشل صاخب مبكر برسالة لصق دقيقة؛ وظهر بالمقابل أن «AlkemosBackups» مرئي في shared-with-me (إعادة التسمية حية والمشاركة سليمة).
-- استخراج متسامح (دفع fd74b92): المعرف يُستخرج من رابط ‎/folders/<id>‎ أو ‎?id=‎ أو توكن وحيد بطول معرف — والمستخرَج يُتحقق من محارفه (20-60 من `[A-Za-z0-9_-]`) قبل أي استخدام، فخاصية منع حقن الشِل لا تتأثر بغباءة اللصق. المحاكاة المحلية وُسّعت إلى 10 حالات (منها لصق 49-حرفًا مطابق للمقيس) — كلها خضراء.
-- التشغيل #13 = 37171157963 — **الحكم القياسي النهائي على نظرية المعرف**: الاستخراج ✓ · المصادقة ✓ · الفحص: name=AlkemosBackups · mode=my-drive-folder (مجلد استهلاكي عادي — ليس Workspace shared drive) · **canAddChildren=True · canEdit=True** (واجهة Drive ذاتها تؤكد حق الـ SA في الإنشاء داخل هذا المجلد) · القراءة بالمعرف المُثبَّت ✓ (المجلد فارغ) · **والرفع مرفوض رغم كل ذلك بنفس 403 storageQuotaExceeded «Service Accounts do not have storage quota»** → تثبيت المعرّف لا يغيّر مالك الملف المُنشأ (الـ SA) وهو طرف الحصة الصفرية — النظرية دُحضت بأقوى سلسلة أدلة ممكنة (مشاركة مثالية + معرف مثبَّت + صلاحية مؤكدة من Google + 403 حتمي).
-- لا ملف اختبار وُلد أصلًا (الرفع مرفوض قبل الخلق) → لا شيء للحذف — حالة Drive نظيفة تمامًا (المجلد فارغ كما بدأ).
-- التوثيق: تحديث الخطة (§1.5 القانون + صف GD-1 في §5 + §6 بالحكم وقياسات التشغيلين) · صف CI_GATES أُعيد بناؤه (الاستهداف بالمعرف + الفحص + الاستخراج المتسامح) · صف `GDRIVE_FOLDER_ID` في RECOVERY-SECRETS-SOURCES · صف السجل في docs/README أُعيد بناؤه · هذا الإدخال + دوران H5 (12→13→12).
-- لا دفعة إلى main: الجولة الخضراء لا تزال مستحيلة التحقيق تحت قيد SA على Drive استهلاكي — كل العمل محفوظ على الفرع gd1-smoke-test (tip fd74b92 وما بعده).
-
-Stage Summary:
-- **نظرية «المعرف يحل مشكلة الحصة» دُحضت قياسًا (التشغيل #13)**: المشاركة Editor مثالية (canAddChildren=True من Drive API ذاته) والمعرف مُثبَّت من السر — والرفع ما زال 403. القانون ملكية-الملف لا هدف-الرفع: البايت يُحسب على منشئ الملف (الـ SA بلا حصة)، وتغيير الأب — اسمًا أو معرفًا — لا يغيّر المالك.
-- الـ workflow الآن أدق تشخيصًا وأصلد تجاه إعادة التسميات: استهداف بالمعرف + كشف تلقائي لو صار المجلد داخل Workspace shared drive (وضع team_drive جاهز — لو وُضع معرف shared drive في السر وأُعيد التشغيل لاختُبر فورًا).
-- قرار المالك كما هو مطبوعًا في سجل أي تشغيل (الخيارات الثلاثة): (1) OAuth توكن مستخدم $0 — مسار GD-1-ALT جاهز في الخطة §5 · (2) Workspace shared drive مدفوع — الـ workflow يدعمه الآن تلقائيًا · (3) R2 مسار §3.6.
-- الحالة: كل العمل على الفرع gd1-smoke-test — **main بلا أي تغيير (52583e8)** التزامًا بشرط الجولة الخضراء.

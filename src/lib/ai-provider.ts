@@ -7,10 +7,27 @@
  *   2. groq                 → https://api.groq.com/openai/v1     (env: GROQ_API_KEY)
  *   3. nvidia (NIM)         → https://integrate.api.nvidia.com/v1 (env: NVIDIA_API_KEY)
  *
- * All previous direct-provider integrations (Gemini SDK / OpenAI /
- * Anthropic / DeepSeek) were removed. Any model that is reachable via
- * OpenRouter, Groq or NVIDIA NIM (including Google's Gemini family through
- * OpenRouter `google/*` slugs) must go through THIS file.
+ * OWNER DIRECTIVE (2026-10-06, «أضف Gemini كمزود AI جديد مع المزودين
+ * الحاليين، واجعله الاختيار الأول في المدونة بكل خطوات توليدها وتوليد خطط
+ * الذكاء الاصطناعي ومحادثات EVO»): a FOURTH provider joins — gemini
+ * (Google AI Studio auth key, FREE tier, env: GEMINI_API_KEY). GEMINI-FIRST
+ * LAW: when the gemini key is configured, a gemini entry LEADS both chains
+ * (strongest = blog pipeline + AI plans · fast = EVO chat) and the 3-way
+ * lead rotation is suspended; the ladder AFTER gemini, the dual-key pool,
+ * the Groq R3 clamp and every queue mechanism stay byte-identical, and with
+ * the key absent the pre-343 behavior is verbatim. Gemini uses the NATIVE
+ * generativelanguage REST API (NOT OpenAI-compatible): the translation
+ * adapters are the only native-shape code in the platform and live below
+ * (callAI / callAIStream branch on provider === "gemini"). Model override:
+ * GEMINI_MODEL. Usage of the free tier is tracked per-tag to Upstash
+ * (src/lib/ai-usage-gemini.ts) feeding docs/ai/gemini-weekly-usage-report.md
+ * (weekly workflow gemini-weekly-usage-report.yml).
+ *
+ * The 2026-08-27 removal banned CONSUMER-side provider fetches and the
+ * Gemini SDK; it is superseded for THIS file only by the explicit owner
+ * order above. The law that consumers never fetch provider URLs themselves
+ * is unchanged (§8). The dead OpenRouter `google/gemma-*` ids (Phase 177
+ * purge) stay dead — this arm is the native API, not an OpenRouter slug.
  *
  * All providers expose the OpenAI Chat Completions API shape:
  * POST {base_url}/chat/completions
@@ -28,7 +45,9 @@
  * This file MUST be server-only — it never exposes API keys to the client.
  */
 
-export type AIProvider = "openrouter" | "groq" | "nvidia";
+export type AIProvider = "openrouter" | "groq" | "nvidia" | "gemini";
+
+import { trackGeminiUsage } from "./ai-usage-gemini";
 
 /**
  * Canonical env-var reader for the allowed providers.
@@ -66,6 +85,17 @@ export function getNvidiaKey(): string {
   return process.env.NVIDIA_API_KEY || "";
 }
 
+/**
+ * GEMINI (2026-10-06 owner addition — fourth provider, FREE tier):
+ * Google AI Studio auth key bound to the owner's Cloud project. Uses the
+ * NATIVE generativelanguage REST API (x-goog-api-key header) — NOT the
+ * OpenAI-compatible shape — so callAI/callAIStream translate for it.
+ * Ops knob: GEMINI_MODEL swaps the model without a deploy.
+ */
+export function getGeminiKey(): string {
+  return process.env.GEMINI_API_KEY || "";
+}
+
 export const AI_PROVIDERS: Record<
   AIProvider,
   {
@@ -101,6 +131,14 @@ export const AI_PROVIDERS: Record<
     docsUrl: "https://build.nvidia.com",
     keyPrefix: "nvapi-",
   },
+  gemini: {
+    label: "Google Gemini",
+    baseUrl: "https://generativelanguage.googleapis.com/v1beta",
+    defaultModel: "gemini-3.8-flash",
+    envKey: "GEMINI_API_KEY",
+    docsUrl: "https://aistudio.google.com/app/apikey",
+    keyPrefix: "AIza",
+  },
 };
 
 export type AIConfig = {
@@ -124,12 +162,15 @@ export type AIConfigStatus = {
  * Override configs (from cookies/inline) are merged by callers via
  * `mergeOverride` below.
  *
- * Only the three allowed providers (openrouter | groq | nvidia) are
- * returned. AI_PROVIDER values outside that set are ignored (default wins).
- * If the requested provider has no key, fall through to the first
- * configured one in priority order openrouter → groq → nvidia.
+ * Only the four allowed providers (openrouter | groq | nvidia | gemini)
+ * are returned. AI_PROVIDER values outside that set are ignored (default
+ * wins). If the requested provider has no key, fall through to the first
+ * configured one in priority order openrouter → groq → nvidia → gemini
+ * (gemini sits LAST here by design: the single-call default stays
+ * openrouter — the GEMINI-FIRST law (2026-10-06) lives in the CHAINS,
+ * which cover blog + plans + EVO exactly as the owner ordered).
  */
-const PROVIDER_PRIORITY: AIProvider[] = ["openrouter", "groq", "nvidia"];
+const PROVIDER_PRIORITY: AIProvider[] = ["openrouter", "groq", "nvidia", "gemini"];
 
 export function getEnvConfig(): AIConfig | null {
   const requested = (process.env.AI_PROVIDER as AIProvider) || "openrouter";
@@ -140,8 +181,15 @@ export function getEnvConfig(): AIConfig | null {
   const openrouterKey = getOpenRouterKey();
   const groqKey = getGroqKey();
   const nvidiaKey = getNvidiaKey();
+  const geminiKey = getGeminiKey();
   const keyFor = (p: AIProvider) =>
-    p === "openrouter" ? openrouterKey : p === "groq" ? groqKey : nvidiaKey;
+    p === "openrouter"
+      ? openrouterKey
+      : p === "groq"
+        ? groqKey
+        : p === "nvidia"
+          ? nvidiaKey
+          : geminiKey;
 
   // Resolve the key for the chosen provider; if it's missing fall through
   // to the first configured provider by priority.
@@ -231,7 +279,309 @@ export type CallAIOptions = {
   maxTokens?: number;
   jsonMode?: boolean;
   timeoutMs?: number;
+  /** UNIVERSAL SWITCHER COVERAGE (observational only): labels the calling
+   *  subsystem so gemini attempts land in per-feature usage counters
+   *  ([gemini-usage] logs + Upstash → weekly report). NEVER changes model
+   *  ordering or fallback policy. */
+  tag?: string;
 };
+
+/* ───────────────────────────────────────────────────────────────────────
+ * GEMINI NATIVE ADAPTER (Phase 343, 2026-10-06 — owner order, free tier)
+ * generativelanguage REST is NOT OpenAI-compatible. The translators below
+ * are the ONLY native-shape code in the platform; every consumer keeps
+ * using callAI / callAIStream unchanged. Both adapters track every attempt
+ * (per-tag) via ai-usage-gemini.ts — awaited but fail-soft, bounded 3s.
+ * ─────────────────────────────────────────────────────────────────────── */
+
+type GeminiPart = { text?: string; thought?: boolean };
+
+type GeminiGenerateResponse = {
+  candidates?: Array<{
+    content?: { parts?: GeminiPart[] } | null;
+    finishReason?: string;
+  }> | null;
+  promptFeedback?: { blockReason?: string } | null;
+  usageMetadata?: {
+    promptTokenCount?: number;
+    candidatesTokenCount?: number;
+    totalTokenCount?: number;
+  } | null;
+};
+
+/** Concatenate non-thought text parts (thought summaries are model CoT —
+ *  never user-facing; mirrors callAI's reasoning-delta buffering law). */
+function geminiTextFromParts(parts: GeminiPart[] | undefined | null): string {
+  if (!Array.isArray(parts)) return "";
+  return parts
+    .filter(
+      (p) =>
+        typeof p?.text === "string" && p.text.length > 0 && p.thought !== true,
+    )
+    .map((p) => p.text as string)
+    .join("");
+}
+
+function geminiBuildBody(
+  prompt: string,
+  options: CallAIOptions,
+): Record<string, unknown> {
+  const generationConfig: Record<string, unknown> = {
+    temperature: options.temperature ?? 0.7,
+    maxOutputTokens: options.maxTokens ?? 4096,
+  };
+  if (options.jsonMode) {
+    // Native mime-type JSON mode — Gemini does NOT server-validate output
+    // (unlike Groq's json_object 400s, Phase 177); parseJSON still guards.
+    generationConfig.responseMimeType = "application/json";
+  }
+  return {
+    ...(options.systemPrompt
+      ? { systemInstruction: { parts: [{ text: options.systemPrompt }] } }
+      : {}),
+    contents: [{ role: "user", parts: [{ text: prompt }] }],
+    generationConfig,
+  };
+}
+
+function geminiHeaders(apiKey: string): Record<string, string> {
+  return {
+    "Content-Type": "application/json",
+    "x-goog-api-key": apiKey,
+  };
+}
+
+function isAbortError(e: unknown): boolean {
+  return (
+    e instanceof Error &&
+    (e.name === "AbortError" || /aborted/i.test(e.message))
+  );
+}
+
+/** Non-streaming: POST /models/{model}:generateContent → joined text. */
+async function callGeminiGenerate(
+  cfg: AIConfig,
+  prompt: string,
+  options: CallAIOptions,
+): Promise<string> {
+  const started = Date.now();
+  const controller = new AbortController();
+  const timeoutMs = options.timeoutMs ?? 60_000;
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  let tracked = false;
+  try {
+    const res = await fetch(`${cfg.baseUrl}/models/${cfg.model}:generateContent`, {
+      method: "POST",
+      headers: geminiHeaders(cfg.apiKey),
+      body: JSON.stringify(geminiBuildBody(prompt, options)),
+      signal: controller.signal,
+    });
+
+    if (!res.ok) {
+      const text = await res.text().catch(() => "");
+      await trackGeminiUsage({
+        tag: options.tag,
+        model: cfg.model,
+        ok: false,
+        status: res.status,
+        latencyMs: Date.now() - started,
+      }).catch(() => {});
+      tracked = true;
+      throw new Error(
+        `AI API error ${res.status} from ${cfg.provider}: ${text.slice(0, 500)}`,
+      );
+    }
+
+    const data = (await res.json()) as GeminiGenerateResponse;
+    const blockReason = data.promptFeedback?.blockReason;
+    const finishReason = data.candidates?.[0]?.finishReason;
+    const text = geminiTextFromParts(data.candidates?.[0]?.content?.parts);
+    if (!text) {
+      await trackGeminiUsage({
+        tag: options.tag,
+        model: cfg.model,
+        ok: false,
+        isEmpty: true,
+        status: res.status,
+        latencyMs: Date.now() - started,
+      }).catch(() => {});
+      tracked = true;
+      throw new Error(
+        `AI provider ${cfg.provider} returned an empty response` +
+          (blockReason ? ` (blockReason: ${blockReason})` : "") +
+          (finishReason && finishReason !== "STOP"
+            ? ` (finishReason: ${finishReason})`
+            : ""),
+      );
+    }
+
+    await trackGeminiUsage({
+      tag: options.tag,
+      model: cfg.model,
+      ok: true,
+      latencyMs: Date.now() - started,
+      promptTokens: data.usageMetadata?.promptTokenCount,
+      completionTokens: data.usageMetadata?.candidatesTokenCount,
+    }).catch(() => {});
+    tracked = true;
+    return text.trim();
+  } catch (e) {
+    if (!tracked) {
+      const abort = isAbortError(e);
+      await trackGeminiUsage({
+        tag: options.tag,
+        model: cfg.model,
+        ok: false,
+        status: 0,
+        errorKind: abort ? "timeout" : "network",
+        latencyMs: Date.now() - started,
+      }).catch(() => {});
+      if (abort) {
+        throw new Error(
+          `AI API timeout after ${timeoutMs}ms from ${cfg.provider}`,
+        );
+      }
+    }
+    throw e;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+/** Streaming: POST /models/{model}:streamGenerateContent?alt=sse — each SSE
+ *  data chunk carries candidates[0].content.parts[].text deltas. Returns
+ *  the FULL text. Failure semantics match callAIStream's chain contract. */
+async function callGeminiStream(
+  cfg: AIConfig,
+  prompt: string,
+  options: CallAIOptions,
+  onDelta?: (chunk: string) => void,
+): Promise<string> {
+  const started = Date.now();
+  const controller = new AbortController();
+  const timeoutMs = options.timeoutMs ?? 60_000;
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  let tracked = false;
+  try {
+    const res = await fetch(
+      `${cfg.baseUrl}/models/${cfg.model}:streamGenerateContent?alt=sse`,
+      {
+        method: "POST",
+        headers: geminiHeaders(cfg.apiKey),
+        body: JSON.stringify(geminiBuildBody(prompt, options)),
+        signal: controller.signal,
+      },
+    );
+
+    if (!res.ok) {
+      const text = await res.text().catch(() => "");
+      await trackGeminiUsage({
+        tag: options.tag,
+        model: cfg.model,
+        ok: false,
+        status: res.status,
+        latencyMs: Date.now() - started,
+      }).catch(() => {});
+      tracked = true;
+      throw new Error(
+        `AI API error ${res.status} from ${cfg.provider}: ${text.slice(0, 500)}`,
+      );
+    }
+    if (!res.body) {
+      await trackGeminiUsage({
+        tag: options.tag,
+        model: cfg.model,
+        ok: false,
+        isEmpty: true,
+        status: res.status,
+        latencyMs: Date.now() - started,
+      }).catch(() => {});
+      tracked = true;
+      throw new Error(`AI provider ${cfg.provider} returned no stream body`);
+    }
+
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+    let full = "";
+    let usage: GeminiGenerateResponse["usageMetadata"] | null = null;
+
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+
+      let nlIdx: number;
+      while ((nlIdx = buffer.indexOf("\n")) !== -1) {
+        const line = buffer.slice(0, nlIdx).trim();
+        buffer = buffer.slice(nlIdx + 1);
+        if (!line || line.startsWith(":")) continue; // SSE comment / keep-alive
+        if (!line.startsWith("data:")) continue;
+        const payload = line.slice(5).trim();
+        if (payload === "[DONE]") continue;
+        try {
+          const evt = JSON.parse(payload) as GeminiGenerateResponse;
+          if (evt.usageMetadata) usage = evt.usageMetadata;
+          const piece = geminiTextFromParts(
+            evt.candidates?.[0]?.content?.parts,
+          );
+          if (piece) {
+            full += piece;
+            onDelta?.(piece);
+          }
+        } catch {
+          // malformed SSE line — skip
+        }
+      }
+    }
+
+    const text = full.trim();
+    if (!text) {
+      await trackGeminiUsage({
+        tag: options.tag,
+        model: cfg.model,
+        ok: false,
+        isEmpty: true,
+        status: res.status,
+        latencyMs: Date.now() - started,
+      }).catch(() => {});
+      tracked = true;
+      throw new Error(`AI provider ${cfg.provider} returned an empty stream`);
+    }
+
+    await trackGeminiUsage({
+      tag: options.tag,
+      model: cfg.model,
+      ok: true,
+      streamed: true,
+      latencyMs: Date.now() - started,
+      promptTokens: usage?.promptTokenCount,
+      completionTokens: usage?.candidatesTokenCount,
+    }).catch(() => {});
+    tracked = true;
+    return text;
+  } catch (e) {
+    if (!tracked) {
+      const abort = isAbortError(e);
+      await trackGeminiUsage({
+        tag: options.tag,
+        model: cfg.model,
+        ok: false,
+        status: 0,
+        errorKind: abort ? "timeout" : "network",
+        latencyMs: Date.now() - started,
+      }).catch(() => {});
+      if (abort) {
+        throw new Error(
+          `AI API timeout after ${timeoutMs}ms from ${cfg.provider}`,
+        );
+      }
+    }
+    throw e;
+  } finally {
+    clearTimeout(timer);
+  }
+}
 
 /**
  * Core: call any OpenAI-compatible chat completion endpoint.
@@ -254,8 +604,14 @@ export async function callAI(
   const cfg = mergeOverride(configOverride);
   if (!cfg || !cfg.apiKey) {
     throw new Error(
-      "AI provider not configured. Set OPENROUTER_API / GROQ_API_KEY / NVIDIA_API_KEY in your environment variables.",
+      "AI provider not configured. Set OPENROUTER_API / GROQ_API_KEY / NVIDIA_API_KEY / GEMINI_API_KEY in your environment variables.",
     );
+  }
+
+  // GEMINI NATIVE ARM (Phase 343): translate to generativelanguage REST —
+  // every other provider keeps the OpenAI-compatible path untouched.
+  if (cfg.provider === "gemini") {
+    return callGeminiGenerate(cfg, prompt, options);
   }
 
   const messages: Array<{ role: string; content: string }> = [];
@@ -391,6 +747,11 @@ export async function callAIStream(
   const cfg = mergeOverride(configOverride);
   if (!cfg || !cfg.apiKey) {
     throw new Error("callAIStream: no provider config/apiKey given");
+  }
+
+  // GEMINI NATIVE ARM (Phase 343): SSE streaming via streamGenerateContent.
+  if (cfg.provider === "gemini") {
+    return callGeminiStream(cfg, prompt, options, onDelta);
   }
 
   const messages: Array<{ role: string; content: string }> = [];
@@ -736,7 +1097,9 @@ export type FallbackChainOptions = CallAIOptions & {
    *  يتعمل لكل منظومة"): every subsystem labels its own chain calls so any
    *  log line always proves WHICH system used WHICH provider/model/key —
    *  e.g. "evo-chat", "plan:workout", "blog:content-ar". Observational
-   *  only — it NEVER changes model ordering or fallback policy. */
+   *  only — it NEVER changes model ordering or fallback policy.
+   *  (Inherited from CallAIOptions since Phase 343 — the tag now also feeds
+   *  per-feature Gemini usage counters.) */
   tag?: string;
   /** Phase 89 — TRUE TOKEN STREAMING: when provided, raw content deltas
    *  stream to this callback as they arrive from the provider.
@@ -812,6 +1175,13 @@ const GROQ_CLAMP_FLOOR = 3_800; // min output room a clamped groq entry must kee
  * catalog ids can retire at any time; verify by LIVE CALL, never by name.
  */
 export const INTERLEAVED_STRONGEST_CHAIN: Array<{ provider: AIProvider; model: string }> = [
+  // GEMINI-FIRST LAW (Phase 343, owner order 2026-10-06 «اجعله الاختيار
+  // الأول»): leads the chain for the blog pipeline + AI plans whenever
+  // GEMINI_API_KEY is configured (free tier). LIVE-VERIFIED 2026-10-05 via
+  // the owner key (run 37384032599: v1beta/gemini-3.8-flash → 200 "OK").
+  // With no key the entry is skipped without consuming attempt budget and
+  // the pre-343 ladder below runs byte-identically.
+  { provider: "gemini", model: "gemini-3.8-flash" },
   { provider: "openrouter", model: "nvidia/nemotron-3-ultra-550b-a55b:free" },
   { provider: "groq", model: "openai/gpt-oss-120b" },
   { provider: "nvidia", model: "nvidia/nemotron-3-super-120b-a12b" },
@@ -845,6 +1215,11 @@ let orKeyCursor = 0;
  * consecutive Groq entries up front are safe (a 429 falls through fast).
  */
 export const INTERLEAVED_FAST_CHAIN: Array<{ provider: AIProvider; model: string }> = [
+  // GEMINI-FIRST LAW (Phase 343, owner order 2026-10-06): EVO chat tries
+  // Gemini first when GEMINI_API_KEY is configured (streamGenerateContent
+  // SSE — TTFT comparable to Groq's LPU in live smoke). Fallback ladder
+  // below is untouched; no key → entry skipped, groq leads as before.
+  { provider: "gemini", model: "gemini-3.8-flash" },
   { provider: "groq", model: "openai/gpt-oss-20b" }, // smallest — usually <1s TTFT (82.6% live)
   { provider: "groq", model: "openai/gpt-oss-120b" }, // quality slot, still LPU-fast (85.3% live)
   { provider: "nvidia", model: "nvidia/nemotron-3.5-lightning-30b-a3b" }, // NIM fast (3B active — 33.3% live)
@@ -865,10 +1240,16 @@ export async function callFreeAIFallbackChain(
   const openrouterKeys = getOpenRouterKeys();
   const groqKey = getGroqKey();
   const nvidiaKey = getNvidiaKey();
+  const geminiKey = getGeminiKey();
 
-  if (openrouterKeys.length === 0 && !groqKey && !nvidiaKey) {
+  if (
+    openrouterKeys.length === 0 &&
+    !groqKey &&
+    !nvidiaKey &&
+    !geminiKey
+  ) {
     throw new Error(
-      "[ai-fallback-chain] No AI providers configured. Set OPENROUTER_API and/or GROQ_API_KEY and/or NVIDIA_API_KEY.",
+      "[ai-fallback-chain] No AI providers configured. Set OPENROUTER_API and/or GROQ_API_KEY and/or NVIDIA_API_KEY and/or GEMINI_API_KEY.",
     );
   }
 
@@ -922,23 +1303,39 @@ export async function callFreeAIFallbackChain(
   let activeChain0: ChainEntry[] =
     options.chain === "fast" ? INTERLEAVED_FAST_CHAIN : INTERLEAVED_STRONGEST_CHAIN;
   if (options.chain !== "fast") {
-    const LEAD_SEQ: AIProvider[] = ["openrouter", "groq", "nvidia"];
-    const leadProvider = LEAD_SEQ[(chainCallSeq - 1) % LEAD_SEQ.length];
-    const leadConfigured =
-      leadProvider === "openrouter"
-        ? openrouterKeys.length > 0
-        : leadProvider === "groq"
-          ? !!groqKey && !skipGroq
-          : !!nvidiaKey;
-    if (leadConfigured && leadProvider !== "openrouter") {
-      const firstIdx = activeChain0.findIndex((e) => e.provider === leadProvider);
-      if (firstIdx > 0) {
-        activeChain0 = [
-          activeChain0[firstIdx],
-          ...activeChain0.slice(0, firstIdx),
-          ...activeChain0.slice(firstIdx + 1),
-        ];
+    if (geminiKey) {
+      // GEMINI-FIRST LAW (Phase 343, owner order 2026-10-06 «اجعله الاختيار
+      // الأول»): with the gemini key configured, gemini leads the chain for
+      // blog + plans (and EVO via the fast chain) on EVERY call — the 3-way
+      // lead rotation is SUSPENDED. The ladder after the gemini entry, the
+      // dual-key pool, and the Groq R3 clamp below are untouched; removing
+      // the key restores the pre-343 rotation verbatim (chainCallSeq keeps
+      // counting so the rotation resumes in phase).
+      console.log(
+        `${LP} gemini-first (owner 2026-10-06): ${process.env.GEMINI_MODEL || "gemini-3.8-flash"} leads, rotation suspended (call #${chainCallSeq}, orKeys=${openrouterKeys.length})`,
+      );
+    } else {
+      const LEAD_SEQ: AIProvider[] = ["openrouter", "groq", "nvidia"];
+      const leadProvider = LEAD_SEQ[(chainCallSeq - 1) % LEAD_SEQ.length];
+      const leadConfigured =
+        leadProvider === "openrouter"
+          ? openrouterKeys.length > 0
+          : leadProvider === "groq"
+            ? !!groqKey && !skipGroq
+            : !!nvidiaKey;
+      if (leadConfigured && leadProvider !== "openrouter") {
+        const firstIdx = activeChain0.findIndex((e) => e.provider === leadProvider);
+        if (firstIdx > 0) {
+          activeChain0 = [
+            activeChain0[firstIdx],
+            ...activeChain0.slice(0, firstIdx),
+            ...activeChain0.slice(firstIdx + 1),
+          ];
+        }
       }
+      console.log(
+        `${LP} lead=${leadConfigured ? leadProvider : "openrouter(fallback)"} (call #${chainCallSeq}, orKeys=${openrouterKeys.length})`,
+      );
     }
     if (skipGroq) activeChain0 = activeChain0.filter((e) => e.provider !== "groq");
     // R3: surviving groq entries carry their own clamped max_tokens; every
@@ -948,8 +1345,14 @@ export async function callFreeAIFallbackChain(
         e.provider === "groq" ? { ...e, maxTokens: groqClampTokens } : e,
       );
     }
-    console.log(
-      `${LP} lead=${leadConfigured ? leadProvider : "openrouter(fallback)"} (call #${chainCallSeq}, orKeys=${openrouterKeys.length})`,
+  }
+
+  // Ops knob: GEMINI_MODEL swaps the gemini arm's model at runtime (no
+  // deploy) — e.g. falling back to gemini-2.5-flash if 3.8-flash is busy.
+  const geminiModelOverride = (process.env.GEMINI_MODEL || "").trim();
+  if (geminiModelOverride) {
+    activeChain0 = activeChain0.map((e) =>
+      e.provider === "gemini" ? { ...e, model: geminiModelOverride } : e,
     );
   }
 
@@ -964,7 +1367,7 @@ export async function callFreeAIFallbackChain(
   // Clamp so that maxModels × effTimeout ≤ budget AND never exceeds caller intent.
   const effTimeoutMs = Math.min(callerTimeoutMs, Math.floor(CHAIN_TOTAL_BUDGET_MS / maxModels));
 
-  const { maxModels: _omit, timeoutMs: _omit2, chain: _omit3, tag: _omit4, ...callOptions } = options;
+  const { maxModels: _omit, timeoutMs: _omit2, chain: _omit3, ...callOptions } = options;
 
   /** Quota/auth-style failures justify burning another KEY on the SAME model. */
   const looksLikeQuota = (m: string) => /\b(401|402|429|403)\b|quota|rate.?limit|credit|insufficient/i.test(m);
@@ -984,6 +1387,8 @@ export async function callFreeAIFallbackChain(
       candidateKeys = [groqKey];
     } else if (provider === "nvidia" && nvidiaKey) {
       candidateKeys = [nvidiaKey];
+    } else if (provider === "gemini" && geminiKey) {
+      candidateKeys = [geminiKey];
     }
     if (candidateKeys.length === 0) {
       errors.push(`${provider}/${model}: key not configured`);
@@ -1081,6 +1486,7 @@ export async function callFreeAIFallbackChain(
       `OpenRouter keys configured: ${openrouterKeys.length}.\n` +
       `Groq key: ${groqKey ? "present" : "MISSING"}.\n` +
       `NVIDIA key: ${nvidiaKey ? "present" : "MISSING"}.\n` +
+      `Gemini key: ${geminiKey ? "present" : "MISSING"}.\n` +
       `Errors:\n  - ${errors.join("\n  - ")}`,
   );
   console.error(finalError.message);

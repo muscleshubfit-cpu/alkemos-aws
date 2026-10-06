@@ -28,6 +28,10 @@ const ENV_KEYS = [
   "OPENROUTER_API_KEY",
   "GROQ_API_KEY",
   "NVIDIA_API_KEY",
+  "GEMINI_API_KEY",
+  "GEMINI_MODEL",
+  "UPSTASH_REDIS_REST_URL",
+  "UPSTASH_REDIS_REST_TOKEN",
 ] as const;
 
 function cleanEnv() {
@@ -113,8 +117,16 @@ describe("Phase 161 — NVIDIA NIM provider contract", () => {
       expect(AI_PROVIDERS.nvidia.docsUrl).toContain("nvidia");
     });
 
-    it("registry has exactly the three allowed providers", () => {
-      expect(Object.keys(AI_PROVIDERS).sort()).toEqual(["groq", "nvidia", "openrouter"]);
+    it("registry has exactly the four allowed providers (Phase 343 — owner order 2026-10-06 added gemini)", () => {
+      expect(Object.keys(AI_PROVIDERS).sort()).toEqual(["gemini", "groq", "nvidia", "openrouter"]);
+    });
+
+    it("gemini entry: native generativelanguage baseUrl + GEMINI_API_KEY env + AIza prefix", () => {
+      expect(AI_PROVIDERS.gemini).toBeDefined();
+      expect(AI_PROVIDERS.gemini.baseUrl).toBe("https://generativelanguage.googleapis.com/v1beta");
+      expect(AI_PROVIDERS.gemini.envKey).toBe("GEMINI_API_KEY");
+      expect(AI_PROVIDERS.gemini.keyPrefix).toBe("AIza");
+      expect(AI_PROVIDERS.gemini.defaultModel).toMatch(/^gemini-/);
     });
   });
 
@@ -216,18 +228,24 @@ describe("Phase 177 — dead-model purge (14-day live audit, owner order «ال�
       }
     });
 
-    it("strongest-first law intact — openrouter ultra-550b leads", () => {
-      expect(INTERLEAVED_STRONGEST_CHAIN[0].provider).toBe("openrouter");
-      expect(INTERLEAVED_STRONGEST_CHAIN[0].model).toBe("nvidia/nemotron-3-ultra-550b-a55b:free");
+    it("GEMINI-FIRST law (Phase 343, owner order 2026-10-06) — gemini leads the strongest chain", () => {
+      expect(INTERLEAVED_STRONGEST_CHAIN[0].provider).toBe("gemini");
+      expect(INTERLEAVED_STRONGEST_CHAIN[0].model).toBe("gemini-3.8-flash");
     });
 
-    it("best live performer sits in slot 2 (groq/gpt-oss-120b, 85.3%)", () => {
-      expect(INTERLEAVED_STRONGEST_CHAIN[1].provider).toBe("groq");
-      expect(INTERLEAVED_STRONGEST_CHAIN[1].model).toBe("openai/gpt-oss-120b");
+    it("strongest-first law intact below gemini — openrouter ultra-550b is slot 2", () => {
+      expect(INTERLEAVED_STRONGEST_CHAIN[1].provider).toBe("openrouter");
+      expect(INTERLEAVED_STRONGEST_CHAIN[1].model).toBe("nvidia/nemotron-3-ultra-550b-a55b:free");
     });
 
-    it("all three providers are represented (interleave + rotation inputs)", () => {
+    it("best live performer sits in slot 3 (groq/gpt-oss-120b, 85.3%)", () => {
+      expect(INTERLEAVED_STRONGEST_CHAIN[2].provider).toBe("groq");
+      expect(INTERLEAVED_STRONGEST_CHAIN[2].model).toBe("openai/gpt-oss-120b");
+    });
+
+    it("all four providers are represented (interleave + rotation inputs)", () => {
       const providers = new Set(INTERLEAVED_STRONGEST_CHAIN.map((e) => e.provider));
+      expect(providers.has("gemini")).toBe(true);
       expect(providers.has("openrouter")).toBe(true);
       expect(providers.has("groq")).toBe(true);
       expect(providers.has("nvidia")).toBe(true);
@@ -263,9 +281,14 @@ describe("Phase 177 — dead-model purge (14-day live audit, owner order «ال�
       expect(idx120).toBeLessThan(idxLightning);
     });
 
-    it("speed law intact — gpt-oss-20b (fastest TTFT) still leads", () => {
-      expect(INTERLEAVED_FAST_CHAIN[0].model).toBe("openai/gpt-oss-20b");
-      expect(INTERLEAVED_FAST_CHAIN[0].provider).toBe("groq");
+    it("GEMINI-FIRST law (Phase 343) — gemini leads the fast chain (EVO) too", () => {
+      expect(INTERLEAVED_FAST_CHAIN[0].provider).toBe("gemini");
+      expect(INTERLEAVED_FAST_CHAIN[0].model).toBe("gemini-3.8-flash");
+    });
+
+    it("speed law intact below gemini — gpt-oss-20b (fastest TTFT) is slot 2", () => {
+      expect(INTERLEAVED_FAST_CHAIN[1].model).toBe("openai/gpt-oss-20b");
+      expect(INTERLEAVED_FAST_CHAIN[1].provider).toBe("groq");
     });
   });
 

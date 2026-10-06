@@ -63,6 +63,10 @@ function emptyResult(): ResearchResult {
  * Groq. The previous implementation used Google's native GenAI SDK with
  * Google Search grounding (`tools:[{googleSearch:{}}]`), which is a DIRECT
  * Gemini API call and is therefore no longer allowed.
+ * (Superseded 2026-10-06, Phase 343: a native gemini arm now lives INSIDE
+ * src/lib/ai-provider.ts by owner order — consumer-side provider fetches
+ * like this file's old one REMAIN banned; this module still rides the
+ * chain exclusively.)
  *
  * Replacement strategy: ask the strongest available chain model to act as
  * a research analyst producing the SAME output shape the pipeline expects

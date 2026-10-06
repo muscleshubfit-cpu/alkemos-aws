@@ -591,8 +591,8 @@ bun run build
 
 ### الـ AI Layer (المسار الموحد)
 
-> **المزودون ثلاثة فقط:** OpenRouter + Groq + NVIDIA NIM — القانون الكامل
-> (المساران القانونيان، تدوير المزود الرائد، ميزانية الـ52 ثانية) بيتُه
+> **المزودون أربعة:** Gemini (أولوية أولى — قانون gemini-first 343 بأمر المالك 2026-10-06، مجاني) + OpenRouter + Groq + NVIDIA NIM — القانون الكامل
+> (المساران القانونيان، تعليق تدوير الرائد عند توفر مفتاح Gemini، ميزانية الـ52 ثانية) بيتُه
 > **`AGENTS.md` §8**، والتنفيذ وخريطة الموديلات الحية بيتُها
 > **`src/lib/ai-provider.ts`**. خلاصة الدوال:
 
@@ -600,7 +600,7 @@ bun run build
 |---|---|---|
 | `callAI(prompt, options)` | المدخل العام الموحد | موجّه لمزود واحد بالإعدادات — أخطاء صادقة (لا تبديل صامت بين المزودين) |
 | `callAIWithFallback(prompt, options)` | **Plans, Articles, Research** — جودة عالية | Sequential — أقوى نموذج أولاً ثم التالي عند الفشل |
-| `callFreeAIFallbackChain(prompt, options)` | **EVO chat وكل المسارات المجانية** | سلسلة متشابكة ثلاثية المزودين (openrouter ↔ groq ↔ nvidia) بميزانية مقيدة ≤52s |
+| `callFreeAIFallbackChain(prompt, options)` | **EVO chat وكل المسارات المجانية** | سلسلة متشابكة رباعية المزودين (gemini-first عند توفر GEMINI_API_KEY ↔ openrouter ↔ groq ↔ nvidia) بميزانية مقيدة ≤52s — بلا مفتاح Gemini السلوك القديم حرفيًا |
 | `callFreeOpenRouterRace(prompt, options, raceCount)` | **التبديلات (Swap) فقط** — سرعة | سباق توازي — أول رد ناجح يفوز |
 | local fallback (`src/lib/ai-local.ts`) | فشل كل المزودات | مولّد محلي حتمي لتدهور رشيق |
 

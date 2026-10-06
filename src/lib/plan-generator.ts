@@ -36,7 +36,9 @@ import type { PlanContent } from "@/lib/data/plans";
 
 // Plan generator uses callFreeAIFallbackChain (interleaved OpenRouter + Groq)
 // for all AI calls — strongest free models first, with Groq for speed.
-// No Gemini dependency.
+// Gemini leads the chain as first choice when GEMINI_API_KEY is configured
+// (owner order 2026-10-06, free tier) — this file's call sites are
+// UNCHANGED: the chain owns selection and fallback.
 
 export type PlanOverrides = {
   targetCalories?: number;

@@ -1,0 +1,81 @@
+name: Gemini weekly usage report
+
+# Phase 343 (2026-10-06 — owner order «أضف Gemini كمزود AI جديد ... مع
+# مراقبة استهلاك Gemini لمدة أسبوع، وإنشاء تقرير المراقبة الأسبوعية»).
+# Reads the per-tag daily counters written by src/lib/ai-usage-gemini.ts
+# (Upstash) and updates docs/ai/gemini-weekly-usage-report.md — newest week
+# on top, 8-week retention. Commit uses the GIT-IDENTITY law email and
+# [vercel skip] (docs-only change). Push rides REPO_ACCESS_TOKEN (branch
+# protection bypass = owner PAT); when that token is missing/unauthorized
+# the run stays GREEN but clearly reports that the row needs a manual land —
+# the report body is ALWAYS in $GITHUB_STEP_SUMMARY.
+
+on:
+  schedule:
+    - cron: "15 21 * * 0" # Sun 21:15 UTC = Mon 00:15 Cairo — reports the last 7 full days
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: gemini-weekly-usage-report
+  cancel-in-progress: false
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+
+      - name: Preflight (fail fast naming missing secrets)
+        env:
+          UPSTASH_REDIS_REST_URL: ${{ secrets.UPSTASH_REDIS_REST_URL }}
+          UPSTASH_REDIS_REST_TOKEN: ${{ secrets.UPSTASH_REDIS_REST_TOKEN }}
+        run: |
+          missing=0
+          for v in UPSTASH_REDIS_REST_URL UPSTASH_REDIS_REST_TOKEN; do
+            if [ -z "${!v}" ]; then echo "❌ Missing secret: $v"; missing=1; fi
+          done
+          exit $missing
+
+      - name: Generate weekly usage report
+        env:
+          UPSTASH_REDIS_REST_URL: ${{ secrets.UPSTASH_REDIS_REST_URL }}
+          UPSTASH_REDIS_REST_TOKEN: ${{ secrets.UPSTASH_REDIS_REST_TOKEN }}
+        run: node scripts/gemini-usage-report.mjs
+
+      - name: Publish report to run summary (always)
+        if: always()
+        run: |
+          if [ -f docs/ai/gemini-weekly-usage-report.md ]; then
+            cat docs/ai/gemini-weekly-usage-report.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Commit updated report (owner identity — GIT-IDENTITY law)
+        id: commit
+        continue-on-error: true
+        env:
+          REPO_ACCESS_TOKEN: ${{ secrets.REPO_ACCESS_TOKEN }}
+        run: |
+          if [ -z "$REPO_ACCESS_TOKEN" ]; then
+            echo "⚠️ REPO_ACCESS_TOKEN missing — report lives in this run's summary only; land the row manually."
+            exit 1
+          fi
+          git config user.name "alkemos-gemini-report"
+          git config user.email "muscleshubfit@gmail.com"
+          if git diff --quiet docs/ai/gemini-weekly-usage-report.md; then
+            echo "No report changes this week (zero-count week) — nothing to commit."
+            exit 0
+          fi
+          git add docs/ai/gemini-weekly-usage-report.md
+          git commit -m "docs: [vercel skip] Gemini weekly usage report $(date -u +%F) (Phase 343 monitoring — worklog GEMINI-PROVIDER-ROLLOUT-2026-10-06)" --quiet
+          git push "https://x-access-token:${REPO_ACCESS_TOKEN}@github.com/muscleshubfit-cpu/alkemos.git" HEAD:main 2>&1 | sed 's/x-access-token:[^@]*@/x-access-token:***@/g'
+          echo "pushed=1" >> "$GITHUB_OUTPUT"

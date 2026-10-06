@@ -87,6 +87,14 @@ jobs:
       GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
       NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
 
+      # ── GEMINI-FIRST ARM (Phase 343, owner order 2026-10-06, free tier) ──
+      # Optional BY DESIGN: missing/empty → the chain skips the gemini entry
+      # and the ladder behaves byte-identically to pre-343 (no preflight).
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      # Gemini usage counters (weekly report source) — optional, fail-soft.
+      UPSTASH_REDIS_REST_URL: ${{ secrets.UPSTASH_REDIS_REST_URL }}
+      UPSTASH_REDIS_REST_TOKEN: ${{ secrets.UPSTASH_REDIS_REST_TOKEN }}
+
       # ── IMAGE SOURCE LAW v3 (Pexels-first real photography) ──
       # PEXELS_API_KEY = PRIMARY (required per law v3); Unsplash/Pixabay
       # = failover. Pollinations/AI generation RETIRED by law v3 —
