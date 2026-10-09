@@ -1,0 +1,98 @@
+# =====================================================================
+# deploy/Caddyfile — Alkemos AWS origin (PRODUCTION shape)
+# Source: docs/VERCEL-TO-AWS-HOSTING-MIGRATION-PLAN-2026-10-09.md ملحق ب
+# (created on branch test/aws-lightsail-migration — owner order 2026-10-09)
+#
+# WHAT THIS FILE IS: the edge layer that replaces what vercel.json's
+# `headers` block used to inject at the Vercel edge. Two families:
+#   1. Security headers — copied VERBATIM from vercel.json (plan §4:
+#      they must stay byte-identical; the plan's Phase 4 battery
+#      compares them byte-for-byte against the Vercel edge).
+#   2. Cache-Control for static families — the vercel.json rules that
+#      the bare origin does not already emit (see the gap note below).
+#
+# THE MEASURED GAP THIS CLOSES (2026-10-09): the general
+#   /images/(.*)  ->  public, max-age=86400
+# rule exists ONLY in vercel.json — next.config.ts headers() covers
+# /images/brand, /images/exercises, /sw.js and public HTML, but NOT the
+# rest of public/images/ (root files + hero/ + og/ + programs/ +
+# authors/ + categories/). Measured on a bare origin those files ship
+# `Cache-Control: public, max-age=0` while the Vercel edge gives them
+# max-age=86400. This file restores edge parity.
+#
+# THE `defer` LAW (measured live, 2026-10-09 — caddy 2.8): WITHOUT
+# `defer`, a `header` op runs BEFORE reverse_proxy merges the upstream
+# response, so a Cache-Control the origin already sets gets APPENDED to
+# (two Cache-Control headers on the wire — measured). WITH `defer`, ops
+# apply at response-write time and REPLACE the field — exactly the
+# Vercel-edge semantics. Every Cache-Control rule below therefore uses
+# defer; the security-header block uses it too (replace-not-append).
+#
+# ORDER STILL MATTERS: deferred ops execute in definition order — the
+# general /images/* rule comes FIRST and the specific sub-trees AFTER
+# it, so the specific value wins (measured: brand=300+SWR,
+# exercises=immutable through the same edge).
+#
+# HTTPS: automatic Let's Encrypt (HTTP-01) — works behind the existing
+# Cloudflare proxy with SSL mode Full-strict (plan §10). At cutover only
+# the Cloudflare A/AAAA record changes; this file needs no edit.
+#
+# For the pre-cutover TEST server (no DNS) use deploy/Caddyfile.test —
+# same rules, `tls internal` instead of Let's Encrypt.
+# =====================================================================
+
+alkemos.com {
+	encode zstd gzip
+
+	# ---- security headers (VERBATIM values from vercel.json) ---------
+	header {
+		defer
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "SAMEORIGIN"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Strict-Transport-Security "max-age=63072000; includeSubDomains; preload"
+		Permissions-Policy "camera=(), microphone=(), geolocation=(), browsing-topics=(), interest-cohort=()"
+		Content-Security-Policy "frame-ancestors 'self'; base-uri 'self'; object-src 'none'; form-action 'self'"
+		Content-Security-Policy-Report-Only "default-src 'self'; script-src 'self' 'unsafe-inline' https://pagead2.googlesyndication.com https://www.googletagmanager.com https://static.cloudflareinsights.com https://*.adtrafficquality.google https://va.vercel-scripts.com https://www.paypal.com https://www.sandbox.paypal.com https://www.paypalobjects.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://openrouter.ai https://api.groq.com https://api.github.com https://api.pwnedpasswords.com https://*.google-analytics.com https://analytics.google.com https://*.adtrafficquality.google; frame-src https://www.paypal.com https://www.sandbox.paypal.com https://googleads.g.doubleclick.net https://td.doubleclick.net https://www.youtube.com https://www.google.com https://*.adtrafficquality.google; media-src 'self' https:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'"
+		-Server
+	}
+
+	# ---- Cache-Control parity with vercel.json (defer = replace) -----
+	# NOTE: vercel.json also sets max-age=86400 on /_next/image(.*) —
+	# that route is intentionally DEAD on this origin (410 quota guard
+	# via images.unoptimized=true), so its rule is NOT replicated.
+	# HTML Cache-Control (SEO-GEO-4) is NOT set here on purpose — it is
+	# emitted by the origin from next.config.ts headers() and must pass
+	# through untouched.
+	header /images/* {
+		defer
+		Cache-Control "public, max-age=86400"
+	}
+	header /sw.js {
+		defer
+		Cache-Control "public, max-age=0, must-revalidate"
+	}
+	header /_next/static/* {
+		defer
+		Cache-Control "public, max-age=31536000, immutable"
+	}
+	header /images/brand/* {
+		defer
+		Cache-Control "public, max-age=300, stale-while-revalidate=604800"
+	}
+	header /images/exercises/* {
+		defer
+		Cache-Control "public, max-age=31536000, immutable"
+	}
+
+	# ---- reverse proxy to the Next.js process ------------------------
+	# flush_interval -1 → zero buffering: required for the EVO SSE stream
+	# (text/event-stream) and honest for the 300s maxDuration routes.
+	reverse_proxy 127.0.0.1:3000 {
+		flush_interval -1
+	}
+}
+
+www.alkemos.com {
+	redir https://alkemos.com{uri} permanent
+}

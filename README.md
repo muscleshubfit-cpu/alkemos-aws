@@ -367,6 +367,18 @@ Referrer-Policy, Permissions-Policy), immutable caching for static assets and
 exercise images, and scheduled jobs (weekly progress reminder, daily pipeline
 dispatch). Site URL, analytics, and ads integrations are env-configured.
 
+**AWS origin pipeline (test phase — not live):** a hosting-migration deploy
+pipeline for a Lightsail origin exists in
+[`.github/workflows/deploy-aws.yml`](./.github/workflows/deploy-aws.yml)
+(manual `workflow_dispatch` ONLY — it never runs on push) with the
+server-side assets under [`deploy/`](./deploy/) and the root
+`ecosystem.config.js` (PM2). It replicates the vercel.json security headers
+and image cache rules in `deploy/Caddyfile` and ships a safe activate
+(atomic symlink switch + `/api/build-info` health check + automatic
+rollback). The full plan and the test-deployment walkthrough live in
+[`docs/VERCEL-TO-AWS-HOSTING-MIGRATION-PLAN-2026-10-09.md`](./docs/VERCEL-TO-AWS-HOSTING-MIGRATION-PLAN-2026-10-09.md);
+Vercel remains the only production line until the owner-ordered DNS cutover.
+
 ---
 
 ## 📚 Documentation

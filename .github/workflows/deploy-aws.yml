@@ -1,0 +1,108 @@
+name: Deploy to AWS origin (alkemos)
+
+# =====================================================================
+# Hosting-migration deploy pipeline — owner order 2026-10-09 (Phase 1
+# of docs/VERCEL-TO-AWS-HOSTING-MIGRATION-PLAN-2026-10-09.md §8 item 1,
+# prepared on branch test/aws-lightsail-migration).
+#
+# LAW: workflow_dispatch ONLY. This workflow NEVER runs on push — Vercel
+# remains the only live deployment line until the DNS cutover (plan
+# §5.2/§12), so merging this file changes nothing about production by
+# itself. The push trigger is added in the same commit that performs
+# the cutover (plan ملحق د).
+#
+# Safe deploy + automatic rollback (owner order: «النشر الآمن والتراجع
+# عند الفشل»): activation runs deploy/deploy.sh ON THE SERVER —
+# bun production install → atomic `current` symlink switch → PM2
+# reload → /api/build-info health check → AUTOMATIC rollback to the
+# previous release if the check fails. Manual rollback:
+# deploy/rollback.sh on the server.
+#
+# Secrets (owner — Settings ▸ Secrets ▸ Actions):
+#   AWS_DEPLOY_HOST        Lightsail public IP (test or production)
+#   AWS_DEPLOY_USER        "deploy" (created by deploy/setup-server.sh)
+#   AWS_DEPLOY_SSH_KEY     private key of the deploy user's keypair
+#   NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY — optional;
+#                          when absent the build runs in demo mode (the
+#                          measured 2,102-page build) and still deploys.
+# =====================================================================
+
+on:
+  workflow_dispatch: {}
+
+concurrency:
+  group: deploy-aws
+  cancel-in-progress: false # queue deploys — never kill a live activation
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+      NEXT_PUBLIC_SITE_URL: https://alkemos.com
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v5
+
+      # Same frozen environment as quality-gate + Vercel: bun 1.3.14
+      # from bun.lock, runtime Node 22.
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3.14"
+
+      - name: Preflight — deploy target configured?
+        env:
+          HOST: ${{ secrets.AWS_DEPLOY_HOST }}
+          USER: ${{ secrets.AWS_DEPLOY_USER }}
+          KEY: ${{ secrets.AWS_DEPLOY_SSH_KEY }}
+        run: |
+          if [ -z "$HOST" ] || [ -z "$USER" ] || [ -z "$KEY" ]; then
+            echo "AWS_DEPLOY_HOST / AWS_DEPLOY_USER / AWS_DEPLOY_SSH_KEY secrets are not configured (Settings → Secrets → Actions). Nothing was deployed."
+            exit 1
+          fi
+
+      - name: Install (frozen)
+        run: bun install --frozen-lockfile
+
+      - name: Build
+        run: bun run build
+
+      # output: standalone stays FORBIDDEN (Vercel law in next.config.ts)
+      # — the release ships the full .next + bun install on the server.
+      - name: Package release
+        run: >-
+          tar -czf release.tgz .next public package.json bun.lock
+          next.config.ts ecosystem.config.js deploy
+
+      - name: Upload release to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.AWS_DEPLOY_HOST }}
+          username: ${{ secrets.AWS_DEPLOY_USER }}
+          key: ${{ secrets.AWS_DEPLOY_SSH_KEY }}
+          source: release.tgz
+          target: "/srv/alkemos/releases/${{ github.sha }}"
+
+      - name: Activate (install → atomic switch → health check → auto-rollback)
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.AWS_DEPLOY_HOST }}
+          username: ${{ secrets.AWS_DEPLOY_USER }}
+          key: ${{ secrets.AWS_DEPLOY_SSH_KEY }}
+          script: |
+            set -e
+            R="/srv/alkemos/releases/${{ github.sha }}"
+            mkdir -p "$R"
+            cd "$R"
+            tar -xzf release.tgz
+            rm -f release.tgz
+            DEPLOY_REF='${{ github.ref_name }}' bash deploy/deploy.sh "$R"

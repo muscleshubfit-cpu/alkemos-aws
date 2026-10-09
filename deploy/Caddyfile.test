@@ -1,0 +1,65 @@
+# =====================================================================
+# deploy/Caddyfile.test — Alkemos AWS origin (TEST shape)
+# Same header/cache/proxy rules as deploy/Caddyfile (including the
+# `defer` replace law — see the comments there) with ONE difference:
+# TLS comes from Caddy's internal CA (`tls internal`) instead of Let's
+# Encrypt — so the pre-cutover TEST server needs NO DNS change and NO
+# domain ownership proof. Reach it with:
+#
+#   curl -k --resolve alkemos.com:443:<server-ip> https://alkemos.com/api/build-info
+#
+# (or trust the Caddy root CA: run `caddy trust` once on the server and
+# drop -k). At cutover, deploy/setup-server.sh is re-run WITHOUT --test
+# to install deploy/Caddyfile (automatic Let's Encrypt) — rules are
+# identical, only the certificate source changes.
+# =====================================================================
+
+alkemos.com {
+	tls internal
+
+	encode zstd gzip
+
+	# ---- security headers (VERBATIM values from vercel.json) ---------
+	header {
+		defer
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "SAMEORIGIN"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Strict-Transport-Security "max-age=63072000; includeSubDomains; preload"
+		Permissions-Policy "camera=(), microphone=(), geolocation=(), browsing-topics=(), interest-cohort=()"
+		Content-Security-Policy "frame-ancestors 'self'; base-uri 'self'; object-src 'none'; form-action 'self'"
+		Content-Security-Policy-Report-Only "default-src 'self'; script-src 'self' 'unsafe-inline' https://pagead2.googlesyndication.com https://www.googletagmanager.com https://static.cloudflareinsights.com https://*.adtrafficquality.google https://va.vercel-scripts.com https://www.paypal.com https://www.sandbox.paypal.com https://www.paypalobjects.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://openrouter.ai https://api.groq.com https://api.github.com https://api.pwnedpasswords.com https://*.google-analytics.com https://analytics.google.com https://*.adtrafficquality.google; frame-src https://www.paypal.com https://www.sandbox.paypal.com https://googleads.g.doubleclick.net https://td.doubleclick.net https://www.youtube.com https://www.google.com https://*.adtrafficquality.google; media-src 'self' https:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'"
+		-Server
+	}
+
+	# ---- Cache-Control parity with vercel.json (defer = replace) -----
+	header /images/* {
+		defer
+		Cache-Control "public, max-age=86400"
+	}
+	header /sw.js {
+		defer
+		Cache-Control "public, max-age=0, must-revalidate"
+	}
+	header /_next/static/* {
+		defer
+		Cache-Control "public, max-age=31536000, immutable"
+	}
+	header /images/brand/* {
+		defer
+		Cache-Control "public, max-age=300, stale-while-revalidate=604800"
+	}
+	header /images/exercises/* {
+		defer
+		Cache-Control "public, max-age=31536000, immutable"
+	}
+
+	reverse_proxy 127.0.0.1:3000 {
+		flush_interval -1
+	}
+}
+
+www.alkemos.com {
+	tls internal
+	redir https://alkemos.com{uri} permanent
+}

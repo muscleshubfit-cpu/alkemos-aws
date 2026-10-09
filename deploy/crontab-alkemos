@@ -1,0 +1,20 @@
+# /etc/cron.d/alkemos — server-side replacement for the two Vercel crons
+# (plan §5.1 + ملحق ج — created on branch test/aws-lightsail-migration,
+# owner order 2026-10-09). Install at cutover time (Phase 2):
+#
+#   sudo install -m 0644 deploy/crontab-alkemos /etc/cron.d/alkemos
+#
+# Schedules are VERBATIM the vercel.json cron expressions (UTC):
+#   progress-reminder   Sun 07:00 UTC   (was "0 7 * * 0")
+#   dispatch-pipelines  daily 23:40 UTC (was "40 23 * * *")
+# The endpoints hit the app DIRECTLY on localhost (no TLS hop) and are
+# protected by verifyCronAuth (timing-safe Bearer, fail-closed) — the
+# same CRON_SECRET the routes already use on Vercel.
+#
+# Secret handling: CRON_SECRET is read at RUNTIME from the single source
+# /srv/alkemos/shared/.env — it is never duplicated into a second file
+# and never appears in this repo file. NOTE: the secret value must be
+# shell-safe (letters/digits/typical token punctuation) because of the
+# double-quoted header interpolation below.
+0 7 * * 0 deploy sh -c 'curl -fsS -m 150 -H "Authorization: Bearer $(grep -m1 "^CRON_SECRET=" /srv/alkemos/shared/.env | cut -d= -f2-)" http://127.0.0.1:3000/api/cron/progress-reminder' >> /var/log/alkemos/cron.log 2>&1
+40 23 * * * deploy sh -c 'curl -fsS -m 90 -H "Authorization: Bearer $(grep -m1 "^CRON_SECRET=" /srv/alkemos/shared/.env | cut -d= -f2-)" http://127.0.0.1:3000/api/cron/dispatch-pipelines' >> /var/log/alkemos/cron.log 2>&1
