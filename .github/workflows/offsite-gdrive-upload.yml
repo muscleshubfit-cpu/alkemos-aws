@@ -187,7 +187,7 @@ jobs:
           fi
 
       - name: Checkout private backup repo (read-only snapshot)
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4 — pinned 2026-10-10 audit (pre-enable hardening)
         with:
           repository: muscleshubfit-cpu/musclehubeg-backups
           token: ${{ secrets.BACKUP_REPO_TOKEN }}
@@ -762,7 +762,7 @@ jobs:
           fi
 
       - name: Checkout code repo (FULL history — the bundle source)
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4 — pinned 2026-10-10 audit (pre-enable hardening)
         with:
           repository: muscleshubfit-cpu/alkemos
           token: ${{ secrets.BACKUP_REPO_TOKEN }}
@@ -770,7 +770,7 @@ jobs:
           path: gd3-alkemos
 
       - name: Checkout private backup repo (FULL history)
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4 — pinned 2026-10-10 audit (pre-enable hardening)
         with:
           repository: muscleshubfit-cpu/musclehubeg-backups
           token: ${{ secrets.BACKUP_REPO_TOKEN }}

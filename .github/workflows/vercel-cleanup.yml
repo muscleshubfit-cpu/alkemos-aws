@@ -79,9 +79,9 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5 — pinned 2026-10-10 audit (pre-enable hardening)
 
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5 — pinned 2026-10-10 audit (pre-enable hardening)
         with:
           # Node 22 — global fetch, zero-dependency runner (db-backup pattern).
           node-version: 22

@@ -48,7 +48,7 @@ jobs:
     timeout-minutes: 20
     steps:
       - name: Checkout main repo (for the script)
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4 — pinned 2026-10-10 audit (pre-enable hardening)
 
       - name: Preflight — fail fast with the exact setup fix (dormant until configured)
         env:

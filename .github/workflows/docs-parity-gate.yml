@@ -41,7 +41,7 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Checkout repository (full history)
-        uses: actions/checkout@v5
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5 — pinned 2026-10-10 audit (pre-enable hardening)
         with:
           fetch-depth: 0   # docs_audit B-check verifies STATE's recorded
                            # commit is an ancestor of HEAD — a shallow

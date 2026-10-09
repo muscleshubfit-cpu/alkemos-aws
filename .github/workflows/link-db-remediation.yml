@@ -36,15 +36,15 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5 — pinned 2026-10-10 audit (pre-enable hardening)
 
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5 — pinned 2026-10-10 audit (pre-enable hardening)
         with:
           node-version: 22
 
       # Production-locked install (A-12): the same frozen bun.lock Vercel
       # and local dev build from — no npm fresh re-resolution drift.
-      - uses: oven-sh/setup-bun@v2
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2 — pinned 2026-10-10 audit (pre-enable hardening)
         with:
           bun-version: 1.3.14
 
