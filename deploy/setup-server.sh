@@ -67,7 +67,7 @@ echo "[setup] 1/7 packages: Node 22 + Caddy"
 rm -f /etc/apt/sources.list.d/caddy-stable.list \
       /usr/share/keyrings/caddy-stable-archive-keyring.gpg
 apt-get update -qq
-apt-get install -y ca-certificates
+apt-get install -y ca-certificates unzip
 curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
 apt-get install -y nodejs
 npm install -g pm2
