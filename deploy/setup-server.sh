@@ -9,8 +9,9 @@
 #        --deploy-key "ssh-ed25519 AAAA… alkemos-deploy"  # TEST Caddy (tls internal)
 #   sudo bash deploy/setup-server.sh --deploy-key "…"     # production Caddy (LE)
 #
-# Installs : Node 22 (NodeSource) · Caddy (apt) · bun (deploy user) · PM2
-#            + pm2-logrotate · systemd autostart for PM2
+# Installs : Node 22 (NodeSource) · Caddy (official binary + systemd unit
+#            — cloudsmith apt quota-402'd, see FIX 2c below) · bun (deploy
+#            user) · PM2 + pm2-logrotate · systemd autostart for PM2
 #            + SWAP 2GB + vm.swappiness=10 (2026-10-09 (2): the $7 test
 #              bundle has 1GB RAM — safety net for OG/Satori spikes and
 #              apt/dpkg runs; measured app peak 356MB, see the plan's
@@ -55,19 +56,55 @@ HERE="$(cd "$(dirname "$0")" && pwd)"
 [ "$(id -u)" -eq 0 ] || { echo "run with sudo (root required)" >&2; exit 1; }
 
 echo "[setup] 1/7 packages: Node 22 + Caddy"
-# FIX 2026-10-09 (2b): Caddy is NOT in Ubuntu 24.04's archive (measured:
-# empty `apt-cache policy caddy` on a fresh Lightsail instance) — the
-# official cloudsmith repo is required (caddyserver.com/docs/install).
+# FIX 2026-10-09 (2b/2c): Caddy is NOT in Ubuntu 24.04's archive (empty
+# apt-cache policy, measured) AND the official cloudsmith apt repo was
+# bandwidth-quota exhausted repo-side (HTTP 402 from two vantage points,
+# measured 2026-10-09) — so: official binary from caddyserver.com +
+# a distro-equivalent systemd unit. Layout mirrors the deb package:
+# /usr/bin/caddy · /etc/caddy · /var/lib/caddy · system user caddy.
 apt-get update -qq
-apt-get install -y ca-certificates gnupg
+apt-get install -y ca-certificates
 curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
-curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' \
-  | gpg --batch --yes --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
-curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' \
-  > /etc/apt/sources.list.d/caddy-stable.list
-apt-get update -qq
-apt-get install -y nodejs caddy
+apt-get install -y nodejs
 npm install -g pm2
+curl -fsSL "https://caddyserver.com/api/download?os=linux&arch=amd64" \
+  -o /usr/bin/caddy.new \
+  && chmod +x /usr/bin/caddy.new \
+  && /usr/bin/caddy.new version \
+  && mv /usr/bin/caddy.new /usr/bin/caddy
+getent group caddy >/dev/null || groupadd --system caddy
+getent passwd caddy >/dev/null || useradd --system --gid caddy \
+  --create-home --home-dir /var/lib/caddy --shell /usr/sbin/nologin caddy
+mkdir -p /etc/caddy /var/lib/caddy
+chown -R caddy:caddy /var/lib/caddy
+cat > /etc/systemd/system/caddy.service <<'UNIT'
+[Unit]
+Description=Caddy
+Documentation=https://caddyserver.com/docs/
+After=network.target network-online.target
+Requires=network-online.target
+
+[Service]
+Type=notify
+User=caddy
+Group=caddy
+ExecStart=/usr/bin/caddy run --environ --config /etc/caddy/Caddyfile
+ExecReload=/usr/bin/caddy reload --config /etc/caddy/Caddyfile --force
+TimeoutStopSec=5s
+LimitNOFILE=1048576
+LimitNPROC=512
+PrivateDevices=true
+ProtectHome=true
+ProtectSystem=full
+AmbientCapabilities=CAP_NET_BIND_SERVICE
+CapabilityBoundingSet=CAP_NET_BIND_SERVICE
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+UNIT
+systemctl daemon-reload
 
 # ---- [swap-block] BEGIN — $7/1GB-RAM safety net (owner order 2026-10-09) ----
 SWAP_SIZE="${SWAP_SIZE:-2G}"
