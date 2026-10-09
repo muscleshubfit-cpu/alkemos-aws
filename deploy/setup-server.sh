@@ -55,7 +55,17 @@ HERE="$(cd "$(dirname "$0")" && pwd)"
 [ "$(id -u)" -eq 0 ] || { echo "run with sudo (root required)" >&2; exit 1; }
 
 echo "[setup] 1/7 packages: Node 22 + Caddy"
+# FIX 2026-10-09 (2b): Caddy is NOT in Ubuntu 24.04's archive (measured:
+# empty `apt-cache policy caddy` on a fresh Lightsail instance) — the
+# official cloudsmith repo is required (caddyserver.com/docs/install).
+apt-get update -qq
+apt-get install -y ca-certificates gnupg
 curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
+curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' \
+  | gpg --batch --yes --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
+curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' \
+  > /etc/apt/sources.list.d/caddy-stable.list
+apt-get update -qq
 apt-get install -y nodejs caddy
 npm install -g pm2
 
