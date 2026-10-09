@@ -1,0 +1,191 @@
+# aws-ai-test.yml — ONE-SHOT AI VERIFICATION (owner order 2026-10-10).
+# Dispatch-only. Never scheduled. Touches NO code, NO provider order, NO
+# deploy workflow, NO production settings. Runs REAL generation tests
+# against the local app on the Lightsail server and prints ONLY:
+# provider/model names, durations, counts, quota numbers and short
+# generated-text snippets. No secret values, no personal data.
+name: aws-ai-test
+on:
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: aws-ai-test
+  cancel-in-progress: false
+
+jobs:
+  ai-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Real AI tests on the server (SSH)
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.AWS_DEPLOY_HOST }}
+          username: ${{ secrets.AWS_DEPLOY_USER }}
+          key: ${{ secrets.AWS_DEPLOY_SSH_KEY }}
+          script: |
+            set -u
+            PASS=0; FAIL=0
+            ok()  { echo "PASS: $1"; PASS=$((PASS+1)); }
+            bad() { echo "FAIL: $1"; FAIL=$((FAIL+1)); }
+
+            echo "== 0) runtime env on the server (names only) =="
+            echo "shared/.env keys: $(cut -d= -f1 /srv/alkemos/shared/.env 2>/dev/null | grep -v '^#' | grep -v '^$' | paste -sd, -)"
+            APP_PID=$(pm2 pid alkemos 2>/dev/null | tail -1)
+            echo "pm2 alkemos pid: $APP_PID"
+            if [ -n "$APP_PID" ] && [ "$APP_PID" != "0" ]; then
+              RUN_KEYS=$(tr '\0' '\n' < /proc/$APP_PID/environ 2>/dev/null | cut -d= -f1 | grep -E '^(GEMINI_API_KEY|GEMINI_MODEL|OPENROUTER_API|OPENROUTER_API_KEY|GROQ_API_KEY|NVIDIA_API_KEY|BREVO_API_KEY|SUPABASE_SERVICE_ROLE_KEY)$' | paste -sd, -)
+              echo "running-process AI env keys: $RUN_KEYS"
+              case "$RUN_KEYS" in
+                *GEMINI_API_KEY*|*OPENROUTER_API*|*GROQ_API_KEY*|*NVIDIA_API_KEY*) ok "running process holds AI provider keys" ;;
+                *) bad "running process has NO AI provider keys" ;;
+              esac
+            else
+              bad "pm2 app alkemos not running"
+            fi
+
+            cat > /tmp/ai-test-plan.mjs <<'EOF'
+            // REAL training-plan generation test (anonymous, Arabic payload).
+            const t0 = Date.now();
+            try {
+              const res = await fetch("http://127.0.0.1:3000/api/ai/workout-plan-demo", {
+                method: "POST",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({ goal: "muscle", level: "beginner", days: 3, equipment: "full-gym", language: "ar", notes: "" }),
+              });
+              const ms = Date.now() - t0;
+              const body = await res.text();
+              if (res.status !== 200) {
+                console.log("PLAN-RESULT: FAIL http=" + res.status + " body=" + body.slice(0, 200));
+                process.exit(1);
+              }
+              const j = JSON.parse(body);
+              const plan = j.plan || j;
+              const days = plan.days || [];
+              const dayOk = days.length === 3;
+              let exCounts = days.map(d => (d.exercises || []).length);
+              let shapeOk = dayOk && exCounts.every(n => n >= 3 && n <= 8);
+              const model = j.model || "(none)";
+              if (!shapeOk || !model) {
+                console.log("PLAN-RESULT: FAIL shape days=" + days.length + " ex=" + exCounts.join("/") + " model=" + model);
+                process.exit(1);
+              }
+              console.log("PLAN-RESULT: PASS");
+              console.log("  provider/model : " + model);
+              console.log("  duration_ms    : " + ms);
+              console.log("  days           : " + days.map(d => (d.name || "?") + " [" + (d.exercises || []).length + " ex]").join(" | "));
+              console.log("  sample ex day1 : " + (days[0].exercises || []).slice(0, 3).map(e => e.name).join(" ، "));
+              console.log("  quota          : " + JSON.stringify(j.quota || null));
+            } catch (e) {
+              console.log("PLAN-RESULT: FAIL error=" + String(e && e.message || e).slice(0, 200));
+              process.exit(1);
+            }
+            EOF
+            cat > /tmp/ai-test-chat.mjs <<'EOF'
+            // REAL EVO chat test — SSE stream read to completion.
+            const Q = "ما هي أهم ثلاث نصائح لبناء عضلات الكتف في المنزل بدون أوزان؟ أجب بإيجاز.";
+            const t0 = Date.now();
+            try {
+              const res = await fetch("http://127.0.0.1:3000/api/ai/chat", {
+                method: "POST",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({ message: Q }),
+              });
+              if (res.status !== 200) {
+                const body = await res.text();
+                console.log("CHAT-RESULT: FAIL http=" + res.status + " body=" + body.slice(0, 200));
+                process.exit(1);
+              }
+              const ct = res.headers.get("content-type") || "";
+              if (!ct.includes("text/event-stream")) {
+                const body = await res.text();
+                console.log("CHAT-RESULT: FAIL content-type=" + ct + " body=" + body.slice(0, 200));
+                process.exit(1);
+              }
+              const reader = res.body.getReader();
+              const dec = new TextDecoder();
+              let buf = "", deltas = 0, tFirstDelta = null, final = null, errFrame = null;
+              while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                buf += dec.decode(value, { stream: true });
+                let i;
+                while ((i = buf.indexOf("\n\n")) >= 0) {
+                  const frame = buf.slice(0, i); buf = buf.slice(i + 2);
+                  let ev = "", data = "";
+                  for (const line of frame.split("\n")) {
+                    if (line.startsWith("event: ")) ev = line.slice(7).trim();
+                    else if (line.startsWith("data: ")) data += line.slice(6);
+                  }
+                  if (ev === "delta") { if (tFirstDelta === null) tFirstDelta = Date.now(); deltas++; }
+                  else if (ev === "final") { try { final = JSON.parse(data); } catch { final = { parse: "error" }; } }
+                  else if (ev === "error") { errFrame = data; }
+                }
+              }
+              const totalMs = Date.now() - t0;
+              const ttftMs = tFirstDelta === null ? null : tFirstDelta - t0;
+              if (!final || errFrame) {
+                console.log("CHAT-RESULT: FAIL final=" + JSON.stringify(final).slice(0, 150) + " errFrame=" + String(errFrame).slice(0, 150));
+                process.exit(1);
+              }
+              const src = String(final.source || "");
+              const text = String(final.response || "");
+              const arabic = /[\u0600-\u06FF]/.test(text);
+              const realAI = src && src !== "local" && src !== "safety" && text.length >= 50;
+              if (!realAI) {
+                console.log("CHAT-RESULT: FAIL src=" + src + " len=" + text.length + " text=" + text.slice(0, 150));
+                process.exit(1);
+              }
+              console.log("CHAT-RESULT: PASS");
+              console.log("  source      : " + src);
+              console.log("  duration_ms : " + totalMs + " (TTFT " + (ttftMs === null ? "n/a" : ttftMs) + ")");
+              console.log("  delta frames: " + deltas);
+              console.log("  final length: " + text.length + " chars, Arabic=" + arabic);
+              console.log("  snippet     : " + text.slice(0, 110).replace(/\n/g, " "));
+            } catch (e) {
+              console.log("CHAT-RESULT: FAIL error=" + String(e && e.message || e).slice(0, 200));
+              process.exit(1);
+            }
+            EOF
+
+            echo "== 1) REAL training-plan generation (primary provider, Arabic) =="
+            if node /tmp/ai-test-plan.mjs; then ok "workout plan generated by a real model"; else bad "workout plan generation failed"; fi
+            echo
+            echo "== 2) REAL EVO chat — SSE to completion =="
+            if node /tmp/ai-test-chat.mjs; then ok "EVO chat streamed a real model reply to completion"; else bad "EVO chat failed"; fi
+
+            echo
+            echo "== 3) quota meter after the tests (anonymous readout) =="
+            curl -s -m 20 http://127.0.0.1:3000/api/ai/quota | head -c 400; echo
+
+            echo
+            echo "== 4) recent app error log (sanitized) =="
+            pm2 logs alkemos --err --lines 40 --nostream 2>/dev/null | tail -n +3 | sed -E \
+              -e 's/AIza[0-9A-Za-z_-]{10,}/***GEMINI-KEY***/g' \
+              -e 's/sk-or-v1-[A-Za-z0-9-]{10,}/***OR-KEY***/g' \
+              -e 's/gsk_[A-Za-z0-9]{20,}/***/g' \
+              -e 's/nvapi-[A-Za-z0-9_-]{20,}/***/g' \
+              -e 's/sk-[A-Za-z0-9]{20,}/***/g' \
+              -e 's/ghp_[A-Za-z0-9]{20,}/***/g' \
+              -e 's/github_pat_[A-Za-z0-9_]{20,}/***/g' \
+              -e 's/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/***@***/g' \
+              | tail -25
+            ERR_COUNT=$(pm2 logs alkemos --err --lines 40 --nostream 2>/dev/null | tail -n +3 | grep -cE 'Error|error' || true)
+            echo "error-lines (last 40): $ERR_COUNT"
+
+            echo
+            echo "== 5) core site re-probe after AI tests =="
+            for p in / /ar /auth /api/build-info /sitemap.xml /rss.xml; do
+              code=$(curl -s -o /dev/null -w '%{http_code}' -m 25 "http://127.0.0.1:3000$p")
+              echo "  $p -> $code"
+              case "$code" in 200|307) ok "core $p";; *) bad "core $p -> $code";; esac
+            done
+            RSS=$(ps -o rss= -p "$APP_PID" 2>/dev/null | tr -d ' ')
+            echo "  alkemos RSS now: ${RSS:-?} KB"
+            rm -f /tmp/ai-test-plan.mjs /tmp/ai-test-chat.mjs
+
+            echo
+            echo "AI-TEST BATTERY: PASS=$PASS FAIL=$FAIL"
+            [ "$FAIL" -eq 0 ]
