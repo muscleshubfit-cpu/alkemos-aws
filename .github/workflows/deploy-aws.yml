@@ -86,15 +86,15 @@ jobs:
       NEXT_PUBLIC_SITE_URL: https://alkemos.com
       NEXT_TELEMETRY_DISABLED: "1"
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0 — pinned 2026-10-10 audit
 
       # Same frozen environment as quality-gate + Vercel: bun 1.3.14
       # from bun.lock, runtime Node 22.
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0 — pinned 2026-10-10 audit
         with:
           node-version: 22
 
-      - uses: oven-sh/setup-bun@v2
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0 — pinned 2026-10-10 audit
         with:
           bun-version: "1.3.14"
 
@@ -169,7 +169,7 @@ jobs:
           next.config.ts ecosystem.config.js deploy
 
       - name: Upload runtime env to shared dir
-        uses: appleboy/scp-action@v0.1.7
+        uses: appleboy/scp-action@917f8b81dfc1ccd331fef9e2d61bdc6c8be94634 # v0.1.7 — pinned 2026-10-10 audit
         with:
           host: ${{ secrets.AWS_DEPLOY_HOST }}
           username: ${{ secrets.AWS_DEPLOY_USER }}
@@ -179,7 +179,7 @@ jobs:
           overwrite: true
 
       - name: Upload release to server
-        uses: appleboy/scp-action@v0.1.7
+        uses: appleboy/scp-action@917f8b81dfc1ccd331fef9e2d61bdc6c8be94634 # v0.1.7 — pinned 2026-10-10 audit
         with:
           host: ${{ secrets.AWS_DEPLOY_HOST }}
           username: ${{ secrets.AWS_DEPLOY_USER }}
@@ -189,7 +189,7 @@ jobs:
           overwrite: true
 
       - name: Activate (env-sync → install → atomic switch → health check → auto-rollback)
-        uses: appleboy/ssh-action@v1.2.0
+        uses: appleboy/ssh-action@7eaf76671a0d7eec5d98ee897acda4f968735a17 # v1.2.0 — pinned 2026-10-10 audit
         env:
           RELEASE_SHA: ${{ github.sha }}
           DEPLOY_BRANCH: ${{ github.ref_name }}
@@ -247,7 +247,7 @@ jobs:
     steps:
       # -------- A. server-side (SSH → host vitals + direct :3000) ------
       - name: A) Server-side checks (SSH)
-        uses: appleboy/ssh-action@v1.2.0
+        uses: appleboy/ssh-action@7eaf76671a0d7eec5d98ee897acda4f968735a17 # v1.2.0 — pinned 2026-10-10 audit
         with:
           host: ${{ secrets.AWS_DEPLOY_HOST }}
           username: ${{ secrets.AWS_DEPLOY_USER }}
@@ -396,7 +396,7 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: Roll back to previous release, verify, re-activate newest
-        uses: appleboy/ssh-action@v1.2.0
+        uses: appleboy/ssh-action@7eaf76671a0d7eec5d98ee897acda4f968735a17 # v1.2.0 — pinned 2026-10-10 audit
         env:
           RELEASE_SHA: ${{ github.sha }}
         with:
