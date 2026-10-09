@@ -52,9 +52,23 @@ name: Deploy to AWS origin (alkemos)
 #   NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY — build +
 #                          runtime; when absent the build runs in demo
 #                          mode (the measured 2,102-page build).
-#   SUPABASE_SERVICE_ROLE_KEY (+ optional AI/email/PayPal keys — see
-#                          the "Stage runtime env" step) — runtime-only;
-#                          synced to shared/.env by the env-sync above.
+#   SUPABASE_SERVICE_ROLE_KEY (+ AI/email/PayPal/cron/EVO/Upstash/Pexels
+#                          keys — see the "Stage runtime env" step) —
+#                          runtime-only; synced to shared/.env by env-sync.
+#   2026-10-10 (audit MEDIUM-5 closure) — staged keys extended with
+#   CRON_SECRET, EVO_CRON_SECRET, EVO_ANON_SALT, EVO_FOLLOWUP_ENABLED,
+#   EVO_FOLLOWUP_FROM, GITHUB_DISPATCH_TOKEN (stored as DISPATCH_TOKEN —
+#   GitHub forbids secrets starting with GITHUB_), PEXELS_API_KEY,
+#   UPSTASH_REDIS_REST_URL/TOKEN. Values synced from the Vercel
+#   production project (owner order «نفذ اضافة الاسرار»); EVO_ANON_SALT
+#   freshly generated (was never set on Vercel — app used the public
+#   fallback salt; the new private salt starts a one-time anon-identity
+#   epoch at cutover, by design stronger than the in-source fallback).
+#   Build-time client inlining (job env): NEXT_PUBLIC_GA_ID,
+#   NEXT_PUBLIC_ADSENSE_CLIENT, NEXT_PUBLIC_PAYPAL_CLIENT_ID — absent
+#   secrets resolve to "" (= previous behavior); PayPal values are
+#   Sensitive in Vercel and must be added by the owner from the PayPal
+#   developer dashboard.
 #
 # Template law (GD-3 lesson): ${{ }} markers live ONLY in env/if/with —
 # scripts reference step-env variables instead.
@@ -85,6 +99,15 @@ jobs:
       NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
       NEXT_PUBLIC_SITE_URL: https://alkemos.com
       NEXT_TELEMETRY_DISABLED: "1"
+      # --- build-time client-bundle inlining (audit 2026-10-10) ---
+      # "use client" components (CheckoutView/CoachWalletView/root-shell)
+      # inline NEXT_PUBLIC_* at BUILD time — runtime .env staging alone
+      # never reaches the shipped bundle. Absent secret -> "" -> previous
+      # behavior (feature off); set the secret -> feature on (Vercel parity:
+      # GA + AdSense active, PayPal once the owner adds its 5 values).
+      NEXT_PUBLIC_GA_ID: ${{ secrets.NEXT_PUBLIC_GA_ID }}
+      NEXT_PUBLIC_ADSENSE_CLIENT: ${{ secrets.NEXT_PUBLIC_ADSENSE_CLIENT }}
+      NEXT_PUBLIC_PAYPAL_CLIENT_ID: ${{ secrets.NEXT_PUBLIC_PAYPAL_CLIENT_ID }}
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0 — pinned 2026-10-10 audit
 
@@ -132,6 +155,15 @@ jobs:
           R_PAYPAL_WEBHOOK_ID: ${{ secrets.PAYPAL_WEBHOOK_ID }}
           R_PAYPAL_MODE: ${{ secrets.PAYPAL_MODE }}
           R_NEXT_PUBLIC_PAYPAL_CLIENT_ID: ${{ secrets.NEXT_PUBLIC_PAYPAL_CLIENT_ID }}
+          R_CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          R_EVO_CRON_SECRET: ${{ secrets.EVO_CRON_SECRET }}
+          R_EVO_ANON_SALT: ${{ secrets.EVO_ANON_SALT }}
+          R_EVO_FOLLOWUP_ENABLED: ${{ secrets.EVO_FOLLOWUP_ENABLED }}
+          R_EVO_FOLLOWUP_FROM: ${{ secrets.EVO_FOLLOWUP_FROM }}
+          R_GITHUB_DISPATCH_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
+          R_PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
+          R_UPSTASH_REDIS_REST_URL: ${{ secrets.UPSTASH_REDIS_REST_URL }}
+          R_UPSTASH_REDIS_REST_TOKEN: ${{ secrets.UPSTASH_REDIS_REST_TOKEN }}
         run: |
           : > env-runtime.env
           stage() {
@@ -153,6 +185,15 @@ jobs:
           stage PAYPAL_WEBHOOK_ID              "$R_PAYPAL_WEBHOOK_ID"
           stage PAYPAL_MODE                    "$R_PAYPAL_MODE"
           stage NEXT_PUBLIC_PAYPAL_CLIENT_ID   "$R_NEXT_PUBLIC_PAYPAL_CLIENT_ID"
+          stage CRON_SECRET                   "$R_CRON_SECRET"
+          stage EVO_CRON_SECRET               "$R_EVO_CRON_SECRET"
+          stage EVO_ANON_SALT                 "$R_EVO_ANON_SALT"
+          stage EVO_FOLLOWUP_ENABLED          "$R_EVO_FOLLOWUP_ENABLED"
+          stage EVO_FOLLOWUP_FROM             "$R_EVO_FOLLOWUP_FROM"
+          stage GITHUB_DISPATCH_TOKEN         "$R_GITHUB_DISPATCH_TOKEN"
+          stage PEXELS_API_KEY                "$R_PEXELS_API_KEY"
+          stage UPSTASH_REDIS_REST_URL        "$R_UPSTASH_REDIS_REST_URL"
+          stage UPSTASH_REDIS_REST_TOKEN      "$R_UPSTASH_REDIS_REST_TOKEN"
           echo "runtime env staged: $(wc -l < env-runtime.env) key(s) [$(cut -d= -f1 env-runtime.env | paste -sd, -)] — values never printed"
 
       - name: Install (frozen)
