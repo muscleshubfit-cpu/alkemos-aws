@@ -62,6 +62,10 @@ echo "[setup] 1/7 packages: Node 22 + Caddy"
 # measured 2026-10-09) — so: official binary from caddyserver.com +
 # a distro-equivalent systemd unit. Layout mirrors the deb package:
 # /usr/bin/caddy · /etc/caddy · /var/lib/caddy · system user caddy.
+# Also scrub any stale cloudsmith source list from the earlier 2b attempt
+# (it breaks apt-get update with 402 until removed).
+rm -f /etc/apt/sources.list.d/caddy-stable.list \
+      /usr/share/keyrings/caddy-stable-archive-keyring.gpg
 apt-get update -qq
 apt-get install -y ca-certificates
 curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
