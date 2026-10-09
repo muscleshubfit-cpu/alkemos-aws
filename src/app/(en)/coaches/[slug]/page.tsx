@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { CoachLandingContent } from "@/components/coach/CoachLandingContent";
 import {
   fetchCoachLanding,
+  fetchPublishedCoachSlugs,
   coachDisplayName,
   resolveLandingCopy,
 } from "@/lib/coach-landing-server";
@@ -25,8 +26,24 @@ import {
  * content columns. Unknown or unpublished slugs → proper 404.
  */
 
-export const revalidate = 300; // 5 min ISR — landing copy changes rarely
+// VERCEL-USAGE-9 (2026-10-09): 300 → 86400 + generateStaticParams —
+// the route measured ƒ (per-request SSR) on Vercel because in Next 16
+// the revalidate export alone never engages ISR on a dynamic route
+// without gSP. Coach landing copy changes rarely; a newly published or
+// edited page appears via dynamicParams (on-demand render) or the 24h
+// revalidate window — never a broken link.
+export const revalidate = 86400; // 24 hours — landing copy changes rarely
 export const runtime = "nodejs";
+
+// VERCEL-USAGE-9 (2026-10-09): prerender every published + approved
+// coach landing at build time (fetchPublishedCoachSlugs mirrors the
+// public fetch gates exactly). dynamicParams stays true, so a coach
+// page published after a build renders on demand and ISR-caches from
+// then on.
+export async function generateStaticParams() {
+  const slugs = await fetchPublishedCoachSlugs();
+  return slugs.map((slug) => ({ slug }));
+}
 
 const SITE_URL = "https://alkemos.com";
 

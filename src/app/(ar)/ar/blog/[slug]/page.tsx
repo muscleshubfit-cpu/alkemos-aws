@@ -8,8 +8,20 @@ import { resolveAuthor } from "@/lib/authors";
 import type { Metadata } from "next";
 
 // #10 fix: ISR — 1 hour revalidate
-export const revalidate = 300; // 5 min — post-remediation freshness
+// VERCEL-USAGE-9 (2026-10-09): 300s → 3600s + generateStaticParams —
+// mirrors the EN fix: without gSP the route stayed ƒ (per-request SSR)
+// and the revalidate export never engaged. See the EN mirror for the
+// full rationale.
+export const revalidate = 3600; // 1 hour — post-remediation freshness window
 export const runtime = "nodejs";
+
+// VERCEL-USAGE-9 (2026-10-09): prerender every published AR post at
+// build time (same law as the EN mirror — dynamicParams stays true so
+// newly published posts render on demand and ISR-cache from then on).
+export async function generateStaticParams() {
+  const pools = await fetchPublishedBlogSlugPools();
+  return Array.from(pools.ar).map((slug) => ({ slug }));
+}
 
 export async function generateMetadata({
   params,

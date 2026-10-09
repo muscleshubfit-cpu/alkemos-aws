@@ -207,6 +207,43 @@ export async function fetchCoachLanding(
 }
 
 /**
+ * VERCEL-USAGE-9 (2026-10-09): published coach landing slugs — the
+ * generateStaticParams source for both /coaches/[slug] mirrors. Mirrors
+ * the exact fetchCoachLanding gates (published + review-approved, with
+ * the same pre-0046 no-column fallback as fetchCoachLandingRow) so the
+ * prerendered set can never contain a slug the public fetch would 404
+ * for review-state reasons. Empty array when the admin client isn't
+ * configured (demo/local builds) — the route then renders on demand
+ * via dynamicParams, never fails the build.
+ */
+export async function fetchPublishedCoachSlugs(): Promise<string[]> {
+  if (!isSupabaseAdminConfigured || !supabaseAdmin) return [];
+
+  const { data, error } = await supabaseAdmin
+    .from("coach_pages")
+    .select("slug")
+    .eq("is_published", true)
+    .eq("review_status", "approved");
+
+  if (error || !data) {
+    // Pre-0046 fallback (same law as fetchCoachLandingRow): the
+    // review_status column doesn't exist yet → every published row is
+    // treated as approved.
+    if (error && (error.code === "42703" || error.code === "PGRST204")) {
+      const { data: legacy } = await supabaseAdmin
+        .from("coach_pages")
+        .select("slug")
+        .eq("is_published", true);
+      return (legacy ?? []).map((row) => row.slug).filter(Boolean);
+    }
+    return [];
+  }
+
+  return data.map((row) => row.slug).filter(Boolean);
+}
+
+
+/**
  * PHASE 58 — STAFF-ONLY preview loader. Same data as the public page but
  * WITHOUT the publish/review gates: the admin review console and the
  * coach's own landing editor need to see PENDING / REJECTED / UNPUBLISHED

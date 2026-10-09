@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getFoodBySlug, getRelatedFoods } from "@/lib/foods";
+import { FOODS, getFoodBySlug, getRelatedFoods } from "@/lib/foods";
 import { getCollectionsForFoodTags, type HubLinkMini } from "@/lib/hub-collections";
 import { getBreadcrumbSchema, getReviewedWebPageSchema, jsonLd } from "@/lib/seo";
 import FoodDetailClient from "./FoodDetailClient";
@@ -12,11 +12,6 @@ import FoodDetailClient from "./FoodDetailClient";
  * generateMetadata. All 8,830 food pages shared the same generic
  * title from foods/layout.tsx. Now generates per-page metadata +
  * JSON-LD Breadcrumb schema server-side.
- *
- * Note: 8,830 pages are too many to pre-generate at build time
- * (would slow the build significantly). Instead, pages are rendered
- * on-demand (ISR via default caching). dynamicParams = true allows
- * any slug to be rendered.
  */
 
 // VERCEL-USAGE-3 (2026-09-21): explicit ISR window. The foods library is
@@ -28,7 +23,24 @@ import FoodDetailClient from "./FoodDetailClient";
 // crawlers sweeping thousands of distinct /foods/<slug> URLs now hit the
 // ISR cache instead of re-rendering 3.6MB of module-backed React per
 // request — the main Fluid CPU + invocation saver of this cycle.
-export const revalidate = 604800; // 7 days
+// VERCEL-USAGE-9 (2026-10-09): 604800 → 86400 + generateStaticParams —
+// the route still measured ƒ (per-request SSR) on Vercel: in Next 16 the
+// revalidate export alone never engages ISR on a dynamic route without
+// gSP. The gSP below prerenders the sitemap-advertised set; the USDA
+// long tail keeps the on-demand path (dynamicParams = true) with the
+// same 24h ISR window.
+export const revalidate = 86400; // 24 hours
+
+// VERCEL-USAGE-9 (2026-10-09): prerender the 80 CURATED foods — the
+// exact deterministic set the foods sitemap advertises (tags.length > 0,
+// the foods-sitemap-policy law — 80 foods × EN/AR mirrors = the 160
+// sitemap URLs). Mirrors sitemap-foods.xml's selection criterion so the
+// prerendered surface and the advertised surface can never drift.
+export async function generateStaticParams() {
+  return FOODS.filter((f) => (f.tags?.length ?? 0) > 0).map((f) => ({
+    slug: f.slug,
+  }));
+}
 
 export async function generateMetadata({
   params,
