@@ -604,17 +604,30 @@ HTML entries carry the old header until their 12h edge TTL expires —
 the report-volume drop ramps in over ~12h after deploy (no CF purge:
 a purge would itself spike origin invocations).
 
+**VERCEL-USAGE-9 (2026-10-09) — `report-uri` removed entirely:** the
+remaining report traffic (violations the whitelist cannot silence —
+third-party script churn, browser extensions, scanner-injected
+headers) still POSTed to `/api/csp-report` on routes where browsers
+enforce the RO header, and each POST = one function invocation that
+can never be CDN-cached. The `report-uri /api/csp-report` directive
+is deleted from `vercel.json` (the policy itself is unchanged —
+Report-Only stays live for future enforcement decisions). The route
+file stays (204 on direct hits) but browsers no longer send reports,
+so the invocation stream goes to zero. Same 12h CF edge-TTL rollout
+note as above: cached HTML carries the old header (and old report
+behavior) until it expires.
+
 ### Cloudflare — the OFFICIAL production HTML cache layer (P1-5, owner decision 2026-09-16 «اعتمد الخيار (ب)»)
 
 `alkemos.com` resolves through Cloudflare BEFORE Vercel, and the zone
-runs THREE cache rules that own the production caching behavior (the
+runs FOUR cache rules that own the production caching behavior (the
 deep-audit P1-5 forensic verified the zone Browser-Cache-TTL is
 `Respect Existing Headers` — the RULES, not the zone setting, are the
 source):
 
 - **Ruleset:** «alkemos cache rules (SEO-GEO-4 2026-09-08)» — one
-  ruleset, THREE rules since VERCEL-USAGE-7 (2026-10-02; rule 3 adds
-  the sitemap/RSS/llms/robots bot-fetch guard); rule 1 edge TTL raised 14400s → 43200s by
+  ruleset, FOUR rules since VERCEL-USAGE-9 (2026-10-09; rule 4 bypasses
+  the HTML cache for RSC requests); rule 1 edge TTL raised 14400s → 43200s by
   VERCEL-USAGE-4 T-3b (2026-09-19, owner order «مطلوب تنفيذ حل
   لمشكلة تجاوز الاستخدام الحالية» — Fluid CPU overage guard).
 - **Rule 1 — public HTML cache** («alkemos-public-html-cache», created
@@ -660,6 +673,24 @@ fetches.
   llms/robots were `cf-cache-status: DYNAMIC` until VERCEL-USAGE-7
   rule 3 (2026-10-02) — now edge-cached 1h (verified MISS→HIT live)
   while Vercel keeps its own ISR cache (`x-vercel-cache: HIT`).
+- **Rule 4 — RSC cache bypass** («alkemos RSC cache bypass», created by
+  VERCEL-USAGE-9 2026-10-09 — soft-navigation correctness guard):
+  **Expression:** `(http.request.uri.query contains "_rsc") or
+  (http.request.headers["rsc"][0] in {"1"})`. **Behavior:**
+  `cache=false` (BYPASS). Cache Rules are stackable and the LAST
+  matching rule wins for conflicting settings, so rule 4 sits AFTER
+  rule 1 in the list and overrides its `cache=true` for RSC requests
+  only. Effect: CF was serving its 12h-cached HTML entry to Next.js
+  RSC fetches (cache key ignores `Vary: rsc`) — client-side soft
+  navigation received `text/html` instead of the `text/x-component`
+  RSC payload, broke, and fell back to a FULL page load (extra
+  invocation + transfer per click). Verified live 2026-10-09: RSC
+  request now returns `text/x-component` + `cf-cache-status: DYNAMIC`
+  (never HIT), while normal HTML requests keep `cf-cache-status: HIT`
+  (rule 1 untouched). After the VERCEL-USAGE-9 ISR deploy, the RSC
+  request lands on Vercel's ISR cache (`x-vercel-cache: HIT`) — zero
+  function renders for soft navigation. Rollback: delete the single
+  rule.
 - **Layering law:** the `next.config.ts` SEO-GEO-4 headers rule stays
   the ORIGIN-side policy (what Vercel emits; what every non-CF path —
   preview URLs, direct Vercel hits — receives). Any future change to
@@ -678,7 +709,12 @@ fetches.
 - Google OAuth via PKCE flow (the `@supabase/ssr` cookie-based
   strategy is critical — see `src/middleware.ts` header comment for
   the failure mode if middleware is missing).
-- Session refresh handled in middleware on every request.
+- Session refresh handled in middleware — VERCEL-USAGE-9 (2026-10-09)
+  scopes it: anonymous requests (no `sb-*` cookies) and non-auth
+  `/api/*` requests skip the Supabase client + `getUser()` hop (route
+  handlers validate their own sessions via `getAuthUser()`); the
+  OAuth/PKCE surface (`/auth/*`) and every authenticated page request
+  keep the full cookie-sync + refresh path.
 - Demo mode (no Supabase env vars): two seeded demo accounts
   (`ahmed@coach.app` / `coach123`, `client@demo.app` / `client123`)
   backed by localStorage (single source: the seed in

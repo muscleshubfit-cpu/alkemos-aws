@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { CoachLandingContent } from "@/components/coach/CoachLandingContent";
 import {
   fetchCoachLanding,
+  fetchPublishedCoachSlugs,
   coachDisplayName,
   resolveLandingCopy,
 } from "@/lib/coach-landing-server";
@@ -23,8 +24,20 @@ import {
  * slugs → proper 404.
  */
 
-export const revalidate = 300; // 5 min ISR — landing copy changes rarely
+// VERCEL-USAGE-9 (2026-10-09): 300 → 86400 + generateStaticParams —
+// mirrors the EN fix: the route measured ƒ (per-request SSR) on Vercel
+// because in Next 16 the revalidate export alone never engages ISR on a
+// dynamic route without gSP. See the EN mirror for the full rationale.
+export const revalidate = 86400; // 24 hours — landing copy changes rarely
 export const runtime = "nodejs";
+
+// VERCEL-USAGE-9 (2026-10-09): prerender every published + approved
+// coach landing at build time (same law as the EN mirror —
+// dynamicParams stays true so newly published pages render on demand).
+export async function generateStaticParams() {
+  const slugs = await fetchPublishedCoachSlugs();
+  return slugs.map((slug) => ({ slug }));
+}
 
 const SITE_URL = "https://alkemos.com";
 

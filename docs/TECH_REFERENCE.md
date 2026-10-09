@@ -283,20 +283,21 @@ RUN_ON_SUPABASE_0030_MULTI_COACH.sql = نسخة مرجعية مطابقة باي
 - الطلب يمر عبر Cloudflare قبل Vercel، وقاعدتا كاش في المنطقة (zone) تملكان سلوك كاش الإنتاج: قاعدة HTML العام (SEO-GEO-4) وقاعدة بطاقات OG (ت-1).
 - إعداد المنطقة Browser-Cache-TTL = **Respect Existing Headers** (تحقق خارجي 2026-09-16) — أي أن **القاعدة** وليست إعداد المنطقة هي المصدر.
 
-### 5.2 الـ ruleset وقواعده الثلاث «alkemos cache rules (SEO-GEO-4 2026-09-08)»
+### 5.2 الـ ruleset وقواعده الأربع «alkemos cache rules (SEO-GEO-4 2026-09-08)»
 
 > **VERCEL-USAGE-3 (2026-09-16، أمر المالك «نفّذ ت-1 وت-3»):** صارت المنطقة تحمل **قاعدتين** في نفس الـ ruleset (phase `http_request_cache_settings`).
 > **VERCEL-USAGE-4 (2026-09-19، أمر المالك «مطلوب تنفيذ حل لمشكلة تجاوز الاستخدام الحالية»):** Edge TTL للقاعدة 1 رُفع **14400 → 43200 ث (12 ساعة — T-3b)** لخفض رندرات الأصل ÷3 حمايةً لسقف Fluid Active CPU على Hobby (كان متجاوزًا: 4h10s/4h).
 > **VERCEL-USAGE-7 (2026-10-02، أمر المالك «أعد التدقيق والإصلاح بناءً على Usage الحالي»):** أُضيفت **القاعدة 3** — كاش حافة ساعة واحدة لـ sitemap*/rss.xml/llms*/robots.txt (حارس نقل جلبات الزواحف من الأصل — تحقق حي MISS→HIT).
+> **VERCEL-USAGE-9 (2026-10-09، أمر المالك «نفّذ الحلول في فرع تجريبي»):** أُضيفت **القاعدة 4** — **تجاوز كاش (bypass)** لطلبات RSC (تعبير `?_rsc` أو ترويسة `RSC: 1`)؛ قواعد الكاش **تراكمية والقاعدة المطابقة الأخيرة تحسم التعارض** (قانون CF الرسمي) لذا تجلس رابعة/أخيرة فتُلغي `cache=true` للقاعدة 1 على طلبات RSC فقط — كان CF يقدّم HTML المخزّن 12س لتنقل React الناعم (مفتاح الكاش يتجاهل `Vary: rsc`) فيكسره ويرغم على تحميل صفحة كاملة؛ تحقق حي: طلب RSC الآن `text/x-component` + `cf-cache-status: DYNAMIC`، وHTML الطبيعي ما زال `HIT`. التراجع: حذف القاعدة الوحيدة.
 
-| العنصر | القاعدة 1: HTML العام | القاعدة 2: بطاقات OG (ت-1) | القاعدة 3: خرائط/خلاصات (VERCEL-USAGE-7) |
-|---|---|---|---|
-| الوصف الحرفي | `alkemos-public-html-cache (+browser_ttl Phase 189 — deep-audit P2-1); edge TTL 3600->14400s (T-3 VERCEL-USAGE-3 2026-09-16) -> 43200s (T-3b VERCEL-USAGE-4 2026-09-19, Fluid CPU overage guard)` | `alkemos og-image cache (T-1 VERCEL-USAGE-3 2026-09-16)` | `alkemos sitemap-rss-llms cache (VERCEL-USAGE-7 2026-10-02 — bot-fetch transfer guard, edge TTL 1h)` |
-| آخر تحديث | VERCEL-USAGE-3 (2026-09-16) — كانت آخر تحديث بالمرحلة 189 | منشأة في VERCEL-USAGE-3 (2026-09-16) | منشأة في VERCEL-USAGE-7 (2026-10-02) |
-| التعبير | قائمة استثناءات المسارات الخاصة بـ SEO-GEO-4 (api/admin/auth/checkout/dashboard/questionnaires/progress/plans/profile/support/referral/preview/coach) + المسارات الخالية من النقاط — أي صفحات HTML العامة فقط | `starts_with(http.request.uri.path, "/api/og-image/")` | `starts_with(http.request.uri.path, "/sitemap") or http.request.uri.path in {"/rss.xml" "/robots.txt"} or starts_with(http.request.uri.path, "/llms")` |
-| السلوك | `cache=true` · Edge TTL override **43200 ث (12 ساعة — T-3b، كان 14400/4 ساعات ثم 3600/ساعة)** · Browser TTL override **300 ث** | `cache=true` · Edge TTL override **86400 ث (يوم كامل)** · Browser TTL **respect_origin** (المسار يرسل أصلًا `public, max-age=86400`) | `cache=true` · Edge TTL override **3600 ث (ساعة — مطابقة لـ ISR المسار نفسه)** · Browser TTL **respect_origin** |
+| العنصر | القاعدة 1: HTML العام | القاعدة 2: بطاقات OG (ت-1) | القاعدة 3: خرائط/خلاصات (VERCEL-USAGE-7) | القاعدة 4: تجاوز RSC (VERCEL-USAGE-9) |
+|---|---|---|---|---|
+| الوصف الحرفي | `alkemos-public-html-cache (+browser_ttl Phase 189 — deep-audit P2-1); edge TTL 3600->14400s (T-3 VERCEL-USAGE-3 2026-09-16) -> 43200s (T-3b VERCEL-USAGE-4 2026-09-19, Fluid CPU overage guard)` | `alkemos og-image cache (T-1 VERCEL-USAGE-3 2026-09-16)` | `alkemos sitemap-rss-llms cache (VERCEL-USAGE-7 2026-10-02 — bot-fetch transfer guard, edge TTL 1h)` | `alkemos RSC cache bypass (VERCEL-USAGE-9 2026-10-09)` |
+| آخر تحديث | VERCEL-USAGE-3 (2026-09-16) — كانت آخر تحديث بالمرحلة 189 | منشأة في VERCEL-USAGE-3 (2026-09-16) | منشأة في VERCEL-USAGE-7 (2026-10-02) | منشأة في VERCEL-USAGE-9 (2026-10-09) |
+| التعبير | قائمة استثناءات المسارات الخاصة بـ SEO-GEO-4 (api/admin/auth/checkout/dashboard/questionnaires/progress/plans/profile/support/referral/preview/coach) + المسارات الخالية من النقاط — أي صفحات HTML العامة فقط | `starts_with(http.request.uri.path, "/api/og-image/")` | `starts_with(http.request.uri.path, "/sitemap") or http.request.uri.path in {"/rss.xml" "/robots.txt"} or starts_with(http.request.uri.path, "/llms")` | `(http.request.uri.query contains "_rsc") or (http.request.headers["rsc"][0] in {"1"})` |
+| السلوك | `cache=true` · Edge TTL override **43200 ث (12 ساعة — T-3b، كان 14400/4 ساعات ثم 3600/ساعة)** · Browser TTL override **300 ث** | `cache=true` · Edge TTL override **86400 ث (يوم كامل)** · Browser TTL **respect_origin** (المسار يرسل أصلًا `public, max-age=86400`) | `cache=true` · Edge TTL override **3600 ث (ساعة — مطابقة لـ ISR المسار نفسه)** · Browser TTL **respect_origin** | `cache=false` (**BYPASS**) · ترتيب أخير = تحسم التعارض مع القاعدة 1 لطلبات RSC فقط |
 
-- المسارات المنقوطة (الأصول الثابتة) والأسطح الخاصة **خارج** القاعدة 1، وكل ما ليس `og-image` خارج القاعدة 2 — خرائط الموقع/RSS/llms/robots لهم **القاعدة 3** حصريًا (كاش ساعة واحدة — أسوأ حداثة للزاحف ساعتان: 1 CF + 1 ISR، بلا أي تأثير على إيقاع اكتشاف الزواحف) — القواعد الثلاث غير متداخلة (القاعدة 1 تستثني `/api*` صراحة).
+- المسارات المنقوطة (الأصول الثابتة) والأسطح الخاصة **خارج** القاعدة 1، وكل ما ليس `og-image` خارج القاعدة 2 — خرائط الموقع/RSS/llms/robots لهم **القاعدة 3** حصريًا (كاش ساعة واحدة — أسوأ حداثة للزاحف ساعتان: 1 CF + 1 ISR، بلا أي تأثير على إيقاع اكتشاف الزواحف) — القواعد الأربع غير متداخلة في الأثر (القاعدة 1 تستثني `/api*` صراحة؛ القاعدة 4 تستهدف فئة طلبات RSC فقط وتتجاوز الكاش لصالح كاش ISR لدى Vercel).
 - تحقق `src/lib/sitemap-xml.ts:23` يضع ترويسات خرائط الموقع بنفسه (Vercel يخزنها مؤقتًا ISR؛ CF يكاشها الآن ساعة عبر القاعدة 3 — كانت `DYNAMIC` قبل VERCEL-USAGE-7).
 
 ### 5.3 الأثر المقاس حيًّا (أدلة 2026-09-16 — قبل/بعد VERCEL-USAGE-3)

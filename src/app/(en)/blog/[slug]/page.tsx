@@ -10,8 +10,22 @@ import type { Metadata } from "next";
 // #10 fix: use ISR instead of force-dynamic — blog posts change rarely,
 // so a 1-hour revalidate cache reduces Vercel function invocations
 // significantly while keeping content fresh.
-export const revalidate = 300; // 5 min — post-remediation freshness (IMAGE SAFETY sweep 2026-08-27)
+// VERCEL-USAGE-9 (2026-10-09): 300s → 3600s. The route measured ƒ
+// (dynamic, per-request invocation) despite this export — in Next 16 a
+// dynamic route without generateStaticParams renders on demand and the
+// revalidate alone never engages the ISR cache. The gSP below turns it
+// into ● (ISR) so every published post is served from the CDN.
+export const revalidate = 3600; // 1 hour — post-remediation freshness window
 export const runtime = "nodejs";
+
+// VERCEL-USAGE-9 (2026-10-09): prerender every published EN post at
+// build time. Posts published after a build still render on demand
+// (dynamicParams defaults to true) and ISR-cache from then on — the
+// pipeline's same-day articles never wait for the next deployment.
+export async function generateStaticParams() {
+  const pools = await fetchPublishedBlogSlugPools();
+  return Array.from(pools.en).map((slug) => ({ slug }));
+}
 
 /**
  * Server-side metadata generation — puts OG tags in <head> where Facebook,

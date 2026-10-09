@@ -105,7 +105,10 @@ export type BlogOGData = {
  * Centralizing this here so the three previous copies of the same REST
  * query don't drift apart.
  */
-// Decision 2 fix: wrap fetchBlogForOG in unstable_cache for 5-min revalidate — aligned with page ISR post IMAGE SAFETY remediation.
+// Decision 2 fix: wrap fetchBlogForOG in unstable_cache — aligned with the
+// blog ISR window (VERCEL-USAGE-9 2026-10-09: 300s → 3600s, same change as
+// the blog pages' revalidate; the lowest cache revalidate propagates to the
+// route, so a 300s entry here would silently cap the 1h ISR at 5m).
 // Blog posts change rarely — caching reduces Supabase queries significantly.
 const fetchBlogForOGUncached = async (
   slug: string,
@@ -214,11 +217,13 @@ const fetchBlogForOGUncached = async (
   }
 };
 
-// Cached wrapper — 1 hour revalidate
+// Cached wrapper — 1 hour revalidate (VERCEL-USAGE-9: aligned with the
+// blog pages' 1h ISR window; the og-image route's freshness is dominated
+// by its own CF edge TTL 86400s regardless).
 export const fetchBlogForOG = unstable_cache(
   fetchBlogForOGUncached,
   ["blog-og"],
-  { revalidate: 300 },
+  { revalidate: 3600 },
 );
 
 /**
@@ -289,11 +294,12 @@ const fetchBlogPostFullUncached = async (
   }
 };
 
-// Cached wrapper — 1 hour revalidate (blog posts change rarely)
+// Cached wrapper — 1 hour revalidate (VERCEL-USAGE-9 2026-10-09: aligned
+// with the blog pages' 1h ISR window — blog posts change rarely)
 export const fetchBlogPostFull = unstable_cache(
   fetchBlogPostFullUncached,
   ["blog-full"],
-  { revalidate: 300 },
+  { revalidate: 3600 },
 );
 
 /**
@@ -302,8 +308,10 @@ export const fetchBlogPostFull = unstable_cache(
  * (blog-content-sanitize.ts). A wrong-prefix link is only rewritten when
  * the target genuinely exists in the reader's language, so a missing or
  * deliberately cross-language target can never be turned into a 404.
- * Light select (slug, language only) + unstable_cache @300s aligned with
- * the blog pages' ISR window: at most one extra query per 5 minutes.
+ * Light select (slug, language only) + unstable_cache aligned with the
+ * blog pages' ISR window (VERCEL-USAGE-9 2026-10-09: 300s → 3600s —
+ * same change as the blog pages' revalidate; at most one extra query
+ * per hour).
  *
  * ─────────────────────────────────────────────────────────────────────
  * PHASE 174 (2026-09-11, live incident): `unstable_cache` JSON-serializes
@@ -344,7 +352,7 @@ const fetchPublishedBlogSlugPoolsCached = unstable_cache(
     return pools;
   },
   ["blog-slug-pools"],
-  { revalidate: 300 },
+  { revalidate: 3600 },
 );
 
 /** Cached wrapper → REAL Sets for every caller (API unchanged, JSON-safe). */

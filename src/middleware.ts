@@ -141,6 +141,37 @@ export async function middleware(request: NextRequest) {
     return response;
   }
 
+  // ──────────────────────────────────────────────────────────────────
+  // VERCEL-USAGE-9 (2026-10-09): Supabase early-exit — two request
+  // classes were paying createServerClient + getUser() for nothing:
+  //
+  //   1. ANONYMOUS requests (zero sb-* cookies): getUser() can only
+  //      resolve to "no session", yet every logged-out page view (the
+  //      vast majority of public traffic — crawlers + visitors) still
+  //      built the client and ran the call on every invocation.
+  //
+  //   2. /api/* requests (except /api/auth/*): every route handler
+  //      validates its own session via getAuthUser() (auth-server.ts —
+  //      its own createServerClient whose getUser() performs the
+  //      in-memory token refresh when needed), so the middleware hop
+  //      was redundant per-invocation work. The OAuth surface is NOT
+  //      affected: the PKCE callback lives at /auth/callback (outside
+  //      /api/*), and both the PKCE verifier and session cookies are
+  //      sb-* prefixed — authenticated flows keep the full cookie-sync
+  //      + refresh path below.
+  //
+  // Locale headers/cookies above are complete for every case — this
+  // return is behavior-identical for the two skipped classes.
+  const hasSbCookies = request.cookies
+    .getAll()
+    .some((cookie) => cookie.name.startsWith("sb-"));
+  const isApiPath =
+    pathname === "/api" || pathname.startsWith("/api/");
+  const isApiAuthPath = pathname.startsWith("/api/auth/");
+  if (!hasSbCookies || (isApiPath && !isApiAuthPath)) {
+    return response;
+  }
+
   const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
     cookies: {
       getAll() {

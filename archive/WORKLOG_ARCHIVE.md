@@ -12223,3 +12223,25 @@ Stage Summary:
 - دروس هامشية مقيسة وثّقت في الـ workflow: Drive v3 لا يقبل permissions ضمن files.create · sendNotificationEmail=false ممنوع مع نقل الملكية (403 حرفي).
 - البريد الشخصي: في GitHub Secrets فقط — صفر ظهور في أي ملف بالريبو (طلب المالك محقق كاملًا).
 - كل العمل على الفرع gd1-smoke-test — **main بلا أي تغيير (52583e8)**: قرار مسار الرفع (OAuth / Workspace / R2) لا يزال بيد المالك.
+
+<!-- rotated 2026-10-09 by scripts/worklog_rotate.py (Phase 288, ARCH-REMEDIATION): 1 entries moved verbatim from worklog.md -->
+---
+Task ID: GD1-OAUTH-EXECUTION-2026-10-04
+Agent: Super Z (main)
+Task: أمر المالك (2026-10-04): «ارجع إلى الخطة الموثقة في المستودع ونفّذ الآن اقتراح OAuth للـGoogle Drive Backup كما هو موضح فيها، مع إبقاء Google Login الحالي للمشروع منفصلًا وعدم تغيير أي شيء متعلق به — وعند الوصول لخطوة تتطلب موافقة Google اليدوية توقف وأعطني الرابط/الخطوة المطلوبة ثم أكمل التنفيذ بعد عودتي» — تنفيذ مسار GD-1-ALT (§5) بعد حسم قانون المنصة ضد SA ووصفة نقل الملكية.
+
+Work Log:
+- القوانين أولًا: AGENTS.md §3.5/§3.8/§12.5.1 · التحقق من فرع gd1-smoke-test (tip c2cbef8 = origin · main بلا تغيير 52583e8) · نمطا اختبار الدخان/التجربة كمرجعين حاكمين.
+- التحقق المعماري قبل البناء: rclone v1.75.1 (النسخة المقيدة ذاتها) تقبل scope=drive.file وscope=drive كقيم إعداد (قياس محلي بثنائي مقيد بالبصمة) · Google Login = مزوّد Supabase Auth (لوحة-side بلا كود/بيئات) — الفصل بنيوي أصلًا ووُثّق صراحة.
+- بناء `.github/workflows/gdrive-oauth-smoke-test.yml` (فرع gd1-smoke-test · محفّز push مؤقت بنمط اختبار الدخان + dispatch بمدخلَي create_app_folder/app_folder_name): بنية التوكن (client_id+client_secret+scope+token.refresh_token — النطاق drive.file الأقل صلاحية افتراضيًا أو drive) → تحديث refresh→access (تشخيصان مقيسان: invalid_grant = قانون الـ 7 أيام لو الشاشة Testing + العلاج، وinvalid_client = خطأ نسخ) → about.get بِرْكة الحساب الحقيقية (العكس المقيس لأصفار SA — غير قاتل عند تقييده) → فحص الفولدر بالمعرف من GDRIVE_FOLDER_ID تحت النطاق → مفاضلة مقيسة: مرئي → جولة rclone كاملة + حارس 12GB · غير مرئي (قانون per-file) → جولة API خام بجذر التطبيق تثبت أطروحة الحصة (owners[0].me=True ولا 403) + قائمة قرار المالك (أ/ب) — قانون لون GD-1-EXP: الأخضر = اكتمال القياس والتنظيف.
+- مساران فرعيان بالفولدر: fork_mkdir.py/fork_rootroundtrip.py يُكتبان بـ cat-heredoc على المسار الأساسي ثم ينفذهما الفرعان (قانون bash: مغلق الـ heredoc يجب أن يقف عند العمود صفر — لا heredoc متداخل داخل if) — درس دُوّن داخل الملف.
+- بناء `scripts/gdrive/oauth-token-helper.html`: أداة محلية لمرة واحدة (عربية RTL · صفر أسرار داخلها · لا تخزين · تتصل بـ Google فقط): عميل Desktop · redirect ‏http://localhost:1 · access_type=offline · prompt=consent · قائمة نطاق drive.file/drive · تبديل الرمز من المتصفح مع احتياط curl/PowerShell جاهز · تركيب بنية السر GDRIVE_OAUTH_TOKEN جاهزة للصق.
+- تحقق محلي قبل أي دفع: YAML + bash -n لكل الكتل + ترجمة 6 heredocs بايثونية + node --check لأداة المساعدة + **محاكاة 14 سيناريو** (rclone وهمية حالة-full + MOCK_OAUTH_JSON): المرئي/غير المرئي/الأول-mint/السر المفقود/invalid_grant/SERVICE_DISABLED/about-403/حارس 12GB/اسم-لا-معرف/نطاق مرفوض/الحصيلة-الغير-متوقعة — 14/14 خضراء و**صفر كشف لقيم OAuth في كل المخرجات** (قانون الأسرار) · المحاكاة اصطادت وأصلحت عيبين حقيقيين قبل الدفع: اقتباس مفقود في سطر client_secret (تعليق بايثون كان يفشل) وجسم python -c داخل دالة bash كان سيرث المسافة البادئة (IndentationError).
+- التوثيق: الخطة (§1.5 تحفظ-2 مسارًا مختارًا + §5 صف GD-1-ALT منفذًا الآلي ومتوقفًا عند اليدوي + §6 فقرة الأمر) · صف CI_GATES للـ workflow الجديد (وإصلاح صف Storage backup الذي مسّه الإدراج) · صف GDRIVE_OAUTH_TOKEN في RECOVERY-SECRETS-SOURCES (اسم/مصدر فقط — صفر قيم) · صف الخطة في docs/README أُعيد بناؤه · هذا الإدخال + دوران H5 (12→13→12).
+
+Stage Summary:
+- **الجزء الآلي من مسار OAuth نُفّذ كاملًا**: workflow إثبات المصادقة بصفة المالك + أداة توليد التوكن المحلية + توثيق الأطر الثلاثة — كل شيء على الفرع gd1-smoke-test، وmain بلا أي تغيير (52583e8).
+- **التوقف المعمول به بأمر المالك**: الخطوات اليدوية على Google (نشر شاشة الموافقة إلى Production · إنشاء عميل OAuth من نوع Desktop app · توليد التوكن بالأداة · إضافة السر GDRIVE_OAUTH_TOKEN) — تُسلَّم للمالك بالروابط والخطوات الدقيقة ثم تُستأنف الجولة الخضراء عند عودته (الهبوط على main يبقى مشروطًا بها).
+- أطروحة الحصة جاهزة للقياس الحي: under OAuth the created file's owner IS the user (anti-SA law) — والفولدر القائم تحت drive.file متوقع غير مرئي (قانون per-file) والمفاضلة (فولدر التطبيق بنطاق الأقل صلاحية / إعادة توليد بنطاق drive) موثقة في قائمة قرار داخل التشغيل ذاته.
+- **فصل Google Login محقق بنيويًا وموثق**: عميل Desktop مستقل يستهلكه GitHub Actions وحده؛ Supabase/الإنتاج/الدومين بلا أي مساس.
+- Push status: pushed (فرع gd1-smoke-test — Commit SHA في git log؛ لا شيء على main قبل جولة خضراء بأمر المالك)
