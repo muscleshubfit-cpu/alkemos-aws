@@ -36,6 +36,12 @@
 # =====================================================================
 set -euo pipefail
 
+# FIX 2026-10-09 (2f): bun (deploy user) lives in ~/.bun/bin — non-
+# interactive SSH sessions (GitHub Actions / drone-ssh) don't source
+# ~/.profile, so bun was invisible and the preflight died. Put it on PATH
+# explicitly (harmless when already there).
+export PATH="$HOME/.bun/bin:$PATH"
+
 RELEASE="${1:?usage: deploy.sh <release_dir> [app_root]}"
 APP_ROOT="${2:-${APP_ROOT:-/srv/alkemos}}"
 CURRENT="$APP_ROOT/current"
