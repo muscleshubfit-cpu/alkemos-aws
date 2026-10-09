@@ -18,17 +18,56 @@ name: Deploy to AWS origin (alkemos)
 # previous release if the check fails. Manual rollback:
 # deploy/rollback.sh on the server.
 #
+# Runtime env sync (2026-10-09 (3a) — closes plan ملحق و step 5's
+# manual gap the owner already fed via GitHub Secrets): secret VALUES
+# are staged into a runner-side file env-runtime.env (never echoed —
+# only key names + count are logged), scp'd to the server's shared
+# dir, and merged into /srv/alkemos/shared/.env by the Activate step
+# BEFORE deploy.sh assembles the release .env. Merge is additive and
+# idempotent (re-running a deploy re-upserts the same keys); absent
+# secrets are skipped silently, so adding a secret in Settings is
+# enough — the next deploy picks it up. No secret value ever appears
+# in any log, command echo, or the release tarball.
+#
+# Post-deploy verify battery (plan ملحق و step 9, automated): job
+# `verify` runs (A) server-side checks over SSH (PM2 table, RAM/swap,
+# disk, direct :3000 probes, shared/.env key NAMES) and (B) edge checks
+# from the runner against Caddy :443 via --resolve alkemos.com:<ip>
+# (tls-internal — no DNS needed): bilingual pages, login page,
+# build-info SHA, sitemaps, the 7 security headers, Cache-Control
+# parity (images/brand/sw.js/_next/static), Arabic og-image generation
+# (Satori+Harfbuzz — the memory-spike path), an anonymous SSE chat
+# probe (no 5xx), and www/http redirects.
+#
+# Rollback drill (optional, dispatch input `rollback_drill`): job
+# `rollback-drill` rolls back to the previous release, VERIFIES it
+# serves via /api/build-info, then re-activates the newest release and
+# verifies again — an end-to-end proof of deploy/rollback.sh with the
+# end state always = newest release live.
+#
 # Secrets (owner — Settings ▸ Secrets ▸ Actions):
 #   AWS_DEPLOY_HOST        Lightsail public IP (test or production)
 #   AWS_DEPLOY_USER        "deploy" (created by deploy/setup-server.sh)
 #   AWS_DEPLOY_SSH_KEY     private key of the deploy user's keypair
-#   NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY — optional;
-#                          when absent the build runs in demo mode (the
-#                          measured 2,102-page build) and still deploys.
+#   NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY — build +
+#                          runtime; when absent the build runs in demo
+#                          mode (the measured 2,102-page build).
+#   SUPABASE_SERVICE_ROLE_KEY (+ optional AI/email/PayPal keys — see
+#                          the "Stage runtime env" step) — runtime-only;
+#                          synced to shared/.env by the env-sync above.
+#
+# Template law (GD-3 lesson): ${{ }} markers live ONLY in env/if/with —
+# scripts reference step-env variables instead.
 # =====================================================================
 
 on:
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      rollback_drill:
+        description: "After verify: roll back to the previous release, verify it serves, then re-activate the newest release (end state = newest live)."
+        required: false
+        type: boolean
+        default: false
 
 concurrency:
   group: deploy-aws
@@ -70,6 +109,52 @@ jobs:
             exit 1
           fi
 
+      # ------------------------------------------------------------ env-sync
+      # Stage the RUNTIME secrets into a file on the runner. Values are
+      # never echoed (no set -x; the log line prints key names + count
+      # only). Absent secrets are skipped silently — the file may end
+      # up empty (then Activate leaves shared/.env untouched).
+      - name: Stage runtime env (secret values → file, never logged)
+        env:
+          R_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          R_NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          R_NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          R_GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          R_GEMINI_MODEL: ${{ secrets.GEMINI_MODEL }}
+          R_OPENROUTER_API: ${{ secrets.OPENROUTER_API }}
+          R_GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          R_NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
+          R_BREVO_API_KEY: ${{ secrets.BREVO_API_KEY }}
+          R_EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
+          R_EMAIL_REPLY_TO: ${{ secrets.EMAIL_REPLY_TO }}
+          R_PAYPAL_CLIENT_ID: ${{ secrets.PAYPAL_CLIENT_ID }}
+          R_PAYPAL_CLIENT_SECRET: ${{ secrets.PAYPAL_CLIENT_SECRET }}
+          R_PAYPAL_WEBHOOK_ID: ${{ secrets.PAYPAL_WEBHOOK_ID }}
+          R_PAYPAL_MODE: ${{ secrets.PAYPAL_MODE }}
+          R_NEXT_PUBLIC_PAYPAL_CLIENT_ID: ${{ secrets.NEXT_PUBLIC_PAYPAL_CLIENT_ID }}
+        run: |
+          : > env-runtime.env
+          stage() {
+            if [ -n "${2:-}" ]; then printf '%s=%s\n' "$1" "$2" >> env-runtime.env; fi
+          }
+          stage SUPABASE_SERVICE_ROLE_KEY      "$R_SUPABASE_SERVICE_ROLE_KEY"
+          stage NEXT_PUBLIC_SUPABASE_URL       "$R_NEXT_PUBLIC_SUPABASE_URL"
+          stage NEXT_PUBLIC_SUPABASE_ANON_KEY  "$R_NEXT_PUBLIC_SUPABASE_ANON_KEY"
+          stage GEMINI_API_KEY                 "$R_GEMINI_API_KEY"
+          stage GEMINI_MODEL                   "$R_GEMINI_MODEL"
+          stage OPENROUTER_API                 "$R_OPENROUTER_API"
+          stage GROQ_API_KEY                   "$R_GROQ_API_KEY"
+          stage NVIDIA_API_KEY                 "$R_NVIDIA_API_KEY"
+          stage BREVO_API_KEY                  "$R_BREVO_API_KEY"
+          stage EMAIL_FROM                     "$R_EMAIL_FROM"
+          stage EMAIL_REPLY_TO                 "$R_EMAIL_REPLY_TO"
+          stage PAYPAL_CLIENT_ID               "$R_PAYPAL_CLIENT_ID"
+          stage PAYPAL_CLIENT_SECRET           "$R_PAYPAL_CLIENT_SECRET"
+          stage PAYPAL_WEBHOOK_ID              "$R_PAYPAL_WEBHOOK_ID"
+          stage PAYPAL_MODE                    "$R_PAYPAL_MODE"
+          stage NEXT_PUBLIC_PAYPAL_CLIENT_ID   "$R_NEXT_PUBLIC_PAYPAL_CLIENT_ID"
+          echo "runtime env staged: $(wc -l < env-runtime.env) key(s) [$(cut -d= -f1 env-runtime.env | paste -sd, -)] — values never printed"
+
       - name: Install (frozen)
         run: bun install --frozen-lockfile
 
@@ -83,6 +168,16 @@ jobs:
           tar -czf release.tgz .next public package.json bun.lock
           next.config.ts ecosystem.config.js deploy
 
+      - name: Upload runtime env to shared dir
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.AWS_DEPLOY_HOST }}
+          username: ${{ secrets.AWS_DEPLOY_USER }}
+          key: ${{ secrets.AWS_DEPLOY_SSH_KEY }}
+          source: env-runtime.env
+          target: "/srv/alkemos/shared"
+          overwrite: true
+
       - name: Upload release to server
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -91,8 +186,67 @@ jobs:
           key: ${{ secrets.AWS_DEPLOY_SSH_KEY }}
           source: release.tgz
           target: "/srv/alkemos/releases/${{ github.sha }}"
+          overwrite: true
 
-      - name: Activate (install → atomic switch → health check → auto-rollback)
+      - name: Activate (env-sync → install → atomic switch → health check → auto-rollback)
+        uses: appleboy/ssh-action@v1.2.0
+        env:
+          RELEASE_SHA: ${{ github.sha }}
+          DEPLOY_BRANCH: ${{ github.ref_name }}
+        with:
+          host: ${{ secrets.AWS_DEPLOY_HOST }}
+          username: ${{ secrets.AWS_DEPLOY_USER }}
+          key: ${{ secrets.AWS_DEPLOY_SSH_KEY }}
+          envs: RELEASE_SHA,DEPLOY_BRANCH
+          script: |
+            set -e
+            # ---- env-sync: merge staged secrets into shared/.env -------
+            # Key NAMES are logged; values are never echoed. The staged
+            # file is removed after the merge (shred best-effort).
+            SYNC="/srv/alkemos/shared/env-runtime.env"
+            ENVF="/srv/alkemos/shared/.env"
+            if [ -s "$SYNC" ]; then
+              touch "$ENVF"
+              chmod 600 "$ENVF"
+              synced=""
+              while IFS= read -r line || [ -n "$line" ]; do
+                case "$line" in ''|'#'*) continue ;; esac
+                k="${line%%=*}"
+                v="${line#*=}"
+                grep -v "^${k}=" "$ENVF" > "${ENVF}.tmp" 2>/dev/null || true
+                mv "${ENVF}.tmp" "$ENVF"
+                printf '%s=%s\n' "$k" "$v" >> "$ENVF"
+                synced="$synced $k"
+              done < "$SYNC"
+              rm -f "$SYNC"
+              chmod 600 "$ENVF"
+              echo "[env-sync] merged:$synced"
+              echo "[env-sync] shared/.env now holds $(grep -c '.' "$ENVF") line(s), mode $(stat -c '%a' "$ENVF")"
+            else
+              echo "[env-sync] nothing staged — shared/.env untouched"
+            fi
+            # ---- activate the release -----------------------------------
+            R="/srv/alkemos/releases/$RELEASE_SHA"
+            mkdir -p "$R"
+            cd "$R"
+            tar -xzf release.tgz
+            rm -f release.tgz
+            DEPLOY_REF="$DEPLOY_BRANCH" bash deploy/deploy.sh "$R"
+
+  # =====================================================================
+  # Post-deploy verification battery (plan ملحق و step 9 — automated).
+  # =====================================================================
+  verify:
+    name: verify battery (server + edge)
+    needs: build-and-deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      EDGE_HOST: ${{ secrets.AWS_DEPLOY_HOST }}
+      RELEASE_SHA: ${{ github.sha }}
+    steps:
+      # -------- A. server-side (SSH → host vitals + direct :3000) ------
+      - name: A) Server-side checks (SSH)
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.AWS_DEPLOY_HOST }}
@@ -100,9 +254,165 @@ jobs:
           key: ${{ secrets.AWS_DEPLOY_SSH_KEY }}
           script: |
             set -e
-            R="/srv/alkemos/releases/${{ github.sha }}"
-            mkdir -p "$R"
-            cd "$R"
-            tar -xzf release.tgz
-            rm -f release.tgz
-            DEPLOY_REF='${{ github.ref_name }}' bash deploy/deploy.sh "$R"
+            echo "== PM2 process table =="
+            pm2 list
+            echo "== memory (MB) + swap =="
+            free -m
+            swapon --show || true
+            echo "== top node processes by RSS (KB) =="
+            ps -eo pid,rss,etime,comm --sort=-rss | awk 'NR==1 || $4 ~ /node/' | head -4
+            echo "== disk (/srv) =="
+            df -h /srv | tail -1
+            echo "== releases on disk (newest first) =="
+            ls -1dt /srv/alkemos/releases/*/ | sed 's|/srv/alkemos/releases/||'
+            echo "== shared/.env keys (names only) =="
+            cut -d= -f1 /srv/alkemos/shared/.env 2>/dev/null | grep -v '^#' | grep -v '^$' | paste -sd, -
+            echo "== localhost:3000 probes (direct, no proxy) =="
+            for p in / /ar /auth /api/build-info /sitemap.xml /rss.xml; do
+              code=$(curl -s -o /dev/null -w '%{http_code}' -m 25 "http://127.0.0.1:3000$p")
+              echo "  $p -> $code"
+            done
+
+      # -------- B. edge-side (runner → Caddy :443, tls-internal) --------
+      - name: B) Edge checks (from the runner via SNI resolve)
+        run: |
+          set -u
+          H="$EDGE_HOST"
+          S="$RELEASE_SHA"
+          BASE="https://alkemos.com"
+          R() { curl -sk --resolve "alkemos.com:443:$H" -m 30 "$@"; }
+          pass=0; fail=0
+          ok()  { echo "PASS: $1"; pass=$((pass+1)); }
+          bad() { echo "FAIL: $1"; fail=$((fail+1)); }
+
+          echo "== core pages =="
+          code=$(R -o /tmp/h -w '%{http_code}' "$BASE/")
+          [ "$code" = "200" ] && ok "/ -> 200" || bad "/ -> $code"
+          grep -q 'lang="en"' /tmp/h && ok "/ is English (lang=en)" || bad "/ lang=en marker missing"
+          grep -qi 'alkemos' /tmp/h && ok "/ contains brand" || bad "/ brand missing"
+          code=$(R -o /tmp/ar -w '%{http_code}' "$BASE/ar")
+          [ "$code" = "200" ] && ok "/ar -> 200" || bad "/ar -> $code"
+          grep -q 'dir="rtl"' /tmp/ar && ok "/ar is Arabic RTL" || bad "/ar dir=rtl marker missing"
+          code=$(R -o /dev/null -w '%{http_code}' "$BASE/auth")
+          [ "$code" = "200" ] && ok "/auth (login page) -> 200" || bad "/auth -> $code"
+
+          echo "== build-info serves this release =="
+          body=$(R "$BASE/api/build-info")
+          case "$body" in
+            *"$S"*) ok "build-info serves $S" ;;
+            *)      bad "build-info body mismatch: $body" ;;
+          esac
+
+          echo "== sitemaps / feeds =="
+          for p in /sitemap.xml /rss.xml /sitemap-blog.xml; do
+            code=$(R -o /dev/null -w '%{http_code}' "$BASE$p")
+            [ "$code" = "200" ] && ok "$p -> 200" || bad "$p -> $code"
+          done
+
+          echo "== security headers on / (the 7 from vercel.json) =="
+          R -I "$BASE/" > /tmp/hdrs
+          for h in X-Content-Type-Options X-Frame-Options Referrer-Policy Strict-Transport-Security Permissions-Policy Content-Security-Policy Content-Security-Policy-Report-Only; do
+            grep -qi "^$h:" /tmp/hdrs && ok "header $h present" || bad "header $h MISSING"
+          done
+          if grep -qi '^server:' /tmp/hdrs; then bad "Server header exposed"; else ok "Server header hidden"; fi
+
+          echo "== Cache-Control parity with the Vercel edge =="
+          cc() { R -I "$BASE$1" | tr -d '\r' | awk -F': ' 'tolower($1)=="cache-control"{print $2}'; }
+          got=$(cc /images/og/og-home-en.png)
+          [ "$got" = "public, max-age=86400" ] && ok "CC /images/* = 86400" || bad "CC /images/* : '$got'"
+          got=$(cc /images/brand/divider-meander-dark.webp)
+          [ "$got" = "public, max-age=300, stale-while-revalidate=604800" ] && ok "CC brand = 300+SWR" || bad "CC brand : '$got'"
+          got=$(cc /sw.js)
+          [ "$got" = "public, max-age=0, must-revalidate" ] && ok "CC sw.js = must-revalidate" || bad "CC sw.js : '$got'"
+          asset=$(grep -oE '/_next/static/[^"]+\.(js|css)' /tmp/h | head -1)
+          if [ -n "$asset" ]; then
+            got=$(cc "$asset")
+            [ "$got" = "public, max-age=31536000, immutable" ] && ok "CC _next/static = immutable" || bad "CC _next/static : '$got'"
+            code=$(R -o /dev/null -w '%{http_code}' "$BASE$asset")
+            [ "$code" = "200" ] && ok "static asset -> 200" || bad "static asset -> $code"
+          else
+            bad "no /_next/static asset found in homepage HTML"
+          fi
+
+          echo "== og-image generator (Arabic compare card — Satori+Harfbuzz spike path) =="
+          ogurl="$BASE/api/og-image/alkemos-vs-myfitnesspal?type=compare&lang=ar"
+          code=$(R -o /tmp/og.png -w '%{http_code}' "$ogurl")
+          if [ "$code" = "200" ] && file -b /tmp/og.png | grep -qi 'png'; then
+            ok "og-image ar -> 200 PNG ($(stat -c%s /tmp/og.png) bytes)"
+          else
+            bad "og-image ar -> $code ($(file -b /tmp/og.png | cut -c1-40))"
+          fi
+
+          echo "== SSE chat endpoint (anonymous POST — AI provider keys may be absent) =="
+          code=$(curl -sk --resolve "alkemos.com:443:$H" -m 40 -o /tmp/sse -w '%{http_code}' \
+            -X POST -H 'Content-Type: application/json' \
+            -d '{"message":"deploy battery ping"}' "$BASE/api/ai/chat" 2>/dev/null || true)
+          [ -n "$code" ] || code=000
+          echo "  POST /api/ai/chat -> $code (first bytes: $(head -c 120 /tmp/sse 2>/dev/null | tr '\n' ' '))"
+          case "$code" in
+            200)
+              ok "chat endpoint -> 200 (no 5xx)"
+              if grep -q '^data:' /tmp/sse 2>/dev/null; then
+                ok "SSE data frames present"
+              else
+                echo "NOTE: no 'data:' frames — likely a provider error event (AI keys not synced yet); recorded, not failed"
+              fi
+              ;;
+            400|401|403|405) ok "chat endpoint gated -> $code (no 5xx)" ;;
+            5*)              bad "chat endpoint -> $code (SERVER ERROR)" ;;
+            *)               echo "WARN: chat endpoint -> $code (recorded — provider config pending)" ;;
+          esac
+
+          echo "== redirects =="
+          www=$(curl -sk --resolve "www.alkemos.com:443:$H" -o /dev/null -w '%{http_code} %{redirect_url}' -m 20 "https://www.alkemos.com/")
+          case "$www" in
+            308*alkemos.com*|301*alkemos.com*|302*alkemos.com*) ok "www -> apex redirect ($www)" ;;
+            *) bad "www redirect : $www" ;;
+          esac
+          httpred=$(curl -s --resolve "alkemos.com:80:$H" -o /dev/null -w '%{http_code} %{redirect_url}' -m 20 "http://alkemos.com/")
+          case "$httpred" in
+            30*https://alkemos.com*) ok "http -> https redirect ($httpred)" ;;
+            *) bad "http redirect : $httpred" ;;
+          esac
+
+          echo "== timing (3 samples, /) =="
+          for i in 1 2 3; do
+            R -o /dev/null -w "  / TTFB %{time_starttransfer}s total %{time_total}s\n" "$BASE/"
+          done
+
+          echo ""
+          echo "EDGE BATTERY RESULT: PASS=$pass FAIL=$fail"
+          [ "$fail" -eq 0 ]
+
+  # =====================================================================
+  # Optional end-to-end rollback drill. End state is ALWAYS the newest
+  # release live — the drill only proves the rollback path in between.
+  # =====================================================================
+  rollback-drill:
+    name: rollback drill (rollback → verify → re-activate)
+    needs: verify
+    if: ${{ inputs.rollback_drill }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Roll back to previous release, verify, re-activate newest
+        uses: appleboy/ssh-action@v1.2.0
+        env:
+          RELEASE_SHA: ${{ github.sha }}
+        with:
+          host: ${{ secrets.AWS_DEPLOY_HOST }}
+          username: ${{ secrets.AWS_DEPLOY_USER }}
+          key: ${{ secrets.AWS_DEPLOY_SSH_KEY }}
+          envs: RELEASE_SHA
+          script: |
+            set -e
+            CUR="$(readlink /srv/alkemos/current)"
+            echo "[drill] current = $CUR"
+            PREV="$(ls -1dt /srv/alkemos/releases/*/ | grep -vF "$CUR" | head -n1)"
+            PREV="${PREV%/}"
+            echo "[drill] rolling back to $PREV (health-checks its own SHA)"
+            bash /srv/alkemos/current/deploy/rollback.sh "$PREV"
+            echo "[drill] ROLLBACK VERIFIED — re-activating the newest release"
+            NEW="/srv/alkemos/releases/$RELEASE_SHA"
+            bash "$NEW/deploy/deploy.sh" "$NEW"
+            echo "[drill] DONE — newest release re-activated and verified (end state clean)"
