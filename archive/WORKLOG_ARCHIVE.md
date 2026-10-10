@@ -12479,3 +12479,26 @@ Stage Summary:
 - الفحص موثق بالتقرير والإصلاحان منفذان حرفيًا: P0 بحث Google حقيقي مُرسَّى بلا أي بديل (فشل صادق + الأدلة تدخل P1/P2) والافتراضي 3.5-flash.
 - آلية الـ fallback للسلاسل/الخطط/EVO لم تُمس بايتًا — الإزالة الوحيدة بمسار البحث فقط بأمر المالك الصريح؛ صفر كشف أسرار.
 - Push status: pushed (كوميت واحد 344 — بلا [vercel skip]: كود إنتاجي يجب أن ينشر)
+
+<!-- rotated 2026-10-10 by scripts/worklog_rotate.py (Phase 288, ARCH-REMEDIATION): 1 entries moved verbatim from worklog.md -->
+---
+Task ID: VERCEL-USAGE-9-2026-10-09
+Agent: Super Z (main)
+Task: أمر المالك (2026-10-09): «نفّذ الحلول التالية في فرع تجريبي (بدون push للإنتاج)» — الحلول 1+3+4+5 من تدقيق VERCEL-USAGE-9: gSP+revalidate للمدونة/الأطعمة/المدربين (EN+AR) · حذف report-uri من vercel.json · قاعدة CF لاستثناء طلبات RSC من كاش HTML · early-exit في middleware + استثناء /api/* من getUser — اختبار محلي كامل (ƒ→● · x-nextjs-cache HIT · قياس HTML) — لا أي push حتى الموافقة النهائية.
+
+Work Log:
+- (الفرع): perf/vercel-usage-fix من رأس main (230af2b) — كوميت محلي واحد، بلا push.
+- (الحل 1 — المدونة): gSP عبر fetchPublishedBlogSlugPools (49 EN + 48 AR مقيسًا) + revalidate 300→3600 في المرآتين؛ محاذاة نوافذ unstable_cache الثلاث بblog-server.ts (blog-og · blog-full · blog-slug-pools) 300→3600 وإلا تُقصّ نافذة ISR فعليًا على 5 دقائق (أدنى revalidate ينتشر للمسار — ظهر 5m في build أول ثم 1h بعد المحاذاة).
+- (الحل 1 — الأطعمة): gSP بالمعيار الحتمي نفسه لsitemap-foods (tags.length>0 = الـ80 صنفًا المنسّقين = الـ160 URLs المُعلنة) + revalidate 604800→86400 في المرآتين؛ الذيل USDA (8,750) يبقى dynamicParams عند الطلب.
+- (الحل 1 — المدربون): fetchPublishedCoachSlugs() جديد بcoach-landing-server.ts يطابق بوابات fetchCoachLanding حرفيًا (published+approved + fallback ما قبل 0046) + revalidate 300→86400 + gSP في المرآتين (مدربان منشوران: ahmedzake · osama).
+- (الحل 3): حذف `report-uri /api/csp-report` من CSP-Report-Only بvercel.json — السياسة نفسها باقية؛ ملف المسار باقٍ؛ تدفق الـPOST ينقطع بعد انتهاء مدخلات الحافة 12س.
+- (الحل 5 — middleware.ts): early-exit عند صفر كوكيز sb-* (الزوار/الزواحف = أغلب الحركة يتخطون createServerClient+getUser) · تخطي /api/* غير /api/auth/* (كل route handler يتحقق بgetAuthUser عميله الخاص — setAll no-op موثق) · OAuth/PKCE سليم (/auth/callback خارج /api، وVerifier كوكيزه sb-*) — ترويسات Locale/x-pathname قبل نقطة التخطي فلا ينقص سلوك.
+- (الحل 4 — CF): قاعدة «alkemos RSC cache bypass (VERCEL-USAGE-9 2026-10-09)» رابعة/أخيرة بruleset الكاش (cache=false) بتعبير `query contains "_rsc" or headers["rsc"][0] in {"1"}` — تراكمية والأخيرة تحسم التعارض (وثيقة CF الرسمية) — منشورة حية الآن بمنطقة الإنتاج.
+- (تحقق محلي — local-only, not preserved: build logs بـ/tmp): build أخضر 2,294 صفحة: المراكز الستة ƒ→● (blog ● 1h ×49/48 · foods ● 1d ×80/80 · coaches ● 1d ×2/2) · next start: x-nextjs-cache HIT + x-nextjs-prerender: 1 للصفحات المصلحة (القوائم الديناميكية بلا ترويسات كاش — الضابط السلبي) · أحجام HTML: مقال EN 146KB · AR 153KB · صنف EN 110KB/AR 115KB (مقيسة) · tsc 0 (داخل build) · vitest 2,306/2,306 · eslint 0 · vercel.json JSON صالح.
+- (قيود البيئة المحلية): anon key استُخرج من حزمة العميل الحية (عام بتصميمه)؛ SUPABASE_SERVICE_ROLE_KEY غير متاح محليًا (Vercel فقط + مشفر بالـAPI) → صفحتا المدربين تُبنيا 404 محليًا (profiles خلف RLS للـanon) — على Vercel تُبنيا صحيحتين؛ دليل ذلك: الاستعلام الحي أعاد المدربين المنشورين وgSP يعمل.
+- (تحقق حي للحل 4): طلب RSC بترويسة RSC:1 الآن `text/x-component` + `cf-cache-status: DYNAMIC` دائمًا (كان HTML مخزّن 12س يكسر التنقل الناعم) · HTML الطبيعي ما زال HIT · BLOCKLIST-1 حي (403 حافّيًا).
+- (التوثيق — نفس الكوميت): SECURITY.md §10 (إزالة report-uri + القاعدة 4 + §11 نطاق تحديث الجلسة) · docs/TECH_REFERENCE.md §5.2 (جدول القواعد الأربع + سطر VERCEL-USAGE-9) · STATE.md (345) · worklog هذا المدخل.
+
+Stage Summary:
+- جاهز للموافقة: الفرع perf/vercel-usage-fix يحول أكبر محركات الاستهلاك (تفاصيل المدونة/الأطعمة/المدربين = استدعاء+نقل لكل زيارة) إلى ISR مخدوم من CDN، ويقطع csp-report POSTs، ويصلح تنقل RSC، ويخفض كلفة middleware — التقدير المعلن للمالك: Invocations 973K→~500K · Transfer 17.71GB→~6GB · CPU 7h→~3h.
+- Push status: not-pushed (فرع تجريبي بأمر المالك — ينتظر الموافقة النهائية قبل الدمج/النشر)

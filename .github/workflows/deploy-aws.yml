@@ -70,6 +70,15 @@ name: Deploy to AWS origin (alkemos)
 #   Sensitive in Vercel and must be added by the owner from the PayPal
 #   developer dashboard.
 #
+#   NEXT_PUBLIC_SITE_URL (2026-10-10 AUTH-CALLBACK-LOCALHOST-REDIRECT fix,
+#   owner live bug «بعد اختيار البريد صفحة الرجوع https://localhost:3000/»):
+#   staged into the RUNTIME env too (public literal — not a secret). It
+#   used to reach the build only; /auth/callback redirects need it AT
+#   RUNTIME because Next 16 hardcodes request.url's host to localhost
+#   behind a proxy (Host/X-Forwarded-Host are ignored — measured on
+#   next@16.3.8), so server-side absolute redirects must resolve their
+#   origin from this var. Root cause: docs/AUTH-CALLBACK-LOCALHOST-REDIRECT-FIX-2026-10-10.md.
+#
 # Template law (GD-3 lesson): ${{ }} markers live ONLY in env/if/with —
 # scripts reference step-env variables instead.
 # =====================================================================
@@ -142,6 +151,9 @@ jobs:
           R_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           R_NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           R_NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          # Public literal (not a secret) — see header: runtime origin for
+          # /auth/callback redirects (AUTH-CALLBACK-LOCALHOST-REDIRECT fix).
+          R_NEXT_PUBLIC_SITE_URL: https://alkemos.com
           R_GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           R_GEMINI_MODEL: ${{ secrets.GEMINI_MODEL }}
           R_OPENROUTER_API: ${{ secrets.OPENROUTER_API }}
@@ -172,6 +184,7 @@ jobs:
           stage SUPABASE_SERVICE_ROLE_KEY      "$R_SUPABASE_SERVICE_ROLE_KEY"
           stage NEXT_PUBLIC_SUPABASE_URL       "$R_NEXT_PUBLIC_SUPABASE_URL"
           stage NEXT_PUBLIC_SUPABASE_ANON_KEY  "$R_NEXT_PUBLIC_SUPABASE_ANON_KEY"
+          stage NEXT_PUBLIC_SITE_URL            "$R_NEXT_PUBLIC_SITE_URL"
           stage GEMINI_API_KEY                 "$R_GEMINI_API_KEY"
           stage GEMINI_MODEL                   "$R_GEMINI_MODEL"
           stage OPENROUTER_API                 "$R_OPENROUTER_API"

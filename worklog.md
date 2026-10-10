@@ -1,4 +1,21 @@
 ---
+Task ID: AUTH-CALLBACK-LOCALHOST-REDIRECT-2026-10-10
+Agent: Super Z (main)
+Task: بلاغ مالك حي (2026-10-10): «قيم PayPal تمت بالفعل، تسجيل الدخول بحساب جوجل وبعد اختيار البريد صفحة الرجوع https://localhost:3000/» — تشخيص وإصلاح دخول جوجل على أصل AWS الحي (ما بعد cutover: alkemos.com عبر Cloudflare→Caddy→PM2 127.0.0.1:3000).
+
+Work Log:
+- (تحقق PayPal أولًا): أسرار GitHub الخمسة حاضرة بالأسماء (PAYPAL_CLIENT_ID/SECRET/WEBHOOK_ID/MODE + NEXT_PUBLIC_PAYPAL_CLIENT_ID) · آخر نشر run #8 على 29282291 ناجح · حزمة العميل الحية تحمل PayPal client-id — تأكيد بلاغ المالك بأن الدفع يعمل.
+- (التشخيص — استبعاد Supabase وGoogle): probe الكallback بكود مزيف بلا كوكيز أعاد 303 إلى https://alkemos.com/?error=... أي Site URL = https://alkemos.com سليم (وليس localhost) · authorize يمرر redirect_to كما يجب · ظهور منتقي حسابات جوجل يثبت أن redirect URI الخاص بSupabase مسجل في Google Console — لا يلزم أي تغيير في لوحة Supabase ولا Google.
+- (الدليل الحاسم): GET https://alkemos.com/auth/callback (بلا كود) → 307 Location: https://localhost:3000/ — المسار نفسه هو من يبني الرابط الخاطئ بعد نجاح تبادل PKCE وضبط كوكي الجلسة (الدخول كان مكتملًا 99% والزيارة الثانية للموقع كانت ستظهر مسجّلة).
+- (السبب الجذري — مقاس على next@16.3.8 بتطبيق probe معزول): Next 16 يبني request.url بمضيف localhost مثبّت دائمًا — يتجاهل Host وX-Forwarded-Host كليًا (استُسلما alkemos.com والنتيجة بقيت https://localhost:<port>) ويأخذ البروتوكول فقط من x-forwarded-proto — خلف Caddy صار الأصل https://localhost:3000 حرفيًا · التحويل النسبي مستحيل: NextResponse.redirect بمسار نسبي يرمي 500 «URL is malformed» · لا علاقة لCaddyfile إذًا ولا لإصلاح headers.
+- (الإصلاح — src/app/(app)/auth/callback/route.ts): redirectOrigin = NEXT_PUBLIC_SITE_URL (بيئة تشغيل) وإلا requestUrl.origin (dev فقط حيث localhost هو الأصل الحقيقي) + نزع الشرطات المائلة الزائدة؛ مواقع التحويل الخمسة (البوابات 1-4 + catch) كلها تحولت إليه — يصلح دفعة واحدة دخول Google OAuth وروابط استعادة كلمة المرور.
+- (البيئة — .github/workflows/deploy-aws.yml): NEXT_PUBLIC_SITE_URL كان يصل البناء فقط — أُضيف إلى runtime staging (قيمة عامة حرفية وليست سرًا: https://alkemos.com) ليعمل فرع env في الكود على الخادم فعلًا (بدونه يبقى fallback إلى requestUrl.origin = localhost) + توثيق السبب في رأس الـworkflow.
+- (اختبار الحراسة — src/lib/__tests__/auth-callback-origin.test.ts): عقد مصدر بنمط fs-contract يفشل عند عودة أي تحويل لrequestUrl.origin ويضمن بقاء staging الـruntime في الـworkflow (منع ارتداد كامل).
+- (التحقق المحلي قبل الدفع): vitest للملف الجديد + جودة الكود على الملفات المعدلة — انظر مدخل التحقق التالي لنشر AWS والقياس الحي بعده.
+
+Stage Summary:
+- جذر مشكلة دخول جوجل ليس في Supabase/Google/Caddy بل في قانون Next 16: request.url مضيفه localhost دائمًا خلف البروكسي — الإصلاح: أصل التحويل من NEXT_PUBLIC_SITE_URL ببيئة التشغيل (أُضيف للstaging) مع fallback للـdev · بانتظار نشر dispatch والقياس الحي (يجب أن يصبح Location = https://alkemos.com/...).
+---
 Task ID: OPS-TRANSITION-P2-2026-10-10
 Agent: Super Z (main)
 Task: أمر المالك (2026-10-10): تنفيذ خطة الانتقال التشغيلي إلى alkemos-aws — الخطوة 2: تحديث مراجع المستودع القديم الأربعة داخل كود AWS لتتجه للمستودع الجديد + نشر + اختبار مهمة AI حقيقية قبل إيقاف العامل القديم. (سبقتها الخطوة 1: نقل مهام النس الخمس واحدة تلو الأخرى بنجاح — db-backup 38015902427 · storage-backup 38015954677 · storage-inventory 38016025057 · backup-retention جاف 38016089720 + حقيقي 38016118803 (GFS D7/W5/M6 أزال 15 مجلد تاريخ، كل البايتات في تاريخ Git) · offsite-gdrive جاف 38016159352 + حقيقي 38016211636 (weekly/W41 رُفع لDrive مع read-back sha256 متطابق) — كلها من الجديد بينما القديم disabled_manually، والنسخ السابقة محفوظة حرفيًا. نُسخت متغيرات Actions السبعة (BACKUP_RETENTION_×3 + OFFSITE_KEEP_×3 + SITE_URL) للجديد، وأُنشئ فرع main عند cf46acb5 وجُعل الافتراضي.)
@@ -183,24 +200,3 @@ Stage Summary:
 - مؤشر 48 ساعة للمالك: توقع هبوط الاستدعاءات اليومية (~25–48K) إلى ~10–15K مع النافذة + خروج أيام سبتمبر الثقيلة من العداد المتجدد.
 - Push status: pushed (docs: [vercel skip] — هذا الكوميت التوثيقي؛ كود الإصلاح هبط عبر PR #7 squash ede3637)
 
----
-Task ID: VERCEL-USAGE-9-2026-10-09
-Agent: Super Z (main)
-Task: أمر المالك (2026-10-09): «نفّذ الحلول التالية في فرع تجريبي (بدون push للإنتاج)» — الحلول 1+3+4+5 من تدقيق VERCEL-USAGE-9: gSP+revalidate للمدونة/الأطعمة/المدربين (EN+AR) · حذف report-uri من vercel.json · قاعدة CF لاستثناء طلبات RSC من كاش HTML · early-exit في middleware + استثناء /api/* من getUser — اختبار محلي كامل (ƒ→● · x-nextjs-cache HIT · قياس HTML) — لا أي push حتى الموافقة النهائية.
-
-Work Log:
-- (الفرع): perf/vercel-usage-fix من رأس main (230af2b) — كوميت محلي واحد، بلا push.
-- (الحل 1 — المدونة): gSP عبر fetchPublishedBlogSlugPools (49 EN + 48 AR مقيسًا) + revalidate 300→3600 في المرآتين؛ محاذاة نوافذ unstable_cache الثلاث بblog-server.ts (blog-og · blog-full · blog-slug-pools) 300→3600 وإلا تُقصّ نافذة ISR فعليًا على 5 دقائق (أدنى revalidate ينتشر للمسار — ظهر 5m في build أول ثم 1h بعد المحاذاة).
-- (الحل 1 — الأطعمة): gSP بالمعيار الحتمي نفسه لsitemap-foods (tags.length>0 = الـ80 صنفًا المنسّقين = الـ160 URLs المُعلنة) + revalidate 604800→86400 في المرآتين؛ الذيل USDA (8,750) يبقى dynamicParams عند الطلب.
-- (الحل 1 — المدربون): fetchPublishedCoachSlugs() جديد بcoach-landing-server.ts يطابق بوابات fetchCoachLanding حرفيًا (published+approved + fallback ما قبل 0046) + revalidate 300→86400 + gSP في المرآتين (مدربان منشوران: ahmedzake · osama).
-- (الحل 3): حذف `report-uri /api/csp-report` من CSP-Report-Only بvercel.json — السياسة نفسها باقية؛ ملف المسار باقٍ؛ تدفق الـPOST ينقطع بعد انتهاء مدخلات الحافة 12س.
-- (الحل 5 — middleware.ts): early-exit عند صفر كوكيز sb-* (الزوار/الزواحف = أغلب الحركة يتخطون createServerClient+getUser) · تخطي /api/* غير /api/auth/* (كل route handler يتحقق بgetAuthUser عميله الخاص — setAll no-op موثق) · OAuth/PKCE سليم (/auth/callback خارج /api، وVerifier كوكيزه sb-*) — ترويسات Locale/x-pathname قبل نقطة التخطي فلا ينقص سلوك.
-- (الحل 4 — CF): قاعدة «alkemos RSC cache bypass (VERCEL-USAGE-9 2026-10-09)» رابعة/أخيرة بruleset الكاش (cache=false) بتعبير `query contains "_rsc" or headers["rsc"][0] in {"1"}` — تراكمية والأخيرة تحسم التعارض (وثيقة CF الرسمية) — منشورة حية الآن بمنطقة الإنتاج.
-- (تحقق محلي — local-only, not preserved: build logs بـ/tmp): build أخضر 2,294 صفحة: المراكز الستة ƒ→● (blog ● 1h ×49/48 · foods ● 1d ×80/80 · coaches ● 1d ×2/2) · next start: x-nextjs-cache HIT + x-nextjs-prerender: 1 للصفحات المصلحة (القوائم الديناميكية بلا ترويسات كاش — الضابط السلبي) · أحجام HTML: مقال EN 146KB · AR 153KB · صنف EN 110KB/AR 115KB (مقيسة) · tsc 0 (داخل build) · vitest 2,306/2,306 · eslint 0 · vercel.json JSON صالح.
-- (قيود البيئة المحلية): anon key استُخرج من حزمة العميل الحية (عام بتصميمه)؛ SUPABASE_SERVICE_ROLE_KEY غير متاح محليًا (Vercel فقط + مشفر بالـAPI) → صفحتا المدربين تُبنيا 404 محليًا (profiles خلف RLS للـanon) — على Vercel تُبنيا صحيحتين؛ دليل ذلك: الاستعلام الحي أعاد المدربين المنشورين وgSP يعمل.
-- (تحقق حي للحل 4): طلب RSC بترويسة RSC:1 الآن `text/x-component` + `cf-cache-status: DYNAMIC` دائمًا (كان HTML مخزّن 12س يكسر التنقل الناعم) · HTML الطبيعي ما زال HIT · BLOCKLIST-1 حي (403 حافّيًا).
-- (التوثيق — نفس الكوميت): SECURITY.md §10 (إزالة report-uri + القاعدة 4 + §11 نطاق تحديث الجلسة) · docs/TECH_REFERENCE.md §5.2 (جدول القواعد الأربع + سطر VERCEL-USAGE-9) · STATE.md (345) · worklog هذا المدخل.
-
-Stage Summary:
-- جاهز للموافقة: الفرع perf/vercel-usage-fix يحول أكبر محركات الاستهلاك (تفاصيل المدونة/الأطعمة/المدربين = استدعاء+نقل لكل زيارة) إلى ISR مخدوم من CDN، ويقطع csp-report POSTs، ويصلح تنقل RSC، ويخفض كلفة middleware — التقدير المعلن للمالك: Invocations 973K→~500K · Transfer 17.71GB→~6GB · CPU 7h→~3h.
-- Push status: not-pushed (فرع تجريبي بأمر المالك — ينتظر الموافقة النهائية قبل الدمج/النشر)

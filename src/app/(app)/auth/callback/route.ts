@@ -35,10 +35,32 @@ import { authCallbackRedirect } from "@/lib/auth-callback-redirect";
  * surface keeps its exact pre-fix behavior (/?auth_error=… on the homepage)
  * — branch ordering below mirrors the pre-fix route on purpose.
  *
+ * AUTH-CALLBACK-LOCALHOST-REDIRECT FIX (2026-10-10, owner live bug report
+ * «تسجيل الدخول بحساب جوجل وبعد اختيار البريد صفحة الرجوع
+ * https://localhost:3000/»): Next 16 constructs request.url with a
+ * HARDCODED localhost host — measured on next@16.3.8, it ignores BOTH the
+ * Host header AND X-Forwarded-Host (probe: Host + XFH alkemos.com still
+ * yields https://localhost:3000; only x-forwarded-proto is honored for the
+ * scheme). On the AWS origin (Caddy → 127.0.0.1:3000, x-forwarded-proto
+ * https) every redirect this route built from requestUrl.origin sent the
+ * browser to https://localhost:3000/ — right AFTER the PKCE exchange had
+ * already succeeded and the session cookie was already set, so Google login
+ * looked dead while being 99% complete. NextResponse.redirect() REQUIRES an
+ * absolute URL (a relative one 500s — "URL is malformed", measured), so the
+ * origin is now resolved: NEXT_PUBLIC_SITE_URL (staged into the RUNTIME env
+ * by deploy-aws.yml since this fix — it used to be build-time only) →
+ * requestUrl.origin (local-dev fallback, where Next's localhost IS the real
+ * origin). Root cause + probes: docs/AUTH-CALLBACK-LOCALHOST-REDIRECT-FIX-2026-10-10.md.
+ *
  * PII law (SECURITY.md §2.3): never log user emails.
  */
 export async function GET(request: Request) {
  const requestUrl = new URL(request.url);
+ // AUTH-CALLBACK-LOCALHOST-REDIRECT FIX (2026-10-10): see the file header —
+ // Next 16's request.url is ALWAYS localhost-hosted behind a proxy, so the
+ // redirect origin comes from the configured site URL (runtime env), falling
+ // back to requestUrl.origin ONLY in local dev where that origin is real.
+ const redirectOrigin = (process.env.NEXT_PUBLIC_SITE_URL || requestUrl.origin).replace(/\/+$/, "");
  const code = requestUrl.searchParams.get("code");
  const next = requestUrl.searchParams.get("next") || "/";
  const error = requestUrl.searchParams.get("error");
@@ -49,14 +71,14 @@ export async function GET(request: Request) {
  if (error) {
  console.error("[auth/callback] provider error:", error, errorDescription);
  const decision = authCallbackRedirect({ code, next, providerError: error });
- return NextResponse.redirect(`${requestUrl.origin}${decision.href}`);
+ return NextResponse.redirect(`${redirectOrigin}${decision.href}`);
  }
 
  // ── Gate 2: no code at all (malformed link / verify dropped it).
  // OAuth keeps its silent home redirect; recovery gets its honest landing.
  if (!code) {
  const decision = authCallbackRedirect({ code: null, next, providerError: null });
- return NextResponse.redirect(`${requestUrl.origin}${decision.href}`);
+ return NextResponse.redirect(`${redirectOrigin}${decision.href}`);
  }
 
  // ── Gate 3: server configuration.
@@ -71,7 +93,7 @@ export async function GET(request: Request) {
  providerError: null,
  exchangeError: "server-config",
  });
- return NextResponse.redirect(`${requestUrl.origin}${decision.href}`);
+ return NextResponse.redirect(`${redirectOrigin}${decision.href}`);
  }
 
  const cookieStore = await cookies();
@@ -108,7 +130,7 @@ export async function GET(request: Request) {
  providerError: null,
  exchangeError: exchangeError?.message ?? null,
  });
- return NextResponse.redirect(`${requestUrl.origin}${decision.href}`);
+ return NextResponse.redirect(`${redirectOrigin}${decision.href}`);
  } catch (e) {
  const msg = e instanceof Error ? e.message : String(e);
  console.error("[auth/callback] Exception:", msg);
@@ -118,6 +140,6 @@ export async function GET(request: Request) {
  providerError: null,
  exchangeError: msg || "unknown",
  });
- return NextResponse.redirect(`${requestUrl.origin}${decision.href}`);
+ return NextResponse.redirect(`${redirectOrigin}${decision.href}`);
  }
 }
