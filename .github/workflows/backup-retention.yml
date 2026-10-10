@@ -51,6 +51,11 @@ on:
         type: boolean
         default: true
 
+# SCHEDULE-RE-REGISTRATION 2026-10-10 (alkemos-aws cutover): 0 schedule-event
+# runs since repo creation — same repo-wide scheduler de-registration as the
+# 2026-08-27 incident (AGENTS.md §8 SCHEDULE HEALTH LAW). Remedy:
+# API enable + this touching commit.
+
 concurrency:
   group: backup-retention
   cancel-in-progress: false

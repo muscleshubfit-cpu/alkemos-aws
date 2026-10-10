@@ -15,6 +15,11 @@ on:
     - cron: "15 21 * * 0" # Sun 21:15 UTC = Mon 00:15 Cairo — reports the last 7 full days
   workflow_dispatch:
 
+# SCHEDULE-RE-REGISTRATION 2026-10-10 (alkemos-aws cutover): 0 schedule-event
+# runs since repo creation — same repo-wide scheduler de-registration as the
+# 2026-08-27 incident (AGENTS.md §8 SCHEDULE HEALTH LAW). Remedy:
+# API enable + this touching commit.
+
 permissions:
   contents: read
 
