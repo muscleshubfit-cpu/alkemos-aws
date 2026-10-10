@@ -11,10 +11,11 @@ Work Log:
 - (الإصلاح — src/app/(app)/auth/callback/route.ts): redirectOrigin = NEXT_PUBLIC_SITE_URL (بيئة تشغيل) وإلا requestUrl.origin (dev فقط حيث localhost هو الأصل الحقيقي) + نزع الشرطات المائلة الزائدة؛ مواقع التحويل الخمسة (البوابات 1-4 + catch) كلها تحولت إليه — يصلح دفعة واحدة دخول Google OAuth وروابط استعادة كلمة المرور.
 - (البيئة — .github/workflows/deploy-aws.yml): NEXT_PUBLIC_SITE_URL كان يصل البناء فقط — أُضيف إلى runtime staging (قيمة عامة حرفية وليست سرًا: https://alkemos.com) ليعمل فرع env في الكود على الخادم فعلًا (بدونه يبقى fallback إلى requestUrl.origin = localhost) + توثيق السبب في رأس الـworkflow.
 - (اختبار الحراسة — src/lib/__tests__/auth-callback-origin.test.ts): عقد مصدر بنمط fs-contract يفشل عند عودة أي تحويل لrequestUrl.origin ويضمن بقاء staging الـruntime في الـworkflow (منع ارتداد كامل).
-- (التحقق المحلي قبل الدفع): vitest للملف الجديد + جودة الكود على الملفات المعدلة — انظر مدخل التحقق التالي لنشر AWS والقياس الحي بعده.
+- (التحقق المحلي قبل الدفع): tsc 0 · eslint 0 · vitest 18/18 (الحراسة الجديدة + جدول القرار) · docs_audit أخضر (دوران H5 ‏13→12) — ثم بوابات main الثلاث خضراء على e8cc613e (quality · docs-parity · anti-regression).
+- (النشر والقياس الحي): deploy run #9 (38027909905) نجح 05:38Z — runtime env شُحن بـ25 مفتاحًا منها NEXT_PUBLIC_SITE_URL (أسماء فقط بالسجل) · build-info يقدم e8cc613e · القياس الحي 05:39Z: GET /auth/callback بلا كود → 307 Location: https://alkemos.com/ (كان https://localhost:3000/) · فرع الخطأ → /?auth_error=… · فرع الاستعادة → /auth/reset?recovery_error=1 — الإصلاح حي ومُقاس.
 
 Stage Summary:
-- جذر مشكلة دخول جوجل ليس في Supabase/Google/Caddy بل في قانون Next 16: request.url مضيفه localhost دائمًا خلف البروكسي — الإصلاح: أصل التحويل من NEXT_PUBLIC_SITE_URL ببيئة التشغيل (أُضيف للstaging) مع fallback للـdev · بانتظار نشر dispatch والقياس الحي (يجب أن يصبح Location = https://alkemos.com/...).
+- دخول جوجل مُصلح ومُقاس حيًا: الجذر ليس Supabase/Google/Caddy بل قانون Next 16 (request.url مضيفه localhost دائمًا خلف البروكسي — يقيس التجاهل الكامل لـHost/X-Forwarded-Host على 16.3.8) · الإصلاح: أصل التحويل من NEXT_PUBLIC_SITE_URL ببيئة التشغيل (أُضيف للـstaging — 25 مفتاحًا) مع fallback للـdev · نفس الإصلاح يرمم روابط استعادة كلمة المرور · جذر المشكلة + القياسات + دليل إعادة الاختبار: docs/archive/AUTH-CALLBACK-LOCALHOST-REDIRECT-FIX-2026-10-10.md.
 ---
 Task ID: OPS-TRANSITION-P2-2026-10-10
 Agent: Super Z (main)

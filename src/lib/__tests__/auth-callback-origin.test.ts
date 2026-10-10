@@ -27,7 +27,7 @@ import { readFileSync } from "node:fs";
  *      `${redirectOrigin}${decision.href}` call sites.
  *
  * Root cause + probe transcript + owner retest guide:
- *   docs/AUTH-CALLBACK-LOCALHOST-REDIRECT-FIX-2026-10-10.md
+ *   docs/archive/AUTH-CALLBACK-LOCALHOST-REDIRECT-FIX-2026-10-10.md
  */
 
 const ROUTE = "src/app/(app)/auth/callback/route.ts";

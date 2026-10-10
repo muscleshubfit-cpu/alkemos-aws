@@ -77,7 +77,7 @@ name: Deploy to AWS origin (alkemos)
 #   RUNTIME because Next 16 hardcodes request.url's host to localhost
 #   behind a proxy (Host/X-Forwarded-Host are ignored — measured on
 #   next@16.3.8), so server-side absolute redirects must resolve their
-#   origin from this var. Root cause: docs/AUTH-CALLBACK-LOCALHOST-REDIRECT-FIX-2026-10-10.md.
+#   origin from this var. Root cause: docs/archive/AUTH-CALLBACK-LOCALHOST-REDIRECT-FIX-2026-10-10.md.
 #
 # Template law (GD-3 lesson): ${{ }} markers live ONLY in env/if/with —
 # scripts reference step-env variables instead.

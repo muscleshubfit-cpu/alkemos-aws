@@ -50,7 +50,7 @@ import { authCallbackRedirect } from "@/lib/auth-callback-redirect";
  * origin is now resolved: NEXT_PUBLIC_SITE_URL (staged into the RUNTIME env
  * by deploy-aws.yml since this fix — it used to be build-time only) →
  * requestUrl.origin (local-dev fallback, where Next's localhost IS the real
- * origin). Root cause + probes: docs/AUTH-CALLBACK-LOCALHOST-REDIRECT-FIX-2026-10-10.md.
+ * origin). Root cause + probes: docs/archive/AUTH-CALLBACK-LOCALHOST-REDIRECT-FIX-2026-10-10.md.
  *
  * PII law (SECURITY.md §2.3): never log user emails.
  */
