@@ -1,0 +1,63 @@
+# Ops cron verify (dispatch-only — owner order 2026-10-10 step 4).
+#
+# WHY: the Vercel crons (dispatch-pipelines 23:40 UTC · progress-reminder
+# Sun 07:00 UTC) are being retired in favor of the server-side
+# /etc/cron.d/alkemos (deploy/crontab-alkemos, installed by the owner from
+# the Lightsail console). The owner's law for this transition: the Vercel
+# crons may only be stopped AFTER the replacement is PROVEN working. This
+# one-shot workflow is the measuring instrument: it reports (read-only,
+# never mutating anything on the server):
+#
+#   1. /etc/cron.d/alkemos — installed? mode? contents (the file carries
+#      NO secret values; it reads CRON_SECRET from shared/.env at runtime).
+#   2. /var/log/alkemos/cron.log — the tail of what the cron jobs actually
+#      did (curl status + endpoint response summaries land there by the
+#      crontab's own >> redirect).
+#   3. A SAFE endpoint liveness probe: GET /api/build-info on
+#      127.0.0.1:3000 (no auth needed, no side effects) — proves the local
+#      app path the cron jobs target. The cron endpoints themselves are
+#      NOT fired manually here: progress-reminder sends real user
+#      notifications (side effects) and dispatch-pipelines tops up the
+#      blog pipelines — both are proven by the ACTUAL scheduled fires,
+#      which this workflow then reads from the log.
+#
+# The crontab lines run as user "deploy" (the /etc/cron.d user column) and
+# log to /var/log/alkemos/cron.log (dir owned deploy:deploy — created by
+# setup-server.sh).
+name: Ops cron verify (dispatch-only)
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: ops-cron-verify
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Report crontab + cron log + local app liveness (read-only)
+        uses: appleboy/ssh-action@7eaf76671a0d7eec5d98ee897acda4f968735a17 # v1.2.0 — pinned 2026-10-10 audit
+        with:
+          host: ${{ secrets.AWS_DEPLOY_HOST }}
+          username: ${{ secrets.AWS_DEPLOY_USER }}
+          key: ${{ secrets.AWS_DEPLOY_SSH_KEY }}
+          script: |
+            set +e
+            echo "== 1. /etc/cron.d/alkemos =="
+            ls -la /etc/cron.d/alkemos 2>&1
+            cat /etc/cron.d/alkemos 2>&1 || echo "(NOT INSTALLED)"
+            echo
+            echo "== 2. /var/log/alkemos/cron.log (tail 40) =="
+            tail -n 40 /var/log/alkemos/cron.log 2>&1 || echo "(no cron log yet — expected before the first scheduled fire)"
+            echo
+            echo "== 3. local app liveness on 127.0.0.1:3000 (safe, no side effects) =="
+            curl -fsS -m 10 http://127.0.0.1:3000/api/build-info 2>&1 || echo "(local probe failed)"
+            echo
+            echo "== 4. server clock (schedule sanity) =="
+            date -u
