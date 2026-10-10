@@ -33,7 +33,7 @@
  * processes it as the fallback, so generation never silently dies.
  */
 
-const REPO = "muscleshubfit-cpu/alkemos";
+const REPO = "muscleshubfit-cpu/alkemos-aws"; // OPS-TRANSITION 2026-10-10: coach pipeline dispatch targets the new repo
 const DISPATCH_TIMEOUT_MS = 8_000;
 
 /** Mirrors blog-pairing MIN_TOPIC_CHARS — a topic shorter than this cannot

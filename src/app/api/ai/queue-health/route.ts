@@ -105,7 +105,7 @@ export async function GET(request: NextRequest) {
   if (token) {
     try {
       const res = await fetch(
-        "https://api.github.com/repos/muscleshubfit-cpu/alkemos/actions/workflows/process-ai-jobs.yml/runs?per_page=1&status=success",
+        "https://api.github.com/repos/muscleshubfit-cpu/alkemos-aws/actions/workflows/process-ai-jobs.yml/runs?per_page=1&status=success", // OPS-TRANSITION 2026-10-10
         {
           headers: {
             Authorization: `Bearer ${token}`,

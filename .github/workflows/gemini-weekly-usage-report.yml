@@ -83,8 +83,8 @@ jobs:
           # pushed as github-actions[bot] → 403). Drop it so REPO_ACCESS_TOKEN
           # (owner PAT = ruleset bypass actor) actually rides the push.
           git config --unset-all http.https://github.com/.extraheader 2>/dev/null || true
-          git push "https://muscleshubfit-cpu:${REPO_ACCESS_TOKEN}@github.com/muscleshubfit-cpu/alkemos.git" HEAD:main 2>&1 | sed -E 's#(muscleshubfit-cpu|x-access-token):[^@]*@#\1:***@#g'
-          if git ls-remote "https://muscleshubfit-cpu:${REPO_ACCESS_TOKEN}@github.com/muscleshubfit-cpu/alkemos.git" refs/heads/main 2>/dev/null | grep -q "$(git rev-parse HEAD)"; then
+          git push "https://muscleshubfit-cpu:${REPO_ACCESS_TOKEN}@github.com/muscleshubfit-cpu/alkemos-aws.git" HEAD:main 2>&1 | sed -E 's#(muscleshubfit-cpu|x-access-token):[^@]*@#\1:***@#g'
+          if git ls-remote "https://muscleshubfit-cpu:${REPO_ACCESS_TOKEN}@github.com/muscleshubfit-cpu/alkemos-aws.git" refs/heads/main 2>/dev/null | grep -q "$(git rev-parse HEAD)"; then
             echo "pushed=1" >> "$GITHUB_OUTPUT"
             echo "✅ Report landed on main as $(git rev-parse --short HEAD)."
           else

@@ -46,7 +46,7 @@ export const maxDuration = 60;
  * GET /api/cron/dispatch-pipelines
  */
 
-const REPO = "muscleshubfit-cpu/alkemos";
+const REPO = "muscleshubfit-cpu/alkemos-aws"; // OPS-TRANSITION 2026-10-10: pipeline + worker backstop targets the new repo
 const EN_WORKFLOW = "blog-post-en.yml";
 const AR_WORKFLOW = "blog-post-ar.yml";
 const AI_JOBS_WORKFLOW = "process-ai-jobs.yml";

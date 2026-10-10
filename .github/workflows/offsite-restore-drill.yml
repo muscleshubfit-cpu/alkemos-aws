@@ -119,7 +119,7 @@ jobs:
       - name: Checkout main repo (the restore scripts)
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4 — pinned 2026-10-10 audit (pre-enable hardening)
         with:
-          repository: muscleshubfit-cpu/alkemos
+          repository: muscleshubfit-cpu/alkemos-aws # OPS-TRANSITION 2026-10-10: restore scripts live in the new repo
           token: ${{ secrets.BACKUP_REPO_TOKEN }}
 
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4 — pinned 2026-10-10 audit (pre-enable hardening)

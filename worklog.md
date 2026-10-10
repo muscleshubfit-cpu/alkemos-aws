@@ -1,4 +1,13 @@
 ---
+Task ID: OPS-TRANSITION-P2-2026-10-10
+Agent: Super Z (main)
+Task: أمر المالك (2026-10-10): تنفيذ خطة الانتقال التشغيلي إلى alkemos-aws — الخطوة 2: تحديث مراجع المستودع القديم الأربعة داخل كود AWS لتتجه للمستودع الجديد + نشر + اختبار مهمة AI حقيقية قبل إيقاف العامل القديم. (سبقتها الخطوة 1: نقل مهام النس الخمس واحدة تلو الأخرى بنجاح — db-backup 38015902427 · storage-backup 38015954677 · storage-inventory 38016025057 · backup-retention جاف 38016089720 + حقيقي 38016118803 (GFS D7/W5/M6 أزال 15 مجلد تاريخ، كل البايتات في تاريخ Git) · offsite-gdrive جاف 38016159352 + حقيقي 38016211636 (weekly/W41 رُفع لDrive مع read-back sha256 متطابق) — كلها من الجديد بينما القديم disabled_manually، والنسخ السابقة محفوظة حرفيًا. نُسخت متغيرات Actions السبعة (BACKUP_RETENTION_×3 + OFFSITE_KEEP_×3 + SITE_URL) للجديد، وأُنشئ فرع main عند cf46acb5 وجُعل الافتراضي.)
+
+Work Log:
+- (التعديل — 8 ملفات): المراجع الأربعة تحولت لمuscleshubfit-cpu/alkemos-aws: src/lib/ai-runner-dispatch.ts (REPO — dispatch عامل الطابور) · src/app/api/cron/dispatch-pipelines/route.ts (REPO — backstop الجدولة + إنقاذ العامل عند التقادم >15د، ref:main) · src/lib/blog-pipeline-dispatch.ts (REPO — dispatch مدونة الكوتش) · src/app/api/ai/queue-health/route.ts (URL آخر تشغيل ناجح للعامل). + الاختبار المرافق blog-pipeline-dispatch.test.ts (URL_EN/AR). + 3 ملفات workflow: gemini-weekly-usage-report.yml (دفع التقرير + ls-remote → alkemos-aws.git) · offsite-gdrive-upload.yml (repository: مصدر حزم git الشهرية → الجديد) · offsite-restore-drill.yml (repository: مصدر سكربتات الاستعادة → الجديد). صفر مراجع قديمة متبقية في src/ أو هذه الملفات.
+- لماذا آمن: ref:"main" يستهدف الآن فرع main الموجود بالجديد عند رأس الإنتاج نفسه (cf46acb5+)؛ أثناء الازدواج المرحلي كل تطبيق يُرسل لمستوده فقط (تطبيق Vercel الحي ما زال بالكود القديم → القديم؛ تطبيق AWS بهذا الكوميت → الجديد) — لا مستودع واحد يُرسل له مرتين، والادعاء الذري claimQueuedJobs (update where status=queued) يمنع المعالجة المزدوجة مهما تزامن العاملان.
+
+---
 Task ID: ALKEMOS-CUTOVER-PREP-2026-10-10
 Agent: Super Z (main)
 Task: أمر المالك (2026-10-10): «نفّذ نقل إنتاج Alkemos من Vercel إلى AWS» وفق خطة النقل §9 مع قيود صارمة: Vercel والمستودع القديم نقطة رجوع كاملة لا تُمس، DNS لا يُحوَّل قبل جاهزية AWS مع حفظ قيم DNS السابقة، لا تغيير خارج نطاق الاستضافة، لا تغييرات PayPal/نسخ احتياطية إضافية، والتوقف عند أي خطوة تحتاج قرار المالك.

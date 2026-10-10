@@ -22,7 +22,7 @@
  * response carries `runnerDispatched: false` so UIs/logs can warn.
  */
 
-const REPO = "muscleshubfit-cpu/alkemos";
+const REPO = "muscleshubfit-cpu/alkemos-aws"; // OPS-TRANSITION 2026-10-10: queue workers now live in the new repo
 const WORKFLOW = "process-ai-jobs.yml";
 const DISPATCH_TIMEOUT_MS = 8_000;
 

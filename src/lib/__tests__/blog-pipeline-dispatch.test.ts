@@ -17,9 +17,9 @@ import {
 
 const TOKEN = "github_pat_test_token_only";
 const URL_AR =
-  "https://api.github.com/repos/muscleshubfit-cpu/alkemos/actions/workflows/blog-post-ar.yml/dispatches";
+  "https://api.github.com/repos/muscleshubfit-cpu/alkemos-aws/actions/workflows/blog-post-ar.yml/dispatches";
 const URL_EN =
-  "https://api.github.com/repos/muscleshubfit-cpu/alkemos/actions/workflows/blog-post-en.yml/dispatches";
+  "https://api.github.com/repos/muscleshubfit-cpu/alkemos-aws/actions/workflows/blog-post-en.yml/dispatches";
 
 const ok204 = (): Response => new Response(null, { status: 204 });
 
