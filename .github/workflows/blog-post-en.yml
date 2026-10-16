@@ -50,6 +50,19 @@ on:
 # scheduled workflows repo-wide after 2026-08-26T16:39Z (dispatch runs kept
 # working). Remedy per AGENTS.md §8 SCHEDULE HEALTH LAW: API enable + this
 # touching commit to re-register the cron triggers with the scheduler.
+#
+# BLOG-RECOVERY 2026-10-16 (RC1 — the migration half-step): this workflow
+# was created with the repo (2026-10-09 cutover) in disabled_manually
+# state and NEVER enabled — the 2026-10-10 cron re-registration commit
+# (48223360) covered the 12 ops workflows but omitted the blog pair, so
+# production blog posts stopped at 2026-10-01 while the FROZEN old repo
+# (muscleshubfit-cpu/alkemos) kept firing this pipeline daily against
+# its retired tree (every run failing at P0 — quota 429 — burning
+# Actions minutes + Gemini quota). Remedy: API enable on BOTH blog
+# workflows + this touching commit (§8) + disable_manually on the old
+# repo's pair (the same retirement pattern every ops job followed at
+# cutover). See docs/BLOG-PIPELINE-RECOVERY-2026-10-16.md for the full
+# forensics.
 concurrency:
   # Independent of the AR pipeline on purpose — AR and EN may overlap.
   group: blog-pipeline-en

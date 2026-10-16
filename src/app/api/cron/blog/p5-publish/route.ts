@@ -134,6 +134,26 @@ export async function GET(request: NextRequest) {
   let publishedPostId: string | null = null;
   let qi: QueueItem | null = null;
 
+  // BLOG-RECOVERY 2026-10-16 (RC3) — repair-directive CONTEXT holder.
+  // The pre-recovery B1 diagnostics carried ONLY the gate-violation
+  // sentence; the P4 re-run then reproduced the same violations because
+  // it had no way to know (a) WHICH citation URLs link-verify had just
+  // confirmed dead (it re-added the same famous-but-404 pages: run
+  // 36949956731 removed who.int/sodium + acsm/fluid-replacement, the
+  // repair re-added them, P5 removed them again — 2 wasted cycles) or
+  // (b) WHICH FAQ questions the deterministic relevance filter dropped
+  // (6/7 dropped, then 2/2 — the count fell 7→1→0 across the repair
+  // cycles instead of recovering). The catch block appends both lists
+  // to repairDiagnostics so the ONE-SHOT directive names the actual
+  // CAUSES. Pure additive context — no gate, threshold, or error
+  // message changes (the `error` field and mapP5FailureToRerunTarget
+  // anchors stay byte-identical).
+  const repairCtx: { deadUrls: string[]; droppedFaqs: string[]; relevanceHint: string } = {
+    deadUrls: [],
+    droppedFaqs: [],
+    relevanceHint: "",
+  };
+
   try {
     const { data, error: fetchErr } = await fetchQueueItem(queueId);
     if (fetchErr) throw new Error(fetchErr);
@@ -245,6 +265,11 @@ export async function GET(request: NextRequest) {
     const relevanceHint = `${outline.title} ${qi.focus_keyword ?? ""}`;
     const relevantFaqs = filterFaqsByRelevance(parsedFaqs, relevanceHint);
     const faqRelevanceDropped = parsedFaqs.length - relevantFaqs.length;
+    // RC3: capture the dropped questions + the hint for the repair directive.
+    repairCtx.droppedFaqs = parsedFaqs
+      .filter((f) => !relevantFaqs.includes(f))
+      .map((f) => f.question);
+    repairCtx.relevanceHint = relevanceHint;
     if (faqRelevanceDropped > 0) {
       console.log(
         `[blog/p5-publish] FAQ relevance filter: ${faqRelevanceDropped} off-topic question(s) dropped (of ${parsedFaqs.length} lifted)`,
@@ -282,6 +307,8 @@ export async function GET(request: NextRequest) {
     // (network available; the Vercel-cron backstop only DISPATCHES the
     // workflow, it never runs P5 itself).
     const linkVerify = await verifyBodyLinks(toolLinkPass.md);
+    // RC3: capture the confirmed-dead URLs for the repair directive.
+    repairCtx.deadUrls = linkVerify.dead;
     if (linkVerify.dead.length > 0) {
       console.warn(
         `[blog/p5-publish] link-verify: ${linkVerify.dead.length} confirmed-dead citation link(s) REMOVED (anchor kept): ${linkVerify.dead.slice(0, 5).join(", ")}`,
@@ -515,9 +542,7 @@ export async function GET(request: NextRequest) {
     // p2-content targets carry no diagnostics (a word-floor failure needs
     // regeneration, not directed repair — B1 is scoped to p4-review).
     const repairDiagnostics =
-      rerunTarget === "p4-review"
-        ? msg.replace(/^p5:\s*/, "").replace(/\s*—\s*rerun p4-review\s*$/, "").trim() || undefined
-        : undefined;
+      rerunTarget === "p4-review" ? buildRepairDiagnostics(msg, repairCtx) : undefined;
     // R5 REPAIR OBSERVABILITY (Execution-Path Audit §10 Phase R5,
     // 2026-09-30): stamp the directive into the row's bundle so the
     // repair path is MEASURABLE — the marker survives the repair chain
@@ -549,6 +574,42 @@ async function dupSkip(queueId: string, title: string, lang: "en" | "ar") {
   });
   if (err) console.error(`[blog/p5-publish] Failed to mark skipped_duplicate: ${err}`);
   return NextResponse.json({ ok: true, step: "p5", queueId, lang, skipped: true, reason: `duplicate-${lang}-title`, title });
+}
+
+/** BLOG-RECOVERY 2026-10-16 (RC3) — B1 diagnostics + actionable context.
+ * Base = the pure violation text exactly as before (the p5: prefix and
+ * the "— rerun p4-review" tail stripped; absent context keeps the
+ * byte-identical legacy string so the B1 canaries stay green). When the
+ * run actually removed dead citation URLs or dropped off-topic FAQ
+ * questions, those CAUSES are appended so the P4 repair model can fix
+ * them at the root instead of reproducing the identical violations
+ * (live evidence: run 36949956731 — 2 repair cycles, FAQ count 7→1→0,
+ * the same dead who.int/acsm links re-added and re-removed). Compact by
+ * design (≤3 URLs · ≤3 questions · total sliced to the 1500-char B1
+ * sanitize cap, core violations first). */
+function buildRepairDiagnostics(
+  msg: string,
+  ctx: { deadUrls: string[]; droppedFaqs: string[]; relevanceHint: string },
+): string | undefined {
+  const base = msg
+    .replace(/^p5:\s*/, "")
+    .replace(/\s*—\s*rerun p4-review\s*$/, "")
+    .trim();
+  if (!base) return undefined;
+  const extras: string[] = [];
+  if (ctx.deadUrls.length > 0) {
+    extras.push(
+      `DEAD CITATION URLS REMOVED at publish verification (confirmed 404/410 — do NOT re-add these exact URLs; cite DIFFERENT authority pages you are certain exist): ${ctx.deadUrls.slice(0, 3).join(" ; ")}`,
+    );
+  }
+  if (ctx.droppedFaqs.length > 0) {
+    const hint = ctx.relevanceHint.trim().slice(0, 120);
+    extras.push(
+      `OFF-TOPIC FAQ QUESTIONS DROPPED by the deterministic relevance filter (a kept FAQ must share at least 2 meaningful words with the article title/focus keyword${hint ? ` "${hint}"` : ""}; rewrite these questions genuinely on-topic for THIS article, or replace them): ${ctx.droppedFaqs.slice(0, 3).map((q) => `"${q}"`).join(" ; ")}`,
+    );
+  }
+  const extra = extras.join(" — ");
+  return extra ? `${base} — ${extra}`.slice(0, 1_500) : base;
 }
 
 /** PHASE 171 (proposal ج): automated row refused — the day's automated

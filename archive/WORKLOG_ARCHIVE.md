@@ -12502,3 +12502,24 @@ Work Log:
 Stage Summary:
 - جاهز للموافقة: الفرع perf/vercel-usage-fix يحول أكبر محركات الاستهلاك (تفاصيل المدونة/الأطعمة/المدربين = استدعاء+نقل لكل زيارة) إلى ISR مخدوم من CDN، ويقطع csp-report POSTs، ويصلح تنقل RSC، ويخفض كلفة middleware — التقدير المعلن للمالك: Invocations 973K→~500K · Transfer 17.71GB→~6GB · CPU 7h→~3h.
 - Push status: not-pushed (فرع تجريبي بأمر المالك — ينتظر الموافقة النهائية قبل الدمج/النشر)
+
+<!-- rotated 2026-10-16 by scripts/worklog_rotate.py (Phase 288, ARCH-REMEDIATION): 1 entries moved verbatim from worklog.md -->
+---
+Task ID: VERCEL-USAGE-9-DEPLOY-2026-10-09
+Agent: Super Z (main)
+Task: أمر المالك (2026-10-09): «نفّذ push للفرع perf/vercel-usage-fix وأنشئ Pull Request للدمج في main. بعد الدمج والنشر، تحقق من: x-vercel-cache HIT على المسارات الستة · انخفاض الاستهلاك في Dashboard خلال 48 ساعة · عدم وجود regressions في الوظائف» — الموافقة النهائية المنتظرة من مدخل VERCEL-USAGE-9.
+
+Work Log:
+- (الدفع): amend هوية كوميت الفرع إلى Super Z <muscleshubfit@gmail.com> (نفس الشجرة: 15 ملفًا +282/-62) → ba04531 → origin/perf/vercel-usage-fix (رأس main البعيد 230af2b بلا حركة — صفر تعارض).
+- (PR #7): البوابات الخمس خضراء على ba04531 (quality tsc/eslint/vitest · parity · guard · Vercel Preview Comments؛ Supabase skipped) · معاينة Vercel READY (dpl_Jsin5aewJuTQtZU57kmGQp6uxcZZ): استخراج جدول المسارات من build log الحقيقي يثبت الأسر الستة ● (blog 1h — أسطر مفردة مثل «● /ar/blog/compare-whey-soy-protein-athletes 1h 1y» · foods 1d · coaches 1d بصفحتي ahmedzake/osama — انحل قيد RLS المحلي بمفاتيح Vercel الحقيقية).
+- (الدمج والنشر): squash PR #7 → main = ede3637 · بوابات main الأربع خضراء على ede3637 · نشر الإنتاج dpl_Cz7KHGhkyXHov5GGJ4iLGBsPAH3X READY 01:45Z · build-info الحي = ede3637 ✓ · crons 2/2 انتقلت للنشر الجديد (dispatch-pipelines 23:40 يوميًا · progress-reminder الأحد 07:00).
+- (التحقق 1 — المسارات الستة): من حافة Vercel مباشرة (تجاوز CF ب--resolve): الطلب الأول PRERENDER والثاني HIT للستة جميعًا (مدونة EN/AR · صنف EN/AR · مدرب EN/AR) مع x-nextjs-prerender: 1 وage يتقدم — أحجام مقيسة: مقال EN 149KB/AR 156KB · صنف EN 113KB/AR 118KB · مدرب EN 45KB/AR 46KB · s-maxage=3600 + stale-while-revalidate=86400 من headers() العامة بnext.config (قائمة قبل هذا الفريم — تحديث حافة كل ساعة، والتجديد الفعلي للمحتوى بrevalidate: 1h مدونة · 1d أطعمة/مدربين).
+- (التحقق 3 — صفر regressions): الصفحات الأساسية 200 (CF HIT) · مسارات ثانية للأسر الستة 200 · ISR القائمة سليمة (exercises/muscles/compare/authors/collections-[slug]) · APIs: coaches/featured 200 · admin/leads 401 غير موثق (كما يجب) · csp-report 204 · CSP-RO من حافة Vercel بلا report-uri (عدّ=0 — النسخة التي تُرى عبر CF كاش HTML عمره ≤12س ينتهي تلقائيًا، فتتوقف POSTs المتصفحات تدريجيًا خلال ≤12س) · RSC:1 → text/x-component + CF DYNAMIC (القاعدة 4 حية) · ?_rsc يمر RSC غير مخزن أيضًا · /auth 200 و/auth/callback 307 (OAuth سليم) · 404ات /login و/collections قائمة بالتصميم (لا مسارات كهذه بجدول البناء — الدخول /auth والقوائم /collections/[slug]) · robots/sitemap/rss/llms/ads/manifest كلها 200 · www→301 · BLOCKLIST-1 حي (403 حافّي على 3 مسارات فحص) · OG الديناميكي 200 · فشل blog-post-en الوحيد على 230af2b قائم (P5 الصادق المعروف).
+- (التحقق 2 — الاستخدام): خط الأساس قبل النشر (01:20Z): نافذة 30ي = 1,004,703/1M (100.5% — تجاوز فعلي) · صادر 10.69GB · 20.014gh · معدل الساعات الأخيرة 273–782 استدعاء/ساعة — نافذة 48 ساعة للمالك: التقدير Invocations → ~500K · Transfer → ~6GB · CPU → ~3h يتحقق تدريجيًا (ramp النشر + خروج أيام سبتمبر الثقيلة من النافذة المتجددة).
+- (التوثيق): STATE 346 + هذا المدخل + دوران H5 (12→13→12).
+
+Stage Summary:
+- VERCEL-USAGE-9 منشور ومُتحقق: المسارات الستة الكبرى تُخدّم من كاش الحافة (PRERENDER→HIT مقيسة للستة)، csp-report ينقطع بانتهاء كاش CF، crons وبوابات CI كلها خضراء — صفر regressings مقيسة.
+- مؤشر 48 ساعة للمالك: توقع هبوط الاستدعاءات اليومية (~25–48K) إلى ~10–15K مع النافذة + خروج أيام سبتمبر الثقيلة من العداد المتجدد.
+- Push status: pushed (docs: [vercel skip] — هذا الكوميت التوثيقي؛ كود الإصلاح هبط عبر PR #7 squash ede3637)
+

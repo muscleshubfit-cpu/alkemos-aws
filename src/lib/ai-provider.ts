@@ -686,8 +686,15 @@ async function callGeminiStream(
  * as search results — a failure here is HONEST (thrown; the ungrounded
  * gate above also rejects 200-without-evidence answers), and the caller's
  * step-level retry (the runner's ×3 law) rides out transient 5xx/overload.
- * Model: GEMINI_MODEL override or the registry default (3.5-flash since
- * 344). Every attempt is tracked per-tag exactly like the other arms.
+ * BLOG-RECOVERY 2026-10-16 (RC2): the call now walks a MODEL LADDER —
+ * GEMINI_MODEL override (if set) → registry default → alternate
+ * grounded-capable flash models (each bills its OWN free-tier quota
+ * bucket, so one drained bucket no longer kills the whole research
+ * step; see GEMINI_GROUNDED_MODEL_LADDER below for the live evidence).
+ * Every attempt is still a REAL grounded call; all models exhausted →
+ * one honest aggregate error. Model: GEMINI_MODEL override leads, then
+ * the registry default (3.5-flash since 344). Every attempt is tracked
+ * per-tag exactly like the other arms.
  * ─────────────────────────────────────────────────────────────────────── */
 
 export type GeminiGroundedSearchResult = {
@@ -696,6 +703,45 @@ export type GeminiGroundedSearchResult = {
   model: string;
   grounding: GeminiGrounding;
 };
+
+/** BLOG-RECOVERY 2026-10-16 (RC2) — grounded-search MODEL LADDER.
+ * Live evidence (GHA logs 2026-10-06 → 10-15 + docs/ai/gemini-weekly-
+ * usage-report.md week of 2026-10-05): the ONLY runtime path that never
+ * succeeded was the grounded call — `blog_research` 108 attempts, 0 OK,
+ * 106 quota(429) — while NON-grounded Gemini calls on the SAME key kept
+ * succeeding (evo-chat 9 OK, plans OK, aws-ai-test real plan OK). Gemini
+ * bills each MODEL its own free-tier quota bucket, so a 429
+ * RESOURCE_EXHAUSTED on gemini-3.5-flash does not mean grounding is
+ * unavailable — it means THAT bucket is drained. The ladder tries the
+ * override/default first, then the alternate grounded-capable flash
+ * models; EVERY attempt is a REAL grounded googleSearch call (the
+ * honest ungrounded-200 gate runs per attempt), so no fake/curated
+ * substitute can ever masquerade as research. All models exhausted →
+ * one honest aggregate error (the caller's ×3 retry rides transient 5xx).
+ * Ops knob: GEMINI_GROUNDED_MODELS (comma-separated) replaces the
+ * built-in tail without a deploy. */
+export const GEMINI_GROUNDED_MODEL_LADDER: readonly string[] = [
+  // (the registry default — gemini-3.5-flash — always leads the ladder;
+  //  it is prepended by callGeminiGroundedSearch below, not listed here)
+  "gemini-3.8-flash", // prior registry default (343) — separate quota bucket
+  "gemini-2.5-flash", // long-stable prior generation — separate bucket
+];
+
+function groundedModelCandidates(): string[] {
+  const override = (process.env.GEMINI_MODEL || "").trim();
+  const envLadder = (process.env.GEMINI_GROUNDED_MODELS || "")
+    .split(",")
+    .map((m) => m.trim())
+    .filter(Boolean);
+  const tail = envLadder.length > 0 ? envLadder : GEMINI_GROUNDED_MODEL_LADDER;
+  return [
+    ...new Set(
+      [override, AI_PROVIDERS.gemini.defaultModel, ...tail].filter(
+        (m): m is string => !!m,
+      ),
+    ),
+  ];
+}
 
 export async function callGeminiGroundedSearch(
   prompt: string,
@@ -707,19 +753,41 @@ export async function callGeminiGroundedSearch(
       "callGeminiGroundedSearch: GEMINI_API_KEY is not configured — real Google-Search grounding is unavailable, and no simulated/curated substitute is allowed (owner order 2026-10-06).",
     );
   }
-  const model =
-    (process.env.GEMINI_MODEL || "").trim() || AI_PROVIDERS.gemini.defaultModel;
-  const cfg: AIConfig = {
-    provider: "gemini",
-    apiKey,
-    model,
-    baseUrl: AI_PROVIDERS.gemini.baseUrl,
-  };
-  const { text, grounding } = await callGeminiGenerate(cfg, prompt, {
-    ...options,
-    googleSearch: true,
-  });
-  return { text, provider: "gemini", model, grounding };
+  const candidates = groundedModelCandidates();
+  const failures: string[] = [];
+  for (const model of candidates) {
+    const cfg: AIConfig = {
+      provider: "gemini",
+      apiKey,
+      model,
+      baseUrl: AI_PROVIDERS.gemini.baseUrl,
+    };
+    try {
+      const { text, grounding } = await callGeminiGenerate(cfg, prompt, {
+        ...options,
+        googleSearch: true,
+      });
+      if (failures.length > 0) {
+        console.warn(
+          `[gemini-grounded] model ${model} succeeded after earlier model failure(s) — ${failures.length} model(s) skipped`,
+        );
+      }
+      return { text, provider: "gemini", model, grounding };
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      failures.push(`[${model}] ${msg.slice(0, 240)}`);
+      const next =
+        candidates.indexOf(model) < candidates.length - 1
+          ? candidates[candidates.indexOf(model) + 1]
+          : null;
+      console.warn(
+        `[gemini-grounded] model ${model} failed${next ? ` → trying ${next}` : " (last ladder model)"}: ${msg.slice(0, 180)}`,
+      );
+    }
+  }
+  throw new Error(
+    `callGeminiGroundedSearch: ALL grounded models failed (tried ${candidates.join(", ")}) — no simulated/curated substitute is allowed (owner order 2026-10-06). Per-model errors: ${failures.join(" | ")}`,
+  );
 }
 
 /**

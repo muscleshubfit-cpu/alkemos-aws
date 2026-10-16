@@ -1,4 +1,22 @@
 ---
+Task ID: BLOG-PIPELINE-RECOVERY-2026-10-16
+Agent: Super Z (main)
+Task: أمر المالك (2026-10-16): «افحص منظومة المدونة، وحدد الأسباب الجذرية لفشل المقالات من سجلات التشغيل والكود الحالي، ثم أصلحها مع الحفاظ على سير العمل والإقران العربي/الإنجليزي والبحث الحقيقي. تحقّق من الإصلاح باختبارات. وثّق كل مشكلة وحلها ونتيجة التحقق في تقرير داخل المستودع، ثم نفّذ commit وpush إلى main بعد التأكد من سلامة التعديلات.»
+
+Work Log:
+- (التشخيص من السجلات الحية): تنزيل وتفكيك سجلات GHA للتشغيلات الفاشلة — EN 38826923342 (10-16) وAR 38714352097 (10-15): كل المحاولات تموت في P0 ب429 RESOURCE_EXHAUSTED من gemini (tag=blog_research · 6 نداءات/تشغيل بسعات 69–207ms) · run 36949956731 (10-02، pre-344): P0→P4 خضراء ثم P5 يفشل 3 مرات بدورتَي إصلاح كاملتين — «FAQ count 1/0 outside 4-7 | no external authority link» مع إسقاط 6/7 أسئلة وحذف رابطَي who.int/sodium + acsm/fluid-replacement.
+- (قياس الحالة عبر API): alkemos-aws — blog-post-ar/en بحالة disabled_manually وصفر تشغيلات مدونة إطلاقًا (105 runs كلها غير مدونة) بينما 12 workflow تشغيليًا active (كوميت 48223360 سجّل الجدولة واستثنى الزوج) · القديم alkemos (المجمّد 2a79e9e1) — الزوج active يطلق يوميًا ويفشل · sitemap حي: 97 URL وآخر lastmod 2026-10-01 (آخر نشر) · تقرير الاستهلاك الأسبوعي: blog_research 108 محاولة/0 نجاح/106 حصة-429 بينما evo-chat ‏9 OK وخطط OK بنفس المفتاح ⇒ الحصة المستنفدة هي دلو الموديل المُسنَد تحديدًا.
+- (الجذر الثالث من الكود): توجيه الإصلاح B1 (repairDiagnostics) كان يحمل نص البوابات فقط — النموذج المُصلِح لا يعرف الروابط التي شُخصت ميتة (فيعيد إضافة who.int/sodium الشهيرة-but-404 — مقيس 404 اليوم) ولا الأسئلة التي أسقطتها فلترة الصلة ولا قاعدتها (≥2 كلمة معنوية مع title+focus) فتسقط مجددًا: العدّ 7→1→0.
+- (الإصلاح RC2 — src/lib/ai-provider.ts): سلم موديلات للبحث المُسنَد في callGeminiGroundedSearch — GEMINI_MODEL ← الافتراضي 3.5-flash ← gemini-3.8-flash ← gemini-2.5-flash (كل موديل حصته المستقلة) + مقبض GEMINI_GROUNDED_MODELS بلا نشر؛ كل محاولة نداء grounded حقيقي (بوابة 200-بلا-أدلة تعمل لكل محاولة) والاستنفاد الكامل خطأ تجميعي صادق يسمّي كل موديل.
+- (الإصلاح RC3 — src/app/api/cron/blog/p5-publish/route.ts): repairCtx يجمع روابط link-verify الميتة + الأسئلة المسقطة + تلميح الصلة، وbuildRepairDiagnostics يضيفها كملاحق (≤3 روابط + ≤3 أسئلة، مضغوطة ≤1500) بعد نص البوابات — error/rerunTarget/مراسي الخريطة بحروفها (الكاناري القائمة خضراء بلا تعديل).
+- (الإصلاح RC1 — workflows + API): لمسة كوميت §8 على ملفَي blog-post-ar/en (تعليق الحادثة والعلاج) + PUT enable للزوجين في alkemos-aws + PUT disable للزوجين في القديم (إسكات المُطلِق المتقادم — نفس نمط هجرة كل مهام التشغيل) + توثيق GEMINI_GROUNDED_MODELS في .env.example.
+- (الاختبارات): +12 كاناري — ai-provider-gemini-grounded-ladder.test.ts (8): سقوط 429 لنجاح 3.8-flash بنداءين حقيقيين، استنفاد الكل = خطأ تجميعي، GEMINI_MODEL يقود، GEMINI_GROUNDED_MODELS يستبدل، 200-بلا-أدلة يظل فشلًا، غياب المفتاح يمنع النداءات · blog-repair-directive-b1-enrichment.route.test.ts (4): الملاحق تصعد في جسم 500 وerror بحرفه، غياب السياق = السلسلة التاريخية توافقًا بايتيًا، word-floor بلا توجيه.
+- (التحقق المحلي): tsc 0 · eslint 0 · vitest 2,322/2,322 (142 ملفًا) · docs_audit ✓ · docs_parity ✓ (STATE 347 + سجل docs/README + دوران worklog 12→12).
+
+Stage Summary:
+- المدونة تستأنف النشر بثلاثة إصلاحات مقابل ثلاثة جذور مقيسة (الهجرة النصف مكتملة · حصة الموديل المُسنَد · توجيه إصلاح بلا أسباب) مع حفظ حرفي لكل القيود: السير P0→P5 وجدولاه الجغرافيان، الإقران AR/EN (pair_id + sharedBrief + المصافحة الثنائية)، البحث الحقيقي (السلم كله نداءات grounded بلا أي بديل) — التقرير الكامل بالمشاكل والحلول ونتائج التحقق: docs/BLOG-PIPELINE-RECOVERY-2026-10-16.md (المرحلة 347).
+- Push status: pushed (main الجديد — الـworkflows فُعِّلت بالـAPI والقديم عُطّل زوجه؛ التحقق الحي موثق §6 بالتقرير)
+---
 Task ID: AUTH-CALLBACK-LOCALHOST-REDIRECT-2026-10-10
 Agent: Super Z (main)
 Task: بلاغ مالك حي (2026-10-10): «قيم PayPal تمت بالفعل، تسجيل الدخول بحساب جوجل وبعد اختيار البريد صفحة الرجوع https://localhost:3000/» — تشخيص وإصلاح دخول جوجل على أصل AWS الحي (ما بعد cutover: alkemos.com عبر Cloudflare→Caddy→PM2 127.0.0.1:3000).
@@ -181,23 +199,4 @@ Stage Summary:
 - تقرير `docs/archive/AWS-COST-AUDIT-2026-10-09.md` + صف السجل + هذا المدخل في كوميت docs واحد [vercel skip] — صفر أثر على الإنتاج (ignore-step يخطّ docs-only).
 - الحصيلة المالية: الحالي **$0 مقيسًا** مع توثيق أول تجاوز مقيس لسقف الاستدعاءات (عالجه ISR) · الوجهة AWS-only أرضية $18–25/ش · التوصية: البقاء الآن، ترقيات طبيعية عند S2، و(ب) AWS+Supabase أولًا عند أول محفز — SST Ion أداة النشر حينها ($0).
 - تغذية القياس القادمة: تقرير Gemini الآلي 2026-10-12 + توكن Supabase سليم + نطاق CF Analytics — تفتح تحديثًا لاحقًا لهذا التدقيق.
-
----
-Task ID: VERCEL-USAGE-9-DEPLOY-2026-10-09
-Agent: Super Z (main)
-Task: أمر المالك (2026-10-09): «نفّذ push للفرع perf/vercel-usage-fix وأنشئ Pull Request للدمج في main. بعد الدمج والنشر، تحقق من: x-vercel-cache HIT على المسارات الستة · انخفاض الاستهلاك في Dashboard خلال 48 ساعة · عدم وجود regressions في الوظائف» — الموافقة النهائية المنتظرة من مدخل VERCEL-USAGE-9.
-
-Work Log:
-- (الدفع): amend هوية كوميت الفرع إلى Super Z <muscleshubfit@gmail.com> (نفس الشجرة: 15 ملفًا +282/-62) → ba04531 → origin/perf/vercel-usage-fix (رأس main البعيد 230af2b بلا حركة — صفر تعارض).
-- (PR #7): البوابات الخمس خضراء على ba04531 (quality tsc/eslint/vitest · parity · guard · Vercel Preview Comments؛ Supabase skipped) · معاينة Vercel READY (dpl_Jsin5aewJuTQtZU57kmGQp6uxcZZ): استخراج جدول المسارات من build log الحقيقي يثبت الأسر الستة ● (blog 1h — أسطر مفردة مثل «● /ar/blog/compare-whey-soy-protein-athletes 1h 1y» · foods 1d · coaches 1d بصفحتي ahmedzake/osama — انحل قيد RLS المحلي بمفاتيح Vercel الحقيقية).
-- (الدمج والنشر): squash PR #7 → main = ede3637 · بوابات main الأربع خضراء على ede3637 · نشر الإنتاج dpl_Cz7KHGhkyXHov5GGJ4iLGBsPAH3X READY 01:45Z · build-info الحي = ede3637 ✓ · crons 2/2 انتقلت للنشر الجديد (dispatch-pipelines 23:40 يوميًا · progress-reminder الأحد 07:00).
-- (التحقق 1 — المسارات الستة): من حافة Vercel مباشرة (تجاوز CF ب--resolve): الطلب الأول PRERENDER والثاني HIT للستة جميعًا (مدونة EN/AR · صنف EN/AR · مدرب EN/AR) مع x-nextjs-prerender: 1 وage يتقدم — أحجام مقيسة: مقال EN 149KB/AR 156KB · صنف EN 113KB/AR 118KB · مدرب EN 45KB/AR 46KB · s-maxage=3600 + stale-while-revalidate=86400 من headers() العامة بnext.config (قائمة قبل هذا الفريم — تحديث حافة كل ساعة، والتجديد الفعلي للمحتوى بrevalidate: 1h مدونة · 1d أطعمة/مدربين).
-- (التحقق 3 — صفر regressions): الصفحات الأساسية 200 (CF HIT) · مسارات ثانية للأسر الستة 200 · ISR القائمة سليمة (exercises/muscles/compare/authors/collections-[slug]) · APIs: coaches/featured 200 · admin/leads 401 غير موثق (كما يجب) · csp-report 204 · CSP-RO من حافة Vercel بلا report-uri (عدّ=0 — النسخة التي تُرى عبر CF كاش HTML عمره ≤12س ينتهي تلقائيًا، فتتوقف POSTs المتصفحات تدريجيًا خلال ≤12س) · RSC:1 → text/x-component + CF DYNAMIC (القاعدة 4 حية) · ?_rsc يمر RSC غير مخزن أيضًا · /auth 200 و/auth/callback 307 (OAuth سليم) · 404ات /login و/collections قائمة بالتصميم (لا مسارات كهذه بجدول البناء — الدخول /auth والقوائم /collections/[slug]) · robots/sitemap/rss/llms/ads/manifest كلها 200 · www→301 · BLOCKLIST-1 حي (403 حافّي على 3 مسارات فحص) · OG الديناميكي 200 · فشل blog-post-en الوحيد على 230af2b قائم (P5 الصادق المعروف).
-- (التحقق 2 — الاستخدام): خط الأساس قبل النشر (01:20Z): نافذة 30ي = 1,004,703/1M (100.5% — تجاوز فعلي) · صادر 10.69GB · 20.014gh · معدل الساعات الأخيرة 273–782 استدعاء/ساعة — نافذة 48 ساعة للمالك: التقدير Invocations → ~500K · Transfer → ~6GB · CPU → ~3h يتحقق تدريجيًا (ramp النشر + خروج أيام سبتمبر الثقيلة من النافذة المتجددة).
-- (التوثيق): STATE 346 + هذا المدخل + دوران H5 (12→13→12).
-
-Stage Summary:
-- VERCEL-USAGE-9 منشور ومُتحقق: المسارات الستة الكبرى تُخدّم من كاش الحافة (PRERENDER→HIT مقيسة للستة)، csp-report ينقطع بانتهاء كاش CF، crons وبوابات CI كلها خضراء — صفر regressings مقيسة.
-- مؤشر 48 ساعة للمالك: توقع هبوط الاستدعاءات اليومية (~25–48K) إلى ~10–15K مع النافذة + خروج أيام سبتمبر الثقيلة من العداد المتجدد.
-- Push status: pushed (docs: [vercel skip] — هذا الكوميت التوثيقي؛ كود الإصلاح هبط عبر PR #7 squash ede3637)
 

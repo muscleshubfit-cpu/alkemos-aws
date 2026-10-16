@@ -49,6 +49,13 @@ on:
 # SCHEDULE-RE-REGISTRATION 2026-08-27: see blog-post-en.yml comment and
 # AGENTS.md §8 SCHEDULE HEALTH LAW — API enable + touching commit to
 # re-register cron triggers after GitHub scheduler de-registration.
+#
+# BLOG-RECOVERY 2026-10-16 (RC1 — the migration half-step): same story
+# as blog-post-en.yml — created disabled_manually at the 2026-10-09
+# cutover, never enabled (48223360 re-registered the 12 ops workflows
+# only), while the frozen old repo kept firing this AR pipeline daily
+# (failing at P0). Remedy: API enable + this touching commit + disable
+# the old repo's pair. See docs/BLOG-PIPELINE-RECOVERY-2026-10-16.md.
 concurrency:
   # Independent of the EN pipeline on purpose — EN and AR may overlap.
   group: blog-pipeline-ar
