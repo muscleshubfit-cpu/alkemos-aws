@@ -79,10 +79,12 @@ afterEach(() => {
 });
 
 describe("RC2 — grounded-search model ladder (registry + export shape)", () => {
-  it("the ladder is exported with the alternates (3.8-flash + 2.5-flash — separate quota buckets)", () => {
+  it("the ladder is exported with cross-family alternates (flash → pro → lite — separate quota buckets)", () => {
     expect(GEMINI_GROUNDED_MODEL_LADDER).toContain("gemini-3.8-flash");
-    expect(GEMINI_GROUNDED_MODEL_LADDER).toContain("gemini-2.5-flash");
+    expect(GEMINI_GROUNDED_MODEL_LADDER).toContain("gemini-3.8-pro");
+    expect(GEMINI_GROUNDED_MODEL_LADDER).toContain("gemini-3.5-flash-lite");
     expect(GEMINI_GROUNDED_MODEL_LADDER).not.toContain("gemini-3.5-flash"); // default leads, never duplicated
+    expect(GEMINI_GROUNDED_MODEL_LADDER).not.toContain("gemini-2.5-flash"); // retired 404 for new keys (live-probed 2026-10-16)
   });
 });
 
@@ -109,20 +111,21 @@ describe("RC2 — a drained quota bucket falls through to the NEXT real grounded
     expect(log[1].body?.tools).toEqual([{ googleSearch: {} }]);
   });
 
-  it("default AND 3.8-flash drained → gemini-2.5-flash answers (3 fetches)", async () => {
+  it("default AND 3.8-flash drained → gemini-3.8-pro answers (3 fetches)", async () => {
     process.env.GEMINI_API_KEY = "AIza-ladder-key";
     const log: FetchLog[] = [];
     stubRoutingFetch(log, (url) =>
-      url.includes("gemini-3.5-flash") || url.includes("gemini-3.8-flash")
+      url.includes("gemini-3.5-flash:generateContent") || url.includes("gemini-3.8-flash:generateContent")
         ? { ok: false, status: 429, payload: QUOTA_429_PAYLOAD }
         : { ok: true, status: 200, payload: GROUNDED_OK_PAYLOAD },
     );
     const out = await callGeminiGroundedSearch("research");
-    expect(out.model).toBe("gemini-2.5-flash");
+    // flash:generateContent guards the exact model — 3.5-flash-LITE must NOT match it
+    expect(out.model).toBe("gemini-3.8-pro");
     expect(log.map((c) => c.url)).toEqual([
       expect.stringContaining("/models/gemini-3.5-flash:generateContent"),
       expect.stringContaining("/models/gemini-3.8-flash:generateContent"),
-      expect.stringContaining("/models/gemini-2.5-flash:generateContent"),
+      expect.stringContaining("/models/gemini-3.8-pro:generateContent"),
     ]);
   });
 
@@ -167,12 +170,13 @@ describe("RC2 — every model drained → ONE honest aggregate error (real-searc
     expect(err.message).toMatch(/ALL grounded models failed/);
     expect(err.message).toContain("gemini-3.5-flash");
     expect(err.message).toContain("gemini-3.8-flash");
-    expect(err.message).toContain("gemini-2.5-flash");
+    expect(err.message).toContain("gemini-3.8-pro");
+    expect(err.message).toContain("gemini-3.5-flash-lite");
     expect(err.message).toContain("AI API error 429");
     // the owner-order law stays in the message: no substitute allowed
     expect(err.message).toContain("no simulated/curated substitute");
-    // three REAL grounded attempts — the loop is bounded by the ladder
-    expect(log).toHaveLength(3);
+    // four REAL grounded attempts — the loop is bounded by the ladder
+    expect(log).toHaveLength(4);
   });
 
   it("an ungrounded-200 on EVERY model still fails honestly (the per-attempt gate survives the ladder)", async () => {

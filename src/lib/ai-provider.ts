@@ -710,21 +710,23 @@ export type GeminiGroundedSearchResult = {
  * succeeded was the grounded call — `blog_research` 108 attempts, 0 OK,
  * 106 quota(429) — while NON-grounded Gemini calls on the SAME key kept
  * succeeding (evo-chat 9 OK, plans OK, aws-ai-test real plan OK). Gemini
- * bills each MODEL its own free-tier quota bucket, so a 429
- * RESOURCE_EXHAUSTED on gemini-3.5-flash does not mean grounding is
- * unavailable — it means THAT bucket is drained. The ladder tries the
- * override/default first, then the alternate grounded-capable flash
- * models; EVERY attempt is a REAL grounded googleSearch call (the
- * honest ungrounded-200 gate runs per attempt), so no fake/curated
+ * bills quota per MODEL FAMILY, so the ladder walks the override/default
+ * first, then alternate grounded-capable models across FAMILIES (flash →
+ * pro → flash-lite); EVERY attempt is a REAL grounded googleSearch call
+ * (the honest ungrounded-200 gate runs per attempt), so no fake/curated
  * substitute can ever masquerade as research. All models exhausted →
  * one honest aggregate error (the caller's ×3 retry rides transient 5xx).
+ * Live-probed 2026-10-16 (run 38833407195): gemini-2.5-flash answers 404
+ * «no longer available to new users» — retired from the ladder; the pro
+ * and lite families are separate quota buckets and stay as fallthroughs.
  * Ops knob: GEMINI_GROUNDED_MODELS (comma-separated) replaces the
  * built-in tail without a deploy. */
 export const GEMINI_GROUNDED_MODEL_LADDER: readonly string[] = [
   // (the registry default — gemini-3.5-flash — always leads the ladder;
   //  it is prepended by callGeminiGroundedSearch below, not listed here)
-  "gemini-3.8-flash", // prior registry default (343) — separate quota bucket
-  "gemini-2.5-flash", // long-stable prior generation — separate bucket
+  "gemini-3.8-flash", // current-gen flash (its 404 advisory names it) — own bucket
+  "gemini-3.8-pro", // pro family — separate quota bucket
+  "gemini-3.5-flash-lite", // lite family — separate quota bucket, historically most available
 ];
 
 function groundedModelCandidates(): string[] {
