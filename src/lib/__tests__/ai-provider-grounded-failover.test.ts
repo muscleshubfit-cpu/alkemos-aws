@@ -286,12 +286,28 @@ describe("cross-provider walk — gemini quota drain moves to openrouter web", (
       };
     });
 
-    const out = await callGroundedSearch("research");
+    const out = await callGroundedSearch("research", { maxTokens: 400 });
     expect(out.provider).toBe("openrouter");
     expect(out.text).toContain("150-300 minutes");
     expect(out.grounding.sources.map((s) => s.url)).toEqual([
       "https://www.who.int/news-room/fact-sheets/detail/physical-activity",
     ]);
+  });
+
+  it("the OR arm enforces a 6000-token floor (LIVE-PROBED run 38843887341: a 400 cap dies inside the reasoning CoT before content/annotations)", async () => {
+    process.env.GEMINI_API_KEY = "AIza-test-key";
+    process.env.OPENROUTER_API = "sk-or-test-key";
+    const log: FetchLog[] = [];
+    stubRoutingFetch(log, (url) =>
+      geminiKeyOk(url)
+        ? { ok: false, status: 429, payload: QUOTA_429 }
+        : { ok: true, status: 200, payload: OR_WEB_OK },
+    );
+    await callGroundedSearch("research", { maxTokens: 400 });
+    expect(log[4].body?.max_tokens).toBe(6000);
+    // a caller above the floor keeps their own value (never clamped DOWN)
+    await callGroundedSearch("research", { maxTokens: 7000 });
+    expect(log[9].body?.max_tokens).toBe(7000);
   });
 
   it("all three arms fail → ONE honest aggregate error; NVIDIA never receives a call", async () => {

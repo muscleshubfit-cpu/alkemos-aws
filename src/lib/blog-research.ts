@@ -469,7 +469,14 @@ Return STRICT JSON only, no markdown fences:
       tag: "blog:research",
       temperature: 0.7,
       maxTokens: 2_500,
-      timeoutMs: 55_000,
+      // BLOG-PROVIDER-FAILOVER 2026-10-16 (round-3 live measurement): the
+      // cross-provider walk now includes the OpenRouter web-plugin arm on a
+      // reasoning model whose chain-measured latency is 30–90s of CoT before
+      // content+annotations (Phase 177) — 55s (the gemini-only tuning) would
+      // abort it mid-answer. 90s fits the GHA native runner budget (480s
+      // window, maxDuration=60 applies only to Vercel serverless, and the
+      // blog steps run natively per the recovery report RC1).
+      timeoutMs: 90_000,
     });
     const parsed = parseJSON<Record<string, unknown>>(text);
     const data = parsed ? normalizeResearch(parsed) : null;

@@ -59,7 +59,9 @@ const ARM_OPTS = {
   tag: "failover-probe",
   temperature: 0.3,
   maxTokens: 400,
-  timeoutMs: 45_000,
+  // 90s per arm: the OpenRouter web arm rides a reasoning model whose
+  // chain-measured CoT is 30–90s before content+annotations (Phase 177).
+  timeoutMs: 90_000,
 } as const;
 
 function ms(started: number): number {
@@ -164,6 +166,40 @@ async function diagnoseGroqModels(): Promise<void> {
     console.log(`DIAG groq all ids: ${ids.slice(0, 50).join(" · ")}`);
   } catch (e) {
     console.log(`DIAG groq models listing failed: ${e instanceof Error ? e.message : e}`);
+  }
+  // Settle the SECOND search path by measurement: Groq's agentic web_search
+  // tool on a regular model (gpt-oss-120b) — accepted? citations returned?
+  // (structure only; never user-facing text, never secrets)
+  try {
+    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: "openai/gpt-oss-120b",
+        messages: [
+          { role: "user", content: "What is the WHO weekly physical activity guidance for adults? One sentence." },
+        ],
+        tools: [{ type: "web_search" }],
+        max_tokens: 400,
+      }),
+    });
+    const bodyText = await res.text();
+    let shape = "";
+    try {
+      const j = JSON.parse(bodyText) as Record<string, unknown>;
+      const msg = ((j.choices as Array<Record<string, unknown>> | undefined)?.[0]?.message) as Record<string, unknown> | undefined;
+      const cit = Array.isArray(msg?.citations) ? (msg.citations as unknown[]).length : Array.isArray((j as Record<string, unknown>).citations) ? ((j as Record<string, unknown>).citations as unknown[]).length : -1;
+      const xg = (j as { x_groq?: { citations?: unknown[] } }).x_groq;
+      shape = `status=${res.status} message_keys=${msg ? Object.keys(msg).join(",") : "-"} content_len=${typeof msg?.content === "string" ? msg.content.length : -1} message_citations=${cit} x_groq_citations=${Array.isArray(xg?.citations) ? xg.citations.length : -1}`;
+    } catch {
+      shape = `status=${res.status} body[:300]=${bodyText.slice(0, 300)}`;
+    }
+    console.log(`DIAG groq web_search-tool (gpt-oss-120b) shape: ${shape}`);
+  } catch (e) {
+    console.log(`DIAG groq web_search tool probe failed: ${e instanceof Error ? e.message : e}`);
   }
 }
 

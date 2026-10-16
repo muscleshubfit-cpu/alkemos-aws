@@ -1018,6 +1018,16 @@ export async function callOpenRouterGroundedSearch(
     const timeoutMs = options.timeoutMs ?? 60_000;
     const timer = setTimeout(() => controller.abort(), timeoutMs);
     try {
+      // LIVE-PROBED 2026-10-16 (runs 38843366143 + 38843887341): the free
+      // nemotron burns its reasoning CoT FIRST and only then writes content
+      // — with the caller's small cap (400) the tokens are exhausted before
+      // any content/annotations materialize (200-with-empty both keys,
+      // 18.7s), while the uncapped diagnostic call completed with
+      // content=366 chars + 5 URL annotations + cost=$0.007. Per-entry
+      // max_tokens FLOOR (the R3 per-entry clamp precedent — measured
+      // upstream behavior, documented): search evidence and the JSON only
+      // exist after the CoT, so the arm guarantees 6000 output tokens.
+      const effectiveMaxTokens = Math.max(options.maxTokens ?? 2_500, 6_000);
       const body: Record<string, unknown> = {
         model,
         messages: [
@@ -1027,7 +1037,7 @@ export async function callOpenRouterGroundedSearch(
           { role: "user", content: prompt },
         ],
         temperature: options.temperature ?? 0.7,
-        max_tokens: options.maxTokens ?? 4096,
+        max_tokens: effectiveMaxTokens,
         // THE REAL SEARCH RIDE-ALONG — no plain-generation path exists here.
         plugins: [OPENROUTER_WEB_PLUGIN],
         // jsonMode intentionally NOT set: the gemini-arm pattern (STRICT-JSON
