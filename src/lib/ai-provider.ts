@@ -61,6 +61,12 @@
 export type AIProvider = "openrouter" | "groq" | "nvidia" | "gemini";
 
 import { trackGeminiUsage } from "./ai-usage-gemini";
+import {
+  activeCooldowns,
+  classifyForCooldown,
+  cooldownState,
+  markCooldown,
+} from "./ai-provider-cooldown";
 
 /**
  * Canonical env-var reader for the allowed providers.
@@ -782,6 +788,24 @@ export async function callGeminiGroundedSearch(
         model,
         baseUrl: AI_PROVIDERS.gemini.baseUrl,
       };
+      // BLOG-PROVIDER-FAILOVER (owner order 2026-10-16 «تجنب تكرار
+      // المحاولات الفاشلة»): a key×model pair that already answered with an
+      // exhaustion-class error in this window is SKIPPED without a network
+      // call — the futile 429 re-walk (8 attempts × 3 step-retries, measured
+      // on the 2026-10-16 recovery runs) collapses to an instant honest
+      // skip. Registry is OPT-IN via AI_PROVIDER_COOLDOWN_MS (canary law —
+      // absent env = byte-identical ladder walk).
+      const cdScope = `grounded:gemini:key#${keyIdx + 1}:${model}`;
+      const cd = cooldownState(cdScope);
+      if (cd) {
+        failures.push(
+          `[key#${keyIdx + 1} ${model}] quota-cooldown until ${new Date(cd.until).toISOString()} (${cd.reason}) — skipped, no call made`,
+        );
+        console.warn(
+          `[gemini-grounded] key#${keyIdx + 1} ${model} in quota-cooldown → skipped (${cd.reason.slice(0, 120)})`,
+        );
+        continue;
+      }
       try {
         const { text, grounding } = await callGeminiGenerate(cfg, prompt, {
           ...options,
@@ -796,6 +820,13 @@ export async function callGeminiGroundedSearch(
       } catch (e) {
         const msg = e instanceof Error ? e.message : String(e);
         failures.push(`[key#${keyIdx + 1} ${model}] ${msg.slice(0, 240)}`);
+        // Exhaustion-class failure (429 quota / 402 payment / 401-403 auth /
+        // 404 model-gone) → cool this key×model for the window; transient
+        // (5xx/timeout/empty) stays retryable as before.
+        const cls = classifyForCooldown(msg);
+        if (cls) {
+          markCooldown(cdScope, `${cls}: ${msg.slice(0, 120)}`);
+        }
         const nextModel =
           candidates.indexOf(model) < candidates.length - 1
             ? candidates[candidates.indexOf(model) + 1]
@@ -810,6 +841,456 @@ export async function callGeminiGroundedSearch(
   }
   throw new Error(
     `callGeminiGroundedSearch: ALL grounded models failed across every configured key (${keys.length} key(s) × ${candidates.join(", ")}) — no simulated/curated substitute is allowed (owner order 2026-10-06). Per-attempt errors: ${failures.join(" | ")}`,
+  );
+}
+
+/* ───────────────────────────────────────────────────────────────────────
+ * CROSS-PROVIDER GROUNDED SEARCH (BLOG-PROVIDER-FAILOVER 2026-10-16,
+ * owner order «افحص وأصلح آلية التبديل التلقائي بين مزوّدي الذكاء
+ * الاصطناعي الحاليين (Gemini / OpenRouter / Groq / NVIDIA) في منظومة
+ * المدونة … افحص دعم البحث المُسنَد لدى كل مزوّد، ولا تستبدله بتوليد
+ * عادي أو نتائج وهمية»).
+ *
+ * Grounded-search capability, measured per provider:
+ *   • Gemini     — NATIVE Google-Search grounding (tools:[{googleSearch:{}}])
+ *                  → callGeminiGroundedSearch above (arm 1).
+ *   • OpenRouter — REAL web search via the documented `web` plugin
+ *                  (plugins:[{id:"web"}]) riding chat/completions; the
+ *                  response carries URL `annotations` as the live-search
+ *                  evidence → callOpenRouterGroundedSearch (arm 2). The
+ *                  plugin bills per-search credits on the EXISTING key —
+ *                  a 402 "insufficient credits" fails HONESTLY and falls
+ *                  through (never a plain-generation substitute).
+ *   • Groq       — REAL live web search via the compound system
+ *                  (`compound-beta` — already entry #8 of the strongest
+ *                  chain); the response carries citation URLs →
+ *                  callGroqGroundedSearch (arm 3). The extractor accepts
+ *                  citations at every documented location (message.citations,
+ *                  message.annotations, root citations, x_groq.citations).
+ *   • NVIDIA NIM — NO native web-search tool in its OpenAI-compatible
+ *                  chat API → EXCLUDED FROM THE GROUNDED PATH BY DESIGN.
+ *                  NVIDIA stays a full generation-chain provider; putting
+ *                  an ungrounded NIM answer into the research step would
+ *                  be exactly the «توليد عادي» the owner forbade.
+ *
+ * EVERY arm enforces the same HONEST EVIDENCE GATE as the gemini arm: a
+ * 200 answer with NO live-search evidence (annotation/citation URLs)
+ * FAILS — model memory can never masquerade as research. All arms
+ * exhausted → ONE honest aggregate error. No simulated/curated
+ * substitute exists anywhere in this path (owner order 2026-10-06).
+ * ─────────────────────────────────────────────────────────────────────── */
+
+/** Cross-provider grounded-search result — same contract the gemini arm
+ *  returns; `provider`/`model` name the arm that actually answered. */
+export type GroundedSearchResult = {
+  text: string;
+  provider: AIProvider;
+  model: string;
+  grounding: GeminiGrounding;
+};
+
+/** OpenRouter web-search plugin body — a REAL search ride-along: the
+ *  model's answer is grounded on live web results and the response
+ *  carries URL annotations as evidence. */
+const OPENROUTER_WEB_PLUGIN = { id: "web", max_results: 5 } as const;
+
+/** Default model for the OpenRouter grounded arm (an existing live-verified
+ *  free-chain id — balanced quality/latency for search-grounded JSON).
+ *  Ops knob: OPENROUTER_GROUNDED_MODEL swaps it without a deploy. */
+export const OPENROUTER_GROUNDED_DEFAULT_MODEL =
+  "nvidia/nemotron-3-super-120b-a12b:free";
+
+export function getOpenRouterGroundedModel(): string {
+  return (
+    (process.env.OPENROUTER_GROUNDED_MODEL || "").trim() ||
+    OPENROUTER_GROUNDED_DEFAULT_MODEL
+  );
+}
+
+/** Default model for the Groq grounded arm (the platform's existing
+ *  compound-system chain entry — built-in live web search + citations).
+ *  Ops knob: GROQ_GROUNDED_MODEL swaps it without a deploy. */
+export const GROQ_GROUNDED_DEFAULT_MODEL = "compound-beta";
+
+export function getGroqGroundedModel(): string {
+  return (
+    (process.env.GROQ_GROUNDED_MODEL || "").trim() ||
+    GROQ_GROUNDED_DEFAULT_MODEL
+  );
+}
+
+/** Extract {title,url} sources from an OpenRouter `annotations` array
+ *  (documented shape: [{type:"url", url, title}]). Defensive: accepts
+ *  malformed/extra shapes, dedupes by URL, caps at 12. */
+function urlSourcesFromAnnotations(annotations: unknown): GeminiGroundingSource[] {
+  if (!Array.isArray(annotations)) return [];
+  const out: GeminiGroundingSource[] = [];
+  const seen = new Set<string>();
+  for (const a of annotations) {
+    const r = (typeof a === "object" && a !== null ? a : {}) as {
+      type?: unknown;
+      url?: unknown;
+      title?: unknown;
+    };
+    if (typeof r.type === "string" && r.type.toLowerCase() !== "url") continue;
+    const url = typeof r.url === "string" ? r.url.trim() : "";
+    if (!url || seen.has(url)) continue;
+    seen.add(url);
+    out.push({
+      title: typeof r.title === "string" ? r.title.trim() : "",
+      url,
+    });
+    if (out.length >= 12) break;
+  }
+  return out;
+}
+
+/** Extract {title,url} sources from a Groq citations array — entries may
+ *  be plain URL strings or {url,title} objects. Deduped, capped at 12. */
+function urlSourcesFromCitations(citations: unknown): GeminiGroundingSource[] {
+  if (!Array.isArray(citations)) return [];
+  const out: GeminiGroundingSource[] = [];
+  const seen = new Set<string>();
+  for (const c of citations) {
+    let url = "";
+    let title = "";
+    if (typeof c === "string") {
+      url = c.trim();
+    } else if (typeof c === "object" && c !== null) {
+      const r = c as { url?: unknown; link?: unknown; title?: unknown };
+      url = typeof r.url === "string" ? r.url.trim() : typeof r.link === "string" ? r.link.trim() : "";
+      title = typeof r.title === "string" ? r.title.trim() : "";
+    }
+    if (!url || seen.has(url)) continue;
+    seen.add(url);
+    out.push({ title, url });
+    if (out.length >= 12) break;
+  }
+  return out;
+}
+
+/** Merge + dedupe source lists from several response locations. */
+function mergeDedupedSources(...lists: GeminiGroundingSource[][]): GeminiGroundingSource[] {
+  const out: GeminiGroundingSource[] = [];
+  const seen = new Set<string>();
+  for (const list of lists) {
+    for (const s of list) {
+      if (!s.url || seen.has(s.url)) continue;
+      seen.add(s.url);
+      out.push(s);
+      if (out.length >= 12) return out;
+    }
+  }
+  return out;
+}
+
+/**
+ * ARM 2 — OpenRouter REAL web search (the documented `web` plugin) on the
+ * EXISTING key pool. Every attempt is a REAL search-augmented call; the
+ * honest evidence gate rejects 200-without-annotations answers. Exhaustion
+ * errors (429/402/401/403) cool the key for the window when the registry
+ * is enabled; all keys failed → one honest aggregate error.
+ */
+export async function callOpenRouterGroundedSearch(
+  prompt: string,
+  options: CallAIOptions = {},
+): Promise<GroundedSearchResult> {
+  const keys = getOpenRouterKeys();
+  if (keys.length === 0) {
+    throw new Error(
+      "callOpenRouterGroundedSearch: no OpenRouter key configured (OPENROUTER_API / OPENROUTER_API_KEY) — the real web-search arm is unavailable, and no simulated/curated substitute is allowed (owner order 2026-10-06).",
+    );
+  }
+  const model = getOpenRouterGroundedModel();
+  const LP = "[or-grounded]" + (options.tag ? ` [${options.tag}]` : "");
+  const failures: string[] = [];
+  for (let keyIdx = 0; keyIdx < keys.length; keyIdx++) {
+    const cdScope = `grounded:openrouter:key#${keyIdx + 1}`;
+    const cd = cooldownState(cdScope);
+    if (cd) {
+      failures.push(
+        `[key#${keyIdx + 1}] quota-cooldown until ${new Date(cd.until).toISOString()} (${cd.reason}) — skipped, no call made`,
+      );
+      console.warn(`${LP} key#${keyIdx + 1} in quota-cooldown → skipped`);
+      continue;
+    }
+    const controller = new AbortController();
+    const timeoutMs = options.timeoutMs ?? 60_000;
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      const body: Record<string, unknown> = {
+        model,
+        messages: [
+          ...(options.systemPrompt
+            ? [{ role: "system", content: options.systemPrompt }]
+            : []),
+          { role: "user", content: prompt },
+        ],
+        temperature: options.temperature ?? 0.7,
+        max_tokens: options.maxTokens ?? 4096,
+        // THE REAL SEARCH RIDE-ALONG — no plain-generation path exists here.
+        plugins: [OPENROUTER_WEB_PLUGIN],
+        // jsonMode intentionally NOT set: the gemini-arm pattern (STRICT-JSON
+        // prompt instructions + the 161.5-hardened parseJSON) — reasoning
+        // models + tool use reject strict response_format upstream.
+      };
+      const res = await fetch(`${AI_PROVIDERS.openrouter.baseUrl}/chat/completions`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${keys[keyIdx]}`,
+          "HTTP-Referer": "https://alkemos.com",
+          "X-Title": "Alkemos Blog Research",
+        },
+        body: JSON.stringify(body),
+        signal: controller.signal,
+      });
+      if (!res.ok) {
+        const text = await res.text().catch(() => "");
+        throw new Error(
+          `AI API error ${res.status} from openrouter (${model}+web): ${text.slice(0, 500)}`,
+        );
+      }
+      const data = (await res.json()) as {
+        choices?: Array<{
+          message?: {
+            content?: string | null;
+            annotations?: unknown;
+          } | null;
+        }> | null;
+        annotations?: unknown;
+      } | null;
+      const msg = data?.choices?.[0]?.message;
+      const content = typeof msg?.content === "string" ? msg.content : "";
+      const sources = mergeDedupedSources(
+        urlSourcesFromAnnotations(msg?.annotations),
+        urlSourcesFromAnnotations(data?.annotations),
+      );
+      // HONEST EVIDENCE GATE — no URL annotations = not built on live
+      // search: fail this key, never pass plain generation as research.
+      if (!content.trim() || sources.length === 0) {
+        throw new Error(
+          `AI provider openrouter (${model}+web) returned ${
+            !content.trim()
+              ? "an empty response"
+              : "no web-search evidence (annotation URLs)"
+          } — the answer was not built on live search`,
+        );
+      }
+      if (failures.length > 0) {
+        console.warn(
+          `${LP} key#${keyIdx + 1} ${model}+web succeeded after ${failures.length} earlier key failure(s)`,
+        );
+      }
+      return {
+        text: content.trim(),
+        provider: "openrouter",
+        model,
+        grounding: { searchQueries: [], sources },
+      };
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      failures.push(`[key#${keyIdx + 1} ${model}+web] ${msg.slice(0, 240)}`);
+      const cls = classifyForCooldown(msg);
+      if (cls) markCooldown(cdScope, `${cls}: ${msg.slice(0, 120)}`);
+      console.warn(`${LP} key#${keyIdx + 1} ${model}+web failed: ${msg.slice(0, 180)}`);
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+  throw new Error(
+    `callOpenRouterGroundedSearch: every configured OpenRouter key failed the REAL web-plugin search (${keys.length} key(s), ${model}+web) — no simulated/curated substitute is allowed (owner order 2026-10-06). Per-key errors: ${failures.join(" | ")}`,
+  );
+}
+
+/**
+ * ARM 3 — Groq REAL live web search via the compound system
+ * (`compound-beta`): search happens INSIDE the model call and the response
+ * carries citation URLs (accepted at every documented location). The
+ * honest evidence gate rejects 200-without-citations answers; exhaustion
+ * errors cool the arm for the window; failure → one honest error.
+ */
+export async function callGroqGroundedSearch(
+  prompt: string,
+  options: CallAIOptions = {},
+): Promise<GroundedSearchResult> {
+  const key = getGroqKey();
+  if (!key) {
+    throw new Error(
+      "callGroqGroundedSearch: GROQ_API_KEY is not configured — the real compound-search arm is unavailable, and no simulated/curated substitute is allowed (owner order 2026-10-06).",
+    );
+  }
+  const model = getGroqGroundedModel();
+  const LP = "[groq-grounded]" + (options.tag ? ` [${options.tag}]` : "");
+  const cdScope = `grounded:groq:${model}`;
+  const cd = cooldownState(cdScope);
+  if (cd) {
+    throw new Error(
+      `callGroqGroundedSearch: ${model} is in quota-cooldown until ${new Date(cd.until).toISOString()} (${cd.reason}) — skipped, no call made`,
+    );
+  }
+  const controller = new AbortController();
+  const timeoutMs = options.timeoutMs ?? 60_000;
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const body: Record<string, unknown> = {
+      model,
+      messages: [
+        ...(options.systemPrompt
+          ? [{ role: "system", content: options.systemPrompt }]
+          : []),
+        { role: "user", content: prompt },
+      ],
+      temperature: options.temperature ?? 0.7,
+      max_tokens: options.maxTokens ?? 4096,
+      // No jsonMode (the gemini-arm STRICT-JSON pattern) and no manual tools:
+      // the compound system performs its OWN live web search.
+    };
+    const res = await fetch(`${AI_PROVIDERS.groq.baseUrl}/chat/completions`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${key}`,
+      },
+      body: JSON.stringify(body),
+      signal: controller.signal,
+    });
+    if (!res.ok) {
+      const text = await res.text().catch(() => "");
+      throw new Error(
+        `AI API error ${res.status} from groq (${model}): ${text.slice(0, 500)}`,
+      );
+    }
+    // The response is OpenAI-compatible PLUS compound citations — the
+    // extractor accepts every documented location (message.citations,
+    // message.annotations, root citations, x_groq.citations) so a live
+    // shape change degrades to an honest gate failure, never a fake pass.
+    const data = (await res.json()) as {
+      choices?: Array<{
+        message?: {
+          content?: string | null;
+          reasoning?: string | null;
+          citations?: unknown;
+          annotations?: unknown;
+        } | null;
+      }> | null;
+      citations?: unknown;
+      annotations?: unknown;
+      x_groq?: { citations?: unknown } | null;
+    } | null;
+    const msg = data?.choices?.[0]?.message;
+    const content =
+      typeof msg?.content === "string" && msg.content.trim()
+        ? msg.content
+        : typeof msg?.reasoning === "string"
+          ? msg.reasoning
+          : "";
+    const sources = mergeDedupedSources(
+      urlSourcesFromCitations(msg?.citations),
+      urlSourcesFromAnnotations(msg?.annotations),
+      urlSourcesFromCitations(data?.citations),
+      urlSourcesFromAnnotations(data?.annotations),
+      urlSourcesFromCitations(data?.x_groq?.citations),
+    );
+    // HONEST EVIDENCE GATE — no citation URLs = not built on live search.
+    if (!content.trim() || sources.length === 0) {
+      throw new Error(
+        `AI provider groq (${model}) returned ${
+          !content.trim()
+            ? "an empty response"
+            : "no web-search evidence (citation URLs)"
+        } — the answer was not built on live search`,
+      );
+    }
+    return {
+      text: content.trim(),
+      provider: "groq",
+      model,
+      grounding: { searchQueries: [], sources },
+    };
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    const cls = classifyForCooldown(msg);
+    if (cls) markCooldown(cdScope, `${cls}: ${msg.slice(0, 120)}`);
+    console.warn(`${LP} ${model} failed: ${msg.slice(0, 180)}`);
+    throw e instanceof Error ? e : new Error(msg);
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+/**
+ * THE CROSS-PROVIDER GROUNDED SEARCH (owner order 2026-10-16): real-search
+ * arms in fixed failover order —
+ *   1. Gemini native googleSearch (model ladder + dual key)
+ *   2. OpenRouter `web` plugin (REAL search, URL annotations)
+ *   3. Groq compound system (REAL live search, citations)
+ *   (NVIDIA NIM: no grounded-search capability — honestly excluded; it
+ *    never receives a call on this path.)
+ * A quota-class failure moves the walk to the NEXT provider; every arm
+ * enforces the honest evidence gate; total failure = ONE honest aggregate
+ * error naming every arm's state. The AR/EN pairing, workflow, and all
+ * gates live ABOVE this layer (blog-research) and are untouched.
+ */
+export async function callGroundedSearch(
+  prompt: string,
+  options: CallAIOptions = {},
+): Promise<GroundedSearchResult> {
+  const armFailures: string[] = [];
+
+  // ARM 1 — Gemini native Google-Search grounding.
+  try {
+    const r = await callGeminiGroundedSearch(prompt, options);
+    if (armFailures.length === 0) return r;
+    console.warn(
+      `[grounded-search] gemini answered after ${armFailures.length} earlier arm failure(s)`,
+    );
+    return r;
+  } catch (e) {
+    armFailures.push(
+      `[gemini googleSearch] ${(e instanceof Error ? e.message : String(e)).slice(0, 400)}`,
+    );
+    console.warn(
+      `[grounded-search] arm 1/3 (gemini googleSearch) failed → moving to openrouter web: ${(e instanceof Error ? e.message : String(e)).slice(0, 180)}`,
+    );
+  }
+
+  // ARM 2 — OpenRouter REAL web search (web plugin).
+  try {
+    const r = await callOpenRouterGroundedSearch(prompt, options);
+    console.warn(
+      `[grounded-search] openrouter web answered after ${armFailures.length} earlier arm failure(s)`,
+    );
+    return r;
+  } catch (e) {
+    armFailures.push(
+      `[openrouter web] ${(e instanceof Error ? e.message : String(e)).slice(0, 400)}`,
+    );
+    console.warn(
+      `[grounded-search] arm 2/3 (openrouter web) failed → moving to groq compound: ${(e instanceof Error ? e.message : String(e)).slice(0, 180)}`,
+    );
+  }
+
+  // ARM 3 — Groq compound REAL live web search.
+  try {
+    const r = await callGroqGroundedSearch(prompt, options);
+    console.warn(
+      `[grounded-search] groq compound answered after ${armFailures.length} earlier arm failure(s)`,
+    );
+    return r;
+  } catch (e) {
+    armFailures.push(
+      `[groq compound] ${(e instanceof Error ? e.message : String(e)).slice(0, 400)}`,
+    );
+  }
+
+  // NVIDIA NIM — excluded BY DESIGN (no native web-search tool in its
+  // OpenAI-compatible chat API): an ungrounded NIM answer is exactly the
+  // «توليد عادي» the owner forbade as a search substitute.
+
+  const cds = activeCooldowns();
+  throw new Error(
+    `callGroundedSearch: every grounded-search arm failed — gemini(googleSearch) → openrouter(web plugin) → groq(compound). NVIDIA NIM has no grounded-search capability (honestly excluded). No simulated/curated substitute is allowed (owner order 2026-10-06). Arm errors: ${armFailures.join(" || ")}${cds.length ? ` || ACTIVE COOLDOWNS: ${cds.map((c) => `${c.scope} until ${new Date(c.until).toISOString()}`).join("; ")}` : ""}`,
   );
 }
 
@@ -1616,6 +2097,25 @@ export async function callFreeAIFallbackChain(
   for (const { provider, model, maxTokens: entryMaxTokens } of activeChain0) {
     if (attempted >= maxModels) break;
 
+    // BLOG-PROVIDER-FAILOVER (owner order 2026-10-16 «بحيث تنتقل للمزوّد
+    // التالي عند نفاد الحصة … وتجنب تكرار المحاولات الفاشلة»): a
+    // provider that answered with an exhaustion-class error earlier in
+    // this window is SKIPPED without a network call and WITHOUT consuming
+    // attempt budget — the next HEALTHY provider takes the slot within
+    // the SAME maxModels budget. Registry is OPT-IN via
+    // AI_PROVIDER_COOLDOWN_MS (canary law — absent env = the pre-2026-10-16
+    // walk, byte-identical).
+    const cd = cooldownState(`chain:${provider}`);
+    if (cd) {
+      errors.push(
+        `${provider}: quota-cooldown until ${new Date(cd.until).toISOString()} (${cd.reason}) — entries skipped, no call made`,
+      );
+      console.log(
+        `${LP} ${provider} in quota-cooldown → skipping its entries until ${new Date(cd.until).toISOString()}`,
+      );
+      continue;
+    }
+
     const baseUrl = AI_PROVIDERS[provider].baseUrl;
     // DUAL-KEY POOL rotation: round-robin across every configured OpenRouter
     // account so the ~50/day free ceiling is shared instead of burned on one.
@@ -1692,6 +2192,18 @@ export async function callFreeAIFallbackChain(
         } catch (e) {
           const msg = e instanceof Error ? e.message : String(e);
           errors.push(`${provider}/${model}: ${msg}`);
+          // BLOG-PROVIDER-FAILOVER (owner order 2026-10-16): exhaustion-class
+          // failure (429 quota / 402 payment / 401-403 auth / 404 gone) →
+          // cool the PROVIDER for the window so later calls skip it and the
+          // next provider leads. Transient (5xx/timeout/empty) stays
+          // retryable as before (the ×3 step-retry rides it out).
+          const cls = classifyForCooldown(msg);
+          if (cls) {
+            markCooldown(
+              `chain:${provider}`,
+              `${cls}: ${provider}/${model}: ${msg.slice(0, 120)}`,
+            );
+          }
           if (attemptStreamed) {
             // Mid-stream failure AFTER user-visible tokens — rethrow so the
             // caller can decide (route sends an SSE error event; the client
@@ -1720,6 +2232,7 @@ export async function callFreeAIFallbackChain(
   }
 
   // All providers failed
+  const cds = activeCooldowns();
   const finalError = new Error(
     `[ai-fallback-chain] All AI providers failed.` +
       (options.tag ? ` (system: ${options.tag})\n` : "\n") +
@@ -1727,6 +2240,11 @@ export async function callFreeAIFallbackChain(
       `Groq key: ${groqKey ? "present" : "MISSING"}.\n` +
       `NVIDIA key: ${nvidiaKey ? "present" : "MISSING"}.\n` +
       `Gemini key: ${geminiKey ? "present" : "MISSING"}.\n` +
+      (cds.length
+        ? `Active quota-cooldowns: ${cds
+            .map((c) => `${c.scope} until ${new Date(c.until).toISOString()}`)
+            .join("; ")}\n`
+        : "") +
       `Errors:\n  - ${errors.join("\n  - ")}`,
   );
   console.error(finalError.message);

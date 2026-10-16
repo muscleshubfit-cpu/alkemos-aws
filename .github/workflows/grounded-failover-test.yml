@@ -1,0 +1,97 @@
+name: Grounded failover test (AI providers)
+
+# ============================================================
+# BLOG-PROVIDER-FAILOVER 2026-10-16 — dispatch-only LIVE probe for
+# the cross-provider grounded-search failover (owner order «اختبر
+# التبديل الفعلي»): REAL calls with the REAL provider keys, NO
+# code changes, NO deploy, NO schedule.
+#
+# Measures (scripts/ai-grounded-failover-probe.mts):
+#   1. Each grounded arm separately — gemini googleSearch ladder ·
+#      openrouter web plugin · groq compound. (NVIDIA: excluded by
+#      design — its chat API has no web-search tool; printed as such.)
+#   2. The end-to-end callGroundedSearch walk — THE failover verdict:
+#      green iff some provider answered with live-search evidence.
+#   3. The generation chain failover (P1/P2/P4-class).
+#   4. The quota-cooldown registry state (futile-repeat avoidance —
+#      AI_PROVIDER_COOLDOWN_MS is ON here exactly like the blog
+#      workflows, so the probe demonstrates the live skip too).
+#
+# Discipline (aws-ai-test precedent): prints provider/model names,
+# durations, statuses, evidence counts and short snippets ONLY — no
+# secret values, no personal data. Honest exit: 1 iff the end-to-end
+# walk produced no grounded answer (per-arm failures are measurements
+# and never fatal).
+# ============================================================
+
+on:
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: grounded-failover-test
+  cancel-in-progress: false
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    env:
+      # Same cooldown window as the blog pipelines (the probe must run
+      # EXACTLY the production wiring of the failover mechanism).
+      AI_PROVIDER_COOLDOWN_MS: "1800000"
+
+      # ── Provider keys (the EXISTING secrets — no new keys, owner law) ──
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      GEMINI_API_KEY2: ${{ secrets.GEMINI_API_KEY2 }}
+      OPENROUTER_API: ${{ secrets.OPENROUTER_API }}
+      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+      GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+      NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
+
+      # ── Gemini usage counters (fail-soft; keeps the weekly report fed) ──
+      UPSTASH_REDIS_REST_URL: ${{ secrets.UPSTASH_REDIS_REST_URL }}
+      UPSTASH_REDIS_REST_TOKEN: ${{ secrets.UPSTASH_REDIS_REST_TOKEN }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5 — pinned 2026-10-10 audit
+
+      - name: Preflight — provider secrets present (fails fast, names the missing ones)
+        run: |
+          echo "=== Preflight [grounded-failover-test]: checking provider secrets ==="
+          missing=0
+          for v in GROQ_API_KEY NVIDIA_API_KEY; do
+            if [ -z "${!v}" ]; then
+              echo "❌ Missing secret: $v"
+              missing=1
+            fi
+          done
+          if [ -z "$OPENROUTER_API" ] && [ -z "$OPENROUTER_API_KEY" ]; then
+            echo "❌ Missing secret: OPENROUTER_API (or OPENROUTER_API_KEY)"
+            missing=1
+          fi
+          if [ -z "$GEMINI_API_KEY" ]; then
+            echo "⚠ GEMINI_API_KEY absent — arm 1 will report a configuration failure (honest, not fatal)"
+          fi
+          if [ "$missing" -eq 1 ]; then
+            echo "❌ Preflight failed — fix the secrets above and re-run."
+            exit 1
+          fi
+          echo "✓ Required provider secrets present"
+
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5 — pinned 2026-10-10 audit
+        with:
+          node-version: 22
+
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2 — pinned 2026-10-10 audit
+        with:
+          bun-version: 1.3.14
+
+      - name: Install dependencies (frozen bun.lock = production tree)
+        run: bun install --frozen-lockfile
+
+      - name: Run the live grounded-failover probe (REAL provider calls)
+        run: npx --no-install tsx scripts/ai-grounded-failover-probe.mts

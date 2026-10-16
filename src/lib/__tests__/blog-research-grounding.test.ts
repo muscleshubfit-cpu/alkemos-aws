@@ -21,9 +21,14 @@ const pipelineSrc = readFileSync(join(libDir, "blog-pipeline.ts"), "utf8");
 const providerSrc = readFileSync(join(libDir, "ai-provider.ts"), "utf8");
 
 describe("Phase 344 — P0 uses the REAL grounded search (no simulation, no substitute)", () => {
-  it("blog-research rides callGeminiGroundedSearch (gemini-only — only it can search)", () => {
-    expect(researchSrc).toContain('import { callGeminiGroundedSearch, parseJSON } from "./ai-provider"');
-    expect(researchSrc).toContain("await callGeminiGroundedSearch(prompt, {");
+  // BLOG-PROVIDER-FAILOVER 2026-10-16 (owner order «افحص دعم البحث
+  // المُسنَد لدى كل مزوّد»): the premise evolved from gemini-only to the
+  // cross-provider REAL-search walk (gemini googleSearch → openrouter web
+  // plugin → groq compound; NVIDIA honestly excluded). The REAL-search law
+  // itself is UNTOUCHED — every arm must return live-search evidence.
+  it("blog-research rides callGroundedSearch (cross-provider real-search failover)", () => {
+    expect(researchSrc).toContain('import { callGroundedSearch, parseJSON } from "./ai-provider"');
+    expect(researchSrc).toContain("await callGroundedSearch(prompt, {");
     expect(researchSrc).toContain('tag: "blog:research"');
     expect(researchSrc).toContain("USE YOUR GOOGLE SEARCH TOOL");
   });

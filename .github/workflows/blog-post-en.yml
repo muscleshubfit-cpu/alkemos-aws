@@ -85,6 +85,16 @@ jobs:
       # (120min) is untouched (actual usage ~28min). Rollback: 480000 → 360000.
       AI_CHAIN_TOTAL_BUDGET_MS: "480000"
 
+      # ── BLOG-PROVIDER-FAILOVER 2026-10-16 (owner order «بحيث تنتقل
+      # للمزوّد التالي عند نفاد الحصة … وتجنب تكرار المحاولات الفاشلة») ──
+      # Quota-cooldown window: exhaustion-class provider failures (429/402/
+      # 401/403/404) cool the failed provider/key×model for 30 minutes and
+      # the chain/grounded walk SKIPS it without consuming attempt budget —
+      # the next healthy provider takes the slot, and the futile 429 re-walk
+      # inside one run collapses to an instant honest skip. Rollback (zero
+      # code): remove this env line, or set AI_PROVIDER_COOLDOWN=0.
+      AI_PROVIDER_COOLDOWN_MS: "1800000"
+
       # ── PHASE 162: coach pipeline parity — optional topic override ──
       # Set ONLY by workflow_dispatch runs the coach triggered from the
       # articles dashboard; the 22:00 UTC scheduled run never carries them

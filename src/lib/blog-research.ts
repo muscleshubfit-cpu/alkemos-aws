@@ -17,10 +17,9 @@
  * خارجيًا حقيقيًا [Google Search grounding] وتدخل نتائج البحث الفعلية
  * في عملية توليد المقال، مع إزالة الاعتماد على محاكاة البحث أو الـ
  * curated fallback كبديل للبحث الحقيقي»): P0 now runs ONE REAL grounded
- * Gemini call (callGeminiGroundedSearch — tools:[{googleSearch:{}}]) and
- * the live evidence (webSearchQueries + grounded result pages) is stored
- * on the artifact (searchedQueries + sources) and flows into P1/P2
- * prompts (blog-pipeline researchDigest + VERIFIED SEARCH CONTEXT).
+ * call and the live evidence (webSearchQueries + grounded result pages)
+ * is stored on the artifact (searchedQueries + sources) and flows into
+ * P1/P2 prompts (blog-pipeline researchDigest + VERIFIED SEARCH CONTEXT).
  * There is NO substitute anymore: the old chain-of-LLs "research from
  * training knowledge" and the deterministic curated fallback are RETIRED
  * as runtime paths — a failed/ungrounded attempt fails the step HONESTLY
@@ -30,10 +29,21 @@
  * silently fell to curated-fallback). fallbackResearch() below survives
  * as a TEST FIXTURE ONLY (blog-*-tests import it), never called at runtime.
  *
+ * BLOG-PROVIDER-FAILOVER 2026-10-16 (owner order «افحص وأصلح آلية التبديل
+ * التلقائي بين مزوّدي الذكاء الاصطناعي الحاليين … مع الحفاظ على البحث
+ * الحقيقي … ولا تستبدله بتوليد عادي أو نتائج وهمية»): the single gemini
+ * call became callGroundedSearch — a REAL-search cross-provider failover
+ * (gemini googleSearch → openrouter web plugin → groq compound; NVIDIA
+ * excluded honestly — no grounded-search capability). Every arm enforces
+ * the honest live-evidence gate; quota-class failures move to the next
+ * provider and cool the failed one (AI_PROVIDER_COOLDOWN_MS opt-in) so
+ * futile 429 re-walks are skipped. Honest-failure law UNCHANGED: no plain
+ * generation, no simulation, no curated substitute — ever.
+ *
  * The niche is fixed: fitness / nutrition / workouts / health.
  * Output is stored on the queue row inside `article_bundle.research0`.
  */
-import { callGeminiGroundedSearch, parseJSON } from "./ai-provider";
+import { callGroundedSearch, parseJSON } from "./ai-provider";
 import {
   getRecentPostsByLanguage,
   getRecentGeneratedTopics,
@@ -447,13 +457,15 @@ Return STRICT JSON only, no markdown fences:
   "topics":   [ "..." ]   // exactly 5 specific, non-generic article topic suggestions NOT overlapping with the recent titles above; EACH must target a long-tail keyword above; VARY the article types across the 5 (guide / myth-busting / comparison / step-by-step plan / science deep-dive); suggestions must differ from the recent coverage at the SEARCH-INTENT and ANGLE level (different reader goal, not just different wording)
 }`;
 
-  // PHASE 344: the REAL grounded call — gemini only (only it can search);
-  // jsonMode is intentionally omitted: the adapter suppresses the JSON
-  // mime-type with tools anyway (REST rejects JSON-mode + tool use), so
-  // the STRICT-JSON instruction above + the 161.5-hardened parseJSON
-  // carry the contract (the Groq Phase 177 pattern).
+  // PHASE 344 + BLOG-PROVIDER-FAILOVER 2026-10-16: the REAL grounded call —
+  // now a CROSS-PROVIDER failover walk (gemini googleSearch → openrouter
+  // web plugin → groq compound; NVIDIA honestly excluded — no grounded-
+  // search capability). jsonMode is intentionally omitted: the gemini arm
+  // suppresses the JSON mime-type with tools anyway (REST rejects JSON-mode
+  // + tool use), so the STRICT-JSON instruction above + the 161.5-hardened
+  // parseJSON carry the contract (the Groq Phase 177 pattern).
   try {
-    const { text, model, grounding, provider } = await callGeminiGroundedSearch(prompt, {
+    const { text, model, grounding, provider } = await callGroundedSearch(prompt, {
       tag: "blog:research",
       temperature: 0.7,
       maxTokens: 2_500,
@@ -466,7 +478,7 @@ Return STRICT JSON only, no markdown fences:
       // (real queries + real result pages) — model JSON never fabricates it.
       data.searchedQueries = grounding.searchQueries;
       data.sources = grounding.sources;
-      console.log(`[blog-research] P0 ${lang} done (${provider}:${model}+googleSearch, kw:${data.keywords.length} faq:${data.faqs.length} topics:${data.topics.length} queries:${grounding.searchQueries.length} sources:${grounding.sources.length})`);
+      console.log(`[blog-research] P0 ${lang} done (${provider}:${model} [grounded], kw:${data.keywords.length} faq:${data.faqs.length} topics:${data.topics.length} queries:${grounding.searchQueries.length} sources:${grounding.sources.length})`);
       return { data, source: `${provider}:${model}` };
     }
     throw new Error(
