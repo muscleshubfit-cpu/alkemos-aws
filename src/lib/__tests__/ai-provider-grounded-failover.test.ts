@@ -103,9 +103,24 @@ const OR_WEB_OK = {
     {
       message: {
         content: "Based on live search: the recommended intake is 1.6 g/kg.",
+        // LIVE-MEASURED shape (run 38844582803): OpenAI-style url_citation
+        // annotations — type "url_citation" + the payload nested under
+        // `url_citation` (the flat {type:"url", url} shape is legacy).
         annotations: [
-          { type: "url", url: "https://examine.com/protein", title: "Protein | Examine" },
-          { type: "url", url: "https://pubmed.ncbi.nlm.nih.gov/22150333", title: "PubMed" },
+          {
+            type: "url_citation",
+            url_citation: {
+              url: "https://examine.com/protein",
+              title: "Protein | Examine",
+            },
+          },
+          {
+            type: "url_citation",
+            url_citation: {
+              url: "https://pubmed.ncbi.nlm.nih.gov/22150333",
+              title: "PubMed",
+            },
+          },
         ],
       },
     },

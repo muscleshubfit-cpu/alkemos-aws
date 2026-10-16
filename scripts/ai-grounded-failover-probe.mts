@@ -141,7 +141,11 @@ async function diagnoseOrWebShape(): Promise<void> {
         const anns = Array.isArray(msg.annotations) ? msg.annotations : [];
         const annPreview = anns
           .slice(0, 2)
-          .map((a: Record<string, unknown>) => `${String(a.type)}:${String(a.url).slice(0, 60)}`)
+          .map((a: Record<string, unknown>) => {
+            const nested = (a.url_citation ?? a.citation) as Record<string, unknown> | null;
+            const url = typeof a.url === "string" ? a.url : typeof nested?.url === "string" ? nested.url : "NO-URL";
+            return `${String(a.type)}:${String(url).slice(0, 60)}`;
+          })
           .join(" | ");
         report =
           `status=${res.status} provider=${String(j.provider ?? "-")} finish=${String(j.choices?.[0]?.finish_reason ?? "-")} ` +

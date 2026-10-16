@@ -919,25 +919,39 @@ export function getGroqGroundedModel(): string {
   );
 }
 
-/** Extract {title,url} sources from an OpenRouter `annotations` array
- *  (documented shape: [{type:"url", url, title}]). Defensive: accepts
- *  malformed/extra shapes, dedupes by URL, caps at 12. */
+/** Extract {title,url} sources from an OpenRouter `annotations` array.
+ *  LIVE-MEASURED shape (run 38844582803): the plugin answers OpenAI-style
+ *  citations — `{type:"url_citation", url_citation:{url,title}}` — and the
+ *  documented flat shape `{type:"url", url, title}` may also appear. Both
+ *  are read; entries without a usable URL (whatever their type) are
+ *  dropped. Deduped by URL, capped at 12. */
 function urlSourcesFromAnnotations(annotations: unknown): GeminiGroundingSource[] {
   if (!Array.isArray(annotations)) return [];
   const out: GeminiGroundingSource[] = [];
   const seen = new Set<string>();
   for (const a of annotations) {
     const r = (typeof a === "object" && a !== null ? a : {}) as {
-      type?: unknown;
       url?: unknown;
       title?: unknown;
+      url_citation?: { url?: unknown; title?: unknown } | null;
+      citation?: { url?: unknown; title?: unknown } | null;
     };
-    if (typeof r.type === "string" && r.type.toLowerCase() !== "url") continue;
-    const url = typeof r.url === "string" ? r.url.trim() : "";
+    const nested = r.url_citation ?? r.citation ?? null;
+    const url =
+      typeof r.url === "string"
+        ? r.url.trim()
+        : typeof nested?.url === "string"
+          ? nested.url.trim()
+          : "";
     if (!url || seen.has(url)) continue;
     seen.add(url);
     out.push({
-      title: typeof r.title === "string" ? r.title.trim() : "",
+      title:
+        typeof r.title === "string"
+          ? r.title.trim()
+          : typeof nested?.title === "string"
+            ? nested.title.trim()
+            : "",
       url,
     });
     if (out.length >= 12) break;
