@@ -261,6 +261,39 @@ describe("cross-provider walk — gemini quota drain moves to openrouter web", (
     expect(out.grounding.sources[0].title).toBe("ISSN");
   });
 
+  it("openrouter reasoning models: empty content + reasoning_details + annotations still answers (LIVE-PROBED run 38843366143)", async () => {
+    process.env.GEMINI_API_KEY = "AIza-test-key";
+    process.env.OPENROUTER_API = "sk-or-test-key";
+    const log: FetchLog[] = [];
+    stubRoutingFetch(log, (url) => {
+      if (geminiKeyOk(url)) return { ok: false, status: 429, payload: QUOTA_429 };
+      return {
+        ok: true,
+        status: 200,
+        payload: {
+          choices: [
+            {
+              message: {
+                content: null,
+                reasoning_details: [{ text: "The WHO guidance recommends 150-300 minutes of moderate activity weekly." }],
+                annotations: [
+                  { type: "url", url: "https://www.who.int/news-room/fact-sheets/detail/physical-activity", title: "WHO" },
+                ],
+              },
+            },
+          ],
+        },
+      };
+    });
+
+    const out = await callGroundedSearch("research");
+    expect(out.provider).toBe("openrouter");
+    expect(out.text).toContain("150-300 minutes");
+    expect(out.grounding.sources.map((s) => s.url)).toEqual([
+      "https://www.who.int/news-room/fact-sheets/detail/physical-activity",
+    ]);
+  });
+
   it("all three arms fail → ONE honest aggregate error; NVIDIA never receives a call", async () => {
     process.env.GEMINI_API_KEY = "AIza-test-key";
     process.env.OPENROUTER_API = "sk-or-test-key";

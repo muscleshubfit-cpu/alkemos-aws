@@ -45,6 +45,7 @@ import {
   callFreeAIFallbackChain,
   getGeminiGroundedKeys,
   getOpenRouterKeys,
+  getOpenRouterGroundedModel,
 } from "../src/lib/ai-provider";
 import {
   activeCooldowns,
@@ -94,6 +95,78 @@ async function probeArm(
   }
 }
 
+/** SELF-DIAGNOSIS (2026-10-16 live round): the OpenRouter web-plugin
+ *  answer shape drifts by model (reasoning models answer in reasoning*
+ *  fields; annotations may sit at message or root). On an arm failure the
+ *  probe dumps the STRUCTURE (keys + lengths only — never user-facing
+ *  text or secrets) so the extractor can be fixed against measured truth. */
+async function diagnoseOrWebShape(): Promise<void> {
+  const keys = getOpenRouterKeys();
+  if (keys.length === 0) return;
+  try {
+    const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${keys[0]}`,
+        "HTTP-Referer": "https://alkemos.com",
+        "X-Title": "Alkemos Failover Probe",
+      },
+      body: JSON.stringify({
+        model: getOpenRouterGroundedModel(),
+        messages: [
+          { role: "user", content: "What is the WHO weekly physical activity guidance for adults? One sentence." },
+        ],
+        plugins: [{ id: "web", max_results: 5 }],
+      }),
+    });
+    const bodyText = await res.text();
+    let structure = "";
+    try {
+      const j = JSON.parse(bodyText) as Record<string, unknown>;
+      const choice = (j.choices as Array<Record<string, unknown>> | undefined)?.[0];
+      const message = choice?.message as Record<string, unknown> | undefined;
+      const contentLen = typeof message?.content === "string" ? message.content.length : -1;
+      const reasoningLen = typeof message?.reasoning === "string" ? (message.reasoning as string).length : -1;
+      const rd = Array.isArray(message?.reasoning_details) ? (message.reasoning_details as unknown[]).length : 0;
+      const ann = Array.isArray(message?.annotations) ? (message.annotations as unknown[]).length : -1;
+      const rootAnn = Array.isArray(j.annotations) ? (j.annotations as unknown[]).length : -1;
+      structure =
+        `status=${res.status} root_keys=${Object.keys(j).join(",")}` +
+        ` message_keys=${message ? Object.keys(message).join(",") : "-"}` +
+        ` content_len=${contentLen} reasoning_len=${reasoningLen} reasoning_details=${rd}` +
+        ` message_annotations=${ann} root_annotations=${rootAnn}` +
+        ` usage=${JSON.stringify(j.usage ?? null).slice(0, 220)}`;
+    } catch {
+      structure = `status=${res.status} body[:400]=${bodyText.slice(0, 400)}`;
+    }
+    console.log(`DIAG openrouter web-plugin response shape: ${structure}`);
+  } catch (e) {
+    console.log(`DIAG openrouter shape probe failed: ${e instanceof Error ? e.message : e}`);
+  }
+}
+
+/** SELF-DIAGNOSIS (2026-10-16 live round): list the Groq account's LIVE
+ *  model ids (public catalog identifiers — not secrets) so a compound-
+ *  model 404 can be settled by measurement, never by guessing. */
+async function diagnoseGroqModels(): Promise<void> {
+  const key = process.env.GROQ_API_KEY || "";
+  if (!key) return;
+  try {
+    const res = await fetch("https://api.groq.com/openai/v1/models", {
+      headers: { Authorization: `Bearer ${key}` },
+    });
+    const data = (await res.json()) as { data?: Array<{ id?: string }> };
+    const ids = (data.data || []).map((m) => String(m.id || "")).filter(Boolean);
+    console.log(`DIAG groq models: status=${res.status} total=${ids.length}`);
+    const searchCapable = ids.filter((id) => /compound|search/i.test(id));
+    console.log(`DIAG groq compound/search-capable ids: ${searchCapable.join(" · ") || "NONE"}`);
+    console.log(`DIAG groq all ids: ${ids.slice(0, 50).join(" · ")}`);
+  } catch (e) {
+    console.log(`DIAG groq models listing failed: ${e instanceof Error ? e.message : e}`);
+  }
+}
+
 async function main(): Promise<void> {
   console.log("=== AI GROUNDED-FAILOVER LIVE PROBE (BLOG-PROVIDER-FAILOVER 2026-10-16) ===");
   console.log(`env: gemini keys=${maskKeys(getGeminiGroundedKeys().length)} · openrouter keys=${maskKeys(getOpenRouterKeys().length)} · groq=${process.env.GROQ_API_KEY ? "configured" : "MISSING"} · nvidia=${process.env.NVIDIA_API_KEY ? "configured" : "MISSING"} · cooldown=${process.env.AI_PROVIDER_COOLDOWN_MS || "off"}`);
@@ -115,6 +188,12 @@ async function main(): Promise<void> {
   console.log("");
   console.log("ARM NVIDIA NIM: EXCLUDED-BY-DESIGN (no web-search tool in its OpenAI-compatible chat API — an ungrounded answer would violate the real-search law; NVIDIA stays a generation-chain provider)");
   console.log("");
+  // ── 1b) SELF-DIAGNOSIS on arm failures (permanent instrument value:
+  // live shapes/ids drift — the probe NAMES them instead of guessing)
+  if (!orOk) await diagnoseOrWebShape();
+  if (!groqOk) await diagnoseGroqModels();
+  console.log("");
+
 
   // ── 2) The end-to-end cross-provider failover walk ──────────────────
   console.log("--- [2/4] End-to-end callGroundedSearch (the actual failover) ---");

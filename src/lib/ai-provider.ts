@@ -1055,13 +1055,29 @@ export async function callOpenRouterGroundedSearch(
         choices?: Array<{
           message?: {
             content?: string | null;
+            reasoning?: string | null;
+            reasoning_details?: Array<{ text?: unknown } | null> | null;
             annotations?: unknown;
           } | null;
         }> | null;
         annotations?: unknown;
       } | null;
       const msg = data?.choices?.[0]?.message;
-      const content = typeof msg?.content === "string" ? msg.content : "";
+      // LIVE-PROBED 2026-10-16 (run 38843366143): the free nemotron
+      // reasoning model answers the web-plugin call with EMPTY content and
+      // the actual text in reasoning_details/reasoning (the same
+      // callAI content→reasoning law — mirrored here so the arm reads
+      // every documented location instead of failing "empty response").
+      let content: string = typeof msg?.content === "string" ? msg.content : "";
+      if (!content && Array.isArray(msg?.reasoning_details)) {
+        content = msg.reasoning_details
+          .map((r) => (typeof r?.text === "string" ? r.text : ""))
+          .filter(Boolean)
+          .join("\n");
+      }
+      if (!content && typeof msg?.reasoning === "string") {
+        content = msg.reasoning;
+      }
       const sources = mergeDedupedSources(
         urlSourcesFromAnnotations(msg?.annotations),
         urlSourcesFromAnnotations(data?.annotations),
