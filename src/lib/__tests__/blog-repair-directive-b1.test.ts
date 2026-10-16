@@ -208,12 +208,15 @@ describe("B1 · repair directive injection (one-shot, repair runs only)", () => 
     }).callFreeAIFallbackChain;
     await reviewAndEnhance("en", filler(1217), OUTLINE, [], "quality-gate battery failed — FAQ count 0");
     const opts = chain.mock.calls[0]?.[1] as Record<string, unknown>;
+    // timeoutMs 110s → 150s (BLOG-PROVIDER-FAILOVER 2026-10-16, live run
+    // 38851515578: every non-gemini review entry aborted at the 110s cap on
+    // the ~11.8k review payload; the workflow budget funds 600s/4=150s).
     expect(opts).toEqual({
       tag: "blog:review-en",
       temperature: 0.4,
       maxTokens: 6_400,
       jsonMode: false,
-      timeoutMs: 110_000,
+      timeoutMs: 150_000,
       maxModels: 4,
     });
   });

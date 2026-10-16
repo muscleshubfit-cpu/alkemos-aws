@@ -1002,7 +1002,16 @@ Return STRICT JSON only:
     // floor → openrouter/nvidia-only BY DESIGN (audit reservation).
     maxTokens: 6_400,
     jsonMode: false,
-    timeoutMs: 110_000,
+    // BLOG-PROVIDER-FAILOVER 2026-10-16 (live run 38851515578): 110s →
+    // 150s + the workflow budget 480s → 600s — in that live window EVERY
+    // non-gemini review entry (OR-ultra · nvidia-super · nvidia-ultra)
+    // aborted at the 110s cap on the ~11.8k-token review payload while
+    // gemini answered 503/429 (its free-tier request quota drained by the
+    // day's testing) — the review needs its real CoT window, and the
+    // 600s/4=150s budget funds exactly this caller timeout. Vercel still
+    // self-clamps to 52s; groq stays excluded for review payloads BY
+    // DESIGN (the R3 audit reservation — clamp below the 3800 floor).
+    timeoutMs: 150_000,
     maxModels: 4,
   });
   const parsed = parseJSON<{

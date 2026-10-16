@@ -73,10 +73,14 @@ jobs:
       # ── Native-execution budget override (default on Vercel: 52000) ──
       # R3 (Execution-Path Audit 2026-09-29): 360000 → 480000 — funds the
       # third P2 chain entry (480/3 = 160s ≥ the 150s caller timeout) and
-      # widens the P4 windows (480/4 = 120s vs 90s). Precedent:
-      # process-ai-jobs.yml has run 480000 since Phase 161.4; the job timeout
-      # (120min) is untouched (actual usage ~28min). Rollback: 480000 → 360000.
-      AI_CHAIN_TOTAL_BUDGET_MS: "480000"
+      # widens the P4 windows. Precedent: process-ai-jobs.yml has run 480000
+      # since Phase 161.4; the job timeout (120min) is untouched.
+      # BLOG-PROVIDER-FAILOVER 2026-10-16 (live run 38851515578): 480000 →
+      # 600000 — every non-gemini P4-review entry aborted at the 110s cap on
+      # the ~11.8k-token review payload while gemini answered 503/429; the
+      # review's real CoT window needs 600s/4 = 150s per entry. Rollback:
+      # 600000 → 480000.
+      AI_CHAIN_TOTAL_BUDGET_MS: "600000"
 
       # ── BLOG-PROVIDER-FAILOVER 2026-10-16 (owner order «بحيث تنتقل
       # للمزوّد التالي عند نفاد الحصة … وتجنب تكرار المحاولات الفاشلة») ──
