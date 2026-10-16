@@ -27,7 +27,12 @@ name: Grounded failover test (AI providers)
 on:
   workflow_dispatch:
 
-permissions: {}
+# MINIMAL permissions: contents:read is REQUIRED for actions/checkout
+# (the aws-ai-test/gsc "permissions: {}" precedent works only because
+# those instruments never check the repo out — they SSH/probe instead).
+# Everything beyond repo read-access stays revoked.
+permissions:
+  contents: read
 
 concurrency:
   group: grounded-failover-test
