@@ -105,6 +105,13 @@ jobs:
       # Optional BY DESIGN: missing/empty → the chain skips the gemini entry
       # and the ladder behaves byte-identically to pre-343 (no preflight).
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      # BLOG-RECOVERY 2026-10-16 (RC2 relief): optional SECOND free-tier
+      # Google AI key — Gemini bills the Google-Search grounding quota
+      # PER PROJECT, so a second key (new project) = an independent
+      # grounded bucket. Empty/absent secret → single-key behavior.
+      # Consumed by the grounded-search ladder in callGeminiGroundedSearch
+      # (P0 research); the gemini-first chain stays on the primary key.
+      GEMINI_API_KEY2: ${{ secrets.GEMINI_API_KEY2 }}
       # Gemini usage counters (weekly report source) — optional, fail-soft.
       UPSTASH_REDIS_REST_URL: ${{ secrets.UPSTASH_REDIS_REST_URL }}
       UPSTASH_REDIS_REST_TOKEN: ${{ secrets.UPSTASH_REDIS_REST_TOKEN }}

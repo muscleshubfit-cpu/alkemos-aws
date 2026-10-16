@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import {
   callGeminiGroundedSearch,
   GEMINI_GROUNDED_MODEL_LADDER,
+  getGeminiGroundedKeys,
 } from "@/lib/ai-provider";
 
 /**
@@ -22,6 +23,7 @@ import {
 
 const ENV_KEYS = [
   "GEMINI_API_KEY",
+  "GEMINI_API_KEY2",
   "GEMINI_MODEL",
   "GEMINI_GROUNDED_MODELS",
   "UPSTASH_REDIS_REST_URL",
@@ -52,16 +54,17 @@ const QUOTA_429_PAYLOAD = {
   },
 };
 
-type FetchLog = { url: string; body?: Record<string, unknown> };
+type FetchLog = { url: string; key?: string; body?: Record<string, unknown> };
 
-/** Route per-URL: fn(url) → {ok,status,payload}. Records every call. */
+/** Route per-URL: fn(url, apiKey) → {ok,status,payload}. Records every call. */
 function stubRoutingFetch(
   log: FetchLog[],
-  route: (url: string) => { ok: boolean; status: number; payload: unknown },
+  route: (url: string, key: string) => { ok: boolean; status: number; payload: unknown },
 ) {
   const fake = vi.fn(async (url: string, init?: RequestInit) => {
-    log.push({ url, body: JSON.parse(String(init?.body)) as Record<string, unknown> });
-    const r = route(url);
+    const key = new Headers(init?.headers).get("x-goog-api-key") ?? "";
+    log.push({ url, key, body: JSON.parse(String(init?.body)) as Record<string, unknown> });
+    const r = route(url, key);
     return {
       ok: r.ok,
       status: r.status,
@@ -204,3 +207,59 @@ describe("RC2 — every model drained → ONE honest aggregate error (real-searc
 function log_unused(): FetchLog[] {
   return [];
 }
+
+describe("RC2 relief — GEMINI_API_KEY2 dual-key pool (per-project grounded quota)", () => {
+  it("primary key all-drained → the SECOND key's default answers (key-major walk, 4+1 fetches)", async () => {
+    process.env.GEMINI_API_KEY = "AIza-primary-key";
+    process.env.GEMINI_API_KEY2 = "AIza-relief-key";
+    const log: FetchLog[] = [];
+    stubRoutingFetch(log, (url, key) =>
+      key === "AIza-primary-key"
+        ? { ok: false, status: 429, payload: QUOTA_429_PAYLOAD }
+        : { ok: true, status: 200, payload: GROUNDED_OK_PAYLOAD },
+    );
+    const out = await callGeminiGroundedSearch("research");
+    // primary burned its whole 4-model ladder (429s), then key#2's FIRST
+    // model answered — an independent per-project grounded bucket.
+    expect(out.model).toBe("gemini-3.5-flash");
+    expect(log).toHaveLength(5);
+    expect(log[0].key).toBe("AIza-primary-key");
+    expect(log[3].url).toContain("gemini-3.5-flash-lite");
+    expect(log[4].key).toBe("AIza-relief-key");
+    expect(log[4].url).toContain("/models/gemini-3.5-flash:generateContent");
+    // every attempt still a REAL grounded call
+    expect(log[4].body?.tools).toEqual([{ googleSearch: {} }]);
+  });
+
+  it("both keys drained → aggregate names the key COUNT + every model (8 honest attempts)", async () => {
+    process.env.GEMINI_API_KEY = "AIza-primary-key";
+    process.env.GEMINI_API_KEY2 = "AIza-relief-key";
+    const log: FetchLog[] = [];
+    stubRoutingFetch(log, () => ({ ok: false, status: 429, payload: QUOTA_429_PAYLOAD }));
+    const err = (await callGeminiGroundedSearch("research").catch((e: Error) => e)) as Error;
+    expect(err.message).toMatch(/ALL grounded models failed/);
+    expect(err.message).toContain("2 key(s)");
+    expect(err.message).toContain("gemini-3.5-flash");
+    expect(err.message).toContain("gemini-3.5-flash-lite");
+    expect(err.message).toContain("[key#1 gemini-3.5-flash]");
+    expect(err.message).toContain("[key#2 gemini-3.5-flash]");
+    expect(log).toHaveLength(8);
+  });
+
+  it("GEMINI_API_KEY2 alone (no primary) serves the ladder — the config error only fires when BOTH are absent", async () => {
+    process.env.GEMINI_API_KEY2 = "AIza-relief-key";
+    expect(getGeminiGroundedKeys()).toEqual(["AIza-relief-key"]);
+    const log: FetchLog[] = [];
+    stubRoutingFetch(log, () => ({ ok: true, status: 200, payload: GROUNDED_OK_PAYLOAD }));
+    const out = await callGeminiGroundedSearch("research");
+    expect(out.model).toBe("gemini-3.5-flash");
+    expect(log).toHaveLength(1);
+    expect(log[0].key).toBe("AIza-relief-key");
+  });
+
+  it("duplicate key values collapse to one pool entry (no wasted double-walk)", () => {
+    process.env.GEMINI_API_KEY = "AIza-same-key";
+    process.env.GEMINI_API_KEY2 = "AIza-same-key";
+    expect(getGeminiGroundedKeys()).toEqual(["AIza-same-key"]);
+  });
+});

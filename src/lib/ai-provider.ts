@@ -745,50 +745,71 @@ function groundedModelCandidates(): string[] {
   ];
 }
 
+/** BLOG-RECOVERY 2026-10-16 (RC2 relief) — DUAL-KEY POOL for the grounded
+ * ladder (the OpenRouter dual-key precedent, applied where it bites):
+ * Gemini bills the Google-Search grounding quota PER PROJECT, and the
+ * live probe (runs 38833407195 + 38834723820 vs aws-ai-test 38835797657)
+ * measured the primary project's grounded quota drained across every
+ * model family while NON-grounded calls on the same key kept succeeding.
+ * A second free-tier key (GEMINI_API_KEY2, a NEW Google project) carries
+ * an INDEPENDENT grounded bucket — the owner adds one secret and P0
+ * resumes without any further code. Absent/empty = single-key behavior
+ * byte-identical to the pre-relief ladder. */
+export function getGeminiGroundedKeys(): string[] {
+  const keys = [process.env.GEMINI_API_KEY || "", process.env.GEMINI_API_KEY2 || ""]
+    .map((k) => k.trim())
+    .filter(Boolean);
+  return [...new Set(keys)];
+}
+
 export async function callGeminiGroundedSearch(
   prompt: string,
   options: CallAIOptions = {},
 ): Promise<GeminiGroundedSearchResult> {
-  const apiKey = getGeminiKey();
-  if (!apiKey) {
+  const keys = getGeminiGroundedKeys();
+  if (keys.length === 0) {
     throw new Error(
       "callGeminiGroundedSearch: GEMINI_API_KEY is not configured — real Google-Search grounding is unavailable, and no simulated/curated substitute is allowed (owner order 2026-10-06).",
     );
   }
   const candidates = groundedModelCandidates();
   const failures: string[] = [];
-  for (const model of candidates) {
-    const cfg: AIConfig = {
-      provider: "gemini",
-      apiKey,
-      model,
-      baseUrl: AI_PROVIDERS.gemini.baseUrl,
-    };
-    try {
-      const { text, grounding } = await callGeminiGenerate(cfg, prompt, {
-        ...options,
-        googleSearch: true,
-      });
-      if (failures.length > 0) {
+  for (let keyIdx = 0; keyIdx < keys.length; keyIdx++) {
+    for (const model of candidates) {
+      const cfg: AIConfig = {
+        provider: "gemini",
+        apiKey: keys[keyIdx],
+        model,
+        baseUrl: AI_PROVIDERS.gemini.baseUrl,
+      };
+      try {
+        const { text, grounding } = await callGeminiGenerate(cfg, prompt, {
+          ...options,
+          googleSearch: true,
+        });
+        if (failures.length > 0) {
+          console.warn(
+            `[gemini-grounded] key#${keyIdx + 1} ${model} succeeded after ${failures.length} earlier key/model failure(s)`,
+          );
+        }
+        return { text, provider: "gemini", model, grounding };
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e);
+        failures.push(`[key#${keyIdx + 1} ${model}] ${msg.slice(0, 240)}`);
+        const nextModel =
+          candidates.indexOf(model) < candidates.length - 1
+            ? candidates[candidates.indexOf(model) + 1]
+            : keys.length - 1 > keyIdx
+              ? `${candidates[0]} (next key)`
+              : null;
         console.warn(
-          `[gemini-grounded] model ${model} succeeded after earlier model failure(s) — ${failures.length} model(s) skipped`,
+          `[gemini-grounded] key#${keyIdx + 1} ${model} failed${nextModel ? ` → trying ${nextModel}` : " (last ladder entry)"}: ${msg.slice(0, 180)}`,
         );
       }
-      return { text, provider: "gemini", model, grounding };
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : String(e);
-      failures.push(`[${model}] ${msg.slice(0, 240)}`);
-      const next =
-        candidates.indexOf(model) < candidates.length - 1
-          ? candidates[candidates.indexOf(model) + 1]
-          : null;
-      console.warn(
-        `[gemini-grounded] model ${model} failed${next ? ` → trying ${next}` : " (last ladder model)"}: ${msg.slice(0, 180)}`,
-      );
     }
   }
   throw new Error(
-    `callGeminiGroundedSearch: ALL grounded models failed (tried ${candidates.join(", ")}) — no simulated/curated substitute is allowed (owner order 2026-10-06). Per-model errors: ${failures.join(" | ")}`,
+    `callGeminiGroundedSearch: ALL grounded models failed across every configured key (${keys.length} key(s) × ${candidates.join(", ")}) — no simulated/curated substitute is allowed (owner order 2026-10-06). Per-attempt errors: ${failures.join(" | ")}`,
   );
 }
 
