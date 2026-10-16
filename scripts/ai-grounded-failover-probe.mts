@@ -97,54 +97,65 @@ async function probeArm(
   }
 }
 
-/** SELF-DIAGNOSIS (2026-10-16 live round): the OpenRouter web-plugin
- *  answer shape drifts by model (reasoning models answer in reasoning*
- *  fields; annotations may sit at message or root). On an arm failure the
- *  probe dumps the STRUCTURE (keys + lengths only — never user-facing
- *  text or secrets) so the extractor can be fixed against measured truth. */
+/** SELF-DIAGNOSIS (2026-10-16 live rounds 4-5): the bare web-plugin call
+ *  succeeds (content + 5 URL annotations + cost) while the ARM call (same
+ *  model, same key, same plugin) returns content WITHOUT annotations — the
+ *  only systematic deltas are temperature and max_tokens. This diagnosis
+ *  isolates them ONE AT A TIME plus the documented :online suffix route,
+ *  dumping the annotation entries themselves (public URLs — safe) so the
+ *  arm's mechanism is chosen by MEASUREMENT, never by guessing. */
 async function diagnoseOrWebShape(): Promise<void> {
   const keys = getOpenRouterKeys();
   if (keys.length === 0) return;
-  try {
-    const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${keys[0]}`,
-        "HTTP-Referer": "https://alkemos.com",
-        "X-Title": "Alkemos Failover Probe",
-      },
-      body: JSON.stringify({
-        model: getOpenRouterGroundedModel(),
-        messages: [
-          { role: "user", content: "What is the WHO weekly physical activity guidance for adults? One sentence." },
-        ],
-        plugins: [{ id: "web", max_results: 5 }],
-      }),
-    });
-    const bodyText = await res.text();
-    let structure = "";
+  const model = getOpenRouterGroundedModel();
+  const ask = "What is the WHO weekly physical activity guidance for adults? One sentence.";
+  const variants: Array<{ label: string; extra: Record<string, unknown>; model?: string }> = [
+    { label: "bare (no temp, no max_tokens)", extra: {} },
+    { label: "max_tokens 6000 only", extra: { max_tokens: 6000 } },
+    { label: "temperature 0.3 only", extra: { temperature: 0.3 } },
+    { label: "arm-exact (temp 0.3 + max_tokens 6000 + plugin)", extra: { temperature: 0.3, max_tokens: 6000 } },
+    { label: "online-suffix (model+\":online\", no plugins field)", extra: {}, model: model + ":online" },
+  ];
+  for (const v of variants) {
     try {
-      const j = JSON.parse(bodyText) as Record<string, unknown>;
-      const choice = (j.choices as Array<Record<string, unknown>> | undefined)?.[0];
-      const message = choice?.message as Record<string, unknown> | undefined;
-      const contentLen = typeof message?.content === "string" ? message.content.length : -1;
-      const reasoningLen = typeof message?.reasoning === "string" ? (message.reasoning as string).length : -1;
-      const rd = Array.isArray(message?.reasoning_details) ? (message.reasoning_details as unknown[]).length : 0;
-      const ann = Array.isArray(message?.annotations) ? (message.annotations as unknown[]).length : -1;
-      const rootAnn = Array.isArray(j.annotations) ? (j.annotations as unknown[]).length : -1;
-      structure =
-        `status=${res.status} root_keys=${Object.keys(j).join(",")}` +
-        ` message_keys=${message ? Object.keys(message).join(",") : "-"}` +
-        ` content_len=${contentLen} reasoning_len=${reasoningLen} reasoning_details=${rd}` +
-        ` message_annotations=${ann} root_annotations=${rootAnn}` +
-        ` usage=${JSON.stringify(j.usage ?? null).slice(0, 220)}`;
-    } catch {
-      structure = `status=${res.status} body[:400]=${bodyText.slice(0, 400)}`;
+      const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${keys[0]}`,
+          "HTTP-Referer": "https://alkemos.com",
+          "X-Title": "Alkemos Failover Probe",
+        },
+        body: JSON.stringify({
+          model: v.model ?? model,
+          messages: [{ role: "user", content: ask }],
+          ...(Object.keys(v.extra).length > 0 || !v.model ? { plugins: [{ id: "web", max_results: 5 }] } : {}),
+          ...v.extra,
+        }),
+      });
+      const bodyText = await res.text();
+      let report = "";
+      try {
+        const j = JSON.parse(bodyText) as Record<string, any>;
+        const msg = j.choices?.[0]?.message ?? {};
+        const anns = Array.isArray(msg.annotations) ? msg.annotations : [];
+        const annPreview = anns
+          .slice(0, 2)
+          .map((a: Record<string, unknown>) => `${String(a.type)}:${String(a.url).slice(0, 60)}`)
+          .join(" | ");
+        report =
+          `status=${res.status} provider=${String(j.provider ?? "-")} finish=${String(j.choices?.[0]?.finish_reason ?? "-")} ` +
+          `content_len=${typeof msg.content === "string" ? msg.content.length : -1} ` +
+          `ann_count=${anns.length} ann[0..1]=${annPreview || "-"} ` +
+          `content_sample=${typeof msg.content === "string" ? msg.content.replace(/\s+/g, " ").slice(0, 110) : "-"}`;
+        if (j.error) report = `status=${res.status} error=${JSON.stringify(j.error).slice(0, 250)}`;
+      } catch {
+        report = `status=${res.status} body[:300]=${bodyText.slice(0, 300)}`;
+      }
+      console.log(`DIAG or-web [${v.label}]: ${report}`);
+    } catch (e) {
+      console.log(`DIAG or-web [${v.label}] fetch failed: ${e instanceof Error ? e.message : e}`);
     }
-    console.log(`DIAG openrouter web-plugin response shape: ${structure}`);
-  } catch (e) {
-    console.log(`DIAG openrouter shape probe failed: ${e instanceof Error ? e.message : e}`);
   }
 }
 
