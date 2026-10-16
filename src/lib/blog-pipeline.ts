@@ -321,7 +321,17 @@ Create the detailed article blueprint. Return STRICT JSON only:
     // attempts aborted at 70s repeatedly (220 timeout/abort class across
     // the window); 360s GHA budget / 2 models = 180s leaves headroom.
     timeoutMs: 110_000,
-    maxModels: 2,
+    // BLOG-PROVIDER-FAILOVER 2026-10-16 (live run 38847288514): 2 → 3 —
+    // the outline died when gemini answered a TRANSIENT 503 ("high demand
+    // … usually temporary" — correctly NOT cooled) and openrouter/ultra
+    // answered the upstream DEGRADED/abort class, while groq/gpt-oss-120b
+    // was HEALTHY and serving pick-topic in the SAME run two minutes
+    // earlier — maxModels=2 stopped the walk before the healthy provider.
+    // Same rationale/precedent as P4 2→4 (Execution-Path Audit: "with
+    // maxModels=2 the review died when BOTH leading models hiccuped")
+    // and P2 2→3 (R3). A skipped/degraded entry consumes no budget, so
+    // the deep walk stays inside the 480s window.
+    maxModels: 3,
   });
   const parsed = parseJSON<{
     title?: string;

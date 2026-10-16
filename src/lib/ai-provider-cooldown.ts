@@ -90,7 +90,8 @@ function cooldownStateFile(): string {
  *  to new users» (2026-10-16 round-2 probe). */
 const QUOTA_CLASS_RE =
   /\b(401|402|403|429|410)\b|quota|rate.?limit|credit|insufficient|resource.?exhausted|payment|billing/i;
-const GONE_CLASS_RE = /\b404\b|no longer available|not found|decommissioned|retired/i;
+const GONE_CLASS_RE =
+  /\b404\b|no longer available|not found|decommissioned|retired|degraded/i;
 
 /** Classify a failure message for cooldown purposes.
  *  "quota" = exhaustion/auth/payment · "gone" = dead model/endpoint ·

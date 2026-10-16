@@ -93,6 +93,11 @@ describe("classifyForCooldown — only exhaustion classes cool", () => {
   it("dead-model class → \"gone\"", () => {
     expect(classifyForCooldown("AI API error 404 from gemini: model not found")).toBe("gone");
     expect(classifyForCooldown("no longer available to new users")).toBe("gone");
+    // BLOG-PROVIDER-FAILOVER 2026-10-16 (live run 38847288514): the openrouter
+    // upstream "DEGRADED function cannot be invoked" class (the Phase-177
+    // dead-id signature on a live call) — futile to re-attempt within the
+    // window, so it cools like a dead model.
+    expect(classifyForCooldown("Provider returned error 400: DEGRADED function cannot be invoked")).toBe("gone");
   });
 
   it("transient failures NEVER cool (retry semantics preserved)", () => {
