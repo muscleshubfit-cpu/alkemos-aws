@@ -309,7 +309,7 @@ describe("cross-provider walk — gemini quota drain moves to openrouter web", (
     ]);
   });
 
-  it("the OR arm enforces a 6000-token floor (LIVE-PROBED run 38843887341: a 400 cap dies inside the reasoning CoT before content/annotations)", async () => {
+  it("the OR arm enforces a 10000-token floor (LIVE-PROBED: 400 dies inside the reasoning CoT; 6000 truncates the ARABIC research mid-JSON — kw:10/topics:0, run 38849540488)", async () => {
     process.env.GEMINI_API_KEY = "AIza-test-key";
     process.env.OPENROUTER_API = "sk-or-test-key";
     const log: FetchLog[] = [];
@@ -319,10 +319,10 @@ describe("cross-provider walk — gemini quota drain moves to openrouter web", (
         : { ok: true, status: 200, payload: OR_WEB_OK },
     );
     await callGroundedSearch("research", { maxTokens: 400 });
-    expect(log[4].body?.max_tokens).toBe(6000);
+    expect(log[4].body?.max_tokens).toBe(10000);
     // a caller above the floor keeps their own value (never clamped DOWN)
-    await callGroundedSearch("research", { maxTokens: 7000 });
-    expect(log[9].body?.max_tokens).toBe(7000);
+    await callGroundedSearch("research", { maxTokens: 12000 });
+    expect(log[9].body?.max_tokens).toBe(12000);
   });
 
   it("all three arms fail → ONE honest aggregate error; NVIDIA never receives a call", async () => {

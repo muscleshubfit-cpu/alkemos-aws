@@ -397,8 +397,12 @@ export function fallbackResearch(lang: "en" | "ar", recentTitles: string[] = [])
  */
 async function researchLanguage(lang: "en" | "ar"): Promise<{ data: LanguageResearch; source: string }> {
   const niche = lang === "ar" ? NICHE_AR : NICHE_EN;
+  // BLOG-PROVIDER-FAILOVER 2026-10-16 (live run 38849540488 — Arabic shape
+  // hardening): the OR reasoning model occasionally "responds in Arabic"
+  // so thoroughly it drifts the JSON STRUCTURE; one explicit line pins the
+  // contract (English keys exactly as templated, Arabic VALUES only).
   const outLang = lang === "ar"
-    ? 'Respond in ARABIC. All keywords, questions, answers and topic titles MUST be in natural, correct Modern Standard Arabic — clear and natural for every Arabic reader (Pan-Arab MSA, no local dialect, no dialect-only vocabulary, correct grammar and spelling).'
+    ? 'Respond in ARABIC. All keywords, questions, answers and topic titles MUST be in natural, correct Modern Standard Arabic — clear and natural for every Arabic reader (Pan-Arab MSA, no local dialect, no dialect-only vocabulary, correct grammar and spelling). The JSON structure below stays EXACTLY as templated: English keys (keywords/faqs/topics), Arabic values only — never rename or translate the JSON keys.'
     : 'Respond in ENGLISH.';
 
   // PHASE 62 VARIETY FIX: P0 previously had ZERO memory of published

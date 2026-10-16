@@ -1032,16 +1032,21 @@ export async function callOpenRouterGroundedSearch(
     const timeoutMs = options.timeoutMs ?? 60_000;
     const timer = setTimeout(() => controller.abort(), timeoutMs);
     try {
-      // LIVE-PROBED 2026-10-16 (runs 38843366143 + 38843887341): the free
+      // LIVE-PROBED 2026-10-16 (runs 38843366143 → 38849540488): the free
       // nemotron burns its reasoning CoT FIRST and only then writes content
       // — with the caller's small cap (400) the tokens are exhausted before
       // any content/annotations materialize (200-with-empty both keys,
       // 18.7s), while the uncapped diagnostic call completed with
       // content=366 chars + 5 URL annotations + cost=$0.007. Per-entry
       // max_tokens FLOOR (the R3 per-entry clamp precedent — measured
-      // upstream behavior, documented): search evidence and the JSON only
-      // exist after the CoT, so the arm guarantees 6000 output tokens.
-      const effectiveMaxTokens = Math.max(options.maxTokens ?? 2_500, 6_000);
+      // upstream behavior, documented). 2026-10-16 pipeline round-3
+      // (38849540488) RAISED the floor 6000 → 10000: the EN research JSON
+      // parses at 6000 but the ARABIC research (longer reasoning CoT)
+      // truncates mid-JSON — the measured signature: keywords:10 yet
+      // topics:0 (parseJSON's truncation repair closes the lost arrays)
+      // twice, and a fully-empty parse once. The :free model's extra
+      // output tokens cost nothing — only the SEARCH is billed.
+      const effectiveMaxTokens = Math.max(options.maxTokens ?? 2_500, 10_000);
       const body: Record<string, unknown> = {
         model,
         messages: [
@@ -1087,6 +1092,8 @@ export async function callOpenRouterGroundedSearch(
         annotations?: unknown;
       } | null;
       const msg = data?.choices?.[0]?.message;
+      const finishReasonRaw = (data?.choices?.[0] as { finish_reason?: unknown } | undefined)?.finish_reason;
+      const finishReason = typeof finishReasonRaw === "string" ? finishReasonRaw : "";
       // LIVE-PROBED 2026-10-16 (run 38843366143): the free nemotron
       // reasoning model answers the web-plugin call with EMPTY content and
       // the actual text in reasoning_details/reasoning (the same
@@ -1108,13 +1115,16 @@ export async function callOpenRouterGroundedSearch(
       );
       // HONEST EVIDENCE GATE — no URL annotations = not built on live
       // search: fail this key, never pass plain generation as research.
+      // (finish_reason rides the message for diagnosis — "length" = the
+      // output hit max_tokens: the truncation signature, measured on the
+      // Arabic research run 38849540488.)
       if (!content.trim() || sources.length === 0) {
         throw new Error(
           `AI provider openrouter (${model}+web) returned ${
             !content.trim()
               ? "an empty response"
               : "no web-search evidence (annotation URLs)"
-          } — the answer was not built on live search`,
+          } — the answer was not built on live search${finishReason ? ` (finish_reason: ${finishReason})` : ""}`,
         );
       }
       if (failures.length > 0) {
