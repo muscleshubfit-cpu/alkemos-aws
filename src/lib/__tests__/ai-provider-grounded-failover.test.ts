@@ -23,10 +23,11 @@ import { join } from "node:path";
  *
  * Pinned here:
  *   • The walk order gemini(googleSearch) → openrouter(web plugin) →
- *     groq(compound) — NVIDIA NEVER receives a grounded call (no
- *     grounded-search capability; honestly excluded).
- *   • Every arm is a REAL search call (plugin body / compound model) and
- *     every arm enforces the honest live-evidence gate — a 200 without
+ *     groq(browser_search — GROQ-2 2026-10-17: the compound-successor
+ *     built-in tool on the GPT-OSS ladder) — NVIDIA NEVER receives a
+ *     grounded call (no grounded-search capability; honestly excluded).
+ *   • Every arm is a REAL search call (plugin body / browser_search tool)
+ *     and every arm enforces the honest live-evidence gate — a 200 without
  *     annotations/citations FAILS and falls through, never masquerades.
  *   • Quota-class failures cool the scope (AI_PROVIDER_COOLDOWN_MS opt-in):
  *     the second call SKIPS the drained arm with zero network calls, and
@@ -46,6 +47,7 @@ const ENV_KEYS = [
   "NVIDIA_API_KEY",
   "OPENROUTER_GROUNDED_MODEL",
   "GROQ_GROUNDED_MODEL",
+  "GROQ_GROUNDED_MODELS",
   "AI_PROVIDER_COOLDOWN_MS",
   "AI_PROVIDER_COOLDOWN",
   "AI_COOLDOWN_STATE_FILE",
@@ -127,11 +129,11 @@ const OR_WEB_OK = {
   ],
 };
 
-const GROQ_COMPOUND_OK = {
+const GROQ_BROWSER_OK = {
   choices: [
     {
       message: {
-        content: "Compound answer grounded on live web search.",
+        content: "Answer grounded on the browser_search live web walk.",
         citations: [
           "https://www.nasm.org/protein-intake",
           "https://pubmed.ncbi.nlm.nih.gov/22150333",
@@ -141,7 +143,7 @@ const GROQ_COMPOUND_OK = {
   ],
 };
 
-const GROQ_COMPOUND_OK_XGROQ = {
+const GROQ_BROWSER_OK_XGROQ = {
   choices: [{ message: { content: "Answer with citations in x_groq." } }],
   x_groq: {
     citations: [{ url: "https://www.issn.org/position-stand", title: "ISSN" }],
@@ -226,7 +228,7 @@ describe("cross-provider walk — gemini quota drain moves to openrouter web", (
     expect(log[4].auth).toBe("Bearer sk-or-test-key");
   });
 
-  it("gemini 429 + openrouter 402 (no plugin credits) → groq compound answers with citations", async () => {
+  it("gemini 429 + openrouter 402 (no plugin credits) → groq browser_search answers with citations", async () => {
     process.env.GEMINI_API_KEY = "AIza-test-key";
     process.env.OPENROUTER_API = "sk-or-test-key";
     process.env.GROQ_API_KEY = "gsk-test-key";
@@ -234,13 +236,13 @@ describe("cross-provider walk — gemini quota drain moves to openrouter web", (
     stubRoutingFetch(log, (url) => {
       if (geminiKeyOk(url)) return { ok: false, status: 429, payload: QUOTA_429 };
       if (orUrl(url)) return { ok: false, status: 402, payload: CREDITS_402 };
-      return { ok: true, status: 200, payload: GROQ_COMPOUND_OK };
+      return { ok: true, status: 200, payload: GROQ_BROWSER_OK };
     });
 
     const out = await callGroundedSearch("research", { tag: "blog:research" });
 
     expect(out.provider).toBe("groq");
-    expect(out.model).toBe("compound-beta");
+    expect(out.model).toBe("openai/gpt-oss-120b");
     expect(out.grounding.sources.map((s) => s.url)).toEqual([
       "https://www.nasm.org/protein-intake",
       "https://pubmed.ncbi.nlm.nih.gov/22150333",
@@ -249,9 +251,11 @@ describe("cross-provider walk — gemini quota drain moves to openrouter web", (
     expect(log).toHaveLength(6);
     expect(groqUrl(log[5].url)).toBe(true);
     expect(log.some((c) => nvidiaUrl(c.url))).toBe(false);
-    // groq compound body: NO manual tools/plugins (search is built into the
-    // compound system), NO response_format
-    expect(log[5].body?.tools).toBeUndefined();
+    // groq browser_search body: the built-in tool rides the call (the REAL
+    // search ride-along — GROQ-2), reasoning_format hidden (GPT-OSS law),
+    // NO response_format (STRICT-JSON prompt contract carries JSON)
+    expect(log[5].body?.tools).toEqual([{ type: "browser_search" }]);
+    expect(log[5].body?.reasoning_format).toBe("hidden");
     expect(log[5].body?.plugins).toBeUndefined();
     expect(log[5].body?.response_format).toBeUndefined();
     expect(log[5].auth).toBe("Bearer gsk-test-key");
@@ -265,7 +269,7 @@ describe("cross-provider walk — gemini quota drain moves to openrouter web", (
     stubRoutingFetch(log, (url) => {
       if (geminiKeyOk(url)) return { ok: false, status: 429, payload: QUOTA_429 };
       if (orUrl(url)) return { ok: false, status: 402, payload: CREDITS_402 };
-      return { ok: true, status: 200, payload: GROQ_COMPOUND_OK_XGROQ };
+      return { ok: true, status: 200, payload: GROQ_BROWSER_OK_XGROQ };
     });
 
     const out = await callGroundedSearch("research");
@@ -274,6 +278,69 @@ describe("cross-provider walk — gemini quota drain moves to openrouter web", (
       "https://www.issn.org/position-stand",
     ]);
     expect(out.grounding.sources[0].title).toBe("ISSN");
+  });
+
+  it("groq ladder: the leader 404s (dead id) → gpt-oss-20b answers (the GROQ-2 compound-decommission law)", async () => {
+    process.env.GEMINI_API_KEY = "AIza-test-key";
+    process.env.OPENROUTER_API = "sk-or-test-key";
+    process.env.GROQ_API_KEY = "gsk-test-key";
+    const log: FetchLog[] = [];
+    const fake = vi.fn(async (url: string, init?: RequestInit) => {
+      const headers = new Headers(init?.headers);
+      const auth = headers.get("authorization") || "";
+      const body = JSON.parse(String(init?.body)) as Record<string, unknown>;
+      log.push({ url, auth, body });
+      let ok = true;
+      let status = 200;
+      let payload: unknown = GROQ_BROWSER_OK;
+      if (geminiKeyOk(String(url))) {
+        ok = false;
+        status = 429;
+        payload = QUOTA_429;
+      } else if (orUrl(String(url))) {
+        ok = false;
+        status = 402;
+        payload = CREDITS_402;
+      } else if (body.model === "openai/gpt-oss-120b") {
+        // the LIVE shape of the decommissioned-id failure (run 39019592155):
+        // 404 model_not_found — the ladder must fall to the next model
+        ok = false;
+        status = 404;
+        payload = { error: { message: "The model `groq/compound` does not exist or you do not have access to it.", type: "invalid_request_error", code: "model_not_found" } };
+      }
+      return {
+        ok,
+        status,
+        json: async () => payload,
+        text: async () => JSON.stringify(payload),
+      } as unknown as Response;
+    });
+    vi.stubGlobal("fetch", fake);
+
+    const out = await callGroundedSearch("research");
+    expect(out.provider).toBe("groq");
+    expect(out.model).toBe("openai/gpt-oss-20b");
+    expect(out.grounding.sources.length).toBe(2);
+    // the ladder walked BOTH groq models: dead leader first, sibling second
+    const groqCalls = log.filter((c) => groqUrl(c.url));
+    expect(groqCalls).toHaveLength(2);
+    expect(groqCalls[0].body?.model).toBe("openai/gpt-oss-120b");
+    expect(groqCalls[1].body?.model).toBe("openai/gpt-oss-20b");
+    // every groq call is a REAL browser_search call with the reasoning law
+    for (const c of groqCalls) {
+      expect(c.body?.tools).toEqual([{ type: "browser_search" }]);
+      expect(c.body?.reasoning_format).toBe("hidden");
+    }
+  });
+
+  it("groq arm clamps max_tokens into the TPM-safe band [4096, 5000] (the R3 law, applied to the grounded arm)", async () => {
+    process.env.GROQ_API_KEY = "gsk-test-key";
+    const log: FetchLog[] = [];
+    stubRoutingFetch(log, () => ({ ok: true, status: 200, payload: GROQ_BROWSER_OK }));
+    await callGroqGroundedSearch("research", { maxTokens: 400 });
+    expect(log[0].body?.max_tokens).toBe(4096);
+    await callGroqGroundedSearch("research", { maxTokens: 12000 });
+    expect(log[1].body?.max_tokens).toBe(5000);
   });
 
   it("openrouter reasoning models: empty content + reasoning_details + annotations still answers (LIVE-PROBED run 38843366143)", async () => {
@@ -340,7 +407,7 @@ describe("cross-provider walk — gemini quota drain moves to openrouter web", (
     expect(err.message).toContain("every grounded-search arm failed");
     expect(err.message).toContain("gemini(googleSearch)");
     expect(err.message).toContain("openrouter(web plugin)");
-    expect(err.message).toContain("groq(compound)");
+    expect(err.message).toContain("groq(browser_search)");
     expect(err.message).toContain("NVIDIA NIM has no grounded-search capability");
     expect(err.message).toContain("no simulated/curated substitute");
     expect(err.message).toContain("AI API error 429");
@@ -377,12 +444,12 @@ describe("cross-provider walk — gemini quota drain moves to openrouter web", (
     process.env.OPENROUTER_API = "sk-or-test-key";
     process.env.GROQ_API_KEY = "gsk-test-key";
     process.env.OPENROUTER_GROUNDED_MODEL = "custom/or-model:free";
-    process.env.GROQ_GROUNDED_MODEL = "groq/custom-compound";
+    process.env.GROQ_GROUNDED_MODEL = "groq/custom-browser";
     const log: FetchLog[] = [];
     stubRoutingFetch(log, (url) => {
       if (geminiKeyOk(url)) return { ok: false, status: 429, payload: QUOTA_429 };
       if (orUrl(url)) return { ok: true, status: 200, payload: OR_WEB_OK };
-      return { ok: true, status: 200, payload: GROQ_COMPOUND_OK };
+      return { ok: true, status: 200, payload: GROQ_BROWSER_OK };
     });
 
     const orOut = await callGroundedSearch("research");
@@ -391,7 +458,7 @@ describe("cross-provider walk — gemini quota drain moves to openrouter web", (
     expect(String(log[4].body?.model)).toBe("custom/or-model:free");
 
     const groqOut = await callGroqGroundedSearch("research");
-    expect(groqOut.model).toBe("groq/custom-compound");
+    expect(groqOut.model).toBe("groq/custom-browser");
   });
 });
 
@@ -414,7 +481,7 @@ describe("honest evidence gates — no live-search evidence = honest failure", (
           payload: { choices: [{ message: { content: "answer from model memory" } }] },
         };
       }
-      return { ok: true, status: 200, payload: GROQ_COMPOUND_OK };
+      return { ok: true, status: 200, payload: GROQ_BROWSER_OK };
     });
 
     const out = await callGroundedSearch("research");
@@ -486,14 +553,14 @@ describe("quota cooldown in the grounded walk (AI_PROVIDER_COOLDOWN_MS on)", () 
 
     await expect(callGroundedSearch("research")).rejects.toThrow(/every grounded-search arm failed/);
     const call1Fetches = log.length;
-    expect(call1Fetches).toBe(6); // 4 + 1 + 1
+    expect(call1Fetches).toBe(7); // 4 gemini + 1 openrouter + 2 groq ladder
 
     const err = (await callGroundedSearch("research").catch((e: Error) => e)) as Error;
     expect(err.message).toMatch(/quota-cooldown until .+ — skipped, no call made/);
     expect(err.message).toContain("ACTIVE COOLDOWNS");
     expect(err.message).toContain("grounded:gemini:key#1:gemini-3.5-flash");
     expect(err.message).toContain("grounded:openrouter:key#1");
-    expect(err.message).toContain("grounded:groq:compound-beta");
+    expect(err.message).toContain("grounded:groq:openai/gpt-oss-120b");
     // ZERO new network calls — the futile repeat is gone
     expect(log.length).toBe(call1Fetches);
   });

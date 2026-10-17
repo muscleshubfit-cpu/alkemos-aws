@@ -10,7 +10,8 @@
  *
  * WHAT IT MEASURES (in order):
  *   1. Each grounded-search arm SEPARATELY with a tiny real prompt —
- *      gemini googleSearch ladder · openrouter web plugin · groq compound.
+ *      gemini googleSearch ladder · openrouter web plugin · groq
+ *      browser_search (GROQ-2: the compound-successor tool).
  *      Per arm: PASS/FAIL, model, HTTP status class, live-evidence counts
  *      (searchQueries/sources), latency, and the failure message when red.
  *      (NVIDIA is NOT probed for grounding: its OpenAI-compatible chat API
@@ -165,7 +166,10 @@ async function diagnoseOrWebShape(): Promise<void> {
 
 /** SELF-DIAGNOSIS (2026-10-16 live round): list the Groq account's LIVE
  *  model ids (public catalog identifiers — not secrets) so a compound-
- *  model 404 can be settled by measurement, never by guessing. */
+ *  model 404 can be settled by measurement, never by guessing. GROQ-2
+ *  (2026-10-17): the compound system is gone (decommissioned 2026-09-21)
+ *  — the diagnosis now settles the browser_search tool shape instead,
+ *  with the ERROR BODY printed on non-200 (the round-1 400 was invisible). */
 async function diagnoseGroqModels(): Promise<void> {
   const key = process.env.GROQ_API_KEY || "";
   if (!key) return;
@@ -176,50 +180,62 @@ async function diagnoseGroqModels(): Promise<void> {
     const data = (await res.json()) as { data?: Array<{ id?: string }> };
     const ids = (data.data || []).map((m) => String(m.id || "")).filter(Boolean);
     console.log(`DIAG groq models: status=${res.status} total=${ids.length}`);
-    const searchCapable = ids.filter((id) => /compound|search/i.test(id));
-    console.log(`DIAG groq compound/search-capable ids: ${searchCapable.join(" · ") || "NONE"}`);
+    const searchCapable = ids.filter((id) => /compound|search|gpt-oss|qwen|allam/i.test(id));
+    console.log(`DIAG groq browser_search-capable candidate ids: ${searchCapable.join(" · ") || "NONE"}`);
     console.log(`DIAG groq all ids: ${ids.slice(0, 50).join(" · ")}`);
   } catch (e) {
     console.log(`DIAG groq models listing failed: ${e instanceof Error ? e.message : e}`);
   }
-  // Settle the SECOND search path by measurement: Groq's agentic web_search
-  // tool on a regular model (gpt-oss-120b) — accepted? citations returned?
-  // (structure only; never user-facing text, never secrets)
-  try {
-    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: "openai/gpt-oss-120b",
-        messages: [
-          { role: "user", content: "What is the WHO weekly physical activity guidance for adults? One sentence." },
-        ],
-        tools: [{ type: "web_search" }],
-        max_tokens: 400,
-      }),
-    });
-    const bodyText = await res.text();
-    let shape = "";
+  // Settle the tool shapes by measurement — three variants, ERROR BODIES
+  // printed (public API messages — safe): the round-1 400 on web_search
+  // taught us the tool name must be the DOCUMENTED one, measured not guessed.
+  const ask = "What is the WHO weekly physical activity guidance for adults? One sentence.";
+  const variants: Array<{ label: string; extra: Record<string, unknown> }> = [
+    { label: "arm-exact (tools browser_search + reasoning_format hidden + temp + max_tokens 4096)", extra: { tools: [{ type: "browser_search" }], reasoning_format: "hidden", temperature: 0.7, max_tokens: 4096 } },
+    { label: "bare tools browser_search (no reasoning_format)", extra: { tools: [{ type: "browser_search" }] } },
+    { label: "tools browser_search + tool_choice required", extra: { tools: [{ type: "browser_search" }], reasoning_format: "hidden", tool_choice: "required", max_tokens: 4096 } },
+  ];
+  for (const v of variants) {
     try {
-      const j = JSON.parse(bodyText) as Record<string, unknown>;
-      const msg = ((j.choices as Array<Record<string, unknown>> | undefined)?.[0]?.message) as Record<string, unknown> | undefined;
-      const cit = Array.isArray(msg?.citations) ? (msg.citations as unknown[]).length : Array.isArray((j as Record<string, unknown>).citations) ? ((j as Record<string, unknown>).citations as unknown[]).length : -1;
-      const xg = (j as { x_groq?: { citations?: unknown[] } }).x_groq;
-      shape = `status=${res.status} message_keys=${msg ? Object.keys(msg).join(",") : "-"} content_len=${typeof msg?.content === "string" ? msg.content.length : -1} message_citations=${cit} x_groq_citations=${Array.isArray(xg?.citations) ? xg.citations.length : -1}`;
-    } catch {
-      shape = `status=${res.status} body[:300]=${bodyText.slice(0, 300)}`;
+      const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${key}`,
+        },
+        body: JSON.stringify({
+          model: "openai/gpt-oss-120b",
+          messages: [{ role: "user", content: ask }],
+          ...v.extra,
+        }),
+      });
+      const bodyText = await res.text();
+      let shape = "";
+      try {
+        const j = JSON.parse(bodyText) as Record<string, unknown>;
+        if (res.status !== 200) {
+          shape = `status=${res.status} error_body=${bodyText.slice(0, 300)}`;
+        } else {
+          const msg = ((j.choices as Array<Record<string, unknown>> | undefined)?.[0]?.message) as Record<string, unknown> | undefined;
+          const cit = Array.isArray(msg?.citations) ? (msg.citations as unknown[]).length : -1;
+          const ann = Array.isArray(msg?.annotations) ? (msg.annotations as unknown[]).length : -1;
+          const rootCit = Array.isArray(j.citations) ? (j.citations as unknown[]).length : -1;
+          const xg = (j as { x_groq?: { citations?: unknown[] } }).x_groq;
+          const xgCit = Array.isArray(xg?.citations) ? xg.citations.length : -1;
+          shape = `status=200 message_keys=${msg ? Object.keys(msg).join(",") : "-"} content_len=${typeof msg?.content === "string" ? msg.content.length : -1} message_citations=${cit} message_annotations=${ann} root_citations=${rootCit} x_groq_citations=${xgCit}`;
+        }
+      } catch {
+        shape = `status=${res.status} body[:300]=${bodyText.slice(0, 300)}`;
+      }
+      console.log(`DIAG groq browser_search [${v.label}]: ${shape}`);
+    } catch (e) {
+      console.log(`DIAG groq browser_search [${v.label}] fetch failed: ${e instanceof Error ? e.message : e}`);
     }
-    console.log(`DIAG groq web_search-tool (gpt-oss-120b) shape: ${shape}`);
-  } catch (e) {
-    console.log(`DIAG groq web_search tool probe failed: ${e instanceof Error ? e.message : e}`);
   }
 }
 
 async function main(): Promise<void> {
-  console.log("=== AI GROUNDED-FAILOVER LIVE PROBE (BLOG-PROVIDER-FAILOVER 2026-10-16) ===");
+  console.log("=== AI GROUNDED-FAILOVER LIVE PROBE (BLOG-PROVIDER-FAILOVER 2026-10-16 · GROQ-2 round 2026-10-17) ===");
   console.log(`env: gemini keys=${maskKeys(getGeminiGroundedKeys().length)} · openrouter keys=${maskKeys(getOpenRouterKeys().length)} · groq=${process.env.GROQ_API_KEY ? "configured" : "MISSING"} · nvidia=${process.env.NVIDIA_API_KEY ? "configured" : "MISSING"} · cooldown=${process.env.AI_PROVIDER_COOLDOWN_MS || "off"}`);
   console.log("");
 
@@ -233,7 +249,7 @@ async function main(): Promise<void> {
     callOpenRouterGroundedSearch(PROBE_PROMPT, { ...ARM_OPTS, tag: "failover-probe:openrouter" }),
   );
   console.log("");
-  const groqOk = await probeArm("groq compound", () =>
+  const groqOk = await probeArm("groq browser_search", () =>
     callGroqGroundedSearch(PROBE_PROMPT, { ...ARM_OPTS, tag: "failover-probe:groq" }),
   );
   console.log("");

@@ -861,9 +861,15 @@ export async function callGeminiGroundedSearch(
  *                  plugin bills per-search credits on the EXISTING key —
  *                  a 402 "insufficient credits" fails HONESTLY and falls
  *                  through (never a plain-generation substitute).
- *   • Groq       — REAL live web search via the compound system
- *                  (`compound-beta` — already entry #8 of the strongest
- *                  chain); the response carries citation URLs →
+ *   • Groq       — REAL live web search via the `browser_search`
+ *                  built-in tool on the GPT-OSS reasoning models
+ *                  (GROQ-2 2026-10-17: Groq DECOMMISSIONED the compound
+ *                  system — groq/compound + compound-mini — on
+ *                  2026-09-21, so the old `compound-beta` entry 404s
+ *                  permanently; live account model list run 38844967928
+ *                  holds ZERO compound ids); the documented successor
+ *                  is the browser_search tool, whose agentic live-web
+ *                  walk returns citation URLs →
  *                  callGroqGroundedSearch (arm 3). The extractor accepts
  *                  citations at every documented location (message.citations,
  *                  message.annotations, root citations, x_groq.citations).
@@ -907,16 +913,44 @@ export function getOpenRouterGroundedModel(): string {
   );
 }
 
-/** Default model for the Groq grounded arm (the platform's existing
- *  compound-system chain entry — built-in live web search + citations).
- *  Ops knob: GROQ_GROUNDED_MODEL swaps it without a deploy. */
-export const GROQ_GROUNDED_DEFAULT_MODEL = "compound-beta";
+/** Default model for the Groq grounded arm. GROQ-2 (2026-10-17): Groq
+ *  decommissioned the compound system (groq/compound + compound-mini) on
+ *  2026-09-21 — every `compound-beta` call now 404s (live-measured runs
+ *  38844967928 + 39019592155; the account's live model list holds zero
+ *  compound ids). The platform-documented successor for REAL live web
+ *  search is the `browser_search` built-in tool, supported by the GPT-OSS
+ *  reasoning models — both ladder ids below are live-verified platform
+ *  generation-chain entries (gpt-oss-120b 85.3% live survival, 20b 82.6%).
+ *  Ops knob: GROQ_GROUNDED_MODEL swaps the leader without a deploy. */
+export const GROQ_GROUNDED_DEFAULT_MODEL = "openai/gpt-oss-120b";
+
+/** Fallback tail for the Groq grounded ladder — each entry is a REAL
+ *  browser_search call on a distinct live-verified model (separate TPM
+ *  headroom). Ops knob: GROQ_GROUNDED_MODELS (comma-separated) replaces
+ *  the whole tail without a deploy. */
+export const GROQ_GROUNDED_MODEL_LADDER: readonly string[] = [
+  "openai/gpt-oss-20b", // smaller sibling — 82.6% live, separate TPM bucket
+];
 
 export function getGroqGroundedModel(): string {
   return (
     (process.env.GROQ_GROUNDED_MODEL || "").trim() ||
     GROQ_GROUNDED_DEFAULT_MODEL
   );
+}
+
+/** Full Groq grounded ladder: GROQ_GROUNDED_MODEL override leads, then the
+ *  built-in tail (or the GROQ_GROUNDED_MODELS env tail). Mirrors the gemini
+ *  grounded-ladder law (GROQ-2): one drained/dead id falls through to the
+ *  next REAL browser_search call; all exhausted → one honest error. */
+function groqGroundedModelCandidates(): string[] {
+  const override = (process.env.GROQ_GROUNDED_MODEL || "").trim();
+  const envLadder = (process.env.GROQ_GROUNDED_MODELS || "")
+    .split(",")
+    .map((m) => m.trim())
+    .filter(Boolean);
+  const tail = envLadder.length > 0 ? envLadder : GROQ_GROUNDED_MODEL_LADDER;
+  return [...new Set([override || GROQ_GROUNDED_DEFAULT_MODEL, ...tail])];
 }
 
 /** Extract {title,url} sources from an OpenRouter `annotations` array.
@@ -1154,11 +1188,12 @@ export async function callOpenRouterGroundedSearch(
 }
 
 /**
- * ARM 3 — Groq REAL live web search via the compound system
- * (`compound-beta`): search happens INSIDE the model call and the response
- * carries citation URLs (accepted at every documented location). The
- * honest evidence gate rejects 200-without-citations answers; exhaustion
- * errors cool the arm for the window; failure → one honest error.
+ * ARM 3 — Groq REAL live web search via the `browser_search` built-in
+ * tool (GROQ-2 2026-10-17): search happens INSIDE the model call — the
+ * agentic tool navigates the live web and the response carries citation
+ * URLs (accepted at every documented location). The honest evidence gate
+ * rejects 200-without-citations answers; exhaustion errors cool the model
+ * scope for the window; all ladder models failed → one honest error.
  */
 export async function callGroqGroundedSearch(
   prompt: string,
@@ -1167,106 +1202,140 @@ export async function callGroqGroundedSearch(
   const key = getGroqKey();
   if (!key) {
     throw new Error(
-      "callGroqGroundedSearch: GROQ_API_KEY is not configured — the real compound-search arm is unavailable, and no simulated/curated substitute is allowed (owner order 2026-10-06).",
+      "callGroqGroundedSearch: GROQ_API_KEY is not configured — the real browser_search arm is unavailable, and no simulated/curated substitute is allowed (owner order 2026-10-06).",
     );
   }
-  const model = getGroqGroundedModel();
+  const models = groqGroundedModelCandidates();
   const LP = "[groq-grounded]" + (options.tag ? ` [${options.tag}]` : "");
-  const cdScope = `grounded:groq:${model}`;
-  const cd = cooldownState(cdScope);
-  if (cd) {
-    throw new Error(
-      `callGroqGroundedSearch: ${model} is in quota-cooldown until ${new Date(cd.until).toISOString()} (${cd.reason}) — skipped, no call made`,
-    );
-  }
-  const controller = new AbortController();
-  const timeoutMs = options.timeoutMs ?? 60_000;
-  const timer = setTimeout(() => controller.abort(), timeoutMs);
-  try {
-    const body: Record<string, unknown> = {
-      model,
-      messages: [
-        ...(options.systemPrompt
-          ? [{ role: "system", content: options.systemPrompt }]
-          : []),
-        { role: "user", content: prompt },
-      ],
-      temperature: options.temperature ?? 0.7,
-      max_tokens: options.maxTokens ?? 4096,
-      // No jsonMode (the gemini-arm STRICT-JSON pattern) and no manual tools:
-      // the compound system performs its OWN live web search.
-    };
-    const res = await fetch(`${AI_PROVIDERS.groq.baseUrl}/chat/completions`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${key}`,
-      },
-      body: JSON.stringify(body),
-      signal: controller.signal,
-    });
-    if (!res.ok) {
-      const text = await res.text().catch(() => "");
-      throw new Error(
-        `AI API error ${res.status} from groq (${model}): ${text.slice(0, 500)}`,
+  const failures: string[] = [];
+  for (const model of models) {
+    const cdScope = `grounded:groq:${model}`;
+    const cd = cooldownState(cdScope);
+    if (cd) {
+      failures.push(
+        `[${model}] quota-cooldown until ${new Date(cd.until).toISOString()} — skipped, no call made (${cd.reason.slice(0, 120)})`,
       );
+      console.warn(`${LP} ${model} in quota-cooldown → skipped`);
+      continue;
     }
-    // The response is OpenAI-compatible PLUS compound citations — the
-    // extractor accepts every documented location (message.citations,
-    // message.annotations, root citations, x_groq.citations) so a live
-    // shape change degrades to an honest gate failure, never a fake pass.
-    const data = (await res.json()) as {
-      choices?: Array<{
-        message?: {
-          content?: string | null;
-          reasoning?: string | null;
-          citations?: unknown;
-          annotations?: unknown;
-        } | null;
-      }> | null;
-      citations?: unknown;
-      annotations?: unknown;
-      x_groq?: { citations?: unknown } | null;
-    } | null;
-    const msg = data?.choices?.[0]?.message;
-    const content =
-      typeof msg?.content === "string" && msg.content.trim()
-        ? msg.content
-        : typeof msg?.reasoning === "string"
-          ? msg.reasoning
-          : "";
-    const sources = mergeDedupedSources(
-      urlSourcesFromCitations(msg?.citations),
-      urlSourcesFromAnnotations(msg?.annotations),
-      urlSourcesFromCitations(data?.citations),
-      urlSourcesFromAnnotations(data?.annotations),
-      urlSourcesFromCitations(data?.x_groq?.citations),
-    );
-    // HONEST EVIDENCE GATE — no citation URLs = not built on live search.
-    if (!content.trim() || sources.length === 0) {
-      throw new Error(
-        `AI provider groq (${model}) returned ${
-          !content.trim()
-            ? "an empty response"
-            : "no web-search evidence (citation URLs)"
-        } — the answer was not built on live search`,
+    const controller = new AbortController();
+    // Agentic browser walk (multi-hop navigate+read) needs the caller's
+    // generous window (P0 passes 180s since 478a1afc); default stays 60s.
+    const timeoutMs = options.timeoutMs ?? 60_000;
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      // Groq free tier bills an 8k TPM window counting prompt AND
+      // max_tokens (the R3 chain-clamp law, measured Phase 177): keep the
+      // completion budget inside the window — floor 4096 (GPT-OSS burns
+      // reasoning tokens before content — the OR-arm CoT law), cap 5000
+      // (window − prompt reserve), caller values outside the band clamp
+      // INTO it, never above.
+      const effectiveMaxTokens = Math.min(
+        Math.max(options.maxTokens ?? 2_500, 4_096),
+        5_000,
       );
+      const body: Record<string, unknown> = {
+        model,
+        messages: [
+          ...(options.systemPrompt
+            ? [{ role: "system", content: options.systemPrompt }]
+            : []),
+          { role: "user", content: prompt },
+        ],
+        temperature: options.temperature ?? 0.7,
+        max_tokens: effectiveMaxTokens,
+        // THE REAL SEARCH RIDE-ALONG (GROQ-2): Groq's built-in
+        // browser_search tool — the documented successor of the
+        // decommissioned compound system. No plain-generation path
+        // exists here; the honest evidence gate below enforces it.
+        tools: [{ type: "browser_search" }],
+        // GPT-OSS reasoning models REQUIRE parsed|hidden reasoning_format
+        // when tools are attached (Groq docs / promptfoo provider law);
+        // "hidden" keeps the response clean: content + citations only.
+        reasoning_format: "hidden",
+        // No jsonMode (the gemini-arm STRICT-JSON pattern) and no manual
+        // function tools: browser_search performs its OWN live web walk.
+      };
+      const res = await fetch(`${AI_PROVIDERS.groq.baseUrl}/chat/completions`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${key}`,
+        },
+        body: JSON.stringify(body),
+        signal: controller.signal,
+      });
+      if (!res.ok) {
+        const text = await res.text().catch(() => "");
+        throw new Error(
+          `AI API error ${res.status} from groq (${model}+browser_search): ${text.slice(0, 500)}`,
+        );
+      }
+      // The response is OpenAI-compatible PLUS browser citations — the
+      // extractor accepts every documented location (message.citations,
+      // message.annotations, root citations, x_groq.citations) so a live
+      // shape change degrades to an honest gate failure, never a fake pass.
+      const data = (await res.json()) as {
+        choices?: Array<{
+          message?: {
+            content?: string | null;
+            reasoning?: string | null;
+            citations?: unknown;
+            annotations?: unknown;
+          } | null;
+        }> | null;
+        citations?: unknown;
+        annotations?: unknown;
+        x_groq?: { citations?: unknown } | null;
+      } | null;
+      const msg = data?.choices?.[0]?.message;
+      const content =
+        typeof msg?.content === "string" && msg.content.trim()
+          ? msg.content
+          : typeof msg?.reasoning === "string"
+            ? msg.reasoning
+            : "";
+      const sources = mergeDedupedSources(
+        urlSourcesFromCitations(msg?.citations),
+        urlSourcesFromAnnotations(msg?.annotations),
+        urlSourcesFromCitations(data?.citations),
+        urlSourcesFromAnnotations(data?.annotations),
+        urlSourcesFromCitations(data?.x_groq?.citations),
+      );
+      // HONEST EVIDENCE GATE — no citation URLs = not built on live search.
+      if (!content.trim() || sources.length === 0) {
+        throw new Error(
+          `AI provider groq (${model}+browser_search) returned ${
+            !content.trim()
+              ? "an empty response"
+              : "no web-search evidence (citation URLs)"
+          } — the answer was not built on live search`,
+        );
+      }
+      if (failures.length > 0) {
+        console.warn(
+          `${LP} ${model}+browser_search succeeded after ${failures.length} earlier model failure(s)`,
+        );
+      }
+      return {
+        text: content.trim(),
+        provider: "groq",
+        model,
+        grounding: { searchQueries: [], sources },
+      };
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      const cls = classifyForCooldown(msg);
+      if (cls) markCooldown(cdScope, `${cls}: ${msg.slice(0, 120)}`);
+      console.warn(`${LP} ${model}+browser_search failed: ${msg.slice(0, 180)}`);
+      failures.push(`[${model}+browser_search] ${msg.slice(0, 240)}`);
+    } finally {
+      clearTimeout(timer);
     }
-    return {
-      text: content.trim(),
-      provider: "groq",
-      model,
-      grounding: { searchQueries: [], sources },
-    };
-  } catch (e) {
-    const msg = e instanceof Error ? e.message : String(e);
-    const cls = classifyForCooldown(msg);
-    if (cls) markCooldown(cdScope, `${cls}: ${msg.slice(0, 120)}`);
-    console.warn(`${LP} ${model} failed: ${msg.slice(0, 180)}`);
-    throw e instanceof Error ? e : new Error(msg);
-  } finally {
-    clearTimeout(timer);
   }
+  throw new Error(
+    `callGroqGroundedSearch: every configured Groq grounded model failed the REAL browser_search call (${models.length} model(s): ${models.join(", ")}) — no simulated/curated substitute is allowed (owner order 2026-10-06). Per-model errors: ${failures.join(" | ")}`,
+  );
 }
 
 /**
@@ -1274,7 +1343,8 @@ export async function callGroqGroundedSearch(
  * arms in fixed failover order —
  *   1. Gemini native googleSearch (model ladder + dual key)
  *   2. OpenRouter `web` plugin (REAL search, URL annotations)
- *   3. Groq compound system (REAL live search, citations)
+ *   3. Groq `browser_search` built-in tool (REAL live web walk, citations
+ *      — GROQ-2 2026-10-17, the compound successor)
  *   (NVIDIA NIM: no grounded-search capability — honestly excluded; it
  *    never receives a call on this path.)
  * A quota-class failure moves the walk to the NEXT provider; every arm
@@ -1298,7 +1368,7 @@ export async function callGroundedSearch(
     return r;
   } catch (e) {
     armFailures.push(
-      `[gemini googleSearch] ${(e instanceof Error ? e.message : String(e)).slice(0, 400)}`,
+      `[gemini googleSearch] ${(e instanceof Error ? e.message : String(e)).slice(0, 600)}`,
     );
     console.warn(
       `[grounded-search] arm 1/3 (gemini googleSearch) failed → moving to openrouter web: ${(e instanceof Error ? e.message : String(e)).slice(0, 180)}`,
@@ -1314,23 +1384,23 @@ export async function callGroundedSearch(
     return r;
   } catch (e) {
     armFailures.push(
-      `[openrouter web] ${(e instanceof Error ? e.message : String(e)).slice(0, 400)}`,
+      `[openrouter web] ${(e instanceof Error ? e.message : String(e)).slice(0, 600)}`,
     );
     console.warn(
-      `[grounded-search] arm 2/3 (openrouter web) failed → moving to groq compound: ${(e instanceof Error ? e.message : String(e)).slice(0, 180)}`,
+      `[grounded-search] arm 2/3 (openrouter web) failed → moving to groq browser_search: ${(e instanceof Error ? e.message : String(e)).slice(0, 180)}`,
     );
   }
 
-  // ARM 3 — Groq compound REAL live web search.
+  // ARM 3 — Groq browser_search REAL live web walk.
   try {
     const r = await callGroqGroundedSearch(prompt, options);
     console.warn(
-      `[grounded-search] groq compound answered after ${armFailures.length} earlier arm failure(s)`,
+      `[grounded-search] groq browser_search answered after ${armFailures.length} earlier arm failure(s)`,
     );
     return r;
   } catch (e) {
     armFailures.push(
-      `[groq compound] ${(e instanceof Error ? e.message : String(e)).slice(0, 400)}`,
+      `[groq browser_search] ${(e instanceof Error ? e.message : String(e)).slice(0, 600)}`,
     );
   }
 
@@ -1340,7 +1410,7 @@ export async function callGroundedSearch(
 
   const cds = activeCooldowns();
   throw new Error(
-    `callGroundedSearch: every grounded-search arm failed — gemini(googleSearch) → openrouter(web plugin) → groq(compound). NVIDIA NIM has no grounded-search capability (honestly excluded). No simulated/curated substitute is allowed (owner order 2026-10-06). Arm errors: ${armFailures.join(" || ")}${cds.length ? ` || ACTIVE COOLDOWNS: ${cds.map((c) => `${c.scope} until ${new Date(c.until).toISOString()}`).join("; ")}` : ""}`,
+    `callGroundedSearch: every grounded-search arm failed — gemini(googleSearch) → openrouter(web plugin) → groq(browser_search). NVIDIA NIM has no grounded-search capability (honestly excluded). No simulated/curated substitute is allowed (owner order 2026-10-06). Arm errors: ${armFailures.join(" || ")}${cds.length ? ` || ACTIVE COOLDOWNS: ${cds.map((c) => `${c.scope} until ${new Date(c.until).toISOString()}`).join("; ")}` : ""}`,
   );
 }
 
@@ -1925,9 +1995,13 @@ const GROQ_CLAMP_FLOOR = 3_800; // min output room a clamped groq entry must kee
  *   3. NVIDIA: nvidia/nemotron-3-super-120b-a12b (120B MoE/12B active — NIM flagship, strong Arabic — 77.8% live)
  *   4. Groq: openai/gpt-oss-20b (20B — fast, good quality — 82.6% live)
  *   5. NVIDIA: nvidia/nemotron-3-ultra-550b-a55b (550B/55B active — strongest NIM, latency-tolerant slot)
- *   6. Groq: qwen/qwen3.6-27b (27B — good Arabic)
+ *   6. Groq: qwen/qwen3.8-27b (27B — good Arabic; GROQ-2 2026-10-17: 3.6
+ *      retired — the live account list (run 38844967928 DIAG) holds 3.8)
  *   7. OpenRouter: nvidia/nemotron-3-super-120b (120B — balanced; 47.9% live)
- *   8. Groq: compound-beta (compound system)
+ *   [8. Groq compound-beta — PURGED GROQ-2 2026-10-17: Groq decommissioned
+ *      the compound system 2026-09-21 (groq/compound + compound-mini); every
+ *      call 404s and the account's live model list holds ZERO compound ids —
+ *      the Phase-177 dead-weight purge law applies.]
  *
  * Groq free tier has an 8000 TPM limit; interleave spreads load across all
  * three providers instead of exhausting one before touching the next.
@@ -1956,9 +2030,8 @@ export const INTERLEAVED_STRONGEST_CHAIN: Array<{ provider: AIProvider; model: s
   { provider: "nvidia", model: "nvidia/nemotron-3-super-120b-a12b" },
   { provider: "groq", model: "openai/gpt-oss-20b" },
   { provider: "nvidia", model: "nvidia/nemotron-3-ultra-550b-a55b" },
-  { provider: "groq", model: "qwen/qwen3.6-27b" },
+  { provider: "groq", model: "qwen/qwen3.8-27b" },
   { provider: "openrouter", model: "nvidia/nemotron-3-super-120b-a12b:free" },
-  { provider: "groq", model: "compound-beta" },
 ];
 
 /** Alternating-lead rotation counter (see callFreeAIFallbackChain below). */
