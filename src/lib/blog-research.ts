@@ -463,14 +463,21 @@ Return STRICT JSON only, no markdown fences:
 
   // PHASE 344 + BLOG-PROVIDER-FAILOVER 2026-10-16: the REAL grounded call —
   // now a CROSS-PROVIDER failover walk (gemini googleSearch → openrouter
-  // web plugin → groq compound; NVIDIA honestly excluded — no grounded-
-  // search capability). jsonMode is intentionally omitted: the gemini arm
-  // suppresses the JSON mime-type with tools anyway (REST rejects JSON-mode
-  // + tool use), so the STRICT-JSON instruction above + the 161.5-hardened
-  // parseJSON carry the contract (the Groq Phase 177 pattern).
+  // web plugin → groq browser_search; NVIDIA honestly excluded — no
+  // grounded-search capability). jsonMode is intentionally omitted: the
+  // gemini arm suppresses the JSON mime-type with tools anyway (REST
+  // rejects JSON-mode + tool use), so the STRICT-JSON instruction above +
+  // the 161.5-hardened parseJSON carry the contract (the Groq Phase 177
+  // pattern). GROQ-2 (2026-10-17, live run 39062486597): a systemPrompt
+  // now reinforces the STRICT-JSON law — the measured failure was the EN
+  // research answering in PROSE (no JSON object anywhere in the text)
+  // while the twin AR call parsed perfectly; the system channel is the
+  // strongest instruction location for agentic browser_search models.
   try {
     const { text, model, grounding, provider } = await callGroundedSearch(prompt, {
       tag: "blog:research",
+      systemPrompt:
+        "You are a strict JSON API endpoint. The user message describes the research task; your ENTIRE response MUST be a single valid JSON object matching the requested schema — no prose, no markdown, no commentary, no code fences. The JSON object starts with { and ends with }.",
       temperature: 0.7,
       maxTokens: 2_500,
       // BLOG-PROVIDER-FAILOVER 2026-10-16 (live measurements, probe
@@ -494,6 +501,12 @@ Return STRICT JSON only, no markdown fences:
       console.log(`[blog-research] P0 ${lang} done (${provider}:${model} [grounded], kw:${data.keywords.length} faq:${data.faqs.length} topics:${data.topics.length} queries:${grounding.searchQueries.length} sources:${grounding.sources.length})`);
       return { data, source: `${provider}:${model}` };
     }
+    // GROQ-2 diagnosis (2026-10-17): print the raw answer sample on an
+    // invalid shape — the measured EN failure (run 39062486597: prose, no
+    // JSON object) must be VISIBLE in the logs, never guessed at again.
+    console.error(
+      `[blog-research] P0 ${lang} invalid research JSON shape from ${provider}:${model} — raw text sample (first 500 chars): ${text.replace(/\s+/g, " ").slice(0, 500)}`,
+    );
     throw new Error(
       `P0 ${lang}: invalid research JSON shape from ${provider}:${model} (topics:${data?.topics.length ?? 0} keywords:${data?.keywords.length ?? 0}) — no substitute allowed`,
     );

@@ -1383,6 +1383,7 @@ export async function callGroqGroundedSearch(
             message?: {
               content?: string | null;
               reasoning?: string | null;
+              reasoning_details?: Array<{ text?: unknown } | null> | null;
               executed_tools?: unknown;
               citations?: unknown;
               annotations?: unknown;
@@ -1393,12 +1394,25 @@ export async function callGroqGroundedSearch(
           x_groq?: { citations?: unknown } | null;
         } | null;
         const msg = data?.choices?.[0]?.message;
-        const content =
+        // Content fallbacks (the OR-arm content→reasoning law, mirrored for
+        // Groq — LIVE-MEASURED on the 20b+parsed flip path, blog run
+        // 39062486597: reasoning models sometimes answer with an EMPTY
+        // content channel and the actual text in reasoning_details /
+        // reasoning — read every documented location instead of failing
+        // "empty response".)
+        let content: string =
           typeof msg?.content === "string" && msg.content.trim()
             ? msg.content
-            : typeof msg?.reasoning === "string"
-              ? msg.reasoning
-              : "";
+            : "";
+        if (!content && Array.isArray(msg?.reasoning_details)) {
+          content = msg.reasoning_details
+            .map((r) => (typeof r?.text === "string" ? r.text : ""))
+            .filter(Boolean)
+            .join("\n");
+        }
+        if (!content && typeof msg?.reasoning === "string") {
+          content = msg.reasoning;
+        }
         const sources = mergeDedupedSources(
           urlSourcesFromExecutedTools(msg?.executed_tools),
           urlSourcesFromCitations(msg?.citations),
