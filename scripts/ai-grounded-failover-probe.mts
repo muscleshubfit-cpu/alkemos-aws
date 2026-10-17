@@ -234,9 +234,83 @@ async function diagnoseGroqModels(): Promise<void> {
   }
 }
 
+/** GROQ-2 round-2 instrument: dump the FULL response shape of the
+ *  browser_search call BEFORE the arms consume the 8k TPM window — walks
+ *  the JSON recursively and prints every array (path + length) and every
+ *  string field whose name or value smells like a URL (public data — safe).
+ *  On a 429-TPM answer: one patient retry after 65s (the window clears). */
+async function dumpGroqBrowserResponse(): Promise<void> {
+  const key = process.env.GROQ_API_KEY || "";
+  if (!key) return;
+  const ask = "What is the WHO weekly physical activity guidance for adults? One sentence, with sources.";
+  const attempt = async (extra: Record<string, unknown>, model: string): Promise<{ status: number; text: string } | null> => {
+    try {
+      const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
+        body: JSON.stringify({ model, messages: [{ role: "user", content: ask }], ...extra }),
+      });
+      const text = await res.text();
+      return { status: res.status, text };
+    } catch (e) {
+      console.log(`DUMP groq [${model}] fetch failed: ${e instanceof Error ? e.message : e}`);
+      return null;
+    }
+  };
+  const walk = (node: unknown, path: string, out: string[]): void => {
+    if (Array.isArray(node)) {
+      out.push(`${path}: array(${node.length})${node.length > 0 ? ` first=${JSON.stringify(node[0]).slice(0, 160)}` : ""}`);
+      node.slice(0, 3).forEach((el, i) => walk(el, `${path}[${i}]`, out));
+    } else if (node && typeof node === "object") {
+      for (const [k, v] of Object.entries(node as Record<string, unknown>)) {
+        if (typeof v === "string") {
+          const smellsUrl = /https?:\/\//.test(v) || /url|link|citation|source/i.test(k);
+          if (smellsUrl) out.push(`${path}.${k}: ${JSON.stringify(v.slice(0, 120))}`);
+        } else {
+          walk(v, `${path}.${k}`, out);
+        }
+      }
+    }
+  };
+  const variants: Array<{ label: string; model: string; extra: Record<string, unknown> }> = [
+    { label: "arm-exact 120b", model: "openai/gpt-oss-120b", extra: { tools: [{ type: "browser_search" }], reasoning_format: "hidden", temperature: 0.3, max_tokens: 4096 } },
+    { label: "tool_choice-required 120b", model: "openai/gpt-oss-120b", extra: { tools: [{ type: "browser_search" }], reasoning_format: "hidden", tool_choice: "required", temperature: 0.3, max_tokens: 4096 } },
+    { label: "reasoning-parsed 20b", model: "openai/gpt-oss-20b", extra: { tools: [{ type: "browser_search" }], reasoning_format: "parsed", temperature: 0.3, max_tokens: 4096 } },
+  ];
+  for (const v of variants) {
+    let r = await attempt(v.extra, v.model);
+    if (r && r.status === 429 && /TPM|tokens per minute/i.test(r.text)) {
+      console.log(`DUMP groq [${v.label}] hit TPM 429 — waiting 65s for the window to clear, then ONE retry`);
+      await new Promise((res) => setTimeout(res, 65_000));
+      r = await attempt(v.extra, v.model);
+    }
+    if (!r) continue;
+    if (r.status !== 200) {
+      console.log(`DUMP groq [${v.label}]: status=${r.status} error_body=${r.text.slice(0, 300)}`);
+      continue;
+    }
+    try {
+      const j = JSON.parse(r.text);
+      const lines: string[] = [];
+      walk(j, "root", lines);
+      console.log(`DUMP groq [${v.label}]: status=200 STRUCTURE:`);
+      for (const l of lines.slice(0, 40)) console.log(`  ${l}`);
+      const content = j?.choices?.[0]?.message?.content;
+      console.log(`  content_sample: ${typeof content === "string" ? content.replace(/\s+/g, " ").slice(0, 200) : "-"}`);
+    } catch {
+      console.log(`DUMP groq [${v.label}]: status=200 body[:400]=${r.text.slice(0, 400)}`);
+    }
+  }
+}
+
 async function main(): Promise<void> {
   console.log("=== AI GROUNDED-FAILOVER LIVE PROBE (BLOG-PROVIDER-FAILOVER 2026-10-16 · GROQ-2 round 2026-10-17) ===");
   console.log(`env: gemini keys=${maskKeys(getGeminiGroundedKeys().length)} · openrouter keys=${maskKeys(getOpenRouterKeys().length)} · groq=${process.env.GROQ_API_KEY ? "configured" : "MISSING"} · nvidia=${process.env.NVIDIA_API_KEY ? "configured" : "MISSING"} · cooldown=${process.env.AI_PROVIDER_COOLDOWN_MS || "off"}`);
+  console.log("");
+
+  // ── 0) GROQ-2 response-shape dump FIRST (TPM window still fresh) ────
+  console.log("--- [0/4] Groq browser_search response-shape dump (GROQ-2) ---");
+  await dumpGroqBrowserResponse();
   console.log("");
 
   // ── 1) Per-arm probes (each is a REAL search call) ──────────────────
