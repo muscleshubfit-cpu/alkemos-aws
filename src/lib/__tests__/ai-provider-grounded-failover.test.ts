@@ -9,6 +9,7 @@ import {
 import {
   __resetCooldownForTests,
   flushCooldownWrites,
+  activeCooldowns,
 } from "@/lib/ai-provider-cooldown";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -130,10 +131,38 @@ const OR_WEB_OK = {
 };
 
 const GROQ_BROWSER_OK = {
+  // LIVE-MEASURED shape (probe run 39061588932, GROQ-2 round 2): the
+  // browser_search findings live at message.executed_tools[*].
+  // search_results.results (title/url/content/score) — the tool's REAL
+  // live-web findings (browser.search + page reads).
   choices: [
     {
       message: {
         content: "Answer grounded on the browser_search live web walk.",
+        executed_tools: [
+          {
+            name: "browser.search",
+            index: 0,
+            type: "browser_search",
+            search_results: {
+              results: [
+                { title: "Physical activity", url: "https://www.nasm.org/protein-intake", content: "", score: 0 },
+                { title: "PubMed", url: "https://pubmed.ncbi.nlm.nih.gov/22150333", content: "", score: 0 },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+};
+
+const GROQ_BROWSER_OK_CITED = {
+  // legacy documented location #1 — message.citations (still accepted)
+  choices: [
+    {
+      message: {
+        content: "Legacy citations shape still accepted.",
         citations: [
           "https://www.nasm.org/protein-intake",
           "https://pubmed.ncbi.nlm.nih.gov/22150333",
@@ -259,6 +288,110 @@ describe("cross-provider walk — gemini quota drain moves to openrouter web", (
     expect(log[5].body?.plugins).toBeUndefined();
     expect(log[5].body?.response_format).toBeUndefined();
     expect(log[5].auth).toBe("Bearer gsk-test-key");
+  });
+
+  it("groq legacy message.citations shape still answers (documented location #1)", async () => {
+    process.env.GEMINI_API_KEY = "AIza-test-key";
+    process.env.OPENROUTER_API = "sk-or-test-key";
+    process.env.GROQ_API_KEY = "gsk-test-key";
+    const log: FetchLog[] = [];
+    stubRoutingFetch(log, (url) => {
+      if (geminiKeyOk(url)) return { ok: false, status: 429, payload: QUOTA_429 };
+      if (orUrl(url)) return { ok: false, status: 402, payload: CREDITS_402 };
+      return { ok: true, status: 200, payload: GROQ_BROWSER_OK_CITED };
+    });
+
+    const out = await callGroundedSearch("research");
+    expect(out.provider).toBe("groq");
+    expect(out.grounding.sources.map((s) => s.url)).toEqual([
+      "https://www.nasm.org/protein-intake",
+      "https://pubmed.ncbi.nlm.nih.gov/22150333",
+    ]);
+  });
+
+  it("groq 400 «Parsing failed» under reasoning_format hidden → flips to parsed and succeeds (LIVE-MEASURED split, run 39061588932)", async () => {
+    process.env.GEMINI_API_KEY = "AIza-test-key";
+    process.env.OPENROUTER_API = "sk-or-test-key";
+    process.env.GROQ_API_KEY = "gsk-test-key";
+    const log: FetchLog[] = [];
+    const fake = vi.fn(async (url: string, init?: RequestInit) => {
+      const headers = new Headers(init?.headers);
+      const auth = headers.get("authorization") || "";
+      const body = JSON.parse(String(init?.body)) as Record<string, unknown>;
+      log.push({ url, auth, body });
+      let ok = true;
+      let status = 200;
+      let payload: unknown = GROQ_BROWSER_OK;
+      if (geminiKeyOk(String(url))) {
+        ok = false; status = 429; payload = QUOTA_429;
+      } else if (orUrl(String(url))) {
+        ok = false; status = 402; payload = CREDITS_402;
+      } else if (body.reasoning_format === "hidden") {
+        // the measured gpt-oss-20b failure under "hidden"
+        ok = false; status = 400;
+        payload = { error: { message: "Parsing failed. The model generated output that could not be parsed. Please adjust your prompt.", type: "invalid_request_error" } };
+      }
+      return {
+        ok, status,
+        json: async () => payload,
+        text: async () => JSON.stringify(payload),
+      } as unknown as Response;
+    });
+    vi.stubGlobal("fetch", fake);
+
+    const out = await callGroundedSearch("research");
+    expect(out.provider).toBe("groq");
+    expect(out.model).toBe("openai/gpt-oss-120b");
+    const groqCalls = log.filter((c) => groqUrl(c.url));
+    expect(groqCalls).toHaveLength(2);
+    expect(groqCalls[0].body?.reasoning_format).toBe("hidden");
+    expect(groqCalls[1].body?.reasoning_format).toBe("parsed");
+  });
+
+  it("groq 429 TPM (per-minute token bucket) → waits Groq's own hint and retries; NEVER marks the 30-min quota registry", async () => {
+    process.env.AI_PROVIDER_COOLDOWN_MS = "600000";
+    process.env.GEMINI_API_KEY = "AIza-test-key";
+    process.env.OPENROUTER_API = "sk-or-test-key";
+    process.env.GROQ_API_KEY = "gsk-test-key";
+    const log: FetchLog[] = [];
+    let groqCall = 0;
+    const fake = vi.fn(async (url: string, init?: RequestInit) => {
+      const headers = new Headers(init?.headers);
+      const auth = headers.get("authorization") || "";
+      const body = JSON.parse(String(init?.body)) as Record<string, unknown>;
+      log.push({ url, auth, body });
+      let ok = true;
+      let status = 200;
+      let payload: unknown = GROQ_BROWSER_OK;
+      if (geminiKeyOk(String(url))) {
+        ok = false; status = 429; payload = QUOTA_429;
+      } else if (orUrl(String(url))) {
+        ok = false; status = 402; payload = CREDITS_402;
+      } else {
+        groqCall++;
+        if (groqCall === 1) {
+          // the measured TPM body (probe run 39061337401): per-minute token
+          // bucket with Groq's own retry hint
+          ok = false; status = 429;
+          payload = { error: { message: "Rate limit reached for model `openai/gpt-oss-120b` in organization `org_x` service tier `on_demand` on tokens per minute (TPM): Limit 8000, Used 7541, Requested 4146. Please try again in 0.01s.", type: "rate_limit_error" } };
+        }
+      }
+      return {
+        ok, status,
+        json: async () => payload,
+        text: async () => JSON.stringify(payload),
+      } as unknown as Response;
+    });
+    vi.stubGlobal("fetch", fake);
+
+    const out = await callGroundedSearch("research");
+    expect(out.provider).toBe("groq");
+    expect(out.model).toBe("openai/gpt-oss-120b");
+    const groqCalls = log.filter((c) => groqUrl(c.url));
+    expect(groqCalls).toHaveLength(2); // 429 TPM → patient retry → 200
+    // the TPM 429 is a per-minute transient: it must NOT cool the model
+    const cds = activeCooldowns();
+    expect(cds.some((c) => c.scope.startsWith("grounded:groq:"))).toBe(false);
   });
 
   it("groq citations are also accepted from x_groq (documented location #2)", async () => {
@@ -504,7 +637,7 @@ describe("honest evidence gates — no live-search evidence = honest failure", (
       };
     });
     const err = (await callGroundedSearch("research").catch((e: Error) => e)) as Error;
-    expect(err.message).toContain("no web-search evidence (citation URLs)");
+    expect(err.message).toContain("no web-search evidence");
     expect(err.message).toContain("not built on live search");
   });
 });

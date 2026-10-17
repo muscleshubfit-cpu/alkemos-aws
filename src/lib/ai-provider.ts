@@ -1187,13 +1187,68 @@ export async function callOpenRouterGroundedSearch(
   );
 }
 
+/** Extract {title,url} sources from a Groq browser_search `executed_tools`
+ *  array — LIVE-MEASURED 2026-10-17 (probe run 39061588932, GROQ-2 round 2):
+ *  each tool execution carries `search_results.results` entries
+ *  ({title,url,content,score}) — the tool's REAL live-web findings (the
+ *  search itself + the browsed pages). These are the citation-grade
+ *  evidence of the browser_search walk. Deduped by URL, capped at 12. */
+function urlSourcesFromExecutedTools(executedTools: unknown): GeminiGroundingSource[] {
+  if (!Array.isArray(executedTools)) return [];
+  const out: GeminiGroundingSource[] = [];
+  const seen = new Set<string>();
+  for (const t of executedTools) {
+    if (typeof t !== "object" || t === null) continue;
+    const results = (t as { search_results?: { results?: unknown } | null })
+      .search_results?.results;
+    if (!Array.isArray(results)) continue;
+    for (const r of results) {
+      if (typeof r !== "object" || r === null) continue;
+      const { url, title } = r as { url?: unknown; title?: unknown };
+      const u = typeof url === "string" ? url.trim() : "";
+      if (!u || seen.has(u)) continue;
+      seen.add(u);
+      out.push({
+        title: typeof title === "string" ? title.trim() : "",
+        url: u,
+      });
+      if (out.length >= 12) return out;
+    }
+  }
+  return out;
+}
+
+/** Parse Groq's own "Please try again in X.XXXs" TPM hint (seconds → ms).
+ *  Absent/unparsable → 15s (the safe mid-window default). */
+function parseGroqTpmRetryHint(text: string): number {
+  const m = /try again in ([0-9]+(?:\.[0-9]+)?)\s*s/i.exec(text);
+  if (!m) return 15_000;
+  const s = Number(m[1]);
+  return Number.isFinite(s) && s > 0 ? s * 1_000 : 15_000;
+}
+
+const sleep = (ms: number): Promise<void> =>
+  new Promise((res) => setTimeout(res, ms));
+
 /**
  * ARM 3 — Groq REAL live web search via the `browser_search` built-in
  * tool (GROQ-2 2026-10-17): search happens INSIDE the model call — the
- * agentic tool navigates the live web and the response carries citation
- * URLs (accepted at every documented location). The honest evidence gate
- * rejects 200-without-citations answers; exhaustion errors cool the model
- * scope for the window; all ladder models failed → one honest error.
+ * agentic tool navigates the live web (measured: browser.search via the
+ * search backend + page reads) and the response carries the findings at
+ * message.executed_tools[*].search_results.results (accepted at every
+ * other documented location too). The honest evidence gate rejects
+ * 200-without-evidence answers; exhaustion errors cool the model scope
+ * for the window; all ladder models failed → one honest error.
+ *
+ * Live-measured failure modes with their in-arm recovery (run
+ * 39061588932): (a) gpt-oss-20b + reasoning_format "hidden" answers HTTP
+ * 400 «Parsing failed» while "parsed" works (and 120b works under
+ * "hidden") — the arm flips the format ONCE on that exact error;
+ * (b) Groq's 8k TPM token-bucket can reject the second parallel research
+ * call (P0 runs AR+EN together; each browser_search walk is
+ * token-heavy) — the arm waits Groq's own "try again in Xs" hint ONCE
+ * and retries, and a pure TPM 429 NEVER marks the 30-min quota
+ * registry (per-minute transient, not sustained exhaustion).
  */
 export async function callGroqGroundedSearch(
   prompt: string,
@@ -1218,119 +1273,183 @@ export async function callGroqGroundedSearch(
       console.warn(`${LP} ${model} in quota-cooldown → skipped`);
       continue;
     }
-    const controller = new AbortController();
     // Agentic browser walk (multi-hop navigate+read) needs the caller's
     // generous window (P0 passes 180s since 478a1afc); default stays 60s.
-    const timeoutMs = options.timeoutMs ?? 60_000;
-    const timer = setTimeout(() => controller.abort(), timeoutMs);
-    try {
-      // Groq free tier bills an 8k TPM window counting prompt AND
-      // max_tokens (the R3 chain-clamp law, measured Phase 177): keep the
-      // completion budget inside the window — floor 4096 (GPT-OSS burns
-      // reasoning tokens before content — the OR-arm CoT law), cap 5000
-      // (window − prompt reserve), caller values outside the band clamp
-      // INTO it, never above.
-      const effectiveMaxTokens = Math.min(
-        Math.max(options.maxTokens ?? 2_500, 4_096),
-        5_000,
-      );
-      const body: Record<string, unknown> = {
-        model,
-        messages: [
-          ...(options.systemPrompt
-            ? [{ role: "system", content: options.systemPrompt }]
-            : []),
-          { role: "user", content: prompt },
-        ],
-        temperature: options.temperature ?? 0.7,
-        max_tokens: effectiveMaxTokens,
-        // THE REAL SEARCH RIDE-ALONG (GROQ-2): Groq's built-in
-        // browser_search tool — the documented successor of the
-        // decommissioned compound system. No plain-generation path
-        // exists here; the honest evidence gate below enforces it.
-        tools: [{ type: "browser_search" }],
-        // GPT-OSS reasoning models REQUIRE parsed|hidden reasoning_format
-        // when tools are attached (Groq docs / promptfoo provider law);
-        // "hidden" keeps the response clean: content + citations only.
-        reasoning_format: "hidden",
-        // No jsonMode (the gemini-arm STRICT-JSON pattern) and no manual
-        // function tools: browser_search performs its OWN live web walk.
-      };
-      const res = await fetch(`${AI_PROVIDERS.groq.baseUrl}/chat/completions`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${key}`,
-        },
-        body: JSON.stringify(body),
-        signal: controller.signal,
-      });
-      if (!res.ok) {
-        const text = await res.text().catch(() => "");
-        throw new Error(
-          `AI API error ${res.status} from groq (${model}+browser_search): ${text.slice(0, 500)}`,
+    const deadline = Date.now() + (options.timeoutMs ?? 60_000);
+    // 3 attempts per model max: primary → format-flip («Parsing failed»
+    // 400) or TPM patient retry — never a hot loop.
+    for (
+      let attempt = 1, reasoningFormat: "hidden" | "parsed" = "hidden";
+      attempt <= 3;
+      attempt++
+    ) {
+      const remaining = deadline - Date.now();
+      if (remaining < 5_000) {
+        failures.push(
+          `[${model}+browser_search] timeout budget exhausted before attempt #${attempt} (deadline ${options.timeoutMs ?? 60_000}ms)`,
         );
+        break;
       }
-      // The response is OpenAI-compatible PLUS browser citations — the
-      // extractor accepts every documented location (message.citations,
-      // message.annotations, root citations, x_groq.citations) so a live
-      // shape change degrades to an honest gate failure, never a fake pass.
-      const data = (await res.json()) as {
-        choices?: Array<{
-          message?: {
-            content?: string | null;
-            reasoning?: string | null;
-            citations?: unknown;
-            annotations?: unknown;
-          } | null;
-        }> | null;
-        citations?: unknown;
-        annotations?: unknown;
-        x_groq?: { citations?: unknown } | null;
-      } | null;
-      const msg = data?.choices?.[0]?.message;
-      const content =
-        typeof msg?.content === "string" && msg.content.trim()
-          ? msg.content
-          : typeof msg?.reasoning === "string"
-            ? msg.reasoning
-            : "";
-      const sources = mergeDedupedSources(
-        urlSourcesFromCitations(msg?.citations),
-        urlSourcesFromAnnotations(msg?.annotations),
-        urlSourcesFromCitations(data?.citations),
-        urlSourcesFromAnnotations(data?.annotations),
-        urlSourcesFromCitations(data?.x_groq?.citations),
-      );
-      // HONEST EVIDENCE GATE — no citation URLs = not built on live search.
-      if (!content.trim() || sources.length === 0) {
-        throw new Error(
-          `AI provider groq (${model}+browser_search) returned ${
-            !content.trim()
-              ? "an empty response"
-              : "no web-search evidence (citation URLs)"
-          } — the answer was not built on live search`,
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), remaining);
+      try {
+        // Groq free tier bills an 8k TPM token-bucket counting prompt AND
+        // max_tokens (the R3 chain-clamp law, measured Phase 177): keep the
+        // completion budget inside the window — floor 4096 (GPT-OSS burns
+        // reasoning tokens before content — the OR-arm CoT law), cap 5000
+        // (window − prompt reserve), caller values outside the band clamp
+        // INTO it, never above.
+        const effectiveMaxTokens = Math.min(
+          Math.max(options.maxTokens ?? 2_500, 4_096),
+          5_000,
         );
-      }
-      if (failures.length > 0) {
-        console.warn(
-          `${LP} ${model}+browser_search succeeded after ${failures.length} earlier model failure(s)`,
+        const body: Record<string, unknown> = {
+          model,
+          messages: [
+            ...(options.systemPrompt
+              ? [{ role: "system", content: options.systemPrompt }]
+              : []),
+            { role: "user", content: prompt },
+          ],
+          temperature: options.temperature ?? 0.7,
+          max_tokens: effectiveMaxTokens,
+          // THE REAL SEARCH RIDE-ALONG (GROQ-2): Groq's built-in
+          // browser_search tool — the documented successor of the
+          // decommissioned compound system. No plain-generation path
+          // exists here; the honest evidence gate below enforces it.
+          tools: [{ type: "browser_search" }],
+          // GPT-OSS reasoning models REQUIRE parsed|hidden reasoning_format
+          // when tools are attached (Groq docs / promptfoo provider law).
+          // LIVE-MEASURED split (run 39061588932): 120b answers under
+          // "hidden"; 20b 400s «Parsing failed» under "hidden" and answers
+          // under "parsed" — the flip is attempted below on that exact
+          // error, so both ladder siblings stay one call away from their
+          // working format.
+          reasoning_format: reasoningFormat,
+          // No jsonMode (the gemini-arm STRICT-JSON pattern) and no manual
+          // function tools: browser_search performs its OWN live web walk.
+        };
+        const res = await fetch(`${AI_PROVIDERS.groq.baseUrl}/chat/completions`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${key}`,
+          },
+          body: JSON.stringify(body),
+          signal: controller.signal,
+        });
+        if (!res.ok) {
+          const text = await res.text().catch(() => "");
+          // RECOVERY (a): the 20b's «Parsing failed» under "hidden" — flip
+          // to "parsed" and retry the SAME model once.
+          if (res.status === 400 && /parsing failed/i.test(text) && attempt < 3) {
+            reasoningFormat = "parsed";
+            console.warn(
+              `${LP} ${model} 400 «Parsing failed» under reasoning_format hidden → flipping to parsed (the measured 20b/120b split) and retrying`,
+            );
+            continue;
+          }
+          // RECOVERY (b): the TPM token-bucket 429 — wait Groq's OWN hint
+          // once (clamped [1s, 70s]) and retry the SAME model.
+          if (
+            res.status === 429 &&
+            /tokens per minute|\bTPM\b/i.test(text) &&
+            attempt < 3
+          ) {
+            const waitMs = Math.min(
+              Math.max(parseGroqTpmRetryHint(text) + 1_000, 1_000),
+              70_000,
+            );
+            if (deadline - Date.now() > waitMs + 10_000) {
+              console.warn(
+                `${LP} ${model} 429 TPM (per-minute token bucket) → waiting ${waitMs}ms (Groq's own hint) and retrying`,
+              );
+              await sleep(waitMs);
+              continue;
+            }
+          }
+          throw new Error(
+            `AI API error ${res.status} from groq (${model}+browser_search): ${text.slice(0, 500)}`,
+          );
+        }
+        // The response is OpenAI-compatible PLUS the browser_search
+        // findings (measured: message.executed_tools[*].search_results.
+        // results — the PRIMARY location) and, on older shapes, citation
+        // arrays — the extractor accepts every documented location so a
+        // live shape change degrades to an honest gate failure, never a
+        // fake pass.
+        const data = (await res.json()) as {
+          choices?: Array<{
+            message?: {
+              content?: string | null;
+              reasoning?: string | null;
+              executed_tools?: unknown;
+              citations?: unknown;
+              annotations?: unknown;
+            } | null;
+          }> | null;
+          citations?: unknown;
+          annotations?: unknown;
+          x_groq?: { citations?: unknown } | null;
+        } | null;
+        const msg = data?.choices?.[0]?.message;
+        const content =
+          typeof msg?.content === "string" && msg.content.trim()
+            ? msg.content
+            : typeof msg?.reasoning === "string"
+              ? msg.reasoning
+              : "";
+        const sources = mergeDedupedSources(
+          urlSourcesFromExecutedTools(msg?.executed_tools),
+          urlSourcesFromCitations(msg?.citations),
+          urlSourcesFromAnnotations(msg?.annotations),
+          urlSourcesFromCitations(data?.citations),
+          urlSourcesFromAnnotations(data?.annotations),
+          urlSourcesFromCitations(data?.x_groq?.citations),
         );
+        // HONEST EVIDENCE GATE — no executed-tools/search/citation URLs =
+        // not built on live search.
+        if (!content.trim() || sources.length === 0) {
+          throw new Error(
+            `AI provider groq (${model}+browser_search) returned ${
+              !content.trim()
+                ? "an empty response"
+                : "no web-search evidence (executed_tools/search_results/citation URLs)"
+            } — the answer was not built on live search`,
+          );
+        }
+        if (failures.length > 0) {
+          console.warn(
+            `${LP} ${model}+browser_search (reasoning_format ${reasoningFormat}) succeeded after ${failures.length} earlier model failure(s)`,
+          );
+        }
+        return {
+          text: content.trim(),
+          provider: "groq",
+          model,
+          grounding: { searchQueries: [], sources },
+        };
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e);
+        // A pure per-minute TPM 429 is TRANSIENT (token bucket), never a
+        // sustained exhaustion — it must NOT poison the 30-min quota
+        // registry (the measured "Please try again in 2.7s" class).
+        const isTpmOnly =
+          /\b429\b/.test(msg) && /tokens per minute|\bTPM\b/i.test(msg);
+        if (!isTpmOnly) {
+          const cls = classifyForCooldown(msg);
+          if (cls) markCooldown(cdScope, `${cls}: ${msg.slice(0, 120)}`);
+        } else {
+          console.warn(
+            `${LP} ${model} TPM 429 exhausted its retries — NOT cooling the 30-min registry (per-minute transient)`,
+          );
+        }
+        console.warn(`${LP} ${model}+browser_search failed: ${msg.slice(0, 180)}`);
+        failures.push(`[${model}+browser_search] ${msg.slice(0, 240)}`);
+        break; // the recovery loops `continue` — a thrown error ends this model
+      } finally {
+        clearTimeout(timer);
       }
-      return {
-        text: content.trim(),
-        provider: "groq",
-        model,
-        grounding: { searchQueries: [], sources },
-      };
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : String(e);
-      const cls = classifyForCooldown(msg);
-      if (cls) markCooldown(cdScope, `${cls}: ${msg.slice(0, 120)}`);
-      console.warn(`${LP} ${model}+browser_search failed: ${msg.slice(0, 180)}`);
-      failures.push(`[${model}+browser_search] ${msg.slice(0, 240)}`);
-    } finally {
-      clearTimeout(timer);
     }
   }
   throw new Error(
