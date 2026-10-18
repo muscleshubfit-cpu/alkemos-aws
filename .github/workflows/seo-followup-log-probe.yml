@@ -1,0 +1,83 @@
+# SEO follow-up log probe (dispatch-only — READ-ONLY SSH) (2026-10-18).
+#
+# WHY (owner order 2026-10-18, follow-up audit): the organic-visibility
+# collapse persists ~8 days after the AWS cutover (2026-10-10) and the
+# owner asked for the AVAILABLE AWS/Caddy logs to be checked for
+# persistent errors or access problems affecting Googlebot. This is the
+# measuring instrument for that ask.
+#
+# WHAT IT READS (nothing is ever written on the server):
+#   1. Caddy service health + journal ERRORS since the cutover (2026-10-10).
+#      NOTE (measured from deploy/Caddyfile + setup-server.sh): Caddy runs
+#      WITHOUT an access-log directive and Next.js does not log requests,
+#      so per-request Googlebot observation is impossible with the current
+#      logging shape — that limitation is documented honestly, not probed
+#      around. journald still records Caddy's operational errors (TLS,
+#      proxy failures, restarts), which IS the "persistent errors" check.
+#   2. Kernel OOM/kill events since the cutover (1GB box, PM2 600M valve).
+#   3. PM2 describe: restart count, uptime, memory — separates deploy
+#      restarts from crash loops (deploy restarts are expected, ~1/dep).
+#   4. /var/log/alkemos/error.log tail (app-level 5xx evidence) and
+#      out.log tail (boot/noise sample).
+#   5. systemd failed-unit census + uptime/load/memory snapshot.
+#
+# Safety properties (same laws as ops-cron-verify.yml):
+#   - workflow_dispatch ONLY — can never fire on schedule/push/PR.
+#   - READ-ONLY by construction: every remote command is a read/report
+#     (journalctl/systemctl/pm2/tail/free/uptime). No file, service, or
+#     process is ever modified.
+#   - Uses the same pinned appleboy/ssh-action as deploy/ops-cron-verify.
+name: SEO follow-up log probe (dispatch-only — read-only)
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: seo-followup-log-probe
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Read-only server log probe (Caddy journal + OOM + PM2 + app logs)
+        uses: appleboy/ssh-action@7eaf76671a0d7eec5d98ee897acda4f968735a17 # v1.2.0 — pinned 2026-10-10 audit
+        with:
+          host: ${{ secrets.AWS_DEPLOY_HOST }}
+          username: ${{ secrets.AWS_DEPLOY_USER }}
+          key: ${{ secrets.AWS_DEPLOY_SSH_KEY }}
+          script: |
+            set +e
+            echo "== 1. caddy service =="
+            systemctl is-active caddy; systemctl show caddy -p NRestarts -p ActiveEnterTimestamp -p ExecMainStartTimestamp
+            echo "-- caddy journal: errors/warnings since 2026-10-10 (last 40) --"
+            journalctl -u caddy --since "2026-10-10" --no-pager 2>/dev/null | grep -iE "error|warn|fatal|panic" | tail -40
+            echo "-- caddy journal: restart lines since 2026-10-10 (last 10) --"
+            journalctl -u caddy --since "2026-10-10" --no-pager 2>/dev/null | grep -iE "Started|Stopped|Stopping|Failed|reload" | tail -10
+            echo
+            echo "== 2. kernel OOM/kill events since cutover =="
+            journalctl -k --since "2026-10-10" --no-pager 2>/dev/null | grep -iE "oom|out of memory|killed process" | tail -10
+            echo "(empty above = no OOM events)"
+            echo
+            echo "== 3. PM2 describe alkemos (restarts / uptime / memory) =="
+            pm2 describe alkemos 2>/dev/null | grep -E "status|restarts|uptime|memory|script path|exec cwd|node args" | head -12
+            echo
+            echo "== 4. app logs =="
+            echo "-- /var/log/alkemos/error.log (tail 30) --"
+            tail -n 30 /var/log/alkemos/error.log 2>&1 || echo "(no error log)"
+            echo "-- error.log line count + mtime --"
+            stat -c "%y %s bytes" /var/log/alkemos/error.log 2>/dev/null
+            wc -l < /var/log/alkemos/error.log 2>/dev/null
+            echo "-- /var/log/alkemos/out.log (tail 8, boot/noise sample) --"
+            tail -n 8 /var/log/alkemos/out.log 2>&1 || echo "(no out log)"
+            echo
+            echo "== 5. box snapshot: failed units + uptime/load/memory =="
+            systemctl --failed --no-legend --plain 2>/dev/null | head -10
+            echo "(empty above = no failed units)"
+            uptime
+            free -m
+            df -h / | tail -1

@@ -312,14 +312,29 @@ jobs:
 
           # ---- 6. SEO-COLLAPSE-AUDIT-2026-10-18 (read-only, PRIMARY only):
           # daily timeseries (configurable window) + device/country splits for
-          # the standard 28d window + optional top-pages comparison window. ----
+          # the standard 28d window + optional top-pages comparison window.
+          # FOLLOWUP-2026-10-18: the same daily timeseries (and the same
+          # optional pages window) is now also pulled for EVERY OTHER visible
+          # property — the old musclehubeg.vercel.app property still collects
+          # impressions at positions 4-11, and dating THAT surface (before vs
+          # after the 10-04 collapse) is the follow-up audit's core question.
+          # Read-only, failure-isolated: one bad property never aborts the run. ----
           audit = {"daily": None, "devices": None, "countries": None,
-                   "pages_window_rows": None, "pages_window_label": "", "error": None}
+                   "pages_window_rows": None, "pages_window_label": "", "error": None,
+                   "all_daily": {}, "all_pages_window": {}}
           if PRIMARY in selected:
               try:
                   audit_start = end - dt.timedelta(days=AUDIT_DAYS_N - 1)
                   audit["daily"] = query_api(PRIMARY, ["date"], 5000,
                                               start_d=audit_start)
+                  for other in selected:
+                      if other == PRIMARY:
+                          continue
+                      try:
+                          audit["all_daily"][other] = query_api(
+                              other, ["date"], 5000, start_d=audit_start)
+                      except QueryError as exc:
+                          audit["all_daily"][other] = "ERROR HTTP " + str(exc.status) + ": " + exc.detail[:150]
                   audit["devices"] = query_api(PRIMARY, ["device"], 100)
                   audit["countries"] = sorted(
                       query_api(PRIMARY, ["country"], 300),
@@ -337,6 +352,17 @@ jobs:
                                   reverse=True)[:50]
                               audit["pages_window_label"] = (pw_start.isoformat()
                                                               + ".." + pw_end.isoformat())
+                              for other in selected:
+                                  if other == PRIMARY:
+                                      continue
+                                  try:
+                                      audit["all_pages_window"][other] = sorted(
+                                          query_api(other, ["page"], 1000,
+                                                    start_d=pw_start, end_d=pw_end),
+                                          key=lambda r: r.get("impressions", 0.0),
+                                          reverse=True)[:25]
+                                  except QueryError as exc:
+                                      audit["all_pages_window"][other] = "ERROR HTTP " + str(exc.status) + ": " + exc.detail[:150]
                       except ValueError:
                           pass
               except QueryError as exc:
@@ -477,6 +503,61 @@ jobs:
                            + format(agg["c"], ".0f") + " | " + format(agg["i"], ".0f")
                            + " | " + format(wp, ".2f") + " |")
                   emit("")
+              if audit["all_daily"]:
+                  emit("### Daily totals — OTHER visible properties (" + str(AUDIT_DAYS_N) + "d) [FOLLOWUP-2026-10-18]")
+                  emit("")
+                  for prop, rows in audit["all_daily"].items():
+                      emit("#### `" + prop + "`")
+                      emit("")
+                      if isinstance(rows, str):
+                          emit("```")
+                          emit(rows)
+                          emit("```")
+                          emit("")
+                          continue
+                      if not rows:
+                          emit("_No rows returned (zero data for the whole window)._")
+                          emit("")
+                          continue
+                      emit("```")
+                      for r in rows:
+                          k = (r.get("keys") or [""])[0]
+                          log("ALLDAILY property=" + prop + " date=" + k
+                              + " clicks=" + format(r.get("clicks", 0.0), ".0f")
+                              + " impressions=" + format(r.get("impressions", 0.0), ".0f")
+                              + " position=" + format(r.get("position", 0.0), ".2f"))
+                          emit(k + " clicks=" + format(r.get("clicks", 0.0), ".0f")
+                               + " impressions=" + format(r.get("impressions", 0.0), ".0f")
+                               + " position=" + format(r.get("position", 0.0), ".2f"))
+                      emit("```")
+                      emit("")
+              if audit["all_pages_window"]:
+                  for prop, rows in audit["all_pages_window"].items():
+                      emit("### Top pages by impressions — OTHER property `" + prop + "` — "
+                           + audit["pages_window_label"])
+                      emit("")
+                      if isinstance(rows, str):
+                          emit("```")
+                          emit(rows)
+                          emit("```")
+                          emit("")
+                          continue
+                      if not rows:
+                          emit("_No rows returned for this window._")
+                          emit("")
+                          continue
+                      out2 = ["| # | Page | Clicks | Impressions | CTR | Avg. position |",
+                              "|---|---|---:|---:|---:|---:|"]
+                      for i, r in enumerate(rows, 1):
+                          safe = (r.get("keys") or [""])[0].replace("|", "\\|")
+                          out2.append("| " + str(i) + " | " + safe + " | "
+                                      + format(r.get("clicks", 0.0), ".0f") + " | "
+                                      + format(r.get("impressions", 0.0), ".0f") + " | "
+                                      + format(r.get("ctr", 0.0) * 100, ".2f") + "% | "
+                                      + format(r.get("position", 0.0), ".2f") + " |")
+                      out2.append("")
+                      for line in out2:
+                          emit(line)
               if audit["devices"]:
                   emit("### Devices (28d)")
                   emit("")
