@@ -64,16 +64,20 @@ jobs:
             echo "(empty above = no OOM events)"
             echo
             echo "== 3. PM2 describe alkemos (restarts / uptime / memory) =="
-            pm2 describe alkemos 2>/dev/null | grep -E "status|restarts|uptime|memory|script path|exec cwd|node args" | head -12
+            pm2 describe alkemos 2>/dev/null | grep -E "status|restarts|uptime|memory|script path|exec cwd|node args|log path" | head -16
+            echo "-- where do PM2 logs actually live? --"
+            ls -la /var/log/alkemos/ 2>&1 | head -15
+            ls -la ~/.pm2/logs/ 2>&1 | head -15
             echo
             echo "== 4. app logs =="
-            echo "-- /var/log/alkemos/error.log (tail 30) --"
-            tail -n 30 /var/log/alkemos/error.log 2>&1 || echo "(no error log)"
-            echo "-- error.log line count + mtime --"
-            stat -c "%y %s bytes" /var/log/alkemos/error.log 2>/dev/null
-            wc -l < /var/log/alkemos/error.log 2>/dev/null
-            echo "-- /var/log/alkemos/out.log (tail 8, boot/noise sample) --"
-            tail -n 8 /var/log/alkemos/out.log 2>&1 || echo "(no out log)"
+            echo "-- ecosystem-declared /var/log/alkemos/error.log (tail 30) --"
+            tail -n 30 /var/log/alkemos/error.log 2>&1 || echo "(no such file at the declared path)"
+            echo "-- pm2 default-path error log (tail 30) --"
+            tail -n 30 ~/.pm2/logs/alkemos-error.log 2>&1 || echo "(no default-path error log)"
+            echo "-- pm2 default-path out log (tail 12) --"
+            tail -n 12 ~/.pm2/logs/alkemos-out.log 2>&1 || echo "(no default-path out log)"
+            echo "-- grep googlebot anywhere in logs (honest probe) --"
+            grep -il googlebot /var/log/alkemos/* ~/.pm2/logs/* 2>/dev/null || echo "(no googlebot traces in available logs — expected: no request logging)"
             echo
             echo "== 5. box snapshot: failed units + uptime/load/memory =="
             systemctl --failed --no-legend --plain 2>/dev/null | head -10
