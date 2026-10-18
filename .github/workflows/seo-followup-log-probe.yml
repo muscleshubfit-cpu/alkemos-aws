@@ -72,10 +72,12 @@ jobs:
             echo "== 4. app logs =="
             echo "-- ecosystem-declared /var/log/alkemos/error.log (tail 30) --"
             tail -n 30 /var/log/alkemos/error.log 2>&1 || echo "(no such file at the declared path)"
-            echo "-- pm2 default-path error log (tail 30) --"
-            tail -n 30 ~/.pm2/logs/alkemos-error.log 2>&1 || echo "(no default-path error log)"
-            echo "-- pm2 default-path out log (tail 12) --"
-            tail -n 12 ~/.pm2/logs/alkemos-out.log 2>&1 || echo "(no default-path out log)"
+            echo "-- ACTUAL PM2 error log /var/log/alkemos/error-1.log (tail 30) --"
+            tail -n 30 /var/log/alkemos/error-1.log 2>&1 || echo "(error-1.log not readable)"
+            echo "-- error-1.log grep HTTP/5xx summary (all rotated+current) --"
+            grep -hoE "\b(5[0-9]{2}|4[0-9]{2})\b[^"]{0,40}" /var/log/alkemos/error-1*.log 2>/dev/null | sort | uniq -c | sort -rn | head -10 || true
+            echo "-- ACTUAL PM2 out log /var/log/alkemos/out-1.log (tail 12) --"
+            tail -n 12 /var/log/alkemos/out-1.log 2>&1 || echo "(out-1.log not readable)"
             echo "-- grep googlebot anywhere in logs (honest probe) --"
             grep -il googlebot /var/log/alkemos/* ~/.pm2/logs/* 2>/dev/null || echo "(no googlebot traces in available logs — expected: no request logging)"
             echo
