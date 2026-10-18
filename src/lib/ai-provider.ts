@@ -1369,7 +1369,10 @@ export async function callGroqGroundedSearch(
             }
           }
           throw new Error(
-            `AI API error ${res.status} from groq (${model}+browser_search): ${text.slice(0, 500)}`,
+            // GROQ-2 diagnosis law: 500 chars cut the TPD body before
+            // «Limit 200,000 · Used X · Requested Y · Please try again in
+            // Zh» — the numbers that settle the reset-time question.
+            `AI API error ${res.status} from groq (${model}+browser_search): ${text.slice(0, 1200)}`,
           );
         }
         // The response is OpenAI-compatible PLUS the browser_search
