@@ -34,7 +34,14 @@
 name: GSC connection test v2 (read-only — dispatch only)
 
 on:
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      days:
+        description: "Daily timeseries window length in complete days (default 120; SEO-COLLAPSE-AUDIT-2026-10-18)"
+        default: "120"
+      pages_window:
+        description: "Optional extra top-pages window as YYYY-MM-DD..YYYY-MM-DD (default: empty = skip)"
+        default: ""
 
 concurrency:
   group: gsc-connection-test
@@ -51,6 +58,8 @@ jobs:
       - name: Run read-only Search Console test (all visible properties)
         env:
           GSC_CREDENTIALS: ${{ secrets.GOOGLE_SEARCH_CONSOLE_CREDENTIALS }}
+          AUDIT_DAYS: ${{ github.event.inputs.days }}
+          AUDIT_PAGES_WINDOW: ${{ github.event.inputs.pages_window }}
         run: |
           set -euo pipefail
           SA_FILE="$RUNNER_TEMP/gsc-sa.json"
@@ -255,8 +264,19 @@ jobs:
                   self.status = status
                   self.detail = detail
 
-          def query_api(prop, dims, row_limit=None):
-              payload = {"startDate": start.isoformat(), "endDate": end.isoformat(),
+          # SEO-COLLAPSE-AUDIT-2026-10-18: optional date overrides so the audit
+          # can pull longer/arbitrary windows without another commit. Defaults
+          # keep the v2 behavior byte-identical.
+          AUDIT_DAYS_RAW = os.environ.get("AUDIT_DAYS", "").strip() or "120"
+          try:
+              AUDIT_DAYS_N = max(1, min(400, int(AUDIT_DAYS_RAW)))
+          except ValueError:
+              AUDIT_DAYS_N = 120
+          AUDIT_PAGES_WIN = os.environ.get("AUDIT_PAGES_WINDOW", "").strip()
+
+          def query_api(prop, dims, row_limit=None, start_d=None, end_d=None):
+              payload = {"startDate": (start_d or start).isoformat(),
+                         "endDate": (end_d or end).isoformat(),
                          "searchType": "web"}
               if dims:
                   payload["dimensions"] = dims
@@ -289,6 +309,38 @@ jobs:
                   entry["error"] = exc
               results.append(entry)
           log("5/5 query set finished for " + str(len(results)) + " property(ies)")
+
+          # ---- 6. SEO-COLLAPSE-AUDIT-2026-10-18 (read-only, PRIMARY only):
+          # daily timeseries (configurable window) + device/country splits for
+          # the standard 28d window + optional top-pages comparison window. ----
+          audit = {"daily": None, "devices": None, "countries": None,
+                   "pages_window_rows": None, "pages_window_label": "", "error": None}
+          if PRIMARY in selected:
+              try:
+                  audit_start = end - dt.timedelta(days=AUDIT_DAYS_N - 1)
+                  audit["daily"] = query_api(PRIMARY, ["date"], 5000,
+                                              start_d=audit_start)
+                  audit["devices"] = query_api(PRIMARY, ["device"], 100)
+                  audit["countries"] = sorted(
+                      query_api(PRIMARY, ["country"], 300),
+                      key=lambda r: r.get("impressions", 0.0), reverse=True)[:40]
+                  if AUDIT_PAGES_WIN and ".." in AUDIT_PAGES_WIN:
+                      pw_s, pw_e = AUDIT_PAGES_WIN.split("..", 1)
+                      try:
+                          pw_start = dt.date.fromisoformat(pw_s.strip())
+                          pw_end = dt.date.fromisoformat(pw_e.strip())
+                          if pw_start <= pw_end <= end:
+                              audit["pages_window_rows"] = sorted(
+                                  query_api(PRIMARY, ["page"], 1000,
+                                            start_d=pw_start, end_d=pw_end),
+                                  key=lambda r: r.get("impressions", 0.0),
+                                  reverse=True)[:50]
+                              audit["pages_window_label"] = (pw_start.isoformat()
+                                                              + ".." + pw_end.isoformat())
+                      except ValueError:
+                          pass
+              except QueryError as exc:
+                  audit["error"] = exc
 
           # ---- Render ----
           def fmt_rows(rows, label):
@@ -366,6 +418,93 @@ jobs:
               log("RESULT property=" + prop + " window=" + start.isoformat() + ".." + end.isoformat()
                   + " clicks=" + format(clicks, ".0f") + " impressions=" + format(imps, ".0f")
                   + " ctr=" + format(ctr, ".2f") + "% position=" + format(pos, ".2f"))
+
+          # ---- Render section 6 (audit) ----
+          emit("---")
+          emit("")
+          emit("## SEO-COLLAPSE-AUDIT-2026-10-18 (read-only adds)")
+          emit("")
+          if audit["error"] is not None:
+              emit("- ❌ audit query FAILED — HTTP " + str(audit["error"].status)
+                   + " — Google said: `" + audit["error"].detail + "`")
+          else:
+              emit("- Daily timeseries: PRIMARY property, last " + str(AUDIT_DAYS_N)
+                   + " complete days, dimension=date (logged to the job log; also summarized weekly below)")
+              emit("- Device + country splits: standard 28-day window (" + start.isoformat()
+                   + " → " + end.isoformat() + ")")
+              if audit["pages_window_label"]:
+                  emit("- Extra top-pages window: " + audit["pages_window_label"]
+                       + " (top 50 by impressions)")
+              emit("")
+              if audit["daily"]:
+                  emit("### Daily totals (" + str(AUDIT_DAYS_N) + "d)")
+                  emit("")
+                  emit("```")
+                  for r in audit["daily"]:
+                      k = (r.get("keys") or [""])[0]
+                      log("DAILY date=" + k
+                          + " clicks=" + format(r.get("clicks", 0.0), ".0f")
+                          + " impressions=" + format(r.get("impressions", 0.0), ".0f")
+                          + " ctr=" + format(r.get("ctr", 0.0) * 100, ".2f") + "%"
+                          + " position=" + format(r.get("position", 0.0), ".2f"))
+                      emit(k + " clicks=" + format(r.get("clicks", 0.0), ".0f")
+                           + " impressions=" + format(r.get("impressions", 0.0), ".0f")
+                           + " position=" + format(r.get("position", 0.0), ".2f"))
+                  emit("```")
+                  emit("")
+                  # weekly aggregation for a quick eyeball
+                  by_week = {}
+                  for r in audit["daily"]:
+                      k = (r.get("keys") or [""])[0]
+                      try:
+                          d = dt.date.fromisoformat(k)
+                      except ValueError:
+                          continue
+                      wk = d - dt.timedelta(days=d.weekday())
+                      agg = by_week.setdefault(wk, {"c": 0.0, "i": 0.0, "n": 0, "p": 0.0})
+                      agg["c"] += r.get("clicks", 0.0)
+                      agg["i"] += r.get("impressions", 0.0)
+                      agg["n"] += 1
+                      agg["p"] += r.get("position", 0.0) * r.get("impressions", 0.0)
+                  emit("### Weekly aggregation")
+                  emit("")
+                  emit("| Week (Mon) | Days | Clicks | Impressions | Wtd. position |")
+                  emit("|---|---:|---:|---:|---:|")
+                  for wk in sorted(by_week, reverse=True):
+                      agg = by_week[wk]
+                      wp = (agg["p"] / agg["i"]) if agg["i"] else 0.0
+                      emit("| " + wk.isoformat() + " | " + str(agg["n"]) + " | "
+                           + format(agg["c"], ".0f") + " | " + format(agg["i"], ".0f")
+                           + " | " + format(wp, ".2f") + " |")
+                  emit("")
+              if audit["devices"]:
+                  emit("### Devices (28d)")
+                  emit("")
+                  for line in fmt_rows(audit["devices"], "device"):
+                      emit(line)
+              if audit["countries"]:
+                  emit("### Countries by impressions (28d, top 40)")
+                  emit("")
+                  for line in fmt_rows(audit["countries"], "country"):
+                      emit(line)
+              if audit["pages_window_rows"]:
+                  emit("### Top pages by impressions — " + audit["pages_window_label"])
+                  emit("")
+                  pw = [dict(r) for r in audit["pages_window_rows"]]
+                  for r in pw:
+                      r["keys"] = r.get("keys") or [""]
+                  out = ["| # | Page | Clicks | Impressions | CTR | Avg. position |",
+                         "|---|---|---:|---:|---:|---:|"]
+                  for i, r in enumerate(pw, 1):
+                      safe = (r["keys"][0]).replace("|", "\\|")
+                      out.append("| " + str(i) + " | " + safe + " | "
+                                 + format(r.get("clicks", 0.0), ".0f") + " | "
+                                 + format(r.get("impressions", 0.0), ".0f") + " | "
+                                 + format(r.get("ctr", 0.0) * 100, ".2f") + "% | "
+                                 + format(r.get("position", 0.0), ".2f") + " |")
+                  out.append("")
+                  for line in out:
+                      emit(line)
 
           emit("---")
           emit("")
