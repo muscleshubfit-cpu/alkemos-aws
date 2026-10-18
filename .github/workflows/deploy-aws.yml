@@ -139,7 +139,7 @@ jobs:
 
       # Same frozen environment as quality-gate + Vercel: bun 1.3.14
       # from bun.lock, runtime Node 22.
-      - uses: actions/setup-node@a0853c24544627f65ddf259abe8019c62421857d6 # v5.0.0 — pinned 2026-10-10 audit
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0 — pinned 2026-10-10 audit
         with:
           node-version: 22
 
