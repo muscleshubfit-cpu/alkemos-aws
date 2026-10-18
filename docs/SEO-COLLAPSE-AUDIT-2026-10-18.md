@@ -38,7 +38,7 @@
 
 | # | الإصلاح | الملفات | الحالة |
 |---|---|---|---|
-| F-1 | **IndexNow push** (يعالج P-1 + P-2): مفتاح عام `public/528c4a…035b.txt` + submitter يقرأ الـ sitemaps الستة الحية ويدفع دفعات ≤500 إلى api.indexnow.org (idempotent بروتوكوليًا) + workflow يومي 03:47 UTC (آخر lastmod≤3 أيام) + `all=true` للتمهيد | `public/528c4a…txt` · `scripts/indexnow-submit.mjs` · `.github/workflows/indexnow-submit.yml` · `.gitignore` استثناء | **منفذ ومختبر محليًا** (جرد 2,197 URL ✓ · تصفية lastmod ✓ · node --check ✓) — النشر عبر deploy-aws بعد إصلاح F-3 ثم دفعة التمهيد (§4) |
+| F-1 | **IndexNow push** (يعالج P-1 + P-2): مفتاح عام `public/528c4a…035b.txt` + submitter يقرأ الـ sitemaps الستة الحية ويدفع دفعات ≤500 إلى api.indexnow.org (idempotent بروتوكوليًا) + workflow يومي 03:47 UTC (آخر lastmod≤3 أيام) + `all=true` للتمهيد | `public/528c4a…txt` · `scripts/indexnow-submit.mjs` · `.github/workflows/indexnow-submit.yml` · `.gitignore` استثناء | **منفذ ومتحقق حيًا**: النشر deploy-aws 39136241838 نجح (المفتاح 200 حيًا) ← التمهيد run 39136902982: **كل الدفعات الخمس HTTP 200 — 2,197/2,197 URL مقبولة** (الجولة الأولى 39136751322 وثّقت تحقق المفتاح المتدرج: 403→202) |
 | F-2 | **أداة قياس التعافي GSC** (يعالج P-4): توسيع سير gsc-connection-test بقراءة-فقط — dimension=date (نافذة قابلة للضبط `days`) + الأجهزة/الدول + نافذة top-pages للمقارنة (`pages_window`) | `.github/workflows/gsc-connection-test.yml` (+ صف CI_GATES) | **منفذ ومستخدم فعليًا** — به استُخرج كل جدول §1 (تشغيلات 39132583136 + 39133102626) |
 
 **ما لم يُنفَّذ عمدًا (بقرار مهني موثق):** P-3 (lastmod الصادق) — تغييره الآن أثناء نافذة التعافي فيه جدل (lastmod=today يدفع إعادة جلب sitemaps)؛ أُرجئ لقرار المالك بعد استقرار الظهور. لا حذف صفحات ولا تغيير URLs ولا تعديلات فهرسة واسعة (لا مبرر موثق — الموقع سليم).
