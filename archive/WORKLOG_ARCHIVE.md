@@ -12559,3 +12559,21 @@ Work Log:
 Stage Summary:
 - التقرير: `docs/VERCEL-TO-AWS-HOSTING-MIGRATION-PLAN-2026-10-09.md` — توصية Lightsail ‏$12/Node+PM2/بلا Docker ($0 خلال الأرصدة ثم $12/ش) بقياس بناء وتشغيل فعلي خارج Vercel وفجوة واحدة معلومة العلاج، وخطة 6 مراحل بتراجع DNS-only — **بانتظار موافقة المالك قبل أي تنفيذ**.
 - التالي عند الموافقة: المرحلة 0 (تحقق الأرصدة من Billing) ثم 1–6 بالترتيب بأوامر منفصلة لكل مرحلة.
+
+<!-- rotated 2026-10-18 by scripts/worklog_rotate.py (Phase 288, ARCH-REMEDIATION): 1 entries moved verbatim from worklog.md -->
+---
+Task ID: AWS-LIGHTSAIL-MIGRATION-PHASE1-2026-10-09
+Agent: Super Z (main)
+Task: أمر المالك (2026-10-09): تنفيذ المرحلة الأولى من نقل الاستضافة من Vercel إلى AWS Lightsail وفق خطة المستودع docs/VERCEL-TO-AWS-HOSTING-MIGRATION-PLAN-2026-10-09.md — فرع اختبار مستقل test/aws-lightsail-migration من أحدث main، اعتماد eu-north-1 ورصيد $100 وانتهاء 2027-04-09 بالخطة على الفرع فقط، معالجة نقص التشغيل/البناء/النشر (كاش الصور + النشر الآمن + التراجع عند الفشل)، إبقاء Supabase/GitHub Actions/مزودي AI/سير المدونة وVercel وDNS كما هي، لا أسرار ولا موارد AWS مدفوعة، اختبار البناء والفحوص ثم تقرير — بلا دمج في main وبلا نشر إنتاجي.
+
+Work Log:
+- الفرع منشأ من origin/main ‏34c950f2 (متزامن، شجرة نظيفة). **المتاح على الفرع فقط** (8 ملفات): `ecosystem.config.js` (الملحق أ حرفيًا) · `deploy/Caddyfile` + `deploy/Caddyfile.test` (tls internal للاختبار بلا DNS) · `deploy/deploy.sh` (تفعيل ذري + فحص صحة + تراجع آلي) · `deploy/rollback.sh` · `deploy/setup-server.sh` (علم --test + caddy validate) · `deploy/crontab-alkemos` · `.github/workflows/deploy-aws.yml` (workflow_dispatch حصرًا + preflight أسرار) + صف CI_GATES + ملاحظة README قسم Deployment + تحديث الخطة (المنطقة/الرصيد/التاريخ/الملاحق أ–و بدليل رفع نسخة الاختبار) + صف سجل docs/README. صفر لمس لsrc/next.config.ts/vercel.json/supabase/الworkflows القائمة/DNS.
+- **فجوة كاش الصور مقيسة ومُصلحة:** الأصل المجرد يعطي `/images/*` العامة (جذر+hero+og+programs+authors+categories) ‏`max-age=0` بينما حافة Vercel تعطيها 86400 (قاعدة vercel.json فقط) — أُصلحت بقواعد Caddy حرفية القيم؛ brand=300+SWR وexercises=immutable وsw.js و/_next/static كلها مقيسة تعمل من الأصل أصلًا.
+- **قانون defer مقيس حيًا (Caddy 2.8.4):** بدونه ظهر **هيدرا Cache-Control مزدوجان** (إضافة لا استبدال) — كل قواعد الكاش والأمان صارت مؤجلة defer = استبدال وقت كتابة الاستجابة (دلالة حافة Vercel)؛ بطارية حية عبر وكيل Caddy فعلي: 7 هيدرز أمان + CC واحد صحيح لكل عائلة + HTML ‏SEO-GEO-4 سليم + og-image عبر الحافة.
+- **محاكاة النشر الآمن (محلية، pm2 وهمي + تطبيق حقيقي):** 19/19 فحصًا أخضر — أول نشر نجاح · فشل متعمد → تراجع آلي للسابق بخروج 1 صاخب · rollback.sh يدوي مُتحقق · تقليم الإصدارات (5، لا يمس الحالي/السابق) · تجميع .env (مشترك+منارة SHA، وضع 600). اصطادت المحاكاة عيبًا حقيقيًا (APP_ROOT وسيطًا ثانيًا فقط) فأُصلح بدعم متغير البيئة.
+- **البطارية الكاملة:** bun install ‏642/761 (146ms) · tsc ‏0 · eslint ‏0 (تحذير المسبق وحده) · next build نجح بـ**2,102 صفحة** (مطابق لقياس الخطة) · vitest ‏**2,306/2,306** · البوابات الخمس خضراء (parity · migration_audit · stale-refs · ui-wiring · docs_audit بصف deploy-aws).
+- اكتشاف جانبي موثق (لم يُلمس التزامًا بالقيود): مرشح الفروع `branches: ain]` تالف حرفيًا في quality-gate/docs-parity/guard/vercel-cleanup — GitHub يتجاهل النمط غير الصالح فتعمل على كل الفروع (مقيس بالAPI: تشغيلات push على main وPR من فروع أخرى) — إصلاحه قرار مالك مستقل.
+
+Stage Summary:
+- الفرع `test/aws-lightsail-migration` جاهز بكل أصول نشر Lightsail (نشر آمن ذري + تراجع آلي/يدوي + كاش صور مطابق للحافة + وضع اختبار بلا DNS) والخطة محدثة بمنطقة eu-north-1 ورصيد $100 حتى 2027-04-09 ودليل رفع نسخة الاختبار (الملحق و). لا دمج في main، لا DNS، لا موارد AWS، لا أسرار، Vercel لم يُمس.
+- Push status: pushed (branch test/aws-lightsail-migration — لا main)

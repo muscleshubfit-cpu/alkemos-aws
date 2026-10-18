@@ -1,0 +1,75 @@
+# IndexNow submitter (SEO-COLLAPSE-AUDIT-2026-10-18 — P1 recovery fix)
+#
+# WHY: the audit's measured finding — Bing returns "There are no results
+# for site:alkemos.com" (measured 2026-10-18: zero pages, zero brand
+# results) while alkemos.com serves 200/indexable to crawlers and all six
+# sitemaps are healthy. The ~6-week-old domain was never picked up by
+# Bing's discovery. IndexNow is Bing's own push protocol (Yandex/Seznam/
+# Naver also honor it; Google does NOT) and works without site
+# verification: the key file https://alkemos.com/<key>.txt is the only
+# ownership proof (public/<key>.txt in this repo is the single source of
+# truth — the script reads it from there at run time).
+#
+# WHAT IT DOES: runs scripts/indexnow-submit.mjs —
+#   1. Reads the six child sitemaps from the LIVE site (SITE_URL).
+#   2. Selects URLs whose <lastmod> is <= `days` old (input, default 3)
+#      or ALL URLs when `all` input is true (recovery bootstrapping).
+#   3. POSTs batches (<= 500 URLs each) to https://api.indexnow.org/indexnow
+#      with {host, key, keyLocation, urlList} — the documented JSON shape.
+# Idempotent by protocol: "If a search engine already knows the URL it
+# will ignore it." No secrets (key is public-by-design), no DB writes,
+# no site mutations.
+#
+# EXIT CODE LAW (honest): 0 = at least one batch accepted (202/200);
+# 1 = nothing submitted / hard failures; 2 = 429 throttled (retry later).
+#
+# SCHEDULE (daily 03:47 UTC): recovery-window nudge — keeps freshly
+# changed URLs flowing to Bing during reindexing. The minute 47 avoids
+# the repo's existing cron minutes; the slot is documented in CI_GATES.
+# REMOVAL: when organic impressions stabilize (owner decision), delete
+# the `schedule:` block only — the workflow stays useful via dispatch.
+#
+# SAFETY: no checkout of application code needed? The script lives in
+# scripts/ so checkout IS needed (shallow, read-only use). permissions:
+# contents: read only. Nothing is ever pushed from this workflow.
+name: IndexNow submit (Bing/Yandex push — recovery)
+
+on:
+  schedule:
+    - cron: "47 3 * * *" # daily 03:47 UTC — recovery window
+  workflow_dispatch:
+    inputs:
+      days:
+        description: "Submit URLs whose sitemap <lastmod> is within N days (ignored when all=true)"
+        default: "3"
+      all:
+        description: "Submit EVERY sitemap URL (recovery bootstrap / re-crawl nudge)"
+        type: boolean
+        default: false
+
+concurrency:
+  group: indexnow-submit
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  submit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout (for scripts/indexnow-submit.mjs + the key file)
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+
+      - name: Submit URLs to IndexNow
+        env:
+          SITE_URL: https://alkemos.com
+        run: |
+          ARGS=""
+          if [ "${{ github.event.inputs.all }}" = "true" ]; then
+            ARGS="--all"
+          elif [ -n "${{ github.event.inputs.days }}" ]; then
+            ARGS="--days ${{ github.event.inputs.days }}"
+          fi
+          node scripts/indexnow-submit.mjs $ARGS
