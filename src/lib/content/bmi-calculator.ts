@@ -321,6 +321,23 @@ export const BMI_CALCULATOR_CONTENT: ToolReference = {
         ar: "النقطة الواحدة تعادل مربع طولك بالكيلوغرامات: عند 1.70 متر نحو 2.9 كجم؛ وعند 1.80 متر نحو 3.24 كجم. ولاحظ الظلم الذي تفرضه الفيزياء على طوال القامص — عليهم تحريك كيلوغرامات أكثر لكل نقطة. وحساب حزام الصحة يتبع مباشرة: للهبوط من 29 إلى 24.9 عند 1.75 متر تحتاج خسارة نحو (29 − 24.9) × 3.06 ≈ 12.5 كجم.",
       },
     },
+    // PRIORITY-PAGES Implementation (2026-10-19, audit §A-4 + §3.3): the
+    // measured pattern "users search for THEIR numeric value" — five
+    // BMI-value queries in GSC run 39152491179 (e.g. "27.0 bmi" @ 72,
+    // "30.9 bmi" @ 78, "43 bmi" @ 77) — all returning zero clicks at
+    // positions 72-86: the page explains the bands but never answers
+    // "my number means what?". This pair serves that tail with the
+    // page's own documented arithmetic (one point = height-squared kg).
+    {
+      q: {
+        en: "What does a BMI of 27 mean?",
+        ar: "مؤشر 27 يعني ماذا؟",
+      },
+      a: {
+        en: "A BMI of 27 sits inside the overweight band (25.0–29.9) — roughly one height-squared in kilograms above the healthy edge (about 3.1 kg at 1.75 m), i.e. 2–4 kg for most heights. Read it as a screening signal, not a verdict: what matters more is where the weight sits (waist circumference) and what it is made of (body fat percentage). If those companions are healthy, treat 27 as a flag to hold the trend — and watch the direction of your readings over the following weeks rather than the single number.",
+        ar: "مؤشر 27 يقع داخل نطاق زيادة الوزن (25.0–29.9) — أي نحو مربع طولك بالكيلوغرامات فوق حافة النطاق الصحي (قرابة 3.1 كجم عند 1.75 متر)، أي 2–4 كجم لأغلب الأطوال. اقرأه إشارةَ فرزٍ لا حكمًا: الأهم بعد الرقم أين يجلس الوزن (محيط الخصر) وممّ يتكون (نسبة دهون الجسم). فإن كان هذان الرفيقان سليمين فاعتبر 27 رايةً تُمسك الاتجاه — وراقب اتجاه قراءاتك خلال الأسابيع التالية لا الرقم الواحد.",
+      },
+    },
     {
       q: {
         en: "Is BMI 24.9 to 25.0 a real boundary?",

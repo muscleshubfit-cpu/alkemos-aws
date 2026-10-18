@@ -38,6 +38,10 @@ export function StaticPageView({
   // passed down) win; the code defaults in site-content/static-pages.ts
   // are the eternal fallback — a missing/broken row can never blank the
   // page (the fallback law).
+  // PRIORITY-PAGES Implementation (2026-10-19, audit §E-2): FAQ items may
+  // now carry optional destination links — passed into the section so
+  // each answer ends with its chips (the existing static-page links
+  // renderer, zero new UI).
   const pageContent: { title: string; sections: StaticSection[] } =
     page === "faq"
       ? {
@@ -45,6 +49,7 @@ export function StaticPageView({
           sections: resolveFaqPage(content, isAr).items.map((f) => ({
             heading: f.q,
             paragraphs: [f.a],
+            links: f.links,
           })),
         }
       : resolveStaticPage(content, page, isAr);

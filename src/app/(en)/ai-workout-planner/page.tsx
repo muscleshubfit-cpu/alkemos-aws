@@ -433,6 +433,69 @@ export default function AiWorkoutPlannerPage() {
           )}
         </div>
 
+        {/* PRIORITY-PAGES Implementation 1 (2026-10-19, audit §A-9 +
+            Improvement 1 — owner-approved frame): a real-shape example of
+            what generation returns, shown BEFORE the first click — the
+            measured decision gap was "best measured demand (14 impr @
+            13.93) on the thinnest copy (190 words, zero FAQ)". The split
+            below is explicitly labeled illustrative; its movement
+            families, set/rep bounds, and the 3-8-exercises-per-day shape
+            all mirror the actual generator prompt + validator
+            (ai-workout-planner.ts) so the example never promises what the
+            tool does not deliver. */}
+        <section className="mt-10">
+          <h2 className="text-xl font-semibold tracking-tight text-[var(--text)]">
+            {isAr ? "مثال لمخرج توليد حقيقي — قبل أن تضغط" : "An example of a real generated split"}
+          </h2>
+          <p className="mt-2 text-sm font-normal leading-relaxed text-[var(--muted-foreground)]">
+            {isAr
+              ? "تقسيمة توضيحية لمبتدئ بتجهيزة دمبل منزلية و4 أيام — كل يوم باسمه وعضلاته المستهدفة، وكل تمرين بمجموعاته وتكراراته. المخرج الفعلي يتولد من مدخلاتك أنت: هدفك ومستواك وأيامك ومعداتك."
+              : "An illustrative split for a beginner with home dumbbells on 4 days — every day named with its target muscles, every exercise with sets and reps. Your real one is generated from your own inputs: goal, level, days, and equipment."}
+          </p>
+          <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {[
+              {
+                dayAr: "اليوم الأول — صدر وترايسبس",
+                dayEn: "Day 1 — chest & triceps",
+                itemsAr: "بنش برس بالدمبل 4×8-10 · تفتيح دمبل مائل 3×10-12 · ضغط أرضي 3×10-15 · غطس بمسند 3×10-15",
+                itemsEn: "Dumbbell bench press 4×8-10 · Incline dumbbell fly 3×10-12 · Push-ups 3×10-15 · Bench dips 3×10-15",
+              },
+              {
+                dayAr: "اليوم الثاني — ظهر وبايسبس",
+                dayEn: "Day 2 — back & biceps",
+                itemsAr: "تجديف بالدمبل منحنيًا 4×8-10 · رفعة ميتة بالدمبل 3×10-12 · بايسبس دمبل واقفًا 3×10-12 · بايسبس مطرقة 3×10-12",
+                itemsEn: "Bent-over dumbbell row 4×8-10 · Dumbbell deadlift 3×10-12 · Standing dumbbell curl 3×10-12 · Hammer curl 3×10-12",
+              },
+              {
+                dayAr: "اليوم الثالث — أرجل",
+                dayEn: "Day 3 — legs",
+                itemsAr: "سكوات كوبلت 4×10-12 · طعن بالدمبل 3×10-12 لكل رجل · رفعة رومانية بالدمبل 3×10-12 · رفعة سمانة واقفًا 4×15-20",
+                itemsEn: "Goblet squat 4×10-12 · Dumbbell lunge 3×10-12 per leg · Dumbbell Romanian deadlift 3×10-12 · Standing calf raise 4×15-20",
+              },
+              {
+                dayAr: "اليوم الرابع — كتف وبطن",
+                dayEn: "Day 4 — shoulders & core",
+                itemsAr: "ضغط كتف بالدمبل واقفًا 4×8-10 · تفتيح جانبي 3×12-15 · بلانك 3×45-60 ثانية · رفع أرجل معلقًا 3×12-15",
+                itemsEn: "Standing dumbbell shoulder press 4×8-10 · Lateral raise 3×12-15 · Plank 3×45-60 sec · Hanging leg raise 3×12-15",
+              },
+            ].map((d) => (
+              <div key={d.dayEn} className="rounded-2xl border border-[var(--edge)] bg-[var(--tint)] p-4">
+                <h3 className="text-sm font-semibold tracking-tight text-[var(--text)]">
+                  {isAr ? d.dayAr : d.dayEn}
+                </h3>
+                <p className="mt-1.5 text-sm font-normal leading-relaxed text-[var(--muted-foreground)]">
+                  {isAr ? d.itemsAr : d.itemsEn}
+                </p>
+              </div>
+            ))}
+          </div>
+          <p className="mt-3 text-xs font-normal leading-relaxed text-[var(--muted-foreground)]">
+            {isAr
+              ? "وكل حركة مطابقة في مكتبة التمارين تظهر في مخرجك الفعلي بصورتها وتنقل إلى صفحة شرحها الكامل — 868+ تمرينًا بالأداء الصحيح."
+              : "In your real output, every movement matched in the exercise library carries its image and links to its full how-to page — 868+ exercises with proper form."}
+          </p>
+        </section>
+
         {/* Generated plan — restored across navigation/refresh; stays
             rendered even when the monthly pool is exhausted. */}
         {hydrated && plan && (
@@ -644,6 +707,104 @@ export default function AiWorkoutPlannerPage() {
                 ? "الأنظمة المولّدة عامة لبالغين أصحاء. إن كان لديك ألم أو إصابة — خصوصاً في الظهر أو الركبة أو الكتف — أو وضع صحي مزمن، فالحركات المناسبة لك تُضبط مع مختص يرى ملفك كاملاً؛ استعمل النظام مادة نقاش ممتازة معه لا بديلاً عنه، وأي تمرين يؤلمك اليوم يُستبدل لا يُجاهد."
                 : "Generated splits are general guidance for healthy adults. If you live with pain or an injury — especially in the back, knees, or shoulders — or a chronic condition, the right movements for you are set with a professional who sees your full file; use the split as an excellent discussion piece with them, never a replacement — and any exercise that hurts today gets swapped, not fought."}
             </p>
+          </div>
+        </section>
+
+        {/* PRIORITY-PAGES Implementation 1 (2026-10-19) — the FAQ this
+            page never had (audit: 190 words, zero FAQ, on the site's best
+            measured demand). Plain visible HTML (no accordion) so the
+            answers ship in the server HTML for non-JS crawlers; every
+            number verified against src/lib/memberships.ts (unified pool:
+            visitor/free 2, premium 4, pro/coaching 8 — success-only
+            counting) and ai-workout-planner.ts (3-8 exercises/day). */}
+        <section className="mt-10">
+          <h2 className="text-xl font-semibold tracking-tight text-[var(--text)]">
+            {isAr ? "أسئلة شائعة حول المخطط" : "Workout planner FAQ"}
+          </h2>
+          <div className="mt-4 space-y-4">
+            {[
+              {
+                q: isAr ? "هل أحتاج حسابًا لتوليد التقسيمة؟" : "Do I need an account to generate a split?",
+                a: isAr
+                  ? "لا — كل زائر يحصل على توليدين ناجحين شهريًا بلا تسجيل ولا بطاقة: رصيدك الشهري مجاني من دخولك الأول. والحساب المجاني يجعل كل خطة تولّدها تُحفظ في حسابك وتصل إليها من أي جهاز."
+                  : "No — every visitor gets 2 successful generations a month with no signup and no card: your monthly pool is free from your very first visit. A free account saves every plan you generate to your account, reachable from any device.",
+              },
+              {
+                q: isAr ? "هل أحتاج ناديًا؟" : "Do I need a gym?",
+                a: isAr ? (
+                  <>
+                    لا — اختر تجهيزتك عند التوليد: وزن الجسم بلا معدات، أو دمبل منزلي، أو نادٍ كامل، وستُختار الحركات بما يناسبها. وكل حركة مطابقة في{" "}
+                    <Link
+                      href="/ar/exercises"
+                      className="text-[var(--text)] underline decoration-[var(--edge)] underline-offset-4 transition-colors hover:decoration-[var(--chrome-edge)]"
+                    >
+                      مكتبة التمارين
+                    </Link>{" "}
+                    (868+ تمرينًا) تظهر بصورتها وتنقل إلى صفحة شرحها الكامل.
+                  </>
+                ) : (
+                  <>
+                    No — pick your equipment at generation time: bodyweight only, home dumbbells, or a full gym, and the movements are chosen to match. Every movement matched in the{" "}
+                    <Link
+                      href="/exercises"
+                      className="text-[var(--text)] underline decoration-[var(--edge)] underline-offset-4 transition-colors hover:decoration-[var(--chrome-edge)]"
+                    >
+                      exercise library
+                    </Link>{" "}
+                    (868+ exercises) carries its image and links to its full how-to page.
+                  </>
+                ),
+              },
+              {
+                q: isAr ? "هل التقسيمة مناسبة لمبتدئ؟" : "Is the split suitable for a beginner?",
+                a: isAr
+                  ? "نعم — اختر «مبتدئ» وسيوزع المولد الحركات الأساسية بأحجام مريحة (3 إلى 8 تمارين لكل يوم). لست متأكدًا من مستواك؟ ابدأ بـ«مبتدئ» — الترقية في التوليد القادم أسهل من العكس، وإن وجدت أسبوعك سهلًا فالمستوى التالي قرارك في المرة التالية."
+                  : "Yes — pick \"beginner\" and the generator lays out the foundational movements at comfortable volumes (3 to 8 exercises per day). Not sure about your level? Start with beginner — moving up in your next generation is easier than the reverse, and if the week feels easy, the next level is your call next time.",
+              },
+              {
+                q: isAr ? "كم توليدًا متاحًا؟ وماذا بعد نفاد الرصيد؟" : "How many generations do I get — and what happens when the pool runs out?",
+                a: isAr
+                  ? "رصيد شهري موحد واحد يجمع خطط التغذية والتمارين معًا: توليدان ناجحان شهريًا لكل زائر بلا حساب، ويرتفع إلى 4 مع بريميوم و8 مع برو والتدريب الأونلاين — ولا يُحتسب إلا التوليد الناجح. بعد نفاد الرصيد تبقى كل خطة ولّدتها مرئية ومتاحة؛ ما يتوقف هو التوليد الجديد حتى يتجدد الرصيد أول الشهر."
+                  : "One unified monthly pool covers nutrition and workout plans together: 2 successful generations a month for every visitor with no account, rising to 4 with Premium and 8 with Pro and Coaching — only successful generations count. After the pool runs out, every plan you generated stays visible and accessible; what pauses is new generation until the pool resets on the 1st.",
+              },
+              {
+                q: isAr ? "هل أستطيع تعديل التقسيمة أو طلب غيرها؟" : "Can I change the split or ask for another one?",
+                a: isAr
+                  ? "نعم — زر «ولّد نظاماً آخر» يولّد تقسيمة جديدة من رصيدك الشهري بمدخلات معدلة إن أردت. ومع الاشتراك يستطيع EVO تبديل تمارين فردية داخل خطتك أسبوعيًا (3 تبديلات مع بريميوم و6 مع برو)، وللتبديل اليدوي الكامل برامج التدريب الجاهزة معروضة لكل مستوى وهدف."
+                  : "Yes — the \"Generate another split\" button draws a new split from your monthly pool, with edited inputs if you like. With a subscription, EVO can swap individual exercises inside your plan weekly (3 swaps with Premium, 6 with Pro), and for full manual control the ready workout programs are laid out for every level and goal.",
+              },
+              {
+                q: isAr ? "ما الفرق بين هذه الأداة وبين EVO؟" : "How is this different from EVO?",
+                a: isAr ? (
+                  <>
+                    المخطط يولّد خطة كاملة من نموذج في ثوانٍ؛{" "}
+                    <Link
+                      href="/ar/evo"
+                      className="text-[var(--text)] underline decoration-[var(--edge)] underline-offset-4 transition-colors hover:decoration-[var(--chrome-edge)]"
+                    >
+                      EVO
+                    </Link>{" "}
+                    محادثة تكيّف خطتك القائمة وتجيب أسئلتك لحظيًا على مدار الساعة. كثير من المستخدمين يبدأون هنا ثم يكملون مع EVO لحاجاتهم اليومية.
+                  </>
+                ) : (
+                  <>
+                    This planner generates a complete plan from a model in seconds;{" "}
+                    <Link
+                      href="/evo"
+                      className="text-[var(--text)] underline decoration-[var(--edge)] underline-offset-4 transition-colors hover:decoration-[var(--chrome-edge)]"
+                    >
+                      EVO
+                    </Link>{" "}
+                    is a conversation that adapts your existing plan and answers your questions instantly, around the clock. Many users start here, then keep EVO for the day-to-day.
+                  </>
+                ),
+              },
+            ].map((faq) => (
+              <div key={faq.q} className="marble-card p-5">
+                <h3 className="text-sm font-semibold text-[var(--text)]">{faq.q}</h3>
+                <p className="mt-1.5 text-sm font-normal leading-relaxed text-[var(--muted-foreground)]">{faq.a}</p>
+              </div>
+            ))}
           </div>
         </section>
       </main>

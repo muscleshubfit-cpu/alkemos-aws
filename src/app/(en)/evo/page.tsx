@@ -23,6 +23,7 @@ import {
 import Image from "next/image";
 import { ThemeImg } from "@/components/ThemeImg";
 import { openEvoFloatingChat } from "@/lib/evo-chat-events";
+import { EVO_FAQ } from "@/lib/evo-faq";
 
 export default function EvoPage() {
   const { lang } = useI18n();
@@ -374,6 +375,71 @@ export default function EvoPage() {
           </div>
         </section>
 
+        {/* PRIORITY-PAGES Implementation 2 (2026-10-19, audit §B-1 +
+            Improvement 2): "What to ask EVO?" — EVO holds the site's best
+            measured standing position (26 impr @ 4.65) yet shipped with no
+            conversation sample and no FAQ. This section shows the product
+            in action before the first message. The sample exchange is
+            explicitly labeled an illustrative model (نموذج توضيحي) — the
+            arithmetic inside it is USDA-consistent (120g drained tuna ≈
+            116 kcal + 40g wholegrain bread ≈ 95 → "about 200 kcal",
+            ~28g protein → "nearly 30g"). */}
+        <section className="marble-card mt-16 p-6 text-[var(--text)] md:p-10">
+          <h2 className="text-2xl font-semibold tracking-tight md:text-3xl">
+            {isAr ? "ماذا تسأل EVO؟" : "What would you ask EVO?"}
+          </h2>
+          <p className="mt-3 text-base font-normal leading-relaxed text-[var(--muted-foreground)]">
+            {isAr
+              ? "أسئلة من واقع الحياة اليومية — اطرحها كما هي، أو صُغها بأسلوبك:"
+              : "Questions from everyday training life — ask them as written, or in your own words:"}
+          </p>
+          <ul className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {[
+              isAr ? "عندي مناسبة الجمعة وأريد تركيزًا على الكتف — رتب لي الأسبوع."
+                : "I have an event this Friday and want a shoulder focus — rearrange my week for me.",
+              isAr ? "سفري الأسبوع القادم بلا نادٍ — بدّل لي تمارين الأسبوع بما يناسب وزن الجسم."
+                : "I'm traveling next week with no gym — swap my week to bodyweight work.",
+              isAr ? "أكلت خارج الخطة اليوم بـ300 سعرة — كيف أعوّض دون كسر الأسبوع؟"
+                : "I ate 300 kcal over plan today — how do I make it up without breaking the week?",
+              isAr ? "كم أرفع وزنًا هذا الأسبوع على أساس تقدمي؟"
+                : "How much weight should I add this week based on my progress?",
+              isAr ? "بدّل تمرين اليوم لآخر لعضلة الفخذ وأنا مسافر."
+                : "Swap today's exercise for another quad movement — I'm away.",
+              isAr ? "وجبة غنية بالبروتين مما تبقى في مطبخي الليلة؟"
+                : "A high-protein meal from what's left in my kitchen tonight?",
+              isAr ? "ما الفرق بين النظام العالي البروتين والمتوازن لعادتي؟"
+                : "What's the difference between high-protein and balanced for my routine?",
+              isAr ? "خطة يوم كامل بـ2,000 سعرة واحفظها في لوحة خططي."
+                : "Build me a full 2,000-calorie day and save it to my plans.",
+            ].map((example) => (
+              <li
+                key={example}
+                className="flex items-start gap-2.5 rounded-2xl border border-[var(--edge)] bg-[var(--tint)] p-4 text-sm font-normal leading-relaxed text-[var(--text)]"
+              >
+                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--muted-2)]" aria-hidden="true" />
+                <span>{example}</span>
+              </li>
+            ))}
+          </ul>
+          {/* The sample exchange — labeled illustrative; real answers are
+              built from the user's own data. */}
+          <div className="mt-8 rounded-2xl border border-[var(--edge)] bg-[var(--card)] p-5">
+            <p className="text-xs font-medium uppercase tracking-wider text-[var(--muted-foreground)]">
+              {isAr ? "نموذج توضيحي لشكل المحادثة" : "An illustrative sample of the conversation"}
+            </p>
+            <div className="mt-4 space-y-3 text-sm font-normal leading-relaxed">
+              <p className="text-[var(--text)]">
+                {isAr ? "أنت: «عندي 200 سعرة فاضلة اليوم — أين أصرفها؟»" : "You: \"I have 200 kcal to spare today — where should I spend them?\""}
+              </p>
+              <p className="text-[var(--muted-foreground)]">
+                {isAr
+                  ? "EVO: «الأسهل بعد تمرينك: تونة مصفاة 120غ مع 40غ خبز أسمر — نحو 200 سعرة وقرابة 30غ بروتين تخدم اليوم بلا أن تكسر أسبوعك. وإن كنت تدّخرها لغدٍ فاجعلها جزءًا من فطور أطول.» — والمخرج الفعلي يُبنى على بياناتك أنت."
+                  : "EVO: \"Easiest after your workout: 120g drained tuna with 40g wholegrain bread — about 200 kcal and nearly 30g of protein, serving today without breaking your week. And if you'd rather save them for tomorrow, fold them into a longer breakfast.\" — your real answer is built from your own data."}
+              </p>
+            </div>
+          </div>
+        </section>
+
         {/* Trust badges */}
         <section className="mt-12 grid grid-cols-2 gap-4 md:grid-cols-4">
           {[
@@ -610,6 +676,26 @@ export default function EvoPage() {
                   {isAr ? card.descAr : card.descEn}
                 </p>
               </a>
+            ))}
+          </div>
+        </section>
+
+        {/* PRIORITY-PAGES Implementation 2 (2026-10-19): the FAQ this page
+            never had — the decision questions (privacy, data, limits) lived
+            only inside the comparison tables, never in the indexable
+            Q&A format. Plain visible HTML from the same single-source
+            array (src/lib/evo-faq.ts) that the language layouts emit as
+            FAQPage JSON-LD (the coaching-faq.ts precedent, audit P1-2). */}
+        <section className="mt-12">
+          <h2 className="text-center text-2xl font-semibold tracking-tight md:text-3xl">
+            {isAr ? "أسئلة شائعة حول EVO" : "EVO frequently asked questions"}
+          </h2>
+          <div className="mx-auto mt-8 max-w-2xl space-y-4">
+            {EVO_FAQ[isAr ? "ar" : "en"].map((faq) => (
+              <div key={faq.q} className="marble-card p-5">
+                <h3 className="text-sm font-semibold text-[var(--text)]">{faq.q}</h3>
+                <p className="mt-1.5 text-sm font-normal leading-relaxed text-[var(--muted-foreground)]">{faq.a}</p>
+              </div>
             ))}
           </div>
         </section>

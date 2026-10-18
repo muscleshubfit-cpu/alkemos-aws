@@ -37,13 +37,25 @@ export default function ToolsPage() {
           <h1 className="text-3xl font-semibold tracking-tight md:text-5xl">
             {isAr ? "الأدوات المجانية" : "Free Tools"}
           </h1>
+          {/* PRIORITY-PAGES Implementation 5 (2026-10-19, audit §A-1 +
+              Improvement 5 — owner-approved frame): the hub carried ~50
+              words with no methodology — it is the institutional entry
+              point of the cluster that holds 75% of the site's measured
+              impression footprint. The intro chains the loop the tools
+              actually serve (calculate → split → plan → generate →
+              track); every number is code-verified (TOOLS_COUNT = 8,
+              FOODS_COUNT = 8,830+, tools-shared.ts). It also closes the
+              §2.6 finding of the 2026-09-28 content audit — the one
+              item of its family that never got a remediation row. */}
           <p className="mx-auto mt-3 max-w-md text-base font-normal text-[var(--muted-foreground)] md:text-lg">
-            {/* 2026-09-15 accuracy fix: the hub serves the full 8-tool
-                cluster (calculators + water tracker + planners), not
-                calculators only — "tools" matches the H1 and tools-shared. */}
             {isAr
               ? "أدوات لياقة وتغذية مجانية — جرّبها فورًا."
               : "Free fitness and nutrition tools — free to try."}
+          </p>
+          <p className="mx-auto mt-4 max-w-2xl text-center text-sm font-normal leading-relaxed text-[var(--muted-foreground)] md:max-w-3xl md:text-base">
+            {isAr
+              ? "الأرقام أولًا: كل تغيير حقيقي في جسمك يبدأ بمعرفة أرقامك — كم تحرق، وكيف توزّعها، وماذا تقيس. أدوات Alkemos الثماني المجانية تحسبها لك بالكامل بلا حساب: ابدأ بحاسبة السعرات لتعرف رقمك اليومي، وزّعه بالماكروز، ابنِ يومك في مخطط الوجبات من قاعدة 8,830+ صنفًا غذائيًا، أو ولّد خطة كاملة بالذكاء الاصطناعي في ثوانٍ — ثم تابع دهون جسمك وماءك حتى تصل."
+              : "Numbers first: every real change in your body starts with knowing your numbers — how much you burn, how you split them, and what you track. Alkemos' eight free tools calculate them all, no account needed: start with the Calorie Calculator for your daily number, split it with the Macro Calculator, build your day in the Meal Planner from 8,830+ foods, or generate a full plan with AI in seconds — then track body fat and water on the way."}
           </p>
         </div>
 
@@ -52,6 +64,54 @@ export default function ToolsPage() {
             <ToolCard key={tool.slug} tool={tool} isAr={isAr} />
           ))}
         </div>
+
+        {/* PRIORITY-PAGES Implementation 5 (2026-10-19, audit §A-1): the
+            "where do I start?" guide — the audit's second gap for this
+            hub (a card index with no intent routing). Three goal lanes,
+            each pointing at the tool(s) that serve it; every destination
+            exists in TOOLS/TOOL_LIBRARIES (tools-shared.ts) or the
+            verified program library (workout-programs.ts). */}
+        <section className="mt-12">
+          <h2 className="text-2xl font-semibold tracking-tight md:text-3xl">
+            {isAr ? "من أين تبدأ؟" : "Where do you start?"}
+          </h2>
+          <p className="mt-2 max-w-md text-sm font-normal text-[var(--muted-foreground)]">
+            {isAr
+              ? "حدد هدفك، والقائمة التالية تأخذك لأداتك الأولى مباشرة:"
+              : "Pick your goal, and the list below takes you straight to your first tool:"}
+          </p>
+          <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+            {[
+              {
+                goalAr: "هدفك خسارة الدهون",
+                goalEn: "Your goal is fat loss",
+                pathAr: "ابدأ بحاسبة السعرات لتعرف رقمك اليومي، ثم وزّعه بالماكروز، وتابع التقدم بحاسبة الدهون ومتتبع الماء.",
+                pathEn: "Start with the Calorie Calculator for your daily number, split it with the Macro Calculator, and follow progress with the Body Fat Calculator and the Water Tracker.",
+              },
+              {
+                goalAr: "هدفك بناء العضل",
+                goalEn: "Your goal is building muscle",
+                pathAr: "ابدأ بالماكروز (بروتينك أولًا) بجانب حاسبة السعرات، وولّد تقسيمتك من مخطط التمارين بالذكاء الاصطناعي أو من برامج التدريب الجاهزة.",
+                pathEn: "Start with the Macro Calculator (your protein first) alongside the Calorie Calculator, and generate your split from the AI Workout Planner or the ready programs.",
+              },
+              {
+                goalAr: "تبدأ بصحتك عامة",
+                goalEn: "You're starting with general health",
+                pathAr: "قياس سريع في دقائق: مؤشر الكتلة، ثم نسبة الدهون، ثم عادة الماء اليومية — ثلاث أدوات تعطيك صورة واضحة أول اليوم.",
+                pathEn: "A quick three-minute reading: the BMI Calculator, then Body Fat, then the daily water habit — three tools that give you a clear picture on day one.",
+              },
+            ].map((lane) => (
+              <div key={lane.goalEn} className="marble-card p-6">
+                <h3 className="text-base font-semibold tracking-tight text-[var(--text)]">
+                  {isAr ? lane.goalAr : lane.goalEn}
+                </h3>
+                <p className="mt-2 text-sm font-normal leading-relaxed text-[var(--muted-foreground)]">
+                  {isAr ? lane.pathAr : lane.pathEn}
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
 
         {/* §12.33: the libraries cluster — its own labeled section (owner
             directive «انقل خطط غذائيه جاهزة الى المكتبات»). */}

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { getEVOApplicationSchema, jsonLd } from "@/lib/seo";
+import { getEVOApplicationSchema, getFAQSchema, jsonLd } from "@/lib/seo";
+import { EVO_FAQ } from "@/lib/evo-faq";
 
 /**
  * SEO-GEO-6.4 (2026-09-12): AR metadata for /ar/evo — P1-9, the last
@@ -73,6 +74,12 @@ export const metadata: Metadata = {
 // name/description/featureList while EN serves English.
 const evoSchema = getEVOApplicationSchema("ar");
 
+// PRIORITY-PAGES Implementation 2 (2026-10-19, audit §B-1): the Arabic
+// FAQ mirror of the EN layout's FAQPage JSON-LD — same single-source
+// array (src/lib/evo-faq.ts), Arabic-first so this URL gets quoted for
+// the Arabic questions (the coaching-faq.ts precedent, audit P1-2).
+const evoFaqSchema = getFAQSchema(EVO_FAQ.ar);
+
 export default function ArEvoLayout({
   children,
 }: {
@@ -83,6 +90,10 @@ export default function ArEvoLayout({
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: jsonLd(evoSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: jsonLd(evoFaqSchema) }}
       />
       {children}
     </>

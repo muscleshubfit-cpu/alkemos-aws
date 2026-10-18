@@ -220,6 +220,73 @@ export default function MembershipsPage({ lang: langProp }: { lang?: Lang } = {}
             : "You can try AI plan generation instantly: no account keeps your plan on this device, a free account saves it permanently in your account & syncs it across your devices, and paid tiers add broader management and extra benefits per plan."}
         </p>
 
+        {/* PRIORITY-PAGES Implementation 3 (2026-10-19, audit §C-1 +
+            Improvement 3 — owner-approved frame): "Which plan fits you?" —
+            the buyer's first decision question, unserved by any copy. Four
+            honest personas, every number against memberships.ts (unified
+            pool 2/4/8/8 · meal-planner saves 1/10/50/50 · saved results
+            3/50/200/200 · swaps 3/6 weekly paid · ads Free+Premium only).
+            The Free row's "1 nutrition + 1 workout plan a month" is the
+            arithmetic of the unified pool (2 combined), never 2+2. */}
+        <section className="mt-12">
+          <h2 className="text-center text-2xl font-semibold tracking-tight md:text-3xl">
+            {isAr ? "أي باقة تناسبك؟" : "Which plan fits you?"}
+          </h2>
+          <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
+            {[
+              {
+                tierAr: "مجاني",
+                tierEn: "Free",
+                fitAr: "تبدأ وتريد أرقامك وخطتك الأولى",
+                fitEn: "You're starting and want your numbers and first plan",
+                bodyAr: "التوليدان الشهريان يكفيان لخطة تغذية وخطة تمرين كل شهر، ومع EVO 10 رسائل يوميًا. والحساب المجاني يحفظ خططك للأبد ويزامنها عبر أجهزتك.",
+                bodyEn: "The 2 monthly generations cover one nutrition plan and one workout plan a month, plus 10 EVO messages a day. A free account keeps your plans forever and syncs them across devices.",
+              },
+              {
+                tierAr: "بريميوم",
+                tierEn: "Premium",
+                fitAr: "صرت تعدّل وتجرب",
+                fitEn: "You're iterating and experimenting",
+                bodyAr: "4 توليدات شهريًا ومحادثة غير محدودة و3 تبديلات أسبوعيًا، وسعة أكبر: 10 خطط محفوظة في مخطط الوجبات و50 نتيجة أدوات مع التصدير.",
+                bodyEn: "4 generations a month, unlimited chat, and 3 weekly swaps — plus more capacity: 10 saved meal-planner plans and 50 saved tool results with export.",
+              },
+              {
+                tierAr: "برو",
+                tierEn: "Pro",
+                fitAr: "تتدرب بجدية وتريد تكييفًا أسبوعيًا بلا إعلانات",
+                fitEn: "You train seriously and want weekly adaptation, ad-free",
+                bodyAr: "8 توليدات و6 تبديلات أسبوعيًا وتحليل أنماط تقدمك، و50 خطة محفوظة و200 نتيجة أدوات، وإعلانات مخفية.",
+                bodyEn: "8 generations, 6 weekly swaps, and progress pattern analysis — 50 saved plans, 200 saved tool results, and no ads.",
+              },
+              {
+                tierAr: "التدريب الأونلاين",
+                tierEn: "Coaching",
+                fitAr: "تريد مدربًا بشريًا يبني خطتك ويتابعك",
+                fitEn: "You want a human coach building your plan and following up",
+                bodyAr: "مدرب بشري يبني خطط تغذيتك وتمارينك ويجري التبديلات بيده، بمتابعة أسبوعية وتذكير تلقائي — ويشمل كل مزايا برو.",
+                bodyEn: "A human coach builds your nutrition and workout plans and makes the swaps personally, with weekly check-ins and automatic reminders — and it includes every Pro feature.",
+              },
+            ].map((card) => (
+              <div key={card.tierEn} className="marble-card p-6">
+                <h3 className="text-lg font-semibold tracking-tight text-[var(--text)]">
+                  {isAr ? card.tierAr : card.tierEn}
+                </h3>
+                <p className="mt-1 text-sm font-medium text-[var(--muted-2)]">
+                  {isAr ? card.fitAr : card.fitEn}
+                </p>
+                <p className="mt-2 text-sm font-normal leading-relaxed text-[var(--muted-foreground)]">
+                  {isAr ? card.bodyAr : card.bodyEn}
+                </p>
+              </div>
+            ))}
+          </div>
+          <p className="mx-auto mt-6 max-w-2xl text-center text-xs font-normal leading-relaxed text-[var(--muted-foreground)]">
+            {isAr
+              ? "قاعدة عامة: ابدأ مجانًا، وارتقِ حين يضيق رصيدك أو سعتك — التفاصيل الكاملة في جدول المقارنة والأسعار أعلاه."
+              : "Rule of thumb: start free, and move up when your pool or capacity feels tight — the full details are in the comparison table and the prices above."}
+          </p>
+        </section>
+
         {/* Refund policy banner */}
         <div className="marble-card mt-12 p-6">
           <div className="flex items-start gap-3">
@@ -404,6 +471,26 @@ export default function MembershipsPage({ lang: langProp }: { lang?: Lang } = {}
               {
                 q: isAr ? "ما هي طرق الدفع؟" : "Payment methods?",
                 a: isAr ? "PayPal (الطريقة الرئيسية — فورية وآمنة)، InstaPay، و Vodafone Cash. PayPal يعالج الدفع تلقائياً؛ الطرق اليدوية تتطلب رفع إيصال يراجعه الفريق خلال 24 ساعة." : "PayPal (primary — instant and secure), InstaPay, and Vodafone Cash. PayPal processes automatically; manual methods require uploading a receipt reviewed within 24 hours.",
+              },
+              // PRIORITY-PAGES Implementation 3 (2026-10-19, audit §C-1):
+              // the two lifecycle questions the page never answered —
+              // what happens to my plans, and can I change tiers. Facts:
+              // plans are data, not quota (plan-persistence law — they
+              // stay visible/accessible); no auto-renew (existing cancel
+              // answer); limits derive from the ACTIVE tier
+              // (membership-tier.ts) so a mid-cycle upgrade applies its
+              // higher limits immediately.
+              {
+                q: isAr ? "ماذا يحدث لخططي إذا انتهى اشتراكي؟" : "What happens to my plans when my subscription ends?",
+                a: isAr
+                  ? "تبقى كل خطة ولّدتها أو حفظتها مرئية ومتاحة كما هي — الخطط بيانات لا رصيدًا. ما يعود إلى حدود الفئة المجانية هو التوليد الجديد وعدد التبديلات حتى تجدد. ولا خصم تلقائي: تبقى باقتك فعّالة حتى نهاية المدة المدفوعة ثم تنتهي."
+                  : "Every plan you generated or saved stays visible and accessible as-is — plans are data, not quota. What returns to the free-tier limits is new generation and swap counts, until you renew. And there's no auto-charge: your plan stays active until the paid period ends, then simply stops.",
+              },
+              {
+                q: isAr ? "هل أستطيع تغيير الباقة لاحقًا؟" : "Can I change my plan later?",
+                a: isAr
+                  ? "نعم، بلا أي التزام: لا تجديدًا تلقائيًا ولا عقودًا — ففي الدورة التالية اختر أي باقة أو ابقَ على المجاني. والترقية في أي لحظة تجعل حدود الباقة الأعلى سارية فورًا لأن الحدود تُشتق من باقتك الفعّالة."
+                  : "Yes, with no commitment: nothing auto-renews and there are no contracts — next cycle, pick any tier or stay on Free. And upgrading at any moment applies the higher tier's limits immediately, because limits derive from your active tier.",
               },
             ].map((faq, i) => (
               <div key={i} className="marble-card p-5">

@@ -378,6 +378,70 @@ export default function AiMealPlannerPage() {
           )}
         </div>
 
+        {/* PRIORITY-PAGES Implementation 1 (2026-10-19, audit §A-8 +
+            Improvement 1 — owner-approved frame): a concrete example of a
+            generated day, shown before the first click. The arithmetic is
+            exact and USDA-consistent: 465 + 700 + 835 = 2,000 kcal; item
+            kcal within each meal sum to the meal total. The day matches
+            the form's DEFAULTS (balanced system, 2,000 kcal) so the
+            example never promises what the tool does not deliver; meal
+            count (3), the ±20% accuracy gate, and 3-5 meals all mirror
+            ai-meal-planner.ts. */}
+        <section className="mt-10">
+          <h2 className="text-xl font-semibold tracking-tight text-[var(--text)]">
+            {isAr ? "مثال لمخرج توليد حقيقي — قبل أن تضغط" : "An example of a real generated day"}
+          </h2>
+          <p className="mt-2 text-sm font-normal leading-relaxed text-[var(--muted-foreground)]">
+            {isAr
+              ? "يوم كامل بالنظام المتوازن وهدف 2,000 سعرة — الإعداد الافتراضي في النموذج أعلاه. ثلاث وجبات بالغرامات، وسعرات كل صنف مذكورة، والإجمالي يطابق الهدف."
+              : "A complete day on the balanced system at a 2,000-calorie target — the form's default above. Three meals in grams, every item's calories listed, and the total lands on the target."}
+          </p>
+          <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
+            {[
+              {
+                mealAr: "الفطور",
+                mealEn: "Breakfast",
+                kcal: 465,
+                itemsAr: "بيض مسلوق 150غ (215) · خبز أسمر 60غ (140) · جبنة قريش 100غ (98) · خيار 100غ (12)",
+                itemsEn: "Boiled eggs 150g (215) · wholegrain bread 60g (140) · cottage cheese 100g (98) · cucumber 100g (12)",
+              },
+              {
+                mealAr: "الغداء",
+                mealEn: "Lunch",
+                kcal: 700,
+                itemsAr: "صدر دجاج مشوي 180غ (300) · أرز أبيض مطبوخ 200غ (260) · سلطة خضراء 200غ (50) · زيت زيتون 10غ (90)",
+                itemsEn: "Grilled chicken breast 180g (300) · cooked white rice 200g (260) · green salad 200g (50) · olive oil 10g (90)",
+              },
+              {
+                mealAr: "العشاء",
+                mealEn: "Dinner",
+                kcal: 835,
+                itemsAr: "سمك مشوي 250غ (300) · بطاطا حلوة مشوية 300غ (255) · خبز أسمر 60غ (140) · جبنة قريش 50غ (50) · زيت زيتون 10غ (90)",
+                itemsEn: "Baked fish 250g (300) · baked sweet potato 300g (255) · wholegrain bread 60g (140) · cottage cheese 50g (50) · olive oil 10g (90)",
+              },
+            ].map((m) => (
+              <div key={m.mealEn} className="rounded-2xl border border-[var(--edge)] bg-[var(--tint)] p-4">
+                <div className="flex items-baseline justify-between gap-2">
+                  <h3 className="text-sm font-semibold tracking-tight text-[var(--text)]">
+                    {isAr ? m.mealAr : m.mealEn}
+                  </h3>
+                  <span className="whitespace-nowrap text-sm font-normal text-[var(--muted-foreground)]" dir="ltr">
+                    {m.kcal} kcal
+                  </span>
+                </div>
+                <p className="mt-1.5 text-sm font-normal leading-relaxed text-[var(--muted-foreground)]">
+                  {isAr ? m.itemsAr : m.itemsEn}
+                </p>
+              </div>
+            ))}
+          </div>
+          <p className="mt-3 text-xs font-normal leading-relaxed text-[var(--muted-foreground)]">
+            {isAr
+              ? "الإجمالي: 2,000 سعرة بالضبط — وكل خطة مولّدة تُفحص قبل عرضها: يجب أن يقع إجماليها ضمن ±20% من هدفك، وما خرج عن الشكل يُرفض لا يُعرض."
+              : "Day total: exactly 2,000 kcal — and every generated plan is validated before display: its total must land within ±20% of your target; a drifted one is rejected, never shown."}
+          </p>
+        </section>
+
         {/* Generated plan — restored across navigation/refresh; stays
             rendered even when the monthly pool is exhausted. */}
         {hydrated && plan && (
@@ -556,6 +620,107 @@ export default function AiMealPlannerPage() {
                 ? "الخطط المولّدة عامة لبالغين أصحاء. إن كان لديك وضع صحي مزمن — سكري أو كلى أو حمل أو اضطراب أكل — فالأرقام المناسبة لك تُضبط مع مختص يرى ملفك كاملاً؛ استعمل الخطة مادة نقاش ممتازة معه لا بديلاً عنه."
                 : "Generated plans are general guidance for healthy adults. If you live with a chronic condition — diabetes, kidney disease, pregnancy, or an eating disorder — the right numbers for you are set with a professional who sees your full file; use the plan as an excellent discussion piece with them, never a replacement."}
             </p>
+          </div>
+        </section>
+
+        {/* PRIORITY-PAGES Implementation 1 (2026-10-19, audit §A-8): the
+            "four planning paths" orientation — the audit's measured finding
+            was that this page (the product's first free-experience gateway)
+            never answers the shopper's most common confusion: generator vs
+            manual planner vs ready plans vs EVO. Rows mirror the verified
+            service set (manual planner: no limits; ready plans: 24; EVO
+            swaps: subscription-gated weekly counter). */}
+        <section className="mt-10">
+          <h2 className="text-xl font-semibold tracking-tight text-[var(--text)]">
+            {isAr ? "أربعة مسارات للتخطيط — أيها يناسبك؟" : "Four ways to plan — which fits you?"}
+          </h2>
+          <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {[
+              {
+                titleAr: "المولد (هذه الصفحة)",
+                titleEn: "The generator (this page)",
+                descAr: "يوم كامل بالغرامات في ثوانٍ — من رصيدك الشهري المجاني (توليدان شهريًا بلا حساب).",
+                descEn: "A complete day in grams in seconds — from your free monthly pool (2 a month, no account).",
+              },
+              {
+                titleAr: "المخطط اليدوي",
+                titleEn: "The manual planner",
+                descAr: "تحكم كامل بلا أي حد: ابنِ يومك صنفًا صنفًا من قاعدة 8,830+ صنفًا بإجماليات حية.",
+                descEn: "Full control with no limits at all: build your day item by item from 8,830+ foods with live totals.",
+              },
+              {
+                titleAr: "24 خطة جاهزة",
+                titleEn: "24 ready-made plans",
+                descAr: "تصفح فوري بالغرامات لكل مستويات السعرات والأنظمة الأربعة — بلا توليد ولا انتظار.",
+                descEn: "Instant browsing in grams across every calorie level and all four systems — no generation, no waiting.",
+              },
+              {
+                titleAr: "EVO للتكييف المستمر",
+                titleEn: "EVO for continuous adaptation",
+                descAr: "مع الاشتراك: تبديل أي وجبة داخل خطتك أسبوعيًا بضغطة واحدة، والنتيجة تُحفظ تلقائيًا.",
+                descEn: "With a subscription: swap any meal in your plan weekly in one tap, and the result saves automatically.",
+              },
+            ].map((path) => (
+              <div key={path.titleEn} className="marble-card p-5">
+                <h3 className="text-sm font-semibold tracking-tight text-[var(--text)]">
+                  {isAr ? path.titleAr : path.titleEn}
+                </h3>
+                <p className="mt-1.5 text-sm font-normal leading-relaxed text-[var(--muted-foreground)]">
+                  {isAr ? path.descAr : path.descEn}
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* PRIORITY-PAGES Implementation 1 (2026-10-19) — the FAQ this
+            page never had (audit: 230 words, zero FAQ, the product's
+            first free-experience gateway). Plain visible HTML; every
+            number verified against memberships.ts (pool 2/4/8/8) and
+            ai-meal-planner.ts (3-5 meals, ±20% kcal gate, notes field
+            passed as hard constraints). */}
+        <section className="mt-10">
+          <h2 className="text-xl font-semibold tracking-tight text-[var(--text)]">
+            {isAr ? "أسئلة شائعة حول المخطط" : "Meal planner FAQ"}
+          </h2>
+          <div className="mt-4 space-y-4">
+            {[
+              {
+                q: isAr ? "هل الخطة المجانية كاملة؟" : "Is the free plan complete?",
+                a: isAr
+                  ? "نعم — توليدان ناجحان شهريًا لكل زائر بلا حساب، وكل توليد يوم كامل بثلاث إلى خمس وجبات بالغرامات والسعرات. وما ولّدته يبقى على جهازك بدون حساب، ويُحفظ دائمًا بحساب مجاني."
+                  : "Yes — two successful generations a month for every visitor with no signup, and each is a complete day of three to five meals in grams and calories. What you generate stays on your device without an account, and is saved permanently with a free one.",
+              },
+              {
+                q: isAr ? "هل الخطة المولدة يوم واحد أم أسبوع؟" : "Is the generated plan one day or a week?",
+                a: isAr
+                  ? "توليد واحد = يوم كامل بالغرامات والسعرات. تستطيع توليد يوم مختلف في المرة التالية من رصيدك، ومع الاشتراك يستطيع EVO تبديل أي وجبة من خطتك القائمة."
+                  : "One generation = one complete day in grams and calories. You can generate a different day next time from your pool, and with a subscription EVO can swap any meal in your existing plan.",
+              },
+              {
+                q: isAr ? "هل يحترم التوليد قيودي الغذائية؟" : "Does it respect my dietary constraints?",
+                a: isAr
+                  ? "نعم — حقل الملاحظات يمرر قيودك إلى المولد كقيود صريحة يجب احترامها (مثال: بلا منتجات الألبان، سمك مرتين أسبوعيًا). والأنظمة الأربعة جاهزة كذلك: متوازن، عالي البروتين، كيتو، نباتي."
+                  : "Yes — the optional-notes field passes your constraints to the generator as explicit rules it must respect (e.g. no dairy, fish twice a week). The four systems are ready too: balanced, high-protein, keto, vegetarian.",
+              },
+              {
+                q: isAr ? "ماذا يحدث بعد نفاد رصيد التوليد؟" : "What happens when the pool runs out?",
+                a: isAr
+                  ? "تبقى كل خطة ولّدتها مرئية ومتاحة في لوحة خططك — ما يتوقف هو التوليد الجديد فقط، حتى يتجدد رصيدك في أول الشهر."
+                  : "Every plan you generated stays visible and accessible in your plans dashboard — only new generation pauses, until your pool resets on the 1st of the next month.",
+              },
+              {
+                q: isAr ? "ما الفرق بين المولد والمخطط اليدوي والخطط الجاهزة؟" : "Generator vs manual planner vs ready plans?",
+                a: isAr
+                  ? "المولد يخرج يومًا كاملًا في ثوانٍ من رصيدك؛ المخطط اليدوي يعطيك تحكمًا كاملًا بلا حدود؛ والـ24 خطة الجاهزة للتصفح الفوري بالغرامات. القسم أعلاه («أربعة مسارات للتخطيط») يفصلها كلها."
+                  : "The generator produces a complete day in seconds from your pool; the manual planner gives you full control with no limits; and the 24 ready-made plans are there for instant browsing in grams. The section above (\"Four ways to plan\") lays them all out.",
+              },
+            ].map((faq) => (
+              <div key={faq.q} className="marble-card p-5">
+                <h3 className="text-sm font-semibold text-[var(--text)]">{faq.q}</h3>
+                <p className="mt-1.5 text-sm font-normal leading-relaxed text-[var(--muted-foreground)]">{faq.a}</p>
+              </div>
+            ))}
           </div>
         </section>
       </main>

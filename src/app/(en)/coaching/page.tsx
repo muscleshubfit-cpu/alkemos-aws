@@ -226,6 +226,69 @@ export default function CoachingPage() {
           </div>
         </section>
 
+        {/* ===================== PRIORITY-PAGES Implementation 3
+            (2026-10-19, audit §D-1 + Improvement 3): "Your week with the
+            coach, as it actually happens" — the highest-priced page's
+            copy never showed the weekly follow-up mechanism. Every step
+            below mirrors the verified service set (memberships.ts):
+            weekly check-in with automatic reminder · manual swaps made by
+            the coach · direct contact · EVO 24/7 between check-ins. */}
+        <section className="bg-[var(--tint)] px-4 py-16 md:py-24">
+          <div className="mx-auto max-w-4xl">
+            <Reveal>
+              <h2 className="text-center text-3xl font-semibold tracking-tight md:text-5xl">
+                {isAr ? "أسبوعك مع المدرب كما يحدث فعلًا." : "Your week with the coach, as it actually happens."}
+              </h2>
+            </Reveal>
+            <div className="mt-12 space-y-6">
+              {[
+                {
+                  n: "01",
+                  titleAr: "يوم المتابعة: يصلك التذكير تلقائيًا",
+                  titleEn: "Check-in day: the reminder arrives automatically",
+                  descAr: "ترسل وزنك وقياساتك وأي ملاحظات في دقائق — لا تقارير ولا جلسات.",
+                  descEn: "You send your weight, measurements, and any notes in minutes — no reports, no sessions.",
+                },
+                {
+                  n: "02",
+                  titleAr: "خلال يوم: مدربك يرد بتعديلات الأسبوع القادم",
+                  titleEn: "Within a day: your coach replies with next week's adjustments",
+                  descAr: "تبديل وجبة أو تمرين بيده حسب أرقامك — ويسألك عن أي عائق يواجهك.",
+                  descEn: "A meal or exercise swapped by hand to match your numbers — and a question about anything standing in your way.",
+                },
+                {
+                  n: "03",
+                  titleAr: "بين المتابعات: EVO معك على مدار الساعة",
+                  titleEn: "Between check-ins: EVO is with you around the clock",
+                  descAr: "أسئلتك اليومية تجيب فورًا، والمدرب على مسافة رسالة مباشرة إن احتجته.",
+                  descEn: "Your daily questions get instant answers, and the coach is one direct message away if you need them.",
+                },
+              ].map((s) => (
+                <Reveal key={s.n}>
+                  <div className="grid grid-cols-[auto_1fr] gap-6 border-t border-[var(--edge)] pt-6 md:gap-12 md:pt-8">
+                    <div className="text-sm font-normal text-[var(--muted-foreground)]">{s.n}</div>
+                    <div>
+                      <h3 className="text-xl font-semibold tracking-tight md:text-2xl">
+                        {isAr ? s.titleAr : s.titleEn}
+                      </h3>
+                      <p className="mt-2 text-base font-normal text-[var(--muted-foreground)] md:text-lg">
+                        {isAr ? s.descAr : s.descEn}
+                      </p>
+                    </div>
+                  </div>
+                </Reveal>
+              ))}
+            </div>
+            <Reveal delay={200}>
+              <p className="mx-auto mt-10 max-w-xl text-center text-base font-normal text-[var(--muted-foreground)] md:text-lg">
+                {isAr
+                  ? "هذا كل الالتزام: دقائق أسبوعية منك، ومدرب يقرأ أرقامك ويعدّل مسارك حول حياتك — سفرك ومطبخك وجدولك."
+                  : "That's the whole commitment: minutes a week from you, and a coach reading your numbers and adjusting your course around your life — your travel, your kitchen, your schedule."}
+              </p>
+            </Reveal>
+          </div>
+        </section>
+
         {/* ===================== FEATURES ===================== */}
         <section className="bg-[var(--tint)] px-4 py-16 md:py-24">
           <div className="mx-auto max-w-5xl">
@@ -351,11 +414,18 @@ export default function CoachingPage() {
               {[
                 {
                   title: isAr ? "إشراف بشري على كل خطة" : "Human oversight on every plan",
+                  // PRIORITY-PAGES Implementation 3 (2026-10-19, audit §D-1):
+                  // the four certification bodies are now named on the page
+                  // (verified source: the author page + llms-full route —
+                  // "certified fitness & nutrition coach — ACSM, ACE, ISSA
+                  // and NASM"), and the card links to the author page where
+                  // the certificates are shown as issued (strongest E-E-A-T
+                  // surface, authors/ahmed-zake renders the certificate scans).
                   body: isAr
-                    ? "المؤسس أحمد زكي — مدرب لياقة وتغذية بخبرة تدريبية تناهز عشرين عامًا، نحو عشر منها تدريب أونلاين — يشرف على المحتوى والخطط، ويُراجع كل مقال للدقة العلمية قبل النشر."
-                    : "Founder Ahmed Zake — a fitness and nutrition coach with about twenty years of training experience, around ten of them coaching online — oversees the platform's content and reviews every article for accuracy before publication.",
-                  href: isAr ? "/ar/about" : "/about",
-                  cta: isAr ? "تعرّف على المؤسس ›" : "Meet the founder ›",
+                    ? "المؤسس أحمد زكي — مدرب لياقة وتغذية معتمد (شهادات من ACSM و ACE و ISSA و NASM) بخبرة تدريبية تناهز عشرين عامًا، نحو عشر منها تدريب أونلاين — يشرف على المحتوى والخطط، ويُراجع كل مقال للدقة العلمية قبل النشر."
+                    : "Founder Ahmed Zake — a certified fitness and nutrition coach (ACSM, ACE, ISSA, and NASM certifications) with about twenty years of training experience, around ten of them coaching online — oversees the platform's content and reviews every article for accuracy before publication.",
+                  href: isAr ? "/ar/authors/ahmed-zake" : "/authors/ahmed-zake",
+                  cta: isAr ? "شهادات المؤسس كما صدرت ›" : "The founder's certificates, as issued ›",
                 },
                 {
                   title: isAr ? "حدود شفافة بلا شروط خفية" : "Transparent limits, no fine print",

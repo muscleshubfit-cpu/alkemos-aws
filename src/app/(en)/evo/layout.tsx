@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { getEVOApplicationSchema, jsonLd } from "@/lib/seo";
+import { getEVOApplicationSchema, getFAQSchema, jsonLd } from "@/lib/seo";
+import { EVO_FAQ } from "@/lib/evo-faq";
 
 /**
  * M30 fix: English-first metadata for /evo.
@@ -63,6 +64,13 @@ export const metadata: Metadata = {
 // entity description (was Arabic-only before the audit fix).
 const evoSchema = getEVOApplicationSchema("en");
 
+// PRIORITY-PAGES Implementation 2 (2026-10-19, audit §B-1): the page now
+// renders a visible FAQ from src/lib/evo-faq.ts — the same single-source
+// array is emitted here as FAQPage JSON-LD (the coaching-faq.ts precedent,
+// audit P1-2): Google retired FAQ rich results (May 2026) but AI answer
+// engines parse JSON-LD from the server HTML (GEO citation value).
+const evoFaqSchema = getFAQSchema(EVO_FAQ.en);
+
 export default function EvoLayout({
   children,
 }: {
@@ -73,6 +81,10 @@ export default function EvoLayout({
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: jsonLd(evoSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: jsonLd(evoFaqSchema) }}
       />
       {children}
     </>

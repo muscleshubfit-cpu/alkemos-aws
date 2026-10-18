@@ -115,6 +115,8 @@ pnpm-lock.yaml
 !/scripts/seo-p212-origin-verify.mjs
 #   scripts/notifications-prune.mjs → weekly notifications retention runner: calls the prune_notifications() RPC of migration 0100 over raw PostgREST (notifications-prune.yml, W2-1a/P-03 2026-10-03 — hit the same /scripts/* blanket trap as the geo/ family; exception added in the same frame)
 !/scripts/notifications-prune.mjs
+#   scripts/check_glued_latin.py → glued Arabic-Latin adjacency scanner over the bilingual copy files (PRIORITY-PAGES-IMPLEMENT 2026-10-19 — mirrors the GLUED_RE rule of blog-msa.ts scanLatinContamination; caught «وEVO» in the frame's own copy before it shipped; the worklog entry cites it as verification evidence, so it must be a committed path (audit F-11); hit the same /scripts/* blanket trap as the geo/ family — exception added in the same frame)
+!/scripts/check_glued_latin.py
 #   scripts/backup-retention.mjs → weekly GFS working-tree prune of the private backup repo: daily 7 / weekly 5 (Sunday-anchored) / monthly 6 with newest-always floor, one-commit deletion, git history intact (backup-retention.yml, BACKUP-STRATEGY GD-2 2026-10-04 — same /scripts/* blanket trap as the family; exception added in the same frame)
 !/scripts/backup-retention.mjs
 #   scripts/gemini-usage-report.mjs → Gemini weekly usage report generator over the Upstash per-tag counters: SCAN+GET last 7 full days, per-tag + daily aggregation (gemini-weekly-usage-report.yml, Phase 343 2026-10-06 — hit the same /scripts/* blanket trap as the family: committed-untracked in 343 and the smoke dispatch failed "Cannot find module"; exception added in the 343-FIXUP frame)

@@ -45,6 +45,19 @@ export const COACHING_FAQ: Record<"en" | "ar", CoachingFaqItem[]> = {
       q: "Is my data secure?",
       a: "Yes — access to your data is controlled at the database level itself: only you can view your records, along with the coach assigned to you (if any) and the authorized platform team when needed for support and operations.",
     },
+    // PRIORITY-PAGES Implementation 3 (2026-10-19, audit §D-1): the two
+    // decision questions the page never answered — online vs gym coach,
+    // and what the weekly follow-up actually looks like. Facts verified
+    // against memberships.ts (weekly check-in + auto reminder · manual
+    // swaps by the coach · direct contact · EVO included at no extra cost).
+    {
+      q: "Why an online coach instead of a gym coach?",
+      a: "A gym coach is beside you for the session; an online coach builds your plan and steers it weekly around your whole life — your travel, your kitchen, your schedule — at a fraction of the cost of private sessions, with every platform tool and EVO included at no extra cost.",
+    },
+    {
+      q: "What does the weekly follow-up actually look like?",
+      a: "Your check-in reminder arrives automatically: you send your weight, measurements, and any notes in minutes. Within a day your coach replies with next week's adjustments — a meal or exercise swapped by hand to match your numbers — and asks about anything in your way. Between check-ins, EVO answers instantly around the clock. That's the whole commitment: minutes a week.",
+    },
   ],
   ar: [
     {
@@ -70,6 +83,16 @@ export const COACHING_FAQ: Record<"en" | "ar", CoachingFaqItem[]> = {
     {
       q: "هل بياناتي آمنة؟",
       a: "نعم — الوصول إلى بياناتك محكوم على مستوى قاعدة البيانات نفسها: لا يطّلع عليها إلا أنت، والمدرب المعيّن لك إن وُجد، وفريق المنصة المصرّح له عند الحاجة للدعم والتشغيل.",
+    },
+    // PRIORITY-PAGES Implementation 3 (2026-10-19, audit §D-1): المرآتان
+    // العربيتان للسؤالين الجديدين أعلاه — نفس الحقائق الموثقة.
+    {
+      q: "لماذا مدرب أونلاين بدلًا من مدرب النادي؟",
+      a: "مدرب النادي بجانبك بالحصة؛ مدرب الأونلاين يبني خطتك ويقودها أسبوعيًا حول حياتك كاملة — سفرك ومطبخك وجدولك — وبتكلفة جزء من سعر الحصص الخاصة، ومعه كل أدوات المنصة وقوة EVO بلا أي زيادة.",
+    },
+    {
+      q: "كيف تبدو المتابعة الأسبوعية فعلًا؟",
+      a: "يصلك تذكير المتابعة تلقائيًا: ترسل وزنك وقياساتك وأي ملاحظات في دقائق. خلال يوم يرد مدربك بتعديلات الأسبوع القادم — تبديل وجبة أو تمرين بيده حسب أرقامك — ويسألك عن أي عائق. وبين المتابعات يجيب EVO أسئلتك فورًا على مدار الساعة. هذا كل الالتزام: دقائق أسبوعيًا.",
     },
   ],
 };

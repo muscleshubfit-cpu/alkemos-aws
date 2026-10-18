@@ -30,7 +30,14 @@ import { FOODS_COUNT } from "@/lib/foods-shared";
 
 export type SiteCopyMap = Record<string, { en?: unknown; ar?: unknown } | undefined>;
 
-export type SiteFaqItem = { q: string; a: string };
+// PRIORITY-PAGES Implementation (2026-10-19, audit §E-2): optional
+// per-answer destination links — the /faq page answered every question
+// then left the visitor stranded ("answers with no links", the audit's
+// measured finding). Optional so every existing consumer (homepage
+// accordion, JSON-LD builders, admin-override picker) is untouched;
+// admin overrides from the DB simply don't carry links (the override IS
+// the content — pre-existing system law, unchanged).
+export type SiteFaqItem = { q: string; a: string; links?: StaticSectionLink[] };
 
 export type StaticSectionLink = { label: string; href: string };
 
