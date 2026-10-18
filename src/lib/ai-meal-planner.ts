@@ -23,7 +23,7 @@
  */
 
 import { DIET_SYSTEMS, getDietSystem } from "./diet-plan-matrix";
-import { parseJSON } from "./ai-provider";
+import { parseJSON } from "./parse-json";
 
 export const DEMO_CALORIE_MIN = 1200;
 export const DEMO_CALORIE_MAX = 4000;

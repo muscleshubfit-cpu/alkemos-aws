@@ -30,6 +30,7 @@
 | P-2 | عدم وجود آلية **دفع/إبلاغ** لأي محرك (لا IndexNow ولا قناة إعادة فهرسة برمجية) — إعادة الفهرسة معلقة على الزحف الاكتشافي وحده | عالٍ | مستودع: لا key ملف ولا submitter قبل هذا الإطار |
 | P-3 | **sitemap.xml index يكتب lastmod=اليوم لكل الأبناء يوميًا** (هاك قديم 08-09 لدفع GSC لإعادة الجلب) — Google يتجاهل lastmod غير الصادق (توثيق رسمي) فيتراجع وزن الإشارة | متوسط | src/app/sitemap.xml/route.ts:26-36 + sitemap viva |
 | P-4 | تتبع التعافي غير مؤتمت: لا قراءة دورية لبيانات GSC لقياس عودة الفهرسة | متوسط | (أُغلق جزئيًا بهذا الإطار — §3) |
+| P-5 | **خط النشر إلى AWS مكسور منذ 2026-10-16** (مُكتشف عند أول deploy بعد 8 أيام): كوميتات GROQ-2 (16-17/10) التي مست `src/` حملت `[vercel skip]` فلم يُبنَ أي شيء — `ai-provider.ts` استورد `ai-provider-cooldown` (node:fs) بينما مكتبتا العميل ai-meal-planner/ai-workout-planner تستوردان `parseJSON` منه → Turbopack يموت على صفحة العميل «does not support external modules (node:fs)» — أي إصلاح مستقبلي للموقع لا يمكن نشره | **حرج** | تشغيل deploy 39135223481 فشل بخطوة Build + تتبع الاستيراد المقيس |
 
 **ما فُحص وسَلِم (نفيات مثبتة):** robots.txt لا يحجب محتوى عام (مطابق للمستودع) · صفر noindex في العينة (124) · canonical ذاتي 100% · قاعدة BLOCKLIST-1 لا تلمس Googlebot (تعبيرها الكامل مقاس: مسحات .php/.env/wp-* فقط) · قاعدة ratelimit تخص `/api/*` حصرًا (زحف HTML لا يلمسها) · الـ middleware لا يقدم محتوى مختلفًا (فحص UA-مزدوج) · حرس 410 على `/_next/image` وحده · تكافؤ محتوى EN/AR سليم بالعينة (كلمات متقاربة) وعمق سليم (مدونة 1294–1691 كلمة · أدوات 3371).
 
@@ -37,7 +38,7 @@
 
 | # | الإصلاح | الملفات | الحالة |
 |---|---|---|---|
-| F-1 | **IndexNow push** (يعالج P-1 + P-2): مفتاح عام `public/528c4a…035b.txt` + submitter يقرأ الـ sitemaps الستة الحية ويدفع دفعات ≤500 إلى api.indexnow.org (idempotent بروتوكوليًا) + workflow يومي 03:47 UTC (آخر lastmod≤3 أيام) + `all=true` للتمهيد | `public/528c4a…txt` · `scripts/indexnow-submit.mjs` · `.github/workflows/indexnow-submit.yml` · `.gitignore` استثناء | **منفذ ومختبر محليًا** (جرد 2,197 URL ✓ · تصفية lastmod ✓ · node --check ✓) — بانتظار deploy ثم دفعة التمهيد (§4) |
+| F-1 | **IndexNow push** (يعالج P-1 + P-2): مفتاح عام `public/528c4a…035b.txt` + submitter يقرأ الـ sitemaps الستة الحية ويدفع دفعات ≤500 إلى api.indexnow.org (idempotent بروتوكوليًا) + workflow يومي 03:47 UTC (آخر lastmod≤3 أيام) + `all=true` للتمهيد | `public/528c4a…txt` · `scripts/indexnow-submit.mjs` · `.github/workflows/indexnow-submit.yml` · `.gitignore` استثناء | **منفذ ومختبر محليًا** (جرد 2,197 URL ✓ · تصفية lastmod ✓ · node --check ✓) — النشر عبر deploy-aws بعد إصلاح F-3 ثم دفعة التمهيد (§4) |
 | F-2 | **أداة قياس التعافي GSC** (يعالج P-4): توسيع سير gsc-connection-test بقراءة-فقط — dimension=date (نافذة قابلة للضبط `days`) + الأجهزة/الدول + نافذة top-pages للمقارنة (`pages_window`) | `.github/workflows/gsc-connection-test.yml` (+ صف CI_GATES) | **منفذ ومستخدم فعليًا** — به استُخرج كل جدول §1 (تشغيلات 39132583136 + 39133102626) |
 
 **ما لم يُنفَّذ عمدًا (بقرار مهني موثق):** P-3 (lastmod الصادق) — تغييره الآن أثناء نافذة التعافي فيه جدل (lastmod=today يدفع إعادة جلب sitemaps)؛ أُرجئ لقرار المالك بعد استقرار الظهور. لا حذف صفحات ولا تغيير URLs ولا تعديلات فهرسة واسعة (لا مبرر موثق — الموقع سليم).

@@ -22,7 +22,7 @@
  *     else is rejected (422) rather than displayed.
  */
 
-import { parseJSON } from "./ai-provider";
+import { parseJSON } from "./parse-json";
 
 export const WORKOUT_DAYS_MIN = 2;
 export const WORKOUT_DAYS_MAX = 6;
