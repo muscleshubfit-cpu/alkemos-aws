@@ -134,6 +134,36 @@ export default function ProgramDetailClient({
               </p>
             </section>
 
+            {/* PRIORITY-PAGES-2 (2026-10-19, audit §D-2 + report §9.4-1):
+                the numeric load progression the P1-9 paragraph generalized
+                — start point, increment, stall rule. The quotable numbers
+                every program page was measured to lack. */}
+            {(isAr ? program.progressionAr : program.progressionEn) && (
+              <section className="mt-4 rounded-2xl border border-[var(--edge)] bg-[var(--tint)] p-4">
+                <h2 className="text-sm font-semibold tracking-tight text-[var(--text)]">
+                  {isAr ? "تدرّج الحمل بالأرقام" : "Load progression, by the numbers"}
+                </h2>
+                <p className="mt-2 text-sm font-normal leading-relaxed text-[var(--muted-foreground)]" dir="auto">
+                  {isAr ? program.progressionAr : program.progressionEn}
+                </p>
+              </section>
+            )}
+
+            {/* PRIORITY-PAGES-2 (2026-10-19, audit §D-2): the honest
+                for-whom / not-for-whom card with plain-text cross-program
+                pointers — the decision section the audit measured missing
+                ("لمن هذا البرنامج / لمن ليس"). */}
+            {(isAr ? program.forWhomAr : program.forWhomEn) && (
+              <section className="mt-4 rounded-2xl border border-[var(--edge)] bg-[var(--tint)] p-4">
+                <h2 className="text-sm font-semibold tracking-tight text-[var(--text)]">
+                  {isAr ? "لمن هذا البرنامج — ولمن ليس" : "Who this program is for — and who it is not"}
+                </h2>
+                <p className="mt-2 text-sm font-normal leading-relaxed text-[var(--muted-foreground)]" dir="auto">
+                  {isAr ? program.forWhomAr : program.forWhomEn}
+                </p>
+              </section>
+            )}
+
             {/* Stats */}
             <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3">
               <div className="rounded-2xl bg-[var(--card)] border border-[var(--edge)] p-4">
@@ -281,6 +311,56 @@ export default function ProgramDetailClient({
             ))}
           </div>
         </section>
+
+        {/* PRIORITY-PAGES-2 (2026-10-19, audit §D-2): the per-program
+            decision FAQs the audit measured missing. Plain visible HTML
+            (marble-card pattern from the EVO FAQ) so the answers ship in
+            the server HTML; the [slug] layouts emit the same array as
+            FAQPage JSON-LD per language. */}
+        {program.faq && program.faq.length > 0 && (
+          <section className="mt-10">
+            <h2 className="text-xl font-semibold tracking-tight">
+              {isAr ? "أسئلة شائعة حول البرنامج" : `About the ${program.nameEn} — common questions`}
+            </h2>
+            <div className="mt-4 space-y-4">
+              {program.faq.map((f) => (
+                <div key={f.q.en} className="marble-card p-5">
+                  <h3 className="text-sm font-semibold text-[var(--text)]" dir="auto">
+                    {isAr ? f.q.ar : f.q.en}
+                  </h3>
+                  <p className="mt-1.5 text-sm font-normal leading-relaxed text-[var(--muted-foreground)]" dir="auto">
+                    {isAr ? f.a.ar : f.a.en}
+                  </p>
+                </div>
+              ))}
+            </div>
+            {/* Destination chips (audit §D-2 internal-linking ask): the
+                three next steps every program reader shares — the hub for
+                the other programs, the AI planner for a personalized split,
+                and the free tools. Language-aware hrefs keep the AR mirror
+                inside /ar. */}
+            <div className="mt-5 flex flex-wrap gap-2">
+              <a
+                href={base}
+                className="rounded-full border border-[var(--edge)] px-4 py-2 text-sm font-normal text-[var(--text)] transition-colors hover:border-[var(--chrome-edge)]"
+              >
+                {isAr ? "كل برامج التدريب" : "All workout programs"}
+              </a>
+              <a
+                href={isAr ? "/ar/ai-workout-planner" : "/ai-workout-planner"}
+                className="rounded-full border border-[var(--edge)] px-4 py-2 text-sm font-normal text-[var(--text)] transition-colors hover:border-[var(--chrome-edge)]"
+              >
+                {isAr ? "ولّد خطة مخصصة بالذكاء الاصطناعي" : "Generate a personalized AI split"}
+              </a>
+              <a
+                href={isAr ? "/ar/tools" : "/tools"}
+                className="rounded-full border border-[var(--edge)] px-4 py-2 text-sm font-normal text-[var(--text)] transition-colors hover:border-[var(--chrome-edge)]"
+              >
+                {isAr ? "الأدوات المجانية" : "Free tools"}
+              </a>
+            </div>
+          </section>
+        )}
 
         {/* CTA */}
         <section className="mt-10 rounded-3xl bg-[#f5f5f7] p-6 text-center text-[#1d1d1f] md:p-8">

@@ -16,6 +16,7 @@ import {
   type ProgramLevel,
   type ProgramGoal,
 } from "@/lib/workout-programs";
+import { getFAQSchema, jsonLd } from "@/lib/seo";
 import Image from "next/image";
 
 /**
@@ -45,6 +46,57 @@ export default function ProgramsPage({ lang: langProp }: { lang?: Lang } = {}) {
   // Card links stay inside the current language's URL space (AR mirror keeps
   // users on /ar/programs/[slug] instead of bouncing to the EN canonical).
   const base = isAr ? "/ar/programs" : "/programs";
+
+  // PRIORITY-PAGES-2 (2026-10-19, audit §D-2 hub gaps — "~150-200 words,
+  // no FAQ, no visible H2 beyond the card badges"): the hub FAQ array —
+  // one array feeding BOTH the visible section and the FAQPage JSON-LD
+  // below (this component SSRs, so the schema ships in the server HTML
+  // of each language's route with its own language's questions).
+  const HUB_FAQ = [
+    {
+      q: {
+        ar: "كيف أعرف مستواي فعلًا؟",
+        en: "How do I know my real level?",
+      },
+      a: {
+        ar: "إن شككت فابدأ بالأسفل: مبتدئ يعني أنك تتعلم الأنماط أو عدت بعد انقطاع طويل، ومتوسط أنك تتمرن بجد منذ أشهر بثبات. المعيار العملي: إن كنت تُكمل الحد الأعلى لتكرارات برنامجك في جلستين متتاليتين بلا تعثر فأنت جاهز للمستوى التالي — والترقية دائمًا أسهل من التراجع.",
+        en: "When in doubt, start lower: beginner means you are still learning the patterns or returning after a long break; intermediate means months of consistent, honest training. The practical test: if you complete the top of your program's rep ranges two sessions in a row without a miss, you are ready for the next level — moving up is always easier than walking it back.",
+      },
+    },
+    {
+      q: {
+        ar: "هل أستطيع التبديل بين البرامج؟",
+        en: "Can I switch between programs?",
+      },
+      a: {
+        ar: "نعم — والاستمرارية أهم من الكمال: برنامج تلتزم به ثمانية أسابيع يتفوق على برنامج مثالي تهمله بعد أسبوعين. عند التبديل ابدأ بأوزان أقل بنحو 10 إلى 20 بالمئة أسبوعًا واحدًا لتتعلم حركات البرنامج الجديد، ثم عد لتقدمك المعتاد.",
+        en: "Yes — and consistency beats perfection: a program you follow for eight weeks outperforms a perfect one you abandon after two. When switching, open with loads about 10-20 percent lighter for a week to learn the new movements, then return to your usual progression.",
+      },
+    },
+    {
+      q: {
+        ar: "هل أحتاج حسابًا لمتابعة البرامج؟",
+        en: "Do I need an account to follow the programs?",
+      },
+      a: {
+        ar: "لا — كل صفحات البرامج تعمل لكل زائر بلا تسجيل، والجداول والشرح وأسئلة كل صفحة في متناول الجميع. الحساب المجاني يخدم ما بعدها: حفظ الخطط التي تولّدها بالذكاء الاصطناعي ومتابعتها من أي جهاز.",
+        en: "No — every program page works for any visitor without signup: the schedules, the guidance, and each page's questions are open to all. A free account serves what comes after: saving the plans you generate with AI and reaching them from any device.",
+      },
+    },
+    {
+      q: {
+        ar: "ما الفرق بين هذه البرامج الجاهزة والمخطط بالذكاء الاصطناعي؟",
+        en: "What's the difference between these ready programs and the AI planner?",
+      },
+      a: {
+        ar: "البرامج الجاهزة منهج مجرّب بجدول ثابت وتدرّج موثق — تبدأ به اليوم وتعرف أين ستكون بعد ثمانية أسابيع. والمخطط بالذكاء الاصطناعي يبني جدولًا من مدخلاتك أنت: هدفك ومستواك وأيامك ومعداتك. مسار شائع ناجح: ابدأ ببرنامج جاهز، وولّد نسختك المخصصة حين تحدده أرقامك.",
+        en: "The ready programs are proven methodology with a fixed schedule and a documented progression — you start today and know where you land in eight weeks. The AI planner builds a schedule from your own inputs: goal, level, days, and equipment. A common, working route: start with a ready program, then generate your customized version once your numbers are settled.",
+      },
+    },
+  ];
+  const hubFaqSchema = getFAQSchema(
+    HUB_FAQ.map((f) => ({ q: isAr ? f.q.ar : f.q.en, a: isAr ? f.a.ar : f.a.en })),
+  );
 
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
@@ -209,7 +261,55 @@ export default function ProgramsPage({ lang: langProp }: { lang?: Lang } = {}) {
             ))}
           </div>
         )}
+
+        {/* PRIORITY-PAGES-2 (2026-10-19, audit §D-2 hub gap): the
+            how-to-choose guidance the hub never had (measured: no visible
+            H2 beyond the card badges). Three steps matching the filters
+            above, then the hub FAQ. */}
+        <section className="mt-14">
+          <h2 className="text-xl font-semibold tracking-tight">
+            {isAr ? "كيف تختار برنامجك؟" : "How to choose your program"}
+          </h2>
+          <p className="mt-3 text-base font-normal leading-relaxed text-[var(--muted-foreground)]">
+            {isAr
+              ? "ثلاثة أسئلة بالترتيب تقودك إلى برنامجك: أين ستتمرن (المنزل بلا معدات، أو بدمبل، أو نادٍ كامل)؛ وكم يومًا يمنحه أسبوعك بصدق (برنامج ثلاثة أيام تلتزم به يتفوق على ستة لا تلحق به)؛ ثم هدفك — قوة أو تضخيمًا أو حرقًا أو لياقة عامة. ومنظّم البحث أعلاه يقرأ اختياراتك الثلاثة ويقصّ القائمة نيابة عنك."
+              : "Three questions in order lead you to your program: where you will train (home with nothing, home with dumbbells, or a full gym); how many days your week honestly gives (a three-day program you keep beats a six-day one you cannot); then your goal — strength, muscle, fat loss, or general fitness. The search organizer above reads all three and shortens the list for you."}
+          </p>
+          <p className="mt-3 text-base font-normal leading-relaxed text-[var(--muted-foreground)]">
+            {isAr
+              ? "وكل صفحة برنامج تحمل ما تحتاجه للبدء: الجدول الأسبوعي كاملًا بالتمارين والمجموعات والتكرارات والراحة، وتدرّج الحمل بالأرقام (من أين تبدأ وكم تضيف ومتى تثبّت)، وقسم «لمن هذا البرنامج ولمن ليس»، وأسئلة القرار الخاصة به."
+              : "And every program page carries what you need to start: the full weekly schedule with exercises, sets, reps, and rest; the load progression in numbers (where to start, what to add, when to hold); the honest for-whom and not-for-whom card; and that program's decision questions."}
+          </p>
+        </section>
+
+        {/* PRIORITY-PAGES-2: the hub FAQ (same array as the JSON-LD above). */}
+        <section className="mt-10">
+          <h2 className="text-xl font-semibold tracking-tight">
+            {isAr ? "أسئلة شائعة حول البرامج" : "Workout programs FAQ"}
+          </h2>
+          <div className="mt-4 space-y-4">
+            {HUB_FAQ.map((f) => (
+              <div key={f.q.en} className="marble-card p-5">
+                <h3 className="text-sm font-semibold text-[var(--text)]" dir="auto">
+                  {isAr ? f.q.ar : f.q.en}
+                </h3>
+                <p className="mt-1.5 text-sm font-normal leading-relaxed text-[var(--muted-foreground)]" dir="auto">
+                  {isAr ? f.a.ar : f.a.en}
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
       </main>
+
+      {/* PRIORITY-PAGES-2: hub FAQ as FAQPage JSON-LD — client components
+          SSR, so this ships in the server HTML of each language route
+          (AR mirror renders this component with lang="ar" → Arabic
+          schema on /ar/programs). */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: jsonLd(hubFaqSchema) }}
+      />
 
 
       {/* Access-point fix (2026-09-14): shared marble footer — this

@@ -330,6 +330,35 @@ export const CALORIE_CALCULATOR_CONTENT: ToolReference = {
       ],
     },
     {
+      id: "after-the-number",
+      // PRIORITY-PAGES-2 (2026-10-19, audit §A-2 + report §9.4-4): the
+      // conversion bridge the page lacked — it computed the number and
+      // stopped. Plain-text routing to the site's own next steps (the
+      // ContentBlock type is text-only by law; the linked destinations
+      // live one screen up in the page chrome). Every number below is the
+      // page's own documented arithmetic (−500 / +400 / 40-30-30).
+      heading: {
+        en: "What to do with your number after the calculation",
+        ar: "ماذا تفعل بالرقم بعد حسابه؟",
+      },
+      blocks: [
+        {
+          kind: "p",
+          text: {
+            en: "A number is a starting point, not a plan — the value appears when you convert it into decisions. First, split it: the macro calculator turns your daily target into protein, carbohydrate, and fat grams (a 40/30/30 starter split the calculator already previews), because \"2,000 calories\" becomes manageable only as food on a plate. Second, give it a schedule: the diet-plan library holds twenty-four ready days — six calorie levels from 1200 to 3000 across four systems (balanced, high-protein, keto, vegetarian) written in grams per item — so your exact number has a ready-made menu you open and follow today, or the AI meal planner generates a complete day from your number, system, and preferences in seconds.",
+            ar: "الرقم نقطة بداية لا خطة — وقيمته تظهر حين تحوّله إلى قرارات. أولًا وزّعه: حاسبة الماكروز تحوّل هدفك اليومي إلى غرامات بروتين وكربوهيدرات ودهون (بتوزيع افتتاحي 40/30/30 تعرضه الحاسبة مسبقًا)، لأن «2000 سعرة» لا تصبح قابلة للإدارة إلا كطعام في طبق. ثانيًا امنحه جدولًا: مكتبة الخطط الغذائية تضم أربعة وعشرين يومًا جاهزًا — ستة مستويات سعرات من 1200 إلى 3000 عبر أربعة أنظمة (المتوازن وعالي البروتين والكيتوني والنباتي) مكتوبة بالغرام لكل صنف — فرقمك بالضبط له قائمة جاهزة تفتحها وتتبعها اليوم، أو يولّد مخطط الوجبات بالذكاء الاصطناعي يومًا كاملًا من رقمك ونظامك وملاحظاتك في ثوانٍ.",
+          },
+        },
+        {
+          kind: "p",
+          text: {
+            en: "Third, pair it with training: a calorie target without training keeps muscle on the sidelines — the workout-programs library lays out ready schedules for every level and location, from a no-equipment home beginner plan to an advanced barbell 5×5, and the AI workout planner builds a split from your goal, level, days, and equipment. Fourth, close the loop: weigh the weekly average (not single mornings) under the same conditions, give each adjustment two to three honest weeks, and recalculate every 4–5 kilograms of body-weight change — the number you own is the one you re-measure. Along the way, the body-fat and water-intake calculators track what the scale alone cannot see.",
+            ar: "ثالثًا اقرنه بالتدريب: هدف سعرات بلا تدريب يُبقي العضلة خارج الملعب — مكتبة برامج التدريب تعرض جداول جاهزة لكل مستوى ومكان، من برنامج منزلي للمبتدئين بلا معدات إلى برنامج بار 5×5 للمتقدمين، ومخطط التمارين بالذكاء الاصطناعي يبني تقسيمة من هدفك ومستواك وأيامك ومعداتك. رابعًا أغلق الحلقة: زِن المتوسط الأسبوعي (لا الصباحات المفردة) بالظروف نفسها، وامنح كل تعديل أسبوعين إلى ثلاثة بصدق، وأعد الحساب كل 4–5 كيلوغرامات من تغير وزنك — فالرقم الذي تملكه هو الذي تعيد قياسه. وفي الطريق تتابع حاسبتا دهون الجسم وشرب الماء ما لا يراه الميزان وحده.",
+          },
+        },
+      ],
+    },
+    {
       id: "food-calorie-table",
       heading: {
         en: "Calorie table for common foods",
@@ -529,6 +558,23 @@ export const CALORIE_CALCULATOR_CONTENT: ToolReference = {
       a: {
         en: "Possibly — but first audit the two silent saboteurs: weekend intake (a 2,000-kcal Saturday erases four disciplined 500-kcal-deficit days) and measurement conditions (weigh naked, after the bathroom, before breakfast, on the same scale, and compare weekly averages rather than single mornings). If both are clean for three full weeks and the trend is still flat, your true TDEE is simply lower than the prediction — subtract another 150–200 kcal and re-test. The calculator gives you the hypothesis; your data runs the experiment.",
         ar: "ربما — لكن دقق أولاً في مخربّين صامتين: استهلاك نهاية الأسبوع (سبت بـ 2000 سعرة يمحو أربعة أيام منضبطة بعجز 500 سعرة) وظروف القياس (زِن بلا ملابس، بعد قضاء الحاجة، قبل الفطور، على الميزان نفسه، وقارن المتوسطات الأسبوعية لا الصباحات المفردة). إن كان الاثنان نظيفين ثلاثة أسابيع كاملة والاتجاه ما يزال مستوياً فإن إنفاقك الحقيقي أدنى من التنبؤ ببساطة — اطرح 150–200 سعرة أخرى وأعد الاختبار. الحاسبة تعطيك الفرضية؛ وبياناتك تدير التجربة.",
+      },
+    },
+    {
+      // PRIORITY-PAGES-2 (2026-10-19, audit Improvement 4 remainder +
+      // report §9.4-3): the Arabic use-case pack's muscle-building half —
+      // the loss half ("How many calories should I eat per day to lose
+      // weight?") already existed; the surplus twin did not. Numbers are
+      // the page's own documented arithmetic: +400 for gain (header
+      // comment + weight-goals section), 0.25-0.5% of body weight per
+      // month, protein 1.6-2.2 g/kg (macro-calculator content).
+      q: {
+        en: "How many calories do I need to build muscle?",
+        ar: "كم سعرة أحتاج لبناء العضل؟",
+      },
+      a: {
+        en: "Your calculated maintenance (TDEE) plus a modest surplus — this calculator adds 400 kcal for its gaining target. Muscle synthesis is a slow factory: a lean gain of about 0.25-0.5% of body weight per month in your first training years uses that surplus efficiently, while force-feeding a thousand extra calories mostly buys fat and indigestion. Hold protein at roughly 1.6-2.2 g per kg of body weight, train with real loads, and judge by the weekly scale trend and your lifts — not by appetite or a single good week.",
+        ar: "سعرات التثبيت المحسوبة لك (الإنفاق اليومي الكلي) زائد فائض معتدل — هذه الحاسبة تضيف 400 سعرة لهدف الزيادة. بناء العضلات مصنع بطيء: زيادة عضلية بنحو 0.25-0.5% من وزن الجسم شهرياً في سنواتك التدريبية الأولى تستثمر هذا الفائض بكفاءة، بينما حشر ألف سعرة إضافية يشتري أساساً دهوناً وعسر هضم. ثبّت البروتين عند نحو 1.6-2.2 غ لكل كجم من وزنك، وتدرب بأحمال حقيقية، واحكم باتجاه الميزان الأسبوعي وأرقام رفعاتك — لا بشهيتك أو أسبوع جيد واحد.",
       },
     },
   ],

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getProgramBySlug } from "@/lib/workout-programs";
 import { getExerciseMinisBySlugs } from "@/lib/exercises";
-import { getBreadcrumbSchema, jsonLd } from "@/lib/seo";
+import { getBreadcrumbSchema, getFAQSchema, jsonLd } from "@/lib/seo";
 import ProgramDetailClient from "./ProgramDetailClient";
 
 /**
@@ -107,6 +107,15 @@ export default async function Page({
       ])
     : null;
 
+  // PRIORITY-PAGES-2 (2026-10-19, audit §D-2): the per-program FAQ array
+  // (workout-programs.ts) as FAQPage JSON-LD — same single-source pattern
+  // as the evo/coaching layouts (EVO_FAQ, coaching-faq). English-first on
+  // the EN canonical so this URL's questions are quoted in English.
+  const faqSchema =
+    program?.faq && program.faq.length > 0
+      ? getFAQSchema(program.faq.map((f) => ({ q: f.q.en, a: f.a.en })))
+      : null;
+
   // Resolve the program's exercise slugs into mini records server-side
   // (bundle law 2026-09-05) so ProgramDetailClient needs no data import.
   const exerciseIndex = program
@@ -121,6 +130,12 @@ export default async function Page({
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: jsonLd(breadcrumbSchema) }}
+        />
+      )}
+      {faqSchema && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: jsonLd(faqSchema) }}
         />
       )}
       <ProgramDetailClient

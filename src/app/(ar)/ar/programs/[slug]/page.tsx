@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getProgramBySlug, WORKOUT_PROGRAMS } from "@/lib/workout-programs";
 import { getExerciseMinisBySlugs } from "@/lib/exercises";
-import { getBreadcrumbSchema, jsonLd, stripTrailingBrandForArTemplate } from "@/lib/seo";
+import { getBreadcrumbSchema, getFAQSchema, jsonLd, stripTrailingBrandForArTemplate } from "@/lib/seo";
 import ProgramDetailClient from "@/app/(en)/programs/[slug]/ProgramDetailClient";
 
 const SITE_URL = "https://alkemos.com";
@@ -102,12 +102,26 @@ export default async function Page({
       ])
     : null;
 
+  // PRIORITY-PAGES-2 (2026-10-19, audit §D-2): the per-program FAQ array
+  // as FAQPage JSON-LD — Arabic-first on the AR mirror (the same
+  // single-source pattern as the evo AR layout's EVO_FAQ.ar).
+  const faqSchema =
+    program?.faq && program.faq.length > 0
+      ? getFAQSchema(program.faq.map((f) => ({ q: f.q.ar, a: f.a.ar })))
+      : null;
+
   return (
     <>
       {breadcrumbSchema && (
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: jsonLd(breadcrumbSchema) }}
+        />
+      )}
+      {faqSchema && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: jsonLd(faqSchema) }}
         />
       )}
       <ProgramDetailClient

@@ -346,6 +346,27 @@ export default async function DietPlanCellPageEn({ params }: Params) {
                 your professional, never as a substitute.
               </p>
             </div>
+            {/* PRIORITY-PAGES-2 (2026-10-19, audit §E-1): the customization
+                route as an explicit question — the CTA card above carries the
+                links; this Q&A states the three paths (manual planner grams,
+                AI generation, EVO meal swaps) in the quotable FAQ format the
+                page's other answers already use. */}
+            <div>
+              <h3 className="text-base font-semibold tracking-tight text-[var(--text)]">
+                Can I customize this plan instead of following it as-is?
+              </h3>
+              <p className="mt-1.5 text-base font-normal leading-relaxed text-[var(--muted-foreground)]">
+                Yes, and that is the intended next step: open the meal
+                planner and enter this plan&apos;s items at your own grams —
+                the totals build live per meal and per day, and you adjust
+                the grams until the day lands exactly on your target. For a
+                regenerated day from your number, system, and preferences,
+                the AI meal planner builds one in seconds, free for
+                everyone. And with a subscription, EVO can swap any single
+                meal inside your plan for a macro-matched equivalent without
+                touching the rest of the day.
+              </p>
+            </div>
           </div>
 
           {/* ── Internal mesh: same level, other systems + same system, other levels ── */}

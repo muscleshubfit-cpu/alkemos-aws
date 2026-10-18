@@ -97,8 +97,14 @@ export default function DietPlanHubPage() {
           </p>
           <p className="mt-3 text-base font-normal leading-relaxed text-[var(--muted-foreground)]">
             ابدأ من رقمك: إن كنت تعرف سعراتك اليومية فاختر نظامك من الكروت
-            أدناه ثم مستوى سعراتك من اختياراته؛ وإن لم تعرفها فمرّ على حاسبة
-            السعرات أولاً — فمستوى 1500 سعرة لشخص يحرق 2400 غير مناسب تماماً
+            أدناه ثم مستوى سعراتك من اختياراته؛ وإن لم تعرفها فمرّ على{" "}
+            <Link
+              href="/ar/tools/calorie-calculator"
+              className="underline decoration-[var(--edge)] underline-offset-4 hover:text-[var(--text)]"
+            >
+              حاسبة السعرات
+            </Link>{" "}
+            أولاً — فمستوى 1500 سعرة لشخص يحرق 2400 غير مناسب تماماً
             لشخص يحرق 1800. ثم اختر النظام الذي يشبه حياتك: المتوازن نقطة
             بداية متوازنة، وعالي البروتين مصمم لخسارة الدهون وبناء
             العضلات، والكيتو لمن يحيا بداخله أصلاً، والنباتي لمن غذاؤه بقول
@@ -153,6 +159,40 @@ export default function DietPlanHubPage() {
                     </Link>
                   ))}
                 </div>
+              </div>
+            ))}
+          </div>
+
+          {/* PRIORITY-PAGES-2 (2026-10-19, audit §E-1): الفهرس النصي
+              للخطط الـ24 بصيغة الاستعلام المقيسة — «خطة 2000 سعرة عالية
+              البروتين — جاهزة بالغرامات» (نمط الاستعلامات المقيسة
+              بتشغيل 39152491179) — المكتبة كانت تعرض الكروت بلا وصلة
+              نصية يقرأها الباحث أو الزاحف. */}
+          <h2 className="mt-10 text-xl font-semibold tracking-tight text-[var(--text)]">
+            كل خطة باسمها — القائمة الكاملة
+          </h2>
+          <p className="mt-3 text-base font-normal leading-relaxed text-[var(--muted-foreground)]">
+            المكتبة كلها بصيغة يطلبها بها الناس — اختر سعراتك ونظامك
+            وتُفتح الخطة بالغرامات:
+          </p>
+          <div className="mt-4 space-y-5">
+            {DIET_SYSTEMS.map((s) => (
+              <div key={s.slug}>
+                <h3 className="text-base font-semibold tracking-tight text-[var(--text)]">
+                  خطط {s.nameAr}
+                </h3>
+                <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1.5">
+                  {DIET_LEVELS.map((lv) => (
+                    <li key={lv}>
+                      <Link
+                        href={`/ar/diet-plan/${lv}/${s.slug}`}
+                        className="text-sm font-normal text-[var(--muted-foreground)] underline decoration-[var(--edge)] underline-offset-4 transition-colors hover:text-[var(--text)]"
+                      >
+                        {`خطة ${lv} سعرة ${s.nameAr} — جاهزة بالغرامات`}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
               </div>
             ))}
           </div>

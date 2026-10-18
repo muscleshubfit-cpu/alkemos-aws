@@ -100,8 +100,14 @@ export default function DietPlanHubPageEn() {
           <p className="mt-3 text-base font-normal leading-relaxed text-[var(--muted-foreground)]">
             Start from your number: if you already know your daily calories,
             pick your system from the cards below, then your level from its
-            calorie options; if you do not, run the calorie calculator first —
-            a 1500-calorie plan fits a person burning 2400 very differently
+            calorie options; if you do not, run the{" "}
+            <Link
+              href="/tools/calorie-calculator"
+              className="underline decoration-[var(--edge)] underline-offset-4 hover:text-[var(--text)]"
+            >
+              calorie calculator
+            </Link>{" "}
+            first — a 1500-calorie plan fits a person burning 2400 very differently
             than one burning 1800. Then choose the system that resembles your
             life: balanced makes a balanced starting point,
             high-protein is built for fat loss and muscle building, keto
@@ -156,6 +162,42 @@ export default function DietPlanHubPageEn() {
                     </Link>
                   ))}
                 </div>
+              </div>
+            ))}
+          </div>
+
+          {/* PRIORITY-PAGES-2 (2026-10-19, audit §E-1): a TEXTUAL index of
+              all 24 leaf plans in the measured query pattern — "2000 calorie
+              high protein meal plan" (2 impr @ 56.50) and "2000 calorie
+              vegetarian meal plan" (1 impr @ 16.00, GSC run 39152491179) —
+              the library showed the cards but never a query-shaped link a
+              searcher (or a crawler) could read. The /diet-plan/2000/
+              high-protein page itself measured 17 impressions @ 52.59. */}
+          <h2 className="mt-10 text-xl font-semibold tracking-tight text-[var(--text)]">
+            Every plan by name — the full 24
+          </h2>
+          <p className="mt-3 text-base font-normal leading-relaxed text-[var(--muted-foreground)]">
+            The whole library, written the way people ask for it — pick your
+            calories and your system and the plan opens in grams:
+          </p>
+          <div className="mt-4 space-y-5">
+            {DIET_SYSTEMS.map((s) => (
+              <div key={s.slug}>
+                <h3 className="text-base font-semibold tracking-tight text-[var(--text)]">
+                  {s.nameEn} meal plans
+                </h3>
+                <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1.5">
+                  {DIET_LEVELS.map((lv) => (
+                    <li key={lv}>
+                      <Link
+                        href={`/diet-plan/${lv}/${s.slug}`}
+                        className="text-sm font-normal text-[var(--muted-foreground)] underline decoration-[var(--edge)] underline-offset-4 transition-colors hover:text-[var(--text)]"
+                      >
+                        {`${lv}-calorie ${s.nameEn.toLowerCase()} meal plan — ready in grams`}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
               </div>
             ))}
           </div>

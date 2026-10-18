@@ -26,9 +26,21 @@ FILES = [
     "src/lib/coaching-faq.ts",
     "src/lib/faq-content.ts",
     "src/lib/content/bmi-calculator.ts",
+    "src/lib/content/calorie-calculator.ts",
     "src/app/(en)/evo/layout.tsx",
     "src/app/(ar)/ar/evo/layout.tsx",
     "src/components/views/StaticPageView.tsx",
+    # PRIORITY-PAGES-2 (2026-10-19): the batch's bilingual copy files —
+    # program library + detail render + hub, and the diet-plan surfaces.
+    "src/lib/workout-programs.ts",
+    "src/app/(en)/programs/page.tsx",
+    "src/app/(en)/programs/[slug]/ProgramDetailClient.tsx",
+    "src/app/(en)/programs/[slug]/page.tsx",
+    "src/app/(ar)/ar/programs/[slug]/page.tsx",
+    "src/app/(en)/diet-plan/page.tsx",
+    "src/app/(ar)/ar/diet-plan/page.tsx",
+    "src/app/(en)/diet-plan/[level]/[system]/page.tsx",
+    "src/app/(ar)/ar/diet-plan/[level]/[system]/page.tsx",
 ]
 
 # Arabic letters (the scanner's ARABIC_LETTER_CLASS is letters-only by
