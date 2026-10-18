@@ -359,25 +359,25 @@ then timestamped files in order — or simply `supabase db push` with the CLI).
 The registry, naming laws, and manual-script rules live in
 [`supabase/migrations/INDEX.md`](./supabase/migrations/INDEX.md).
 
-### Deployment (Vercel)
-Import the repository on Vercel, add the environment variables, and deploy.
-[`vercel.json`](./vercel.json) carries the production posture: Frankfurt
-region, security headers (HSTS, CSP + report-only, X-Frame-Options,
-Referrer-Policy, Permissions-Policy), immutable caching for static assets and
-exercise images, and scheduled jobs (weekly progress reminder, daily pipeline
-dispatch). Site URL, analytics, and ads integrations are env-configured.
+### Deployment (AWS Lightsail — production origin)
 
-**AWS origin pipeline (test phase — not live):** a hosting-migration deploy
-pipeline for a Lightsail origin exists in
+The production line is the AWS Lightsail origin (DNS cutover completed
+2026-10-10). Every code push to `main` runs the required tests
+(`tsc --noEmit` • `eslint` • `vitest`) in
 [`.github/workflows/deploy-aws.yml`](./.github/workflows/deploy-aws.yml)
-(manual `workflow_dispatch` ONLY — it never runs on push) with the
-server-side assets under [`deploy/`](./deploy/) and the root
-`ecosystem.config.js` (PM2). It replicates the vercel.json security headers
-and image cache rules in `deploy/Caddyfile` and ships a safe activate
-(atomic symlink switch + `/api/build-info` health check + automatic
-rollback). The full plan and the test-deployment walkthrough live in
+and deploys automatically on green — doc-only pushes (Markdown, `docs/`,
+`archive/`, `scripts/`) skip the deploy safely, and manual
+`workflow_dispatch` stays for drills and re-runs. Activation is safe by
+construction: atomic `current` symlink switch + `/api/build-info` health
+check + automatic rollback to the previous release on failure
+(`deploy/rollback.sh` for manual flips), followed by a post-deploy verify
+battery (server vitals over SSH + edge checks). Server-side assets live
+under [`deploy/`](./deploy/) and the root `ecosystem.config.js` (PM2);
+`deploy/Caddyfile` replicates the vercel.json security headers and image
+cache rules. [`vercel.json`](./vercel.json) keeps the legacy Vercel
+posture for the DNS-rollback path documented in
 [`docs/VERCEL-TO-AWS-HOSTING-MIGRATION-PLAN-2026-10-09.md`](./docs/VERCEL-TO-AWS-HOSTING-MIGRATION-PLAN-2026-10-09.md);
-Vercel remains the only production line until the owner-ordered DNS cutover.
+site URL, analytics, and ads integrations are env-configured.
 
 ---
 

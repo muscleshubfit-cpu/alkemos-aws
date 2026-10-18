@@ -5,11 +5,25 @@ name: Deploy to AWS origin (alkemos)
 # of docs/VERCEL-TO-AWS-HOSTING-MIGRATION-PLAN-2026-10-09.md §8 item 1,
 # prepared on branch test/aws-lightsail-migration).
 #
-# LAW: workflow_dispatch ONLY. This workflow NEVER runs on push — Vercel
-# remains the only live deployment line until the DNS cutover (plan
-# §5.2/§12), so merging this file changes nothing about production by
-# itself. The push trigger is added in the same commit that performs
-# the cutover (plan ملحق د).
+# LAW (owner order 2026-10-19 «إصلاح النشر التلقائي» — supersedes the
+# hosting-migration Phase 1 law above): every CODE push to main runs the
+# required tests (job `test` — the canonical AGENTS.md §3.5 battery:
+# tsc --noEmit • eslint • vitest run, in the same frozen bun.lock/Node 22
+# environment as quality-gate) and, only on green, builds and deploys to
+# AWS automatically — no manual workflow_dispatch needed for routine
+# releases. The DNS cutover completed 2026-10-10 and AWS Lightsail is the
+# production origin, so the old dispatch-only law is retired (dispatch
+# stays for drills/re-runs). Doc-only pushes (Markdown/docs/archive/
+# scripts) skip the whole pipeline SAFELY: none of those paths ship in
+# the release tarball (.next public package.json bun.lock next.config.ts
+# ecosystem.config.js deploy) nor can change a test outcome — the same
+# scoping law as quality-gate Phase 290. .github/** is deliberately NOT
+# ignored: a workflow change must prove itself through a real run. The
+# deploy mechanism itself is UNCHANGED: safe activation + /api/build-info
+# health check + AUTOMATIC rollback on failure, the post-deploy verify
+# battery, and the existing concurrency group (queued — never kills a
+# live activation; GitHub's one-pending rule collapses burst pushes so
+# only the newest queued commit deploys).
 #
 # Safe deploy + automatic rollback (owner order: «النشر الآمن والتراجع
 # عند الفشل»): activation runs deploy/deploy.sh ON THE SERVER —
@@ -84,6 +98,17 @@ name: Deploy to AWS origin (alkemos)
 # =====================================================================
 
 on:
+  push:
+    branches: [main]
+    # Doc-only pushes cannot change the shipped site or a test outcome
+    # (quality-gate Phase 290 scoping law) — they skip the deploy entirely.
+    # .github/** is NOT ignored on purpose: workflow changes deploy too,
+    # so every pipeline edit proves itself through a real end-to-end run.
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - 'archive/**'
+      - 'scripts/**'
   workflow_dispatch:
     inputs:
       rollback_drill:
@@ -100,7 +125,55 @@ permissions:
   contents: read
 
 jobs:
+  # =====================================================================
+  # Required tests (owner order 2026-10-19): the canonical AGENTS.md §3.5
+  # battery — identical commands and frozen environment to quality-gate
+  # (Phase 141). The deploy job below only starts when this gate is green.
+  # =====================================================================
+  test:
+    name: gate (tsc • eslint • vitest)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0 — pinned 2026-10-10 audit
+
+      # Same frozen environment as quality-gate + Vercel: bun 1.3.14
+      # from bun.lock, runtime Node 22.
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe8019c62421857d6 # v5.0.0 — pinned 2026-10-10 audit
+        with:
+          node-version: 22
+
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0 — pinned 2026-10-10 audit
+        with:
+          bun-version: "1.3.14"
+
+      - name: Install dependencies (frozen bun.lock = production tree)
+        run: bun install --frozen-lockfile
+
+      # Phase 141.1 lesson: next-env.d.ts is a gitignored fresh-clone
+      # artifact — only next build/dev regenerates it; write the standard
+      # stub so a bare tsc finds the static-image module declarations.
+      - name: Regenerate next-env.d.ts (gitignored fresh-clone artifact)
+        run: |
+          printf '%s\n' \
+            '/// <reference types="next" />' \
+            '/// <reference types="next/image-types/global" />' \
+            '' \
+            '// NOTE: This file should not be edited' \
+            '// see https://nextjs.org/docs/app/api-reference/config/typescript for more information.' \
+            > next-env.d.ts
+
+      - name: Typecheck — npx tsc --noEmit
+        run: npx --no-install tsc --noEmit
+
+      - name: Lint — npx eslint .
+        run: npx --no-install eslint .
+
+      - name: Unit tests — vitest run
+        run: npx --no-install vitest run
+
   build-and-deploy:
+    needs: test # owner order 2026-10-19: deploy only on a green gate
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
@@ -445,7 +518,7 @@ jobs:
   rollback-drill:
     name: rollback drill (rollback → verify → re-activate)
     needs: verify
-    if: ${{ inputs.rollback_drill }}
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.rollback_drill }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
