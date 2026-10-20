@@ -285,7 +285,14 @@ async function dumpGroqBrowserResponse(): Promise<void> {
     // Arabic) · allam-2-7b (Arabic-specialized) · gpt-oss-safeguard-20b.
     { label: "browser_search qwen3.8-27b (separate TPD bucket)", model: "qwen/qwen3.8-27b", extra: { tools: [{ type: "browser_search" }], temperature: 0.3, max_tokens: 4096 } },
     { label: "browser_search allam-2-7b (Arabic specialist, separate TPD bucket)", model: "allam-2-7b", extra: { tools: [{ type: "browser_search" }], temperature: 0.3, max_tokens: 4096 } },
-    { label: "browser_search gpt-oss-safeguard-20b (separate TPD bucket)", model: "openai/gpt-oss-safeguard-20b", extra: { tools: [{ type: "browser_search" }], reasoning_format: "hidden", temperature: 0.3, max_tokens: 4096 } },
+    // BLOG-RECOVERY-2 round-3: safeguard-20b ACCEPTED the browser_search
+    // tool (the 400 was «Parsing failed» under reasoning_format hidden —
+    // the exact measured 20b/120b split whose remedy is the flip to
+    // "parsed"). Measure the flipped shape + the required-variant: if it
+    // answers with REAL executed_tools evidence it is a THIRD gpt-oss TPD
+    // bucket (fresh — the safeguard id is used by nothing else).
+    { label: "browser_search safeguard-20b reasoning-parsed (fresh TPD bucket)", model: "openai/gpt-oss-safeguard-20b", extra: { tools: [{ type: "browser_search" }], reasoning_format: "parsed", temperature: 0.3, max_tokens: 4096 } },
+    { label: "browser_search safeguard-20b parsed+tool_choice-required (fresh TPD bucket)", model: "openai/gpt-oss-safeguard-20b", extra: { tools: [{ type: "browser_search" }], reasoning_format: "parsed", tool_choice: "required", temperature: 0.3, max_tokens: 4096 } },
   ];
   for (const v of variants) {
     let r = await attempt(v.extra, v.model);
