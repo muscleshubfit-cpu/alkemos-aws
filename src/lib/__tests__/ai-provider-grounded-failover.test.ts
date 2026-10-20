@@ -706,7 +706,7 @@ describe("quota cooldown in the grounded walk (AI_PROVIDER_COOLDOWN_MS on)", () 
 
     await expect(callGroundedSearch("research")).rejects.toThrow(/every grounded-search arm failed/);
     const call1Fetches = log.length;
-    expect(call1Fetches).toBe(7); // 3 gemini (post-3.8-pro ladder) + 1 openrouter + 3 groq ladder (120b/20b/safeguard — the round-3 third bucket)
+    expect(call1Fetches).toBe(6); // 3 gemini (post-3.8-pro ladder) + 1 openrouter + 2 groq ladder (120b/20b — safeguard removed round-4: 413 Request-too-large on the research prompt)
 
     const err = (await callGroundedSearch("research").catch((e: Error) => e)) as Error;
     expect(err.message).toMatch(/quota-cooldown until .+ — skipped, no call made/);

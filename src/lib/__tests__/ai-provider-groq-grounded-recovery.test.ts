@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { callGroundedSearch } from "@/lib/ai-provider";
+import { callGroundedSearch, GROQ_GROUNDED_MODEL_LADDER } from "@/lib/ai-provider";
 import {
   __resetCooldownForTests,
   activeCooldowns,
@@ -255,75 +255,31 @@ describe("BLOG-RECOVERY 2026-10-20 — per-minute 429 classification law", () =>
     expect(err.message).toContain("every grounded-search arm failed");
     expect(err.message).toContain("tokens per day");
     // exactly ONE network call PER LADDER MODEL — a daily class never
-    // burns a patient retry (3 models: 120b leader + 20b + safeguard —
-    // the round-3 third bucket)
-    expect(log.filter((c) => groqUrl(c.url))).toHaveLength(3);
+    // burns a patient retry (2 models: 120b leader + 20b — the round-4
+    // ladder, safeguard removed)
+    expect(log.filter((c) => groqUrl(c.url))).toHaveLength(2);
     // and it cools every scope: the next walk skips all of them without a call
     const cds = activeCooldowns();
     expect(cds.some((c) => c.scope === "grounded:groq:openai/gpt-oss-120b")).toBe(true);
     expect(cds.some((c) => c.scope === "grounded:groq:openai/gpt-oss-20b")).toBe(true);
-    expect(cds.some((c) => c.scope === "grounded:groq:openai/gpt-oss-safeguard-20b")).toBe(true);
+    expect(cds.some((c) => c.scope === "grounded:groq:openai/gpt-oss-safeguard-20b")).toBe(false); // never in the walk — removed round-4
   });
 });
 
 /* ══════════════════════════════════════════════════════════════════
- * LAW 4 — the round-3 THIRD TPD bucket: 120b AND 20b drained to their
- * TPD edge (measured 2026-10-20: 199.4k+/200k both) → safeguard-20b
- * (fresh bucket) answers — the exact measured live scenario.
+ * LAW 4 — the round-4 POST-MORTEM pin: safeguard-20b is NOT in the
+ * ladder. It was added round-3 (live-measured browser_search-capable
+ * on the probe's SMALL ask, fresh TPD bucket) and removed after the
+ * live production attempt (run 39495419206): the REAL P0 research
+ * prompt (~4.5k tokens + max_tokens 5000 + the walk's growing browser
+ * context) exceeds its context window — 413 «Request too large» on the
+ * very first request, every time. Structurally unfit; available via
+ * the GROQ_GROUNDED_MODELS knob for smaller jobs.
  * ═════════════════════════════════════════════════════════════════ */
-describe("BLOG-RECOVERY-2 round-3 — the safeguard-20b third TPD bucket", () => {
-  it("120b AND 20b TPD-drained in the SAME walk → the fresh safeguard bucket answers (the exact measured 2026-10-20 live scenario)", { timeout: 20_000 }, async () => {
-    process.env.GEMINI_API_KEY = "AIza-test-key";
-    process.env.OPENROUTER_API = "sk-or-test-key";
-    process.env.GROQ_API_KEY = "gsk-test-key";
-    process.env.AI_PROVIDER_COOLDOWN_MS = "1800000";
-    const log: FetchLog[] = [];
-    // Body-model routing (the real scenario: per-MODEL TPD buckets):
-    // 120b + 20b answer the daily-limit body; the fresh safeguard bucket
-    // answers with a REAL browser_search walk (executed_tools + sources).
-    const fake = vi.fn(async (url: string, init?: RequestInit) => {
-      const headers = new Headers(init?.headers);
-      const auth = headers.get("authorization") || "";
-      const body = JSON.parse(String(init?.body)) as Record<string, unknown>;
-      log.push({ url, auth, body });
-      let ok = true;
-      let status = 200;
-      let payload: unknown = GROQ_BROWSER_OK;
-      if (geminiKeyOk(String(url))) {
-        ok = false; status = 429; payload = QUOTA_429_GEMINI;
-      } else if (orUrl(String(url))) {
-        ok = false; status = 402; payload = CREDITS_402;
-      } else if (body.model === "openai/gpt-oss-120b" || body.model === "openai/gpt-oss-20b") {
-        // the LIVE measured state of 2026-10-20 (probe 39445715096):
-        // both gpt-oss buckets at their 199.4k+/200k TPD edge
-        ok = false; status = 429; payload = TPD_DAILY_429;
-      }
-      return {
-        ok, status,
-        json: async () => payload,
-        text: async () => JSON.stringify(payload),
-      } as unknown as Response;
-    });
-    vi.stubGlobal("fetch", fake);
-
-    const out = await callGroundedSearch("research");
-    expect(out.provider).toBe("groq");
-    expect(out.model).toBe("openai/gpt-oss-safeguard-20b");
-    expect(out.grounding.sources.length).toBeGreaterThanOrEqual(2);
-    // the walk: 120b TPD-drained → 20b TPD-drained → safeguard's REAL walk
-    const groqModels = log
-      .filter((c) => groqUrl(c.url))
-      .map((c) => String((c.body as { model?: string }).model));
-    expect(groqModels).toEqual([
-      "openai/gpt-oss-120b",
-      "openai/gpt-oss-20b",
-      "openai/gpt-oss-safeguard-20b",
-    ]);
-    // the daily-class drains cool ONLY the drained buckets — safeguard stays free
-    const cds = activeCooldowns();
-    expect(cds.some((c) => c.scope === "grounded:groq:openai/gpt-oss-120b")).toBe(true);
-    expect(cds.some((c) => c.scope === "grounded:groq:openai/gpt-oss-20b")).toBe(true);
-    expect(cds.some((c) => c.scope === "grounded:groq:openai/gpt-oss-safeguard-20b")).toBe(false);
+describe("BLOG-RECOVERY-2 round-4 — the safeguard-20b post-mortem", () => {
+  it("GROQ_GROUNDED_MODEL_LADDER carries exactly [20b] — safeguard removed (413 Request-too-large on the research prompt, run 39495419206)", () => {
+    expect(GROQ_GROUNDED_MODEL_LADDER).toEqual(["openai/gpt-oss-20b"]);
+    expect(GROQ_GROUNDED_MODEL_LADDER).not.toContain("openai/gpt-oss-safeguard-20b");
   });
 });
 

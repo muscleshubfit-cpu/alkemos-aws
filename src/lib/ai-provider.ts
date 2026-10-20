@@ -936,17 +936,17 @@ export const GROQ_GROUNDED_DEFAULT_MODEL = "openai/gpt-oss-120b";
  *  the whole tail without a deploy. */
 export const GROQ_GROUNDED_MODEL_LADDER: readonly string[] = [
   "openai/gpt-oss-20b", // smaller sibling — 82.6% live, separate TPM bucket
-  // BLOG-RECOVERY-2 round-3 (2026-10-20, probe run 39446813895): a THIRD
-  // bucket, live-measured by REAL browser_search walks (9 executed tools,
-  // real who.int results under reasoning_format "parsed" — under "hidden"
-  // it 400s «Parsing failed», the EXACT measured 20b/120b split, so the
-  // existing hidden→parsed flip recovery carries it). Measured necessary:
-  // gpt-oss-120b and gpt-oss-20b drain their SEPARATE 200k TPD buckets on
-  // heavy days (both hit 199.4k+/200k on 2026-10-20) while this third id
-  // is used by nothing else — the fresh bucket is the day-saver. qwen3.8
-  // and allam-2-7b were live-measured OUT (400 «tools[0].type must be
-  // one of [function, mcp]» — no browser_search support).
-  "openai/gpt-oss-safeguard-20b", // fresh TPD bucket — the measured third arm
+  // BLOG-RECOVERY-2 round-4 (2026-10-20, live run 39495419206): the
+  // round-3 candidate openai/gpt-oss-safeguard-20b was REMOVED — it
+  // supports browser_search on SMALL asks (the probe's one-sentence
+  // question walked fine) but the REAL P0 research prompt (~4.5k tokens
+  // + max_tokens 5000 + the walk's growing browser context) exceeds its
+  // context window: 413 «Request too large for model …safeguard-20b»
+  // on the very first request, every time — structurally unfit for
+  // this path. It stays available for smaller jobs via the
+  // GROQ_GROUNDED_MODELS ops knob. (qwen3.8-27b and allam-2-7b were
+  // live-measured OUT in round 2: 400 «tools[0].type must be one of
+  // [function, mcp]» — no browser_search support at all.)
 ];
 
 export function getGroqGroundedModel(): string {
