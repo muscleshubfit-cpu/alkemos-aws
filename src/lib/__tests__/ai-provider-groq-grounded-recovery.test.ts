@@ -255,12 +255,75 @@ describe("BLOG-RECOVERY 2026-10-20 — per-minute 429 classification law", () =>
     expect(err.message).toContain("every grounded-search arm failed");
     expect(err.message).toContain("tokens per day");
     // exactly ONE network call PER LADDER MODEL — a daily class never
-    // burns a patient retry (2 models: 120b leader + 20b tail = 2 calls)
-    expect(log.filter((c) => groqUrl(c.url))).toHaveLength(2);
-    // and it cools every scope: the next walk skips both without a call
+    // burns a patient retry (3 models: 120b leader + 20b + safeguard —
+    // the round-3 third bucket)
+    expect(log.filter((c) => groqUrl(c.url))).toHaveLength(3);
+    // and it cools every scope: the next walk skips all of them without a call
     const cds = activeCooldowns();
     expect(cds.some((c) => c.scope === "grounded:groq:openai/gpt-oss-120b")).toBe(true);
     expect(cds.some((c) => c.scope === "grounded:groq:openai/gpt-oss-20b")).toBe(true);
+    expect(cds.some((c) => c.scope === "grounded:groq:openai/gpt-oss-safeguard-20b")).toBe(true);
+  });
+});
+
+/* ══════════════════════════════════════════════════════════════════
+ * LAW 4 — the round-3 THIRD TPD bucket: 120b AND 20b drained to their
+ * TPD edge (measured 2026-10-20: 199.4k+/200k both) → safeguard-20b
+ * (fresh bucket) answers — the exact measured live scenario.
+ * ═════════════════════════════════════════════════════════════════ */
+describe("BLOG-RECOVERY-2 round-3 — the safeguard-20b third TPD bucket", () => {
+  it("120b AND 20b TPD-drained in the SAME walk → the fresh safeguard bucket answers (the exact measured 2026-10-20 live scenario)", { timeout: 20_000 }, async () => {
+    process.env.GEMINI_API_KEY = "AIza-test-key";
+    process.env.OPENROUTER_API = "sk-or-test-key";
+    process.env.GROQ_API_KEY = "gsk-test-key";
+    process.env.AI_PROVIDER_COOLDOWN_MS = "1800000";
+    const log: FetchLog[] = [];
+    // Body-model routing (the real scenario: per-MODEL TPD buckets):
+    // 120b + 20b answer the daily-limit body; the fresh safeguard bucket
+    // answers with a REAL browser_search walk (executed_tools + sources).
+    const fake = vi.fn(async (url: string, init?: RequestInit) => {
+      const headers = new Headers(init?.headers);
+      const auth = headers.get("authorization") || "";
+      const body = JSON.parse(String(init?.body)) as Record<string, unknown>;
+      log.push({ url, auth, body });
+      let ok = true;
+      let status = 200;
+      let payload: unknown = GROQ_BROWSER_OK;
+      if (geminiKeyOk(String(url))) {
+        ok = false; status = 429; payload = QUOTA_429_GEMINI;
+      } else if (orUrl(String(url))) {
+        ok = false; status = 402; payload = CREDITS_402;
+      } else if (body.model === "openai/gpt-oss-120b" || body.model === "openai/gpt-oss-20b") {
+        // the LIVE measured state of 2026-10-20 (probe 39445715096):
+        // both gpt-oss buckets at their 199.4k+/200k TPD edge
+        ok = false; status = 429; payload = TPD_DAILY_429;
+      }
+      return {
+        ok, status,
+        json: async () => payload,
+        text: async () => JSON.stringify(payload),
+      } as unknown as Response;
+    });
+    vi.stubGlobal("fetch", fake);
+
+    const out = await callGroundedSearch("research");
+    expect(out.provider).toBe("groq");
+    expect(out.model).toBe("openai/gpt-oss-safeguard-20b");
+    expect(out.grounding.sources.length).toBeGreaterThanOrEqual(2);
+    // the walk: 120b TPD-drained → 20b TPD-drained → safeguard's REAL walk
+    const groqModels = log
+      .filter((c) => groqUrl(c.url))
+      .map((c) => String((c.body as { model?: string }).model));
+    expect(groqModels).toEqual([
+      "openai/gpt-oss-120b",
+      "openai/gpt-oss-20b",
+      "openai/gpt-oss-safeguard-20b",
+    ]);
+    // the daily-class drains cool ONLY the drained buckets — safeguard stays free
+    const cds = activeCooldowns();
+    expect(cds.some((c) => c.scope === "grounded:groq:openai/gpt-oss-120b")).toBe(true);
+    expect(cds.some((c) => c.scope === "grounded:groq:openai/gpt-oss-20b")).toBe(true);
+    expect(cds.some((c) => c.scope === "grounded:groq:openai/gpt-oss-safeguard-20b")).toBe(false);
   });
 });
 
