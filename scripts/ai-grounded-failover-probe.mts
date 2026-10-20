@@ -276,6 +276,16 @@ async function dumpGroqBrowserResponse(): Promise<void> {
     { label: "arm-exact 120b", model: "openai/gpt-oss-120b", extra: { tools: [{ type: "browser_search" }], reasoning_format: "hidden", temperature: 0.3, max_tokens: 4096 } },
     { label: "tool_choice-required 120b", model: "openai/gpt-oss-120b", extra: { tools: [{ type: "browser_search" }], reasoning_format: "hidden", tool_choice: "required", temperature: 0.3, max_tokens: 4096 } },
     { label: "reasoning-parsed 20b", model: "openai/gpt-oss-20b", extra: { tools: [{ type: "browser_search" }], reasoning_format: "parsed", temperature: 0.3, max_tokens: 4096 } },
+    // BLOG-RECOVERY-2 (2026-10-20 round 2): the live TPD state measured the
+    // gpt-oss buckets drained to the edge (120b 200,000/200,000 — the day's
+    // failed runs + probes consumed the whole 200k rolling window) while the
+    // account's live model list holds THREE more browser_search candidates
+    // with INDEPENDENT per-model TPD buckets. Live-measure them the same
+    // way (never by name): qwen3.8-27b (a live generation-chain entry, good
+    // Arabic) · allam-2-7b (Arabic-specialized) · gpt-oss-safeguard-20b.
+    { label: "browser_search qwen3.8-27b (separate TPD bucket)", model: "qwen/qwen3.8-27b", extra: { tools: [{ type: "browser_search" }], temperature: 0.3, max_tokens: 4096 } },
+    { label: "browser_search allam-2-7b (Arabic specialist, separate TPD bucket)", model: "allam-2-7b", extra: { tools: [{ type: "browser_search" }], temperature: 0.3, max_tokens: 4096 } },
+    { label: "browser_search gpt-oss-safeguard-20b (separate TPD bucket)", model: "openai/gpt-oss-safeguard-20b", extra: { tools: [{ type: "browser_search" }], reasoning_format: "hidden", temperature: 0.3, max_tokens: 4096 } },
   ];
   for (const v of variants) {
     let r = await attempt(v.extra, v.model);
