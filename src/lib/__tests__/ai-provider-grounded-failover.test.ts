@@ -101,6 +101,22 @@ const CREDITS_402 = {
   error: { code: 402, message: "Insufficient credits to use the web plugin" },
 };
 
+/** The REALISTIC Groq sustained-exhaustion body (the GROQ-2 diagnosis
+ *  law): tokens-per-day wording + Limit/Used numbers + hours-scale hint.
+ *  BLOG-RECOVERY 2026-10-20 classification law: ONLY this daily class is a
+ *  sustained 429 on the groq arm (cools the 30-min registry); hint-less
+ *  per-minute variants retry patiently and never cool — the old tests
+ *  reused the GEMINI quota body on groq, which the new law correctly
+ *  reads as per-minute (no daily markers), so the groq arm's quota
+ *  fixtures now carry the REAL Groq daily shape. */
+const GROQ_TPD_429 = {
+  error: {
+    message:
+      "Rate limit reached for model `openai/gpt-oss-120b` in organization `org_x` service tier `on_demand` on tokens per day (TPD): Limit 200,000, Used 198,932, Requested 4,000. Please try again in 4h 2m 3s.",
+    type: "rate_limit_error",
+  },
+};
+
 const OR_WEB_OK = {
   choices: [
     {
@@ -244,17 +260,18 @@ describe("cross-provider walk — gemini quota drain moves to openrouter web", (
     ]);
     expect(out.grounding.sources[0].title).toBe("Protein | Examine");
 
-    // walk order: 4 REAL gemini grounded attempts (the ladder), then ONE
+    // walk order: 3 REAL gemini grounded attempts (the ladder — 3.8-pro
+    // retired 2026-10-20: measured 404 on the live key), then ONE
     // openrouter web call — groq/nvidia NEVER called.
-    expect(log).toHaveLength(5);
-    expect(log.slice(0, 4).every((c) => geminiKeyOk(c.url))).toBe(true);
-    expect(orUrl(log[4].url)).toBe(true);
+    expect(log).toHaveLength(4);
+    expect(log.slice(0, 3).every((c) => geminiKeyOk(c.url))).toBe(true);
+    expect(orUrl(log[3].url)).toBe(true);
     expect(log.some((c) => groqUrl(c.url) || nvidiaUrl(c.url))).toBe(false);
     // the openrouter attempt IS a real search call: web plugin in the body,
     // NO response_format (STRICT-JSON prompt contract carries JSON).
-    expect(log[4].body?.plugins).toEqual([{ id: "web", max_results: 5 }]);
-    expect(log[4].body?.response_format).toBeUndefined();
-    expect(log[4].auth).toBe("Bearer sk-or-test-key");
+    expect(log[3].body?.plugins).toEqual([{ id: "web", max_results: 5 }]);
+    expect(log[3].body?.response_format).toBeUndefined();
+    expect(log[3].auth).toBe("Bearer sk-or-test-key");
   });
 
   it("gemini 429 + openrouter 402 (no plugin credits) → groq browser_search answers with citations", async () => {
@@ -276,18 +293,18 @@ describe("cross-provider walk — gemini quota drain moves to openrouter web", (
       "https://www.nasm.org/protein-intake",
       "https://pubmed.ncbi.nlm.nih.gov/22150333",
     ]);
-    // 4 gemini + 1 openrouter + 1 groq, NVIDIA never called
-    expect(log).toHaveLength(6);
-    expect(groqUrl(log[5].url)).toBe(true);
+    // 3 gemini + 1 openrouter + 1 groq, NVIDIA never called
+    expect(log).toHaveLength(5);
+    expect(groqUrl(log[4].url)).toBe(true);
     expect(log.some((c) => nvidiaUrl(c.url))).toBe(false);
     // groq browser_search body: the built-in tool rides the call (the REAL
     // search ride-along — GROQ-2), reasoning_format hidden (GPT-OSS law),
     // NO response_format (STRICT-JSON prompt contract carries JSON)
-    expect(log[5].body?.tools).toEqual([{ type: "browser_search" }]);
-    expect(log[5].body?.reasoning_format).toBe("hidden");
-    expect(log[5].body?.plugins).toBeUndefined();
-    expect(log[5].body?.response_format).toBeUndefined();
-    expect(log[5].auth).toBe("Bearer gsk-test-key");
+    expect(log[4].body?.tools).toEqual([{ type: "browser_search" }]);
+    expect(log[4].body?.reasoning_format).toBe("hidden");
+    expect(log[4].body?.plugins).toBeUndefined();
+    expect(log[4].body?.response_format).toBeUndefined();
+    expect(log[4].auth).toBe("Bearer gsk-test-key");
   });
 
   it("groq legacy message.citations shape still answers (documented location #1)", async () => {
@@ -348,7 +365,7 @@ describe("cross-provider walk — gemini quota drain moves to openrouter web", (
     expect(groqCalls[1].body?.reasoning_format).toBe("parsed");
   });
 
-  it("groq 429 TPM (per-minute token bucket) → waits Groq's own hint and retries; NEVER marks the 30-min quota registry", async () => {
+  it("groq 429 TPM (per-minute token bucket) → waits Groq's own hint and retries; NEVER marks the 30-min quota registry", { timeout: 15_000 }, async () => {
     process.env.AI_PROVIDER_COOLDOWN_MS = "600000";
     process.env.GEMINI_API_KEY = "AIza-test-key";
     process.env.OPENROUTER_API = "sk-or-test-key";
@@ -519,10 +536,10 @@ describe("cross-provider walk — gemini quota drain moves to openrouter web", (
         : { ok: true, status: 200, payload: OR_WEB_OK },
     );
     await callGroundedSearch("research", { maxTokens: 400 });
-    expect(log[4].body?.max_tokens).toBe(10000);
+    expect(log[3].body?.max_tokens).toBe(10000);
     // a caller above the floor keeps their own value (never clamped DOWN)
     await callGroundedSearch("research", { maxTokens: 12000 });
-    expect(log[9].body?.max_tokens).toBe(12000);
+    expect(log[7].body?.max_tokens).toBe(12000);
   });
 
   it("all three arms fail → ONE honest aggregate error; NVIDIA never receives a call", async () => {
@@ -533,7 +550,7 @@ describe("cross-provider walk — gemini quota drain moves to openrouter web", (
     stubRoutingFetch(log, (url) => {
       if (geminiKeyOk(url)) return { ok: false, status: 429, payload: QUOTA_429 };
       if (orUrl(url)) return { ok: false, status: 402, payload: CREDITS_402 };
-      return { ok: false, status: 429, payload: QUOTA_429 };
+      return { ok: false, status: 429, payload: GROQ_TPD_429 };
     });
 
     const err = (await callGroundedSearch("research").catch((e: Error) => e)) as Error;
@@ -588,7 +605,7 @@ describe("cross-provider walk — gemini quota drain moves to openrouter web", (
     const orOut = await callGroundedSearch("research");
     expect(orOut.provider).toBe("openrouter");
     expect(orOut.model).toBe("custom/or-model:free");
-    expect(String(log[4].body?.model)).toBe("custom/or-model:free");
+    expect(String(log[3].body?.model)).toBe("custom/or-model:free");
 
     const groqOut = await callGroqGroundedSearch("research");
     expect(groqOut.model).toBe("groq/custom-browser");
@@ -619,11 +636,14 @@ describe("honest evidence gates — no live-search evidence = honest failure", (
 
     const out = await callGroundedSearch("research");
     expect(out.provider).toBe("groq"); // the ungrounded OR answer did NOT pass
-    expect(orUrl(log[4].url)).toBe(true);
-    expect(groqUrl(log[5].url)).toBe(true);
+    expect(orUrl(log[3].url)).toBe(true);
+    expect(groqUrl(log[4].url)).toBe(true);
   });
 
-  it("groq 200 WITHOUT citations fails the gate → the aggregate reports it honestly", async () => {
+  it("groq 200 WITHOUT citations fails the gate → the aggregate reports it honestly", { timeout: 20_000 }, async () => {
+    // BLOG-RECOVERY 2026-10-20: the evidence-less 200 now re-walks the
+    // SAME model twice (2s pauses) before the honest failure — the gate
+    // itself is unchanged; the timeout covers the two pauses on slow CI.
     process.env.GEMINI_API_KEY = "AIza-test-key";
     process.env.OPENROUTER_API = "sk-or-test-key";
     process.env.GROQ_API_KEY = "gsk-test-key";
@@ -661,13 +681,13 @@ describe("quota cooldown in the grounded walk (AI_PROVIDER_COOLDOWN_MS on)", () 
 
     const out1 = await callGroundedSearch("research");
     expect(out1.provider).toBe("openrouter");
-    expect(log).toHaveLength(5); // 4 futile gemini 429s + 1 OR success
+    expect(log).toHaveLength(4); // 3 futile gemini 429s (post-3.8-pro ladder) + 1 OR success
 
     const out2 = await callGroundedSearch("research");
     expect(out2.provider).toBe("openrouter");
     // the second call made ZERO gemini attempts — the whole drained ladder
     // was skipped from cooldown memory
-    const call2 = log.slice(5);
+    const call2 = log.slice(4);
     expect(call2).toHaveLength(1);
     expect(call2.every((c) => orUrl(c.url))).toBe(true);
   });
@@ -681,12 +701,12 @@ describe("quota cooldown in the grounded walk (AI_PROVIDER_COOLDOWN_MS on)", () 
     stubRoutingFetch(log, (url) => {
       if (geminiKeyOk(url)) return { ok: false, status: 429, payload: QUOTA_429 };
       if (orUrl(url)) return { ok: false, status: 402, payload: CREDITS_402 };
-      return { ok: false, status: 429, payload: QUOTA_429 };
+      return { ok: false, status: 429, payload: GROQ_TPD_429 };
     });
 
     await expect(callGroundedSearch("research")).rejects.toThrow(/every grounded-search arm failed/);
     const call1Fetches = log.length;
-    expect(call1Fetches).toBe(7); // 4 gemini + 1 openrouter + 2 groq ladder
+    expect(call1Fetches).toBe(6); // 3 gemini (post-3.8-pro ladder) + 1 openrouter + 2 groq ladder
 
     const err = (await callGroundedSearch("research").catch((e: Error) => e)) as Error;
     expect(err.message).toMatch(/quota-cooldown until .+ — skipped, no call made/);
@@ -709,12 +729,12 @@ describe("quota cooldown in the grounded walk (AI_PROVIDER_COOLDOWN_MS on)", () 
 
     await expect(callGroundedSearch("research")).rejects.toThrow(/every grounded-search arm failed/);
     const call1Fetches = log.length;
-    expect(log.slice(0, 4).every((c) => geminiKeyOk(c.url))).toBe(true);
+    expect(log.slice(0, 3).every((c) => geminiKeyOk(c.url))).toBe(true);
 
     await expect(callGroundedSearch("research")).rejects.toThrow(/every grounded-search arm failed/);
-    // gemini was re-attempted (4 more REAL calls) — 503 stays retryable
+    // gemini was re-attempted (3 more REAL calls — post-3.8-pro ladder) — 503 stays retryable
     const call2Gemini = log.slice(call1Fetches).filter((c) => geminiKeyOk(c.url));
-    expect(call2Gemini).toHaveLength(4);
+    expect(call2Gemini).toHaveLength(3);
   });
 
   it("AI_PROVIDER_COOLDOWN=0 kill-switch restores the no-cooldown walk", async () => {
@@ -731,8 +751,9 @@ describe("quota cooldown in the grounded walk (AI_PROVIDER_COOLDOWN_MS on)", () 
 
     await callGroundedSearch("research");
     await callGroundedSearch("research");
-    // both calls walked the full gemini ladder (rollback knob = old walk)
-    expect(log.filter((c) => geminiKeyOk(c.url))).toHaveLength(8);
+    // both calls walked the full gemini ladder (rollback knob = old walk;
+    // 2 × 3 models — post-3.8-pro ladder)
+    expect(log.filter((c) => geminiKeyOk(c.url))).toHaveLength(6);
   });
 
   it("cooldown marks survive a process restart via the state file (cross-step persistence)", async () => {
@@ -755,8 +776,8 @@ describe("quota cooldown in the grounded walk (AI_PROVIDER_COOLDOWN_MS on)", () 
     const out = await callGroundedSearch("research");
     expect(out.provider).toBe("openrouter");
     // gemini skipped from the FILE state — only the OR call was made
-    expect(log.slice(5)).toHaveLength(1);
-    expect(log.slice(5).every((c) => orUrl(c.url))).toBe(true);
+    expect(log.slice(4)).toHaveLength(1);
+    expect(log.slice(4).every((c) => orUrl(c.url))).toBe(true);
   });
 });
 
@@ -902,9 +923,10 @@ describe("cooldown OFF (absent env) — pre-failover walk preserved", () => {
     );
     await callGroundedSearch("research");
     await callGroundedSearch("research");
-    // BOTH calls walked the full 4-model ladder (byte-identical to the
-    // pre-2026-10-16 walk — the registry is a no-op without the env)
-    expect(log.filter((c) => geminiKeyOk(c.url))).toHaveLength(8);
+    // BOTH calls walked the full 3-model ladder (byte-identical to the
+    // pre-2026-10-16 walk minus the retired 3.8-pro — the registry is a
+    // no-op without the env)
+    expect(log.filter((c) => geminiKeyOk(c.url))).toHaveLength(6);
   });
 
   it("callGeminiGroundedSearch keeps its own contract (the existing ladder canary's twin)", async () => {

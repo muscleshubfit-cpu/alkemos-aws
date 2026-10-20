@@ -723,15 +723,21 @@ export type GeminiGroundedSearchResult = {
  * substitute can ever masquerade as research. All models exhausted →
  * one honest aggregate error (the caller's ×3 retry rides transient 5xx).
  * Live-probed 2026-10-16 (run 38833407195): gemini-2.5-flash answers 404
- * «no longer available to new users» — retired from the ladder; the pro
- * and lite families are separate quota buckets and stay as fallthroughs.
+ * «no longer available to new users» — retired from the ladder; gemini-3.8-pro
+ * retired 2026-10-20 the same way (404 on the live key — see the ladder).
  * Ops knob: GEMINI_GROUNDED_MODELS (comma-separated) replaces the
  * built-in tail without a deploy. */
 export const GEMINI_GROUNDED_MODEL_LADDER: readonly string[] = [
   // (the registry default — gemini-3.5-flash — always leads the ladder;
   //  it is prepended by callGeminiGroundedSearch below, not listed here)
   "gemini-3.8-flash", // current-gen flash (its 404 advisory names it) — own bucket
-  "gemini-3.8-pro", // pro family — separate quota bucket
+  // "gemini-3.8-pro" REMOVED 2026-10-20 (BLOG-RECOVERY): 404 «models/
+  // gemini-3.8-pro is not found for API version v1beta» on the live key —
+  // measured 2026-10-16 (run 38834723820) and again on every daily since
+  // (39403516194 …). A dead id burns one grounded attempt per walk and
+  // pollutes the cooldown registry with a gone-class entry. Ops knob:
+  // GEMINI_GROUNDED_MODELS re-adds it without a deploy if a future key/
+  // project ever carries it.
   "gemini-3.5-flash-lite", // lite family — separate quota bucket, historically most available
 ];
 
@@ -1227,6 +1233,44 @@ function parseGroqTpmRetryHint(text: string): number {
   return Number.isFinite(s) && s > 0 ? s * 1_000 : 15_000;
 }
 
+/* GROQ 429 CLASSIFICATION (BLOG-RECOVERY 2026-10-20). Live evidence (runs
+ * 39403516194 + the 14 daily failures before it): Groq answers per-minute
+ * limits with the «Rate limit reached for model … in organization …» shell
+ * whose body carries a seconds-scale «Please try again in Xs» hint — and NOT
+ * every variant spells out «tokens per minute» (the RPM sibling does not).
+ * The old TPM-only detector misclassified those as sustained exhaustion →
+ * markCooldown poisoned grounded:groq:<model> for 30 minutes → the step's
+ * ×3 retries collapsed to instant skips → the run died. The DAILY class is
+ * different on its face: Limit/Used/Requested numbers or hours-scale hints
+ * («Limit 200,000 · Used X · Requested Y · Please try again in Zh» — the
+ * GROQ-2 diagnosis law). Classification law: a 429 is SUSTAINED only when
+ * its body carries daily markers; otherwise it is per-minute transient —
+ * patient wait + retry, never a registry cooldown. */
+function groq429DailyClass(text: string): boolean {
+  // Per-minute buckets also carry Limit/Used/Requested numbers («on tokens
+  // per minute (TPM): Limit 8000, Used 7541, Requested 4146» — the measured
+  // probe body, run 39061337401) — explicit per-minute wording vetoes the
+  // daily class BEFORE the numbers are consulted.
+  if (/tokens per minute|\bTPM\b|requests per minute|\bRPM\b/i.test(text))
+    return false;
+  return (
+    /tokens? per day|\bTPD\b/i.test(text) ||
+    /limit [0-9][0-9,.]*[^\n]{0,60}used/i.test(text) ||
+    /try again in [0-9]+(?:\.[0-9]+)?\s*(?:h|hr|hour)/i.test(text)
+  );
+}
+
+/** True iff this 429 body looks like a per-minute (TPM/RPM) bucket —
+ * seconds-scale hint or per-minute words, and NO daily markers. */
+function groq429PerMinuteClass(text: string): boolean {
+  if (!text) return false;
+  if (groq429DailyClass(text)) return false;
+  return (
+    /try again in [0-9]+(?:\.[0-9]+)?\s*s/i.test(text) ||
+    /tokens per minute|\bTPM\b|requests per minute|\bRPM\b/i.test(text)
+  );
+}
+
 const sleep = (ms: number): Promise<void> =>
   new Promise((res) => setTimeout(res, ms));
 
@@ -1349,20 +1393,39 @@ export async function callGroqGroundedSearch(
             );
             continue;
           }
-          // RECOVERY (b): the TPM token-bucket 429 — wait Groq's OWN hint
-          // once (clamped [1s, 70s]) and retry the SAME model.
+          // RECOVERY (a2) (BLOG-RECOVERY 2026-10-20): the agentic «Tool
+          // call validation failed» 400 — measured on the EN twin (run
+          // 39403516194, gpt-oss-20b: "attempted to call tool 'assistant…'").
+          // The model occasionally opens its walk with a bogus tool call;
+          // one brief pause + retry of the SAME model is the remedy. A
+          // second occurrence falls through to the honest throw below.
           if (
-            res.status === 429 &&
-            /tokens per minute|\bTPM\b/i.test(text) &&
+            res.status === 400 &&
+            /tool call validation failed/i.test(text) &&
             attempt < 3
           ) {
+            console.warn(
+              `${LP} ${model} 400 «Tool call validation failed» (agentic quirk) → pausing 3s and retrying the same model`,
+            );
+            await sleep(3_000);
+            continue;
+          }
+          // RECOVERY (b) (BLOG-RECOVERY 2026-10-20 — the classification
+          // law above): EVERY 429 whose body is NOT daily-marked is a
+          // per-minute transient (TPM/RPM buckets, hint or hint-less) —
+          // wait Groq's own hint (+3s safety, floor 3s, cap 70s) and
+          // retry the SAME model. Daily-class 429s (Limit/Used numbers,
+          // hours hints) stay exhaustion: thrown + cooled below, exactly
+          // as before. The old TPM-only wording check killed 15 daily
+          // runs on hint-less per-minute 429s misread as exhaustion.
+          if (res.status === 429 && attempt < 3 && !groq429DailyClass(text)) {
             const waitMs = Math.min(
-              Math.max(parseGroqTpmRetryHint(text) + 1_000, 1_000),
+              Math.max(parseGroqTpmRetryHint(text) + 3_000, 3_000),
               70_000,
             );
             if (deadline - Date.now() > waitMs + 10_000) {
               console.warn(
-                `${LP} ${model} 429 TPM (per-minute token bucket) → waiting ${waitMs}ms (Groq's own hint) and retrying`,
+                `${LP} ${model} 429 (per-minute class${groq429PerMinuteClass(text) ? " — hinted" : " — unmarked"}) → waiting ${waitMs}ms (Groq's own hint) and retrying`,
               );
               await sleep(waitMs);
               continue;
@@ -1427,6 +1490,20 @@ export async function callGroqGroundedSearch(
         // HONEST EVIDENCE GATE — no executed-tools/search/citation URLs =
         // not built on live search.
         if (!content.trim() || sources.length === 0) {
+          // BLOG-RECOVERY 2026-10-20: a 200-empty (or evidence-less) walk
+          // right after a sibling grounded call on the same free-tier
+          // bucket is the measured starvation shape (39403516194 EN
+          // twin: 120b answered 200-empty at 09:51:44, 5s after the AR
+          // walk's success). ONE pause + re-walk of the SAME model before
+          // the honest failure — every retry is still a REAL
+          // browser_search call and the evidence gate runs per attempt.
+          if (attempt < 3) {
+            console.warn(
+              `${LP} ${model} 200 ${!content.trim() ? "empty content" : "no search evidence"} → pausing 2s and re-walking (starvation class, attempt ${attempt}/3)`,
+            );
+            await sleep(2_000);
+            continue;
+          }
           throw new Error(
             `AI provider groq (${model}+browser_search) returned ${
               !content.trim()
@@ -1448,17 +1525,19 @@ export async function callGroqGroundedSearch(
         };
       } catch (e) {
         const msg = e instanceof Error ? e.message : String(e);
-        // A pure per-minute TPM 429 is TRANSIENT (token bucket), never a
-        // sustained exhaustion — it must NOT poison the 30-min quota
-        // registry (the measured "Please try again in 2.7s" class).
-        const isTpmOnly =
-          /\b429\b/.test(msg) && /tokens per minute|\bTPM\b/i.test(msg);
-        if (!isTpmOnly) {
+        // A per-minute 429 (TPM/RPM bucket — seconds hint or per-minute
+        // words, NO daily markers) is TRANSIENT, never a sustained
+        // exhaustion — it must NOT poison the 30-min quota registry (the
+        // measured "Please try again in 2.7s" class + the hint-less RPM
+        // variant that killed 15 daily runs). Daily-class 429s and every
+        // other exhaustion class still cool, exactly as before.
+        const isPerMinute429 = /\b429\b/.test(msg) && !groq429DailyClass(msg);
+        if (!isPerMinute429) {
           const cls = classifyForCooldown(msg);
           if (cls) markCooldown(cdScope, `${cls}: ${msg.slice(0, 120)}`);
         } else {
           console.warn(
-            `${LP} ${model} TPM 429 exhausted its retries — NOT cooling the 30-min registry (per-minute transient)`,
+            `${LP} ${model} per-minute 429 exhausted its retries — NOT cooling the 30-min registry (transient bucket)`,
           );
         }
         console.warn(`${LP} ${model}+browser_search failed: ${msg.slice(0, 180)}`);

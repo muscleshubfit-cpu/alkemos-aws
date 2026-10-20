@@ -573,3 +573,60 @@ export async function runPhase0Research(
     source: `p0-${lang}:${r.source}`,
   };
 }
+
+/* ─────────────────────────────────────────────────────────────────────
+ * P0-PAIR-SERIAL (BLOG-RECOVERY 2026-10-20 — the bilingual double-walk
+ * law). LIVE ROOT CAUSE (AR run 39403516194, the 15th consecutive daily
+ * failure): the CREATE path launched BOTH languages' grounded research
+ * CONCURRENTLY (Promise.all) — and with gemini's grounded quota drained
+ * at project level (429 × every family, weekly report week of 10-05)
+ * and both OpenRouter keys answering 402 «never purchased credits» for
+ * the web plugin, the two simultaneous walks BOTH landed on the single
+ * remaining grounded arm (Groq browser_search, free tier). One walk
+ * won (AR: groq:120b, 95s, 12 live sources); the twin (EN) starved the
+ * same per-minute token/tool bucket → 200-empty on 120b → 400 tool-call-
+ * validation on 20b → the step failed → ×3 step retries all collapsed
+ * against the 30-min cooldowns the cascade set. The standalone probe
+ * (single sequential grounded call) stayed GREEN the whole time — the
+ * pipeline (concurrent pair) stayed RED. Fix: serialize the pair, and
+ * when the first language landed on the rate-limited arm, wait out a
+ * recovery gap before the twin's walk (the 10-17 probe measured a
+ * sequential second call succeeding ~45s after the first; 90s is the
+ * measured-safe default). Ops knob: P0_PAIR_GAP_MS (default 90000;
+ * 0 disables the gap — serialization itself is unconditional).
+ * ─────────────────────────────────────────────────────────────────────── */
+
+/** Recovery gap between the two languages' grounded walks (ms). */
+export function p0PairGapMs(): number {
+  const raw = Number(process.env.P0_PAIR_GAP_MS);
+  if (Number.isFinite(raw) && raw >= 0) return Math.min(raw, 600_000);
+  return 90_000;
+}
+
+const sleepMs = (ms: number): Promise<void> =>
+  new Promise((res) => setTimeout(res, ms));
+
+/**
+ * P0-PAIR-SERIAL: run the two languages' Phase-0 research SEQUENTIALLY
+ * (mine first — the pipeline's own language keeps the freshest bucket),
+ * with a token-bucket recovery gap when the first walk landed on the
+ * rate-limited Groq arm. Returns [mine, other] exactly like the old
+ * Promise.all — callers are unchanged. (The `runner` parameter is a
+ * test-only DI seam — production always uses the default runPhase0Research.)
+ */
+export async function runBilingualResearchPair(
+  lang: "en" | "ar",
+  otherLang: "en" | "ar",
+  runner: (l: "en" | "ar") => Promise<Phase0Result> = runPhase0Research,
+): Promise<[Phase0Result, Phase0Result]> {
+  const mine = await runner(lang);
+  const gapMs = p0PairGapMs();
+  if (gapMs > 0 && mine.source.includes("groq")) {
+    console.log(
+      `[blog-research] P0 pair: ${lang} landed on groq (${mine.source}) → waiting ${Math.round(gapMs / 1000)}s before the ${otherLang} twin's grounded walk (free-tier token/tool bucket recovery — P0-PAIR-SERIAL)`,
+    );
+    await sleepMs(gapMs);
+  }
+  const other = await runner(otherLang);
+  return [mine, other];
+}

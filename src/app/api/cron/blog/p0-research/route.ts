@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { runPhase0Research, researchUsedFallback } from "@/lib/blog-research";
+import { runBilingualResearchPair, runPhase0Research, researchUsedFallback } from "@/lib/blog-research";
 import { supabaseAdmin, isSupabaseAdminConfigured } from "@/lib/supabase/admin";
 import { getLangParam, findAdoptablePairRow, findRecentPairRows, markQueueRowCoachRequested, type PipelineLang, type QueueItem } from "@/lib/blog-queue";
 import {
@@ -273,11 +273,13 @@ export async function GET(request: NextRequest) {
     }
 
     // ── 3) CREATE — full bilingual protocol.
-    const [mine, other] = await Promise.all([
-      runPhase0Research(lang),
-      runPhase0Research(otherLang),
-    ]);
-    // `mine` = MY language's Phase-0 result; `other` = the twin language's.
+    // P0-PAIR-SERIAL (BLOG-RECOVERY 2026-10-20): the pair's two grounded
+    // walks run SEQUENTIALLY with a token-bucket recovery gap — the old
+    // Promise.all launched both on the ONE working grounded arm (Groq
+    // free tier) at the same instant and the starving twin killed the
+    // step on 15 consecutive daily runs (39403516194 evidence). See
+    // blog-research.ts P0-PAIR-SERIAL for the full measured story.
+    const [mine, other] = await runBilingualResearchPair(lang, otherLang);
     const mineResearch = mine.research;
     alertIfFallback(mine.source, lang);
     alertIfFallback(other.source, otherLang);

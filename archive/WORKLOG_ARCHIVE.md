@@ -12687,3 +12687,18 @@ Stage Summary:
 - الخادم جاهز للقطع 100% من جهة الكود والبيئة والتحقق (تكافؤ مقيس + 28/28 + PayPal×5 + AutoSnapshot) · cutover.sh جاهز على الفرع وطريقه للخادم · بوابتا DNS (Cloudflare — لا توكن CF لدى الوكيل: فُحص أسرار المستودعين وenv المشاريع) وجذر الخادم (Lightsail console) هما الخطوتان الوحيدتان المتبقيتان — كلتاهما للمالك حصرًا وفق القيد السابع. تراجع Vercel متاح في أي لحظة: إعادة سجلات CF (خطة §12).
 - Push status: pushed (branch test/aws-lightsail-migration فقط — لا DNS، لا Vercel، لا كود تطبيق)
 
+
+<!-- rotated 2026-10-20 by scripts/worklog_rotate.py (Phase 288, ARCH-REMEDIATION): 1 entries moved verbatim from worklog.md -->
+---
+Task ID: OPS-TRANSITION-P2-2026-10-10
+Agent: Super Z (main)
+Task: أمر المالك (2026-10-10): تنفيذ خطة الانتقال التشغيلي إلى alkemos-aws — الخطوة 2: تحديث مراجع المستودع القديم الأربعة داخل كود AWS لتتجه للمستودع الجديد + نشر + اختبار مهمة AI حقيقية قبل إيقاف العامل القديم. (سبقتها الخطوة 1: نقل مهام النس الخمس واحدة تلو الأخرى بنجاح — db-backup 38015902427 · storage-backup 38015954677 · storage-inventory 38016025057 · backup-retention جاف 38016089720 + حقيقي 38016118803 (GFS D7/W5/M6 أزال 15 مجلد تاريخ، كل البايتات في تاريخ Git) · offsite-gdrive جاف 38016159352 + حقيقي 38016211636 (weekly/W41 رُفع لDrive مع read-back sha256 متطابق) — كلها من الجديد بينما القديم disabled_manually، والنسخ السابقة محفوظة حرفيًا. نُسخت متغيرات Actions السبعة (BACKUP_RETENTION_×3 + OFFSITE_KEEP_×3 + SITE_URL) للجديد، وأُنشئ فرع main عند cf46acb5 وجُعل الافتراضي.)
+
+Work Log:
+- (التعديل — 8 ملفات): المراجع الأربعة تحولت لمuscleshubfit-cpu/alkemos-aws: src/lib/ai-runner-dispatch.ts (REPO — dispatch عامل الطابور) · src/app/api/cron/dispatch-pipelines/route.ts (REPO — backstop الجدولة + إنقاذ العامل عند التقادم >15د، ref:main) · src/lib/blog-pipeline-dispatch.ts (REPO — dispatch مدونة الكوتش) · src/app/api/ai/queue-health/route.ts (URL آخر تشغيل ناجح للعامل). + الاختبار المرافق blog-pipeline-dispatch.test.ts (URL_EN/AR). + 3 ملفات workflow: gemini-weekly-usage-report.yml (دفع التقرير + ls-remote → alkemos-aws.git) · offsite-gdrive-upload.yml (repository: مصدر حزم git الشهرية → الجديد) · offsite-restore-drill.yml (repository: مصدر سكربتات الاستعادة → الجديد). صفر مراجع قديمة متبقية في src/ أو هذه الملفات.
+- لماذا آمن: ref:"main" يستهدف الآن فرع main الموجود بالجديد عند رأس الإنتاج نفسه (cf46acb5+)؛ أثناء الازدواج المرحلي كل تطبيق يُرسل لمستوده فقط (تطبيق Vercel الحي ما زال بالكود القديم → القديم؛ تطبيق AWS بهذا الكوميت → الجديد) — لا مستودع واحد يُرسل له مرتين، والادعاء الذري claimQueuedJobs (update where status=queued) يمنع المعالجة المزدوجة مهما تزامن العاملان.
+
+Stage Summary:
+- نُشر 29282291 عبر deploy-aws (تشغيل 38016349467 — DEPLOY VERIFIED، الإنتاج يخدمه) · العامل الجديد مفعّل ومختبر (38016706233 GREEN، كل الأسرار حاضرة، اتصال حقيقي بSupabase) لكن الطابور فارغ (done=0) — إدراج المهام مصادق حصرًا ⇒ بانتظار فعل مالك واحد (طلب توليد من أدوات المدرب) لإثبات معالجة مهمة حقيقية عبر العامل الجديد قبل إيقاف القديم (قانون المالك: لا إيقاف للمصدر القديم قبل بديل مثبت).
+- Push status: pushed (main الجديد فقط — لا Vercel يُمس؛ المستودع القديم نقطة رجوع مجمدة)
+

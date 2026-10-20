@@ -82,10 +82,10 @@ afterEach(() => {
 });
 
 describe("RC2 — grounded-search model ladder (registry + export shape)", () => {
-  it("the ladder is exported with cross-family alternates (flash → pro → lite — separate quota buckets)", () => {
+  it("the ladder is exported with cross-family alternates (flash → lite — separate quota buckets; 3.8-pro retired 2026-10-20: measured 404 on the live key)", () => {
     expect(GEMINI_GROUNDED_MODEL_LADDER).toContain("gemini-3.8-flash");
-    expect(GEMINI_GROUNDED_MODEL_LADDER).toContain("gemini-3.8-pro");
     expect(GEMINI_GROUNDED_MODEL_LADDER).toContain("gemini-3.5-flash-lite");
+    expect(GEMINI_GROUNDED_MODEL_LADDER).not.toContain("gemini-3.8-pro"); // 404 «not found for API version v1beta» on the live key — runs 38834723820 + every daily since
     expect(GEMINI_GROUNDED_MODEL_LADDER).not.toContain("gemini-3.5-flash"); // default leads, never duplicated
     expect(GEMINI_GROUNDED_MODEL_LADDER).not.toContain("gemini-2.5-flash"); // retired 404 for new keys (live-probed 2026-10-16)
   });
@@ -114,7 +114,7 @@ describe("RC2 — a drained quota bucket falls through to the NEXT real grounded
     expect(log[1].body?.tools).toEqual([{ googleSearch: {} }]);
   });
 
-  it("default AND 3.8-flash drained → gemini-3.8-pro answers (3 fetches)", async () => {
+  it("default AND 3.8-flash drained → gemini-3.5-flash-lite answers (3 fetches — 3.8-pro retired: measured 404)", async () => {
     process.env.GEMINI_API_KEY = "AIza-ladder-key";
     const log: FetchLog[] = [];
     stubRoutingFetch(log, (url) =>
@@ -124,11 +124,11 @@ describe("RC2 — a drained quota bucket falls through to the NEXT real grounded
     );
     const out = await callGeminiGroundedSearch("research");
     // flash:generateContent guards the exact model — 3.5-flash-LITE must NOT match it
-    expect(out.model).toBe("gemini-3.8-pro");
+    expect(out.model).toBe("gemini-3.5-flash-lite");
     expect(log.map((c) => c.url)).toEqual([
       expect.stringContaining("/models/gemini-3.5-flash:generateContent"),
       expect.stringContaining("/models/gemini-3.8-flash:generateContent"),
-      expect.stringContaining("/models/gemini-3.8-pro:generateContent"),
+      expect.stringContaining("/models/gemini-3.5-flash-lite:generateContent"),
     ]);
   });
 
@@ -173,13 +173,14 @@ describe("RC2 — every model drained → ONE honest aggregate error (real-searc
     expect(err.message).toMatch(/ALL grounded models failed/);
     expect(err.message).toContain("gemini-3.5-flash");
     expect(err.message).toContain("gemini-3.8-flash");
-    expect(err.message).toContain("gemini-3.8-pro");
+    expect(err.message).not.toContain("gemini-3.8-pro"); // retired 2026-10-20 — a dead id never re-enters the walk
     expect(err.message).toContain("gemini-3.5-flash-lite");
     expect(err.message).toContain("AI API error 429");
     // the owner-order law stays in the message: no substitute allowed
     expect(err.message).toContain("no simulated/curated substitute");
-    // four REAL grounded attempts — the loop is bounded by the ladder
-    expect(log).toHaveLength(4);
+    // three REAL grounded attempts (3.5-flash, 3.8-flash, 3.5-flash-lite) —
+    // the loop is bounded by the (post-3.8-pro) ladder
+    expect(log).toHaveLength(3);
   });
 
   it("an ungrounded-200 on EVERY model still fails honestly (the per-attempt gate survives the ladder)", async () => {
@@ -209,7 +210,7 @@ function log_unused(): FetchLog[] {
 }
 
 describe("RC2 relief — GEMINI_API_KEY2 dual-key pool (per-project grounded quota)", () => {
-  it("primary key all-drained → the SECOND key's default answers (key-major walk, 4+1 fetches)", async () => {
+  it("primary key all-drained → the SECOND key's default answers (key-major walk, 3+1 fetches)", async () => {
     process.env.GEMINI_API_KEY = "AIza-primary-key";
     process.env.GEMINI_API_KEY2 = "AIza-relief-key";
     const log: FetchLog[] = [];
@@ -219,19 +220,19 @@ describe("RC2 relief — GEMINI_API_KEY2 dual-key pool (per-project grounded quo
         : { ok: true, status: 200, payload: GROUNDED_OK_PAYLOAD },
     );
     const out = await callGeminiGroundedSearch("research");
-    // primary burned its whole 4-model ladder (429s), then key#2's FIRST
-    // model answered — an independent per-project grounded bucket.
+    // primary burned its whole 3-model ladder (429s — post-3.8-pro), then
+    // key#2's FIRST model answered — an independent per-project bucket.
     expect(out.model).toBe("gemini-3.5-flash");
-    expect(log).toHaveLength(5);
+    expect(log).toHaveLength(4);
     expect(log[0].key).toBe("AIza-primary-key");
-    expect(log[3].url).toContain("gemini-3.5-flash-lite");
-    expect(log[4].key).toBe("AIza-relief-key");
-    expect(log[4].url).toContain("/models/gemini-3.5-flash:generateContent");
+    expect(log[2].url).toContain("gemini-3.5-flash-lite");
+    expect(log[3].key).toBe("AIza-relief-key");
+    expect(log[3].url).toContain("/models/gemini-3.5-flash:generateContent");
     // every attempt still a REAL grounded call
-    expect(log[4].body?.tools).toEqual([{ googleSearch: {} }]);
+    expect(log[3].body?.tools).toEqual([{ googleSearch: {} }]);
   });
 
-  it("both keys drained → aggregate names the key COUNT + every model (8 honest attempts)", async () => {
+  it("both keys drained → aggregate names the key COUNT + every model (6 honest attempts)", async () => {
     process.env.GEMINI_API_KEY = "AIza-primary-key";
     process.env.GEMINI_API_KEY2 = "AIza-relief-key";
     const log: FetchLog[] = [];
@@ -243,7 +244,7 @@ describe("RC2 relief — GEMINI_API_KEY2 dual-key pool (per-project grounded quo
     expect(err.message).toContain("gemini-3.5-flash-lite");
     expect(err.message).toContain("[key#1 gemini-3.5-flash]");
     expect(err.message).toContain("[key#2 gemini-3.5-flash]");
-    expect(log).toHaveLength(8);
+    expect(log).toHaveLength(6);
   });
 
   it("GEMINI_API_KEY2 alone (no primary) serves the ladder — the config error only fires when BOTH are absent", async () => {
