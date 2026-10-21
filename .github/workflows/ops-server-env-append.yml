@@ -1,0 +1,70 @@
+# Ops server env append (dispatch-only — Cloudflare purge pair)
+#
+# WHY (owner order 2026-10-21 — the manual-edits/review staleness incident):
+# the BLOG-CACHE-REFRESH fix purges the Cloudflare edge copy of an article
+# the moment the owner approves/edits it, so the reader never waits out the
+# s-maxage=3600 window. The purge call (src/lib/blog-cache-revalidate.ts)
+# is env-gated on CLOUDFLARE_ZONE_ID + CLOUDFLARE_PURGE_TOKEN, and the
+# production origin reads its env from /srv/alkemos/shared/.env (deploy.sh
+# assembles every release env from that file — the documented owner-managed
+# path, VERCEL-TO-AWS plan §8 item 6). This workflow is the audited way to
+# append that pair idempotently, with a masked read-back.
+#
+# SAFETY LAWS:
+#   - workflow_dispatch ONLY — never on schedule/push/PR.
+#   - APPEND-ONLY + IDEMPOTENT: an existing key is NEVER rewritten
+#     (grep-guard before append); existing lines are never touched.
+#   - Fixed allowlist: only CLOUDFLARE_ZONE_ID / CLOUDFLARE_PURGE_TOKEN can
+#     ever be appended — there is no generic key/value surface.
+#   - Verified read-back prints key NAMES only, never values.
+#   - Values transit dispatch inputs (visible in the run event to repo
+#     collaborators — the same trust boundary as every dispatch secret
+#     hand-off); the file keeps its 0600 mode.
+name: Ops server env append (dispatch-only — Cloudflare purge pair)
+
+on:
+  workflow_dispatch:
+    inputs:
+      cloudflare_zone_id:
+        description: "CLOUDFLARE_ZONE_ID value (alkemos.com zone id)"
+        required: true
+      cloudflare_purge_token:
+        description: "CLOUDFLARE_PURGE_TOKEN value (zone-scoped cache-purge token)"
+        required: true
+
+concurrency:
+  group: ops-server-env-append
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  append:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Idempotent append of the Cloudflare purge pair to shared/.env (masked verify)
+        uses: appleboy/ssh-action@7eaf76671a0d7eec5d98ee897acda4f968735a17 # v1.2.0 — pinned 2026-10-10 audit
+        with:
+          host: ${{ secrets.AWS_DEPLOY_HOST }}
+          username: ${{ secrets.AWS_DEPLOY_USER }}
+          key: ${{ secrets.AWS_DEPLOY_SSH_KEY }}
+          script: |
+            set -eu
+            ENV=/srv/alkemos/shared/.env
+            [ -f "$ENV" ] || { echo "FATAL: $ENV missing (owner setup incomplete)"; exit 1; }
+            ensure_kv() {
+              KEY="$1"; VAL="$2"
+              if grep -q "^${KEY}=" "$ENV"; then
+                echo "$KEY already present — left untouched"
+              else
+                printf '%s=%s\n' "$KEY" "$VAL" >> "$ENV"
+                echo "$KEY appended"
+              fi
+            }
+            ensure_kv CLOUDFLARE_ZONE_ID "${{ inputs.cloudflare_zone_id }}"
+            ensure_kv CLOUDFLARE_PURGE_TOKEN "${{ inputs.cloudflare_purge_token }}"
+            chmod 600 "$ENV"
+            echo "--- verify (names only) ---"
+            grep -o '^CLOUDFLARE_[A-Z_]*=' "$ENV" || echo "no CLOUDFLARE_ keys found (unexpected)"

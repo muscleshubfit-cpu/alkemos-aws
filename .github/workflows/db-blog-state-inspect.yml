@@ -1,0 +1,45 @@
+# DB blog state inspect (dispatch-only — READ-ONLY REST probe)
+#
+# WHY (owner order 2026-10-21 «افحص سبب عدم انعكاس تعديلاتي اليدوية على
+# المقالات المنشورة…»): the manual-edits/review-approval incident needed
+# row-level DB evidence (did the edits save? any duplicate slug+language
+# copies? which review_status values exist?) while the session held no
+# direct Supabase credentials — the repo's own service-role secret is the
+# one channel that can read the truth. This workflow is that channel.
+#
+# SAFETY LAWS:
+#   - workflow_dispatch ONLY — can never fire on schedule/push/PR.
+#   - READ-ONLY by construction: scripts/db-blog-state-inspect.mjs issues
+#     plain PostgREST GETs and prints row state + content IDENTITY
+#     (length/words/sha256-12/head+tail snippets) — never a full body,
+#     never any secret value.
+#   - Zero writes: no UPDATE/INSERT/PATCH verb exists in the script.
+name: DB blog state inspect (dispatch-only — read-only)
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: db-blog-state-inspect
+  cancel-in-progress: false
+
+permissions:
+  contents: read # script + secrets only; results stay in the run log
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout main repo (for the script)
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5 — pinned 2026-10-10 audit (pre-enable hardening)
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4 — pinned 2026-10-10 audit (pre-enable hardening)
+        with:
+          node-version: 24
+
+      - name: Read blog_posts state (target slugs + duplicate census + review census + 5 recent)
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: node scripts/db-blog-state-inspect.mjs
