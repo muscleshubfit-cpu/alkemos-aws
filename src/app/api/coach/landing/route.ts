@@ -3,6 +3,7 @@ import { requireCoach, authRequired, type AuthUser } from "@/lib/auth-server";
 import { supabaseAdmin, isSupabaseAdminConfigured } from "@/lib/supabase/admin";
 import { coachLandingBodySchema } from "@/lib/validation/schemas";
 import { coachSlugFromName } from "@/lib/slug";
+import { revalidateCoachLanding } from "@/lib/coach-landing-revalidate";
 import type { Database } from "@/lib/supabase/types";
 
 // 0049 SOFT-ROLL LAW: certificates is sent only on the FIRST attempt —
@@ -371,5 +372,15 @@ export async function PUT(request: NextRequest) {
     }
   }
 
-  return NextResponse.json({ page: data });
+  // CACHE-POLICY-AUDIT 2026-10-22: the public landing mirrors ride
+  // ISR 86400 + CF edge 43200 with no other invalidation — refresh both
+  // language mirrors for THIS slug right after the successful write.
+  // Fail-soft (the helper never throws): a coach save going to
+  // moderation hides the old public render immediately, and an admin
+  // save (self-approved) publishes immediately — the 0046 review law's
+  // intent, no longer leaking through the stacked TTLs. The old slug
+  // on a rename self-heals inside the 24h ISR window (unchanged).
+  const cacheRefresh = await revalidateCoachLanding(slug);
+
+  return NextResponse.json({ page: data, cache_refresh: cacheRefresh });
 }

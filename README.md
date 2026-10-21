@@ -121,7 +121,11 @@ ledger-based — `src/lib/refund.ts`).
   receipt-reviewed top-ups (InstaPay / Vodafone Cash / PayPal), activation
   gated on sufficient balance
 - **Public coach page** — claimable slug, landing editor, ads, certificates
-  (`/coaches/[slug]`)
+  (`/coaches/[slug]`); the coach's save (PUT `/api/coach/landing`) and the
+  admin's approve/reject flip both invalidate the public mirrors on demand
+  (ISR paths + targeted Cloudflare edge purge — CACHE-POLICY-AUDIT
+  2026-10-22), and `POST /api/admin/coach-pages/revalidate` is the manual
+  cache lever after direct Supabase edits
 - **Affiliate program** — 20% commission on referred subscription payments,
   $10 minimum payout, 7-day hold, automatic reversal on refunds
   (`src/lib/affiliate-engine-server.ts`)
@@ -214,9 +218,14 @@ about / privacy / terms / FAQ pages, in **Arabic and English separately** —
 is editable by the site owner from the admin panel at
 `/admin/site-content` («نصوص الموقع», in the Content section of the admin
 sidebar). A save writes the `site_content` table (RLS: public read,
-admin-only writes, migration `0094`) and the pages pick it up within ~5
-minutes through ISR (the same 300 s window the blog uses) — **no git commit,
-no CI run, no Vercel deploy**. The copy that ships in the code
+admin-only writes, migration `0094`). A successful save or reset also
+fires an on-demand cache refresh (admin-gated
+`POST /api/admin/site-content/revalidate` — CACHE-POLICY-AUDIT
+2026-10-22): the data-cache tag + the ten consuming pages' ISR + the
+Cloudflare edge copies invalidate immediately, so the edit is **live on
+the next request** instead of waiting out the 300 s window (which
+remains the safety net, alongside the 12 h edge TTL). **No git commit,
+no CI run, no deploy**. The copy that ships in the code
 (`src/lib/site-content/`) is the built-in default for every field, so a
 missing or malformed row always renders the current wording verbatim — the
 page can never go blank. Clearing a field in the editor restores its

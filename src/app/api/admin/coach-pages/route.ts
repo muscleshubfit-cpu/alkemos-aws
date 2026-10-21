@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin, authRequired } from "@/lib/auth-server";
 import { supabaseAdmin, isSupabaseAdminConfigured } from "@/lib/supabase/admin";
+import { revalidateCoachLanding } from "@/lib/coach-landing-revalidate";
 import { adminCoachPageReviewBodySchema } from "@/lib/validation/schemas";
 
 /**
@@ -284,5 +285,16 @@ export async function PATCH(request: NextRequest) {
     console.error("[coach-pages] coach notification failed:", notifErr.message);
   }
 
-  return NextResponse.json({ ok: true, page: data });
+  // CACHE-POLICY-AUDIT 2026-10-22: the review flip changes what the
+  // PUBLIC mirrors serve (approve → new content live, reject → the
+  // page must hide) — refresh both /coaches/<slug> mirrors + the CF
+  // edge right here. Fail-soft (never-throwing helper): a cache
+  // failure can't fail the review that already succeeded.
+  const cacheRefresh =
+    typeof (data as { slug?: string }).slug === "string" &&
+    (data as { slug?: string }).slug
+      ? await revalidateCoachLanding((data as { slug: string }).slug)
+      : null;
+
+  return NextResponse.json({ ok: true, page: data, cache_refresh: cacheRefresh });
 }

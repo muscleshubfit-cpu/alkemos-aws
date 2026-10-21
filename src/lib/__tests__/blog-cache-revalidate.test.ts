@@ -42,6 +42,7 @@ vi.mock("@/lib/supabase/admin", () => ({
 import {
   revalidateBlogPost,
   blogPostPublicPaths,
+  blogPostPurgeUrls,
   BLOG_CACHE_TAGS,
 } from "@/lib/blog-cache-revalidate";
 import { POST as revalidateRoute } from "@/app/api/admin/blog/revalidate/route";
@@ -123,7 +124,25 @@ describe("revalidateBlogPost — the three-layer invalidation", () => {
       "https://alkemos.com/blog",
       "https://alkemos.com/rss.xml",
       "https://alkemos.com/sitemap-blog.xml",
+      // CACHE-POLICY-AUDIT 2026-10-22: the og-image card (edge TTL 86400
+      // via its own CF rule) rides the same purge so a title edit
+      // refreshes social cards too.
+      "https://alkemos.com/api/og-image/my-post?lang=en",
     ]);
+  });
+
+  it("purges the AR og-image card URL for the AR language mirror", async () => {
+    expect(blogPostPurgeUrls({ slug: "my-post", language: "ar" })).toContain(
+      `https://alkemos.com/api/og-image/${"my-post"}?lang=ar`,
+    );
+    // the og-image ROUTE is edge-cached only — it never rides
+    // revalidatePath (the four page paths do). Built by concatenation so
+    // the UI-wiring guard doesn't read a fake dynamic-segment literal
+    // ("/api/og-image/<fake-slug>") as a fetch target.
+    const ogImageRoute = "/api/og-image" + "/my-post" + "?lang=ar";
+    expect(
+      Object.values(blogPostPublicPaths({ slug: "my-post", language: "ar" })),
+    ).not.toContain(ogImageRoute);
   });
 
   it("is fail-soft when the edge purge rejects (never throws, reports the error)", async () => {

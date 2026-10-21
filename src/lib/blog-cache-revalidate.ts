@@ -1,4 +1,5 @@
 import { revalidatePath, revalidateTag } from "next/cache";
+import { purgeCloudflareEdgeUrls } from "@/lib/edge-purge";
 
 /**
  * BLOG-CACHE-REFRESH — the 2026-10-21 root-cause fix for «تعديلاتي
@@ -16,10 +17,19 @@ import { revalidatePath, revalidateTag } from "next/cache";
  *      blog-slug-pools) revalidate: 3600
  *   2. Next.js ISR page/route cache — the blog pages' revalidate: 3600
  *      (plus force-static rss.xml / sitemap-blog.xml)
- *   3. Cloudflare edge — s-maxage=3600 + stale-while-revalidate=86400 on
- *      the HTML, and each layer can "latch" the previous layer's stale
- *      copy on its refresh (an origin STALE-while-revalidate answer is
- *      still a 200 that the edge happily re-caches for another hour).
+ *   3. Cloudflare edge — the «alkemos-public-html-cache» rule serves
+ *      the HTML for edge_ttl=43200 (measured live 2026-10-22 — the
+ *      pre-audit comments said 3600; the rule was raised twice since:
+ *      T-3 → 14400, T-3b → 43200), plus og-image edge_ttl=86400 — and
+ *      each layer can "latch" the previous layer's stale copy on its
+ *      refresh (an origin STALE-while-revalidate answer is still a 200
+ *      that the edge happily re-caches for another TTL window).
+ *
+ * CACHE-POLICY-AUDIT 2026-10-22 extension: the purge list now also
+ * carries the article's og-image generator URL (/api/og-image/<slug>
+ * ?lang=…) — the card renders the stored title, and the og-image cache
+ * rule holds it for a full edge day, so a title edit would otherwise
+ * keep the OLD card alive for up to 24h on social platforms.
  *
  * THE FIX (minimal + safe — TTLs, cache settings and the review policy
  * are all untouched): every owner write path that already updates the DB
@@ -63,7 +73,10 @@ export type BlogCacheRevalidateOutcome = {
   };
 };
 
-/** The public URL paths a published post flows through (per language). */
+/** The public URL paths a published post flows through (per language).
+ * PAGE paths only — these are what revalidatePath() gets called with;
+ * the og-image generator URL is a ROUTE (edge-cached, never ISR-cached)
+ * and rides the purge list via blogPostPurgeUrls(). */
 export function blogPostPublicPaths({ slug, language }: BlogCacheRevalidateInput) {
   const listing = language === "ar" ? "/ar/blog" : "/blog";
   return {
@@ -72,6 +85,17 @@ export function blogPostPublicPaths({ slug, language }: BlogCacheRevalidateInput
     rss: language === "ar" ? "/ar/rss.xml" : "/rss.xml",
     sitemap: "/sitemap-blog.xml",
   } as const;
+}
+
+/** The absolute URLs purged from the Cloudflare edge for one post: the
+ * four page URLs + the og-image card (CACHE-POLICY-AUDIT 2026-10-22 —
+ * the card carries the stored title and its edge TTL is 86400s). */
+export function blogPostPurgeUrls(input: BlogCacheRevalidateInput): string[] {
+  const pages = Object.values(blogPostPublicPaths(input)).map(
+    (p) => `https://alkemos.com${p}`,
+  );
+  const ogImage = `https://alkemos.com/api/og-image/${input.slug}?lang=${input.language}`;
+  return [...pages, ogImage];
 }
 
 /**
@@ -113,9 +137,10 @@ export async function revalidateBlogPost(
 
   // 3) Cloudflare edge — targeted per-URL purge (NOT a cache-settings
   //    change): the zone-scoped token pair comes from the documented
-  //    shared/.env production path.
-  const urls = paths.map((p) => `https://alkemos.com${p}`);
-  const edge = await purgeCloudflareEdge(urls);
+  //    shared/.env production path. Includes the og-image card URL
+  //    (edge TTL 86400) so a title edit refreshes social cards too.
+  const urls = blogPostPurgeUrls(input);
+  const edge = await purgeCloudflareEdgeUrls(urls);
 
   return {
     ok: !originError,
@@ -123,61 +148,4 @@ export async function revalidateBlogPost(
     invalidated: { tags: [...BLOG_CACHE_TAGS], paths: [...paths] },
     edge,
   };
-}
-
-async function purgeCloudflareEdge(urls: string[]): Promise<
-  BlogCacheRevalidateOutcome["edge"]
-> {
-  const zoneId = process.env.CLOUDFLARE_ZONE_ID;
-  const token = process.env.CLOUDFLARE_PURGE_TOKEN;
-  if (!zoneId || !token) {
-    return {
-      attempted: false,
-      ok: false,
-      urls,
-      error:
-        "CLOUDFLARE_ZONE_ID/CLOUDFLARE_PURGE_TOKEN not configured — the edge keeps serving the old copy until s-maxage=3600 expires (≤1h); see docs/BLOG-CONTENT-CACHE-REFRESH-2026-10-21.md §setup",
-    };
-  }
-  try {
-    const res = await fetch(
-      `https://api.cloudflare.com/client/v4/zones/${zoneId}/purge_cache`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ files: urls }),
-        signal: AbortSignal.timeout(5000),
-      },
-    );
-    if (!res.ok) {
-      return {
-        attempted: true,
-        ok: false,
-        urls,
-        error: `Cloudflare purge HTTP ${res.status}`,
-      };
-    }
-    const json = (await res.json().catch(() => null)) as
-      | { success?: boolean }
-      | null;
-    if (!json?.success) {
-      return {
-        attempted: true,
-        ok: false,
-        urls,
-        error: "Cloudflare purge endpoint answered without success=true",
-      };
-    }
-    return { attempted: true, ok: true, urls };
-  } catch (e) {
-    return {
-      attempted: true,
-      ok: false,
-      urls,
-      error: e instanceof Error ? e.message : "edge purge threw (non-Error)",
-    };
-  }
 }

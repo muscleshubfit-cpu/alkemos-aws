@@ -27,6 +27,13 @@ type SiteContentRow = {
 
 const SITE_CONTENT_CACHE_KEY = ["site-content-overrides"];
 
+/** CACHE-POLICY-AUDIT 2026-10-22: the tag that opens on-demand
+ * invalidation for this cache entry — revalidateSiteContent()
+ * (src/lib/site-content/revalidate.ts) fires it after every admin
+ * save/reset, so an edit is live on the next render instead of after
+ * the 300s TTL (and the CF edge copy is purged in the same action). */
+export const SITE_CONTENT_CACHE_TAG = "site-content";
+
 const fetchSiteContentUncached = async (): Promise<SiteCopyMap> => {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -56,10 +63,14 @@ const fetchSiteContentUncached = async (): Promise<SiteCopyMap> => {
 
 /**
  * Cached override map (5-minute revalidate). One cache entry serves
- * every public route in the same render window.
+ * every public route in the same render window. Carries the
+ * SITE_CONTENT_CACHE_TAG since 2026-10-22 — the admin save paths
+ * invalidate it on demand (the blog precedent); the 300s TTL stays the
+ * safety net, and the Cloudflare edge copy (edge_ttl=43200 — measured
+ * live 2026-10-22) is purged by the same revalidate action.
  */
 export const fetchSiteContentOverrides = unstable_cache(
   fetchSiteContentUncached,
   SITE_CONTENT_CACHE_KEY,
-  { revalidate: 300 },
+  { revalidate: 300, tags: [SITE_CONTENT_CACHE_TAG] },
 );

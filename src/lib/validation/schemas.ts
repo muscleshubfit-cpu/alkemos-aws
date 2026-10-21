@@ -814,6 +814,23 @@ export const adminBlogRevalidateBodySchema = z
 
 export type AdminBlogRevalidateBody = z.infer<typeof adminBlogRevalidateBodySchema>;
 
+// ── POST /api/admin/coach-pages/revalidate (CACHE-POLICY-AUDIT 2026-10-22) ──
+
+/** The slug IS the whole payload — the invalidation targets are
+ * derived from it (/coaches/<slug> + /ar/coaches/<slug>). Same shape
+ * the coach landing editor's own SLUG_RE enforces. */
+export const adminCoachPagesRevalidateBodySchema = z.object({
+  slug: z
+    .string()
+    .min(3)
+    .max(40)
+    .regex(/^[a-z0-9-]+$/, "الرابط يجب أن يكون أحرفًا إنجليزية صغيرة أو أرقامًا أو شرطة (-)"),
+});
+
+export type AdminCoachPagesRevalidateBody = z.infer<
+  typeof adminCoachPagesRevalidateBodySchema
+>;
+
 // ── PATCH /api/admin/coach-kind ──
 
 /** The enum IS the legacy check — every gate failure re-derives «coach_id

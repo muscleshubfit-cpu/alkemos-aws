@@ -32,6 +32,12 @@ import {
 // without gSP. Coach landing copy changes rarely; a newly published or
 // edited page appears via dynamicParams (on-demand render) or the 24h
 // revalidate window — never a broken link.
+// CACHE-POLICY-AUDIT 2026-10-22: the write paths now ALSO invalidate on
+// demand — PUT /api/coach/landing (the coach's own save) and the admin
+// review flip (PATCH /api/admin/coach-pages) fire revalidateCoachLanding
+// (revalidatePath both mirrors + targeted CF edge purge), so an approved
+// edit is live immediately instead of waiting out this 24h window + the
+// CF edge_ttl=43200.
 export const revalidate = 86400; // 24 hours — landing copy changes rarely
 export const runtime = "nodejs";
 

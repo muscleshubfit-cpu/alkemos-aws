@@ -254,6 +254,21 @@ export function AdminSiteContentView() {
     return null;
   };
 
+  /* ── Cache refresh (CACHE-POLICY-AUDIT 2026-10-22) ──
+   * The editor saves directly from the browser to Supabase — this
+   * fire-and-forget call makes the server invalidate the data-cache
+   * tag + the ten consuming pages' ISR + the Cloudflare edge copies
+   * (edge_ttl=43200) right after a successful save/reset. Never blocks
+   * the UI; a failure only warns in the console (the 300s TTL + edge
+   * TTL remain the safety net). The blog editor's exact pattern. */
+  const refreshCacheAfterSave = () => {
+    void fetch("/api/admin/site-content/revalidate", {
+      method: "POST",
+    }).catch((e) => {
+      console.warn("[site-content-cache-refresh] post-save revalidation failed", e);
+    });
+  };
+
   /* ── Save (per tab scope) ── */
   const save = async () => {
     const problem = validate();
@@ -311,11 +326,12 @@ export function AdminSiteContentView() {
       }
     }
 
+    if (failures === 0) refreshCacheAfterSave();
     await load();
     setSaving(false);
     setStatus(
       failures === 0
-        ? { ok: true, text: isAr ? "تم الحفظ — يظهر على الموقع خلال ~5 دقائق." : "Saved — live on the site within ~5 minutes." }
+        ? { ok: true, text: isAr ? "تم الحفظ — يظهر على الموقع فورًا (أو خلال ~5 دقائق إن تعذر الإبطال)." : "Saved — live on the site immediately (or within ~5 minutes if invalidation was skipped)." }
         : { ok: false, text: isAr ? `فشل حفظ ${failures} عنصراً — أعد المحاولة.` : `Failed to save ${failures} item(s) — try again.` },
     );
   };
@@ -329,8 +345,9 @@ export function AdminSiteContentView() {
       setStatus({ ok: false, text: isAr ? "فشل إعادة الضبط." : "Reset failed." });
       return;
     }
+    refreshCacheAfterSave();
     await load();
-    setStatus({ ok: true, text: isAr ? "أُعيدت القيم المدمجة الافتراضية." : "Built-in defaults restored." });
+    setStatus({ ok: true, text: isAr ? "أُعيدت القيم المدمجة الافتراضية — وظهرت فورًا على الموقع." : "Built-in defaults restored — live on the site immediately." });
   };
 
   /* ── Render helpers ── */

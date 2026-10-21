@@ -272,14 +272,14 @@ const nextConfig: NextConfig = {
         // P1-5 verification (2026-09-16, owner decision «اعتمد الخيار (ب)»):
         // in PRODUCTION this header is NOT what browsers ultimately see —
         // Cloudflare sits in front and the zone cache rule «alkemos cache
-        // rules» (created SEO-GEO-4, updated Phase 189 per §12.46-د:
-        // cache=true · edge_ttl override 3600 · browser_ttl override 300,
-        // expression = the private-path exclusion list below + no-dot
-        // paths) is the OFFICIAL cache layer: it rewrites the browser
-        // Cache-Control to `max-age=300` and serves HTML from the edge
-        // for 3600s (documented in SECURITY.md §10 + TECH_REFERENCE §5).
-        // This rule still governs what the ORIGIN (Vercel) emits and every
-        // non-CF access path (preview URLs, direct Vercel hits) — the
+        // rules» (created SEO-GEO-4 — expression = the private-path
+        // exclusion list below + no-dot paths) is the OFFICIAL cache
+        // layer: it rewrites the browser Cache-Control to `max-age=300`
+        // and serves HTML from the edge. CACHE-POLICY-AUDIT 2026-10-22
+        // (measured live via the CF API): edge_ttl is **43200** (raised
+        // 3600 → 14400 (T-3) → 43200 (T-3b VERCEL-USAGE-4)) — NOT 3600.
+        // This rule still governs what the ORIGIN emits and every
+        // non-CF access path (preview URLs, direct hits) — the
         // documented intent:
         //   - Browsers (origin-direct): max-age=0 + must-revalidate →
         //     revalidate every visit (identical freshness to no-store).

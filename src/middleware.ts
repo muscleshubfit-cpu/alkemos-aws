@@ -42,13 +42,17 @@ function isArabicPath(pathname: string): boolean {
  *
  * PHASE 215 / P1-5 (2026-09-16, owner decision «اعتمد الخيار (ب)»):
  * Cloudflare is the OFFICIAL production HTML cache layer. The zone cache
- * rule «alkemos cache rules» (cache=true · edge_ttl override 3600 ·
- * browser_ttl override 300 — expression = the SEO-GEO-4 private-path
- * exclusion list + no-dot paths) rewrites what browsers finally see
- * (`private, max-age=300, must-revalidate` on live HTML) and serves
- * HTML from the edge for 3600s. The next.config rule remains the
- * origin-side policy (Vercel output + non-CF paths). Full layer
- * documentation: SECURITY.md §10 + TECH_REFERENCE §5.
+ * rule «alkemos cache rules» (browser_ttl override 300 — expression =
+ * the SEO-GEO-4 private-path exclusion list + no-dot paths) rewrites
+ * what browsers finally see (`private, max-age=300, must-revalidate` on
+ * live HTML) and serves HTML from the edge. CACHE-POLICY-AUDIT
+ * 2026-10-22 (measured live via the CF API): edge_ttl = **43200s (12h)**
+ * — raised twice since SEO-GEO-4 (3600 → 14400 (T-3) → 43200 (T-3b,
+ * the Fluid CPU overage guard)); owner write paths therefore invalidate
+ * on demand (revalidateTag/revalidatePath + targeted CF purge) instead
+ * of waiting for any TTL. The next.config rule remains the origin-side
+ * policy (non-CF paths). Full layer documentation: SECURITY.md §10 +
+ * TECH_REFERENCE §5 + docs/CACHE-POLICY-AUDIT-2026-10-22.md.
  *
  * What THIS file still owns: the `mhe:locale` cookie is now written ONLY
  * when the value actually changes. The old unconditional write put

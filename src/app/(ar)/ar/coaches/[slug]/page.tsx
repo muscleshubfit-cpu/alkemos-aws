@@ -28,6 +28,10 @@ import {
 // mirrors the EN fix: the route measured ƒ (per-request SSR) on Vercel
 // because in Next 16 the revalidate export alone never engages ISR on a
 // dynamic route without gSP. See the EN mirror for the full rationale.
+// CACHE-POLICY-AUDIT 2026-10-22: the write paths now ALSO invalidate on
+// demand (revalidateCoachLanding covers BOTH mirrors — see the EN
+// mirror's comment), so an approved edit is live immediately instead of
+// waiting out this 24h window + the CF edge_ttl=43200.
 export const revalidate = 86400; // 24 hours — landing copy changes rarely
 export const runtime = "nodejs";
 
