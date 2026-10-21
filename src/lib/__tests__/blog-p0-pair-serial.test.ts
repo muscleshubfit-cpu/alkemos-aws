@@ -59,9 +59,10 @@ describe("P0-PAIR-SERIAL — the two languages NEVER walk concurrently", () => {
       events.push(`end:${l}`);
       return fakeResult(l, `p0-${l}:openrouter:nvidia/nemotron-3.5-lightning:free`);
     };
-    const [mine, other] = await runBilingualResearchPair("ar", "en", runner);
-    expect(mine.lang).toBe("ar");
-    expect(other.lang).toBe("en");
+    const out = await runBilingualResearchPair("ar", "en", runner);
+    expect(out.mine.lang).toBe("ar");
+    expect(out.other?.lang).toBe("en");
+    expect(out.twinError).toBeNull();
     // THE serialization invariant: mine fully ends BEFORE the twin starts
     expect(events).toEqual(["start:ar", "end:ar", "start:en", "end:en"]);
   });
@@ -108,6 +109,40 @@ describe("P0-PAIR-SERIAL — the groq recovery gap law", () => {
     };
     await runBilingualResearchPair("ar", "en", runner);
     expect(events).toEqual(["run:ar", "run:en"]);
+  });
+});
+
+describe("P0-PAIR-SERIAL round-5 — the twin-research legacy degradation", () => {
+  it("the TWIN's research failure AFTER mine succeeded → mine is returned (other=null, twinError set) — the successful research is NEVER discarded", async () => {
+    process.env.P0_PAIR_GAP_MS = "10";
+    const twinError = new Error("AI API error 524 from groq (gateway timeout — the measured 39550847616 shape)");
+    const runner = async (l: "en" | "ar"): Promise<Phase0Result> => {
+      if (l === "en") throw twinError; // the twin dies
+      return fakeResult(l, "p0-ar:groq:openai/gpt-oss-120b");
+    };
+    const out = await runBilingualResearchPair("ar", "en", runner);
+    expect(out.mine.lang).toBe("ar"); // MY research survives
+    expect(out.mine.source).toBe("p0-ar:groq:openai/gpt-oss-120b");
+    expect(out.other).toBeNull();
+    expect(out.twinError).toContain("524");
+  });
+
+  it("MY research failure still THROWS (the run cannot continue without its own research — the real-search law)", async () => {
+    process.env.P0_PAIR_GAP_MS = "10";
+    const runner = async (l: "en" | "ar"): Promise<Phase0Result> => {
+      if (l === "ar") throw new Error("grounded search failed for ar");
+      return fakeResult(l, "p0-en:groq:openai/gpt-oss-120b");
+    };
+    await expect(runBilingualResearchPair("ar", "en", runner)).rejects.toThrow("grounded search failed for ar");
+  });
+
+  it("both researches succeed → other present, twinError null (the full pair contract)", async () => {
+    process.env.P0_PAIR_GAP_MS = "10";
+    const runner = async (l: "en" | "ar"): Promise<Phase0Result> =>
+      fakeResult(l, `p0-${l}:groq:openai/gpt-oss-120b`);
+    const out = await runBilingualResearchPair("ar", "en", runner);
+    expect(out.other?.lang).toBe("en");
+    expect(out.twinError).toBeNull();
   });
 });
 

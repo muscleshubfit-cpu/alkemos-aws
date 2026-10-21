@@ -279,24 +279,39 @@ export async function GET(request: NextRequest) {
     // free tier) at the same instant and the starving twin killed the
     // step on 15 consecutive daily runs (39403516194 evidence). See
     // blog-research.ts P0-PAIR-SERIAL for the full measured story.
-    const [mine, other] = await runBilingualResearchPair(lang, otherLang);
+    const { mine, other, twinError } = await runBilingualResearchPair(lang, otherLang);
+    // `mine` = MY language's Phase-0 result; `other` = the twin's (null on
+    // the round-5 degradation — the twin's research failed after mine
+    // succeeded, so no shared brief is possible and MY row becomes an
+    // exact legacy single row: the twin's own pipeline run researches its
+    // side later and publishes independently (an unpaired article beats
+    // no article — three live attempts measured the whole-step throw
+    // discarding a SUCCESSFUL research every time: 39495419206, 39550847616).
     const mineResearch = mine.research;
     alertIfFallback(mine.source, lang);
-    alertIfFallback(other.source, otherLang);
+    if (other) alertIfFallback(other.source, otherLang);
 
-    // Pairing call — its failure degrades the WHOLE run to legacy V3.
+    // Pairing call — its failure (or the round-5 twin-research
+    // degradation: no twin research → no shared brief possible) degrades
+    // the WHOLE run to legacy V3.
     let brief: SharedBrief | null = null;
     try {
-      const enResearch = lang === "en" ? mineResearch : other.research;
-      const arResearch = lang === "ar" ? mineResearch : other.research;
-      const choice = await runPairingSelection(enResearch, arResearch);
-      brief = {
-        pairId: randomUUID(),
-        topicEn: choice.topicEn,
-        topicAr: choice.topicAr,
-        angleId: choice.angleId,
-        sealedAt: new Date().toISOString(),
-      };
+      const enResearch = lang === "en" ? mineResearch : other?.research;
+      const arResearch = lang === "ar" ? mineResearch : other?.research;
+      if (enResearch && arResearch) {
+        const choice = await runPairingSelection(enResearch, arResearch);
+        brief = {
+          pairId: randomUUID(),
+          topicEn: choice.topicEn,
+          topicAr: choice.topicAr,
+          angleId: choice.angleId,
+          sealedAt: new Date().toISOString(),
+        };
+      } else if (twinError) {
+        console.warn(
+          `[blog/p0-research] twin research failed → no shared brief (legacy single row for ${lang}): ${twinError.slice(0, 200)}`,
+        );
+      }
     } catch (e) {
       console.warn(
         `[blog/p0-research] pairing failed → legacy single row: ${e instanceof Error ? e.message : e}`,
@@ -385,7 +400,10 @@ export async function GET(request: NextRequest) {
     // TWIN row — best-effort: its failure never fails MY run (the twin's
     // own P0 JOIN rescues the pair later).
     let twinInserted = false;
-    if (brief) {
+    if (brief && other) {
+      // (other is non-null whenever brief exists — the round-5 degradation
+      // nulls the twin research and leaves brief null too; the guard keeps
+      // the type system honest about it.)
       try {
         const twinTopic = otherLang === "ar" ? brief.topicAr : brief.topicEn;
         const twinRes = await insertResearchedRow({

@@ -606,19 +606,37 @@ export function p0PairGapMs(): number {
 const sleepMs = (ms: number): Promise<void> =>
   new Promise((res) => setTimeout(res, ms));
 
+/** P0-PAIR-SERIAL result: `mine` always present when the call resolves;
+ *  `other` null + `twinError` set when the TWIN's research failed after
+ *  mine succeeded (the round-5 legacy degradation — see below). */
+export type BilingualResearchPairResult = {
+  mine: Phase0Result;
+  other: Phase0Result | null;
+  twinError: string | null;
+};
+
 /**
  * P0-PAIR-SERIAL: run the two languages' Phase-0 research SEQUENTIALLY
  * (mine first — the pipeline's own language keeps the freshest bucket),
  * with a token-bucket recovery gap when the first walk landed on the
- * rate-limited Groq arm. Returns [mine, other] exactly like the old
- * Promise.all — callers are unchanged. (The `runner` parameter is a
- * test-only DI seam — production always uses the default runPhase0Research.)
+ * rate-limited Groq arm. MY language's research failure still THROWS
+ * (the run cannot continue without its own research — the real-search
+ * law). The TWIN's research failure DEGRADES instead (BLOG-RECOVERY-2
+ * round-5, live evidence 39495419206 + 39550847616: three consecutive
+ * attempts measured the AR research succeeding while the EN twin died
+ * to free-tier chaos — a TPD edge, a 413, then a 524 gateway timeout —
+ * and the whole-step throw DISCARDED the successful AR research each
+ * time, losing the day entirely). The degradation inserts MY row as an
+ * exact legacy single row (the documented pairing-failure path): the
+ * twin's OWN pipeline run researches its side later and publishes
+ * independently — an unpaired article beats no article. (The `runner`
+ * parameter is a test-only DI seam — production always uses the default.)
  */
 export async function runBilingualResearchPair(
   lang: "en" | "ar",
   otherLang: "en" | "ar",
   runner: (l: "en" | "ar") => Promise<Phase0Result> = runPhase0Research,
-): Promise<[Phase0Result, Phase0Result]> {
+): Promise<BilingualResearchPairResult> {
   const mine = await runner(lang);
   const gapMs = p0PairGapMs();
   if (gapMs > 0 && mine.source.includes("groq")) {
@@ -627,6 +645,14 @@ export async function runBilingualResearchPair(
     );
     await sleepMs(gapMs);
   }
-  const other = await runner(otherLang);
-  return [mine, other];
+  try {
+    const other = await runner(otherLang);
+    return { mine, other, twinError: null };
+  } catch (e) {
+    const twinError = e instanceof Error ? e.message : String(e);
+    console.error(
+      `[blog-research] P0 pair: the ${otherLang} twin's research failed AFTER ${lang} succeeded → legacy single row for ${lang} (the twin's own pipeline run researches its side later — the documented degradation) — ${twinError.slice(0, 240)}`,
+    );
+    return { mine, other: null, twinError };
+  }
 }
