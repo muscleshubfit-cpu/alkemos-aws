@@ -2136,11 +2136,18 @@ export const INTERLEAVED_STRONGEST_CHAIN: Array<{ provider: AIProvider; model: s
   { provider: "gemini", model: "gemini-3.5-flash" },
   { provider: "openrouter", model: "nvidia/nemotron-3-ultra-550b-a55b:free" },
   { provider: "groq", model: "openai/gpt-oss-120b" },
-  { provider: "nvidia", model: "nvidia/nemotron-3-super-120b-a12b" },
+  // BLOG-RECOVERY-3 round-3 (2026-10-21, live run 39632881785): BOTH
+  // nvidia/nemotron-3-super-120b-a12b entries REMOVED — the id answered
+  // 404 «Function …: Not found for account» on NVIDIA NIM directly AND
+  // through the OpenRouter :free twin in the same window (measured twice
+  // in-run, 16:28 + 16:32 UTC), and the 404's gone-class cooldown froze
+  // BOTH providers for 30 minutes — killing the two remaining P4 attempts
+  // outright. The 161.2 live-call law cut both ways before (safeguard-20b
+  // measured IN then OUT): this id stays out until a live probe measures
+  // it answering again.
   { provider: "groq", model: "openai/gpt-oss-20b" },
   { provider: "nvidia", model: "nvidia/nemotron-3-ultra-550b-a55b" },
   { provider: "groq", model: "qwen/qwen3.8-27b" },
-  { provider: "openrouter", model: "nvidia/nemotron-3-super-120b-a12b:free" },
 ];
 
 /** Alternating-lead rotation counter (see callFreeAIFallbackChain below). */

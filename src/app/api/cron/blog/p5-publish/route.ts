@@ -5,7 +5,7 @@ import { countWords, splitFaqSection, filterFaqsByRelevance, clampMetaTitle, cla
 import { scanLatinContamination } from "@/lib/blog-msa";
 import { runP5QualityGates } from "@/lib/blog-quality-gates";
 import { verifyBodyLinks } from "@/lib/blog-link-verify";
-import { EDITORIAL_FAQ_COUNT_RANGE, EDITORIAL_AUTHORITY_DOMAINS } from "@/lib/blog-editorial-law";
+import { EDITORIAL_FAQ_COUNT_RANGE, EDITORIAL_AUTHORITY_DOMAINS, EDITORIAL_SEED_AUTHORITY_LINKS } from "@/lib/blog-editorial-law";
 import { getRecentPostsByLanguage } from "@/lib/blog-topics";
 import { embedBodyImages } from "@/lib/blog-images";
 import { insertToolLinks } from "@/lib/blog-tool-links";
@@ -605,7 +605,7 @@ function buildRepairDiagnostics(
   // one link to a whitelisted authority domain.
   if (/no external authority link/i.test(base)) {
     extras.push(
-      `AUTHORITY LINK REQUIRED: the previous body carried ZERO links to a whitelisted authority domain. Keep or add at least ONE link to a real page on one of these domains, on a grammatical anchor naming the source: ${EDITORIAL_AUTHORITY_DOMAINS.slice(0, 6).join(" / ")} — the YMYL E-E-A-T floor is a hard publish gate.`,
+      `AUTHORITY LINK REQUIRED: the previous body carried ZERO links to a whitelisted authority domain. Add ONE link to a REAL page — prefer one of these VERIFIED links (they exist; cite the one most relevant to the sentence you attach it to): ${EDITORIAL_SEED_AUTHORITY_LINKS.join(" ; ")} — otherwise use a page on: ${EDITORIAL_AUTHORITY_DOMAINS.slice(0, 6).join(" / ")}. NEVER invent a URL path you are not certain exists. The YMYL E-E-A-T floor is a hard publish gate.`,
     );
   }
   if (ctx.deadUrls.length > 0) {

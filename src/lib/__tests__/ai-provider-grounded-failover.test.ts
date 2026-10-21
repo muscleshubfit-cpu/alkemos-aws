@@ -839,7 +839,10 @@ describe("chain failover — provider cooldown frees attempt budget (callFreeAIF
     });
 
     expect(out.provider).toBe("nvidia");
-    expect(out.model).toBe("nvidia/nemotron-3-super-120b-a12b");
+    // BLOG-RECOVERY-3 round-3: nemotron-3-super-120b-a12b was REMOVED from
+    // the chain (404 «Function not found» on NIM + its OR twin, measured
+    // twice live 2026-10-21) — the 4th-provider proof now rides nvidia-ultra.
+    expect(out.model).toBe("nvidia/nemotron-3-ultra-550b-a55b");
     expect(log).toHaveLength(1);
     expect(nvidiaUrl(log[0].url)).toBe(true);
   });

@@ -122,6 +122,25 @@ export const EDITORIAL_FAQ_COUNT_RANGE = { min: 4, max: 7 } as const;
  * is training/nutrition-heavy, not purely medical — without these the
  * G4 authority-link floor has no natural citation target for sports
  * articles (the owner's audit-2 finding). Byte-order: P4-composable. */
+
+/**
+ * BLOG-RECOVERY-3 round-3 (2026-10-21, live run 39632881785): VERIFIED
+ * seed authority links — every URL here answered HTTP 200 at commit time
+ * (measured 2026-10-21 16:40 UTC with a plain GET). They ride the G4
+ * repair directive so the review model never INVENTS authority URLs
+ * (the measured failure: an invented ODS path 404ed at publish
+ * verification, the link was removed, and the gate failed again — the
+ * loop could not converge while every cycle fabricated a different dead
+ * path). The link-verify publish step still removes any seed that later
+ * dies — the seeds buy convergence, not immortality.
+ */
+export const EDITORIAL_SEED_AUTHORITY_LINKS: readonly string[] = [
+  "https://www.who.int/news-room/fact-sheets/detail/healthy-diet",
+  "https://www.who.int/news-room/fact-sheets/detail/physical-activity",
+  "https://www.cdc.gov/physical-activity-basics/",
+  "https://www.ncbi.nlm.nih.gov/books/NBK537084/",
+];
+
 export const EDITORIAL_AUTHORITY_DOMAINS: readonly string[] = [
   "who.int",
   "ncbi.nlm.nih.gov",
