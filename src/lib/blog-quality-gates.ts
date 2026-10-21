@@ -103,6 +103,20 @@ const ANCHOR_FUNCTION_WORDS: Record<GateLang, Set<string>> = {
   ]),
 };
 
+/** True iff the URL's host is (or is a subdomain of) an EDITORIAL
+ *  AUTHORITY domain (www. tolerated) — the G4 citation surface. */
+function isAuthorityUrl(url: string): boolean {
+  try {
+    const host = new URL(url).hostname.toLowerCase();
+    const bare = host.replace(/^www\./, "");
+    return EDITORIAL_AUTHORITY_DOMAINS.some(
+      (d) => bare === d || bare.endsWith(`.${d}`),
+    );
+  } catch {
+    return false;
+  }
+}
+
 /** G5 — anchors that violate the grammar law: raw keyword lists (≥4
  * words, zero function words) or keyword stacks (>5 words) that are not
  * an exact published-post title. `legalTitles` = the exact titles of
@@ -126,6 +140,13 @@ export function findUngrammaticalAnchors(
     if (!/[\p{L}]/u.test(anchor)) continue;
     if (legal.has(normalize(anchor))) continue; // exact post title — allowed
     const words = anchor.split(/\s+/).filter(Boolean);
+    // BLOG-RECOVERY-3 round-2 (2026-10-21, live run 39628616769): an anchor
+    // pointing at an EDITORIAL AUTHORITY domain is a SOURCE CITATION — a
+    // natural proper-noun name («إرشادات الكلية الأمريكية للطب الرياضي» →
+    // acsm.org), not keyword stuffing (stuffing targets the site's OWN search
+    // surface). Authority anchors within the AR word-economy threshold (≤7)
+    // pass without the function-word check.
+    if (words.length <= 7 && isAuthorityUrl(m[2])) continue;
     // BLOG-RECOVERY-3 (2026-10-21, live run 39580182779): the EN-calibrated
     // >5 auto-reject killed legitimate 6-word ARABIC noun clauses — measured
     // «كمية الماء التي يحتاجها الرياضي يوميًا» (6 words, carries the function

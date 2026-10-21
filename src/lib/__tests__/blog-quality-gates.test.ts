@@ -112,6 +112,25 @@ describe("G5 — anchor grammar law", () => {
       "تمارين بناء العضلات المنزل",
     ]);
   });
+
+  it("AR (BLOG-RECOVERY-3 r2): an AUTHORITY-DOMAIN anchor ≤7 words passes without the function-word check (a source citation, not stuffing) — the measured «كمية البروتين اليومية لبناء العضلات» class (run 39628616769)", () => {
+    const md = "راجع [كمية البروتين اليومية لبناء العضلات](https://www.acsm.org/) للمزيد.";
+    expect(findUngrammaticalAnchors(md, "ar", [])).toEqual([]);
+  });
+
+  it("BLOG-RECOVERY-3 r2: the authority-domain exemption does NOT leak to non-authority URLs (the same anchor to an internal/tool link stays judged)", () => {
+    const md = "راجع [كمية البروتين اليومية لبناء العضلات](/tools/macro-calculator) للمزيد.";
+    expect(findUngrammaticalAnchors(md, "ar", [])).toEqual([
+      "كمية البروتين اليومية لبناء العضلات",
+    ]);
+  });
+
+  it("BLOG-RECOVERY-3 r2: an authority anchor ABOVE the 7-word economy threshold is still rejected (the count law holds on authority links too)", () => {
+    const md = "راجع [إرشادات الكلية الأمريكية للطب الرياضي حول التغذية السليمة دائمًا](https://www.acsm.org/) للمزيد.";
+    expect(findUngrammaticalAnchors(md, "ar", [])).toEqual([
+      "إرشادات الكلية الأمريكية للطب الرياضي حول التغذية السليمة دائمًا",
+    ]);
+  });
 });
 
 describe("G6 — quoted search phrases in prose (§C4 stuffing pattern)", () => {

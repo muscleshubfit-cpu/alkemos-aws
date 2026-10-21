@@ -5,7 +5,7 @@ import { countWords, splitFaqSection, filterFaqsByRelevance, clampMetaTitle, cla
 import { scanLatinContamination } from "@/lib/blog-msa";
 import { runP5QualityGates } from "@/lib/blog-quality-gates";
 import { verifyBodyLinks } from "@/lib/blog-link-verify";
-import { EDITORIAL_FAQ_COUNT_RANGE } from "@/lib/blog-editorial-law";
+import { EDITORIAL_FAQ_COUNT_RANGE, EDITORIAL_AUTHORITY_DOMAINS } from "@/lib/blog-editorial-law";
 import { getRecentPostsByLanguage } from "@/lib/blog-topics";
 import { embedBodyImages } from "@/lib/blog-images";
 import { insertToolLinks } from "@/lib/blog-tool-links";
@@ -597,6 +597,17 @@ function buildRepairDiagnostics(
     .trim();
   if (!base) return undefined;
   const extras: string[] = [];
+  // BLOG-RECOVERY-3 round-2 (2026-10-21, live run 39628616769): a repair
+  // re-review that regenerates the body WITHOUT any external authority
+  // link kept failing G4 again and again (measured: two consecutive
+  // cycles rebuilt the article with zero authority links) — the repair
+  // directive must carry the exact requirement: keep/restore at least
+  // one link to a whitelisted authority domain.
+  if (/no external authority link/i.test(base)) {
+    extras.push(
+      `AUTHORITY LINK REQUIRED: the previous body carried ZERO links to a whitelisted authority domain. Keep or add at least ONE link to a real page on one of these domains, on a grammatical anchor naming the source: ${EDITORIAL_AUTHORITY_DOMAINS.slice(0, 6).join(" / ")} — the YMYL E-E-A-T floor is a hard publish gate.`,
+    );
+  }
   if (ctx.deadUrls.length > 0) {
     extras.push(
       `DEAD CITATION URLS REMOVED at publish verification (confirmed 404/410 — do NOT re-add these exact URLs; cite DIFFERENT authority pages you are certain exist): ${ctx.deadUrls.slice(0, 3).join(" ; ")}`,
