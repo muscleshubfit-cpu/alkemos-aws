@@ -78,6 +78,40 @@ describe("G5 — anchor grammar law", () => {
     const good = "اقرأ [تمارين بدون معدات للمبتدئين](/ar/blog/w).";
     expect(findUngrammaticalAnchors(good, "ar", [])).toEqual([]);
   });
+
+  // BLOG-RECOVERY-3 (2026-10-21, live run 39580182779): the anchors the P4
+  // model ACTUALLY produced in the live run — the gate rejected every
+  // repair cycle and publishing was blocked for the whole day.
+  it("AR (BLOG-RECOVERY-3): the LIVE-MEASURED authority anchors pass — fused-preposition morphology + AR word economy", () => {
+    const md = [
+      "راجع [إرشادات الكلية الأمريكية للطب الرياضي](https://www.acsm.org/).",
+      "راجع [الكلية الأمريكية للطب الرياضي](https://www.acsm.org/).",
+      "راجع [كمية الماء التي يحتاجها الرياضي يوميًا](https://www.issn-online.org/).",
+    ].join(" ");
+    expect(findUngrammaticalAnchors(md, "ar", [])).toEqual([]);
+  });
+
+  it("AR (BLOG-RECOVERY-3): a 6-word noun clause with a function word passes the count (the >5 EN threshold killed «كمية الماء التي يحتاجها الرياضي يوميًا»)", () => {
+    const md = "راجع [كمية الماء التي يحتاجها الرياضي يوميًا](https://www.who.int/).";
+    expect(findUngrammaticalAnchors(md, "ar", [])).toEqual([]);
+  });
+
+  it("AR (BLOG-RECOVERY-3): an 8-word keyword stack is still rejected (the >7 AR threshold keeps the stuffing law)", () => {
+    const md = "شوف [تمارين بناء العضلات المنزل بدون معدات للمبتدئين أسبوعيا](/ar/blog/z).";
+    // 8 words, and the function words بدون/للمبتدئين(لل!)/أسبوعيا — the count rule alone must reject
+    expect(findUngrammaticalAnchors(md, "ar", [])).toEqual([
+      "تمارين بناء العضلات المنزل بدون معدات للمبتدئين أسبوعيا",
+    ]);
+  });
+
+  it("AR (BLOG-RECOVERY-3): the fused-preposition signal alone does NOT rescue a bare list (canary law intact)", () => {
+    // «تمارين بناء العضلات المنزل» keeps failing: plain-ال words are
+    // insufficient — only لل/بال/كال/وال/فال fused forms count.
+    const bad = "شوف [تمارين بناء العضلات المنزل](/ar/blog/z) للمزيد.";
+    expect(findUngrammaticalAnchors(bad, "ar", [])).toEqual([
+      "تمارين بناء العضلات المنزل",
+    ]);
+  });
 });
 
 describe("G6 — quoted search phrases in prose (§C4 stuffing pattern)", () => {

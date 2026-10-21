@@ -56,6 +56,42 @@ async function guardDuplicate(
 }
 
 function pickKeyword(r: LanguageResearch, topic: string): string {
+  // BLOG-RECOVERY-3 (2026-10-21, live run 39580182779): the exact-SUBSTRING
+  // match never fires for Arabic compounds (topic and keyword share WORDS,
+  // not substrings) and fell through to keywords[0] — measured: a calories
+  // article carrying the PROTEIN keyword, which fed the FAQ relevance
+  // filter the wrong axis and dropped on-topic FAQs until repairs. Word-
+  // overlap scoring picks the keyword that actually targets the topic
+  // (≥2 shared meaningful words, stopwords removed, diacritics stripped).
+  const norm = (s: string) =>
+    s
+      .toLowerCase()
+      .replace(/[\u064B-\u0652]/g, "")
+      .replace(/[^\p{L}\p{N}]+/gu, " ")
+      .trim();
+  const stop = new Set([
+    "في", "من", "على", "عن", "مع", "أو", "او", "و", "ثم", "كيف", "ما", "متى",
+    "هل", "لماذا", "أين", "اليومي", "يوميا", "افضل", "أفضل",
+    "the", "a", "an", "of", "to", "for", "in", "on", "at", "with", "and",
+    "or", "how", "what", "best", "why", "when", "vs",
+  ]);
+  const topicWords = new Set(
+    norm(topic).split(/\s+/).filter((w) => w.length > 1 && !stop.has(w)),
+  );
+  let best = "";
+  let bestScore = 0;
+  for (const k of r.keywords) {
+    const kwWords = norm(k.keyword)
+      .split(/\s+/)
+      .filter((w) => w.length > 1 && !stop.has(w));
+    const score = kwWords.filter((w) => topicWords.has(w)).length;
+    if (score > bestScore) {
+      bestScore = score;
+      best = k.keyword;
+    }
+  }
+  if (bestScore >= 2) return best;
+  // legacy exact-substring fallback, then keywords[0]
   const lower = topic.toLowerCase();
   const hit = r.keywords.find(
     (k) =>
@@ -107,13 +143,34 @@ export async function GET(request: NextRequest) {
 
     const statusErr = validateQueueStatus(qi, "researched");
     if (statusErr) {
-      if (qi.status === "outlined")
+      // BLOG-RECOVERY-3 (2026-10-21): the RESUME walk re-enters the
+      // pipeline at P1 whatever the stuck row's mid-status — a row that
+      // already outlined (or advanced further: written/images_done/
+      // reviewed/published, or crashed mid-write at "writing") has its
+      // outline DONE; re-outlining would discard the topic/outline/draft
+      // alignment and burn the generation quota for nothing. (P2 already
+      // carries this fast-exit shape for its own advanced statuses.)
+      if (
+        ["outlined", "writing", "written", "images_done", "reviewed", "published"].includes(
+          qi.status,
+        )
+      )
         return NextResponse.json({ ok: true, step: "p1", queueId: qi.id, lang, idempotent: true });
       if (qi.status !== "failed")
         return NextResponse.json(
           { ok: false, queueId: qi.id, skipped: true, reason: "wrong_status", actual_status: qi.status },
           { status: 409 },
         );
+      // BLOG-RECOVERY-3 (2026-10-21): artifact-preserving resume — a row
+      // that failed in a LATER stage keeps its valid outline; re-outlining
+      // would discard the topic/outline/draft alignment and burn the
+      // generation quota for nothing. Only a row with NO outline artifact
+      // re-runs P1 (the failure was AT P1).
+      const failedBundle = qi.article_bundle ? (JSON.parse(qi.article_bundle) as Record<string, unknown>) : {};
+      if (failedBundle.outline) {
+        console.warn(`[blog/p1-outline] RESUME: failed row ${qi.id} carries a valid outline — skipping (the failure was in a later stage)`);
+        return NextResponse.json({ ok: true, step: "p1", queueId: qi.id, lang, resumed: true });
+      }
       console.warn(`[blog/p1-outline] Re-processing previously failed item ${qi.id}`);
     }
 

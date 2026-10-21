@@ -12702,3 +12702,23 @@ Stage Summary:
 - نُشر 29282291 عبر deploy-aws (تشغيل 38016349467 — DEPLOY VERIFIED، الإنتاج يخدمه) · العامل الجديد مفعّل ومختبر (38016706233 GREEN، كل الأسرار حاضرة، اتصال حقيقي بSupabase) لكن الطابور فارغ (done=0) — إدراج المهام مصادق حصرًا ⇒ بانتظار فعل مالك واحد (طلب توليد من أدوات المدرب) لإثبات معالجة مهمة حقيقية عبر العامل الجديد قبل إيقاف القديم (قانون المالك: لا إيقاف للمصدر القديم قبل بديل مثبت).
 - Push status: pushed (main الجديد فقط — لا Vercel يُمس؛ المستودع القديم نقطة رجوع مجمدة)
 
+
+<!-- rotated 2026-10-21 by scripts/worklog_rotate.py (Phase 288, ARCH-REMEDIATION): 1 entries moved verbatim from worklog.md -->
+---
+Task ID: AUTH-CALLBACK-LOCALHOST-REDIRECT-2026-10-10
+Agent: Super Z (main)
+Task: بلاغ مالك حي (2026-10-10): «قيم PayPal تمت بالفعل، تسجيل الدخول بحساب جوجل وبعد اختيار البريد صفحة الرجوع https://localhost:3000/» — تشخيص وإصلاح دخول جوجل على أصل AWS الحي (ما بعد cutover: alkemos.com عبر Cloudflare→Caddy→PM2 127.0.0.1:3000).
+
+Work Log:
+- (تحقق PayPal أولًا): أسرار GitHub الخمسة حاضرة بالأسماء (PAYPAL_CLIENT_ID/SECRET/WEBHOOK_ID/MODE + NEXT_PUBLIC_PAYPAL_CLIENT_ID) · آخر نشر run #8 على 29282291 ناجح · حزمة العميل الحية تحمل PayPal client-id — تأكيد بلاغ المالك بأن الدفع يعمل.
+- (التشخيص — استبعاد Supabase وGoogle): probe الكallback بكود مزيف بلا كوكيز أعاد 303 إلى https://alkemos.com/?error=... أي Site URL = https://alkemos.com سليم (وليس localhost) · authorize يمرر redirect_to كما يجب · ظهور منتقي حسابات جوجل يثبت أن redirect URI الخاص بSupabase مسجل في Google Console — لا يلزم أي تغيير في لوحة Supabase ولا Google.
+- (الدليل الحاسم): GET https://alkemos.com/auth/callback (بلا كود) → 307 Location: https://localhost:3000/ — المسار نفسه هو من يبني الرابط الخاطئ بعد نجاح تبادل PKCE وضبط كوكي الجلسة (الدخول كان مكتملًا 99% والزيارة الثانية للموقع كانت ستظهر مسجّلة).
+- (السبب الجذري — مقاس على next@16.3.8 بتطبيق probe معزول): Next 16 يبني request.url بمضيف localhost مثبّت دائمًا — يتجاهل Host وX-Forwarded-Host كليًا (استُسلما alkemos.com والنتيجة بقيت https://localhost:<port>) ويأخذ البروتوكول فقط من x-forwarded-proto — خلف Caddy صار الأصل https://localhost:3000 حرفيًا · التحويل النسبي مستحيل: NextResponse.redirect بمسار نسبي يرمي 500 «URL is malformed» · لا علاقة لCaddyfile إذًا ولا لإصلاح headers.
+- (الإصلاح — src/app/(app)/auth/callback/route.ts): redirectOrigin = NEXT_PUBLIC_SITE_URL (بيئة تشغيل) وإلا requestUrl.origin (dev فقط حيث localhost هو الأصل الحقيقي) + نزع الشرطات المائلة الزائدة؛ مواقع التحويل الخمسة (البوابات 1-4 + catch) كلها تحولت إليه — يصلح دفعة واحدة دخول Google OAuth وروابط استعادة كلمة المرور.
+- (البيئة — .github/workflows/deploy-aws.yml): NEXT_PUBLIC_SITE_URL كان يصل البناء فقط — أُضيف إلى runtime staging (قيمة عامة حرفية وليست سرًا: https://alkemos.com) ليعمل فرع env في الكود على الخادم فعلًا (بدونه يبقى fallback إلى requestUrl.origin = localhost) + توثيق السبب في رأس الـworkflow.
+- (اختبار الحراسة — src/lib/__tests__/auth-callback-origin.test.ts): عقد مصدر بنمط fs-contract يفشل عند عودة أي تحويل لrequestUrl.origin ويضمن بقاء staging الـruntime في الـworkflow (منع ارتداد كامل).
+- (التحقق المحلي قبل الدفع): tsc 0 · eslint 0 · vitest 18/18 (الحراسة الجديدة + جدول القرار) · docs_audit أخضر (دوران H5 ‏13→12) — ثم بوابات main الثلاث خضراء على e8cc613e (quality · docs-parity · anti-regression).
+- (النشر والقياس الحي): deploy run #9 (38027909905) نجح 05:38Z — runtime env شُحن بـ25 مفتاحًا منها NEXT_PUBLIC_SITE_URL (أسماء فقط بالسجل) · build-info يقدم e8cc613e · القياس الحي 05:39Z: GET /auth/callback بلا كود → 307 Location: https://alkemos.com/ (كان https://localhost:3000/) · فرع الخطأ → /?auth_error=… · فرع الاستعادة → /auth/reset?recovery_error=1 — الإصلاح حي ومُقاس.
+
+Stage Summary:
+- دخول جوجل مُصلح ومُقاس حيًا: الجذر ليس Supabase/Google/Caddy بل قانون Next 16 (request.url مضيفه localhost دائمًا خلف البروكسي — يقيس التجاهل الكامل لـHost/X-Forwarded-Host على 16.3.8) · الإصلاح: أصل التحويل من NEXT_PUBLIC_SITE_URL ببيئة التشغيل (أُضيف للـstaging — 25 مفتاحًا) مع fallback للـdev · نفس الإصلاح يرمم روابط استعادة كلمة المرور · جذر المشكلة + القياسات + دليل إعادة الاختبار: docs/archive/AUTH-CALLBACK-LOCALHOST-REDIRECT-FIX-2026-10-10.md.

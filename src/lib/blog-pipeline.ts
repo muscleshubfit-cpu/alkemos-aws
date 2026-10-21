@@ -986,7 +986,16 @@ Return STRICT JSON only:
   "externalLinks": [{"url":"https://...","anchorText":"anchor"}]
 }`;
 
-  const { text, model, provider } = await callFreeAIFallbackChain(prompt, {
+  // BLOG-RECOVERY-3 (2026-10-21, live runs 39580182779 + 39619137420):
+  // the chain STOPS at the FIRST non-empty answer — a compressed review
+  // (measured 433 and 981 words against the 1000 floor, the latter NINETEEN
+  // words short) never lets the ladder reach the nvidia entries, and the
+  // step-level retry re-draws the same compressor. ONE length-repair
+  // re-call (the P2-force/B1 one-shot precedent) rides the SAME prompt
+  // with a stern directive naming the measured shortfall; if the second
+  // draw still lands under the floor the honest error fires naming BOTH.
+  const reviewChainCall = (extraDirective: string) =>
+    callFreeAIFallbackChain(extraDirective ? `${extraDirective}\n\n${prompt}` : prompt, {
     tag: `blog:review-${lang}`,
     temperature: 0.4,
     // Review embeds the FULL draft → big payload runs openrouter/nvidia-only
@@ -1013,8 +1022,10 @@ Return STRICT JSON only:
     // DESIGN (the R3 audit reservation — clamp below the 3800 floor).
     timeoutMs: 150_000,
     maxModels: 4,
-  });
-  const parsed = parseJSON<{
+    });
+
+  let { text, model, provider } = await reviewChainCall("");
+  let parsed = parseJSON<{
     articleMd?: string;
     keywordCoverage?: string;
     changesSummary?: unknown[];
@@ -1022,7 +1033,7 @@ Return STRICT JSON only:
     internalLinks?: unknown[];
     externalLinks?: unknown[];
   }>(text);
-  const md = (parsed?.articleMd || "").trim();
+  let md = (parsed?.articleMd || "").trim();
   // R4: parse failure keeps the legacy message; a PARSED review that lands
   // under the execution floor is a DISTINCT class — the review shrank the
   // draft below what P5 could ever publish (its 1300 floor is measured on
@@ -1032,11 +1043,40 @@ Return STRICT JSON only:
   if (!parsed || !md) {
     throw new Error(`P4 ${lang}: invalid review JSON from ${provider}:${model}`);
   }
-  const reviewWords = countWords(md);
+  let reviewWords = countWords(md);
   if (reviewWords < BLOG_EXECUTION_WORD_FLOOR) {
-    throw new Error(
-      `P4 ${lang}: review output too short from ${provider}:${model} (${reviewWords} words < ${BLOG_EXECUTION_WORD_FLOOR}-word execution floor — the draft was longer; the review shrank it)`,
+    // BLOG-RECOVERY-3: ONE length-repair re-call before the honest throw.
+    console.warn(
+      `[blog-pipeline] P4 ${lang} review ${reviewWords}w < ${BLOG_EXECUTION_WORD_FLOOR} floor (${provider}:${model}) → ONE length-repair re-call`,
     );
+    const target = Math.max(BLOG_EXECUTION_WORD_FLOOR + 200, draftWords);
+    const second = await reviewChainCall(
+      `LENGTH REPAIR — MANDATORY: your previous review output was ${reviewWords} words, ${BLOG_EXECUTION_WORD_FLOOR - reviewWords} words UNDER the ${BLOG_EXECUTION_WORD_FLOOR}-word floor, and it will be REJECTED. Re-emit the COMPLETE reviewed article at ${target}+ words. You ALREADY did the editorial work — do NOT re-analyze, just re-emit your reviewed article in FULL without truncation or compression: every section, every paragraph, nothing summarized away. The floor is a hard publish gate.`,
+    );
+    const parsed2 = parseJSON<{
+      articleMd?: string;
+      keywordCoverage?: string;
+      changesSummary?: unknown[];
+      factCheckNotes?: string;
+      internalLinks?: unknown[];
+      externalLinks?: unknown[];
+    }>(second.text);
+    const md2 = (parsed2?.articleMd || "").trim();
+    const w2 = countWords(md2);
+    if (parsed2 && w2 >= BLOG_EXECUTION_WORD_FLOOR) {
+      parsed = parsed2;
+      md = md2;
+      reviewWords = w2;
+      model = second.model;
+      provider = second.provider;
+      console.warn(
+        `[blog-pipeline] P4 ${lang} length-repair succeeded (${reviewWords}w via ${provider}:${model})`,
+      );
+    } else {
+      throw new Error(
+        `P4 ${lang}: review output too short from ${provider}:${model} (${reviewWords} words) AND the length-repair re-call (${second.provider}:${second.model}, ${w2} words) — both under the ${BLOG_EXECUTION_WORD_FLOOR}-word execution floor; the draft was longer (${draftWords} words)`,
+      );
+    }
   }
   const coverage = ["good", "partial", "poor"].includes(parsed?.keywordCoverage ?? "")
     ? (parsed.keywordCoverage as ReviewReport["keywordCoverage"])

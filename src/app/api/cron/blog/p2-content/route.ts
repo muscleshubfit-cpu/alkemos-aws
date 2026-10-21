@@ -78,7 +78,10 @@ export async function GET(request: NextRequest) {
 
     // Idempotent fast-exits for already-advanced rows; wrong_status for
     // anything genuinely out of order.
-    if (qi.status !== "outlined" && qi.status !== "failed") {
+    // BLOG-RECOVERY-3 (2026-10-21): "writing" is RE-ATTEMPTABLE — a row
+    // crashed mid-write (status set before the write, bundle.content may
+    // or may not exist) used to dead-end here with 409 forever.
+    if (qi.status !== "outlined" && qi.status !== "failed" && qi.status !== "writing") {
       if (["written", "images_done", "reviewed", "published"].includes(qi.status)) {
         return NextResponse.json({ ok: true, step: "p2", queueId: qi.id, lang, idempotent: true });
       }

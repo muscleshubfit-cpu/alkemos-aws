@@ -108,6 +108,15 @@ export async function GET(request: NextRequest) {
 
     const bundle = qi.article_bundle ? JSON.parse(qi.article_bundle) : {};
 
+    // BLOG-RECOVERY-3 (2026-10-21): artifact-preserving resume — a failed
+    // row that already carries a review keeps it UNLESS the caller asked
+    // for a repair regeneration (?repairDiagnostics=… rides the B1
+    // contract — exactly the P5 repair loop that must re-run P4).
+    if (qi.status === "failed" && bundle.review && !repairDiagnostics) {
+      console.warn(`[blog/p4-review] RESUME: failed row ${qi.id} carries a completed review — skipping (the failure was at P5; pass ?repairDiagnostics to force a re-review)`);
+      return NextResponse.json({ ok: true, step: "p4", queueId: qi.id, lang, resumed: true });
+    }
+
     const outline: OutlinePlan | undefined = bundle.outline;
     const research: LanguageResearch | undefined = bundle.research0;
     const draft: string | undefined = bundle.content?.markdown;

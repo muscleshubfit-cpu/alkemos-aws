@@ -236,7 +236,7 @@ describe("B1 · directed outputs judged by the same floor (byte-truth canaries)"
   it("the P4 code floor applies to undirected runs with the R4 message shape (prompt contract ≠ code gate)", async () => {
     state.articleMd = filler(752);
     await expect(reviewAndEnhance("en", filler(1217), OUTLINE, [])).rejects.toThrow(
-      /P4 en: review output too short from b1test:b1-test-model \(752 words < 1000-word execution floor — the draft was longer; the review shrank it\)/,
+      /P4 en: review output too short from b1test:b1-test-model \(752 words\) AND the length-repair re-call/,
     );
   });
 
@@ -244,7 +244,7 @@ describe("B1 · directed outputs judged by the same floor (byte-truth canaries)"
     state.articleMd = filler(671);
     await expect(
       reviewAndEnhance("ar", filler(1217), OUTLINE, [], "quality-gate battery failed — FAQ count 3 outside the 4-7 range"),
-    ).rejects.toThrow("671 words < 1000-word execution floor");
+    ).rejects.toThrow("671 words");
   });
 
   it("source truth: the floors ride their named constants at the owner-ordered 1000 (Phase 323)", () => {

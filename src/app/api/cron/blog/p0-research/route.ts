@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { runBilingualResearchPair, runPhase0Research, researchUsedFallback } from "@/lib/blog-research";
 import { supabaseAdmin, isSupabaseAdminConfigured } from "@/lib/supabase/admin";
-import { getLangParam, findAdoptablePairRow, findRecentPairRows, markQueueRowCoachRequested, type PipelineLang, type QueueItem } from "@/lib/blog-queue";
+import { getLangParam, findAdoptablePairRow, findRecentPairRows, findResumableRow, markQueueRowCoachRequested, type PipelineLang, type QueueItem } from "@/lib/blog-queue";
 import {
   extractSharedBrief,
   isAdoptablePairRow,
@@ -224,6 +224,35 @@ export async function GET(request: NextRequest) {
   const coachRun = !!(coachTopic || getJobIdParam(request));
 
   try {
+    // ── 0) RESUME (BLOG-RECOVERY-3, owner order 2026-10-21 «استكمال دون
+    // فقدان العمل»): MY OWN language's row stuck mid-pipeline (or honestly
+    // failed after completed stages) within 48h, never published — its
+    // bundle carries every completed artifact; the per-stage idempotency
+    // and artifact gates re-run only from the first incomplete stage.
+    // Ordered BEFORE ADOPT: my own row preserves the most completed work
+    // (a twin-pre-created pair row holds research only). Degrades to the
+    // legacy walk on any error.
+    try {
+      const resumable = await findResumableRow(lang);
+      if (resumable) {
+        console.log(
+          `[blog/p0-research] RESUME: my ${lang} row ${resumable.id} is "${resumable.status}" (≤48h, unpublished) — continuing it instead of creating a new row (completed stages skip idempotently)`,
+        );
+        if (coachRun) await markQueueRowCoachRequested(resumable.id);
+        return NextResponse.json({
+          ok: true,
+          step: "p0",
+          queueId: resumable.id,
+          lang,
+          pairMode: "resumed" as const,
+          resumed: true,
+          actual_status: resumable.status,
+        });
+      }
+    } catch (e) {
+      console.warn(`[blog/p0-research] resume degraded: ${e instanceof Error ? e.message : e}`);
+    }
+
     // ── 1) ADOPT (≤48h) — my side was pre-created by the twin's window.
     try {
       const candidate = await findAdoptablePairRow(lang);

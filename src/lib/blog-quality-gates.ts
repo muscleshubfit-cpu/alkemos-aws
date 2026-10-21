@@ -126,13 +126,38 @@ export function findUngrammaticalAnchors(
     if (!/[\p{L}]/u.test(anchor)) continue;
     if (legal.has(normalize(anchor))) continue; // exact post title — allowed
     const words = anchor.split(/\s+/).filter(Boolean);
-    if (words.length > 5) {
+    // BLOG-RECOVERY-3 (2026-10-21, live run 39580182779): the EN-calibrated
+    // >5 auto-reject killed legitimate 6-word ARABIC noun clauses — measured
+    // «كمية الماء التي يحتاجها الرياضي يوميًا» (6 words, carries the function
+    // word التي, still auto-rejected). Arabic spends ~30-50% more words than
+    // English on the same phrase; the stack threshold is per-language now.
+    if (words.length > (lang === "ar" ? 7 : 5)) {
       violations.push(anchor);
       continue;
     }
     if (words.length >= 4) {
       const fn = ANCHOR_FUNCTION_WORDS[lang];
-      const hasFunctionWord = words.some((w) => fn.has(w.replace(/[^\p{L}\p{N}']/gu, "").toLowerCase()));
+      let hasFunctionWord = words.some((w) =>
+        fn.has(w.replace(/[^\p{L}\p{N}']/gu, "").toLowerCase()),
+      );
+      // BLOG-RECOVERY-3 (2026-10-21, same run): ARABIC FUSED MORPHOLOGY —
+      // Arabic fuses prepositions + the definite article INTO the noun
+      // (لـ+الطب = للطب، بـ+المنزل = بالمنزل)، so the standalone
+      // function-word check can NEVER see them. Measured false positives
+      // that kept failing every P4 repair cycle: «إرشادات الكلية الأمريكية
+      // للطب الرياضي»، «الكلية الأمريكية للطب الرياضي» — both perfectly
+      // grammatical authority anchors. A word carrying لل/بال/كال/وال/فال
+      // is a PREPOSITIONED definite token — a construct-chain word, not a
+      // bare keyword-list entry (the stuffing shape stacks bare nouns:
+      // «تمارين بناء العضلات المنزل» — still flagged, canary-pinned). The
+      // precision set is deliberately narrow (fused-with-article forms
+      // only): plain-ال words stay insufficient, so the existing Arabic
+      // keyword-list canary keeps failing as designed. EN is unchanged.
+      if (lang === "ar" && !hasFunctionWord) {
+        hasFunctionWord = words.some(
+          (w) => w.length >= 4 && /^(?:لل|بال|كال|وال|فال)/.test(w),
+        );
+      }
       if (!hasFunctionWord) violations.push(anchor);
     }
   }

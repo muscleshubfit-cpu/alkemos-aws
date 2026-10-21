@@ -137,7 +137,7 @@ describe("R4 · P4 execution floor (reviewAndEnhance)", () => {
   it("kills the live 1201→752 shrinkage class at P4 with a DISTINCT message", async () => {
     state.articleMd = filler(752);
     await expect(reviewAndEnhance("en", filler(1201), OUTLINE, [])).rejects.toThrow(
-      /P4 en: review output too short from floortest:floor-test-model \(752 words < 1000-word execution floor — the draft was longer; the review shrank it\)/,
+      /P4 en: review output too short from floortest:floor-test-model \(752 words\) AND the length-repair re-call/,
     );
   });
 

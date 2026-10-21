@@ -145,6 +145,13 @@ export async function GET(request: NextRequest) {
     }
 
     const bundle = qi.article_bundle ? JSON.parse(qi.article_bundle) : {};
+    // BLOG-RECOVERY-3 (2026-10-21): artifact-preserving resume — a failed
+    // row that already sourced its images keeps them (re-fetching would
+    // swap the article's images for new ones for no reason).
+    if (qi.status === "failed" && Array.isArray(bundle.images) && bundle.images.length > 0) {
+      console.warn(`[blog/p3-images] RESUME: failed row ${qi.id} carries ${bundle.images.length} sourced image(s) — skipping (the failure was in a later stage)`);
+      return NextResponse.json({ ok: true, step: "p3", queueId: qi.id, lang, resumed: true, images: bundle.images.length });
+    }
     const plan: ImagePlanItem[] = bundle.outline?.imagePlan ?? [];
     if (plan.length === 0) {
       throw new Error("p3: image plan missing — rerun p1-outline");

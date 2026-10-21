@@ -420,6 +420,56 @@ export async function countAutomatedPublishedToday(
 // ═══════════════════════════════════════════════════════════════
 
 /**
+ * RESUME path (BLOG-RECOVERY-3, owner order 2026-10-21 «استكمال دون
+ * فقدان العمل»): the newest MY-language row within 48h that sits in a
+ * mid-pipeline state — researched/outlined/writing/written/images_done/
+ * reviewed — or was honestly marked failed AFTER some stages completed
+ * (markQueueItemFailed keeps the row's bundle with every completed
+ * artifact). NEVER returns a published row. The P0 route returns this
+ * row's id instead of creating a new one; the per-stage idempotency and
+ * artifact gates then skip completed work and re-run only from the first
+ * incomplete stage — a stuck P5 (e.g. a quality-gate rejection) costs a
+ * pure-code re-evaluation, not a full regeneration. Any error → null
+ * (the route degrades to the legacy ADOPT/JOIN/CREATE walk).
+ */
+export async function findResumableRow(
+  lang: "en" | "ar",
+): Promise<QueueItem | null> {
+  if (!isSupabaseAdminConfigured || !supabaseAdmin) return null;
+  try {
+    const since = new Date(Date.now() - 48 * 3_600_000).toISOString();
+    const { data, error } = await supabaseAdmin
+      .from("blog_generation_queue")
+      .select("*")
+      .eq("language", lang)
+      .in("status", [
+        "researched",
+        "outlined",
+        "writing",
+        "written",
+        "images_done",
+        "reviewed",
+        "failed",
+      ])
+      .gte("created_at", since)
+      .order("created_at", { ascending: false })
+      .limit(1);
+    if (error) {
+      console.warn(
+        `[blog-queue] findResumableRow degraded: ${error.message}`,
+      );
+      return null;
+    }
+    return (data as QueueItem[] | null)?.[0] ?? null;
+  } catch (e) {
+    console.warn(
+      `[blog-queue] findResumableRow degraded: ${e instanceof Error ? e.message : e}`,
+    );
+    return null;
+  }
+}
+
+/**
  * ADOPT path: the newest MY-language `researched` row that carries a
  * pair_id (its twin's window created it for me). Returns null when no
  * candidate exists OR on any error — including migration 0076 not yet
