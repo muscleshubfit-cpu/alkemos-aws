@@ -289,6 +289,26 @@ export function BlogEditorView({ mode, postId }: { mode: "new" | "edit"; postId?
  });
  };
 
+ // BLOG-CACHE-REFRESH (2026-10-21 root-cause fix): the editor saves
+ // DIRECTLY from the browser to Supabase (adminUpdatePost — no server
+ // write route exists to hook), so the client fires this server-side
+ // cache refresh after every successful save/create. Measured incident:
+ // the owner's saved edits sat invisible behind the three TTL layers
+ // (unstable_cache 3600s → ISR 3600s → Cloudflare s-maxage 3600 + SWR
+ // 86400) for hours. Fire-and-forget BY DESIGN: the save already
+ // succeeded; a cache refresh failure warns in the console, never the
+ // UX (docs/BLOG-CONTENT-CACHE-REFRESH-2026-10-21.md).
+ const refreshCacheAfterSave = (id?: string) => {
+ if (!id) return;
+ void fetch("/api/admin/blog/revalidate", {
+ method: "POST",
+ headers: { "Content-Type": "application/json" },
+ body: JSON.stringify({ post_id: id }),
+ }).catch((e) => {
+ console.warn("[blog-cache-refresh] post-save revalidation failed", e);
+ });
+ };
+
  const save = async (publish?: boolean) => {
  if (!post.title?.trim() || !post.content?.trim()) {
  toast.error(isAr ? "العنوان والمحتوى مطلوبان" : "Title and content are required");
@@ -333,9 +353,11 @@ export function BlogEditorView({ mode, postId }: { mode: "new" | "edit"; postId?
  };
  if (mode === "edit" && postId) {
  await adminUpdatePost(postId, updates);
+ refreshCacheAfterSave(postId);
  toast.success(isAr ? "تم الحفظ!" : "Saved!");
  } else {
  const created = await adminCreatePost(updates);
+ refreshCacheAfterSave(created?.id);
  toast.success(isAr ? "تم إنشاء المقال!" : "Article created!");
  router.push("/admin/blog");
  }

@@ -795,6 +795,25 @@ export const adminBlogReviewBodySchema = z.object({
 
 export type AdminBlogReviewBody = z.infer<typeof adminBlogReviewBodySchema>;
 
+// ── POST /api/admin/blog/revalidate (BLOG-CACHE-REFRESH 2026-10-21) ──
+
+/** The cache-refresh action body: EITHER the row id (the editor's
+ *  post-save call — the row is re-read for slug+language) OR the
+ *  slug+language pair directly (the manual lever after a direct
+ *  Supabase dashboard edit). One of the two shapes is mandatory. */
+export const adminBlogRevalidateBodySchema = z
+  .object({
+    post_id: z.string().min(1).max(MAX_ADMIN_ID_LEN).optional(),
+    slug: z.string().min(1).max(160).optional(),
+    language: z.enum(["en", "ar"]).optional(),
+  })
+  .refine(
+    (v) => Boolean(v.post_id) || (v.slug !== undefined && v.language !== undefined),
+    { message: "post_id أو (slug + language) مطلوبان لتحديث الكاش" },
+  );
+
+export type AdminBlogRevalidateBody = z.infer<typeof adminBlogRevalidateBodySchema>;
+
 // ── PATCH /api/admin/coach-kind ──
 
 /** The enum IS the legacy check — every gate failure re-derives «coach_id

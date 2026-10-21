@@ -220,10 +220,13 @@ const fetchBlogForOGUncached = async (
 // Cached wrapper — 1 hour revalidate (VERCEL-USAGE-9: aligned with the
 // blog pages' 1h ISR window; the og-image route's freshness is dominated
 // by its own CF edge TTL 86400s regardless).
+// BLOG-CACHE-REFRESH (2026-10-21): the `blog-og` tag makes this entry
+// invalidatable on demand (revalidateTag in blog-cache-revalidate.ts) —
+// TTL unchanged; without the tag a DB edit could only wait out the hour.
 export const fetchBlogForOG = unstable_cache(
   fetchBlogForOGUncached,
   ["blog-og"],
-  { revalidate: 3600 },
+  { revalidate: 3600, tags: ["blog-og"] },
 );
 
 /**
@@ -296,10 +299,15 @@ const fetchBlogPostFullUncached = async (
 
 // Cached wrapper — 1 hour revalidate (VERCEL-USAGE-9 2026-10-09: aligned
 // with the blog pages' 1h ISR window — blog posts change rarely)
+// BLOG-CACHE-REFRESH (2026-10-21): the `blog-full` tag makes this entry
+// invalidatable on demand (revalidateTag in blog-cache-revalidate.ts) —
+// TTL unchanged; this is THE body cache behind "my manual edits don't
+// show" — a DB content edit now propagates on the next request after
+// the invalidation instead of after the hour.
 export const fetchBlogPostFull = unstable_cache(
   fetchBlogPostFullUncached,
   ["blog-full"],
-  { revalidate: 3600 },
+  { revalidate: 3600, tags: ["blog-full"] },
 );
 
 /**
@@ -352,7 +360,9 @@ const fetchPublishedBlogSlugPoolsCached = unstable_cache(
     return pools;
   },
   ["blog-slug-pools"],
-  { revalidate: 3600 },
+  // BLOG-CACHE-REFRESH (2026-10-21): tag for on-demand invalidation — TTL
+  // unchanged (revalidateTag in blog-cache-revalidate.ts).
+  { revalidate: 3600, tags: ["blog-slug-pools"] },
 );
 
 /** Cached wrapper → REAL Sets for every caller (API unchanged, JSON-safe). */

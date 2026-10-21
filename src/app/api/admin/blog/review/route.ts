@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin, authRequired } from "@/lib/auth-server";
 import { supabaseAdmin, isSupabaseAdminConfigured } from "@/lib/supabase/admin";
 import { adminBlogReviewBodySchema } from "@/lib/validation/schemas";
+import { revalidateBlogPost } from "@/lib/blog-cache-revalidate";
 
 /**
  * POST /api/admin/blog/review — AUDIT_REPORT.md §9-المرحلة 2, item 1
@@ -90,9 +91,29 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "المقال غير موجود" }, { status: 404 });
   }
 
+  // BLOG-CACHE-REFRESH (2026-10-21 root-cause fix): the flip must also
+  // REACH THE READER. Measured incident: the owner approved here and the
+  // live page kept saying «AI-generated · medical review pending» for
+  // hours — the row was updated but the three cache layers (unstable_cache
+  // data 3600s → ISR 3600s → Cloudflare s-maxage 3600 + SWR 86400) had no
+  // invalidation hook at all. Fail-soft BY DESIGN: the approval already
+  // succeeded; a cache refresh failure is reported in the echo, never
+  // fatal (docs/BLOG-CONTENT-CACHE-REFRESH-2026-10-21.md).
+  let cacheRefresh: Awaited<ReturnType<typeof revalidateBlogPost>> | null =
+    null;
+  try {
+    cacheRefresh = await revalidateBlogPost({
+      slug: data.slug,
+      language: data.language === "ar" ? "ar" : "en",
+    });
+  } catch {
+    cacheRefresh = null;
+  }
+
   return NextResponse.json({
     ok: true,
     post: data,
+    ...(cacheRefresh ? { cache_refresh: cacheRefresh } : {}),
     ...(parsed.data.note ? { note: parsed.data.note } : {}),
   });
 }
