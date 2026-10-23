@@ -249,6 +249,20 @@ export function PlansView() {
  ]);
  setPlans(data);
  setSwapUsage(usage);
+ // NOTIF→PLAN 2026-10-24 (owner order item 3 — التوجيه): the
+ // plan_activated notification deep link (/plans?plan=<id>) auto-opens
+ // THIS plan's modal — the member lands on the exact plan the bell
+ // announced, not just the plans list. One-shot per mount (the param
+ // stays in the URL harmlessly; a manual later open is never hijacked).
+ try {
+ const wanted = new URLSearchParams(window.location.search).get("plan");
+ if (wanted) {
+ const match = data.find((p) => p.id === wanted);
+ if (match) setActive(match);
+ }
+ } catch {
+ /* a malformed ?plan param never breaks the page */
+ }
  } catch (e) {
  console.error("[PlansView] load failed:", e instanceof Error ? e.message : e);
  } finally {
@@ -854,7 +868,10 @@ function MealContent({ content, onSwap, swapLoading, planId, isSwapPending }: { 
  {isSwapPending("meal", planId, i) ? (isAr ? "قيد الاستبدال" : "Swapping") : t("plan.swap")}
  </Button>
  </div>
- <table className="w-full text-sm">
+ {/* NOTIF→PLAN 2026-10-24 (item 6): the table scrolls inside its own
+     card on phones — never outside the modal. */}
+ <div className="overflow-x-auto">
+ <table className="w-full min-w-[520px] text-sm">
  <thead>
  <tr className="text-start">
  <th className="p-2 text-start font-medium text-muted-foreground w-8">#</th>
@@ -894,6 +911,7 @@ function MealContent({ content, onSwap, swapLoading, planId, isSwapPending }: { 
  </tfoot>
  )}
  </table>
+ </div>
  {m.notes && <p className="mt-1 text-xs text-muted-foreground"> {m.notes}</p>}
  </div>
  ))}

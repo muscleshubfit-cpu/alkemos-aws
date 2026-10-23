@@ -19,6 +19,7 @@ import {
   regenerateWorkoutDay,
   substituteExercise,
 } from "@/lib/plan-generator";
+import { DIET_TYPES, type DietType } from "@/lib/diet-types";
 import type { ClientContext } from "@/lib/ai-local";
 import { generateSocialPost } from "@/lib/social-posts";
 import { pickSmartTopic } from "@/lib/blog-topics";
@@ -500,6 +501,7 @@ async function runPlanNutrition(payload: Record<string, unknown>) {
     foods?: string[];
     mealsCount?: number;
     notes?: string;
+    dietType?: string;
   };
   // EVO-4 (W4): anonymized platform knowledge (E1 aggregates + E2 exemplar)
   // steers the generation — fail-open to "" when the knowledge base is
@@ -513,6 +515,11 @@ async function runPlanNutrition(payload: Record<string, unknown>) {
       foods: overrides.foods,
       mealsCount: overrides.mealsCount,
       notes: overrides.notes,
+      // NOTIF→PLAN 2026-10-24 (owner order item 4): the coach's explicit
+      // diet-type selection rides the sanitized payload whitelist.
+      dietType: (DIET_TYPES as readonly string[]).includes(String(overrides.dietType))
+        ? (overrides.dietType as DietType)
+        : undefined,
     },
     knowledgeBlock,
   );

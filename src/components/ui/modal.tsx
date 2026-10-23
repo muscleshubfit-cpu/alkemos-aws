@@ -140,8 +140,18 @@ export function Modal({
           <DialogDescription>{description}</DialogDescription>
         ) : null}
 
-        {/* Body — optionally a scroll region so the title stays reachable. */}
-        <div className={cn(scroll && "max-h-[70vh] overflow-y-auto scrollbar-thin pe-1")}>
+        {/* Body — optionally a scroll region so the title stays reachable.
+            NOTIF→PLAN 2026-10-24 (owner order item 6 — mobile overflow root
+            cause): DialogContent is a GRID whose items default to
+            `min-width: auto` — a wide child (the plan tables' min-content
+            width on a 360px phone) stretched the grid track past the
+            dialog's bounded width and painted OUTSIDE the viewport with no
+            scrollbar (the live bug: only the right edge of the plan modal
+            was reachable). `min-w-0` lets the body shrink to the real
+            container width, and the explicit `overflow-x-auto` scrolls
+            any remaining wide content INSIDE the modal — the page behind
+            never moves (Radix already locks body scroll). */}
+        <div className={cn("min-w-0", scroll && "max-h-[70vh] overflow-x-auto overflow-y-auto scrollbar-thin pe-1")}>
           {children}
         </div>
 

@@ -113,6 +113,43 @@ export async function POST(request: NextRequest) {
   const ensureAllowed = (clientId: string) =>
     !allowedClientIds || allowedClientIds.has(clientId);
 
+  // ── NOTIF→PLAN 2026-10-24 (owner order item 2 — إشعارات الاستبيانات
+  // لغير المشتركين): SURVEY-notification eligibility ──────────────────
+  // A notification whose link targets the questionnaire surface
+  // (/questionnaires — the questionnaire-reminder template's link) may
+  // only reach ENTITLED members: clients assigned to a coach (B2B — the
+  // coach's own roster) OR clients with an ACTIVE site subscription
+  // (B2C — the progress-reminder cron's established eligibility rule).
+  // A registered-but-unsubscribed profile is NOT entitled to coaching
+  // workflow pings. The check runs BEFORE any insert; skipped ids are
+  // reported honestly in the response. Non-survey links (renewal
+  // reminders, announcements…) keep the legacy reach — only the survey
+  // class is gated.
+  const isSurveyLink = (l: string | null | undefined) =>
+    typeof l === "string" && l.split("?")[0].replace(/\/+$/, "") === "/questionnaires";
+
+  const resolveEligibleClientIds = async (candidateIds: string[]): Promise<Set<string>> => {
+    const eligible = new Set<string>();
+    if (candidateIds.length === 0) return eligible;
+    if (!supabaseAdmin) return new Set(candidateIds); // unreachable post-guard; narrows TS
+    const db = supabaseAdmin;
+    try {
+      const [assignedRes, subsRes] = await Promise.all([
+        db.from("coach_assignments").select("client_id").in("client_id", candidateIds),
+        db.from("subscriptions").select("client_id").eq("status", "active").in("client_id", candidateIds),
+      ]);
+      for (const r of (assignedRes.data ?? []) as { client_id: string }[]) eligible.add(r.client_id);
+      for (const r of (subsRes.data ?? []) as { client_id: string }[]) eligible.add(r.client_id);
+    } catch (e) {
+      // Fail-open policy question: on resolver error we degrade to the
+      // LEGACY behavior (everyone passes) rather than silently muting
+      // the coach's send — the error is logged for the audit trail.
+      console.error("[broadcast] survey-eligibility resolver failed — degrading to legacy reach:", e instanceof Error ? e.message : String(e));
+      return new Set(candidateIds);
+    }
+    return eligible;
+  };
+
   // --- Single client ---
   if (target === "single") {
     if (!userId) {
@@ -126,6 +163,16 @@ export async function POST(request: NextRequest) {
         { error: "Forbidden — client is not assigned to you" },
         { status: 403 },
       );
+    }
+    // Survey eligibility (item 2) — verified BEFORE the insert.
+    if (isSurveyLink(link)) {
+      const eligible = await resolveEligibleClientIds([userId]);
+      if (!eligible.has(userId)) {
+        return NextResponse.json(
+          { error: "Forbidden — this client is not eligible for questionnaire notifications (no coach assignment, no active subscription)" },
+          { status: 403 },
+        );
+      }
     }
     const { data, error } = await supabaseAdmin
       .from("notifications")
@@ -155,7 +202,7 @@ export async function POST(request: NextRequest) {
     }
     // Limit to 500 to prevent abuse
     const requested = userIds.slice(0, 500) as string[];
-    const ids = allowedClientIds
+    let ids = allowedClientIds
       ? requested.filter((uid: string) => allowedClientIds!.has(uid))
       : requested;
     if (ids.length === 0) {
@@ -163,6 +210,20 @@ export async function POST(request: NextRequest) {
         { error: "Forbidden — none of the selected clients are assigned to you" },
         { status: 403 },
       );
+    }
+    // Survey eligibility (item 2): ineligible ids are SKIPPED (not a 403 —
+    // a mixed selection must still reach the entitled members) and the
+    // count is reported honestly.
+    let skippedIneligible = 0;
+    if (isSurveyLink(link)) {
+      const eligible = await resolveEligibleClientIds(ids);
+      skippedIneligible = ids.length - ids.filter((uid: string) => eligible.has(uid)).length;
+      ids = ids.filter((uid: string) => eligible.has(uid));
+      if (ids.length === 0) {
+        return NextResponse.json(
+          { ok: true, sent: 0, skipped_ineligible: skippedIneligible, message: "None of the selected clients are eligible for questionnaire notifications" },
+        );
+      }
     }
     const notifications = ids.map((uid: string) => ({
       user_id: uid,
@@ -177,7 +238,7 @@ export async function POST(request: NextRequest) {
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
-    return NextResponse.json({ ok: true, sent: notifications.length });
+    return NextResponse.json({ ok: true, sent: notifications.length, ...(skippedIneligible > 0 ? { skipped_ineligible: skippedIneligible } : {}) });
   }
 
   // --- Broadcast to ALL clients ("all" = my clients for a plain coach) ---
@@ -201,9 +262,24 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: true, sent: 0, message: "No clients found" });
   }
 
+  // Survey eligibility (item 2): the admin's "all clients" historically
+  // reached EVERY role=client profile — including registered-but-
+  // unsubscribed ones. Survey notifications now filter to the entitled
+  // set (assigned OR actively subscribed); the skip count is reported.
+  let allSkippedIneligible = 0;
+  let recipients = clients as { id: string }[];
+  if (isSurveyLink(link)) {
+    const eligible = await resolveEligibleClientIds(recipients.map((c) => c.id));
+    allSkippedIneligible = recipients.length - recipients.filter((c) => eligible.has(c.id)).length;
+    recipients = recipients.filter((c) => eligible.has(c.id));
+    if (recipients.length === 0) {
+      return NextResponse.json({ ok: true, sent: 0, skipped_ineligible: allSkippedIneligible, message: "No eligible clients for questionnaire notifications" });
+    }
+  }
+
   // Bulk insert notifications for all clients — M22 fix: batch in chunks of 500
   // to avoid Supabase's insert limit + partial failure on large client lists.
-  const notifications = clients.map((c: { id: string }) => ({
+  const notifications = recipients.map((c: { id: string }) => ({
     user_id: c.id,
     type: "coach_broadcast",
     title,
@@ -236,6 +312,7 @@ export async function POST(request: NextRequest) {
     ok: true,
     sent: totalInserted,
     total: notifications.length,
+    ...(allSkippedIneligible > 0 ? { skipped_ineligible: allSkippedIneligible } : {}),
     ...(lastError ? { partialError: lastError } : {}),
   });
 }

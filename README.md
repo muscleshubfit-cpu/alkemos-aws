@@ -112,11 +112,48 @@ Prices, quotas, and tier features are defined in a single source:
 Every paid tier carries a 7-day conditional refund (no-features-used,
 ledger-based — `src/lib/refund.ts`).
 
+### Notifications (member bell + staff bell)
+- **Member bell** (`src/components/NotificationBell.tsx`) — per-user rows in
+  `notifications`, localized at display time from the structured `payload`
+  (migration 0093). Clicking a notification marks it read and deep-links to
+  the linked item: `plan_activated` opens THE plan's modal directly
+  (`/plans?plan=<id>` auto-opens it), questionnaire statuses open the
+  questionnaires, support replies the support thread view
+- **Staff bell** (`src/components/AdminNotificationBell.tsx`) —
+  `admin_notifications` routed per coach (`target_coach_id`).
+  `questionnaire_submitted` / `new_client` / `plan_approved` open the
+  client's manager page (`/coach/<id>`) directly; `new_ticket` opens the
+  ticket's thread (`/coach/support?ticket=<id>`); coach-targeted events
+  (wallet top-ups, coach-support replies) dual-write into the staff bell
+  following the affiliate-engine precedent
+- **Dedup guards (NOTIF→PLAN 2026-10-24)** — every structured emit carries an
+  event-identity key (`plan_id` / request id / ticket id / order id) and the
+  emitters + `POST /api/notifications/admin` skip a re-fire of the SAME
+  event inside its window (double-clicks, network retries, the PayPal
+  wallet parallel-race loser). Guards fail-open: a lost event is worse than
+  a duplicate; the weekly progress cron keeps its own per-week dedup
+- **Survey-notification eligibility (NOTIF→PLAN 2026-10-24)** — broadcasts
+  whose link targets `/questionnaires` only reach ENTITLED members: clients
+  assigned to a coach OR holding an active subscription; ineligible ids are
+  skipped and reported (`skipped_ineligible`) instead of silently muted
+
 ### For coaches (B2B)
 - **Client dashboard** — lifecycle filter tabs and per-client management
   (overview, subscription, plans, AI plans, questionnaires, progress)
 - **AI plans** — generation draws from the client's own balance
-  (ownership-checked); manual edits and per-element regeneration are unlimited
+  (ownership-checked); manual edits and per-element regeneration are unlimited.
+  The nutrition generator computes ALL calories/macros server-side
+  (`computeNutritionTargets` — Mifflin-St Jeor BMR, activity TDEE, goal
+  adjustment from BOTH the goal text (Arabic spelling drift tolerated) AND
+  the target-weight diff, then re-enforces them on the parsed output and
+  REBUILDS the overview text so one plan can never carry two contradicting
+  number sets). The coach picks the **diet type** (متوازن/كيتو/لو كارب/
+  نباتي/نباتي صرف) BEFORE generating — the pick (or the questionnaire's
+  classified diet) drives the macro policy (keto = very low carb) and the
+  AI's food selection (`src/lib/diet-types.ts` is the zero-dependency
+  contract shared by the UI and the job pipeline). Missing basic data or
+  extreme results stamp `needs_review` flags that render as a review banner
+  in the coach viewer — the plan stays a draft until the coach approves it
 - **Wallet system** — fixed per-client activation pricing paid to the platform,
   receipt-reviewed top-ups (InstaPay / Vodafone Cash / PayPal), activation
   gated on sufficient balance

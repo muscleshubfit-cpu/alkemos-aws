@@ -33,6 +33,9 @@ import {
 } from "@/lib/ai-local";
 import { EXERCISES, CATEGORY_LABELS, EQUIPMENT_LABELS, LEVEL_LABELS, type Exercise } from "@/lib/exercises";
 import type { PlanContent } from "@/lib/data/plans";
+// NOTIF→PLAN 2026-10-24: the diet contract's single source (re-exported
+// below for server callers); imported here for this module's own use.
+import { DIET_TYPES, DIET_TYPE_LABELS_AR, classifyDietText, type DietType } from "@/lib/diet-types";
 
 // Plan generator uses callFreeAIFallbackChain (interleaved OpenRouter + Groq)
 // for all AI calls — strongest free models first, with Groq for speed.
@@ -40,12 +43,23 @@ import type { PlanContent } from "@/lib/data/plans";
 // (owner order 2026-10-06, free tier) — this file's call sites are
 // UNCHANGED: the chain owns selection and fallback.
 
+/**
+ * Diet-type contract — the single source lives in the ZERO-DEPENDENCY
+ * leaf `src/lib/diet-types.ts` (the client selector needs it too and must
+ * never import this server module's runtime values — the Phase-183
+ * bundle law). Re-exported here so server callers keep one import path.
+ */
+export { DIET_TYPES, DIET_TYPE_LABELS_AR, classifyDietText } from "@/lib/diet-types";
+export type { DietType } from "@/lib/diet-types";
+
 export type PlanOverrides = {
   targetCalories?: number;
   macros?: { protein_g: number; carbs_g: number; fat_g: number };
   foods?: string[]; // preferred foods to include
   mealsCount?: number; // override meals-per-day
   notes?: string; // free-text instructions from the coach
+  /** Explicit coach-selected diet type (wins over the questionnaire). */
+  dietType?: import("@/lib/diet-types").DietType;
 };
 
 export type NutritionPlanContent = {
@@ -65,8 +79,28 @@ export type NutritionPlanContent = {
     lean_mass?: string;
     bmr?: number;
     tdee?: number;
+    /** NOTIF→PLAN 2026-10-24: goal label + resolved diet type (display). */
+    goal?: string;
+    diet_type?: string;
+    target_weight?: string;
   };
   daily_calories: number;
+  /**
+   * NOTIF→PLAN 2026-10-24 (owner order items 5+7): the SUM of the meals'
+   * total_calories — recomputed server-side at normalization so the coach
+   * and the member can see whether the meals actually track the daily
+   * target (the live incident: target 2320 while the macros card said
+   * 2905 and the meals summed 2342 — three different numbers in one plan).
+   */
+  meals_total_calories?: number;
+  /**
+   * Coach-review banner data (owner order item 5: «عند نقص البيانات
+   * الأساسية أو اكتشاف نتيجة متطرفة، أوقف اعتماد الخطة واطلب مراجعة
+   * المدرب»). Plans are DRAFT until the coach approves; when these flags
+   * exist the coach's viewer shows an explicit review-needed banner
+   * instead of presenting the numbers as verified.
+   */
+  needs_review?: { flags: string[]; note?: string };
   macros: {
     protein_g: number;
     carbs_g: number;
@@ -446,6 +480,24 @@ export type NutritionTargets = {
   goalAdjustmentPct: number;
   macros: { protein_g: number; carbs_g: number; fat_g: number };
   bodyFatPct: number | null;
+  /** Resolved diet type (coach override > questionnaire classification). */
+  dietType: DietType;
+  /** Target weight from the questionnaire (null when absent) — drives goal
+   * detection alongside the goal text and is echoed in data_analysis. */
+  targetWeightKg: number | null;
+  /** Free-text allergy/disliked answers — echoed into the deterministic
+   * overview so the member sees what was excluded. */
+  allergyText: string;
+  dislikedText: string;
+  /**
+   * Plausibility flags (owner order item 5: «عند نقص البيانات الأساسية أو
+   * اكتشاف نتيجة متطرفة، أوقف اعتماد الخطة واطلب مراجعة المدرب»). The
+   * plan ships as a DRAFT the coach must approve anyway; these flags make
+   * the review need VISIBLE instead of silently presenting defaults or
+   * extreme values as real numbers. Structural signals only — no invented
+   * medical thresholds.
+   */
+  reviewFlags: string[];
 };
 
 function numOr(v: unknown, fallback: number): number {
@@ -453,7 +505,18 @@ function numOr(v: unknown, fallback: number): number {
   return Number.isFinite(n) && n > 0 ? n : fallback;
 }
 
-/** Map questionnaire activity strings (AR or EN) to a TDEE multiplier. */
+/** Was `v` a REAL input (not the fallback default)? Used for review flags. */
+function hasNumInput(v: unknown): boolean {
+  const n = parseFloat(String(v ?? "").replace(/[^\d.-]/g, ""));
+  return Number.isFinite(n) && n > 0;
+}
+
+/**
+ * Map questionnaire activity strings (AR or EN) to a TDEE multiplier.
+ * The set is deliberately broad: real answers arrive in free-form Arabic
+ * (e.g. "تحسين الصحه خساره الوزن" style spelling drift) — an unmatched
+ * label falls back to the moderate 1.55 multiplier (the previous law).
+ */
 function activityMultiplier(activity: unknown): number {
   const a = String(activity || "").toLowerCase();
   if (/sedentary|خفيف جدا|قليل الحركة|مكتبي/.test(a)) return 1.2;
@@ -465,20 +528,132 @@ function activityMultiplier(activity: unknown): number {
   return 1.55;
 }
 
-function computeNutritionTargets(ctx: ClientContext, overrides?: PlanOverrides): NutritionTargets {
+/**
+ * Goal detection (owner order item 5 — the live 2026-10-23 incident
+ * «خطة تغذية - Samar samy»: the client's goal read "تحسين الصحه خساره
+ * الوزن" and the old regex only knew «خسارة وزن» with the tied-تاء
+ * spelling, so the −20% deficit NEVER fired and daily_calories landed on
+ * raw TDEE 2905 while the plan text promised 2320).
+ *
+ * TWO independent signals now (mirroring generateNutritionPlan's local
+ * law, which always had both):
+ *   1. target-weight diff: target < weight−2kg → fat loss · > +2kg → gain
+ *   2. goal-text patterns with Arabic spelling drift (خساره/خسارة/إنقاص/
+ *      تخسيس/تنحيف/نقص وزن/تنزيل وزن/دهون…)
+ * Fat-loss text wins ties (a stated goal outranks the target-weight field).
+ */
+const FAT_LOSS_GOAL_RE =
+  /weight.?loss|lose|fat.?loss|تخفيف|تنحيف|تخسيس|خسار|إنقاص|انقاص|نقص وزن|تنزيل وزن|تنزيل الوزن|نزول وزن|دهون|حرق|رجيم|دايت/;
+const MUSCLE_GAIN_GOAL_RE =
+  /muscle|gain|bulk|mass|ضخام|بناء عضل|زياد.*وزن|تسمين|زيادة الوزن|تكبير/;
+
+export function detectGoalAdjustmentPct(
+  goalText: unknown,
+  weightKg: number,
+  targetWeightKg: number | null,
+): number {
+  const goal = String(goalText || "").toLowerCase();
+  const targetPct = (() => {
+    if (targetWeightKg === null || !Number.isFinite(targetWeightKg)) return 0;
+    const diff = targetWeightKg - weightKg;
+    if (diff <= -2) return -20;
+    if (diff >= 2) return 10;
+    return 0;
+  })();
+  if (FAT_LOSS_GOAL_RE.test(goal)) return -20;
+  if (MUSCLE_GAIN_GOAL_RE.test(goal)) return 10;
+  return targetPct;
+}
+
+/**
+ * Diet-aware macro policy (owner order item 4: «إضافة اختيار واضح لنوع
+ * الدايت… واحترامه في النتيجة النهائية»). Protein stays the platform
+ * law (2.0 g/kg, coach override wins). The DIFFERENCE is the carb/fat
+ * split:
+ *   - keto: carbs are DEFINITIONALLY tiny — 5-10% of kcal, clamped
+ *     [20g, 50g] net-ish (the widely-published ketogenic band, used as
+ *     the diet's own definition, not as a medical prescription); fat
+ *     takes the remainder.
+ *   - low_carb: carbs ≈ 25% of kcal; fat takes the remainder.
+ *   - balanced / vegetarian / vegan: the existing default policy
+ *     (fat 25% of kcal, carbs the remainder). Vegetarian/vegan differ in
+ *     FOOD SELECTION (the prompt), not in macro math.
+ * Fat floors (0.5/0.6 g/kg) only guard the arithmetic against negative
+ * grams; the floors are structural, not medical.
+ */
+export function computeMacrosForDiet(
+  dietType: DietType,
+  dailyCalories: number,
+  weightKg: number,
+  coachMacros?: { protein_g: number; carbs_g: number; fat_g: number },
+): { protein_g: number; carbs_g: number; fat_g: number } {
+  if (
+    coachMacros &&
+    coachMacros.protein_g > 0 &&
+    coachMacros.carbs_g > 0 &&
+    coachMacros.fat_g > 0
+  ) {
+    return {
+      protein_g: Math.round(coachMacros.protein_g),
+      carbs_g: Math.round(coachMacros.carbs_g),
+      fat_g: Math.round(coachMacros.fat_g),
+    };
+  }
+  const proteinG = Math.round(2.0 * weightKg);
+  if (dietType === "keto") {
+    // 8% of kcal as carbs, clamped into the ketogenic band [20g, 50g].
+    const carbsG = Math.max(20, Math.min(50, Math.round((dailyCalories * 0.08) / 4)));
+    const remaining = dailyCalories - proteinG * 4 - carbsG * 4;
+    const fatG = Math.max(Math.round(0.5 * weightKg), Math.round(remaining / 9));
+    return { protein_g: proteinG, carbs_g: carbsG, fat_g: fatG };
+  }
+  if (dietType === "low_carb") {
+    const carbsG = Math.max(50, Math.round((dailyCalories * 0.25) / 4));
+    const remaining = dailyCalories - proteinG * 4 - carbsG * 4;
+    const fatG = Math.max(Math.round(0.6 * weightKg), Math.round(remaining / 9));
+    return { protein_g: proteinG, carbs_g: carbsG, fat_g: fatG };
+  }
+  // balanced / vegetarian / vegan — the platform default since #3 FIX.
+  const fatG = Math.round((dailyCalories * 0.25) / 9);
+  const carbsFromProteinFat = dailyCalories - proteinG * 4 - fatG * 9;
+  const carbsG = Math.max(50, Math.round(carbsFromProteinFat / 4));
+  return { protein_g: proteinG, carbs_g: carbsG, fat_g: fatG };
+}
+
+export function computeNutritionTargets(ctx: ClientContext, overrides?: PlanOverrides): NutritionTargets {
   const nutrition = loose(ctx.nutrition);
   const fitness = loose(ctx.fitness);
   const measurements = ctx.recent_measurements?.[0] ?? null;
 
-  const genderRaw = String(nutrition.gender || "male").toLowerCase();
+  const genderRaw = String(nutrition.gender || "").toLowerCase();
   const gender: "male" | "female" =
     genderRaw.includes("f") || /أنثى|بنت|امرأة|إمرأة|حرم/.test(genderRaw)
       ? "female"
       : "male";
 
-  const weightKg = numOr(nutrition.weight ?? measurements?.weight, 80);
-  const heightCm = numOr(nutrition.height, 175);
-  const ageYears = numOr(nutrition.age, 25);
+  // Review flag: missing gender means BMR used the male constant by default.
+  const reviewFlags: string[] = [];
+  const genderMissing = String(nutrition.gender || "").trim() === "";
+  if (genderMissing) reviewFlags.push("missing_gender");
+
+  const weightInput = nutrition.weight ?? measurements?.weight;
+  const heightInput = nutrition.height;
+  const ageInput = nutrition.age;
+  const weightKg = numOr(weightInput, 80);
+  const heightCm = numOr(heightInput, 175);
+  const ageYears = numOr(ageInput, 25);
+  // Basic-data completeness (owner order item 5: defaults must not pass as
+  // real measurements silently) — plausibility bounds only.
+  if (!hasNumInput(weightInput) || weightKg < 30 || weightKg > 350) reviewFlags.push("missing_or_implausible_weight");
+  if (!hasNumInput(heightInput) || heightCm < 100 || heightCm > 250) reviewFlags.push("missing_or_implausible_height");
+  if (!hasNumInput(ageInput) || ageYears < 10 || ageYears > 100) reviewFlags.push("missing_or_implausible_age");
+
+  // Diet type: explicit coach selection wins; else classify the
+  // questionnaire's free-text diet answer.
+  const dietType: DietType =
+    overrides?.dietType && (DIET_TYPES as readonly string[]).includes(overrides.dietType)
+      ? overrides.dietType
+      : classifyDietText(nutrition.diet);
 
   // Coach overrides are authoritative when present.
   const overrideCalories = numOr(overrides?.targetCalories, 0);
@@ -491,25 +666,32 @@ function computeNutritionTargets(ctx: ClientContext, overrides?: PlanOverrides):
   // 2. TDEE — activity multiplier.
   const tdee = Math.round(bmr * activityMultiplier(fitness.activity));
 
-  // 3. Goal adjustment.
-  const goal = String(fitness.goal || "").toLowerCase();
-  let goalAdjustmentPct = 0;
-  if (/weight.?loss|lose|fat loss|تخفيس|تنحيف|خسارة وزن|دهون/.test(goal)) {
-    goalAdjustmentPct = -20;
-  } else if (/muscle|gain|bulk|mass|ضخام|بناء عضل|زيادة وزن/.test(goal)) {
-    goalAdjustmentPct = +10;
-  }
+  // 3. Goal adjustment — TWO signals (goal text with spelling drift +
+  // target-weight diff). THE 2026-10-23 ROOT CAUSE FIX.
+  const targetWeightRaw = nutrition.target ?? nutrition.target_weight;
+  const targetWeightKg = hasNumInput(targetWeightRaw) ? numOr(targetWeightRaw, weightKg) : null;
+  const goalAdjustmentPct = detectGoalAdjustmentPct(fitness.goal, weightKg, targetWeightKg);
 
   let dailyCalories =
     overrideCalories > 0 ? Math.round(overrideCalories) : Math.round(tdee * (1 + goalAdjustmentPct / 100));
   // Safety floor: never below 1200 kcal (medical minimum).
-  dailyCalories = Math.max(1200, dailyCalories);
+  const floorHit = dailyCalories < 1200;
+  if (floorHit) {
+    dailyCalories = 1200;
+    reviewFlags.push("calorie_floor_applied");
+  }
+  // Structural plausibility (NOT medical thresholds): a deficit deeper
+  // than 25% or a surplus beyond 15% of TDEE is flagged for coach review,
+  // not blocked.
+  if (!floorHit && tdee > 0) {
+    const deviationPct = ((dailyCalories - tdee) / tdee) * 100;
+    if (deviationPct < -25) reviewFlags.push("deficit_beyond_25pct");
+    if (deviationPct > 15) reviewFlags.push("surplus_beyond_15pct");
+  }
 
-  // 4. Macros — protein-first policy unless overridden.
-  const protein_g = overrides?.macros?.protein_g ?? Math.round(2.0 * weightKg);
-  const fat_g = overrides?.macros?.fat_g ?? Math.round((dailyCalories * 0.25) / 9);
-  const carbsFromProteinFat = dailyCalories - protein_g * 4 - fat_g * 9;
-  const carbs_g = overrides?.macros?.carbs_g ?? Math.max(50, Math.round(carbsFromProteinFat / 4));
+  // 4. Macros — diet-aware policy (keto / low_carb / default), coach
+  // macros always win.
+  const macros = computeMacrosForDiet(dietType, dailyCalories, weightKg, overrides?.macros);
 
   // 5. Body fat — US Navy (optional inputs).
   let bodyFatPct: number | null = null;
@@ -530,7 +712,7 @@ function computeNutritionTargets(ctx: ClientContext, overrides?: PlanOverrides):
     }
   }
 
-  return { gender, weightKg, heightCm, ageYears, bmr, tdee, dailyCalories, goalAdjustmentPct, macros: { protein_g, carbs_g, fat_g }, bodyFatPct };
+  return { gender, weightKg, heightCm, ageYears, bmr, tdee, dailyCalories, goalAdjustmentPct, macros: { protein_g: macros.protein_g, carbs_g: macros.carbs_g, fat_g: macros.fat_g }, bodyFatPct, dietType, targetWeightKg, allergyText: String(nutrition.allergies || "").trim(), dislikedText: String(nutrition.disliked || "").trim(), reviewFlags };
 }
 
 const ACTIVITY_AR: Record<string, string> = {
@@ -680,6 +862,7 @@ ${overrides.notes ? `- ملاحظات إضافية: ${overrides.notes}` : ""}
 - TDEE: ${targets.tdee} سعرة
 - مستوى النشاط المعتمد: ${activityLabelAr(targets.tdee / Math.max(1, targets.bmr))}
 - الهدف المعتمد: ${goalLabelAr(targets.goalAdjustmentPct)}
+- النظام الغذائي المعتمد: ${DIET_TYPE_LABELS_AR[targets.dietType]} (${targets.dietType}) — التزم به في اختيار الأصناف بالكامل${targets.dietType === "keto" ? " (أغذية قليلة الكربوهيدرات جدًا فقط — لا أرز/خبز/عسل/سكر/فواكه عالية السكر كمكونات أساسية)" : targets.dietType === "low_carb" ? " (قلل مصادر الكربوهيدرات النشوية)" : targets.dietType === "vegetarian" || targets.dietType === "vegan" ? " (مصادر بروتين نباتية فقط" + (targets.dietType === "vegan" ? " — بلا ألبان أو بيض" : " — الألبان والبيض مسموحان") + ")" : ""}
 - daily_calories اليومية = ${targets.dailyCalories} سعرة (ضع هذا الرقم كما هو في المخرجات)
 - الماكروز الرسمية: بروتين ${targets.macros.protein_g}جم (${targets.macros.protein_g * 4} سعرة) / كارب ${targets.macros.carbs_g}جم (${targets.macros.carbs_g * 4} سعرة) / دهون ${targets.macros.fat_g}جم (${targets.macros.fat_g * 9} سعرة)
 ${targets.bodyFatPct !== null ? `- body_fat_pct (US Navy): ~${targets.bodyFatPct}%` : ""}
@@ -891,7 +1074,7 @@ ${splitDescription}${safetyRules}
  *   - macros g + kcal splits ← recomputed from the enforced calories/grams
  *   - data_analysis.bmr/tdee/body_fat_pct ← server-computed values
  */
-function normalizeNutritionPlan(
+export function normalizeNutritionPlan(
   plan: Record<string, unknown>,
   overrides?: PlanOverrides,
   targets?: NutritionTargets,
@@ -985,13 +1168,45 @@ function normalizeNutritionPlan(
           targets.bodyFatPct !== null ? `~${targets.bodyFatPct}%` : String(planAnalysis?.body_fat_pct ?? ""),
         bmr: targets.bmr,
         tdee: targets.tdee,
+        // NOTIF→PLAN 2026-10-24: the goal/diet/target-weight provenance of
+        // the official numbers — shown in تحليل البيانات so the coach can
+        // audit WHY the plan promises what it promises.
+        goal: goalLabelAr(targets.goalAdjustmentPct),
+        diet_type: DIET_TYPE_LABELS_AR[targets.dietType],
+        target_weight: targets.targetWeightKg !== null ? `${targets.targetWeightKg} كجم` : String(planAnalysis?.target_weight ?? ""),
       }
     : (planAnalysis ?? undefined);
 
+  // NOTIF→PLAN 2026-10-24 (owner order item 7): the meals-sum + review
+  // flags ride the plan so every surface (coach viewer, member viewer,
+  // PDF print) can show consistency instead of three different numbers.
+  const meals_total_calories = meals.reduce(
+    (s, m) => s + (typeof m.total_calories === "number" ? m.total_calories : 0),
+    0,
+  );
+  const needs_review =
+    targets && targets.reviewFlags.length > 0
+      ? {
+          flags: targets.reviewFlags,
+          note:
+            "بيانات أساسية ناقصة أو قيمة متطرفة في حسابات الخطة — راجع الأرقام مع العميل قبل اعتمادها.",
+        }
+      : undefined;
+
   return {
-    overview: String(plan.overview || ""),
+    // NOTIF→PLAN 2026-10-24 (owner order item 7): when deterministic
+    // targets exist the overview is REBUILT server-side — the live
+    // incident shipped an AI-written overview promising 2320 kcal / 318P /
+    // 24C / 106F while the enforced structured numbers said 2905 / 265 /
+    // 279 / 81 (two contradicting sets of "official" numbers in ONE plan).
+    // The model keeps its narrative role (goal/diet phrasing) but every
+    // NUMBER now comes from server math — same law as daily_calories and
+    // macros (#3 FIX), extended to the last free-text surface.
+    overview: targets ? buildDeterministicOverview(plan, targets, overrides) : String(plan.overview || ""),
     data_analysis,
     daily_calories,
+    meals_total_calories,
+    ...(needs_review ? { needs_review } : {}),
     macros: {
       protein_g,
       carbs_g,
@@ -1005,6 +1220,53 @@ function normalizeNutritionPlan(
     water_target: plan.water_target as string | undefined,
     meals,
   };
+}
+
+/**
+ * NOTIF→PLAN 2026-10-24 — the deterministic overview (owner order item 7).
+ * Mirrors generateNutritionPlan's local-template structure so AI plans and
+ * local-fallback plans present the SAME numbers the structured fields
+ * carry: BMR/TDEE (server), the goal adjustment, the target calories, the
+ * macros with their kcal shares, and the diet type. The model's original
+ * narrative (if any) survives as the FIRST line — its numbers do not.
+ */
+function buildDeterministicOverview(
+  plan: Record<string, unknown>,
+  targets: NutritionTargets,
+  overrides?: PlanOverrides,
+): string {
+  const modelIntro = String(plan.overview || "").split("\n")[0].trim().slice(0, 220);
+  const deficit = targets.dailyCalories - targets.tdee;
+  const m = targets.macros;
+  const pct = (kcal: number) =>
+    targets.dailyCalories > 0 ? Math.round((kcal / targets.dailyCalories) * 100) : 0;
+  const lines: string[] = [];
+  if (modelIntro) lines.push(modelIntro);
+  lines.push(
+    `الهدف: ${goalLabelAr(targets.goalAdjustmentPct)} · النظام الغذائي: ${DIET_TYPE_LABELS_AR[targets.dietType]}`,
+  );
+  lines.push(
+    `معدل الأيض الأساسي (BMR): ${targets.bmr} سعرة · إجمالي الاستهلاك اليومي (TDEE): ${targets.tdee} سعرة`,
+  );
+  lines.push(
+    deficit === 0
+      ? "السعرات المستهدفة = مستوى الصيانة (بلا عجز أو فائض)."
+      : deficit < 0
+        ? `عجز يومي: ${Math.abs(deficit)} سعرة`
+        : `فائض يومي: ${deficit} سعرة`,
+  );
+  lines.push(`السعرات المستهدفة: ${targets.dailyCalories} سعرة/يوم`);
+  lines.push(
+    `البروتين: ${m.protein_g}جم (≈${pct(m.protein_g * 4)}%) · الكربوهيدرات: ${m.carbs_g}جم (≈${pct(m.carbs_g * 4)}%) · الدهون: ${m.fat_g}جم (≈${pct(m.fat_g * 9)}%)`,
+  );
+  if (overrides?.targetCalories && overrides.targetCalories > 0) {
+    lines.push("(السعرات بتخصيص المدرب)");
+  }
+  const allergies = targets.allergyText;
+  const disliked = targets.dislikedText;
+  if (allergies) lines.push(`تم استبعاد: ${allergies}`);
+  if (disliked) lines.push(`تم تجنب: ${disliked}`);
+  return lines.join("\n");
 }
 
 function normalizeWorkoutPlan(plan: Record<string, unknown>): WorkoutPlanContent {

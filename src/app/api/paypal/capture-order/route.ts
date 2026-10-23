@@ -327,17 +327,52 @@ async function handleWalletTopupCapture(
     );
   }
 
-  // 6. Notify the coach (best-effort)
+  // 6. Notify the coach (best-effort). NOTIF→PLAN 2026-10-24 (item 1):
+  // deduped on the PayPal order id — the wallet RPC resolves a PARALLEL
+  // replay into a clean live-balance return (0098), and without this
+  // guard the loser of that race inserted a SECOND top-up notification
+  // (+ history row is idempotent-guarded separately). Fail-open.
   {
-    const { error: notifyErr } = await supabaseAdmin.from("notifications").insert({
-      user_id: userId,
-      type: "wallet_topup_approved",
-      title: "تم شحن محفظتك عبر PayPal ✅",
-      body: `اتشحن ${usd}$ في محفظتك — الرصيد الجديد ${newBalance}.`,
-      link: "/coach/wallet",
-      payload: { amount: usd, balance: newBalance, provider: "paypal" },
-    });
-    if (notifyErr) console.error("[paypal/capture-order] Top-up notify error:", notifyErr.message);
+    try {
+      const { data: dupe } = await supabaseAdmin
+        .from("notifications")
+        .select("id")
+        .eq("user_id", userId)
+        .eq("type", "wallet_topup_approved")
+        .contains("payload", { order_id: orderId })
+        .limit(1);
+      if (Array.isArray(dupe) && dupe.length > 0) {
+        console.log(`[paypal/capture-order] Top-up notify for order ${orderId} already sent — skipping`);
+      } else {
+        const { error: notifyErr } = await supabaseAdmin.from("notifications").insert({
+          user_id: userId,
+          type: "wallet_topup_approved",
+          title: "تم شحن محفظتك عبر PayPal ✅",
+          body: `اتشحن ${usd}$ في محفظتك — الرصيد الجديد ${newBalance}.`,
+          link: "/coach/wallet",
+          payload: { amount: usd, balance: newBalance, provider: "paypal", order_id: orderId },
+        });
+        if (notifyErr) console.error("[paypal/capture-order] Top-up notify error:", notifyErr.message);
+        // NOTIF→PLAN 2026-10-24 (items 1+3): the recipient is a COACH — his
+        // header bell reads admin_notifications (SiteHeader staff routing),
+        // so the member-table row above was never displayed. Dual-write into
+        // the staff bell (the affiliate-engine precedent), same dedup scope.
+        await supabaseAdmin
+          .from("admin_notifications")
+          .insert({
+            type: "wallet_topup_approved",
+            title: "تم شحن محفظتك عبر PayPal ✅",
+            body: `اتشحن ${usd}$ في محفظتك — الرصيد الجديد ${newBalance}.`,
+            link: "/coach/wallet",
+            target_coach_id: userId,
+            payload: { amount: usd, balance: newBalance, provider: "paypal", order_id: orderId },
+            read: false,
+          })
+          .then(undefined, () => {}); // never block the top-up on the bell
+      }
+    } catch (e) {
+      console.error("[paypal/capture-order] Top-up notify guard error (non-blocking):", e instanceof Error ? e.message : String(e));
+    }
   }
 
   console.log(

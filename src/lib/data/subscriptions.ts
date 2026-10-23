@@ -12,7 +12,7 @@ import {
  LS_PREFIX,
  type Profile,
 } from "./helpers";
-import { createNotification, createAdminNotification } from "./notifications";
+import { createNotification, createAdminNotification , createNotificationDeduped } from "./notifications";
 import { canonicalModelTier } from "../plans";
 import { pickPrimarySubscription } from "../subscription-view";
 import type { Subscription, SubscriptionRequest } from "@/lib/supabase/types";
@@ -377,7 +377,9 @@ export async function reviewSubscriptionRequest(id: string, action: "approve" | 
  // Notify the user — 0093: payload feeds the bell's render-side catalog
  // (lib/notification-i18n.ts) so EN members read English and the «1 أشهر»
  // grammar bug never reappears (arMonthsPhrase law).
- await createNotification(req.user_id, "subscription_approved", "تم تفعيل اشتراكك!", `تم الموافقة على طلب اشتراكك (${req.plan_tier}) لمدة ${req.duration_months} أشهر.`, "/dashboard", { tier: req.plan_tier, months: req.duration_months });
+ // NOTIF→PLAN 2026-10-24 (item 1): deduped on the request id — a
+ // double-clicked admin approval (or a retried submit) rings once.
+ await createNotificationDeduped(req.user_id, "subscription_approved", "تم تفعيل اشتراكك!", `تم الموافقة على طلب اشتراكك (${req.plan_tier}) لمدة ${req.duration_months} أشهر.`, "/dashboard", { tier: req.plan_tier, months: req.duration_months, request_id: req.id }, { key: "request_id", value: req.id, windowMs: 5 * 60 * 1000 });
  // PHASE 66 (owner-approved): award the affiliate commission from the
  // SERVER (POST /api/affiliate/commission) instead of the browser.
  // The Phase 64 study proved the old browser engine call failed
@@ -403,7 +405,8 @@ export async function reviewSubscriptionRequest(id: string, action: "approve" | 
  } else {
  // M55 fix: include rejection reason in the notification if provided
  const reasonText = adminNote ? ` (${adminNote})` : "";
- await createNotification(data.user_id, "subscription_rejected", "تم رفض طلب الاشتراك", `تم رفض طلب اشتراكك.${reasonText} يرجى التواصل مع الدعم.`, "/memberships", { reason: adminNote || "" });
+ // NOTIF→PLAN 2026-10-24 (item 1): same request-id dedup on rejection.
+ await createNotificationDeduped(data.user_id, "subscription_rejected", "تم رفض طلب الاشتراك", `تم رفض طلب اشتراكك.${reasonText} يرجى التواصل مع الدعم.`, "/memberships", { reason: adminNote || "", request_id: data.id }, { key: "request_id", value: data.id, windowMs: 5 * 60 * 1000 });
  }
  return data;
  }

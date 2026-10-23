@@ -67,7 +67,7 @@ export async function createTicket(clientId: string, subject: string, body: stri
  if (error) throw new Error(error.message);
  await supabase.from("ticket_messages").insert({ ticket_id: ticket.id, sender_id: clientId, body });
  // Notify the ASSIGNED coach (multi-coach routing via clientId)
- await createAdminNotification("new_ticket", "تذكرة دعم جديدة ", `موضوع: ${subject}`, "coach-support", clientId, { subject }).catch(() => {});
+ await createAdminNotification("new_ticket", "تذكرة دعم جديدة ", `موضوع: ${subject}`, `/coach/support?ticket=${ticket.id}`, clientId, { subject, ticket_id: ticket.id, client_id: clientId, dedupKey: `new_ticket:${ticket.id}` }).catch(() => {});
  return ticket;
  }
  const all = read<SupportTicket[]>(LS_TICKETS, []);

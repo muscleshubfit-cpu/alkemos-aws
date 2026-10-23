@@ -38,6 +38,7 @@
  *   → finishJob()/failJob(); failJob requeues until MAX_ATTEMPTS.
  */
 import type { Json } from "@/lib/supabase/types";
+import { DIET_TYPES } from "@/lib/diet-types";
 
 import { supabaseAdmin, isSupabaseAdminConfigured } from "@/lib/supabase/admin";
 
@@ -185,6 +186,14 @@ export function sanitizeJobPayload(type: AiJobType, raw: unknown): Json {
           foods: Array.isArray(o.foods) ? (o.foods as unknown[]).map((f) => str(f, 60)).slice(0, 30) : undefined,
           mealsCount: (() => { const n = num(o.mealsCount); return n ? Math.min(6, Math.max(2, Math.round(n))) : undefined; })(),
           notes: str(o.notes, 500),
+          // NOTIF→PLAN 2026-10-24 (owner order item 4): the coach's diet-type
+          // selection — strict enum whitelist, same shape law as every other
+          // override field (a hostile value degrades to undefined, never
+          // reaches the prompt as free text).
+          dietType: (() => {
+            const d = str(o.dietType, 20);
+            return (DIET_TYPES as readonly string[]).includes(d) ? d : undefined;
+          })(),
         },
       };
     }

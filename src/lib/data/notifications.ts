@@ -106,6 +106,81 @@ export async function createNotification(userId: string, type: string, title: st
 }
 
 // ---------------------------------------------------------------------------
+// NOTIF→PLAN 2026-10-24 (owner order item 1 — تكرار الإشعارات): the dedup
+// guard. Live-DB evidence: plan_activated rows 5-53s apart (double-click /
+// network retry on the SAME approval), questionnaire_status double-fires,
+// and the PayPal wallet top-up's parallel-race loser re-notifying. Every
+// emit site whose event has a natural identity key now checks for an
+// existing row BEFORE inserting — same (user_id, type) + same
+// payload[dedupKey] inside the window → skip. Fail-OPEN: a dedup CHECK
+// failure never blocks the real event (the guard degrades to a plain
+// createNotification — a duplicate is recoverable, a lost event is not).
+// ---------------------------------------------------------------------------
+
+export type NotificationDedup = {
+ /** The payload field that identifies the EVENT (e.g. plan_id). */
+ key: string;
+ /** Key VALUE — compared against payload[key] of recent rows. */
+ value: string;
+ /** Look-back window (ms). Default 5 minutes. */
+ windowMs?: number;
+};
+
+/**
+ * Deduped member-notification emit. Semantics:
+ *  - SELECT recent rows (user_id+type, created_at >= now-window) and skip
+ *    the insert when one already carries payload[key] === value.
+ *  - localStorage (demo) path: same check against the stored rows.
+ *  - Returns the existing row when deduped, the new row otherwise.
+ */
+export async function createNotificationDeduped(
+ userId: string,
+ type: string,
+ title: string,
+ body: string,
+ link?: string,
+ payload?: Record<string, unknown>,
+ dedup?: NotificationDedup,
+) {
+ const windowMs = dedup?.windowMs ?? 5 * 60 * 1000;
+ const since = new Date(Date.now() - windowMs).toISOString();
+
+ if (isSupabaseConfigured && supabase) {
+  try {
+   const { data: recent, error } = await supabase
+    .from("notifications")
+    .select("id, user_id, type, title, body, link, read, created_at, payload")
+    .eq("user_id", userId)
+    .eq("type", type)
+    .gte("created_at", since)
+    .order("created_at", { ascending: false })
+    .limit(25);
+   if (!error && Array.isArray(recent) && dedup) {
+    const dupe = (recent as NotificationRow[]).find(
+     (r) => (r.payload as Record<string, unknown> | null | undefined)?.[dedup.key] === dedup.value,
+    );
+    if (dupe) return dupe;
+   }
+  } catch {
+   // fail-open: never lose the event over the guard itself
+  }
+  return createNotification(userId, type, title, body, link, payload);
+ }
+ // No descriptor → the legacy plain emit (never dedup on undefined keys).
+ if (!dedup) return createNotification(userId, type, title, body, link, payload);
+ const all = read<NotificationRow[]>(LS_PREFIX + "notifs", []);
+ const dupe = all.find(
+  (n) =>
+   n.user_id === userId &&
+   n.type === type &&
+   new Date(n.created_at).getTime() >= Date.now() - windowMs &&
+   (n.payload as Record<string, unknown> | undefined)?.[dedup.key] === dedup.value,
+ );
+ if (dupe) return dupe;
+ return createNotification(userId, type, title, body, link, payload);
+}
+
+// ---------------------------------------------------------------------------
 // Admin Notifications (for coach)
 // ---------------------------------------------------------------------------
 

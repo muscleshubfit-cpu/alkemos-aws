@@ -9,7 +9,7 @@ import {
  LS_PLANS,
  LS_TICKETS,
 } from "./helpers";
-import { createNotification, createAdminNotification } from "./notifications";
+import { createNotificationDeduped, createAdminNotification } from "./notifications";
 import { getSubscriptionForClient } from "./subscriptions";
 import { getLimits } from "@/lib/memberships";
 import type { Database, Plan, SupportTicket } from "@/lib/supabase/types";
@@ -85,23 +85,30 @@ export async function activatePlan(planId: string, clientId: string) {
  .select()
  .single();
  if (error) throw new Error(error.message);
- // Notify the client — 0093: payload feeds the bell's render-side catalog
- await createNotification(
- clientId,
- "plan_activated",
- "تم تفعيل خطة جديدة لك! ",
- "خطتك الجديدة جاهزة الآن. اطّلع عليها من صفحة خططي.",
- "/plans",
- { plan_type: plan?.type === "meal" ? "meal" : "workout" },
+ // Notify the client — 0093: payload feeds the bell's render-side catalog.
+ // NOTIF→PLAN 2026-10-24 (items 1+3): (a) the emit is DEDUPED on
+ // plan_id — the live DB showed the same approval firing 5-53s apart on
+ // double-click/retry; (b) the link deep-opens THIS plan's modal
+ // (/plans?plan=<id>) instead of dropping the member on the plans list.
+ await createNotificationDeduped(
+  clientId,
+  "plan_activated",
+  "تم تفعيل خطة جديدة لك! ",
+  "خطتك الجديدة جاهزة الآن. اطّلع عليها من صفحة خططي.",
+  `/plans?plan=${planId}`,
+  { plan_type: plan?.type === "meal" ? "meal" : "workout", plan_id: planId },
+  { key: "plan_id", value: planId, windowMs: 5 * 60 * 1000 },
  );
- // Notify coach (confirmation — routed to the client's assigned coach)
+ // Notify coach (confirmation — routed to the client's assigned coach).
+ // NOTIF→PLAN 2026-10-24 (item 3): the staff link opens the client's
+ // manager page directly (/coach/<id>) instead of the generic coach list.
  await createAdminNotification(
- "plan_approved",
- "تم تفعيل خطة للعميل ",
- `خطة ${plan?.type === "meal" ? "تغذية" : "تمارين"} تم تفعيلها وإرسالها للعميل.`,
- "coach",
- clientId,
- { plan_type: plan?.type === "meal" ? "meal" : "workout" },
+  "plan_approved",
+  "تم تفعيل خطة للعميل ",
+  `خطة ${plan?.type === "meal" ? "تغذية" : "تمارين"} تم تفعيلها وإرسالها للعميل.`,
+  `/coach/${clientId}`,
+  clientId,
+  { plan_type: plan?.type === "meal" ? "meal" : "workout", client_id: clientId, plan_id: planId, dedupKey: `plan_approved:${planId}` },
  ).catch(() => {});
  return data;
  }

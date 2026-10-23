@@ -37,6 +37,20 @@ export function CoachSupportView() {
     }
   };
 
+  // NOTIF→PLAN 2026-10-24 (owner order item 3 — التوجيه): the new_ticket
+  // notification deep link (/coach/support?ticket=<id>) auto-opens the
+  // announced ticket's thread instead of dropping the coach on the inbox
+  // to hunt for it. Applied once the first load finishes; a coach's own
+  // later selection is never hijacked.
+  useEffect(() => {
+    const wanted = new URLSearchParams(window.location.search).get("ticket");
+    if (!wanted) return;
+    if (tickets.some((t) => t.id === wanted)) {
+      const match = tickets.find((t) => t.id === wanted);
+      if (match && (!active || active.id !== wanted)) setActive(match);
+    }
+  }, [tickets, active]);
+
   useEffect(() => {
     load();
     // VERCEL-USAGE cleanup (2026-09-16): pause polling while the tab is

@@ -165,6 +165,11 @@ export async function POST(request: NextRequest) {
     .eq("id", parentId);
 
   // The coach hears about the reply instantly.
+  // NOTIF→PLAN 2026-10-24 (items 1+3): the coach's header bell reads
+  // admin_notifications (SiteHeader routes staff to AdminNotificationBell)
+  // — a row in `notifications` was written but NEVER DISPLAYED to its only
+  // recipient. Dual-write into the staff bell targeted at THIS coach (the
+  // affiliate-engine precedent), keeping the legacy row for compat.
   await supabaseAdmin.from("notifications").insert({
     user_id: parent.coach_id,
     type: "coach_support_reply",
@@ -172,6 +177,17 @@ export async function POST(request: NextRequest) {
     body: text.slice(0, 200),
     link: "/coach/help",
   });
+  await supabaseAdmin
+    .from("admin_notifications")
+    .insert({
+      type: "coach_support_reply",
+      title: "رد فريق الدعم على رسالتك",
+      body: text.slice(0, 200),
+      link: "/coach/help",
+      target_coach_id: parent.coach_id,
+      read: false,
+    })
+    .then(undefined, () => {}); // never block the reply on the bell
 
   return NextResponse.json({ ok: true });
 }

@@ -283,7 +283,26 @@ export async function POST(request: NextRequest) {
     .eq("id", ticketId);
 
   // Ring the client's bell so he knows staff replied.
+  // NOTIF→PLAN 2026-10-24 (item 1): deduped on identical (ticket, body)
+  // within 60s — a double-submitted identical reply (network retry) rings
+  // once; distinct messages always ring. Fail-open on guard errors.
   if (wantsReply) {
+    try {
+      const since = new Date(Date.now() - 60 * 1000).toISOString();
+      const { data: recent } = await supabaseAdmin
+        .from("notifications")
+        .select("id")
+        .eq("user_id", clientId)
+        .eq("type", "support_reply")
+        .gte("created_at", since)
+        .eq("body", text.slice(0, 200))
+        .limit(1);
+      if (Array.isArray(recent) && recent.length > 0) {
+        return NextResponse.json({ ok: true, deduped: true });
+      }
+    } catch {
+      // fail-open — fall through to the insert
+    }
     await supabaseAdmin
       .from("notifications")
       .insert({
@@ -397,9 +416,13 @@ async function memberCreateTicket(
       type: "new_ticket",
       title: "تذكرة دعم جديدة ",
       body: `موضوع: ${subject.slice(0, 200)}${priority === "high" ? " — أولوية (عضوية كوتشينج)" : ""}`,
-      link: "coach-support",
+      // NOTIF→PLAN 2026-10-24 (items 1+3): deep link opens the ticket's
+      // thread directly (/coach/support?ticket=<id>) — CoachSupportView
+      // auto-opens the matching ticket; dedupKey + the guard in
+      // POST /api/notifications/admin kill accidental double-pings.
+      link: `/coach/support?ticket=${ticket.id}`,
       target_coach_id: targetCoachId,
-      payload: { subject: subject.slice(0, 200), high: priority === "high" },
+      payload: { subject: subject.slice(0, 200), high: priority === "high", ticket_id: ticket.id, client_id: auth.id, dedupKey: `new_ticket:${ticket.id}` },
       read: false,
     })
     .then(undefined, () => {});

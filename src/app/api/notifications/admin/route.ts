@@ -182,7 +182,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const { type, title, body: notifBody, link, clientId, payload } = parsed.data;
+  const { type, title, body: notifBody, link, clientId, payload, dedupKey } = parsed.data;
 
   if (!type || !title) {
     return NextResponse.json(
@@ -231,6 +231,38 @@ export async function POST(request: NextRequest) {
       .limit(1)
       .maybeSingle();
     targetCoachId = (adm as { id: string } | null)?.id ?? null;
+  }
+
+  // NOTIF→PLAN 2026-10-24 (owner order item 1 — تكرار الإشعارات): the
+  // SERVER-SIDE dedup guard. The event identity is the explicit dedupKey
+  // OR payload.dedupKey (the emit sites ride it inside the payload);
+  // when a row of the same type + key exists within the window, the
+  // insert is SKIPPED (idempotent success — the retry that caused it
+  // must not double-ring the bell). Fail-OPEN: any guard error falls
+  // through to the plain insert (a duplicate is recoverable; a lost
+  // event is not). Live-DB evidence for the class: plan_approved pings
+  // 5-53s apart on the same approval.
+  const DEDUP_WINDOW_MS = 10 * 60 * 1000;
+  const eventKey =
+    (typeof dedupKey === "string" && dedupKey) ||
+    (typeof payload?.dedupKey === "string" && (payload.dedupKey as string)) ||
+    "";
+  if (eventKey) {
+    try {
+      const since = new Date(Date.now() - DEDUP_WINDOW_MS).toISOString();
+      const { data: recent } = await supabaseAdmin
+        .from("admin_notifications")
+        .select("id")
+        .eq("type", type)
+        .gte("created_at", since)
+        .contains("payload", { dedupKey: eventKey })
+        .limit(1);
+      if (recent && Array.isArray(recent) && recent.length > 0) {
+        return NextResponse.json({ ok: true, deduped: true, id: recent[0].id });
+      }
+    } catch {
+      // fail-open — see the comment above
+    }
   }
 
   const { data, error } = await supabaseAdmin

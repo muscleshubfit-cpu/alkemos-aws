@@ -9,7 +9,7 @@ import {
  LS_NUTRI_Q,
  LS_FIT_Q,
 } from "./helpers";
-import { createNotification, createAdminNotification } from "./notifications";
+import { createNotificationDeduped, createAdminNotification } from "./notifications";
 import type { Json, NutritionQuestionnaire, FitnessQuestionnaire } from "@/lib/supabase/types";
 
 /** Row shape shared by nutrition/fitness questionnaires (identical columns). */
@@ -76,13 +76,17 @@ export async function upsertQuestionnaire(
  // If submitted, notify the ASSIGNED coach (fire-and-forget — don't block
  // on notification; routed via clientId → target_coach_id)
  if (status === "submitted") {
+ // NOTIF→PLAN 2026-10-24 (items 1+3): deep link opens the client's
+ // manager page (/coach/<id>) — the questionnaire lives THERE, not on
+ // the generic coach list; dedupKey kills double-pings when the member
+ // re-saves the same questionnaire twice in quick succession.
  createAdminNotification(
- "questionnaire_submitted",
- "استبيان جديد للمراجعة ",
- `استبيان ${type === "nutrition" ? "التغذية" : "اللياقة"} — بانتظار مراجعتك`,
- "coach",
- clientId,
- { qtype: type },
+  "questionnaire_submitted",
+  "استبيان جديد للمراجعة ",
+  `استبيان ${type === "nutrition" ? "التغذية" : "اللياقة"} — بانتظار مراجعتك`,
+  `/coach/${clientId}`,
+  clientId,
+  { qtype: type, client_id: clientId, dedupKey: `questionnaire_submitted:${clientId}:${type}` },
  ).catch(() => {});
  }
  return row;
@@ -119,9 +123,19 @@ export async function setQuestionnaireStatus(
  .select()
  .single();
  if (error) throw new Error(error.message);
- // Notify the user — 0093: payload feeds the bell's render-side catalog
+ // Notify the user — 0093: payload feeds the bell's render-side catalog.
+ // NOTIF→PLAN 2026-10-24 (item 1): deduped on (qtype:status) — the coach
+ // double-clicking approve/needs-info must not double-ring the member.
  const statusMsg = status === "approved" ? "تمت الموافقة على استبيانك" : "يحتاج استبيانك لمزيد من المعلومات";
- await createNotification(clientId, "questionnaire_status", statusMsg, `استبيان ${type === "nutrition" ? "التغذية" : "اللياقة"}: ${statusMsg}`, "/questionnaires", { qtype: type, status });
+ await createNotificationDeduped(
+  clientId,
+  "questionnaire_status",
+  statusMsg,
+  `استبيان ${type === "nutrition" ? "التغذية" : "اللياقة"}: ${statusMsg}`,
+  "/questionnaires",
+  { qtype: type, status, dedup_value: `${type}:${status}` },
+  { key: "dedup_value", value: `${type}:${status}`, windowMs: 2 * 60 * 1000 },
+ );
  return data;
  }
  const key = type === "nutrition" ? LS_NUTRI_Q : LS_FIT_Q;

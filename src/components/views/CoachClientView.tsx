@@ -22,6 +22,7 @@ import {
  RefreshCw,
  ChevronDown,
  Download,
+ AlertTriangle,
 } from "lucide-react";
 // #5 fix: lazy-load recharts (~600KB) — only loaded when progress tab is opened
 import dynamic from "next/dynamic";
@@ -81,10 +82,26 @@ import type { Profile, Subscription, ProgressEntry, Plan } from "@/lib/supabase/
 // Type-only imports (erased at build): PlanContent family comes from the
 // server generator; the client only needs their shapes for the editor.
 import type { NutritionPlanContent, WorkoutPlanContent, PlanOverrides } from "@/lib/plan-generator";
+// NOTIF→PLAN 2026-10-24: the diet-type contract comes from the ZERO-DEPENDENCY
+// leaf module — never plan-generator's runtime values (server-only, 1.6MB
+// exercises array — the Phase-183 bundle law).
+import { DIET_TYPES, DIET_TYPE_LABELS_AR, classifyDietText, type DietType } from "@/lib/diet-types";
 import type { PlanContent } from "@/lib/data/plans";
 
 /** Result payload of a finished plan_* ai_job (getAiJob → job.result). */
 type PlanJobResult = { title?: string; content?: PlanContent | null; materialized?: boolean; plan_id?: string };
+
+// NOTIF→PLAN 2026-10-24 (owner order item 5): human-readable labels for the
+// server's structural plausibility flags — the coach banner's list.
+const REVIEW_FLAG_LABELS_AR: Record<string, string> = {
+ missing_gender: "الجنس غير محدد في الاستبيان — حساب BMR استخدم القيمة الافتراضية",
+ missing_or_implausible_weight: "الوزن مفقود أو غير منطقي — استُخدمت قيمة افتراضية",
+ missing_or_implausible_height: "الطول مفقود أو غير منطقي — استُخدمت قيمة افتراضية",
+ missing_or_implausible_age: "العمر مفقود أو غير منطقي — استُخدمت قيمة افتراضية",
+ calorie_floor_applied: "السعرات الناتجة تحت الحد الأدنى (١٢٠٠) — تم تقييدها",
+ deficit_beyond_25pct: "عجز حراري أعمق من ٢٥٪ من TDEE — قيمة متطرفة",
+ surplus_beyond_15pct: "فائض حراري يتجاوز ١٥٪ من TDEE — قيمة متطرفة",
+};
 
 /** Narrow questionnaire `data: Json` into a plain editable record. */
 const asForm = (v: Json | undefined | null): Record<string, Json> =>
@@ -1173,6 +1190,7 @@ export function CoachClientView({ clientId }: { clientId: string }) {
  t={t}
  quota={aiUsage}
  lang={lang}
+ qDietText={String(((nutriQ?.data ?? {}) as { diet?: unknown }).diet ?? "")}
  />
 
  {/* T-4PILLAR-COMPLETE: live status of queued plan jobs for THIS client.
@@ -2243,6 +2261,49 @@ function PlanViewerModal({ plan, onClose, onRegenerate }: { plan: Plan; onClose:
  )}
  </div>
 
+ {/* NOTIF→PLAN 2026-10-24 (owner order items 5+7): the review banner —
+     missing basic data / extreme values must STOP silent approval; the
+     coach sees exactly WHY the plan needs his eyes before اعتماد. */}
+ {!isWorkout && content && "meals" in content && content.needs_review && (
+ <div className="rounded-xl border border-amber-500/40 bg-amber-500/10 p-3 text-xs text-amber-700 dark:text-amber-400">
+ <div className="flex items-center gap-1.5 font-bold">
+ <AlertTriangle className="h-4 w-4" />
+ الخطة تحتاج مراجعتك قبل الاعتماد
+ </div>
+ <p className="mt-1 leading-relaxed">{content.needs_review.note}</p>
+ <ul className="mt-1.5 list-inside list-disc space-y-0.5 opacity-90">
+ {content.needs_review.flags.map((f, i) => (
+ <li key={i}>{REVIEW_FLAG_LABELS_AR[f] ?? f}</li>
+ ))}
+ </ul>
+ </div>
+ )}
+
+ {/* NOTIF→PLAN 2026-10-24 (owner order item 7): meals-vs-target
+     consistency — one line, computed from the SAME totals the member
+     sees, so "بطاقة 2905" vs "نظرة عامة 2320" can never silently
+     diverge again. */}
+ {!isWorkout && content && "meals" in content && typeof content.meals_total_calories === "number" && content.meals_total_calories > 0 && (
+ <div className="rounded-xl border border-border bg-muted/40 px-3 py-2 text-xs">
+ <span className="font-semibold">اتساق الوجبات: </span>
+ <span className="text-muted-foreground">
+ مجموع سعرات الوجبات ≈ {content.meals_total_calories} سعرة
+ {content.daily_calories > 0 && (
+ <>
+ {" · "}
+ {Math.abs(content.meals_total_calories - content.daily_calories) <= Math.max(120, content.daily_calories * 0.07) ? (
+ <span className="font-medium text-success">متسق مع الهدف اليومي ({content.daily_calories} سعرة)</span>
+ ) : (
+ <span className="font-medium text-amber-600 dark:text-amber-400">
+ يختلف عن الهدف اليومي ({content.daily_calories} سعرة) بنحو {content.meals_total_calories - content.daily_calories > 0 ? "+" : ""}{content.meals_total_calories - content.daily_calories} سعرة — راجع التوزيع
+ </span>
+ )}
+ </>
+ )}
+ </span>
+ </div>
+ )}
+
  {/* Nutrition: Macros */}
  {!isWorkout && (
  <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -2558,7 +2619,10 @@ function PlanViewerModal({ plan, onClose, onRegenerate }: { plan: Plan; onClose:
  </Button>
  )}
  </div>
- <table className="w-full text-sm">
+ {/* NOTIF→PLAN 2026-10-24 (item 6): the table scrolls inside its own
+     card on phones — never outside the modal. */}
+ <div className="overflow-x-auto">
+ <table className="w-full min-w-[520px] text-sm">
  <thead>
  <tr className="border-b border-border text-start">
  <th className="p-2 text-start font-medium text-muted-foreground w-8">#</th>
@@ -2632,6 +2696,7 @@ function PlanViewerModal({ plan, onClose, onRegenerate }: { plan: Plan; onClose:
  </tfoot>
  )}
  </table>
+ </div>
  {editMode && (
  <button onClick={() => addMealItem(mealIdx)} className="mt-2 flex items-center gap-1 text-xs text-primary hover:underline">
  <Plus className="h-3 w-3" /> إضافة صنف
@@ -2746,7 +2811,10 @@ function PlanViewerModal({ plan, onClose, onRegenerate }: { plan: Plan; onClose:
  </div>
  ) : (
  <>
- <table className="w-full text-sm">
+ {/* NOTIF→PLAN 2026-10-24 (item 6): the table scrolls inside its own
+     card on phones — never outside the modal. */}
+ <div className="overflow-x-auto">
+ <table className="w-full min-w-[480px] text-sm">
  <thead>
  <tr className="text-start">
  <th className="p-2 text-start font-medium text-muted-foreground">التمرين</th>
@@ -2844,6 +2912,7 @@ function PlanViewerModal({ plan, onClose, onRegenerate }: { plan: Plan; onClose:
  })}
  </tbody>
  </table>
+ </div>
  {editMode && (
  <button onClick={() => addExercise(dayIdx)} className="m-2 flex items-center gap-1 text-xs text-primary hover:underline">
  <Plus className="h-3 w-3" /> إضافة تمرين
@@ -2887,12 +2956,17 @@ function CoachAIPlanGenerator({
  t,
  quota,
  lang,
+ qDietText,
 }: {
  generating: string | null;
  onGenerate: (planType: "workout" | "nutrition", overrides?: PlanOverrides) => Promise<void>;
  t: (key: string) => string;
  quota: { unlimited: boolean; clientBalance?: { tier: string; pool?: { used: number; limit: number; remaining?: number; unlimited: boolean }; nutrition: { used: number; limit: number; unlimited: boolean; weeklyUsed?: number; weeklyLimit?: number }; workout: { used: number; limit: number; unlimited: boolean; weeklyUsed?: number; weeklyLimit?: number } } } | null;
  lang: "ar" | "en";
+ /** NOTIF→PLAN 2026-10-24: the client's questionnaire diet answer — the
+  * "auto" diet chip classifies THIS text live so the coach sees what a
+  * no-pick generation would resolve to. */
+ qDietText: string;
 }) {
  const isAr = lang === "ar";
  // Phase 183 (2026-09-13 «البوول الموحد"): generation is blocked by
@@ -2949,6 +3023,13 @@ function CoachAIPlanGenerator({
  const [foods, setFoods] = useState("");
  const [mealsCount, setMealsCount] = useState("");
  const [notes, setNotes] = useState("");
+ // NOTIF→PLAN 2026-10-24 (owner order item 4): an explicit diet-type
+ // selection BEFORE plan creation. Default "auto" = classify the client's
+ // questionnaire diet answer (shown beside the selector); a concrete pick
+ // OVERRIDES the questionnaire, rides the sanitized job payload, drives
+ // the diet-aware macro policy, and is echoed in the plan's
+ // data_analysis.diet_type + overview.
+ const [dietType, setDietType] = useState<"auto" | DietType>("auto");
 
  const buildOverrides = (): PlanOverrides | undefined => {
  const ov: PlanOverrides = {};
@@ -2965,6 +3046,7 @@ function CoachAIPlanGenerator({
  }
  if (mealsCount.trim()) ov.mealsCount = parseInt(mealsCount);
  if (notes.trim()) ov.notes = notes;
+ if (dietType !== "auto") ov.dietType = dietType;
  return Object.keys(ov).length > 0 ? ov : undefined;
  };
 
@@ -2983,6 +3065,54 @@ function CoachAIPlanGenerator({
  {t("coach.aiPlans")}
  </h2>
  <p className="mt-1 text-sm text-muted-foreground">{t("coach.aiHint")}</p>
+
+ {/* NOTIF→PLAN 2026-10-24 (owner order item 4): diet-type selection —
+     VISIBLE BEFORE the generate buttons (not buried in advanced
+     options). "تلقائي" resolves from the client's questionnaire diet
+     answer (shown live); a concrete pick overrides it end-to-end. */}
+ <div className="mt-4">
+ <div className="mb-1.5 flex flex-wrap items-center gap-2">
+ <Label className="text-xs font-semibold text-foreground">
+ {isAr ? "نوع النظام الغذائي" : "Diet type"}
+ </Label>
+ <span className="text-[11px] text-muted-foreground">
+ {dietType === "auto"
+ ? isAr
+ ? `(تلقائي — من الاستبيان: ${classifyDietText(qDietText) === "balanced" && !qDietText.trim() ? "غير محدد" : DIET_TYPE_LABELS_AR[classifyDietText(qDietText)]})`
+ : `(auto — from questionnaire: ${qDietText.trim() ? classifyDietText(qDietText) : "unspecified"})`
+ : isAr
+ ? `الاختيار: ${DIET_TYPE_LABELS_AR[dietType]}`
+ : `Selected: ${dietType}`}
+ </span>
+ </div>
+ <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label={isAr ? "نوع النظام الغذائي" : "Diet type"}>
+ {(["auto", ...DIET_TYPES] as const).map((d) => {
+ const active = dietType === d;
+ const label = d === "auto" ? (isAr ? "تلقائي" : "Auto") : DIET_TYPE_LABELS_AR[d];
+ return (
+ <button
+ key={d}
+ type="button"
+ role="radio"
+ aria-checked={active}
+ onClick={() => setDietType(d)}
+ className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-all ${
+ active
+ ? "border-primary bg-primary text-primary-foreground shadow-sm"
+ : "border-border bg-background text-muted-foreground hover:border-primary/40 hover:text-foreground"
+ }`}
+ >
+ {label}
+ </button>
+ );
+ })}
+ </div>
+ <p className="mt-1.5 text-[11px] text-muted-foreground">
+ {isAr
+ ? "نوع الدايت بيحدد توزيع الماكروز (الكيتو = كارب منخفض جدًا) وبيتوجه لاختيار الأصناف. اختيارك بيتحفظ وبيمرر لعملية التوليد فعليًا."
+ : "The diet type drives the macro split (keto = very low carb) and food selection. Your pick is saved and passed into the generation job."}
+ </p>
+ </div>
 
  <div className="mt-5 grid gap-3 sm:grid-cols-2">
  <button

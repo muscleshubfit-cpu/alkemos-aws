@@ -1072,6 +1072,13 @@ export const adminNotificationBodySchema = z.object({
   // Values are data (strings/numbers/booleans) written by our own emit
   // sites; the route caps the serialized size before insert.
   payload: z.record(z.string(), z.unknown()).optional(),
+  // NOTIF→PLAN 2026-10-24 (owner order item 1 — تكرار الإشعارات): the
+  // event-identity key — when present, the route skips the insert when an
+  // identical (type, payload.dedupKey) row was created within the dedup
+  // window (retries/double-clicks never double-ring the bell). May also
+  // ride inside payload as `dedupKey`; this top-level field is the
+  // explicit form for callers without a payload.
+  dedupKey: z.string().min(1).max(200).optional(),
 });
 
 export type AdminNotificationBody = z.infer<typeof adminNotificationBodySchema>;

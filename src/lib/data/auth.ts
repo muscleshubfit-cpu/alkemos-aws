@@ -115,9 +115,9 @@ export async function signUpEmail(
      "new_client",
      "عميل مدعو أكمل تفعيل حسابه! ",
      `عميلك المدعو ${fullName} (${email}) أكمل التسجيل — اطمئن على استبياناته وجهّز خططه.`,
-     "coach",
-     adoptIn.user.id,
-     { name: fullName, email, variant: "invited" },
+     `/coach/${adoptIn.user.id}`,
+ adoptIn.user.id,
+ { name: fullName, email, variant: "invited", client_id: adoptIn.user.id, dedupKey: `new_client:${adoptIn.user.id}` },
     ).catch(() => {});
     return { error: null, profile };
    }
@@ -157,9 +157,9 @@ export async function signUpEmail(
  "new_client",
  "عميل جديد سجّل! ",
  `${fullName} (${email}) انضم للمنصة. اطمئن على استبياناته وجهّز خططه.`,
- "coach",
+ `/coach/${retry.user.id}`,
  retry.user.id,
- { name: fullName, email, variant: "standard" },
+ { name: fullName, email, variant: "standard", client_id: retry.user.id, dedupKey: `new_client:${retry.user.id}` },
  ).catch(() => {});
  return { error: null, profile };
  }
@@ -172,9 +172,9 @@ export async function signUpEmail(
  "new_client",
  "عميل جديد سجّل (بانتظار التأكيد)! ",
  `${fullName} (${email}) انضم للمنصة — في انتظار تأكيد البريد الإلكتروني.`,
- "coach",
+ `/coach/${data.user.id}`,
  data.user.id,
- { name: fullName, email, variant: "pending" },
+ { name: fullName, email, variant: "pending", client_id: data.user.id, dedupKey: `new_client:${data.user.id}` },
  ).catch(() => {});
  return { error: null, profile: null, needsConfirmation: true };
  }
@@ -196,9 +196,9 @@ export async function signUpEmail(
  "new_client",
  "عميل جديد سجّل! ",
  `${fullName} (${email}) انضم للمنصة. اطمئن على استبياناته وجهّز خططه.`,
- "coach",
+ `/coach/${data.user.id}`,
  data.user.id,
- { name: fullName, email, variant: "standard" },
+ { name: fullName, email, variant: "standard", client_id: data.user.id, dedupKey: `new_client:${data.user.id}` },
  ).catch(() => {});
  clearCoachSlugCookie();
  clearReferralCookie();
@@ -232,7 +232,7 @@ export async function signUpEmail(
  write(LS_PROFILES, profiles);
  write<Session>(LS_SESSION, { userId: id, email });
  // Notify coach
- await createAdminNotification("new_client", "عميل جديد", `${fullName} سجّل`, "coach", id).catch(() => {});
+ await createAdminNotification("new_client", "عميل جديد", `${fullName} سجّل`, `/coach/${id}`, id, { client_id: id, dedupKey: `new_client:${id}` }).catch(() => {});
  return { error: null, profile: profiles[id] };
 }
 
