@@ -154,6 +154,19 @@ ledger-based — `src/lib/refund.ts`).
   contract shared by the UI and the job pipeline). Missing basic data or
   extreme results stamp `needs_review` flags that render as a review banner
   in the coach viewer — the plan stays a draft until the coach approves it
+- **Plan editor (2026-10-24)** — the coach's plan modal header WRAPS on
+  phones (the measured root of the clipped screen + unreachable
+  تعديل/توليد buttons was an unwrappable `shrink-0` action cluster:
+  639px min-content inside a 280px dialog at 360px), the per-item AI swap
+  and per-meal regenerate are available in BOTH view and edit modes, and
+  the food-name cell is a **food-library combobox** (`FoodPickerCell` —
+  portal dropdown over `/api/food-search`; picking a row prefills its
+  default serving grams). Every pick/grams/calories edit recomputes the
+  WHOLE plan through one pure chain (`src/lib/nutrition-totals.ts`:
+  item macros → meal totals → daily = meals-total → macro grams + 4/4/9
+  kcal splits); gram edits recalc from the library row the coach actually
+  picked (session binding, invalidated on AI swaps/regens/removals), and
+  count-based amounts («2 بيضة») never guess macros
 - **Wallet system** — fixed per-client activation pricing paid to the platform,
   receipt-reviewed top-ups (InstaPay / Vodafone Cash / PayPal), activation
   gated on sufficient balance

@@ -41,6 +41,14 @@ type SearchResult = {
   };
   image?: string;
   brand?: string;
+  /** PLAN-EDIT-2026-10-24 (owner order — coach plan-editor autocomplete):
+   * the LOCAL row's default serving size (grams + Arabic/English label)
+   * so the editor can prefill "150 جرام" on pick. Open Food Facts rows
+   * carry no serving — consumers fall back to 100g. Additive + optional:
+   * the historical contract is unchanged. */
+  defaultGrams?: number;
+  servingAr?: string;
+  servingEn?: string;
 };
 
 /** Shape of an Open Food Facts product row that this endpoint consumes. */
@@ -90,6 +98,9 @@ export async function GET(request: NextRequest) {
       slug: f.slug,
       url: `/foods/${f.slug}`,
       per100g: f.per100g,
+      defaultGrams: f.defaultGrams,
+      servingAr: f.defaultServingAr,
+      servingEn: f.defaultServingEn,
     }));
 
   // 2. Search Open Food Facts (if query is long enough)

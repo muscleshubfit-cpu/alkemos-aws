@@ -23,6 +23,7 @@ import {
  ChevronDown,
  Download,
  AlertTriangle,
+ Search,
 } from "lucide-react";
 // #5 fix: lazy-load recharts (~600KB) — only loaded when progress tab is opened
 import dynamic from "next/dynamic";
@@ -36,6 +37,7 @@ import { useI18n } from "@/lib/i18n";
 import { useNav } from "@/hooks/use-nav";
 import { useAuth } from "@/hooks/use-auth";
 import { Modal } from "@/components/ui/modal";
+import { Popover, PopoverAnchor, PopoverContent } from "@/components/ui/popover";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -86,6 +88,10 @@ import type { NutritionPlanContent, WorkoutPlanContent, PlanOverrides } from "@/
 // leaf module — never plan-generator's runtime values (server-only, 1.6MB
 // exercises array — the Phase-183 bundle law).
 import { DIET_TYPES, DIET_TYPE_LABELS_AR, classifyDietText, type DietType } from "@/lib/diet-types";
+// PLAN-EDIT-2026-10-24: the editor's pure item→meal→plan math (grams
+// parser + 4/4/9 macro chain) — the zero-dependency leaf, unit-tested
+// in __tests__/nutrition-totals.test.ts.
+import { parseGrams, scalePer100g, recomputeNutritionTotals, type BoundFood } from "@/lib/nutrition-totals";
 import type { PlanContent } from "@/lib/data/plans";
 
 /** Result payload of a finished plan_* ai_job (getAiJob → job.result). */
@@ -1890,66 +1896,75 @@ function PlanViewerModal({ plan, onClose, onRegenerate }: { plan: Plan; onClose:
  setContent(newContent);
  };
 
- // Update meal item — auto-calculates calories from the food database when
- // the coach edits the food name or amount. This keeps totals consistent
- // with the system even for manual edits.
- const updateMealItem = async (mealIdx: number, itemIdx: number, field: "food" | "amount" | "calories" | "alternatives", value: string) => {
- if (!content || !("meals" in content) || !content.meals[mealIdx]) return;
- const newContent: NutritionPlanContent = { ...content };
- newContent.meals = [...newContent.meals];
- newContent.meals[mealIdx] = { ...newContent.meals[mealIdx] };
- newContent.meals[mealIdx].items = [...newContent.meals[mealIdx].items];
- newContent.meals[mealIdx].items[itemIdx] = { ...newContent.meals[mealIdx].items[itemIdx] };
- const item = newContent.meals[mealIdx].items[itemIdx];
+ // Update meal item — every edit flows through the shared pure math
+ // (src/lib/nutrition-totals.ts): item macros → meal totals → plan
+ // daily_calories + meals_total_calories + macros (grams AND 4/4/9 kcal
+ // splits) — the owner-ordered behavior «بعد تحديد السعرات أو الجرامات
+ // يتم تغيّر كل السعرات والماكروز لكامل الخطة».
+ //
+ // PLAN-EDIT-2026-10-24: the OLD food/amount handler silently fetched
+ // the FIRST /api/food-search match and applied its numbers invisibly
+ // (a wrong pick was undetectable). That path is REPLACED by the
+ // FoodPickerCell combobox (visible library choices) + session-bound
+ // per-100g rows: gram edits recompute from the food the coach actually
+ // chose; unbound items keep their numbers until a pick (honesty over
+ // guessing — the NOTIF→PLAN lesson).
+ const [boundFoods, setBoundFoods] = useState<Record<string, BoundFood>>({});
 
- if (field === "calories") {
- item.calories = parseInt(value) || 0;
- } else if (field === "alternatives") {
- item.alternatives = value;
- } else {
- item[field] = value;
- // Auto-calc calories when food or amount changes
- if (field === "food" || field === "amount") {
- try {
- const res = await fetch(`/api/food-search?q=${encodeURIComponent(item.food || "")}&lang=${lang}`);
- if (res.ok) {
- const data = await res.json();
- const match = data.results?.[0];
- if (match) {
- const grams = parseInt(item.amount?.replace(/[^0-9]/g, "") || "100") || 100;
- const factor = grams / 100;
- item.calories = Math.round(match.per100g.calories * factor);
- item.protein_g = Math.round(match.per100g.protein * factor);
- item.carbs_g = Math.round(match.per100g.carbs * factor);
- item.fat_g = Math.round(match.per100g.fat * factor);
- }
- }
- } catch {
- // food-search failed — skip auto-calc
- }
- }
- }
+ const pickLibraryFood = (mealIdx: number, itemIdx: number, row: FoodSearchRow) => {
+  if (!content || !("meals" in content) || !content.meals[mealIdx]) return;
+  const newContent: NutritionPlanContent = JSON.parse(JSON.stringify(content));
+  const item = newContent.meals[mealIdx].items[itemIdx];
+  if (!item) return;
+  // Keep the coach's existing grams when the amount already carries a
+  // gram quantity; otherwise prefill the library row's default serving
+  // (150g for a chicken breast, etc.) — never a blind 100.
+  const grams = parseGrams(item.amount) ?? row.defaultGrams ?? 100;
+  item.food = row.name;
+  item.amount = `${grams} ${isAr ? "جرام" : "g"}`;
+  const scaled = scalePer100g(row.per100g, grams);
+  item.calories = scaled.calories;
+  item.protein_g = scaled.protein_g;
+  item.carbs_g = scaled.carbs_g;
+  item.fat_g = scaled.fat_g;
+  setBoundFoods((prev) => ({ ...prev, [`${mealIdx}:${itemIdx}`]: { name: row.name, per100g: row.per100g } }));
+  setContent(recomputeNutritionTotals(newContent));
+  toast.success(isAr
+   ? "تم اختيار الصنف من المكتبة ✅ — عدّل الجرامات وستُعاد حسابات الخطة كلها تلقائيًا (اضغط «حفظ» للتثبيت)"
+   : "Picked from the food library ✅ — change the grams and every plan total recalculates (press Save to apply)");
+ };
 
- // === Recompute meal totals (calories + protein + carbs + fat) ===
- const mealItems = newContent.meals[mealIdx].items;
- newContent.meals[mealIdx].total_calories = mealItems.reduce((s, i) => s + (i.calories || 0), 0);
- newContent.meals[mealIdx].total_protein_g = mealItems.reduce((s, i) => s + (i.protein_g || 0), 0);
- newContent.meals[mealIdx].total_carbs_g = mealItems.reduce((s, i) => s + (i.carbs_g || 0), 0);
- newContent.meals[mealIdx].total_fat_g = mealItems.reduce((s, i) => s + (i.fat_g || 0), 0);
+ const updateMealItem = (mealIdx: number, itemIdx: number, field: "food" | "amount" | "calories" | "alternatives", value: string) => {
+  if (!content || !("meals" in content) || !content.meals[mealIdx]) return;
+  const newContent: NutritionPlanContent = JSON.parse(JSON.stringify(content));
+  const item = newContent.meals[mealIdx].items[itemIdx];
+  if (!item) return;
 
- // === Recompute plan totals (daily_calories + macros) ===
- const allMeals = newContent.meals;
- newContent.daily_calories = allMeals.reduce((s, m) => s + (m.total_calories || 0), 0);
- if (newContent.macros) {
- newContent.macros.protein_g = allMeals.reduce((s, m) => s + (m.total_protein_g || 0), 0);
- newContent.macros.carbs_g = allMeals.reduce((s, m) => s + (m.total_carbs_g || 0), 0);
- newContent.macros.fat_g = allMeals.reduce((s, m) => s + (m.total_fat_g || 0), 0);
- newContent.macros.protein_cal = newContent.macros.protein_g * 4;
- newContent.macros.carbs_cal = newContent.macros.carbs_g * 4;
- newContent.macros.fat_cal = newContent.macros.fat_g * 9;
- }
+  if (field === "calories") {
+   item.calories = parseInt(value) || 0;
+  } else if (field === "alternatives") {
+   item.alternatives = value;
+  } else if (field === "food") {
+   // Free-text rename (FoodPickerCell blur without a pick): the
+   // custom name is kept as typed — macros are NOT guessed.
+   item.food = value;
+  } else {
+   // AMOUNT — grams drive the recalc when a library food is bound
+   // to this item (pick or explicit re-pick). Count-based amounts
+   // ("2 بيضة") parse to null and keep the current numbers.
+   item.amount = value;
+   const bound = boundFoods[`${mealIdx}:${itemIdx}`];
+   const grams = parseGrams(value);
+   if (bound && grams != null) {
+    const scaled = scalePer100g(bound.per100g, grams);
+    item.calories = scaled.calories;
+    item.protein_g = scaled.protein_g;
+    item.carbs_g = scaled.carbs_g;
+    item.fat_g = scaled.fat_g;
+   }
+  }
 
- setContent(newContent);
+  setContent(recomputeNutritionTotals(newContent));
  };
 
  // Regenerate a single meal — queues meal_regenerate on GitHub Actions, then updates
@@ -1973,29 +1988,24 @@ function PlanViewerModal({ plan, onClose, onRegenerate }: { plan: Plan; onClose:
  // Job results are job-type-specific JSON — the engine’s "done" result always carries
  // a replacement meal with this exact shape (same runtime semantics as before).
  const newMeal = result.replacement as NutritionPlanContent["meals"][number];
- const newContent: NutritionPlanContent = { ...content };
- newContent.meals = [...newContent.meals];
+ const newContent: NutritionPlanContent = JSON.parse(JSON.stringify(content));
  newContent.meals[mealIdx] = { ...newMeal };
 
- // === Recompute meal totals for the regenerated meal ===
- const mealItems = newMeal.items || [];
- newContent.meals[mealIdx].total_calories = mealItems.reduce((s, i) => s + (i.calories || 0), 0);
- newContent.meals[mealIdx].total_protein_g = mealItems.reduce((s, i) => s + (i.protein_g || 0), 0);
- newContent.meals[mealIdx].total_carbs_g = mealItems.reduce((s, i) => s + (i.carbs_g || 0), 0);
- newContent.meals[mealIdx].total_fat_g = mealItems.reduce((s, i) => s + (i.fat_g || 0), 0);
-
- // === Recompute plan totals (daily_calories + macros) ===
- newContent.daily_calories = newContent.meals.reduce((s, m) => s + (m.total_calories || 0), 0);
- if (newContent.macros) {
- newContent.macros.protein_g = newContent.meals.reduce((s, m) => s + (m.total_protein_g || 0), 0);
- newContent.macros.carbs_g = newContent.meals.reduce((s, m) => s + (m.total_carbs_g || 0), 0);
- newContent.macros.fat_g = newContent.meals.reduce((s, m) => s + (m.total_fat_g || 0), 0);
- newContent.macros.protein_cal = newContent.macros.protein_g * 4;
- newContent.macros.carbs_cal = newContent.macros.carbs_g * 4;
- newContent.macros.fat_cal = newContent.macros.fat_g * 9;
- }
-
- setContent(newContent);
+ // PLAN-EDIT-2026-10-24: totals ride the shared pure math
+ // (recomputeNutritionTotals) — including meals_total_calories so the
+ // «اتساق الوجبات» banner can never go stale after a regeneration.
+ // The replaced meal's items are AI-provided, not library picks —
+ // drop this meal's session bindings so a later gram edit can't
+ // recompute from the OLD food's per-100g row.
+ setBoundFoods((prev) => {
+  const next: Record<string, BoundFood> = {};
+  for (const [k, v] of Object.entries(prev)) {
+   if (k.startsWith(`${mealIdx}:`)) continue;
+   next[k] = v;
+  }
+  return next;
+ });
+ setContent(recomputeNutritionTotals(newContent));
  toast.success(isAr ? "تم إعادة توليد الوجبة!" : "Meal regenerated!");
  } catch (e) {
  toast.error((e instanceof Error ? e.message : "") || (isAr ? "فشل إعادة التوليد" : "Regeneration failed"));
@@ -2024,26 +2034,12 @@ function PlanViewerModal({ plan, onClose, onRegenerate }: { plan: Plan; onClose:
  };
 
  // Add meal item
- // Helper: recompute meal + plan totals after any change to items
- const recomputeTotals = (newContent: NutritionPlanContent) => {
- for (let i = 0; i < newContent.meals.length; i++) {
- const items = newContent.meals[i].items || [];
- newContent.meals[i].total_calories = items.reduce((s, it) => s + (it.calories || 0), 0);
- newContent.meals[i].total_protein_g = items.reduce((s, it) => s + (it.protein_g || 0), 0);
- newContent.meals[i].total_carbs_g = items.reduce((s, it) => s + (it.carbs_g || 0), 0);
- newContent.meals[i].total_fat_g = items.reduce((s, it) => s + (it.fat_g || 0), 0);
- }
- newContent.daily_calories = newContent.meals.reduce((s, m) => s + (m.total_calories || 0), 0);
- if (newContent.macros) {
- newContent.macros.protein_g = newContent.meals.reduce((s, m) => s + (m.total_protein_g || 0), 0);
- newContent.macros.carbs_g = newContent.meals.reduce((s, m) => s + (m.total_carbs_g || 0), 0);
- newContent.macros.fat_g = newContent.meals.reduce((s, m) => s + (m.total_fat_g || 0), 0);
- newContent.macros.protein_cal = newContent.macros.protein_g * 4;
- newContent.macros.carbs_cal = newContent.macros.carbs_g * 4;
- newContent.macros.fat_cal = newContent.macros.fat_g * 9;
- }
- return newContent;
- };
+ // PLAN-EDIT-2026-10-24: the inline totals math moved to the shared
+ // zero-dep leaf (src/lib/nutrition-totals.ts, unit-tested there) —
+ // this alias keeps the call sites below terse. It also recomputes
+ // meals_total_calories (the old inline copy didn't — the «اتساق
+ // الوجبات» banner went stale after every edit).
+ const recomputeTotals = (c: NutritionPlanContent) => recomputeNutritionTotals(c);
 
  // ── Phase 79 (owner «الكوتشينج يستفيدوا من نفس الخصائص»): the two
  // granular regeneration tools the admin console has, now inside the
@@ -2085,6 +2081,14 @@ function PlanViewerModal({ plan, onClose, onRegenerate }: { plan: Plan; onClose:
  newContent.meals[mealIdx].items = [...newContent.meals[mealIdx].items];
  newContent.meals[mealIdx].items[itemIdx] = { ...newContent.meals[mealIdx].items[itemIdx], ...rep };
  recomputeTotals(newContent);
+ // PLAN-EDIT-2026-10-24: the AI's replacement is NOT the coach's picked
+ // library row — drop this item's binding so a later gram edit can't
+ // recompute from the OLD food's per-100g numbers.
+ setBoundFoods((prev) => {
+  const next = { ...prev };
+  delete next[`${mealIdx}:${itemIdx}`];
+  return next;
+ });
  setContent(newContent);
  toast.success(isAr ? "تم استبدال الصنف ✅ — اضغط \"حفظ\" لتثبيت التعديل." : "Item replaced ✅ — press \"Save\" to apply the change.");
  } catch (e) {
@@ -2147,6 +2151,24 @@ function PlanViewerModal({ plan, onClose, onRegenerate }: { plan: Plan; onClose:
  newContent.meals[mealIdx] = { ...newContent.meals[mealIdx] };
  newContent.meals[mealIdx].items = newContent.meals[mealIdx].items.filter((_, i) => i !== itemIdx);
  recomputeTotals(newContent);
+ // PLAN-EDIT-2026-10-24: bindings are index-keyed — dropping an item
+ // shifts the later indices of the SAME meal; re-key them so a binding
+ // can never end up pointing at the wrong item's food.
+ setBoundFoods((prev) => {
+  const next: Record<string, BoundFood> = {};
+  for (const [k, v] of Object.entries(prev)) {
+   const [m, i] = k.split(":").map(Number);
+   if (m === mealIdx) {
+    if (i === itemIdx) continue; // the removed item — drop its binding
+    if (i > itemIdx) {
+     next[`${m}:${i - 1}`] = v; // shifted down by the removal
+     continue;
+    }
+   }
+   next[k] = v;
+  }
+  return next;
+ });
  setContent(newContent);
  };
 
@@ -2215,9 +2237,13 @@ function PlanViewerModal({ plan, onClose, onRegenerate }: { plan: Plan; onClose:
  {!editMode ? (
  <>
  {onRegenerate && (
- <Button size="sm" variant="outline" className="gap-1.5 border-primary/30 text-primary" onClick={onRegenerate}>
+ <Button size="sm" variant="outline" className="gap-1.5 border-primary/30 text-primary" onClick={onRegenerate} title="إعادة توليد الخطة كاملة">
  <RefreshCw className="h-3.5 w-3.5" />
- إعادة توليد
+ {/* PLAN-EDIT-2026-10-24: icon-only on phones — the header action
+     cluster is the surface that overflowed the modal off-screen
+     (639px min-content inside a 328px dialog at 360px); the label
+     returns ≥sm where the dialog is 672px wide. */}
+ <span className="hidden sm:inline">إعادة توليد</span>
  </Button>
  )}
  <Button size="sm" variant="outline" className="gap-1.5" onClick={() => downloadPlanPDF()} title="تحميل الخطة كـ PDF">
@@ -2600,12 +2626,15 @@ function PlanViewerModal({ plan, onClose, onRegenerate }: { plan: Plan; onClose:
  <p className="text-xs text-muted-foreground">{m.time}</p>
  )}
  </div>
- {/* Per-meal regenerate button — works for ALL plans (AI + manual) */}
- {!editMode && (
+ {/* Per-meal regenerate button — works for ALL plans (AI + manual).
+     PLAN-EDIT-2026-10-24 (owner order — «توليد صنف او وجبة بالذكاء
+     الاصطناعي»): available in BOTH modes now — it was view-only
+     before, so the coach editing a meal had to exit edit mode to
+     regenerate it. */}
  <Button
  size="sm"
  variant="outline"
- className="gap-1.5 border-primary/30 text-primary"
+ className="gap-1.5 border-primary/30 text-primary shrink-0"
  onClick={() => regenerateSingleMeal(mealIdx)}
  disabled={regeneratingMealIdx !== null}
  >
@@ -2617,7 +2646,6 @@ function PlanViewerModal({ plan, onClose, onRegenerate }: { plan: Plan; onClose:
  <span className="hidden sm:inline">إعادة توليد الوجبة</span>
  <span className="sm:hidden">توليد</span>
  </Button>
- )}
  </div>
  {/* NOTIF→PLAN 2026-10-24 (item 6): the table scrolls inside its own
      card on phones — never outside the modal. */}
@@ -2630,16 +2658,36 @@ function PlanViewerModal({ plan, onClose, onRegenerate }: { plan: Plan; onClose:
  <th className="p-2 text-start font-medium text-muted-foreground">الكمية</th>
  <th className="p-2 text-start font-medium text-muted-foreground">السعرات</th>
  <th className="p-2 text-start font-medium text-muted-foreground hidden md:table-cell">البدائل</th>
- {/* Phase 79: per-item AI swap — same tool the admin console has */}
- {!editMode && <th className="p-2 w-8"></th>}
- {editMode && <th className="p-2 w-8"></th>}
+ {/* Phase 79: per-item AI swap — same tool the admin console has.
+     PLAN-EDIT-2026-10-24 (owner order — «المفترض أن يكون متاح للمدرب
+     التعديل والتبديل»): the swap column now exists in BOTH modes —
+     one header cell, one action cell per row. */}
+ <th className="p-2 w-8"></th>
  </tr>
  </thead>
  <tbody>
  {m.items?.map((it, itemIdx: number) => (
  <tr key={itemIdx} className="border-b border-border/60">
  <td className="p-2 text-muted-foreground">{itemIdx + 1}</td>
- <td className="p-2"><EditCell value={it.food} onChange={(v) => updateMealItem(mealIdx, itemIdx, "food", v)} className="font-medium" /></td>
+ <td className="p-2 min-w-[9rem]">
+ {/* PLAN-EDIT-2026-10-24 (owner order — «مفترض أن يظهر اختيارات من
+     مكتبة الأطعمة عند كتابة اسم الصنف»): the food cell in edit mode
+     is a combobox over the food library — visible choices, never a
+     silent first-match guess. */}
+ {editMode ? (
+ <FoodPickerCell
+ value={it.food || ""}
+ lang={lang}
+ isAr={isAr}
+ mealIdx={mealIdx}
+ itemIdx={itemIdx}
+ onPick={pickLibraryFood}
+ onRename={(mi, ii, v) => updateMealItem(mi, ii, "food", v)}
+ />
+ ) : (
+ <span className="font-medium">{it.food}</span>
+ )}
+ </td>
  <td className="p-2"><EditCell value={it.amount} onChange={(v) => updateMealItem(mealIdx, itemIdx, "amount", v)} /></td>
  <td className="p-2">
  <EditCell value={it.calories} onChange={(v) => updateMealItem(mealIdx, itemIdx, "calories", v)} type="number" />
@@ -2659,15 +2707,11 @@ function PlanViewerModal({ plan, onClose, onRegenerate }: { plan: Plan; onClose:
  it.alternatives && <span>{it.alternatives}</span>
  )}
  </td>
- {editMode && (
  <td className="p-2">
- <button onClick={() => removeMealItem(mealIdx, itemIdx)} className="text-destructive hover:text-destructive/80">
- <Trash2 className="h-3.5 w-3.5" />
- </button>
- </td>
- )}
- {!editMode && (
- <td className="p-2">
+ <div className="flex items-center gap-1.5">
+ {/* PLAN-EDIT-2026-10-24: the AI item swap rides INSIDE edit mode
+     too (it was view-only before) — swap + delete side by side,
+     the same cluster the workout editor has. */}
  <button
  onClick={() => regenerateSingleItem(mealIdx, itemIdx)}
  disabled={regeneratingElKey !== null}
@@ -2676,8 +2720,13 @@ function PlanViewerModal({ plan, onClose, onRegenerate }: { plan: Plan; onClose:
  >
  {regeneratingElKey === `item:${mealIdx}:${itemIdx}` ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Wand2 className="h-3.5 w-3.5" />}
  </button>
- </td>
+ {editMode && (
+ <button onClick={() => removeMealItem(mealIdx, itemIdx)} className="text-destructive hover:text-destructive/80">
+ <Trash2 className="h-3.5 w-3.5" />
+ </button>
  )}
+ </div>
+ </td>
  </tr>
  ))}
  </tbody>
@@ -2939,6 +2988,163 @@ function PlanViewerModal({ plan, onClose, onRegenerate }: { plan: Plan; onClose:
  </div>
  )}
  </Modal>
+ );
+}
+
+/** A food-library row as returned by /api/food-search — the fields the
+ *  editor's combobox consumes (local rows also carry their default
+ *  serving since PLAN-EDIT-2026-10-24). */
+type FoodSearchRow = {
+ name: string;
+ source: "local" | "openfoodfacts";
+ per100g: { calories: number; protein: number; carbs: number; fat: number };
+ defaultGrams?: number;
+ servingAr?: string;
+ servingEn?: string;
+};
+
+/**
+ * PLAN-EDIT-2026-10-24 (owner order — «اضافة صنف مفترض ان يظهر اختيارات
+ * من مكتبة الأطعمة عند كتابة اسم الصنف»): the food-name cell in edit
+ * mode is a COMBOBOX. Typing debounces to /api/food-search and shows the
+ * library's rows in a PORTAL dropdown (Radix Popover — it survives the
+ * meal table's overflow-x-auto wrapper and the modal's own scroll region
+ * on any phone width, where a plain absolute dropdown would be clipped).
+ * Picking a row binds its per-100g nutrition to the item, prefills the
+ * default serving grams, and recomputes every plan total; later gram
+ * edits recalc from the SAME row the coach chose (session binding).
+ * Blur without a pick keeps the typed text as a free-form custom item
+ * (macros untouched — no more silent first-match guessing).
+ */
+function FoodPickerCell({
+ value,
+ lang,
+ isAr,
+ mealIdx,
+ itemIdx,
+ onPick,
+ onRename,
+}: {
+ value: string;
+ lang: "ar" | "en";
+ isAr: boolean;
+ mealIdx: number;
+ itemIdx: number;
+ onPick: (mealIdx: number, itemIdx: number, row: FoodSearchRow) => void;
+ onRename: (mealIdx: number, itemIdx: number, value: string) => void;
+}) {
+ const [query, setQuery] = useState(value);
+ const [results, setResults] = useState<FoodSearchRow[]>([]);
+ const [loading, setLoading] = useState(false);
+ const [open, setOpen] = useState(false);
+ const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+ // Measured live (2026-10-24 smoke): without this guard every cell's
+ // MOUNT fetch (its initial food name) auto-opened a dropdown the coach
+ // never asked for. The dropdown opens ONLY for a query the coach
+ // actually typed.
+ const userTypedRef = useRef(false);
+
+ // Sync the local input when the item's food changes from the outside
+ // (a library pick or an AI swap replaced it). Typing never propagates
+ // upward, so an in-progress query is never clobbered.
+ useEffect(() => {
+ setQuery(value);
+ }, [value]);
+
+ useEffect(() => {
+ if (debounceRef.current) clearTimeout(debounceRef.current);
+ const trimmed = query.trim();
+ if (!trimmed) {
+ setResults([]);
+ setOpen(false);
+ setLoading(false);
+ return;
+ }
+ setLoading(true);
+ // B-03 ownership law (W1-4c, the meal-planner's proven pattern): every
+ // query owns its OWN AbortController — a superseded slow query can
+ // never land its older results over the newer ones.
+ const controller = new AbortController();
+ const { signal } = controller;
+ debounceRef.current = setTimeout(async () => {
+ try {
+ const res = await fetch(`/api/food-search?q=${encodeURIComponent(trimmed)}&lang=${lang}`, { signal });
+ if (res.ok) {
+ const data = await res.json();
+ if (signal.aborted) return; // late-body belt
+ const rows: FoodSearchRow[] = (data.results ?? []).slice(0, 8);
+ setResults(rows);
+ if (userTypedRef.current) setOpen(rows.length > 0);
+ }
+ } catch {
+ // silent — includes the AbortError of a superseded query.
+ } finally {
+ if (!signal.aborted) setLoading(false);
+ }
+ }, 300);
+ return () => {
+ if (debounceRef.current) clearTimeout(debounceRef.current);
+ controller.abort();
+ };
+ }, [query, lang]);
+
+ return (
+ <Popover open={open} onOpenChange={setOpen}>
+ <PopoverAnchor asChild>
+ <div className="relative flex w-full items-center">
+ <Search className="pointer-events-none absolute start-2 h-3.5 w-3.5 text-muted-foreground" />
+ <Input
+ value={query}
+ onChange={(e) => {
+ userTypedRef.current = true;
+ setQuery(e.target.value);
+ }}
+ onFocus={() => {
+ if (results.length > 0 && userTypedRef.current) setOpen(true);
+ }}
+ // Free-text commit when the coach leaves the field without picking:
+ // the typed name stays on the item; macros are NOT guessed.
+ onBlur={() => onRename(mealIdx, itemIdx, query.trim())}
+ placeholder={isAr ? "اكتب اسم الصنف…" : "Food name…"}
+ className="h-8 ps-8 text-sm font-medium"
+ dir="auto"
+ />
+ {loading && <Loader2 className="absolute end-2 h-3.5 w-3.5 animate-spin text-muted-foreground" />}
+ </div>
+ </PopoverAnchor>
+ <PopoverContent
+ // Focus must STAY in the input (this is a combobox, not a menu) —
+ // Radix's default auto-focus would break typing.
+ onOpenAutoFocus={(e) => e.preventDefault()}
+ align="start"
+ sideOffset={4}
+ collisionPadding={8}
+ className="max-h-72 w-64 overflow-y-auto p-1"
+ >
+ {results.map((r, i) => (
+ <button
+ key={`${r.name}-${i}`}
+ type="button"
+ // Classic combobox guard: keep focus in the input while choosing —
+ // the click then lands onPick WITHOUT a preceding blur-rename race.
+ onMouseDown={(e) => e.preventDefault()}
+ onClick={() => {
+ onPick(mealIdx, itemIdx, r);
+ setOpen(false);
+ }}
+ className="flex w-full flex-col items-start gap-0.5 rounded-md px-2 py-1.5 text-start transition-colors hover:bg-accent"
+ >
+ <span className="w-full truncate text-sm font-medium" dir="auto">{r.name}</span>
+ <span className="text-[11px] text-muted-foreground">
+ {r.source === "local" ? (isAr ? "المكتبة" : "Library") : isAr ? "منتج" : "Product"}
+ {" · "}
+ {r.per100g.calories} {isAr ? "سعرة/١٠٠جم" : "kcal/100g"}
+ {` · P${r.per100g.protein} C${r.per100g.carbs} F${r.per100g.fat}`}
+ </span>
+ </button>
+ ))}
+ </PopoverContent>
+ </Popover>
  );
 }
 

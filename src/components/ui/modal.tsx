@@ -110,8 +110,20 @@ export function Modal({
         showCloseButton={false}
         className={cn(SIZE_CLASSES[size], contentClassName)}
       >
-        {/* Header: icon + (required) accessible title … actions + labeled close. */}
-        <div className="flex items-start justify-between gap-3">
+        {/* Header: icon + (required) accessible title … actions + labeled close.
+            PLAN-EDIT-2026-10-24 (owner order — «لسه الشاشه لا تظهر كاملة»):
+            the header row is a GRID ITEM of DialogContent and inherited
+            `min-width: auto` — its min-content (nowrap truncated title +
+            the UNWRAPPABLE shrink-0 action cluster: مسودة/AI/توليد/PDF/
+            تعديل/X badges+buttons) measured 639px inside a 328px dialog at
+            360px viewport, painting the actions OUTSIDE the dialog — off
+            the left screen edge in RTL (the live bug: the coach literally
+            could not see or reach تعديل / إعادة توليد / PDF — "التعديل
+            غير موجود"). The body got min-w-0 in NOTIF→PLAN item 6; the
+            header did not. Fix at the root: min-w-0 + flex-wrap on the
+            row, flex-wrap on the cluster — the actions wrap to a second
+            row INSIDE the dialog on phones and share one line on desktop. */}
+        <div className="flex min-w-0 flex-wrap items-start justify-between gap-x-3 gap-y-2">
           <div className="flex min-w-0 flex-1 items-center gap-2">
             {icon ? (
               <span className="flex shrink-0 items-center text-primary">{icon}</span>
@@ -121,7 +133,7 @@ export function Modal({
             </DialogTitle>
           </div>
           {actions || showClose ? (
-            <div className="flex shrink-0 items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               {actions}
               {showClose ? (
                 <DialogClose
@@ -150,8 +162,14 @@ export function Modal({
             was reachable). `min-w-0` lets the body shrink to the real
             container width, and the explicit `overflow-x-auto` scrolls
             any remaining wide content INSIDE the modal — the page behind
-            never moves (Radix already locks body scroll). */}
-        <div className={cn("min-w-0", scroll && "max-h-[70vh] overflow-x-auto overflow-y-auto scrollbar-thin pe-1")}>
+            never moves (Radix already locks body scroll).
+            PLAN-EDIT-2026-10-24: the header now wraps to a second row on
+            phones (the fix above), so the 70vh body cap alone could push
+            the wrapped dialog past short viewports — the cap is now
+            dvh-aware (min(70vh, 100dvh − 14rem) keeps header+padding+
+            gap inside even the shortest common phone heights, and stays
+            70vh on desktop where 100dvh−14rem is larger). */}
+        <div className={cn("min-w-0", scroll && "max-h-[min(70vh,calc(100dvh-14rem))] overflow-x-auto overflow-y-auto scrollbar-thin pe-1")}>
           {children}
         </div>
 
