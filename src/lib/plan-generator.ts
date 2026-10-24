@@ -24,6 +24,7 @@
 import {
   callFreeAIFallbackChain,
   parseJSON,
+  type FallbackChainOptions,
 } from "@/lib/ai-provider";
 import {
   generateNutritionPlan,
@@ -36,6 +37,19 @@ import type { PlanContent } from "@/lib/data/plans";
 // NOTIF→PLAN 2026-10-24: the diet contract's single source (re-exported
 // below for server callers); imported here for this module's own use.
 import { DIET_TYPES, DIET_TYPE_LABELS_AR, classifyDietText, type DietType } from "@/lib/diet-types";
+// AI-PLAN-QUALITY 2026-10-24 (owner order items 2+5): the MANDATORY
+// output-quality gate — every AI payload passes one of these validators
+// before it is returned, displayed, or persisted. A provider answering
+// 200 is NOT evidence of quality.
+import {
+  validateNutritionPlanAIOutput,
+  validateRegeneratedMeal,
+  validateRegeneratedFoodItem,
+  validateRegeneratedWorkoutDay,
+  validateWorkoutPlanAIOutput,
+  type AIMealLike,
+  type GroundItemFn,
+} from "@/lib/plan-ai-validation";
 
 // Plan generator uses callFreeAIFallbackChain (interleaved OpenRouter + Groq)
 // for all AI calls — strongest free models first, with Groq for speed.
@@ -223,6 +237,73 @@ export type MealAlternative = {
   total_calories?: number;
 };
 
+/* ─────────── AI-PLAN-QUALITY 2026-10-24 — the mandatory quality gate ───────────
+ *
+ * ROOT CAUSES this block kills (owner order «نفّذ فحصًا جذريًا وإصلاحًا
+ * شاملًا… جودة التوليد هي الأولوية القصوى»):
+ *
+ * (1) generateNutritionPlanAI accepted ANY JSON with meals.length > 0 —
+ *     a plan whose meals summed 1500 against a 2900 target was saved,
+ *     billed, and shown (the live «ثلاثة أرقام متناقضة» incident class).
+ * (2) Regeneration results (meal / item / day) were applied with ZERO
+ *     validation — drifted calories and string-typed numbers reached
+ *     members' SAVED plans.
+ * (3) The AI's calorie estimates were never cross-checked against the
+ *     real food library — grounding (owner order item 3) is injected
+ *     below via the lazy loader.
+ *
+ * LAW: call + validate → on validation failure ONE repair retry carrying
+ * the exact rejection reason → still invalid = honest failure (full plans
+ * fall back to the local rule-based generator with a visible review flag;
+ * regenerations THROW so the caller keeps the original element intact).
+ * ──────────────────────────────────────────────────────────────────────── */
+
+/** Lazy grounding loader — the 3.6MB FOODS array is only paid when an
+ * actual generation/regeneration runs, and a failed load degrades to
+ * no-grounding (never blocks generation). */
+let groundingFnCache: GroundItemFn | null | undefined;
+async function getGroundItemFn(): Promise<GroundItemFn | null> {
+  if (groundingFnCache !== undefined) return groundingFnCache;
+  try {
+    const mod = await import("./plan-food-grounding");
+    groundingFnCache = mod.groundItemToLibrary;
+  } catch (e) {
+    console.warn("[plan-generator] food grounding unavailable (continuing without):", e instanceof Error ? e.message : e);
+    groundingFnCache = null;
+  }
+  return groundingFnCache;
+}
+
+/** The repair directive appended to the SECOND attempt — names the exact
+ * gate failure so the model corrects precisely that (the B1 pattern). */
+function repairDirective(error: string): string {
+  return `\n\n⚠ محاولتك السابقة رُفضت بوابة جودة المنصة لهذا السبب تحديدًا: «${error}».
+أعد توليد الإجابة كاملة بصيغة JSON صالحة فقط، مصحّحًا هذا الخطأ بعينه، وملتزمًا بالأرقام الرسمية والقيود المذكورة أعلاه حرفيًا.`;
+}
+
+/** One chain call + parse + validate, with ONE repair retry on gate
+ * failure. Throws the gate error when both attempts fail validation. */
+async function callValidatedChain<T>(
+  buildPrompt: (repairNote: string) => string,
+  options: FallbackChainOptions,
+  validate: (parsed: unknown, rawText: string) => { ok: true; value: T } | { ok: false; error: string },
+): Promise<{ value: T; model: string; provider: string; repaired: boolean }> {
+  const firstErrorHolder: string[] = [];
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const repairNote = attempt === 0 ? "" : repairDirective(firstErrorHolder[0] ?? "مخرجات غير مطابقة للمخطط");
+    const { text, model, provider } = await callFreeAIFallbackChain(
+      buildPrompt(repairNote),
+      options,
+    );
+    const parsed = parseJSON<unknown>(text);
+    const verdict = validate(parsed, text);
+    if (verdict.ok) return { value: verdict.value, model, provider, repaired: attempt > 0 };
+    firstErrorHolder[0] = verdict.error;
+    console.warn(`[plan-generator] quality gate rejected attempt ${attempt + 1}: ${verdict.error}`);
+  }
+  throw new Error(`بوابة الجودة رفضت المخرجات: ${firstErrorHolder[0] ?? "شكل غير صالح"}`);
+}
+
 /**
  * Generate a nutrition plan via AI, with fallback to local.
  *
@@ -230,6 +311,13 @@ export type MealAlternative = {
  * SERVER-SIDE first (computeNutritionTargets), injected into the prompt as
  * MANDATORY numbers, then RE-ENFORCED on the parsed output via
  * normalizeNutritionPlan(targets) — the model cannot overwrite them.
+ *
+ * AI-PLAN-QUALITY 2026-10-24: the parsed plan now passes
+ * validateNutritionPlanAIOutput BEFORE acceptance — meals bounded, items
+ * coerced + library-grounded, totals recomputed from items, and the day
+ * must close within ±25% of the target. One repair retry; total failure
+ * falls back to the local generator with a VISIBLE review flag (the
+ * coach sees the AI path failed — never silently presented as AI work).
  */
 export async function generateNutritionPlanAI(
   ctx: ClientContext,
@@ -245,13 +333,14 @@ export async function generateNutritionPlanAI(
   // Add a randomization seed to the prompt so each generation produces
   // different meal/exercise choices even for the same client.
   const seed = Math.floor(Math.random() * 1000000);
-  const prompt = `${buildNutritionPrompt(ctx, name, overrides, targets)}${buildVarietyBlock("nutrition", seed, ctx.recent_plan_names ?? [])}${platformKnowledge ?? ""}`;
+  const basePrompt = `${buildNutritionPrompt(ctx, name, overrides, targets)}${buildVarietyBlock("nutrition", seed, ctx.recent_plan_names ?? [])}${platformKnowledge ?? ""}`;
 
   try {
     // Use callFreeAIFallbackChain — OpenRouter + Groq interleaved (owner
     // directive). Chain self-clamps maxModels × timeoutMs ≤ 52s (Vercel Hobby).
-    const { text, model, provider } = await callFreeAIFallbackChain(
-      prompt,
+    const groundItem = await getGroundItemFn();
+    const { value, model, provider } = await callValidatedChain(
+      (repairNote) => basePrompt + repairNote,
       {
         tag: "plan:nutrition",
         systemPrompt: NUTRITION_SYSTEM_PROMPT,
@@ -265,12 +354,16 @@ export async function generateNutritionPlanAI(
         // saturation the strongest available model must stay reachable.
         maxModels: 5,
       },
+      (parsed) => validateNutritionPlanAIOutput(parsed, targets.dailyCalories, groundItem),
     );
-    const parsed = parseJSON<NutritionPlanContent>(text);
-    if (parsed && parsed.meals && parsed.meals.length > 0) {
+    if (value.meals.length > 0) {
       return {
         title: `خطة تغذية - ${name}`,
-        content: normalizeNutritionPlan(parsed, overrides, targets),
+        content: normalizeNutritionPlan(
+          { meals: value.meals } as unknown as Record<string, unknown>,
+          overrides,
+          targets,
+        ),
         source: `${provider}:${model}`,
       };
     }
@@ -278,17 +371,27 @@ export async function generateNutritionPlanAI(
     console.error("[plan-generator] Nutrition plan AI failed:", e instanceof Error ? e.message : e);
   }
 
-  // Fallback: local rule-based generator
+  // Fallback: local rule-based generator — with the honest review flag so
+  // the coach banner explains WHY (AI gate rejected / providers down).
   const local = generateNutritionPlan(ctx);
+  const flaggedTargets: NutritionTargets = {
+    ...targets,
+    reviewFlags: [...targets.reviewFlags, "ai_output_rejected_local_fallback"],
+  };
   return {
     title: `خطة تغذية - ${name}`,
-    content: normalizeNutritionPlan(local, overrides, targets),
+    content: normalizeNutritionPlan(local, overrides, flaggedTargets),
     source: "local-fallback",
   };
 }
 
 /**
  * Generate a workout plan via OpenRouter AI, with fallback to local.
+ *
+ * AI-PLAN-QUALITY 2026-10-24: validateWorkoutPlanAIOutput gates the parsed
+ * program — 3-8 days, every TRAINING day carrying 3-8 real exercises with
+ * bounded sets, rest days emptied. One repair retry; total failure falls
+ * back to the local generator (workflow never breaks for the coach).
  */
 export async function generateWorkoutPlanAI(
   ctx: ClientContext,
@@ -297,12 +400,12 @@ export async function generateWorkoutPlanAI(
   const name = ctx.name || "العميل";
   // Randomization seed for variety
   const seed = Math.floor(Math.random() * 1000000);
-  const prompt = `${buildWorkoutPrompt(ctx, name, overrides)}${buildVarietyBlock("workout", seed, ctx.recent_plan_names ?? [])}`;
+  const basePrompt = `${buildWorkoutPrompt(ctx, name, overrides)}${buildVarietyBlock("workout", seed, ctx.recent_plan_names ?? [])}`;
 
   try {
     // OpenRouter + Groq only (owner directive) — clamped ≤ 52s.
-    const { text, model, provider } = await callFreeAIFallbackChain(
-      prompt,
+    const { value, model, provider } = await callValidatedChain(
+      (repairNote) => basePrompt + repairNote,
       {
         tag: "plan:workout",
         systemPrompt: WORKOUT_SYSTEM_PROMPT,
@@ -314,12 +417,12 @@ export async function generateWorkoutPlanAI(
         // (was 26s — too tight for a multi-week program on slow models).
         maxModels: 4,
       },
+      (parsed) => validateWorkoutPlanAIOutput(parsed),
     );
-    const parsed = parseJSON<WorkoutPlanContent>(text);
-    if (parsed && parsed.days && parsed.days.length > 0) {
+    if (value.days.length > 0) {
       return {
         title: `برنامج تمارين - ${name}`,
-        content: normalizeWorkoutPlan(parsed),
+        content: normalizeWorkoutPlan({ days: value.days } as unknown as Record<string, unknown>),
         source: `${provider}:${model}`,
       };
     }
@@ -365,9 +468,23 @@ export async function regenerateMeal(
    *  foods, anonymized) built by evo-nutrition-knowledge.server.ts. */
   platformKnowledge?: string,
 ): Promise<{ meal: RegeneratedMeal; suggestions: Array<Record<string, unknown>>; source: string }> {
+  // AI-PLAN-QUALITY 2026-10-24: coerce the incoming meal's calories —
+  // legacy plans carry string numbers and the old sum produced garbage
+  // targets (0 + "300" = "0300") straight into the prompt.
+  const itemsNum = (meal.items || []).map((i) => ({
+    food: String(i?.food ?? ""),
+    amount: String(i?.amount ?? ""),
+    calories: Number(i?.calories) || 0,
+  }));
   const totalCals =
-    targetCalories ||
-    (meal.items || []).reduce((s, i) => s + (i.calories || 0), 0);
+    (targetCalories && Number(targetCalories) > 0 ? Math.round(Number(targetCalories)) : 0) ||
+    itemsNum.reduce((s, i) => s + i.calories, 0);
+  // Degenerate guard: a meal with no usable calorie anchor cannot be
+  // regenerated "to an equivalent" — fail honestly instead of prompting
+  // the model for a 0-calorie meal.
+  if (totalCals <= 0) {
+    throw new Error("لا يمكن إعادة توليد وجبة بلا سعرات مرجعية — حدّث سعرات الوجبة الحالية أولًا.");
+  }
 
   const avoidBlock =
     Array.isArray(avoidNames) && avoidNames.length > 0
@@ -386,7 +503,7 @@ ${JSON.stringify({ ...clientContext, name: undefined }, null, 2)}`
 }
 
 الوجبة الحالية (لاحظ تنوع الأصناف وابتعد عن التكرار):
-${JSON.stringify(meal, null, 2)}
+${JSON.stringify({ name: meal.name, items: itemsNum, notes: meal.notes }, null, 2)}
 
 ${coachNote ? `تعليمات الكوتش: ${coachNote}` : ""}
 
@@ -409,47 +526,83 @@ ${coachNote ? `تعليمات الكوتش: ${coachNote}` : ""}
  ]
 }
 
-تأكد أن مجموع سعرات أصناف الوجبة الرئيسية وكل اقتراح يساوي تقريباً ${totalCals}. استخدم أصناف عربية/مصرية متنوعة. لا تكرر نفس الأصناف الموجودة في الوجبة الحالية.`;
+قواعد إلزامية تُتحقق آليًا بوابة جودة المنصة قبل قبول نتيجتك — أي خرق يُرفض:
+- مجموع سعرات أصناف «meal.items» نفسها (وليس رقم total_calories المكتوب) لازم يقع ضمن ±20% من ${totalCals} سعرة.
+- 2 إلى 6 أصناف في الوجبة، وكل صنف بسعرات بين 5 و1500 وبكمية بالجرام.
+- استخدم أصناف عربية/مصرية متوفرة. لا تكرر نفس الأصناف الموجودة في الوجبة الحالية.`;
 
-  try {
-    // OpenRouter + Groq only — GHA budget allows richer output now.
-    const { text, model, provider } = await callFreeAIFallbackChain(
-      prompt,
-      {
-        tag: "plan:nutrition-alt",
-        systemPrompt: NUTRITION_SYSTEM_PROMPT,
-        temperature: 0.8,
-        maxTokens: 2600,
-        jsonMode: true,
-        timeoutMs: 60_000,
-        maxModels: 3,
-      },
-    );
-    const rawParsed = parseJSON<Record<string, unknown>>(text);
-    const parsed = (rawParsed ?? {}) as {
-      meal?: { items?: unknown[] };
-      suggestions?: unknown[];
-      items?: unknown[];
-    };
-    if ((parsed.meal?.items?.length ?? 0) > 0) {
-      return {
-        meal: parsed.meal as RegeneratedMeal,
-        suggestions: Array.isArray(parsed.suggestions)
-          ? (parsed.suggestions as Array<Record<string, unknown>>).slice(0, 3)
-          : [],
-        source: `${provider}:${model}`,
-      };
-    }
-    // Backward-compat shape (flat meal object without wrapper).
-    if (parsed.items && parsed.items.length > 0) {
-      return { meal: rawParsed as RegeneratedMeal, suggestions: [], source: `${provider}:${model}` };
-    }
-  } catch (e) {
-    console.error("[regenerate-meal] AI failed:", e instanceof Error ? e.message : e);
+  // AI-PLAN-QUALITY 2026-10-24: the result is GATED — items coerced +
+  // library-grounded, totals recomputed from items, and the meal must
+  // close within ±20% of totalCals (the demo planner's law, now the paid
+  // path's law). ONE repair retry names the exact rejection; a second
+  // failure THROWS so the caller keeps the original meal untouched —
+  // no unvalidated regeneration is ever returned, displayed, or saved.
+  const groundItem = await getGroundItemFn();
+  let rawParsedRef: Record<string, unknown> | null = null;
+  const { value, model, provider } = await callValidatedChain(
+    (repairNote) => prompt + repairNote,
+    {
+      tag: "plan:nutrition-alt",
+      systemPrompt: NUTRITION_SYSTEM_PROMPT,
+      temperature: 0.8,
+      maxTokens: 2600,
+      jsonMode: true,
+      timeoutMs: 60_000,
+      maxModels: 3,
+    },
+    (parsed) => {
+      rawParsedRef =
+        parsed && typeof parsed === "object"
+          ? (parsed as Record<string, unknown>)
+          : null;
+      return validateRegeneratedMeal(parsed, totalCals, groundItem);
+    },
+  );
+
+  // Suggestions ride the SAME parsed payload — best-effort normalization
+  // (coerce calories, recompute totals, drop unusable entries). They are
+  // display-level extras; the gated meal above is the contract.
+  const suggestions = normalizeSuggestions(rawParsedRef);
+
+  return {
+    meal: value as unknown as RegeneratedMeal,
+    suggestions,
+    source: `${provider}:${model}`,
+  };
+}
+
+/** AI-PLAN-QUALITY 2026-10-24: coerce + recompute the display-level
+ * `suggestions` array of a meal regeneration — every item's calories
+ * coerced to a finite number, totals recomputed from items, entries with
+ * no usable items dropped. Never throws. */
+function normalizeSuggestions(
+  rawParsed: Record<string, unknown> | null,
+): Array<Record<string, unknown>> {
+  if (!rawParsed) return [];
+  const list = Array.isArray(rawParsed.suggestions) ? rawParsed.suggestions : [];
+  const out: Array<Record<string, unknown>> = [];
+  for (const s of list.slice(0, 3)) {
+    const sug = (s && typeof s === "object" ? s : {}) as Record<string, unknown>;
+    const rawItems = Array.isArray(sug.items) ? sug.items : [];
+    const items = rawItems
+      .map((rawIt) => {
+        const it = (rawIt && typeof rawIt === "object" ? rawIt : {}) as Record<string, unknown>;
+        const food = typeof it.food === "string" ? it.food.trim().slice(0, 80) : "";
+        const amount = typeof it.amount === "string" ? it.amount.trim().slice(0, 80) : "";
+        const cals = Number(it.calories);
+        if (!food || !Number.isFinite(cals) || cals <= 0 || cals > 2000) return null;
+        return { food, amount, calories: Math.round(cals) };
+      })
+      .filter((v): v is { food: string; amount: string; calories: number } => v !== null);
+    if (items.length === 0) continue;
+    out.push({
+      name: typeof sug.name === "string" ? sug.name.trim().slice(0, 60) : "بديل",
+      items,
+      total_calories: items.reduce((s, i) => s + i.calories, 0),
+      why: typeof sug.why === "string" ? sug.why.trim().slice(0, 200) : "",
+    });
   }
-
-  // Fallback: return the original meal unchanged (the caller can show an error)
-  throw new Error("تعذّر إعادة توليد الوجبة. حاول مرة أخرى.");
+  return out;
 }
 
 /* ----------------- Deterministic calorie/macro computation ----------------- */
@@ -1079,25 +1232,37 @@ export function normalizeNutritionPlan(
   overrides?: PlanOverrides,
   targets?: NutritionTargets,
 ): NutritionPlanContent {
+  // AI-PLAN-QUALITY 2026-10-24: item numbers are COERCED (strings →
+  // numbers — the old `typeof number ? : 0` zeroed string calories)
+  // and meal totals are RECOMPUTED from the items — model-provided
+  // totals are never trusted (the demo planner's law, now this path's
+  // law too). When items carry NO protein at all, the model's meal-level
+  // estimate survives instead of a misleading 0.
   const meals = ((plan.meals as unknown[] | undefined) || []).map((rawMeal) => {
     const m = (rawMeal ?? {}) as Record<string, unknown>;
     const items = ((m.items as unknown[] | undefined) || []).map((rawItem) => {
       const it = (rawItem ?? {}) as Record<string, unknown>;
+      const calNum = Number(it.calories);
+      const protNum = Number(it.protein_g);
+      const carbNum = Number(it.carbs_g);
+      const fatNum = Number(it.fat_g);
       return {
         food: String(it.food || ""),
         amount: String(it.amount || ""),
-        calories: typeof it.calories === "number" ? it.calories : 0,
-        protein_g: it.protein_g as number | undefined,
+        calories: Number.isFinite(calNum) && calNum > 0 ? Math.round(calNum) : 0,
+        protein_g: Number.isFinite(protNum) && protNum > 0 ? Math.round(protNum * 10) / 10 : undefined,
+        carbs_g: Number.isFinite(carbNum) && carbNum > 0 ? Math.round(carbNum * 10) / 10 : undefined,
+        fat_g: Number.isFinite(fatNum) && fatNum > 0 ? Math.round(fatNum * 10) / 10 : undefined,
         alternatives: it.alternatives as string | undefined,
       };
     });
-    const total_calories =
-      typeof m.total_calories === "number"
-        ? m.total_calories
-        : items.reduce((s, i) => s + (i.calories || 0), 0);
-    const total_protein_g =
-      typeof m.total_protein_g === "number"
-        ? m.total_protein_g
+    const anyProtein = items.some((i) => typeof i.protein_g === "number");
+    const total_calories = items.reduce((s, i) => s + (i.calories || 0), 0);
+    const modelTotalProtein = Number(m.total_protein_g);
+    const total_protein_g = anyProtein
+      ? Math.round(items.reduce((s, i) => s + (i.protein_g || 0), 0) * 10) / 10
+      : Number.isFinite(modelTotalProtein) && modelTotalProtein > 0
+        ? Math.round(modelTotalProtein)
         : items.reduce((s, i) => s + (i.protein_g || 0), 0);
     // Owner directive #2: keep up to TWO structured whole-meal alternatives,
     // normalizing each alternative's totals exactly like top-level meals.
@@ -1107,20 +1272,18 @@ export function normalizeNutritionPlan(
           const altItems = Array.isArray(alt.items)
             ? (alt.items as unknown[]).slice(0, 12).map((rawIt) => {
                 const it = (rawIt ?? {}) as Record<string, unknown>;
+                const cals = Number(it.calories);
                 return {
                   food: String(it.food ?? ""),
                   amount: String(it.amount ?? ""),
-                  calories: typeof it.calories === "number" ? it.calories : 0,
+                  calories: Number.isFinite(cals) && cals > 0 ? Math.round(cals) : 0,
                 };
               })
             : [];
           return {
             name: String(alt.name || "بديل"),
             items: altItems,
-            total_calories:
-              typeof alt.total_calories === "number"
-                ? alt.total_calories
-                : altItems.reduce((s, i) => s + (i.calories || 0), 0),
+            total_calories: altItems.reduce((s, i) => s + i.calories, 0),
           };
         })
       : undefined;
@@ -1808,7 +1971,9 @@ export async function regenerateFoodItem(
   avoidNames: string[] = [],
   coachNote?: string,
 ): Promise<{ item: { food: string; amount: string; calories: number; alternatives?: string }; source: string }> {
-  const targetCals = Math.max(10, Math.round(item.calories || 0));
+  // AI-PLAN-QUALITY 2026-10-24: coerce the incoming calories — legacy
+  // items carry string numbers; the ±15% anchor must be a real number.
+  const targetCals = Math.max(10, Math.round(Number(item?.calories) || 0));
   const avoid =
     avoidNames.filter((n) => typeof n === "string" && n.trim().length > 1).slice(0, 40);
   const ctx = clientContext ? JSON.stringify({ ...clientContext, name: undefined }, null, 2) : "";
@@ -1821,9 +1986,9 @@ ${ctx ? `بيانات الشخص (راعِ الحساسية والأطعمة غ�
       ? `أصناف ممنوع اقتراحها (موجودة في باقي الخطة — ممنوع التكرار):\n${avoid.join("، ")}\n`
       : ""
   }${coachNote ? `تعليمات إضافية: ${coachNote}\n` : ""}
-قواعد إلزامية:
+قواعد إلزامية (تُتحقق آليًا بوابة جودة المنصة — أي خرق يُرفض ويُعاد الطلب):
 - البديل لنفس الدور الغذائي (بروتين↔بروتين، كارب↔كارب، دهون↔دهون، خضار↔خضار، فاكهة↔فاكهة، ألبان↔ألبان).
-- السعرات ${Math.round(targetCals * 0.85)}–${Math.round(targetCals * 1.15)} سعرة (±15%).
+- السعرات ${Math.round(targetCals * 0.85)}–${Math.round(targetCals * 1.15)} سعرة (±15%) — رقم صحيح موجب فقط.
 - كميات واقعية بالجرام/الوحدات بنفس أسلوب «${item.amount}».
 - اذكر بديل ثانٍ داخل حقل alternatives بنفس أسلوب «أو ...».
 - استخدم أصناف عربية/مصرية متوفرة.
@@ -1831,28 +1996,33 @@ ${ctx ? `بيانات الشخص (راعِ الحساسية والأطعمة غ�
 أعد JSON فقط (بدون أسوار markdown):
 { "food": "اسم الصنف البديل", "amount": "الكمية", "calories": ${targetCals}, "alternatives": "أو بديل ثانٍ بالكمية" }`;
 
-  const { text, model, provider } = await callFreeAIFallbackChain(prompt, {
-    tag: "plan:item-regen",
-    systemPrompt:
-      "أنت أخصائي تغذية. تعيد JSON صالحاً فقط — صنف واحد بديل مكافئ دون أي نص إضافي.",
-    temperature: 0.7,
-    maxTokens: 400,
-    jsonMode: true,
-    timeoutMs: 30_000,
-    maxModels: 3,
-  });
-  const parsed = parseJSON<Record<string, unknown>>(text);
-  const food = String(parsed?.food ?? "").trim();
-  if (!food) throw new Error("تعذّر إعادة توليد الصنف. حاول مرة أخرى.");
-  const cals = Number(parsed?.calories);
+  // AI-PLAN-QUALITY 2026-10-24: the replacement is GATED — valid name +
+  // amount and calories inside the promised ±15% band (library grounding
+  // may pull an inflated estimate back to the per-100g truth BEFORE the
+  // bound check). One repair retry; a second failure THROWS so the
+  // caller keeps the original item untouched.
+  const groundItem = await getGroundItemFn();
+  const { value, model, provider } = await callValidatedChain(
+    (repairNote) => prompt + repairNote,
+    {
+      tag: "plan:item-regen",
+      systemPrompt:
+        "أنت أخصائي تغذية. تعيد JSON صالحاً فقط — صنف واحد بديل مكافئ دون أي نص إضافي.",
+      temperature: 0.7,
+      maxTokens: 400,
+      jsonMode: true,
+      timeoutMs: 30_000,
+      maxModels: 3,
+    },
+    (parsed) => validateRegeneratedFoodItem(parsed, targetCals, groundItem),
+  );
+
   return {
     item: {
-      food,
-      amount: String(parsed?.amount ?? item.amount).trim() || item.amount,
-      calories: Number.isFinite(cals) && cals > 0 ? Math.round(cals) : targetCals,
-      alternatives: typeof parsed?.alternatives === "string" && parsed.alternatives.trim()
-        ? parsed.alternatives.trim().slice(0, 200)
-        : item.alternatives,
+      food: value.food,
+      amount: value.amount || item.amount,
+      calories: value.calories,
+      alternatives: value.alternatives ?? item.alternatives,
     },
     source: `${provider}:${model}`,
   };
@@ -1892,39 +2062,41 @@ ${avoid.length > 0 ? `تمارين باقي أيام الخطة (ممنوع تك
       ? `بيانات المتدرب: الهدف ${fitness.goal || "لياقة عامة"} • المستوى ${fitness.experience || "متوسط"} • المكان ${fitness.location || "جيم"}${fitness.injuries ? ` • إصابات: ${fitness.injuries}` : ""}\n`
       : ""
   }${isHome ? "⚠ المكان منزل — تمارين بوزن الجسم أو دمبل أو مقاومة فقط، بدون أجهزة جيم.\n" : ""}${coachNote ? `تعليمات إضافية: ${coachNote}\n` : ""}
-قواعد إلزامية:
+قواعد إلزامية (تُتحقق آليًا بوابة جودة المنصة — أي خرق يُرفض ويُعاد الطلب):
 - نفس يوم الأسبوع «${day.day}» ونفس التركيز العضلي «${day.focus}».
 - 4-6 تمارين مختلفة تماماً عن الحالية وعن باقي الأيام.
-- لكل تمرين: sets (رقم)، reps، rest، و notes نصيحة قصيرة بالعربية.
+- لكل تمرين: sets (رقم بين 1 و12)، reps، rest، و notes نصيحة قصيرة بالعربية.
 - استخدم أسماء تمارين إنجليزية مطابقة لمكتبتنا (Bench Press, Squat, Lat Pulldown, Dumbbell Row…) لتظهر صورها تلقائياً.
 
 أعد JSON فقط (بدون أسوار markdown):
 { "focus": "${day.focus}", "exercises": [ { "name": "Bench Press", "sets": 4, "reps": "6-8", "rest": "90 ثانية", "notes": "نصيحة بالعربية" } ] }`;
 
-  const { text, model, provider } = await callFreeAIFallbackChain(prompt, {
-    tag: "plan:day-regen",
-    systemPrompt:
-      "أنت مدرب لياقة محترف. تعيد JSON صالحاً فقط — يوم تدريبي واحد بدون أي نص إضافي.",
-    temperature: 0.7,
-    maxTokens: 1200,
-    jsonMode: true,
-    timeoutMs: 45_000,
-    maxModels: 3,
-  });
-  const parsed = parseJSON<Record<string, unknown>>(text);
-  const exercises = Array.isArray(parsed?.exercises) ? parsed.exercises : [];
-  if (exercises.length === 0) throw new Error("تعذّر إعادة توليد اليوم. حاول مرة أخرى.");
+  // AI-PLAN-QUALITY 2026-10-24: the day is GATED — 3-8 exercises, every
+  // one with a real name and bounded sets. One repair retry; a second
+  // failure THROWS so the caller keeps the original day untouched.
+  const { value, model, provider } = await callValidatedChain(
+    (repairNote) => prompt + repairNote,
+    {
+      tag: "plan:day-regen",
+      systemPrompt:
+        "أنت مدرب لياقة محترف. تعيد JSON صالحاً فقط — يوم تدريبي واحد بدون أي نص إضافي.",
+      temperature: 0.7,
+      maxTokens: 1200,
+      jsonMode: true,
+      timeoutMs: 45_000,
+      maxModels: 3,
+    },
+    (parsed) => validateRegeneratedWorkoutDay(parsed, { day: day.day, focus: day.focus }),
+  );
 
-  const shaped = (exercises as unknown[]).slice(0, 8).map((rawEx) => {
-    const ex = (rawEx ?? {}) as Record<string, unknown>;
-    const name = String((ex as Record<string, unknown>)?.name ?? "");
-    const matched = findExerciseInLibrary(name);
+  const shaped = value.exercises.map((ex) => {
+    const matched = findExerciseInLibrary(ex.name);
     return {
-      name: matched ? matched.nameEn : name,
-      sets: typeof ex?.sets === "number" ? ex.sets : parseInt(String(ex?.sets ?? "")) || 3,
-      reps: String(ex?.reps ?? "10-12"),
-      rest: String(ex?.rest ?? "90 ثانية"),
-      notes: String(ex?.notes ?? ""),
+      name: matched ? matched.nameEn : ex.name,
+      sets: ex.sets,
+      reps: ex.reps,
+      rest: ex.rest,
+      notes: ex.notes,
       image: matched ? getExerciseImageFromLibrary(matched) : undefined,
       exerciseSlug: matched ? matched.slug : undefined,
     };
@@ -1932,8 +2104,8 @@ ${avoid.length > 0 ? `تمارين باقي أيام الخطة (ممنوع تك
 
   return {
     day: {
-      day: day.day,
-      focus: String(parsed?.focus ?? day.focus).slice(0, 120) || day.focus,
+      day: value.day,
+      focus: value.focus,
       isRest: false,
       exercises: shaped,
     },

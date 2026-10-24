@@ -1402,6 +1402,24 @@ export function CoachClientView({ clientId }: { clientId: string }) {
  plan={viewingPlan}
  onClose={() => setViewingPlan(null)}
  onRegenerate={() => handleRegeneratePlan(viewingPlan)}
+ // AI-PLAN-QUALITY 2026-10-24: the SAME context the full-plan generator
+ // uses (questionnaires + measurements + recent-plan names) now rides
+ // every in-editor regeneration — meal/item/day/exercise swaps stopped
+ // running blind to allergies, diet, goal, location and injuries.
+ regenContext={{
+ clientContext: {
+ name: client?.full_name || "العميل",
+ nutrition: nutriQ?.data || null,
+ fitness: fitQ?.data || null,
+ recent_measurements: progress.slice(-3).map((p) => ({
+ weight: p.weight,
+ waist: p.waist,
+ date: p.created_at,
+ })),
+ recent_plan_names: buildRecentPlanNames(),
+ },
+ location: String((fitQ?.data as { location?: unknown } | null)?.location ?? "") || undefined,
+ }}
  />
  )}
  </div>
@@ -1635,7 +1653,7 @@ function QuestionnaireCard({
 }
 
 
-function PlanViewerModal({ plan, onClose, onRegenerate }: { plan: Plan; onClose: () => void; onRegenerate?: () => void }) {
+function PlanViewerModal({ plan, onClose, onRegenerate, regenContext }: { plan: Plan; onClose: () => void; onRegenerate?: () => void; regenContext?: { clientContext: Record<string, unknown>; location?: string } }) {
  const { t, lang } = useI18n();
  // STAGE-254: bilingual toasts — the modal is fully bilingual already, the
  // toasts were the only Arabic-only stragglers in it.
@@ -1663,8 +1681,14 @@ function PlanViewerModal({ plan, onClose, onRegenerate }: { plan: Plan; onClose:
  try {
  // Swaps run on the GitHub Actions queue; the sanitized payload
  // carries name/sets/reps/rest/focus only.
+ // AI-PLAN-QUALITY 2026-10-24: the regeneration now carries the
+ // client's context + training location — the substitution engine's
+ // injury/equipment filters key on them (blind swaps produced gym
+ // machines for home clients and injury-unsafe picks).
  const { result } = await runAiJob("exercise_regenerate", {
  exercise: { name: ex.name, sets: ex.sets, reps: ex.reps, rest: ex.rest, focus },
+ location: regenContext?.location,
+ clientContext: regenContext?.clientContext,
  });
  // Job results are job-type-specific JSON — narrow to the exercise contract the engine honors.
  const rep = (result.replacement ?? null) as WorkoutPlanContent["days"][number]["exercises"][number] | null;
@@ -1979,15 +2003,35 @@ function PlanViewerModal({ plan, onClose, onRegenerate }: { plan: Plan; onClose:
  const meal = content.meals[mealIdx];
  // OWNER DIRECTIVE 2026-08-27: meal regeneration is a queued AI job
  // (GitHub Actions worker) returning the replacement + 3 suggestions.
+ // AI-PLAN-QUALITY 2026-10-24: the request now carries the client's
+ // CONTEXT (allergies/goal/diet via the questionnaire data) and the
+ // other meals' foods as the avoid-list — regeneration used to run
+ // BLIND and could serve foods the client is allergic to.
+ const avoidNames: string[] = (content.meals || [])
+ .flatMap((m, i) =>
+ i === mealIdx
+ ? []
+ : [String(m?.name || ""), ...((m?.items || []).map((it) => String(it?.food || "")))],
+ )
+ .filter((n) => n.trim().length > 1)
+ .slice(0, 40);
  const { result } = await runAiJob("meal_regenerate", {
  meal,
  targetCalories:
- meal.total_calories ||
- (meal.items || []).reduce((s, i) => s + (i.calories || 0), 0),
+ (typeof meal.total_calories === "number" && meal.total_calories > 0
+ ? meal.total_calories
+ : (meal.items || []).reduce((s, i) => s + (Number(i?.calories) || 0), 0)) || undefined,
+ clientContext: regenContext?.clientContext,
+ avoid_names: avoidNames,
  });
  // Job results are job-type-specific JSON — the engine’s "done" result always carries
  // a replacement meal with this exact shape (same runtime semantics as before).
+ // The server gate already validated + coerced it; the double-check below
+ // keeps a defensive floor against any legacy/drifted payload.
  const newMeal = result.replacement as NutritionPlanContent["meals"][number];
+ if (!newMeal || !Array.isArray(newMeal.items) || newMeal.items.length === 0) {
+ throw new Error(isAr ? "نتيجة إعادة التوليد غير صالحة — لم تُطبّق" : "The regeneration result is invalid — not applied");
+ }
  const newContent: NutritionPlanContent = JSON.parse(JSON.stringify(content));
  newContent.meals[mealIdx] = { ...newMeal };
 
@@ -2071,6 +2115,9 @@ function PlanViewerModal({ plan, onClose, onRegenerate }: { plan: Plan; onClose:
  item: { food: item.food, amount: item.amount, calories: item.calories, alternatives: item.alternatives },
  meal_name: meal.name,
  avoid_names: avoidNames.slice(0, 40),
+ // AI-PLAN-QUALITY 2026-10-24: same context law as the meal swap —
+ // the ±15% single-item replacement must respect allergies/diet.
+ clientContext: regenContext?.clientContext,
  });
  // Job results are job-type-specific JSON — narrow to the item contract the engine honors.
  const rep = (result.replacement ?? null) as NutritionPlanContent["meals"][number]["items"][number] | null;
@@ -2080,7 +2127,12 @@ function PlanViewerModal({ plan, onClose, onRegenerate }: { plan: Plan; onClose:
  newContent.meals[mealIdx] = { ...newContent.meals[mealIdx] };
  newContent.meals[mealIdx].items = [...newContent.meals[mealIdx].items];
  newContent.meals[mealIdx].items[itemIdx] = { ...newContent.meals[mealIdx].items[itemIdx], ...rep };
- recomputeTotals(newContent);
+ // AI-PLAN-QUALITY 2026-10-24 (ROOT BUG): the old call DISCARDED the
+ // recomputed copy — `recomputeTotals(newContent)` returns a NEW object
+ // and its return value was thrown away, so meal/plan totals stayed
+ // STALE in the editor after every AI item swap (and the stale numbers
+ // were what got SAVED). The recomputed copy is the content now.
+ const recomputed = recomputeTotals(newContent);
  // PLAN-EDIT-2026-10-24: the AI's replacement is NOT the coach's picked
  // library row — drop this item's binding so a later gram edit can't
  // recompute from the OLD food's per-100g numbers.
@@ -2089,7 +2141,7 @@ function PlanViewerModal({ plan, onClose, onRegenerate }: { plan: Plan; onClose:
   delete next[`${mealIdx}:${itemIdx}`];
   return next;
  });
- setContent(newContent);
+ setContent(recomputed);
  toast.success(isAr ? "تم استبدال الصنف ✅ — اضغط \"حفظ\" لتثبيت التعديل." : "Item replaced ✅ — press \"Save\" to apply the change.");
  } catch (e) {
  toast.error((e instanceof Error ? e.message : "") || (isAr ? "فشل استبدال الصنف" : "Failed to replace the item"));
@@ -2116,6 +2168,9 @@ function PlanViewerModal({ plan, onClose, onRegenerate }: { plan: Plan; onClose:
  const { result } = await runAiJob("day_regenerate", {
  day: { day: d.day, focus: d.focus, exercises: d.exercises || [] },
  avoid_names: avoidNames.slice(0, 60),
+ // AI-PLAN-QUALITY 2026-10-24: same context law — home/gym equipment
+ // + injuries + experience drive the day's exercise selection.
+ clientContext: regenContext?.clientContext,
  });
  // Job results are job-type-specific JSON — narrow to the day contract the engine honors.
  const rep = (result.replacement ?? null) as WorkoutPlanContent["days"][number] | null;
@@ -2139,8 +2194,9 @@ function PlanViewerModal({ plan, onClose, onRegenerate }: { plan: Plan; onClose:
  newContent.meals = [...newContent.meals];
  newContent.meals[mealIdx] = { ...newContent.meals[mealIdx] };
  newContent.meals[mealIdx].items = [...newContent.meals[mealIdx].items, { food: "", amount: "", calories: 0 }];
- recomputeTotals(newContent);
- setContent(newContent);
+ // AI-PLAN-QUALITY 2026-10-24: same discarded-return bug class — the
+ // recomputed totals copy is the content that renders and saves.
+ setContent(recomputeTotals(newContent));
  };
 
  // Remove meal item
@@ -2150,7 +2206,8 @@ function PlanViewerModal({ plan, onClose, onRegenerate }: { plan: Plan; onClose:
  newContent.meals = [...newContent.meals];
  newContent.meals[mealIdx] = { ...newContent.meals[mealIdx] };
  newContent.meals[mealIdx].items = newContent.meals[mealIdx].items.filter((_, i) => i !== itemIdx);
- recomputeTotals(newContent);
+ // AI-PLAN-QUALITY 2026-10-24: same discarded-return bug class.
+ const recomputed = recomputeTotals(newContent);
  // PLAN-EDIT-2026-10-24: bindings are index-keyed — dropping an item
  // shifts the later indices of the SAME meal; re-key them so a binding
  // can never end up pointing at the wrong item's food.
@@ -2169,7 +2226,7 @@ function PlanViewerModal({ plan, onClose, onRegenerate }: { plan: Plan; onClose:
   }
   return next;
  });
- setContent(newContent);
+ setContent(recomputed);
  };
 
  // Add exercise

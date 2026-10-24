@@ -192,3 +192,55 @@ describe("recomputeNutritionTotals — the item→meal→plan chain", () => {
   expect(next.meals_total_calories).toBe(0);
  });
 });
+
+/* ── AI-PLAN-QUALITY 2026-10-24 — string-poisoning immunity ──
+ * Model/legacy items carrying STRING numbers ("230") used to turn every
+ * sum into string concatenation ("0230…") — displayed AND persisted.
+ * recomputeNutritionTotals now coerces every numeric field first. */
+
+describe("recomputeNutritionTotals — AI string-number immunity (AI-PLAN-QUALITY)", () => {
+ it("string calories/protein/macros are coerced, sums stay numbers", () => {
+  const poisoned: NutritionPlanContent = {
+   overview: "",
+   daily_calories: 0,
+   macros: { protein_g: 0, carbs_g: 0, fat_g: 0 },
+   meals: [
+    {
+     name: "وجبة",
+     items: [
+      { food: "شوفان", amount: "60 جم", calories: "220" as unknown as number, protein_g: "8" as unknown as number, carbs_g: "30" as unknown as number, fat_g: "4" as unknown as number },
+      { food: "موزة", amount: "1", calories: "100" as unknown as number },
+     ],
+    },
+   ],
+  };
+  const next = recomputeNutritionTotals(poisoned);
+  expect(next.meals[0].total_calories).toBe(320);
+  expect(typeof next.meals[0].total_calories).toBe("number");
+  expect(next.daily_calories).toBe(320);
+  expect(next.meals_total_calories).toBe(320);
+  expect(next.macros.protein_g).toBe(8);
+  expect(next.macros.carbs_g).toBe(30);
+  expect(next.macros.fat_g).toBe(4);
+  expect(next.macros.protein_cal).toBe(32);
+  expect(next.macros.fat_cal).toBe(36);
+ });
+
+ it("stale string meal totals are recomputed from items, not concatenated", () => {
+  const legacy: NutritionPlanContent = {
+   overview: "",
+   daily_calories: 0,
+   macros: { protein_g: 0, carbs_g: 0, fat_g: 0 },
+   meals: [
+    {
+     name: "وجبة",
+     items: [{ food: "أرز", amount: "200 جم", calories: 260 }],
+     total_calories: "0260" as unknown as number,
+    },
+   ],
+  };
+  const next = recomputeNutritionTotals(legacy);
+  expect(next.meals[0].total_calories).toBe(260);
+  expect(next.daily_calories).toBe(260);
+ });
+});

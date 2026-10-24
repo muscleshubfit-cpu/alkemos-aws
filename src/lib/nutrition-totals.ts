@@ -9,6 +9,11 @@
  * component (the old inline copies drifted from meals_total_calories and
  * left the NOTIF→PLAN «اتساق الوجبات» banner stale after edits).
  *
+ * AI-PLAN-QUALITY 2026-10-24: every numeric field is COERCED through
+ * numOr before any arithmetic — AI/legacy items carrying STRING numbers
+ * ("230") used to poison the sums (0 + "230" = "0230" garbage that was
+ * displayed AND persisted). Totals are now always finite numbers.
+ *
  * BUNDLE LAW: type-only import from the server generator (erased at
  * build — the Phase-183 law: no runtime value may come from there).
  */
@@ -28,6 +33,12 @@ export type BoundFood = {
   name: string;
   per100g: Per100g;
 };
+
+/** Coerce an item/macros field to a finite number (strings → numbers). */
+function numOr(v: unknown): number {
+  const n = typeof v === "number" ? v : parseFloat(String(v ?? ""));
+  return Number.isFinite(n) && n > 0 ? n : 0;
+}
 
 /**
  * Parse a gram quantity out of a free-text amount.
@@ -100,23 +111,23 @@ export function recomputeNutritionTotals(
 
   for (const meal of next.meals ?? []) {
     const items = meal.items ?? [];
-    meal.total_calories = items.reduce((s, it) => s + (it.calories || 0), 0);
-    meal.total_protein_g = items.reduce((s, it) => s + (it.protein_g || 0), 0);
-    meal.total_carbs_g = items.reduce((s, it) => s + (it.carbs_g || 0), 0);
-    meal.total_fat_g = items.reduce((s, it) => s + (it.fat_g || 0), 0);
+    meal.total_calories = items.reduce((s, it) => s + numOr(it.calories), 0);
+    meal.total_protein_g = items.reduce((s, it) => s + numOr(it.protein_g), 0);
+    meal.total_carbs_g = items.reduce((s, it) => s + numOr(it.carbs_g), 0);
+    meal.total_fat_g = items.reduce((s, it) => s + numOr(it.fat_g), 0);
   }
 
   const meals = next.meals ?? [];
   const sum = (pick: (m: NutritionPlanContent["meals"][number]) => number) =>
     meals.reduce((s, m) => s + pick(m), 0);
 
-  next.daily_calories = sum((m) => m.total_calories || 0);
+  next.daily_calories = sum((m) => numOr(m.total_calories));
   next.meals_total_calories = next.daily_calories;
 
   if (next.macros) {
-    next.macros.protein_g = sum((m) => m.total_protein_g || 0);
-    next.macros.carbs_g = sum((m) => m.total_carbs_g || 0);
-    next.macros.fat_g = sum((m) => m.total_fat_g || 0);
+    next.macros.protein_g = sum((m) => numOr(m.total_protein_g));
+    next.macros.carbs_g = sum((m) => numOr(m.total_carbs_g));
+    next.macros.fat_g = sum((m) => numOr(m.total_fat_g));
     next.macros.protein_cal = next.macros.protein_g * 4;
     next.macros.carbs_cal = next.macros.carbs_g * 4;
     next.macros.fat_cal = next.macros.fat_g * 9;

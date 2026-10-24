@@ -153,7 +153,22 @@ ledger-based — `src/lib/refund.ts`).
   AI's food selection (`src/lib/diet-types.ts` is the zero-dependency
   contract shared by the UI and the job pipeline). Missing basic data or
   extreme results stamp `needs_review` flags that render as a review banner
-  in the coach viewer — the plan stays a draft until the coach approves it
+  in the coach viewer — the plan stays a draft until the coach approves it.
+  **Output quality is GATED, not hoped for (2026-10-24):** every AI payload —
+  full plans AND every regeneration level (meal / food item / workout day /
+  exercise) — passes a mandatory validator before it is returned, displayed,
+  or saved: the day must close within ±25% of the server target, a
+  regenerated meal within ±20% of its own calories, a swapped item within
+  ±15%, items carry bounded REAL numbers (string numbers are coerced), meal
+  totals are recomputed from the items (model-claimed totals are never
+  trusted), and calorie estimates that deviate >35% from the food library's
+  per-100g × grams truth are REPLACED by it. A rejected payload gets ONE
+  repair retry whose prompt names the exact reason; a second rejection falls
+  back to the local rule-based generator with a visible review flag (full
+  plans) or throws honestly so the original element stays untouched
+  (regenerations). Regenerations also carry the client's own context
+  (allergies, diet, goal, injuries, training location), and the member's
+  weekly swap quota is burned only when a swap actually SUCCEEDS
 - **Plan editor (2026-10-24)** — the coach's plan modal header WRAPS on
   phones (the measured root of the clipped screen + unreachable
   تعديل/توليد buttons was an unwrappable `shrink-0` action cluster:
@@ -291,7 +306,11 @@ strongest-model chains, a `Promise.any` race mode for fast swaps, and SSE
 streaming for chat. Every sequential path is budget-clamped so
 `maxModels × timeoutMs` never exceeds ~52s (the serverless limit), and
 long-running generation (the blog pipeline, queued AI jobs) runs on GitHub
-Actions runners instead of serverless functions.
+Actions runners instead of serverless functions. Gemini leads both chains
+when its key is configured. Plan generation and regeneration outputs pass a
+mandatory quality gate (`src/lib/plan-ai-validation.ts`) with food-library
+grounding (`src/lib/plan-food-grounding.ts`) — a provider answering 200 is
+not evidence of quality.
 
 ### Automated content pipeline
 The bilingual blog is generated end-to-end — research → outline → article →

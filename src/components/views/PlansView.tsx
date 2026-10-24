@@ -15,6 +15,7 @@ import type { NutritionPlanContent, WorkoutPlanContent } from "@/lib/plan-genera
 import type { AiJobRow } from "@/lib/ai-jobs";
 import type { Plan, Json } from "@/lib/supabase/types";
 import { enqueueAiJobClient, getAiJob } from "@/lib/ai-jobs-client";
+import { applyMemberSwapToContent } from "@/lib/member-swap-apply";
 import { resolveExerciseImage, getExerciseImage, getExerciseImages, getFallbackSVG } from "@/lib/exercise-images";
 import { useExerciseLookup } from "@/lib/exercise-lookup";
 import { ImageWithFallback } from "@/components/ui/image-with-fallback";
@@ -160,31 +161,32 @@ export function PlansView() {
  }, []);
 
  /** Applies a finished job's replacement to local plan state AND persists
- * it (PHASE 69 — previously local-only: a reload reverted the swap). */
+ * it (PHASE 69 — previously local-only: a reload reverted the swap).
+ * AI-PLAN-QUALITY 2026-10-24: the replacement is VALIDATED first (shape
+ * + coerced numbers) and MEAL swaps recompute the whole plan's totals —
+ * the old code spliced the raw payload unvalidated and left the calorie
+ * card showing the previous meal's numbers, or corrupted the row when
+ * the payload was shapeless. An invalid result is NEVER applied nor
+ * persisted — the member sees exactly why instead of a broken plan. */
  const applySwapToPlans = useCallback(
  (entry: PendingSwap, replacement: unknown) => {
- // Dynamic JSON mutation on parsed plan content — kept honest with
- // explicit narrow views instead of `any`.
- const mutate = (content: Json | null): Json => {
- const base = content && typeof content === "object" && !Array.isArray(content) ? content : {};
- if (entry.kind === "meal") {
- const meals = [...(((content as { meals?: unknown[] } | null)?.meals || []))];
- if (meals[entry.i1] !== undefined) meals[entry.i1] = replacement;
- return { ...base, meals } as Json;
- }
- const days = [...(((content as { days?: unknown[] } | null)?.days || []))];
- type DayView = { exercises?: unknown[]; [k: string]: unknown };
- const day = { ...((days[entry.i1] as DayView | undefined) || {}) };
- day.exercises = [...(day.exercises || [])];
- if (day.exercises[entry.i2!] !== undefined) day.exercises[entry.i2!] = replacement;
- days[entry.i1] = day;
- return { ...base, days } as Json;
- };
  // Compute the new content ONCE from the latest snapshot (plansRef is
  // render-synced) so the persisted payload always matches the UI.
  const target = plansRef.current.find((p) => p.id === entry.planId);
  if (!target) return;
- const newContent = mutate((target.content ?? null) as Json | null);
+ const applied = applyMemberSwapToContent(
+ (target.content ?? null) as unknown,
+ entry.kind,
+ entry.i1,
+ entry.i2,
+ replacement,
+ );
+ if (!applied.ok) {
+ console.warn("[PlansView] swap result rejected by the apply gate:", applied.error);
+ toast.error(applied.error);
+ return;
+ }
+ const newContent = applied.content as Json;
  setPlans((prev) => prev.map((p) => (p.id === entry.planId ? { ...p, content: newContent } : p)));
  setActive((prevActive) =>
  prevActive && prevActive.id === entry.planId
@@ -299,6 +301,13 @@ export function PlansView() {
  const planContent = asPlanContent(plan?.content);
  if (!planContent || !("meals" in planContent) || !planContent.meals[mealIndex]) throw new Error("Meal not found");
  const mealItem = planContent.meals[mealIndex];
+ // AI-PLAN-QUALITY 2026-10-24: the meal's CURRENT calorie anchor rides the
+ // payload explicitly (coerced — legacy string totals must not reach the
+ // server gate as garbage); the server's ±20% regeneration law keys on it.
+ const mealTargetCals =
+ (typeof mealItem.total_calories === "number" && mealItem.total_calories > 0
+ ? mealItem.total_calories
+ : (mealItem.items || []).reduce((s, i) => s + (Number(i?.calories) || 0), 0)) || undefined;
  // PHASE 62 VARIETY: pass the OTHER meals' item names from the same plan
  // so the regenerated meal doesn't duplicate them (allergies/dislikes in
  // the questionnaire aren't available client-side here, but the queue
@@ -315,6 +324,7 @@ export function PlansView() {
  // click only enqueues the job (tier limit is enforced server-side now).
  const jobId = await enqueueAiJobClient("meal_regenerate", {
  meal: mealItem,
+ targetCalories: mealTargetCals,
  clientContext: { name: profile?.full_name },
  avoid_names: avoidNames,
  });

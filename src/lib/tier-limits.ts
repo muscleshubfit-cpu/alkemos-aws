@@ -589,6 +589,62 @@ export async function checkAndRecordSwap(
 }
 
 /**
+ * AI-PLAN-QUALITY 2026-10-24 (owner order item 4 — «تحديث الحصص المدفوعة
+ * بصورة صحيحة»): CHECK-ONLY quota gate for the member swap enqueue. The
+ * paid weekly swap quota is now recorded ONLY when the regeneration job
+ * actually SUCCEEDS (the runner calls recordSwapUsage after finishJob) —
+ * the old record-at-enqueue burned a paid unit for every permanently
+ * FAILED regeneration. Semantics mirror the Phase-183 unified plan pool
+ * (success-only via ai_plan_usage) — the owner's own established law.
+ * The soft-limit race window (count + no insert) keeps the documented
+ * 1-off overage parity of the old check+insert pair.
+ */
+export async function checkSwapQuota(
+  userId: string,
+  swapType: "meal" | "exercise",
+  tierHint?: string | null,
+  staffHint?: boolean,
+): Promise<{
+  allowed: boolean;
+  used: number;
+  limit: number | null;
+  unlimited: boolean;
+}> {
+  if (staffHint) {
+    return { allowed: true, used: 0, limit: null, unlimited: true };
+  }
+  const tier = sanitizeTier(tierHint) ?? (await resolveTierFromDb(userId));
+  const limit = swapLimitForTier(tier);
+
+  if (limit === null) {
+    return { allowed: true, used: 0, limit: null, unlimited: true };
+  }
+  if (limit === 0) {
+    return { allowed: false, used: 0, limit: 0, unlimited: false };
+  }
+  const used = await countThisWeekSwaps(userId, swapType);
+  return {
+    allowed: used < limit,
+    used,
+    limit,
+    unlimited: false,
+  };
+}
+
+/**
+ * Record a SUCCESSFUL swap in the plan_swaps table — called by the GHA
+ * runner after a meal_regenerate / exercise_regenerate job lands `done`
+ * (AI-PLAN-QUALITY 2026-10-24: success-only quota law). Fail-soft by
+ * inheritance (recordSwap swallows its own errors).
+ */
+export async function recordSwapUsage(
+  userId: string,
+  swapType: "meal" | "exercise",
+): Promise<void> {
+  await recordSwap(userId, swapType);
+}
+
+/**
  * Record a swap in the plan_swaps table.
  */
 async function recordSwap(

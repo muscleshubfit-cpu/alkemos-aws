@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireUser, requireCoach, authRequired } from "@/lib/auth-server";
-import { checkAndRecordSwap, checkUnifiedPlanQuota } from "@/lib/tier-limits";
+import { checkSwapQuota, checkUnifiedPlanQuota } from "@/lib/tier-limits";
 import {
   isAiJobType,
   JOB_GATE,
@@ -111,11 +111,14 @@ export async function POST(request: NextRequest) {
       // (success-only, ai_plan_usage — see the check further below).
     } else {
       // user_swap_meal | user_swap_exercise → enforce C16 weekly tier limit.
-      // Record-at-enqueue mirrors the previous swap system exactly: quota
-      // is consumed once the request is accepted (documented parity).
+      // AI-PLAN-QUALITY 2026-10-24: the gate is CHECK-ONLY here — the paid
+      // unit is recorded by the runner when the job lands `done`
+      // (success-only law, mirroring the Phase-183 unified plan pool);
+      // a permanently FAILED regeneration no longer burns the member's
+      // weekly swap quota. The 429 shape and messages are unchanged.
       if (userId) {
         const swapType = gate === "user_swap_meal" ? "meal" : "exercise";
-        const limitCheck = await checkAndRecordSwap(userId, swapType, authTier);
+        const limitCheck = await checkSwapQuota(userId, swapType, authTier, Boolean(authRole && authRole !== "client"));
         if (!limitCheck.allowed) {
           const limitText =
             limitCheck.limit === 0

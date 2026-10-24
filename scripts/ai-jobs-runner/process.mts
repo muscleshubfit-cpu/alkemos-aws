@@ -72,6 +72,25 @@ async function main(): Promise<void> {
   let failed = 0;
   const failedLabels: string[] = [];
 
+  // AI-PLAN-QUALITY 2026-10-24 (owner order item 4 — «تحديث الحصص المدفوعة
+  // بصورة صحيحة»): the member swap quota is recorded HERE, when a
+  // meal_regenerate / exercise_regenerate job actually lands `done`.
+  // The enqueue gate is check-only now — a permanently failed
+  // regeneration no longer burns the member's paid weekly swap.
+  // Fail-soft: a ledger hiccup NEVER fails the finished job.
+  const recordSwapOnSuccess = async (job: { job_type: string; requested_by?: string | null }): Promise<void> => {
+    try {
+      if (job.job_type !== "meal_regenerate" && job.job_type !== "exercise_regenerate") return;
+      const userId = String(job.requested_by || "");
+      if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userId)) return;
+      const { recordSwapUsage } = await import("../../src/lib/tier-limits");
+      await recordSwapUsage(userId, job.job_type === "meal_regenerate" ? "meal" : "exercise");
+      console.log(`[ai-jobs] usage recorded: ${job.job_type} → plan_swaps(${userId.slice(0, 8)}…)`);
+    } catch (e) {
+      console.warn("[ai-jobs] swap usage recording failed (job stays done):", e instanceof Error ? e.message : e);
+    }
+  };
+
   // Loop in batches until queue empty / cap reached / wall-clock out.
   while (Date.now() < RUN_DEADLINE_MS && done + failed < MAX_JOBS_PER_RUN) {
     const batch = await claimQueuedJobs(Math.min(3, MAX_JOBS_PER_RUN - done - failed));
@@ -86,6 +105,7 @@ async function main(): Promise<void> {
         if (!processor) throw new Error(`no processor registered for ${job.job_type}`);
         const result = await processor(job.payload ?? {});
         await finishJob(job.id, result);
+        await recordSwapOnSuccess(job);
         done++;
         console.log(`[ai-jobs] ✓ ${label} done in ${Math.round((Date.now() - startedAt) / 1000)}s`);
         console.log(`::notice::AI job ${job.job_type} completed`);
