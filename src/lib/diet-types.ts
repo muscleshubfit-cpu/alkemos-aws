@@ -42,3 +42,48 @@ export function classifyDietText(raw: unknown): DietType {
   if (/vegetarian|veg\b|نباتي/.test(s)) return "vegetarian";
   return "balanced";
 }
+
+/**
+ * PLAN-REGEN-CONSTRAINTS 2026-10-24 (owner order item 1 — the measured
+ * keto-loss bug): resolve the diet type a SAVED plan was generated under,
+ * so every regeneration path (whole plan / target change / meal / item)
+ * can re-impose the SAME diet instead of silently falling back to the
+ * questionnaire's free-text classification.
+ *
+ * Sources tried in order (the generation echo first, the questionnaire
+ * classification last):
+ *   1. An explicit enum already stored on the content (diet_type as the
+ *      enum key — future-proof).
+ *   2. The generation echo label in data_analysis.diet_type — the EXACT
+ *      DIET_TYPE_LABELS_AR round-trip, then classifyDietText on the label
+ *      itself (robust to legacy/coach-pasted plans whose echo was written
+ *      by the model or carries extra wording like «كيتو (Keto)»).
+ *   3. The questionnaire's diet answer (classifyDietText) — the previous
+ *      behavior, kept as the last resort.
+ *
+ * Returns null when NOTHING resolves (the caller then deliberately
+ * passes no diet constraint — never invents one).
+ */
+export function resolvePlanDietType(
+  content: { data_analysis?: { diet_type?: unknown }; diet_type?: unknown } | null | undefined,
+  questionnaireDiet?: unknown,
+): DietType | null {
+  if (!content) return null;
+  const asEnum = String(content.diet_type ?? "").trim().toLowerCase();
+  if ((DIET_TYPES as readonly string[]).includes(asEnum)) return asEnum as DietType;
+  const echo = String(content.data_analysis?.diet_type ?? "").trim();
+  if (echo) {
+    const exact = (Object.keys(DIET_TYPE_LABELS_AR) as DietType[]).find(
+      (k) => DIET_TYPE_LABELS_AR[k] === echo,
+    );
+    if (exact) return exact;
+    const classified = classifyDietText(echo);
+    if (classified !== "balanced") return classified;
+    // An exact "balanced" echo resolves to balanced itself.
+    if (echo === DIET_TYPE_LABELS_AR.balanced) return "balanced";
+  }
+  if (questionnaireDiet !== undefined && questionnaireDiet !== null && String(questionnaireDiet).trim() !== "") {
+    return classifyDietText(questionnaireDiet);
+  }
+  return null;
+}

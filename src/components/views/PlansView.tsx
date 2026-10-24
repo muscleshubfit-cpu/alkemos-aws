@@ -15,6 +15,13 @@ import type { NutritionPlanContent, WorkoutPlanContent } from "@/lib/plan-genera
 import type { AiJobRow } from "@/lib/ai-jobs";
 import type { Plan, Json } from "@/lib/supabase/types";
 import { displayCalories } from "@/lib/nutrition-totals";
+// PLAN-REGEN-CONSTRAINTS 2026-10-24: the member swap carries the OWNING
+// plan's committed diet (resolved from the plan content itself — the echo
+// label written at generation) plus the member's own questionnaire answers
+// (allergies/disliked/diet) so the replacement respects the same
+// constraints the coach-side swaps respect.
+import { resolvePlanDietType } from "@/lib/diet-types";
+import { getQuestionnaire } from "@/lib/data";
 import { enqueueAiJobClient, getAiJob } from "@/lib/ai-jobs-client";
 import { applyMemberSwapToContent } from "@/lib/member-swap-apply";
 import { resolveExerciseImage, getExerciseImage, getExerciseImages, getFallbackSVG } from "@/lib/exercise-images";
@@ -330,11 +337,24 @@ export function PlansView() {
    .slice(0, 40);
  // OWNER DIRECTIVE 2026-08-27: generation runs on GitHub Actions — this
  // click only enqueues the job (tier limit is enforced server-side now).
+ // PLAN-REGEN-CONSTRAINTS 2026-10-24 (the measured RC1-c): the swap rides
+ // the plan's COMMITTED diet + the member's questionnaire constraints —
+ // a keto plan's replacement meal may no longer come back as rice at
+ // matching calories, and allergens are gate-enforced server-side.
+ const planDiet = resolvePlanDietType(planContent) ?? undefined;
+ let memberNutrition: Record<string, unknown> | null = null;
+ try {
+ const nutriQ = await getQuestionnaire(profile.id, "nutrition");
+ memberNutrition = (nutriQ?.data as Record<string, unknown> | null) ?? null;
+ } catch {
+ memberNutrition = null; // questionnaire unreadable → diet echo still rides
+ }
  const jobId = await enqueueAiJobClient("meal_regenerate", {
  meal: mealItem,
  targetCalories: mealTargetCals,
- clientContext: { name: profile?.full_name },
+ clientContext: { name: profile?.full_name, ...(memberNutrition ? { nutrition: memberNutrition } : {}) },
  avoid_names: avoidNames,
+ ...(planDiet ? { dietType: planDiet } : {}),
  });
  const pendingEntry: PendingSwap = {
  id: jobId,

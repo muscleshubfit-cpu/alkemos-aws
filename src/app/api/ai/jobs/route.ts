@@ -168,6 +168,34 @@ export async function POST(request: NextRequest) {
       if (!isSupabaseAdminConfigured || !supabaseAdmin) {
         return NextResponse.json({ error: "Server not configured" }, { status: 501 });
       }
+      // PLAN-REGEN-CONSTRAINTS 2026-10-24 (owner order item 3): SITE COACH
+      // (coach_kind='site' — migration 0067's B2C follow-up roster) generates
+      // for the members in HIS site_coach_assignments roster; the B2B money
+      // gates below (coach_assignments ownership + active coaching
+      // subscription + the client's unified pool) never apply to him — his
+      // member already paid the SITE, and his jobs do NOT burn the member's
+      // pool (runner-side planPoolBillingForRequester skips coach_kind='site').
+      const { data: requesterProfile } = await supabaseAdmin
+        .from("profiles")
+        .select("role, coach_kind")
+        .eq("id", userId!)
+        .maybeSingle();
+      if (String(requesterProfile?.coach_kind ?? "").toLowerCase() === "site") {
+        const { data: rostered } = await supabaseAdmin
+          .from("site_coach_assignments")
+          .select("client_id")
+          .eq("client_id", clientId)
+          .eq("coach_id", userId!)
+          .maybeSingle();
+        if (!rostered) {
+          return NextResponse.json(
+            { error: "هذا العميل مش ضمن أعضاء متابعتك — كل مدرب موقع يولّد لأعضائه هو فقط." },
+            { status: 403 },
+          );
+        }
+        // Site-side work: no B2B activation gate, no client-pool burn —
+        // skip straight to the enqueue (the runner records nothing).
+      } else {
       const { data: owned } = await supabaseAdmin
         .from("coach_assignments")
         .select("client_id")
@@ -231,6 +259,7 @@ export async function POST(request: NextRequest) {
           { status: 429, headers: { "Retry-After": "86400" } },
         );
       }
+      } // end B2B gates (the site-coach branch above skips them)
     }
 
     // ── Enqueue via service-role (sanitization happens inside). ────────

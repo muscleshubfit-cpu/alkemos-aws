@@ -644,6 +644,69 @@ export async function recordSwapUsage(
   await recordSwap(userId, swapType);
 }
 
+/* ─────────────── PLAN-POOL BILLING POLICY (PLAN-REGEN-CONSTRAINTS 2026-10-24) ───────────────
+ *
+ * OWNER ORDER 2026-10-24 item 3 («تصحيح منطق الأرصدة والاستحقاقات… أضف
+ * اختبارات مستقلة تثبت أن مدرب الموقع لا يُخصم من رصيد العميل، وأن قواعد
+ * مدربي الشركات تُطبّق كما صُممت»), reconciled with the MEASURED policy
+ * landscape before any change:
+ *
+ *   - B2B coach (profiles.role='coach' + coach_kind='b2b' — migration
+ *     0067's partner model): plan generation burns the CLIENT's unified
+ *     monthly pool — the documented owner decrees (2026-09-01 «توليد
+ *     الخطط بيتحسب من الرصيد سواء عن طريق المدرب او عن طريق ايفو» +
+ *     2026-09-13 «البوول الموحد»). UNCHANGED.
+ *   - Site coach (role='coach' + coach_kind='site' — the B2C follow-up
+ *     roster): his members ALREADY paid the site (migration 0067's own
+ *     rationale: mixing B2C members into the B2B money tables "would
+ *     bill site coaches for members who already paid the SITE") — his
+ *     generations must NOT burn the member's self-service pool.
+ *   - Admin (role='admin' — the site's own staff): STAFF QUOTA SEMANTICS
+ *     (the enqueue gate already bypasses every check for admins) — site
+ *     work never consumes a client's paid balance. This was the MEASURED
+ *     live defect: 18/20 recent plan jobs were admin-requested and every
+ *     one burned its client's pool (client 87cd7ba6 lost 5 of 8 units to
+ *     admin-driven work in two days).
+ *   - Unresolvable requester: NO burn (fail-open on the ledger — never
+ *     bills a client when the requester cannot be attributed).
+ *
+ * The recording itself moved from the processors (inside the job, BEFORE
+ * finishJob — a finishJob failure + requeue + re-run burned the pool
+ * TWICE) to the runner AFTER finishJob lands `done` — the same
+ * success-only, single-record shape recordSwapOnSuccess already has.
+ * ─────────────────────────────────────────────────────────────────────────────── */
+
+export type PlanPoolBillingVerdict = {
+  /** true = record ONE ai_plan_usage row against the client's pool. */
+  bill: boolean;
+  /** The policy reason (logged by the runner — auditable). */
+  reason: string;
+};
+
+/**
+ * WHO pays the client's unified plan pool for a successful plan job.
+ * Pure function — the runner resolves the requester's profile and hands
+ * the two fields in; tests pin the full matrix.
+ */
+export function planPoolBillingForRequester(
+  role: unknown,
+  coachKind: unknown,
+): PlanPoolBillingVerdict {
+  const r = String(role ?? "").trim().toLowerCase();
+  const k = String(coachKind ?? "").trim().toLowerCase();
+  if (r === "coach") {
+    if (k === "site") {
+      return { bill: false, reason: "site-coach: B2C follow-up — member already paid the site (0067 law); no client-pool burn" };
+    }
+    // 'b2b' AND the legacy default (NULL kind → 'b2b' per migration 0067)
+    return { bill: true, reason: "b2b-coach: client unified pool per owner decrees 2026-09-01/2026-09-13" };
+  }
+  if (r === "admin") {
+    return { bill: false, reason: "admin: site staff work — staff quota semantics; no client-pool burn" };
+  }
+  return { bill: false, reason: `unresolved requester role (${r || "none"}) — fail-open, no client-pool burn` };
+}
+
 /**
  * Record a swap in the plan_swaps table.
  */

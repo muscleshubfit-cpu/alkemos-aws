@@ -101,6 +101,32 @@ export const PLAN_AI_SANITY = {
   /** Trust the food library over the model when the model's calorie
    * estimate deviates beyond this (cooked/raw variance lives below it). */
   groundingTolerance: 0.35,
+  /**
+   * PLAN-REGEN-CONSTRAINTS 2026-10-24 (owner order item 2): per-item
+   * MACRO↔CALORIE coherence band. When an item carries all three macros
+   * the Atwater factors (P×4 + C×4 + F×9) must roughly close on the
+   * declared calories — an INFLATED-calories hallucination (600 kcal for
+   * macros summing 224 = ×2.7) is rejected at this band, which starts at
+   * ×1.5 so rounded protein-forward rows (library chicken 248 kcal vs
+   * 172-235 naive on mis-scaled grams) never false-fire. The downward
+   * direction (macros-kcal far ABOVE calories) gets a wider band:
+   * USDA-style rows count fiber inside carbs at 4 kcal/g while
+   * physiologically insoluble fiber contributes ~0-2 kcal/g, so
+   * high-fiber foods legitimately show declared calories BELOW the naive
+   * Atwater sum (measured: wheat bran 100g → 216 kcal declared vs 344
+   * naive). No sugar-alcohol correction is applied — the platform's
+   * library rows carry no sugar-alcohol fields, so erythritol-style items
+   * simply fall inside the wide downward band (documented honestly, not
+   * silently "corrected").
+   */
+  macroCalorieInflationTolerance: 0.5,
+  macroCalorieDeflationTolerance: 0.7,
+  /** Keto item carb ceiling (g) — the ketogenic band is 20-50g NET for
+   * the WHOLE day, so a single item above this is definitionally off-diet. */
+  ketoItemCarbsMax: 12,
+  /** Low-carb item carb ceiling (g) — ~25% of kcal as carbs for the day
+   * allows a starch SIDE in a low-carb meal, not a >35g carb item. */
+  lowCarbItemCarbsMax: 35,
   /** String length ceilings (display safety). */
   foodNameMax: 80,
   amountMax: 80,
@@ -157,6 +183,235 @@ function clamp(n: number, min: number, max: number): number {
 
 function str(v: unknown, max: number): string {
   return typeof v === "string" ? v.trim().slice(0, max) : "";
+}
+
+/* ─────────────── Client-constraint compliance (PLAN-REGEN-CONSTRAINTS) ───────────────
+ *
+ * OWNER ORDER 2026-10-24 (items 1+2 — the measured keto-loss bug): the
+ * client's COMMITTED constraints — diet type, allergies, banned/disliked
+ * foods — are MANDATORY at every generation/regeneration stage (plan,
+ * meal, single item). A provider answering 200 with a rice dish inside a
+ * keto plan is as rejected as one answering garbage JSON.
+ *
+ * PURE MODULE law preserved: the token tables below are DATA (no
+ * imports); matching is conservative substring containment over an
+ * Arabic-aware normalization, and KNOWN dairy-alternative / keto-flour
+ * wordings are guarded so plant milks and almond/coconut flour do not
+ * false-trigger the dairy/grain tokens.
+ * ──────────────────────────────────────────────────────────────────────── */
+
+/** Diets the gate enforces on ITEMS (balanced = unconstrained). */
+export type ConstraintDietType = "keto" | "low_carb" | "vegetarian" | "vegan";
+
+/** The constraint bundle handed to every validator below. */
+export type ClientItemConstraints = {
+  dietType?: ConstraintDietType | null;
+  /** Allergen tokens (already expanded by buildClientConstraints). */
+  allergyTokens?: string[];
+  /** Disliked / banned food tokens from the questionnaire. */
+  bannedTokens?: string[];
+};
+
+/** Normalize a food name / token for matching: lowercase Latin, strip
+ * Arabic diacritics + tatweel, unify alef/ya/ta-marbuta shapes, collapse
+ * spaces. Best-effort — identical in spirit to the grounding module's
+ * normalizeFoodName but kept LOCAL so this module stays import-free. */
+function normFood(s: string): string {
+  return String(s || "")
+    .toLowerCase()
+    .replace(/[\u064B-\u065F\u0670\u0640]/g, "")
+    .replace(/[إأآا]/g, "ا")
+    .replace(/ى/g, "ي")
+    .replace(/ة/g, "ه")
+    .replace(/ال(?=\S)/g, "")
+    .replace(/[^\p{L}\p{N}\s]/gu, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+/** Per-diet forbidden-token tables (normalized on first use). */
+const DIET_FORBIDDEN_TOKENS: Record<ConstraintDietType, string[]> = {
+  keto: [
+    // grains & starches
+    "ارز", "رز ابيض", "خبز", "عيش", "توست", "شوفان", "مكرونه", "مكرونة", "باستا", "سباجيتي",
+    "بطاطس", "بطاطا", "كينوا", "برغل", "بلغر", "كسكسي", "فريك", "ذره", "ذرة", "فطير", "بيتزا", "كريب", "بان كيك",
+    // sugars & syrups
+    "سكر", "عسل", "مربي", "عصير", "غازيه", "مشروب سكري",
+    // dried & high-sugar fruits
+    "تمر", "بلح", "زبيب", "موز", "مانجو", "عنب", "تين", "اناناس", "بطيخ", "مشمس مجفف",
+    // english
+    "rice", "bread", "toast", "oats", "oatmeal", "pasta", "spaghetti", "potato", "sweet potato",
+    "quinoa", "bulgur", "couscous", "corn", "pizza", "pancake", "sugar", "honey", "jam", "juice",
+    "dates", "raisins", "banana", "mango", "grapes", "figs", "pineapple", "watermelon", "soda",
+  ],
+  low_carb: [
+    // dense sugar sources only — starch portions ride the carb-gram ceiling
+    "سكر", "عسل", "مربي", "عصير", "غازيه", "تمر", "بلح", "زبيب", "حلاوه", "حلاوة", "كيك", "بسكويت", "جاتو",
+    "sugar", "honey", "jam", "juice", "dates", "raisins", "cake", "cookies", "soda",
+  ],
+  vegetarian: [
+    "لحم", "دجاج", "فراخ", "سمك", "سلطات بحريه", "سلمون", "تونه", "تونة", "جمبري", "استاكوزا", "كابوريا",
+    "انشوجه", "سردين", "ماكريل", "كفته", "كباب", "برجر", "سجق", "بسطرمه", "مرقه لحم", "مرقه دجاج", "ستيك",
+    "meat", "beef", "lamb", "mutton", "chicken", "turkey", "fish", "salmon", "tuna", "shrimp", "prawn",
+    "crab", "lobster", "anchovy", "sardine", "mackerel", "burger", "sausage", "bacon", "steak", "kebab", "meatball",
+  ],
+  vegan: [
+    // vegetarian table + animal products + dairy (dairy tokens carry the
+    // plant-alternative guard below — coconut/soy/oat/almond milks pass)
+    "لحم", "دجاج", "فراخ", "سمك", "سلمون", "تونه", "تونة", "جمبري", "استاكوزا", "كابوريا", "انشوجه", "سردين",
+    "ماكريل", "كفته", "كباب", "برجر", "سجق", "بسطرمه", "مرقه لحم", "مرقه دجاج", "ستيك",
+    "بيض", "بيضه", "بيضة", "اومليت", "جلاتين",
+    "جبن", "جبنة", "لبنه", "حليب", "زبادي", "قريش", "موزاريلا", "شيدر", "بارميزان",
+    "كريمه", "كريمة", "زبده", "زبدة", "عسل", "كاسترد", "بوظه", "ايس كريم",
+    "meat", "beef", "lamb", "chicken", "turkey", "fish", "salmon", "tuna", "shrimp", "prawn", "crab",
+    "lobster", "anchovy", "sardine", "mackerel", "burger", "sausage", "bacon", "steak", "kebab", "meatball",
+    "egg", "omelette", "omelet", "gelatin",
+    "cheese", "milk", "yogurt", "yoghurt", "cream", "butter", "whey", "casein", "honey", "custard", "ice cream", "gelato",
+  ],
+};
+
+/** Vegan dairy tokens carry a plant-alternative guard (coconut/soy/oat/
+ * almond milks are vegan staples — they must NOT trip the dairy match).
+ * Applies to BOTH the vegan diet tokens AND dairy-allergy family tokens. */
+const VEGAN_DAIRY_TOKENS = [
+  "جبن", "جبنة", "لبنه", "لبن زبادي", "حليب", "زبادي", "قريش", "موزاريلا", "شيدر", "بارميزان",
+  "كريمه", "كريمة", "زبده", "زبدة", "عسل", "كاسترد", "بوظه", "ايس كريم",
+  "cheese", "milk", "yogurt", "yoghurt", "cream", "butter", "whey", "casein", "honey", "custard", "ice cream", "gelato",
+];
+const PLANT_BASED_GUARD = /جوز هند|جوزهند|صويا|نباتي|شوفان|لوز|بذر الكتان|ارز|رز/;
+
+/** Allergen category → family expansion (CONSERVATIVE: category words
+ * only — a named single food stays a plain containment token). */
+const ALLERGEN_EXPANSION: Array<{ category: RegExp; family: string[] }> = [
+  { category: /مكسرات|نوت|nuts?\b|peanut|فول سوداني|فولسوداني/, family: [
+    "جوز", "عين جمل", "بندق", "كاجو", "فستق", "لوز", "مكسرات", "زبدة الفول السوداني", "نوتيلا",
+    "walnut", "hazelnut", "cashew", "pistachio", "almond", "nut", "peanut", "nutella",
+  ] },
+  { category: /بيض|eggs?\b/, family: ["بيض", "بيضه", "بيضة", "اومليت", "مايونيز", "egg", "omelette", "mayonnaise"] },
+  { category: /البان|لبان|اجبان|dairy|milk|حليب|لبن/, family: [
+    "حليب", "لبن", "زبادي", "جبن", "جبنة", "قريش", "لبنه", "موزاريلا", "شيدر", "كريمه", "كريمة", "زبده", "زبدة",
+    "milk", "yogurt", "cheese", "cream", "butter", "whey", "casein",
+  ] },
+  { category: /سمك|اسماك|أسم|seafood|fish\b/, family: [
+    "سمك", "سلمون", "تونه", "تونة", "جمبري", "استاكوزا", "كابوريا", "سردين", "ماكريل", "انشوجه",
+    "fish", "salmon", "tuna", "shrimp", "prawn", "crab", "lobster", "sardine", "anchovy",
+  ] },
+  { category: /جلوتين|gluten|قمح|wheat\b/, family: [
+    "خبز", "عيش", "توست", "مكرونه", "مكرونة", "شعير", "برغل", "فريك", "سباجيتي", "باستا",
+    "bread", "pasta", "spaghetti", "barley", "bulgur", "toast",
+  ] },
+  { category: /صويا|soy|soya/, family: ["صويا", "توفو", "soy", "tofu", "edamame"] },
+];
+
+/** Stop words stripped when tokenizing the allergy/disliked free text. */
+const TOKEN_STOP_WORDS = new Set([
+  "حساسيه", "حساسية", "من", "و", "او", "أو", "لا", "يوجد", "ولا", "انا", "أنا", "عند", "عندي", "مع", "بدون",
+  "allergy", "allergic", "to", "and", "or", "no", "none", "i", "have", "am",
+]);
+
+/** Tokenize a free-text allergy/disliked line into matchable tokens,
+ * expanding category words to their food families. */
+export function tokenizeConstraintText(raw: unknown): string[] {
+  const text = String(raw || "");
+  if (!text.trim()) return [];
+  const normText = normFood(text);
+  const words = normText.split(/[\s،,؛;/·+|]+/).filter(Boolean);
+  const tokens = new Set<string>();
+  for (const w of words) {
+    if (w.length < 2 || TOKEN_STOP_WORDS.has(w)) continue;
+    tokens.add(w);
+    for (const { category, family } of ALLERGEN_EXPANSION) {
+      // Category matched on the normalized word, the normalized FULL text
+      // (hamza/article shapes like «ألبان» → «لبان» resolve here), or the
+      // raw lowercased text (English categories) — union of the three.
+      if (category.test(w) || category.test(normText) || category.test(text.toLowerCase())) {
+        for (const f of family) tokens.add(normFood(f));
+      }
+    }
+  }
+  return [...tokens].filter(Boolean);
+}
+
+/** Build the constraint bundle from the raw client fields (pure). */
+export function buildClientConstraints(opts: {
+  dietType?: unknown;
+  allergyText?: unknown;
+  dislikedText?: unknown;
+}): ClientItemConstraints {
+  const dietRaw = String(opts.dietType ?? "").trim().toLowerCase();
+  const dietType = (["keto", "low_carb", "vegetarian", "vegan"] as const).includes(
+    dietRaw as ConstraintDietType,
+  )
+    ? (dietRaw as ConstraintDietType)
+    : null;
+  const allergyTokens = tokenizeConstraintText(opts.allergyText);
+  const bannedTokens = tokenizeConstraintText(opts.dislikedText);
+  return {
+    ...(dietType ? { dietType } : {}),
+    ...(allergyTokens.length > 0 ? { allergyTokens } : {}),
+    ...(bannedTokens.length > 0 ? { bannedTokens } : {}),
+  };
+}
+
+/** True when the constraints carry anything enforceable. */
+export function hasItemConstraints(c?: ClientItemConstraints | null): boolean {
+  return Boolean(c && (c.dietType || (c.allergyTokens?.length ?? 0) > 0 || (c.bannedTokens?.length ?? 0) > 0));
+}
+
+/**
+ * Check ONE item against the client's constraints. Returns the violation
+ * message (Arabic — it rides the repair directive verbatim) or null when
+ * compliant / unconstrained.
+ */
+export function checkItemConstraints(
+  food: string,
+  macros: { carbs_g?: number | null },
+  constraints?: ClientItemConstraints | null,
+): string | null {
+  if (!hasItemConstraints(constraints)) return null;
+  const name = normFood(food);
+  if (!name) return null;
+
+  const hits = (tokens: string[]): string | null => {
+    for (const rawTok of tokens) {
+      const tok = normFood(rawTok);
+      if (!tok || tok.length < 2) continue;
+      // Plant-based guard: dairy tokens never fire on coconut/soy/oat/
+      // almond milk or plant-cheese wordings ("حليب جوز الهند" is vegan).
+      if (VEGAN_DAIRY_TOKENS.includes(rawTok) && PLANT_BASED_GUARD.test(name)) {
+        continue;
+      }
+      if (name.includes(tok)) return tok;
+    }
+    return null;
+  };
+
+  if (constraints?.dietType) {
+    const forbidden = hits(DIET_FORBIDDEN_TOKENS[constraints.dietType]);
+    if (forbidden) {
+      return `الصنف «${food}» مخالف لنظام ${constraints.dietType === "keto" ? "الكيتو" : constraints.dietType === "low_carb" ? "قليل الكربوهيدرات" : constraints.dietType === "vegan" ? "النباتي الصرف" : "النباتي"} (يحتوي «${forbidden}»)`;
+    }
+    const carbs = typeof macros.carbs_g === "number" ? macros.carbs_g : null;
+    if (constraints.dietType === "keto" && carbs !== null && carbs > PLAN_AI_SANITY.ketoItemCarbsMax) {
+      return `الصنف «${food}» يحمل ${Math.round(carbs)}جم كربوهيدرات — أعلى من سقف صنف الكيتو (${PLAN_AI_SANITY.ketoItemCarbsMax}جم)`;
+    }
+    if (constraints.dietType === "low_carb" && carbs !== null && carbs > PLAN_AI_SANITY.lowCarbItemCarbsMax) {
+      return `الصنف «${food}» يحمل ${Math.round(carbs)}جم كربوهيدرات — أعلى من سقف صنف قليل الكربوهيدرات (${PLAN_AI_SANITY.lowCarbItemCarbsMax}جم)`;
+    }
+  }
+  if (constraints?.allergyTokens?.length) {
+    const allergen = hits(constraints.allergyTokens);
+    if (allergen) {
+      return `الصنف «${food}» يحتوي «${allergen}» — من ضمن حساسيات العميل المسجلة`;
+    }
+  }
+  if (constraints?.bannedTokens?.length) {
+    const banned = hits(constraints.bannedTokens);
+    if (banned) {
+      return `الصنف «${food}» يحتوي «${banned}» — من ضمن الأطعمة الممنوعة/غير المحببة للعميل`;
+    }
+  }
+  return null;
 }
 
 /* ─────────────────────────── Item normalization ─────────────────────────── */
@@ -243,6 +498,31 @@ export function normalizeAIItem(
   }
 
   const alternatives = str(it.alternatives, 200) || undefined;
+
+  // ── MACRO↔CALORIE coherence (PLAN-REGEN-CONSTRAINTS 2026-10-24, owner
+  //    order item 2: «كشف التناقض بين السعرات المحسوبة من الماكروز والسعرات
+  //    المعلنة»). Runs on the FINAL numbers (post-grounding). Asymmetric
+  //    bands — see PLAN_AI_SANITY above for the fiber rationale. Only
+  //    fires when the model supplied ALL THREE macros; partial macro sets
+  //    are estimates, not contradictions (documented honest limit).
+  if (protein_g !== null && carbs_g !== null && fat_g !== null) {
+    const kcalFromMacros = protein_g * 4 + carbs_g * 4 + fat_g * 9;
+    if (kcalFromMacros > 0) {
+      if (calories > kcalFromMacros * (1 + PLAN_AI_SANITY.macroCalorieInflationTolerance)) {
+        return {
+          ok: false,
+          error: `item "${food}" calories (${Math.round(calories)}) contradict its macros (P${Math.round(protein_g)}·C${Math.round(carbs_g)}·F${Math.round(fat_g)} → ${Math.round(kcalFromMacros)} kcal by 4/4/9) — inflated calories`,
+        };
+      }
+      if (kcalFromMacros > calories * (1 + PLAN_AI_SANITY.macroCalorieDeflationTolerance)) {
+        return {
+          ok: false,
+          error: `item "${food}" macros (P${Math.round(protein_g)}·C${Math.round(carbs_g)}·F${Math.round(fat_g)} → ${Math.round(kcalFromMacros)} kcal) contradict its declared ${Math.round(calories)} kcal`,
+        };
+      }
+    }
+  }
+
   return {
     ok: true,
     value: {
@@ -303,6 +583,10 @@ export function validateNutritionPlanAIOutput(
   parsed: unknown,
   targetCalories: number,
   groundItem?: GroundItemFn | null,
+  /** PLAN-REGEN-CONSTRAINTS 2026-10-24: the client's committed diet +
+   * allergy/banned tokens — enforced per item (a rice dish inside a keto
+   * plan is rejected exactly like a shapeless payload). */
+  constraints?: ClientItemConstraints | null,
 ): NutritionPlanVerdict {
   const mealsRaw = unwrapMeals(parsed);
   if (!mealsRaw) return { ok: false, error: "model returned no meals array" };
@@ -333,6 +617,8 @@ export function validateNutritionPlanAIOutput(
     for (const rawItem of rawItems) {
       const v = normalizeAIItem(rawItem, groundItem);
       if (!v.ok) return { ok: false, error: `meal "${name}": ${v.error}` };
+      const violation = checkItemConstraints(v.value.food, v.value, constraints);
+      if (violation) return { ok: false, error: `meal "${name}": ${violation}` };
       items.push(v.value);
     }
     const modelTotalProtein = coerceNumber(meal.total_protein_g ?? meal.total_protein);
@@ -378,6 +664,10 @@ export function validateRegeneratedMeal(
   raw: unknown,
   targetCalories: number,
   groundItem?: GroundItemFn | null,
+  /** PLAN-REGEN-CONSTRAINTS 2026-10-24: diet/allergy constraints of the
+   * plan the meal belongs to — a keto plan's replacement meal may not
+   * come back with rice at matching calories. */
+  constraints?: ClientItemConstraints | null,
 ): MealRegenVerdict {
   const obj = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>;
   // Accept both { meal: {...} } and a flat meal object.
@@ -398,6 +688,8 @@ export function validateRegeneratedMeal(
   for (const rawItem of rawItems) {
     const v = normalizeAIItem(rawItem, groundItem);
     if (!v.ok) return { ok: false, error: v.error };
+    const violation = checkItemConstraints(v.value.food, v.value, constraints);
+    if (violation) return { ok: false, error: violation };
     items.push(v.value);
   }
   const modelTotalProtein = coerceNumber(mealRaw.total_protein_g ?? mealRaw.total_protein);
@@ -440,9 +732,15 @@ export function validateRegeneratedFoodItem(
   raw: unknown,
   originalCalories: number,
   groundItem?: GroundItemFn | null,
+  /** PLAN-REGEN-CONSTRAINTS 2026-10-24: diet/allergy constraints — the
+   * ±15% calorie-equivalent replacement must ALSO respect the client's
+   * committed diet and allergies (owner order item 1). */
+  constraints?: ClientItemConstraints | null,
 ): FoodItemRegenVerdict {
   const v = normalizeAIItem(raw, groundItem);
   if (!v.ok) return { ok: false, error: v.error };
+  const violation = checkItemConstraints(v.value.food, v.value, constraints);
+  if (violation) return { ok: false, error: violation };
   const target = Math.max(1, originalCalories);
   const drift = Math.abs(v.value.calories - target) / target;
   if (drift > PLAN_AI_SANITY.itemDriftTolerance + 1e-9) {

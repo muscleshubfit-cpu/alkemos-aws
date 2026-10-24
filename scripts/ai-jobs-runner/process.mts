@@ -91,6 +91,67 @@ async function main(): Promise<void> {
     }
   };
 
+  // PLAN-REGEN-CONSTRAINTS 2026-10-24 (owner order item 3 — «تصحيح منطق
+  // الأرصدة والاستحقاقات»): the CLIENT's unified plan pool for a successful
+  // plan_nutrition / plan_workout job is recorded HERE — after finishJob
+  // lands `done` (the old in-processor recording sat BEFORE finishJob: a
+  // finishJob failure → requeue → re-run burned the pool TWICE) — and it is
+  // ROLE-AWARE (tier-limits.planPoolBillingForRequester):
+  //   · b2b coach (role=coach, coach_kind='b2b'|null) → the client's pool
+  //     burns — the owner's documented decrees (2026-09-01 + 2026-09-13),
+  //     exactly as before;
+  //   · SITE COACH (role=coach, coach_kind='site') → NO client-pool burn —
+  //     his B2C members already paid the site (migration 0067's own law);
+  //   · ADMIN (site staff) → NO client-pool burn — the measured live defect
+  //     this kills: 18/20 recent plan jobs were admin-requested and each
+  //     burned its client's pool;
+  //   · unresolvable requester → NO burn (fail-open on the ledger).
+  // Fail-soft: a lookup/ledger hiccup NEVER fails the finished job.
+  const recordPlanPoolOnSuccess = async (job: {
+    job_type: string;
+    requested_by?: string | null;
+    payload?: Record<string, unknown> | null;
+  }): Promise<void> => {
+    try {
+      if (job.job_type !== "plan_nutrition" && job.job_type !== "plan_workout") return;
+      const clientId = String(job.payload?.clientId ?? "");
+      if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(clientId)) {
+        return; // no target client → nothing to bill (browser-side plan)
+      }
+      const { supabaseAdmin } = await import("../../src/lib/supabase/admin");
+      const { planPoolBillingForRequester, recordUnifiedPlanUsage } = await import(
+        "../../src/lib/tier-limits"
+      );
+      let role: string | null = null;
+      let coachKind: string | null = null;
+      const requesterId = String(job.requested_by || "");
+      if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(requesterId) && supabaseAdmin) {
+        const { data: profile } = await supabaseAdmin
+          .from("profiles")
+          .select("role, coach_kind")
+          .eq("id", requesterId)
+          .maybeSingle();
+        role = profile?.role ?? null;
+        coachKind = profile?.coach_kind ?? null;
+      }
+      const policy = planPoolBillingForRequester(role, coachKind);
+      if (!policy.bill) {
+        console.log(`[ai-jobs] plan-pool billing skipped: ${policy.reason}`);
+        return;
+      }
+      await recordUnifiedPlanUsage({
+        userId: clientId,
+        kind: job.job_type === "plan_nutrition" ? "nutrition" : "workout",
+        surface: "coach",
+      });
+      console.log(
+        `[ai-jobs] usage recorded: ${job.job_type} → ai_plan_usage(client ${clientId.slice(0, 8)}…, requester ${role}/${coachKind ?? "b2b"})`,
+      );
+    } catch (e) {
+      console.warn("[ai-jobs] plan-pool usage recording failed (job stays done):", e instanceof Error ? e.message : e);
+    }
+  };
+
   // Loop in batches until queue empty / cap reached / wall-clock out.
   while (Date.now() < RUN_DEADLINE_MS && done + failed < MAX_JOBS_PER_RUN) {
     const batch = await claimQueuedJobs(Math.min(3, MAX_JOBS_PER_RUN - done - failed));
@@ -106,6 +167,7 @@ async function main(): Promise<void> {
         const result = await processor(job.payload ?? {});
         await finishJob(job.id, result);
         await recordSwapOnSuccess(job);
+        await recordPlanPoolOnSuccess(job);
         done++;
         console.log(`[ai-jobs] ✓ ${label} done in ${Math.round((Date.now() - startedAt) / 1000)}s`);
         console.log(`::notice::AI job ${job.job_type} completed`);

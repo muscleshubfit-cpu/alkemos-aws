@@ -213,6 +213,15 @@ export function sanitizeJobPayload(type: AiJobType, raw: unknown): Json {
         avoid_names: Array.isArray(p.avoid_names)
           ? (p.avoid_names as unknown[]).filter((n) => typeof n === "string").map((n) => str(n, 60)).slice(0, 40)
           : [],
+        // PLAN-REGEN-CONSTRAINTS 2026-10-24 (owner order item 1): the OWNING
+        // plan's diet type rides the meal swap so the replacement respects
+        // the client's committed diet (keto plan → keto meal). Strict enum
+        // whitelist — a hostile value degrades to undefined, same law as
+        // plan_nutrition's dietType.
+        dietType: (() => {
+          const d = str(p.dietType, 20);
+          return (DIET_TYPES as readonly string[]).includes(d) ? d : undefined;
+        })(),
       };
     }
     case "exercise_regenerate": {
@@ -247,6 +256,12 @@ export function sanitizeJobPayload(type: AiJobType, raw: unknown): Json {
         avoid_names: Array.isArray(p.avoid_names)
           ? (p.avoid_names as unknown[]).filter((n) => typeof n === "string").map((n) => str(n, 60)).slice(0, 40)
           : [],
+        // PLAN-REGEN-CONSTRAINTS 2026-10-24: the owning plan's diet type —
+        // the ±15%-equivalent item replacement must respect it too.
+        dietType: (() => {
+          const d = str(p.dietType, 20);
+          return (DIET_TYPES as readonly string[]).includes(d) ? d : undefined;
+        })(),
       };
     }
     case "day_regenerate": {

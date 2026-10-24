@@ -112,6 +112,8 @@ pnpm-lock.yaml
 !/scripts/ai-grounded-failover-probe.mts
 !/scripts/indexnow-submit.mjs
 !/scripts/seo-p212-cls-risk.mjs
+#   scripts/plan-ai-probe.mts → LIVE real-provider plan-quality probe (PLAN-REGEN-CONSTRAINTS 2026-10-24 — plan-ai-probe.yml dispatch-only instrument: synthetic keto client through the real chain + gate + independent audit + one keto meal regen; zero DB writes, zero client-balance impact; hit the same /scripts/* blanket trap — exception added in the same frame)
+!/scripts/plan-ai-probe.mts
 !/scripts/seo-p212-origin-verify.mjs
 #   scripts/notifications-prune.mjs → weekly notifications retention runner: calls the prune_notifications() RPC of migration 0100 over raw PostgREST (notifications-prune.yml, W2-1a/P-03 2026-10-03 — hit the same /scripts/* blanket trap as the geo/ family; exception added in the same frame)
 !/scripts/notifications-prune.mjs

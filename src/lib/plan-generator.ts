@@ -47,9 +47,22 @@ import {
   validateRegeneratedFoodItem,
   validateRegeneratedWorkoutDay,
   validateWorkoutPlanAIOutput,
+  buildClientConstraints,
+  hasItemConstraints,
   type AIMealLike,
+  type ClientItemConstraints,
   type GroundItemFn,
 } from "@/lib/plan-ai-validation";
+// PLAN-REGEN-CONSTRAINTS 2026-10-24 (owner order item 2): the INDEPENDENT
+// audit layer — recomputes every total from the raw items and reports
+// drift/contradictions the generator's own math can never surface.
+import {
+  auditNutritionPlan,
+  auditWorkoutPlan,
+  hasCriticalFindings,
+  type NutritionAuditReport,
+  type WorkoutAuditReport,
+} from "@/lib/plan-audit";
 
 // Plan generator uses callFreeAIFallbackChain (interleaved OpenRouter + Groq)
 // for all AI calls — strongest free models first, with Groq for speed.
@@ -115,6 +128,20 @@ export type NutritionPlanContent = {
    * instead of presenting the numbers as verified.
    */
   needs_review?: { flags: string[]; note?: string };
+  /**
+   * PLAN-REGEN-CONSTRAINTS 2026-10-24: the INDEPENDENT audit's recomputed
+   * truth (totals from the raw items, drift vs the declared target and
+   * macros, per-item findings). Attached server-side at generation; the
+   * coach viewer / tests / the real-provider probe read it. Provenance is
+   * explicit (library-anchored vs model-estimated).
+   */
+  audit?: {
+    recomputed: NutritionAuditReport["recomputed"];
+    targetDriftPct: number | null;
+    macroDriftPct: NutritionAuditReport["macroDriftPct"];
+    criticalFindings: number;
+    findings: NutritionAuditReport["findings"];
+  };
   macros: {
     protein_g: number;
     carbs_g: number;
@@ -159,6 +186,10 @@ export type NutritionPlanContent = {
 
 export type WorkoutPlanContent = {
   overview: string;
+  /** PLAN-REGEN-CONSTRAINTS 2026-10-24: the independent workout audit —
+   * shape sanity + suitability (location equipment, beginner level,
+   * injury-unsafe picks) recomputed from the FINAL saved shape. */
+  audit?: WorkoutAuditReport;
   days: Array<{
     day: string;
     focus: string;
@@ -281,6 +312,61 @@ function repairDirective(error: string): string {
 أعد توليد الإجابة كاملة بصيغة JSON صالحة فقط، مصحّحًا هذا الخطأ بعينه، وملتزمًا بالأرقام الرسمية والقيود المذكورة أعلاه حرفيًا.`;
 }
 
+/* ─────────── PLAN-REGEN-CONSTRAINTS 2026-10-24 (owner order items 1+2) ───────────
+ * The client's COMMITTED constraints (diet type, allergies, disliked
+ * foods) ride EVERY generation/regeneration prompt AND its quality gate:
+ * prompt-level instruction + gate-level enforcement + the named-reason
+ * repair retry. The diet type reaching these helpers is the RESOLVED one
+ * (coach override > plan echo > questionnaire classification — see
+ * diet-types.resolvePlanDietType), never a guess.
+ * ──────────────────────────────────────────────────────────────────────────────── */
+
+/** Extract the constraint bundle from a ClientContext + resolved diet. */
+function constraintsFromContext(
+  ctx: ClientContext | undefined,
+  dietType?: DietType | null,
+): ClientItemConstraints | undefined {
+  const nutrition = ctx ? loose(ctx.nutrition) : {};
+  const c = buildClientConstraints({
+    dietType: dietType ?? undefined,
+    allergyText: nutrition.allergies,
+    dislikedText: nutrition.disliked,
+  });
+  return hasItemConstraints(c) ? c : undefined;
+}
+
+/** The explicit prompt block carrying the constraints to the model. */
+function constraintPromptBlock(constraints?: ClientItemConstraints | null): string {
+  if (!hasItemConstraints(constraints)) return "";
+  const lines: string[] = [];
+  if (constraints?.dietType) {
+    const label =
+      constraints.dietType === "keto"
+        ? "الكيتو (قليل الكربوهيدرات جدًا)"
+        : constraints.dietType === "low_carb"
+          ? "قليل الكربوهيدرات"
+          : constraints.dietType === "vegan"
+            ? "النباتي الصرف"
+            : "النباتي";
+    const forbidden =
+      constraints.dietType === "keto"
+        ? "أرز، خبز، عيش، مكرونة، شوفان، بطاطس، بطاطا، كينوا، برغل، فريك، ذرة، سكر، عسل، مربى، عصير، تمر، بلح، زبيب، موز، مانجو، عنب، أناناس، بطيخ"
+        : constraints.dietType === "low_carb"
+          ? "سكر، عسل، مربى، عصير، تمر، بلح، زبيب، حلويات صناعية"
+          : constraints.dietType === "vegan"
+            ? "كل اللحوم والدواجن والأسماك والبيض والألبان ومشتقاتها (جبن/زبادي/زبدة/كريمة) والعسل"
+            : "كل اللحوم والدواجن والأسماك والمأكولات البحرية";
+    lines.push(`- النظام الغذائي الملتزم به العميل: ${label} — التزامًا كاملًا في كل صنف. ممنوع نهائيًا: ${forbidden}.`);
+  }
+  if (constraints?.allergyTokens?.length) {
+    lines.push(`- حساسيات العميل (ممنوع نهائيًا أي صنف يحتويها): ${[...new Set(constraints.allergyTokens)].slice(0, 25).join("، ")}.`);
+  }
+  if (constraints?.bannedTokens?.length) {
+    lines.push(`- أطعمة ممنوعة/غير محببة للعميل (تجنبها كليًا): ${[...new Set(constraints.bannedTokens)].slice(0, 25).join("، ")}.`);
+  }
+  return `\n⚠ قيود إلزامية على هذا العميل — تُفحص آليًا بوابة جودة المنصة قبل قبول نتيجتك، وأي خرق يُرفض ويُعاد الطلب:\n${lines.join("\n")}\n`;
+}
+
 /** One chain call + parse + validate, with ONE repair retry on gate
  * failure. Throws the gate error when both attempts fail validation. */
 async function callValidatedChain<T>(
@@ -330,10 +416,15 @@ export async function generateNutritionPlanAI(
 ): Promise<GeneratePlanResult> {
   const name = ctx.name || "العميل";
   const targets = computeNutritionTargets(ctx, overrides);
+  // PLAN-REGEN-CONSTRAINTS 2026-10-24: the RESOLVED diet (coach override >
+  // questionnaire classification — exactly what computeNutritionTargets
+  // resolved) + the questionnaire's allergy/disliked texts become
+  // MANDATORY constraints on both the prompt and the gate.
+  const constraints = constraintsFromContext(ctx, targets.dietType);
   // Add a randomization seed to the prompt so each generation produces
   // different meal/exercise choices even for the same client.
   const seed = Math.floor(Math.random() * 1000000);
-  const basePrompt = `${buildNutritionPrompt(ctx, name, overrides, targets)}${buildVarietyBlock("nutrition", seed, ctx.recent_plan_names ?? [])}${platformKnowledge ?? ""}`;
+  const basePrompt = `${buildNutritionPrompt(ctx, name, overrides, targets)}${constraintPromptBlock(constraints)}${buildVarietyBlock("nutrition", seed, ctx.recent_plan_names ?? [])}${platformKnowledge ?? ""}`;
 
   try {
     // Use callFreeAIFallbackChain — OpenRouter + Groq interleaved (owner
@@ -354,16 +445,42 @@ export async function generateNutritionPlanAI(
         // saturation the strongest available model must stay reachable.
         maxModels: 5,
       },
-      (parsed) => validateNutritionPlanAIOutput(parsed, targets.dailyCalories, groundItem),
+      (parsed) => validateNutritionPlanAIOutput(parsed, targets.dailyCalories, groundItem, constraints),
     );
     if (value.meals.length > 0) {
+      const content = normalizeNutritionPlan(
+        { meals: value.meals } as unknown as Record<string, unknown>,
+        overrides,
+        targets,
+      );
+      // PLAN-REGEN-CONSTRAINTS: the independent audit rides the saved
+      // content — recomputed totals + drift + findings, critical ones
+      // surfacing on the coach review banner (never silently).
+      const audit = auditNutritionPlan(content, {
+        dietType: targets.dietType,
+        allergyText: targets.allergyText,
+        dislikedText: targets.dislikedText,
+        anchorItem: groundItem,
+      });
+      content.audit = {
+        recomputed: audit.recomputed,
+        targetDriftPct: audit.targetDriftPct,
+        macroDriftPct: audit.macroDriftPct,
+        criticalFindings: audit.findings.filter((f) => f.severity === "critical").length,
+        findings: audit.findings,
+      };
+      if (audit.findings.some((f) => f.severity === "critical")) {
+        content.needs_review = {
+          flags: [
+            ...(content.needs_review?.flags ?? []),
+            "independent_audit_critical_findings",
+          ],
+          note: content.needs_review?.note ?? "التدقيق المستقل وجد ملاحظات جوهرية — راجع الأرقام قبل الاعتماد.",
+        };
+      }
       return {
         title: `خطة تغذية - ${name}`,
-        content: normalizeNutritionPlan(
-          { meals: value.meals } as unknown as Record<string, unknown>,
-          overrides,
-          targets,
-        ),
+        content,
         source: `${provider}:${model}`,
       };
     }
@@ -420,9 +537,23 @@ export async function generateWorkoutPlanAI(
       (parsed) => validateWorkoutPlanAIOutput(parsed),
     );
     if (value.days.length > 0) {
+      const content = normalizeWorkoutPlan({ days: value.days } as unknown as Record<string, unknown>);
+      // PLAN-REGEN-CONSTRAINTS: the independent workout audit — suitability
+      // axes (home equipment, beginner level, recorded injuries) recomputed
+      // from the final saved shape against the exercise library.
+      const fitnessCtx = loose(ctx.fitness);
+      content.audit = auditWorkoutPlan(content, {
+        location: fitnessCtx.location,
+        experience: fitnessCtx.experience,
+        injuries: fitnessCtx.injuries,
+        lookupExercise: (n) => {
+          const hit = findExerciseInLibrary(n);
+          return hit ? { equipment: hit.equipment, level: hit.level, slug: hit.slug } : null;
+        },
+      });
       return {
         title: `برنامج تمارين - ${name}`,
-        content: normalizeWorkoutPlan({ days: value.days } as unknown as Record<string, unknown>),
+        content,
         source: `${provider}:${model}`,
       };
     }
@@ -467,6 +598,11 @@ export async function regenerateMeal(
   /** EVO-4 (W4 E3): optional swap-learning block (most-removed/most-added
    *  foods, anonymized) built by evo-nutrition-knowledge.server.ts. */
   platformKnowledge?: string,
+  /** PLAN-REGEN-CONSTRAINTS 2026-10-24 (owner order item 1): the diet the
+   *  OWNING plan was generated under (resolvePlanDietType) — the
+   *  replacement meal must respect it (keto plan → keto meal). Optional so
+   *  legacy callers keep compiling; absent = questionnaire-only law. */
+  dietType?: DietType | null,
 ): Promise<{ meal: RegeneratedMeal; suggestions: Array<Record<string, unknown>>; source: string }> {
   // AI-PLAN-QUALITY 2026-10-24: coerce the incoming meal's calories —
   // legacy plans carry string numbers and the old sum produced garbage
@@ -492,8 +628,13 @@ export async function regenerateMeal(
 ${avoidNames.slice(0, 40).join("، ")}\n`
       : "";
 
+  // PLAN-REGEN-CONSTRAINTS 2026-10-24: the owning plan's diet + the
+  // client's allergies/disliked texts ride BOTH the prompt and the gate.
+  const constraints = constraintsFromContext(clientContext, dietType);
+  const constraintBlock = constraintPromptBlock(constraints);
+
   const prompt = `أنت أخصائي تغذية محترف. أعد توليد وجبة بديلة بنفس السعرات (${totalCals} سعرة) ونفس نسب الماكروز قدر الإمكان.
-${avoidBlock}
+${avoidBlock}${constraintBlock}
 ${platformKnowledge ?? ""}
 ${
   clientContext
@@ -555,7 +696,7 @@ ${coachNote ? `تعليمات الكوتش: ${coachNote}` : ""}
         parsed && typeof parsed === "object"
           ? (parsed as Record<string, unknown>)
           : null;
-      return validateRegeneratedMeal(parsed, totalCals, groundItem);
+      return validateRegeneratedMeal(parsed, totalCals, groundItem, constraints);
     },
   );
 
@@ -1970,6 +2111,9 @@ export async function regenerateFoodItem(
   clientContext?: ClientContext,
   avoidNames: string[] = [],
   coachNote?: string,
+  /** PLAN-REGEN-CONSTRAINTS 2026-10-24 (owner order item 1): the diet of
+   *  the OWNING plan — the ±15%-equivalent replacement must respect it. */
+  dietType?: DietType | null,
 ): Promise<{ item: { food: string; amount: string; calories: number; alternatives?: string }; source: string }> {
   // AI-PLAN-QUALITY 2026-10-24: coerce the incoming calories — legacy
   // items carry string numbers; the ±15% anchor must be a real number.
@@ -1977,11 +2121,15 @@ export async function regenerateFoodItem(
   const avoid =
     avoidNames.filter((n) => typeof n === "string" && n.trim().length > 1).slice(0, 40);
   const ctx = clientContext ? JSON.stringify({ ...clientContext, name: undefined }, null, 2) : "";
+  // PLAN-REGEN-CONSTRAINTS 2026-10-24: the owning plan's diet + allergies
+  // ride the prompt AND the ±15% gate (owner order item 1).
+  const constraints = constraintsFromContext(clientContext, dietType);
+  const constraintBlock = constraintPromptBlock(constraints);
 
   const prompt = `أنت أخصائي تغذية محترف. استبدل صنفًا واحدًا فقط بصنف بديل مكافئ.
 
 الصنف الحالي: ${item.food} — الكمية: ${item.amount} — السعرات: ${targetCals} سعرة
-${ctx ? `بيانات الشخص (راعِ الحساسية والأطعمة غير المحببة):\n${ctx}\n` : ""}${
+${ctx ? `بيانات الشخص (راعِ الحساسية والأطعمة غير المحببة):\n${ctx}\n` : ""}${constraintBlock}${
     avoid.length > 0
       ? `أصناف ممنوع اقتراحها (موجودة في باقي الخطة — ممنوع التكرار):\n${avoid.join("، ")}\n`
       : ""
@@ -2014,7 +2162,7 @@ ${ctx ? `بيانات الشخص (راعِ الحساسية والأطعمة غ�
       timeoutMs: 30_000,
       maxModels: 3,
     },
-    (parsed) => validateRegeneratedFoodItem(parsed, targetCals, groundItem),
+    (parsed) => validateRegeneratedFoodItem(parsed, targetCals, groundItem, constraints),
   );
 
   return {

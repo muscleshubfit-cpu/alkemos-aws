@@ -88,7 +88,7 @@ import type { NutritionPlanContent, WorkoutPlanContent, PlanOverrides } from "@/
 // NOTIF→PLAN 2026-10-24: the diet-type contract comes from the ZERO-DEPENDENCY
 // leaf module — never plan-generator's runtime values (server-only, 1.6MB
 // exercises array — the Phase-183 bundle law).
-import { DIET_TYPES, DIET_TYPE_LABELS_AR, classifyDietText, type DietType } from "@/lib/diet-types";
+import { DIET_TYPES, DIET_TYPE_LABELS_AR, classifyDietText, resolvePlanDietType, type DietType } from "@/lib/diet-types";
 // PLAN-EDIT-2026-10-24: the editor's pure item→meal→plan math (grams
 // parser + 4/4/9 macro chain) — the zero-dependency leaf, unit-tested
 // in __tests__/nutrition-totals.test.ts.
@@ -802,7 +802,16 @@ export function CoachClientView({ clientId }: { clientId: string }) {
  recent_plan_names: buildRecentPlanNames(),
  };
  const planType = plan.type === "workout" ? "workout" : "nutrition";
- await queuePlanJob(planType, clientContext, undefined, plan);
+ // PLAN-REGEN-CONSTRAINTS 2026-10-24 (RC1-a — the measured keto-loss root):
+ // the plan's COMMITTED diet rides the regeneration overrides. Without it
+ // the diet fell back to the questionnaire's free-text classification — a
+ // coach-selected keto with an unrecognized questionnaire answer silently
+ // regenerated as BALANCED (the owner-reported bug).
+ const planDiet =
+   planType === "nutrition"
+     ? resolvePlanDietType(plan.content as { data_analysis?: { diet_type?: unknown } } | null, (nutriQ?.data as { diet?: unknown } | null)?.diet)
+     : null;
+ await queuePlanJob(planType, clientContext, planDiet ? { dietType: planDiet } : undefined, plan);
  };
 
  return (
@@ -1836,13 +1845,14 @@ function PlanViewerModal({
  // Preserve the plan's original diet constraint across the regeneration:
  // the generation echo (data_analysis.diet_type) is an Arabic label — map
  // it back to the DietType enum so the new prompt obeys the same diet.
+ // PLAN-REGEN-CONSTRAINTS 2026-10-24 (RC1-b): robust resolution — the
+ // exact label round-trip, then classification of the echo itself (legacy
+ // / coach-pasted plans whose echo carries extra wording still resolve),
+ // then null (never a guess). classifyDietText stays imported for the
+ // selector's live preview elsewhere.
  const planDietType = (() => {
  if (!content || !("meals" in content)) return undefined;
- const label = String((content as NutritionPlanContent).data_analysis?.diet_type || "");
- const hit = (Object.keys(DIET_TYPE_LABELS_AR) as DietType[]).find(
- (k) => DIET_TYPE_LABELS_AR[k] === label,
- );
- return hit;
+ return resolvePlanDietType(content as { data_analysis?: { diet_type?: unknown } } | null) ?? undefined;
  })();
  const applyTargetDraft = () => {
  const n = parseInt(targetDraft.replace(/[^0-9]/g, ""), 10);
@@ -2236,6 +2246,10 @@ function PlanViewerModal({
  : (meal.items || []).reduce((s, i) => s + (Number(i?.calories) || 0), 0)) || undefined,
  clientContext: regenContext?.clientContext,
  avoid_names: avoidNames,
+ // PLAN-REGEN-CONSTRAINTS 2026-10-24: the OWNING plan's committed diet
+ // rides the swap (keto plan → keto replacement meal, enforced by the
+ // server-side quality gate — not just the prompt).
+ ...(planDietType ? { dietType: planDietType } : {}),
  });
  // Job results are job-type-specific JSON — the engine’s "done" result always carries
  // a replacement meal with this exact shape (same runtime semantics as before).
@@ -2331,6 +2345,9 @@ function PlanViewerModal({
  // AI-PLAN-QUALITY 2026-10-24: same context law as the meal swap —
  // the ±15% single-item replacement must respect allergies/diet.
  clientContext: regenContext?.clientContext,
+ // PLAN-REGEN-CONSTRAINTS 2026-10-24: the owning plan's diet rides the
+ // single-item swap too (server-side gate enforcement).
+ ...(planDietType ? { dietType: planDietType } : {}),
  });
  // Job results are job-type-specific JSON — narrow to the item contract the engine honors.
  const rep = (result.replacement ?? null) as NutritionPlanContent["meals"][number]["items"][number] | null;

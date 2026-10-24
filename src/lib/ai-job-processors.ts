@@ -24,7 +24,7 @@ import type { ClientContext } from "@/lib/ai-local";
 import { generateSocialPost } from "@/lib/social-posts";
 import { pickSmartTopic } from "@/lib/blog-topics";
 import { supabaseAdmin, isSupabaseAdminConfigured } from "@/lib/supabase/admin";
-import { recordUnifiedPlanUsage } from "@/lib/tier-limits";
+
 import { weeksUnitAr } from "@/lib/utils";
 import type { PlanContent } from "@/lib/data/plans";
 import type { SocialPlatform, SocialTone } from "@/lib/social-posts";
@@ -470,28 +470,16 @@ async function materializePlanDraftRow(
 }
 
 /**
- * PHASE 183 (2026-09-13 «البوول الموحد»): burn ONE unit of the
- * CLIENT's unified plan pool when a coach/admin plan job SUCCEEDS
- * (owner decree 2026-09-01: «توليد الخطط بيتحسب من الرصيد سواء عن
- * طريق المدرب او عن طريق ايفو»). Success-only — failed jobs never
- * insert a row. Fail-soft: a ledger hiccup must never fail the job.
+ * PLAN-REGEN-CONSTRAINTS 2026-10-24 (owner order item 3): plan-pool
+ * billing MOVED OUT of the processors to the runner (recordPlanPoolOnSuccess
+ * in scripts/ai-jobs-runner/process.mts) — recorded AFTER finishJob lands
+ * `done` (kills the finishJob-failure → requeue → re-run DOUBLE-BURN
+ * window) and ROLE-AWARE via tier-limits.planPoolBillingForRequester:
+ * b2b coach → client pool burns (owner decrees 2026-09-01/13, unchanged);
+ * site coach / admin / unresolvable → NO client-pool burn (the measured
+ * live defect: admin-requested jobs were burning client 87cd7ba6's pool).
+ * The full policy contract is unit-pinned in plan-pool-billing.test.ts.
  */
-async function recordPlanPoolUsage(
-  payload: Record<string, unknown>,
-  kind: "nutrition" | "workout",
-): Promise<void> {
-  try {
-    const clientId = String(payload?.clientId ?? "");
-    if (!UUID_RE.test(clientId)) return; // no target client → nothing to bill
-    await recordUnifiedPlanUsage({
-      userId: clientId,
-      kind,
-      surface: "coach",
-    });
-  } catch {
-    // never fail the job over the ledger
-  }
-}
 
 async function runPlanNutrition(payload: Record<string, unknown>) {
   const ctx = pickClientContext(payload.clientContext);
@@ -525,7 +513,6 @@ async function runPlanNutrition(payload: Record<string, unknown>) {
   );
   const plan_id = await materializePlanDraftRow(payload, res.title, res.content, "meal");
   if (plan_id) console.log(`[plan_nutrition] draft materialized: plans#${plan_id}`);
-  await recordPlanPoolUsage(payload, "nutrition");
   return {
     title: res.title,
     plan_type: "nutrition",
@@ -554,7 +541,6 @@ async function runPlanWorkout(payload: Record<string, unknown>) {
   });
   const plan_id = await materializePlanDraftRow(payload, res.title, res.content, "workout");
   if (plan_id) console.log(`[plan_workout] draft materialized: plans#${plan_id}`);
-  await recordPlanPoolUsage(payload, "workout");
   return {
     title: res.title,
     plan_type: "workout",
@@ -577,6 +563,11 @@ async function runMealRegenerate(payload: Record<string, unknown>) {
     payload.reason as string | undefined,
     Array.isArray(payload.avoid_names) ? (payload.avoid_names as string[]) : [],
     swapBlock,
+    // PLAN-REGEN-CONSTRAINTS 2026-10-24: the owning plan's diet (strict
+    // enum — sanitizeJobPayload whitelisted it) re-imposed on the swap.
+    (DIET_TYPES as readonly string[]).includes(String(payload.dietType))
+      ? (payload.dietType as DietType)
+      : undefined,
   );
   return {
     replacement: out.meal,
@@ -606,6 +597,11 @@ async function runFoodItemRegenerate(payload: Record<string, unknown>) {
     ctx,
     Array.isArray(payload.avoid_names) ? (payload.avoid_names as string[]) : [],
     payload.note as string | undefined,
+    // PLAN-REGEN-CONSTRAINTS 2026-10-24: the owning plan's diet re-imposed
+    // on the single-item replacement.
+    (DIET_TYPES as readonly string[]).includes(String(payload.dietType))
+      ? (payload.dietType as DietType)
+      : undefined,
   );
   return { replacement: out.item, source: out.source };
 }
