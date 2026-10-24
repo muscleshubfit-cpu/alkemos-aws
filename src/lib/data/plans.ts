@@ -213,13 +213,47 @@ export async function addPlan(plan: PlanInsert): Promise<Plan> {
  return newRow;
 }
 
-export async function deletePlan(id: string) {
+/**
+ * DRAFT-DELETE FIX 2026-10-24 (owner order item 3 «أضف وسيلة واضحة وآمنة
+ * لحذف المسودة… مع تأكيد قبل الحذف، وتحقق من الملكية وصحة الحذف من
+ * قاعدة البيانات وتحديث القائمة»): the old deletePlan fired the delete
+ * and returned void — the Supabase error was DISCARDED, so a silently
+ * failing delete (RLS, network, row already gone) looked exactly like a
+ * success and the UI refreshed the list anyway. The contract is now
+ * VERIFIED: the error is captured AND the row is confirmed gone (a fresh
+ * RLS-visible select by id) before { ok: true } is returned — the caller
+ * toasts the truth. Deletion touches ONLY the plans row: ai_jobs
+ * receipts, plan_swaps history and notifications stay untouched.
+ */
+export async function deletePlan(
+ id: string,
+): Promise<{ ok: true } | { ok: false; error: string }> {
  if (isSupabaseConfigured && supabase) {
- await supabase.from("plans").delete().eq("id", id);
- return;
+  const { error } = await supabase.from("plans").delete().eq("id", id);
+  if (error) {
+   console.error("[deletePlan] supabase delete failed:", error.message);
+   return { ok: false, error: error.message };
+  }
+  // Verify-gone: RLS still shows the row to this coach if the delete
+  // silently matched nothing (or was rolled back) — never claim success
+  // over an unverifiable state.
+  const { data: stillThere } = await supabase
+   .from("plans")
+   .select("id")
+   .eq("id", id)
+   .maybeSingle();
+  if (stillThere) {
+   return { ok: false, error: "تعذر حذف الخطة من قاعدة البيانات — حاول مرة أخرى" };
+  }
+  return { ok: true };
  }
  const all = read<Plan[]>(LS_PLANS, []);
- write(LS_PLANS, all.filter((p) => p.id !== id));
+ const next = all.filter((p) => p.id !== id);
+ if (next.length === all.length) {
+  return { ok: false, error: "الخطة غير موجودة — حدّث الصفحة" };
+ }
+ write(LS_PLANS, next);
+ return { ok: true };
 }
 
 /** Update a plan's content (title, notes, content JSON, status). */

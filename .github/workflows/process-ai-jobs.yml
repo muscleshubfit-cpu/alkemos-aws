@@ -139,6 +139,27 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: Drain ai_jobs queue (reap stale → claim → process → write results)
+        # REGEN-RELIABILITY FIX 2026-10-24 (owner order item 2 — the measured
+        # root from the LIVE run 40091765755 logs): the runner executes
+        # server code through tsx under plain Node conditions, where the
+        # `server-only` package resolves to its THROWING default export —
+        # so src/lib/plan-food-grounding (→ foods.ts, guarded `server-only`)
+        # failed to import on EVERY runner run since AI-PLAN-QUALITY
+        # («food grounding unavailable (continuing without)» in all three
+        # 11:52/11:54/11:56 UTC runs) and the food-library grounding
+        # (owner order item 3) was silently DEAD in the ONLY production AI
+        # path. Adding the react-server resolution condition — exactly the
+        # condition Next's own server runtime resolves `server-only` under
+        # (its package.json: react-server → empty.js) — makes the import
+        # resolve to the same empty module it does on the server, so
+        # grounding is LIVE in the runner. Verified locally: the import
+        # loads, the full processor graph loads (9 processors), and
+        # groundItemToLibrary returns real library rows (150g chicken
+        # breast 600→248). The guard's client-bundle purpose is untouched:
+        # the Next build still resolves it to the throwing build for
+        # client components.
+        env:
+          NODE_OPTIONS: "--conditions=react-server"
         run: npx --no-install tsx scripts/ai-jobs-runner/process.mts --max "${{ github.event.inputs.max_jobs || '10' }}"
 
       - name: Summary

@@ -3,6 +3,10 @@ import {
   parseGrams,
   scalePer100g,
   recomputeNutritionTotals,
+  displayCalories,
+  resolveTargetCalorieChange,
+  TARGET_CONSISTENCY_ABS_KCAL,
+  TARGET_CONSISTENCY_PCT,
 } from "@/lib/nutrition-totals";
 import type { NutritionPlanContent } from "@/lib/plan-generator";
 
@@ -130,10 +134,14 @@ describe("recomputeNutritionTotals — the item→meal→plan chain", () => {
   expect(next.meals[1].total_calories).toBe(248);
  });
 
- it("daily_calories = meals_total_calories = the meals sum (one number, everywhere)", () => {
+ it("CALORIE-TARGET 2026-10-24: meals_total = the meals sum; daily_calories (the TARGET) SURVIVES the recompute", () => {
   const next = recomputeNutritionTotals(plan);
-  expect(next.daily_calories).toBe(628); // 380 + 248
-  expect(next.meals_total_calories).toBe(628);
+  // The ACTUAL is the meals sum…
+  expect(next.meals_total_calories).toBe(628); // 380 + 248
+  // …and the TARGET is no longer clobbered by it (the old
+  // `daily_calories = sum` line silently reverted every coach target edit
+  // on the next item edit — the «الرقم المعروض» illusion).
+  expect(next.daily_calories).toBe(9999);
  });
 
  it("macro grams sum the meals and split kcal at 4/4/9", () => {
@@ -160,8 +168,9 @@ describe("recomputeNutritionTotals — the item→meal→plan chain", () => {
   edited.meals[1].items[0] = { ...edited.meals[1].items[0], ...scaled };
   const next = recomputeNutritionTotals(edited);
   expect(next.meals[1].total_calories).toBe(330);
-  expect(next.daily_calories).toBe(710); // 380 + 330
-  expect(next.meals_total_calories).toBe(710);
+  // The ACTUAL moves with the edit; the TARGET (9999) stays untouched.
+  expect(next.meals_total_calories).toBe(710); // 380 + 330
+  expect(next.daily_calories).toBe(9999);
   expect(next.macros.protein_g).toBe(83); // 21 + 62 (31×2)
  });
 
@@ -176,7 +185,9 @@ describe("recomputeNutritionTotals — the item→meal→plan chain", () => {
   };
   const next = recomputeNutritionTotals(legacy);
   expect(next.meals[0].total_calories).toBe(500);
-  expect(next.daily_calories).toBe(500);
+  expect(next.meals_total_calories).toBe(500);
+  expect(next.daily_calories).toBe(0); // no target set — stays 0, actual rides meals_total
+  expect(displayCalories(next)).toBe(500); // display falls back to the actual
   expect(next.macros.protein_g).toBe(0);
  });
 
@@ -188,8 +199,60 @@ describe("recomputeNutritionTotals — the item→meal→plan chain", () => {
    meals: [],
   };
   const next = recomputeNutritionTotals(empty);
-  expect(next.daily_calories).toBe(0);
+  expect(next.daily_calories).toBe(5); // preserved target
   expect(next.meals_total_calories).toBe(0);
+ });
+});
+
+/* ── CALORIE-TARGET 2026-10-24 (owner order item 1: «افحص هل المطلوب إعادة
+ * حساب أم إعادة توليد، ونفّذ السلوك الصحيح») — the display + verdict laws. */
+describe("displayCalories — the actual-first display law", () => {
+ it("shows the meals sum when present (updates on every edit/swap)", () => {
+  expect(displayCalories({ daily_calories: 2905, meals_total_calories: 2342 })).toBe(2342);
+ });
+
+ it("falls back to the target for legacy plans without meals_total_calories", () => {
+  expect(displayCalories({ daily_calories: 2905 })).toBe(2905);
+  expect(displayCalories({})).toBe(0);
+  expect(displayCalories(null)).toBe(0);
+ });
+
+ it("ignores a zero meals_total (treated as absent)", () => {
+  expect(displayCalories({ daily_calories: 1800, meals_total_calories: 0 })).toBe(1800);
+ });
+});
+
+describe("resolveTargetCalorieChange — recalc vs regenerate (the measured answer)", () => {
+ it("IN BAND: a small change keeps the meals — target-only update is the honest behavior", () => {
+  // ±max(120, 7%): 2000 → band 140 → meals at 2100 are within
+  expect(resolveTargetCalorieChange(2000, 2100)).toEqual({ kind: "in-band" });
+  expect(resolveTargetCalorieChange(2000, 1861)).toEqual({ kind: "in-band" }); // -139
+  // 2905 → band ~203 → meals 2710 within
+  expect(resolveTargetCalorieChange(2905, 2710)).toEqual({ kind: "in-band" });
+ });
+
+ it("OUT OF BAND: a material change REQUIRES regeneration (recalc can never move meals)", () => {
+  const verdict = resolveTargetCalorieChange(2000, 2905);
+  expect(verdict.kind).toBe("regenerate");
+  if (verdict.kind === "regenerate") {
+   expect(verdict.reason).toContain("2905");
+   expect(verdict.reason).toContain("2000");
+  }
+  // 2905 → 2000: |2000-2905| = 905 > band 203 → regenerate
+  expect(resolveTargetCalorieChange(2905, 2000).kind).toBe("regenerate");
+  // tiny plans use the absolute floor: 1200 → band = max(120, 84) = 120
+  expect(resolveTargetCalorieChange(1200, 1290).kind).toBe("in-band"); // +90 ≤ 120
+  expect(resolveTargetCalorieChange(1200, 1400).kind).toBe("regenerate"); // +200 > 120
+ });
+
+ it("the band constants stay the banner's own law", () => {
+  expect(TARGET_CONSISTENCY_ABS_KCAL).toBe(120);
+  expect(TARGET_CONSISTENCY_PCT).toBe(0.07);
+ });
+
+ it("an invalid target asks for regeneration (never a silent no-op)", () => {
+  expect(resolveTargetCalorieChange(0, 2000).kind).toBe("regenerate");
+  expect(resolveTargetCalorieChange(NaN, 2000).kind).toBe("regenerate");
  });
 });
 
@@ -217,8 +280,12 @@ describe("recomputeNutritionTotals — AI string-number immunity (AI-PLAN-QUALIT
   const next = recomputeNutritionTotals(poisoned);
   expect(next.meals[0].total_calories).toBe(320);
   expect(typeof next.meals[0].total_calories).toBe("number");
-  expect(next.daily_calories).toBe(320);
+  // CALORIE-TARGET 2026-10-24: the fixture set NO target (0) — 0 is
+  // preserved (never silently replaced by the sum); the ACTUAL rides
+  // meals_total_calories and displayCalories reads it.
+  expect(next.daily_calories).toBe(0);
   expect(next.meals_total_calories).toBe(320);
+  expect(displayCalories(next)).toBe(320);
   expect(next.macros.protein_g).toBe(8);
   expect(next.macros.carbs_g).toBe(30);
   expect(next.macros.fat_g).toBe(4);
@@ -241,6 +308,7 @@ describe("recomputeNutritionTotals — AI string-number immunity (AI-PLAN-QUALIT
   };
   const next = recomputeNutritionTotals(legacy);
   expect(next.meals[0].total_calories).toBe(260);
-  expect(next.daily_calories).toBe(260);
+  expect(next.meals_total_calories).toBe(260);
+  expect(displayCalories(next)).toBe(260);
  });
 });

@@ -93,14 +93,22 @@ export function scalePer100g(per100g: Per100g, grams: number): {
 }
 
 /**
- * Recompute EVERY total a nutrition plan displays, from its items up:
+ * Recompute every total a nutrition plan displays, from its items up:
  *
  *   item macros → per-meal totals (calories/protein/carbs/fat)
- *              → plan daily_calories + meals_total_calories (same sum —
- *                the «اتساق الوجبات» banner can never show a stale
- *                mismatch again)
+ *              → meals_total_calories (the ACTUAL — what the meals sum to)
  *              → macros in grams AND their kcal splits (protein 4,
  *                carbs 4, fat 9 kcal/g — the NOTIF→PLAN item-5 law)
+ *
+ * CALORIE-TARGET FIX 2026-10-24 (owner order item 1 «تغيير الهدف يجب أن
+ * يؤدي إلى إعادة ضبط فعلية لمحتوى الخطة… دون الاكتفاء بتغيير الرقم
+ * المعروض»): daily_calories is the plan's TARGET (set deterministically at
+ * generation: coach override > server-computed TDEE math) — it is NOT the
+ * meals' sum and must SURVIVE every item edit. The old line
+ * `next.daily_calories = sum(...)` conflated target with actual: the coach
+ * set a new target, then ANY item edit silently clobbered it back to the
+ * meals' sum (the "الرقم المعروض" illusion). The actual now lives in
+ * meals_total_calories; displays read actual-first via displayCalories().
  *
  * Mutates a deep copy and returns it (the editor's immutability shape).
  */
@@ -121,8 +129,13 @@ export function recomputeNutritionTotals(
   const sum = (pick: (m: NutritionPlanContent["meals"][number]) => number) =>
     meals.reduce((s, m) => s + pick(m), 0);
 
-  next.daily_calories = sum((m) => numOr(m.total_calories));
-  next.meals_total_calories = next.daily_calories;
+  // The ACTUAL meals sum — daily_calories (the TARGET) is preserved, only
+  // COERCED to a finite number when a legacy plan carried it as a string
+  // ("1000" — the AI-PLAN-QUALITY string-poisoning law; the VALUE never
+  // changes: numOr returns 0 only for absent/garbage, so a real target
+  // survives byte-identical).
+  next.meals_total_calories = sum((m) => numOr(m.total_calories));
+  next.daily_calories = numOr(next.daily_calories);
 
   if (next.macros) {
     next.macros.protein_g = sum((m) => numOr(m.total_protein_g));
@@ -134,4 +147,63 @@ export function recomputeNutritionTotals(
   }
 
   return next;
+}
+
+/**
+ * The calories a plan surface should DISPLAY: the ACTUAL meals sum when the
+ * plan carries it (every generated plan does; it updates on every
+ * edit/swap), falling back to the target for legacy plans that predate
+ * meals_total_calories. Keeps member/coach cards tracking the real meals
+ * (the NOTIF→PLAN post-swap law) while the target stays intact in data.
+ */
+export function displayCalories(content: {
+  daily_calories?: number;
+  meals_total_calories?: number;
+} | null | undefined): number {
+  const actual = numOr(content?.meals_total_calories);
+  if (actual > 0) return actual;
+  return numOr(content?.daily_calories);
+}
+
+/**
+ * CALORIE-TARGET FIX 2026-10-24 (owner order item 1: «افحص هل المطلوب إعادة
+ * حساب أم إعادة توليد، ونفّذ السلوك الصحيح»). The measured answer:
+ *
+ *   - A recalculation DERIVES totals FROM the meals — it can never MOVE the
+ *     meals toward a new target. Recalc alone is the "number-only" illusion
+ *     the owner rejected.
+ *   - So a target change is judged against the platform's own consistency
+ *     band (the «اتساق الوجبات» banner law: ±max(120 kcal, 7%)):
+ *       · IN BAND — the meals already track the new target within the
+ *         platform's quality bar → updating the target field + recomputed
+ *         totals IS the honest correct behavior (no quota burned).
+ *       · OUT OF BAND — the meals no longer meet the new target → the plan
+ *         content must be REGENERATED (meals, quantities, totals) with the
+ *         new target as the generation override, preserving the client's
+ *         context and constraints.
+ */
+export type TargetChangeVerdict =
+  | { kind: "in-band" }
+  | { kind: "regenerate"; reason: string };
+
+export const TARGET_CONSISTENCY_ABS_KCAL = 120;
+export const TARGET_CONSISTENCY_PCT = 0.07;
+
+export function resolveTargetCalorieChange(
+  newTarget: number,
+  mealsTotalCalories: number,
+): TargetChangeVerdict {
+  const target = Math.round(newTarget);
+  const actual = Math.round(mealsTotalCalories);
+  if (!Number.isFinite(target) || target <= 0) {
+    return { kind: "regenerate", reason: "هدف غير صالح" };
+  }
+  const band = Math.max(TARGET_CONSISTENCY_ABS_KCAL, target * TARGET_CONSISTENCY_PCT);
+  if (Math.abs(actual - target) <= band) {
+    return { kind: "in-band" };
+  }
+  return {
+    kind: "regenerate",
+    reason: `مجموع الوجبات الحالية (${actual} سعرة) خارج نطاق الاتساق مع الهدف الجديد (${target} سعرة ±${Math.round(band)})`,
+  };
 }

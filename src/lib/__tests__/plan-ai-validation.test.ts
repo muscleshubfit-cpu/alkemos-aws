@@ -44,7 +44,9 @@ describe("coerceNumber", () => {
     expect(coerceNumber(230)).toBe(230);
     expect(coerceNumber(" 230 ")).toBe(230);
     expect(coerceNumber("230,5")).toBe(230.5);
-    expect(coerceNumber("٢٣٠")).toBeNull?.(); // Arabic-Indic digits are NOT parsed (documented)
+    // REGEN-RELIABILITY 2026-10-24: Arabic-Indic digits ARE parsed now (the
+    // live "calories outside 1-2000" rejection class — parity with parseGrams).
+    expect(coerceNumber("٢٣٠")).toBe(230);
     expect(coerceNumber("abc")).toBeNull();
     expect(coerceNumber(null)).toBeNull();
     expect(coerceNumber(undefined)).toBeNull();
@@ -299,5 +301,113 @@ describe("validateWorkoutPlanAIOutput", () => {
   it("rejects hollow training days and wrong day counts", () => {
     expect(validateWorkoutPlanAIOutput({ days: [day("أ", 1), day("ب", 2), day("ج", 3)] }).ok).toBe(false);
     expect(validateWorkoutPlanAIOutput({ days: [day("أ", 3), day("ب", 3)] }).ok).toBe(false);
+  });
+});
+
+/* ── REGEN-RELIABILITY 2026-10-24 (owner order item 2 — the LIVE measured
+ * failure classes from GHA run 40091765755 on the deployed c0900c31):
+ * the gate rejected perfectly good payloads twice and food_item_regenerate
+ * job #ce03e09f failed PERMANENTLY over them. These canaries pin the two
+ * compat laws that make regeneration actually succeed:
+ *   (a) Arabic-Indic/Persian digit strings are real numbers ("٢٥٠" = 250
+ *       — the old \d strip deleted every glyph → "calories outside
+ *       1-2000" rejections);
+ *   (b) wrapper shapes ({item:{…}} / {replacement:{…}} — the 16-token
+ *       gemini payloads) carry the same data at one level of nesting —
+ *       "item has no food name" rejections died with the unwrap. */
+describe("REGEN-RELIABILITY — Arabic-Indic/Persian digit coercion (the live rejection class)", () => {
+  it("Arabic-Indic digits parse as numbers", () => {
+    expect(coerceNumber("٢٥٠")).toBe(250);
+    expect(coerceNumber("١٢٣٤")).toBe(1234);
+    expect(coerceNumber("٢٥٠ سعرة")).toBe(250);
+    expect(coerceNumber("٣٠.٥")).toBe(30.5);
+  });
+
+  it("Persian digits parse as numbers", () => {
+    expect(coerceNumber("۴۵۰")).toBe(450);
+    expect(coerceNumber("۲۰۰ گرم")).toBe(200);
+  });
+
+  it("mixed Latin + Arabic-Indic digits parse", () => {
+    expect(coerceNumber("1٢٣")).toBe(123);
+  });
+
+  it("the old behaviors stay: Latin strings, numbers, and the Arabic decimal separator", () => {
+    expect(coerceNumber("230")).toBe(230);
+    expect(coerceNumber(230)).toBe(230);
+    expect(coerceNumber("23٫5")).toBe(23.5);
+    expect(coerceNumber("abc")).toBeNull();
+    expect(coerceNumber("")).toBeNull();
+  });
+
+  it("an item whose calories came as Arabic-Indic digits now PASSES the item gate", () => {
+    const v = normalizeAIItem({
+      food: "صدر دجاج مشوي بالأعشاب",
+      amount: "150 جم",
+      calories: "٢٥٠",
+    });
+    expect(v.ok).toBe(true);
+    if (v.ok) expect(v.value.calories).toBe(250);
+  });
+
+  it("validateRegeneratedFoodItem accepts an Arabic-numeral replacement inside ±15%", () => {
+    const verdict = validateRegeneratedFoodItem(
+      { food: "تونة في الماء", amount: "150 جم", calories: "٢٠٥" },
+      200,
+      null,
+    );
+    expect(verdict.ok).toBe(true);
+  });
+});
+
+describe("REGEN-RELIABILITY — wrapper-shape unwrap (the live 16-token payload class)", () => {
+  const flat = { food: "تونة في الماء", amount: "150 جم", calories: 205 };
+
+  it("a flat item still passes as before (no behavior change on the happy path)", () => {
+    const v = normalizeAIItem(flat);
+    expect(v.ok).toBe(true);
+  });
+
+  it("{item:{…}} unwraps and passes", () => {
+    const v = normalizeAIItem({ item: flat });
+    expect(v.ok).toBe(true);
+    if (v.ok) expect(v.value.food).toBe("تونة في الماء");
+  });
+
+  it("{replacement:{…}} unwraps and passes", () => {
+    const v = normalizeAIItem({ replacement: flat });
+    expect(v.ok).toBe(true);
+    if (v.ok) expect(v.value.calories).toBe(205);
+  });
+
+  it("{food_item:{…}} and {new_item:{…}} unwrap too", () => {
+    expect(normalizeAIItem({ food_item: flat }).ok).toBe(true);
+    expect(normalizeAIItem({ new_item: flat }).ok).toBe(true);
+  });
+
+  it("a TOP-LEVEL name still wins over any wrapper key (no false unwrap)", () => {
+    const v = normalizeAIItem({ name: "بيض مسلوق", amount: "2 بيضة", calories: 150, item: { food: "other" } });
+    expect(v.ok).toBe(true);
+    if (v.ok) expect(v.value.food).toBe("بيض مسلوق");
+  });
+
+  it("validateRegeneratedFoodItem accepts the WRAPPED shape the providers actually returned", () => {
+    const verdict = validateRegeneratedFoodItem(
+      { replacement: { food: "جبن قريش", amount: "200 جم", calories: 190 } },
+      200,
+      null,
+    );
+    expect(verdict.ok).toBe(true);
+    if (verdict.ok) expect(verdict.value.food).toBe("جبن قريش");
+  });
+
+  it("garbage still rejects honestly — the unwrap is not a loophole", () => {
+    expect(normalizeAIItem({ item: "مجرد نص" }).ok).toBe(false);
+    expect(normalizeAIItem({ replacement: { amount: "100 جم", calories: 200 } }).ok).toBe(false);
+    expect(normalizeAIItem({ item: null }).ok).toBe(false);
+  });
+
+  it("arrays never unwrap (an items array is not a wrapped item)", () => {
+    expect(normalizeAIItem([flat]).ok).toBe(false);
   });
 });

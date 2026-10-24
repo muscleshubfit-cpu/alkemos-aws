@@ -117,14 +117,35 @@ export const PLAN_AI_SANITY = {
 /* ─────────────────────────── Coercion helpers ─────────────────────────── */
 
 /**
- * Coerce a model-supplied number: handles "230", 230, " 230 ", 230.0.
+ * Coerce a model-supplied number: handles 230, "230", " 230 ", 230.0,
+ * AND Arabic-Indic/Persian digit strings ("٢٥٠" / "۴۵۰").
  * Returns null when not finite (NEVER 0 — 0 is a valid cooking value
  * and must not mask a missing field).
+ *
+ * REGEN-RELIABILITY FIX 2026-10-24 (owner order item 2 — the live measured
+ * rejection class, run 40091765755): models answering in Arabic routinely
+ * emit calories as Arabic-Indic numerals, and the old `[\\d.-]` strip
+ * DELETED every ٠-۹/۰-۹ glyph (JS \d matches [0-9] only) — "٢٥٠" parsed to
+ * NaN → null → the gate rejected a perfectly good item with «calories
+ * outside 1-2000». parseGrams (nutrition-totals) already normalizes these
+ * digits; the gate now shares the same law (parity, not a new policy).
  */
+const ARABIC_INDIC_DIGITS = "٠١٢٣٤٥٦٧٨٩";
+const PERSIAN_DIGITS = "۰۱۲۳۴۵۶۷۸۹";
+
+function normalizeDigits(v: string): string {
+  return v.replace(/[٠-٩]/g, (d) => String(ARABIC_INDIC_DIGITS.indexOf(d)))
+    .replace(/[۰-۹]/g, (d) => String(PERSIAN_DIGITS.indexOf(d)));
+}
+
 export function coerceNumber(v: unknown): number | null {
   if (typeof v === "number") return Number.isFinite(v) ? v : null;
   if (typeof v === "string") {
-    const n = parseFloat(v.replace(/[٫,]/g, ".").replace(/[^\d.\-]/g, ""));
+    const n = parseFloat(
+      normalizeDigits(v)
+        .replace(/[٫,]/g, ".")
+        .replace(/[^\d.\-]/g, ""),
+    );
     return Number.isFinite(n) ? n : null;
   }
   return null;
@@ -144,6 +165,28 @@ export type ItemVerdict =
   | { ok: true; value: AIItemLike }
   | { ok: false; error: string };
 
+/** Unwrap one level of common model wrappers around a single item:
+ * {item:{…}} · {replacement:{…}} · {food_item:{…}} · {new_item:{…}} —
+ * REGEN-RELIABILITY FIX 2026-10-24 (owner order item 2, the live measured
+ * class from run 40091765755): providers kept answering 200 with the
+ * replacement NESTED under a wrapper key (16-token payloads) while the
+ * gate read food/name only at the TOP level → «item has no food name»
+ * rejections → the job failed permanently although the data inside was
+ * fine. Same unwrap law the plan-level gate (unwrapMeals) already has. */
+const ITEM_WRAPPER_KEYS = ["item", "replacement", "food_item", "new_item"] as const;
+
+function unwrapItem(raw: Record<string, unknown>): Record<string, unknown> {
+  const hasName = typeof raw.food === "string" || typeof raw.name === "string";
+  if (hasName) return raw;
+  for (const key of ITEM_WRAPPER_KEYS) {
+    const inner = raw[key];
+    if (inner && typeof inner === "object" && !Array.isArray(inner)) {
+      return inner as Record<string, unknown>;
+    }
+  }
+  return raw;
+}
+
 /**
  * Normalize ONE food item: coerce calories/protein, bound them, and —
  * when a grounding callback is provided — cross-check the model's calorie
@@ -156,7 +199,8 @@ export function normalizeAIItem(
   raw: unknown,
   groundItem?: GroundItemFn | null,
 ): ItemVerdict {
-  const it = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>;
+  const rawObj = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>;
+  const it = unwrapItem(rawObj);
   const food = str(it.food ?? it.name, PLAN_AI_SANITY.foodNameMax);
   if (!food) return { ok: false, error: "item has no food name" };
   const amount = str(it.amount, PLAN_AI_SANITY.amountMax);

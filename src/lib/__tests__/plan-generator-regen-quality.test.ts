@@ -330,3 +330,93 @@ describe("regenerateWorkoutDay — 3-8 exercises enforced", () => {
     await expect(regenerateWorkoutDay(currentDay)).rejects.toThrow("بوابة الجودة");
   });
 });
+
+/* ── REGEN-RELIABILITY 2026-10-24 (owner order item 2 — «اختبر إعادة توليد
+ * وجبة وصنف منفردًا كلًّا على حدة… وتأكد من حفظ النتيجة وتحديث المجاميع»):
+ * the two LIVE-measured payload classes from GHA run 40091765755 (deployed
+ * c0900c31) flow through the REAL engine — the meal path and the item path
+ * SEPARATELY — with mocked providers returning exactly what production
+ * returned:
+ *   · Arabic-Indic digit calories ("٢٥٠" — rejected as «calories outside
+ *     1-2000» before the coercion fix);
+ *   · wrapper-nested items ({item:{…}} / {replacement:{…}} — rejected as
+ *     «item has no food name» before the unwrap fix, the 16-token payloads).
+ * Both must now SUCCEED first-try — no repair retry, no throw — with
+ * recomputed totals. */
+describe("REGEN-RELIABILITY — the live-measured payload classes pass the real engine", () => {
+  beforeEach(() => {
+    chainState.responses.length = 0;
+    chainState.prompts.length = 0;
+  });
+
+  it("MEAL path: Arabic-Indic digit calories inside items regenerate successfully (first try, no repair)", async () => {
+    chainState.responses.push({
+      text: JSON.stringify({
+        meal: {
+          name: "فطور بديل",
+          items: [
+            { food: "فول مدمس", amount: "200 جم", calories: "٢٣٠", protein_g: "١٦" },
+            { food: "خبز بلدي", amount: "رغيف", calories: "١٨٠" },
+            { food: "جبن قريش", amount: "50 جم", calories: "٩٠" },
+          ],
+          total_calories: 99999,
+        },
+        suggestions: [],
+      }),
+      model: "gemini-3.5-flash",
+      provider: "gemini",
+    });
+    const out = await regenerateMeal(
+      { name: "الفطور", items: [{ food: "بيض", amount: "2", calories: 200 }], notes: "" },
+      500,
+      ctx,
+      undefined,
+      [],
+    );
+    // First-try success: exactly ONE provider call (no repair retry).
+    expect(chainState.prompts).toHaveLength(1);
+    // Arabic-Indic digits coerced: 230 + 180 + 90 = 500 — inside ±20% of 500.
+    expect(out.meal).toBeTruthy();
+    const meal = out.meal as { items: Array<{ calories: number }>; total_calories?: number };
+    expect(meal.items.map((i) => i.calories)).toEqual([230, 180, 90]);
+  });
+
+  it("ITEM path: a wrapper-nested replacement ({replacement:{…}}) with Arabic numerals succeeds (the 16-token class)", async () => {
+    chainState.responses.push({
+      text: JSON.stringify({
+        replacement: { food: "تونة في الماء", amount: "150 جم", calories: "٢٠٥", alternatives: "أو 200 جم سمك مشوي" },
+      }),
+      model: "gemini-3.5-flash",
+      provider: "gemini",
+    });
+    const out = await regenerateFoodItem(
+      { food: "صدور دجاج", amount: "150 جم", calories: 200 },
+      ctx,
+      [],
+      undefined,
+    );
+    expect(chainState.prompts).toHaveLength(1);
+    expect(out.item.food).toBe("تونة في الماء");
+    expect(out.item.calories).toBe(205); // coerced from "٢٠٥", inside ±15% of 200
+    expect(out.item.alternatives).toBe("أو 200 جم سمك مشوي");
+  });
+
+  it("ITEM path: the {item:{…}} wrapper shape (the other measured class) succeeds too", async () => {
+    chainState.responses.push({
+      text: JSON.stringify({
+        item: { food: "جبن قريش", amount: "200 جم", calories: 190 },
+      }),
+      model: "openrouter/nemotron",
+      provider: "openrouter",
+    });
+    const out = await regenerateFoodItem(
+      { food: "زبادي", amount: "200 جم", calories: 200 },
+      ctx,
+      [],
+      undefined,
+    );
+    expect(chainState.prompts).toHaveLength(1);
+    expect(out.item.food).toBe("جبن قريش");
+    expect(out.item.calories).toBe(190);
+  });
+});

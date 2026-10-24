@@ -24,6 +24,7 @@ import {
  Download,
  AlertTriangle,
  Search,
+ Target,
 } from "lucide-react";
 // #5 fix: lazy-load recharts (~600KB) — only loaded when progress tab is opened
 import dynamic from "next/dynamic";
@@ -91,7 +92,16 @@ import { DIET_TYPES, DIET_TYPE_LABELS_AR, classifyDietText, type DietType } from
 // PLAN-EDIT-2026-10-24: the editor's pure item→meal→plan math (grams
 // parser + 4/4/9 macro chain) — the zero-dependency leaf, unit-tested
 // in __tests__/nutrition-totals.test.ts.
-import { parseGrams, scalePer100g, recomputeNutritionTotals, type BoundFood } from "@/lib/nutrition-totals";
+import {
+ parseGrams,
+ scalePer100g,
+ recomputeNutritionTotals,
+ displayCalories,
+ resolveTargetCalorieChange,
+ TARGET_CONSISTENCY_ABS_KCAL,
+ TARGET_CONSISTENCY_PCT,
+ type BoundFood,
+} from "@/lib/nutrition-totals";
 import type { PlanContent } from "@/lib/data/plans";
 
 /** Result payload of a finished plan_* ai_job (getAiJob → job.result). */
@@ -360,7 +370,13 @@ export function CoachClientView({ clientId }: { clientId: string }) {
  try {
  const fresh = await listAllClientPlans(entry.clientId);
  const old = fresh.find((p) => p.id === entry.replacePlanId);
- if (old && old.status === "draft") await deletePlan(old.id);
+ if (old && old.status === "draft") {
+ // DRAFT-DELETE FIX 2026-10-24: deletePlan is verified now — a failed
+ // old-draft cleanup is LOGGED (never silent), but still best-effort:
+ // the new draft already exists and stays either way.
+ const verdict = await deletePlan(old.id);
+ if (!verdict.ok) console.warn("[regenerate] old draft cleanup failed:", verdict.error);
+ }
  } catch {
  /* old draft cleanup is best-effort */
  }
@@ -615,11 +631,34 @@ export function CoachClientView({ clientId }: { clientId: string }) {
  }
  };
 
- const removePlan = async (id: string) => {
- if (!confirm(t("coach.deletePlanConfirm"))) return;
- await deletePlan(id);
- const data = await listPlans(clientId);
- setPlans(data);
+ // DRAFT-DELETE FIX 2026-10-24 (owner order item 3): the native confirm()
+ // is replaced by the in-UI dialog below (mobile in-app browsers suppress
+ // window.confirm — the coaches' daily reality), the delete itself is
+ // VERIFIED against the DB (deletePlan returns ok/error — silent RLS or
+ // network failures no longer look like success), and the list refresh
+ // reads the SAME source the tab renders (listAllClientPlans — the old
+ // listPlans refresh made every draft/archived plan VANISH from the UI
+ // after any delete, though they were still in the DB).
+ const [deleteTarget, setDeleteTarget] = useState<Plan | null>(null);
+ const [deletingPlanId, setDeletingPlanId] = useState<string | null>(null);
+ const confirmRemovePlan = async () => {
+ if (!deleteTarget) return;
+ setDeletingPlanId(deleteTarget.id);
+ try {
+ const verdict = await deletePlan(deleteTarget.id);
+ if (!verdict.ok) {
+ toast.error(verdict.error || (isAr ? "فشل حذف الخطة — لم يُغيَّر شيء" : "Deleting the plan failed — nothing was changed"));
+ return;
+ }
+ setPlans(await listAllClientPlans(clientId));
+ setViewingPlan((vp) => (vp?.id === deleteTarget.id ? null : vp));
+ toast.success(isAr ? "تم حذف الخطة نهائيًا ✅" : "The plan was permanently deleted ✅");
+ } catch (e) {
+ toast.error((e instanceof Error ? e.message : "") || (isAr ? "فشل حذف الخطة" : "Deleting the plan failed"));
+ } finally {
+ setDeletingPlanId(null);
+ setDeleteTarget(null);
+ }
  };
 
 
@@ -1170,7 +1209,7 @@ export function CoachClientView({ clientId }: { clientId: string }) {
  <Eye className="h-3.5 w-3.5" />
  عرض
  </Button>
- <Button size="sm" variant="ghost" onClick={() => removePlan(p.id)} className="text-destructive hover:text-destructive">
+ <Button size="sm" variant="ghost" onClick={() => setDeleteTarget(p)} className="text-destructive hover:text-destructive" title={isAr ? "حذف الخطة (بتأكيد)" : "Delete plan (with confirmation)"}>
  <Trash2 className="h-4 w-4" />
  </Button>
  </div>
@@ -1337,7 +1376,7 @@ export function CoachClientView({ clientId }: { clientId: string }) {
  موافقة وإرسال
  </Button>
  )}
- <Button size="sm" variant="ghost" onClick={() => removePlan(p.id)} className="text-destructive hover:text-destructive">
+ <Button size="sm" variant="ghost" onClick={() => setDeleteTarget(p)} className="text-destructive hover:text-destructive" title={isAr ? "حذف الخطة (بتأكيد)" : "Delete plan (with confirmation)"}>
  <Trash2 className="h-4 w-4" />
  </Button>
  </div>
@@ -1402,6 +1441,26 @@ export function CoachClientView({ clientId }: { clientId: string }) {
  plan={viewingPlan}
  onClose={() => setViewingPlan(null)}
  onRegenerate={() => handleRegeneratePlan(viewingPlan)}
+ // CALORIE-TARGET FIX 2026-10-24 (owner order item 1): the editor's
+ // «تعديل الهدف اليومي» control routes an OUT-OF-BAND target change
+ // here — the plan content is REGENERATED with the new target as the
+ // generation override (meals, quantities, totals — NOT a number-only
+ // edit), preserving the client's context + constraints (allergies,
+ // diet, goal, measurements) and the plan's original diet type.
+ onTargetRegenerate={(newTarget, dietType) => {
+ setViewingPlan(null);
+ void queuePlanJob("nutrition", {
+ name: client?.full_name || "العميل",
+ nutrition: nutriQ?.data || null,
+ fitness: fitQ?.data || null,
+ recent_measurements: progress.slice(-3).map((p) => ({
+ weight: p.weight,
+ waist: p.waist,
+ date: p.created_at,
+ })),
+ recent_plan_names: buildRecentPlanNames(),
+ }, { targetCalories: newTarget, ...(dietType ? { dietType } : {}) }, viewingPlan);
+ }}
  // AI-PLAN-QUALITY 2026-10-24: the SAME context the full-plan generator
  // uses (questionnaires + measurements + recent-plan names) now rides
  // every in-editor regeneration — meal/item/day/exercise swaps stopped
@@ -1421,6 +1480,82 @@ export function CoachClientView({ clientId }: { clientId: string }) {
  location: String((fitQ?.data as { location?: unknown } | null)?.location ?? "") || undefined,
  }}
  />
+ )}
+
+ {/* DRAFT-DELETE FIX 2026-10-24 (owner order item 3): the in-UI delete
+     confirmation — mobile-safe (no window.confirm, which in-app browsers
+     suppress), explicit about WHAT is deleted (this one plans row — never
+     ai_jobs receipts, plan_swaps history or notifications), and stronger
+     for approved/current plans (a live client surface) than for drafts. */}
+ {deleteTarget && (
+ <Modal
+ open={deleteTarget !== null}
+ onOpenChange={(o) => {
+ if (!o && deletingPlanId === null) setDeleteTarget(null);
+ }}
+ title={isAr ? "تأكيد حذف الخطة" : "Confirm plan deletion"}
+ icon={<Trash2 className="h-5 w-5" />}
+ size="sm"
+ >
+ <div className="space-y-4">
+ <div className="space-y-2 rounded-xl border border-border bg-muted/40 p-3 text-sm">
+ <div className="font-semibold">{deleteTarget.title}</div>
+ <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+ <span>{deleteTarget.type === "meal" ? "خطة تغذية" : "برنامج تمارين"}</span>
+ <span>·</span>
+ <span>{new Date(deleteTarget.created_at).toLocaleDateString(isAr ? "ar-EG" : "en-US")}</span>
+ {deleteTarget.status === "draft" && (
+ <Badge variant="outline" className="border-warning text-warning">مسودة — بانتظار المراجعة</Badge>
+ )}
+ {deleteTarget.is_current && (
+ <Badge variant="outline" className="border-success text-success">مُفعّلة للعميل</Badge>
+ )}
+ {deleteTarget.status === "archived" && (
+ <Badge variant="outline" className="text-muted-foreground">أرشيف</Badge>
+ )}
+ {deleteTarget.status === "approved" && !deleteTarget.is_current && (
+ <Badge variant="outline" className="border-success/50 text-success">معتمدة</Badge>
+ )}
+ </div>
+ </div>
+ {deleteTarget.status === "draft" ? (
+ <p className="text-sm text-muted-foreground">
+ سيُحذف صف هذه المسودة <strong>نهائيًا من قاعدة البيانات</strong> بعد التأكيد. لا تُمس أي بيانات أخرى (مهام الذكاء الاصطناعى، سجل الاستبدالات، الإشعارات) ولا أي خطة أخرى.
+ </p>
+ ) : (
+ <div className="rounded-xl border border-destructive/40 bg-destructive/5 p-3 text-sm text-destructive">
+ <p className="font-semibold">
+ {deleteTarget.is_current
+ ? "هذه خطة مُفعّلة يراها العميل الآن"
+ : "هذه خطة معتمدة"}
+ {" "}— الحذف نهائي وستختفي من صفحة العميل فورًا.
+ </p>
+ <p className="mt-1 text-muted-foreground">
+ يُحذف صف الخطة فقط من قاعدة البيانات — لا تُمس أي بيانات أخرى مرتبطة. إن كنت تريد استبدالها بخطة جديدة فالأفضل اعتماد الجديدة أولًا (تُؤرشف القديمة تلقائيًا) بدل الحذف.
+ </p>
+ </div>
+ )}
+ <div className="flex flex-wrap items-center justify-end gap-2">
+ <Button variant="outline" onClick={() => setDeleteTarget(null)} disabled={deletingPlanId !== null}>
+ {isAr ? "إلغاء" : "Cancel"}
+ </Button>
+ <Button
+ variant="destructive"
+ onClick={() => void confirmRemovePlan()}
+ disabled={deletingPlanId !== null}
+ >
+ {deletingPlanId !== null ? (
+ <Loader2 className="me-1.5 h-4 w-4 animate-spin" />
+ ) : (
+ <Trash2 className="me-1.5 h-4 w-4" />
+ )}
+ {deleteTarget.status === "draft"
+ ? isAr ? "حذف المسودة نهائيًا" : "Delete draft permanently"
+ : isAr ? "حذف الخطة نهائيًا" : "Delete plan permanently"}
+ </Button>
+ </div>
+ </div>
+ </Modal>
  )}
  </div>
  );
@@ -1653,7 +1788,22 @@ function QuestionnaireCard({
 }
 
 
-function PlanViewerModal({ plan, onClose, onRegenerate, regenContext }: { plan: Plan; onClose: () => void; onRegenerate?: () => void; regenContext?: { clientContext: Record<string, unknown>; location?: string } }) {
+function PlanViewerModal({
+ plan,
+ onClose,
+ onRegenerate,
+ onTargetRegenerate,
+ regenContext,
+}: {
+ plan: Plan;
+ onClose: () => void;
+ onRegenerate?: () => void;
+ /** CALORIE-TARGET FIX 2026-10-24: an out-of-band target change routes
+  *  here — the parent regenerates the plan content with the new target
+  *  (meals, quantities, totals) preserving the client's context. */
+ onTargetRegenerate?: (newTarget: number, dietType?: DietType) => void;
+ regenContext?: { clientContext: Record<string, unknown>; location?: string };
+}) {
  const { t, lang } = useI18n();
  // STAGE-254: bilingual toasts — the modal is fully bilingual already, the
  // toasts were the only Arabic-only stragglers in it.
@@ -1668,6 +1818,68 @@ function PlanViewerModal({ plan, onClose, onRegenerate, regenContext }: { plan: 
  const [content, setContent] = useState<PlanContent | null>(plan.content ? JSON.parse(JSON.stringify(plan.content)) as PlanContent : null);
  const [saving, setSaving] = useState(false);
  const isWorkout = plan.type === "workout";
+
+ // CALORIE-TARGET FIX 2026-10-24 (owner order item 1): the daily-calorie
+ // TARGET editor. The stat card below now shows the meals' ACTUAL sum
+ // (read-only — editing it was the «الرقم المعروض» illusion); changing the
+ // TARGET is this dedicated flow: within the platform's consistency band
+ // (±max(120, 7%)) the meals already track the new target → the target
+ // field updates and rides the same «حفظ» as every other edit; outside the
+ // band a recalculation can NEVER move the meals toward the target → the
+ // plan content is regenerated (onTargetRegenerate) with the new target as
+ // the generation override, preserving the client's context/constraints.
+ const [targetEditOpen, setTargetEditOpen] = useState(false);
+ const [targetDraft, setTargetDraft] = useState("");
+ const [targetRegenConfirm, setTargetRegenConfirm] = useState<number | null>(null);
+ const currentTarget = content && "meals" in content ? Number(content.daily_calories) || 0 : 0;
+ const mealsActual = content && "meals" in content ? Number(content.meals_total_calories) || 0 : 0;
+ // Preserve the plan's original diet constraint across the regeneration:
+ // the generation echo (data_analysis.diet_type) is an Arabic label — map
+ // it back to the DietType enum so the new prompt obeys the same diet.
+ const planDietType = (() => {
+ if (!content || !("meals" in content)) return undefined;
+ const label = String((content as NutritionPlanContent).data_analysis?.diet_type || "");
+ const hit = (Object.keys(DIET_TYPE_LABELS_AR) as DietType[]).find(
+ (k) => DIET_TYPE_LABELS_AR[k] === label,
+ );
+ return hit;
+ })();
+ const applyTargetDraft = () => {
+ const n = parseInt(targetDraft.replace(/[^0-9]/g, ""), 10);
+ if (!Number.isFinite(n) || n <= 0) {
+ toast.error(isAr ? "اكتب هدفًا صحيحًا بالسعرات (مثلاً 2000)" : "Enter a valid calorie target (e.g. 2000)");
+ return;
+ }
+ if (n < 1200) {
+ toast.error(isAr ? "الحد الأدنى اليومي 1200 سعرة (حد المنصة الصحي) — راجع الهدف" : "The daily floor is 1200 kcal (the platform's health floor) — review the target");
+ return;
+ }
+ if (n > 6000) {
+ toast.error(isAr ? "الحد الأقصى اليومي 6000 سعرة — راجع الهدف" : "The daily ceiling is 6000 kcal — review the target");
+ return;
+ }
+ const verdict = resolveTargetCalorieChange(n, mealsActual > 0 ? mealsActual : n);
+ if (verdict.kind === "in-band") {
+ if (content && "meals" in content) {
+ const next = JSON.parse(JSON.stringify(content)) as NutritionPlanContent;
+ next.daily_calories = n;
+ setContent(next);
+ }
+ setTargetEditOpen(false);
+ setTargetDraft("");
+ toast.success(
+ isAr
+ ? `تم تحديث الهدف اليومي إلى ${n} سعرة — الوجبات الحالية متسقة معه ضمن نطاق المنصة (اضغط «حفظ» للتثبيت)`
+ : `Daily target updated to ${n} kcal — the current meals already track it within the platform's band (press Save)`,
+ );
+ return;
+ }
+ // Outside the band: recalculation can't move the meals toward the
+ // target — regeneration is the honest path. Confirm in-UI (mobile-safe).
+ setTargetRegenConfirm(n);
+ setTargetEditOpen(false);
+ setTargetDraft("");
+ };
 
  // T-4PILLAR-COMPLETE: per-exercise AI swap inside the coach editor —
  // same injury-safe library-filtered job the client side uses, wired
@@ -1806,9 +2018,10 @@ function PlanViewerModal({ plan, onClose, onRegenerate, regenContext }: { plan: 
  }
 
  // Macros
- if (c.daily_calories || c.macros) {
+ const printCals = displayCalories(c);
+ if (printCals > 0 || c.macros) {
  html += `<h2> السعرات والماكروز</h2><div class="stats">`;
- if (c.daily_calories) html += `<div class="stat"><span class="stat-label">السعرات اليومية</span><span class="stat-value">${c.daily_calories}</span></div>`;
+ if (printCals > 0) html += `<div class="stat"><span class="stat-label">السعرات اليومية (مجموع الوجبات)</span><span class="stat-value">${printCals}</span></div>`;
  if (c.macros?.protein_g) html += `<div class="stat"><span class="stat-label">بروتين</span><span class="stat-value">${c.macros.protein_g}جم</span></div>`;
  if (c.macros?.carbs_g) html += `<div class="stat"><span class="stat-label">كارب</span><span class="stat-value">${c.macros.carbs_g}جم</span></div>`;
  if (c.macros?.fat_g) html += `<div class="stat"><span class="stat-label">دهون</span><span class="stat-value">${c.macros.fat_g}جم</span></div>`;
@@ -2374,11 +2587,11 @@ function PlanViewerModal({ plan, onClose, onRegenerate, regenContext }: { plan: 
  {content.daily_calories > 0 && (
  <>
  {" · "}
- {Math.abs(content.meals_total_calories - content.daily_calories) <= Math.max(120, content.daily_calories * 0.07) ? (
+ {Math.abs(content.meals_total_calories - content.daily_calories) <= Math.max(TARGET_CONSISTENCY_ABS_KCAL, content.daily_calories * TARGET_CONSISTENCY_PCT) ? (
  <span className="font-medium text-success">متسق مع الهدف اليومي ({content.daily_calories} سعرة)</span>
  ) : (
  <span className="font-medium text-amber-600 dark:text-amber-400">
- يختلف عن الهدف اليومي ({content.daily_calories} سعرة) بنحو {content.meals_total_calories - content.daily_calories > 0 ? "+" : ""}{content.meals_total_calories - content.daily_calories} سعرة — راجع التوزيع
+ يختلف عن الهدف اليومي ({content.daily_calories} سعرة) بنحو {content.meals_total_calories - content.daily_calories > 0 ? "+" : ""}{content.meals_total_calories - content.daily_calories} سعرة — استخدم «تعديل الهدف» لإعادة التوليد بالهدف الصحيح
  </span>
  )}
  </>
@@ -2387,16 +2600,113 @@ function PlanViewerModal({ plan, onClose, onRegenerate, regenContext }: { plan: 
  </div>
  )}
 
- {/* Nutrition: Macros */}
+ {/* CALORIE-TARGET FIX 2026-10-24 (owner order item 1): the daily-target
+     control — the ONLY way the target changes now. In-band changes update
+     the target field (saved via «حفظ»); out-of-band changes regenerate the
+     plan content (meals, quantities, totals) with the new target — never
+     a number-only edit that leaves the meals behind. */}
+ {!isWorkout && content && "meals" in content && (
+ <div className="rounded-xl border border-primary/25 bg-primary/5 px-3 py-2.5">
+ <div className="flex flex-wrap items-center justify-between gap-2">
+ <div className="text-xs">
+ <span className="font-semibold">الهدف اليومي: </span>
+ <span className="text-primary font-bold">{currentTarget > 0 ? currentTarget : "غير محدد"}</span>
+ <span className="text-muted-foreground"> سعرة</span>
+ {mealsActual > 0 && (
+ <span className="text-muted-foreground"> · وجبات الخطة حاليًا ≈ {mealsActual} سعرة</span>
+ )}
+ </div>
+ {!targetEditOpen ? (
+ <Button
+ size="sm"
+ variant="outline"
+ className="h-7 gap-1.5 border-primary/30 text-primary"
+ onClick={() => {
+ setTargetDraft(currentTarget > 0 ? String(currentTarget) : "");
+ setTargetEditOpen(true);
+ }}
+ >
+ <Target className="h-3.5 w-3.5" />
+ تعديل الهدف
+ </Button>
+ ) : (
+ <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => { setTargetEditOpen(false); setTargetDraft(""); }}>
+ إلغاء
+ </Button>
+ )}
+ </div>
+ {targetEditOpen && (
+ <div className="mt-2.5 space-y-2">
+ <div className="flex flex-wrap items-center gap-2">
+ <Input
+ type="number"
+ inputMode="numeric"
+ value={targetDraft}
+ onChange={(e) => setTargetDraft(e.target.value)}
+ placeholder="مثلاً: 2000"
+ className="h-8 w-32 text-sm"
+ />
+ <Button size="sm" className="h-8" onClick={applyTargetDraft} disabled={!targetDraft.trim()}>
+ تطبيق الهدف
+ </Button>
+ </div>
+ <p className="text-[11px] leading-relaxed text-muted-foreground">
+ تغيير ضئيل (ضمن ±{Math.round(Math.max(TARGET_CONSISTENCY_ABS_KCAL, (parseInt(targetDraft) || currentTarget || 2000) * TARGET_CONSISTENCY_PCT))} سعرة من وجبات الخطة): يُحدَّث الرقم الهدف فقط وتظل الوجبات كما هي — متسقة أصلًا.
+ <br />
+ تغيير أكبر: تُعاد توليد الوجبات والكميات والمجاميع كاملة بالهدف الجديد (نفس قيود العميل: الحساسيات، النظام الغذائي، الهدف) وتصل كمسودة جديدة تحل محل هذه عند اعتمادك.
+ </p>
+ </div>
+ )}
+ {targetRegenConfirm !== null && (
+ <div className="mt-2.5 rounded-xl border border-warning/40 bg-warning/5 p-3 text-xs">
+ <p className="font-semibold text-warning">
+ الهدف الجديد ({targetRegenConfirm} سعرة) يتطلب إعادة توليد الخطة — تغيير الرقم وحده لا يجعل الوجبات تطابقه.
+ </p>
+ <p className="mt-1 leading-relaxed text-muted-foreground">
+ سيُرسل طلب توليد جديد بالهدف الجديد مع الحفاظ الكامل على بيانات العميل وقيوده (الحساسيات، النظام الغذائي{planDietType ? ` (${DIET_TYPE_LABELS_AR[planDietType]})` : ""}، الهدف، القياسات). تصل الخطة الجديدة كمسودة خلال دقائق — {plan.status === "draft" ? "وتحل محل هذه المسودة عند وصولها" : "والخطة الحالية تبقى معتمدة كما هي حتى تعتمد الجديدة"}. هذا يخصم وحدة من رصيد توليد الخطط الشهري للعميل.
+ </p>
+ <div className="mt-2 flex flex-wrap items-center gap-2">
+ <Button size="sm" variant="ghost" className="h-7" onClick={() => setTargetRegenConfirm(null)}>
+ إلغاء
+ </Button>
+ <Button
+ size="sm"
+ className="h-7 gap-1.5"
+ onClick={() => {
+ if (onTargetRegenerate) {
+ onTargetRegenerate(targetRegenConfirm, planDietType);
+ } else {
+ toast.error(isAr ? "إعادة التوليد بالهدف غير متاحة هنا" : "Target regeneration is unavailable here");
+ }
+ setTargetRegenConfirm(null);
+ }}
+ >
+ <RefreshCw className="h-3.5 w-3.5" />
+ إعادة التوليد بالهدف الجديد
+ </Button>
+ </div>
+ </div>
+ )}
+ </div>
+ )}
+
+ {/* Nutrition: Macros — CALORIE-TARGET FIX 2026-10-24: the السعرات card
+     is the meals' ACTUAL sum (displayCalories: meals_total first, target
+     fallback for legacy plans) and is READ-ONLY even in edit mode — it is
+     computed from the items (edit the items, or «تعديل الهدف» above), and
+     the old editable card was exactly the «تغيير الرقم المعروض» illusion:
+     typing a number there never touched the meals, and any later item edit
+     silently clobbered it back (RC1-a + RC1-b). The target has its own
+     dedicated control above; macros stay item-derived and editable as
+     free-text overrides of what the items sum to. */}
  {!isWorkout && (
  <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
  {[
- { key: "daily_calories", label: "السعرات", color: "text-primary", suffix: "" },
  { key: "macros.protein_g", label: "بروتين", color: "text-success", suffix: "g" },
  { key: "macros.carbs_g", label: "كارب", color: "text-warning", suffix: "g" },
  { key: "macros.fat_g", label: "دهون", color: "text-primary", suffix: "g" },
  ].map((stat) => {
- const val = stat.key.includes(".") ? content[stat.key.split(".")[0]]?.[stat.key.split(".")[1]] : content[stat.key];
+ const val = content[stat.key.split(".")[0]]?.[stat.key.split(".")[1]];
  return (
  <div key={stat.key} className="rounded-xl border border-border bg-background p-3 text-center">
  {editMode ? (
@@ -2404,12 +2714,7 @@ function PlanViewerModal({ plan, onClose, onRegenerate, regenContext }: { plan: 
  type="number"
  value={val ?? 0}
  onChange={(e) => {
- if (stat.key.includes(".")) {
- const [parent, child] = stat.key.split(".");
  updateField(stat.key, parseInt(e.target.value) || 0);
- } else {
- updateField(stat.key, parseInt(e.target.value) || 0);
- }
  }}
  className={`h-8 text-center text-lg font-bold ${stat.color}`}
  />
@@ -2420,6 +2725,12 @@ function PlanViewerModal({ plan, onClose, onRegenerate, regenContext }: { plan: 
  </div>
  );
  })}
+ <div className="rounded-xl border border-primary/30 bg-primary/5 p-3 text-center">
+ <div className="font-display text-lg font-bold text-primary">
+ {content && "meals" in content ? displayCalories(content) : 0}
+ </div>
+ <div className="text-xs text-muted-foreground">السعرات (مجموع الوجبات)</div>
+ </div>
  </div>
  )}
 

@@ -121,6 +121,9 @@ describe("root cause 4 — pick/grams recalcs every calorie + macro of the plan"
     expect(s).toContain("export function scalePer100g");
     expect(s).toContain("export function recomputeNutritionTotals");
     expect(s).toContain("next.macros.fat_cal = next.macros.fat_g * 9;");
-    expect(s).toContain("next.meals_total_calories = next.daily_calories;");
+    // CALORIE-TARGET 2026-10-24: the target (daily_calories) is PRESERVED
+    // through every recompute — the actual rides meals_total_calories.
+    expect(s).toContain("next.meals_total_calories = sum((m) => numOr(m.total_calories));");
+    expect(s).toContain("next.daily_calories = numOr(next.daily_calories);");
   });
 });

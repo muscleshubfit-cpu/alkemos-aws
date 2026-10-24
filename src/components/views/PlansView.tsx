@@ -14,6 +14,7 @@ import type { PlanContent } from "@/lib/data/plans";
 import type { NutritionPlanContent, WorkoutPlanContent } from "@/lib/plan-generator";
 import type { AiJobRow } from "@/lib/ai-jobs";
 import type { Plan, Json } from "@/lib/supabase/types";
+import { displayCalories } from "@/lib/nutrition-totals";
 import { enqueueAiJobClient, getAiJob } from "@/lib/ai-jobs-client";
 import { applyMemberSwapToContent } from "@/lib/member-swap-apply";
 import { resolveExerciseImage, getExerciseImage, getExerciseImages, getFallbackSVG } from "@/lib/exercise-images";
@@ -222,11 +223,18 @@ export function PlansView() {
  }
  if (job?.status === "failed") {
  removePendingSwap(entry.id);
+ // REGEN-RELIABILITY FIX 2026-10-24 (owner order item 2 — «عدم استهلاك
+ // الحصة عند الفشل»): the server records the weekly swap unit ONLY on
+ // success (recordSwapOnSuccess in the runner) — the optimistic
+ // decrement from the click must roll back to server truth HERE too,
+ // or the member stares at a burned unit the DB never charged.
+ void refreshUsage();
  toast.error(job.error_message || (isAr ? "فشل الاستبدال." : "The swap failed."));
  return;
  }
  }
  removePendingSwap(entry.id);
+ void refreshUsage();
  toast.error(isAr ? "انتهت مهلة انتظار الاستبدال — حاول مرة أخرى." : "The swap wait timed out — please try again.");
  } finally {
  activeWatchers.current.delete(entry.id);
@@ -467,7 +475,8 @@ export function PlansView() {
  // Macros
  if (content && "meals" in content && (content.daily_calories || content.macros)) {
  html += `<h2> السعرات والماكروز</h2><div class="stats">`;
- if (content.daily_calories) html += `<div class="stat"><span class="stat-label">السعرات اليومية</span><span class="stat-value">${content.daily_calories}</span></div>`;
+ const printCals = displayCalories(content);
+ if (printCals > 0) html += `<div class="stat"><span class="stat-label">السعرات اليومية (مجموع الوجبات)</span><span class="stat-value">${printCals}</span></div>`;
  if (content.macros?.protein_g) html += `<div class="stat"><span class="stat-label">بروتين</span><span class="stat-value">${content.macros.protein_g}جم</span></div>`;
  if (content.macros?.carbs_g) html += `<div class="stat"><span class="stat-label">كربوهيدرات</span><span class="stat-value">${content.macros.carbs_g}جم</span></div>`;
  if (content.macros?.fat_g) html += `<div class="stat"><span class="stat-label">دهون</span><span class="stat-value">${content.macros.fat_g}جم</span></div>`;
@@ -678,9 +687,9 @@ function PlanCard({ plan, onClick }: { plan: Plan; onClick: () => void }) {
  {t("plans.view")}
  </Button>
  </div>
- {content && "meals" in content && content.daily_calories && (
+ {content && "meals" in content && displayCalories(content) > 0 && (
  <div className="mt-3 flex gap-2 text-xs">
- <Badge variant="secondary">{content.daily_calories} cal</Badge>
+ <Badge variant="secondary">{displayCalories(content)} cal</Badge>
  {content.macros && (
  <Badge variant="outline">P:{content.macros.protein_g}g</Badge>
  )}
@@ -799,9 +808,9 @@ function MealContent({ content, onSwap, swapLoading, planId, isSwapPending }: { 
  )}
 
  {/* Macros summary */}
- {content.daily_calories && (
+ {displayCalories(content) > 0 && (
  <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
- <Stat label={t("plan.calories")} value={content.daily_calories} />
+ <Stat label={t("plan.calories")} value={displayCalories(content)} />
  <Stat label={t("plan.protein")} value={`${content.macros?.protein_g || 0}g`} />
  <Stat label={t("plan.carbs")} value={`${content.macros?.carbs_g || 0}g`} />
  <Stat label={t("plan.fat")} value={`${content.macros?.fat_g || 0}g`} />

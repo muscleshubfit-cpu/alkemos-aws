@@ -178,10 +178,45 @@ ledger-based — `src/lib/refund.ts`).
   portal dropdown over `/api/food-search`; picking a row prefills its
   default serving grams). Every pick/grams/calories edit recomputes the
   WHOLE plan through one pure chain (`src/lib/nutrition-totals.ts`:
-  item macros → meal totals → daily = meals-total → macro grams + 4/4/9
+  item macros → meal totals → the meals' ACTUAL sum → macro grams + 4/4/9
   kcal splits); gram edits recalc from the library row the coach actually
   picked (session binding, invalidated on AI swaps/regens/removals), and
   count-based amounts («2 بيضة») never guess macros
+- **Calorie-target editing with a real effect (2026-10-24)** — the daily
+  calorie TARGET is preserved separately from the meals' actual sum (the
+  السعرات card shows the actual, read-only — editing it was a number-only
+  illusion, and any later item edit used to silently clobber the target
+  back to the meals' sum). The dedicated «تعديل الهدف» control in the plan
+  editor is the only way the target changes: a change within the
+  platform's consistency band (±max(120 kcal, 7%)) updates the target
+  field (the meals already track it); anything bigger REGENERATES the
+  whole plan content (meals, quantities, totals) with the new target as
+  the generation override — preserving the client's questionnaires
+  (allergies, diet, goal, measurements), recovering the plan's original
+  diet type, and swapping the old DRAFT only after the replacement
+  arrives (approved plans are never touched until the new draft is
+  approved). The member's calorie cards read the actual meals sum
+  (`displayCalories`) so they keep tracking every meal swap
+- **Draft & plan deletion (2026-10-24)** — the coach can delete a draft
+  (or, with a stronger explicit warning, an approved/current plan) from
+  the plans list: an in-UI confirmation dialog (no `window.confirm` —
+  suppressed in mobile in-app browsers) names exactly what is deleted
+  (the one plans row — never AI-job receipts, swap history or
+  notifications), the delete is VERIFIED against the database (the
+  Supabase error is captured AND the row is confirmed gone before
+  success), and the list refreshes from the same all-plans source it
+  renders
+- **Regeneration reliability (2026-10-24)** — the queue worker
+  (`process-ai-jobs.yml`) runs the AI runner under Node's
+  `react-server` resolution condition so the `server-only`-guarded food
+  library loads (the grounding was silently dead in the runner since the
+  gate landed), the AI validators coerce Arabic-Indic/Persian digit
+  numbers («٢٥٠» = 250 — a live rejection class) and unwrap
+  wrapper-nested payloads (`{item:{…}}` / `{replacement:{…}}` — the
+  16-token provider payloads that failed item regeneration permanently),
+  and the member's swap counter rolls back to server truth when a
+  regeneration FAILS (the quota is success-only, and the UI now shows
+  it)
 - **Wallet system** — fixed per-client activation pricing paid to the platform,
   receipt-reviewed top-ups (InstaPay / Vodafone Cash / PayPal), activation
   gated on sufficient balance

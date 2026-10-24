@@ -60,8 +60,10 @@ describe("applyMemberSwapToContent — meal kind", () => {
     expect(c.meals[0].name).toBe("فطور بديل");
     expect(c.meals[0].total_calories).toBe(350);
     expect(c.meals[0].items[0].calories).toBe(210);
-    // The header card now matches the meals actually shown.
-    expect(c.daily_calories).toBe(750);
+    // CALORIE-TARGET 2026-10-24: the header card reads the ACTUAL
+    // (meals_total_calories — it updates on every swap); daily_calories is
+    // the plan's TARGET and SURVIVES the swap (displayCalories picks the
+    // actual first).
     expect(c.meals_total_calories).toBe(750);
     expect(c.macros.protein_g).toBe(78); // 18 + 60
     expect(c.macros.carbs_g).toBe(28);
@@ -78,9 +80,9 @@ describe("applyMemberSwapToContent — meal kind", () => {
     });
     expect(res.ok).toBe(true);
     if (!res.ok) return;
-    const c = res.content as { daily_calories: number };
-    expect(c.daily_calories).toBe(750);
-    expect(typeof c.daily_calories).toBe("number");
+    const c = res.content as { daily_calories: number; meals_total_calories: number };
+    expect(c.meals_total_calories).toBe(750);
+    expect(typeof c.meals_total_calories).toBe("number");
   });
 
   it("REJECTS shapeless payloads without touching the plan (the old corruption bug)", () => {
@@ -166,7 +168,11 @@ describe("applyMemberSwapToContent — legacy plans", () => {
     expect(res.ok).toBe(true);
     if (!res.ok) return;
     const c = res.content as { daily_calories: number; meals_total_calories: number };
-    expect(c.daily_calories).toBe(750);
+    // The legacy string target "1000" is COERCED to the number 1000 and
+    // preserved as the target; the actual (750) rides meals_total_calories.
+    expect(c.daily_calories).toBe(1000);
+    expect(c.meals_total_calories).toBe(750);
     expect(typeof c.daily_calories).toBe("number");
+    expect(typeof c.meals_total_calories).toBe("number");
   });
 });
