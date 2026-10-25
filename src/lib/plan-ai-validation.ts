@@ -265,11 +265,11 @@ const DIET_FORBIDDEN_TOKENS: Record<ConstraintDietType, string[]> = {
     "ماكريل", "كفته", "كباب", "برجر", "سجق", "بسطرمه", "مرقه لحم", "مرقه دجاج", "ستيك",
     "بيض", "بيضه", "بيضة", "اومليت", "جلاتين",
     "جبن", "جبنة", "لبنه", "حليب", "زبادي", "قريش", "موزاريلا", "شيدر", "بارميزان",
-    "كريمه", "كريمة", "زبده", "زبدة", "عسل", "كاسترد", "بوظه", "ايس كريم",
+    "كريمه", "كريمة", "زبده", "زبدة", "سمن", "عسل", "كاسترد", "بوظه", "ايس كريم",
     "meat", "beef", "lamb", "chicken", "turkey", "fish", "salmon", "tuna", "shrimp", "prawn", "crab",
     "lobster", "anchovy", "sardine", "mackerel", "burger", "sausage", "bacon", "steak", "kebab", "meatball",
     "egg", "omelette", "omelet", "gelatin",
-    "cheese", "milk", "yogurt", "yoghurt", "cream", "butter", "whey", "casein", "honey", "custard", "ice cream", "gelato",
+    "cheese", "milk", "yogurt", "yoghurt", "cream", "butter", "ghee", "whey", "casein", "honey", "custard", "ice cream", "gelato",
   ],
 };
 
@@ -287,13 +287,20 @@ const PLANT_BASED_GUARD = /جوز هند|جوزهند|صويا|نباتي|شوف
  * only — a named single food stays a plain containment token). */
 const ALLERGEN_EXPANSION: Array<{ category: RegExp; family: string[] }> = [
   { category: /مكسرات|نوت|nuts?\b|peanut|فول سوداني|فولسوداني/, family: [
-    "جوز", "عين جمل", "بندق", "كاجو", "فستق", "لوز", "مكسرات", "زبدة الفول السوداني", "نوتيلا",
+    "جوز", "عين جمل", "بندق", "كاجو", "فستق", "لوز", "مكسرات", "فول سوداني", "فولسوداني", "زبدة الفول السوداني", "نوتيلا",
     "walnut", "hazelnut", "cashew", "pistachio", "almond", "nut", "peanut", "nutella",
   ] },
   { category: /بيض|eggs?\b/, family: ["بيض", "بيضه", "بيضة", "اومليت", "مايونيز", "egg", "omelette", "mayonnaise"] },
   { category: /البان|لبان|اجبان|dairy|milk|حليب|لبن/, family: [
-    "حليب", "لبن", "زبادي", "جبن", "جبنة", "قريش", "لبنه", "موزاريلا", "شيدر", "كريمه", "كريمة", "زبده", "زبدة",
-    "milk", "yogurt", "cheese", "cream", "butter", "whey", "casein",
+    "حليب", "لبن", "زبادي", "جبن", "جبنة", "قريش", "لبنه", "موزاريلا", "شيدر", "كريمه", "كريمة", "زبده", "زبدة", "سمن",
+    "milk", "yogurt", "cheese", "cream", "butter", "ghee", "whey", "casein",
+  ] },
+  // SWAP-ROOTCAUSE 2026-10-25: sesame joins the expansion families — the
+  // new tahini row is a staple fat, and sesame is a top-9 allergen; the
+  // family keeps the expansion CONSERVATIVE (seeds + paste only).
+  { category: /سمسم|طحينه|طحينة|sesame|tahini/, family: [
+    "طحينة", "طحينه", "سمسم", "حلاوه طحينيه", "حلاوة طحينية",
+    "sesame", "tahini", "halva",
   ] },
   { category: /سمك|اسماك|أسم|seafood|fish\b/, family: [
     "سمك", "سلمون", "تونه", "تونة", "جمبري", "روبيان", "استاكوزا", "كابوريا", "سردين", "ماكريل", "انشوجه", "بلح البحر",
@@ -309,6 +316,11 @@ const ALLERGEN_EXPANSION: Array<{ category: RegExp; family: string[] }> = [
 /** Stop words stripped when tokenizing the allergy/disliked free text. */
 const TOKEN_STOP_WORDS = new Set([
   "حساسيه", "حساسية", "من", "و", "او", "أو", "لا", "يوجد", "ولا", "انا", "أنا", "عند", "عندي", "مع", "بدون",
+  // SWAP-ROOTCAUSE 2026-10-25: negation/quantity fillers measured in live
+  // questionnaires («اوقات الجبن والعيش» → «اوقات»; «مفيش» = nothing) —
+  // they are noise, never foods, and «مفيش» as a banned token would
+  // shadow nothing while polluting the repair message.
+  "اوقات", "احيانا", "أحيانا", "مفيش", "مفيش.", "لا شيء", "لاشيء", "none", "nothing", "لا يوجد", "يوجد",
   "allergy", "allergic", "to", "and", "or", "no", "none", "i", "have", "am",
 ]);
 
@@ -318,7 +330,13 @@ export function tokenizeConstraintText(raw: unknown): string[] {
   const text = String(raw || "");
   if (!text.trim()) return [];
   const normText = normFood(text);
-  const words = normText.split(/[\s،,؛;/·+|]+/).filter(Boolean);
+  // SWAP-ROOTCAUSE 2026-10-25: Arabic attaches the conjunction و to the
+  // next word («الجبن والعيش» → token «وعيش» that never matches any food
+  // name). Split each word on its leading و too — both shapes enter the
+  // token set, the bare one («عيش») reaches real names.
+  const words = normText.split(/[\s،,؛;/·+|]+/).flatMap((w) =>
+    w.length >= 4 && w.startsWith("و") ? [w, w.slice(1)] : [w],
+  ).filter(Boolean);
   const tokens = new Set<string>();
   for (const w of words) {
     if (w.length < 2 || TOKEN_STOP_WORDS.has(w)) continue;
@@ -658,6 +676,33 @@ export type MealRegenVerdict =
   | { ok: true; value: AIMealLike }
   | { ok: false; error: string };
 
+/** Wrapper keys providers nest the regenerated MEAL under (the measured
+ *  2026-10-24/25 drift class). The FIRST key whose value is an object
+ *  carrying an items/foods array wins; a flat meal object passes through
+ *  unchanged. Mirrors unwrapItem's law one level up. */
+const MEAL_WRAPPER_KEYS = ["meal", "replacement", "new_meal", "regenerated_meal", "result", "data"] as const;
+
+function unwrapMealPayload(obj: Record<string, unknown>): Record<string, unknown> {
+  const hasItems = (v: unknown): v is Record<string, unknown> =>
+    Boolean(v) && typeof v === "object" && !Array.isArray(v) &&
+    (Array.isArray((v as Record<string, unknown>).items) || Array.isArray((v as Record<string, unknown>).foods));
+  // A flat meal already carrying items IS the meal — never look deeper.
+  if (hasItems(obj)) return obj;
+  for (const key of MEAL_WRAPPER_KEYS) {
+    const inner = obj[key];
+    if (hasItems(inner)) return inner as Record<string, unknown>;
+    // One extra nesting level ({result:{meal:{items}}}): the free tier
+    // measured both shapes; a bounded second hop stays deterministic.
+    if (inner && typeof inner === "object" && !Array.isArray(inner)) {
+      for (const key2 of MEAL_WRAPPER_KEYS) {
+        const inner2 = (inner as Record<string, unknown>)[key2];
+        if (hasItems(inner2)) return inner2 as Record<string, unknown>;
+      }
+    }
+  }
+  return obj;
+}
+
 /**
  * The MEAL-REGENERATION gate: one meal, items coerced + grounded, totals
  * recomputed, and the replacement closes within ±20% of the meal's own
@@ -673,8 +718,14 @@ export function validateRegeneratedMeal(
   constraints?: ClientItemConstraints | null,
 ): MealRegenVerdict {
   const obj = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>;
-  // Accept both { meal: {...} } and a flat meal object.
-  const mealRaw = (obj.meal && typeof obj.meal === "object" ? obj.meal : obj) as Record<string, unknown>;
+  // SWAP-ROOTCAUSE 2026-10-25: unwrap common model wrappers around the MEAL
+  // before reading items — the same measured wrapper class the item gate
+  // already handles (REGEN-RELIABILITY FIX 2026-10-24: providers answer 200
+  // with the replacement NESTED under {replacement|result|data}). The old
+  // meal gate read `obj.meal` or the FLAT object only, so a perfectly good
+  // {replacement:{items:[…]}} payload died as «وصلت 0» — the exact live
+  // rejection that burned the production swap's three attempts.
+  const mealRaw = unwrapMealPayload(obj);
   const name = str(mealRaw.name, PLAN_AI_SANITY.mealNameMax) || "وجبة بديلة";
   const rawItems = Array.isArray(mealRaw.items)
     ? mealRaw.items

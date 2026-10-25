@@ -3418,7 +3418,8 @@ function PlanViewerModal({
 
 /** A food-library row as returned by /api/food-search — the fields the
  *  editor's combobox consumes (local rows also carry their default
- *  serving since PLAN-EDIT-2026-10-24). */
+ *  serving since PLAN-EDIT-2026-10-24, and the pagination envelope since
+ *  FOOD-LIBRARY-COMPLETENESS 2026-10-25). */
 type FoodSearchRow = {
  name: string;
  source: "local" | "openfoodfacts";
@@ -3462,6 +3463,12 @@ function FoodPickerCell({
  const [results, setResults] = useState<FoodSearchRow[]>([]);
  const [loading, setLoading] = useState(false);
  const [open, setOpen] = useState(false);
+ // FOOD-LIBRARY-COMPLETENESS 2026-10-25 (owner order item 7): the FULL
+ // library behind the combobox — the first page carries 12 ranked rows
+ // and «المزيد» progressive-loads the next page from the SAME query while
+ // library rows remain (nextOffset from the pagination envelope).
+ const [moreOffset, setMoreOffset] = useState<number | null>(null);
+ const [loadingMore, setLoadingMore] = useState(false);
  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
  // Measured live (2026-10-24 smoke): without this guard every cell's
  // MOUNT fetch (its initial food name) auto-opened a dropdown the coach
@@ -3481,6 +3488,7 @@ function FoodPickerCell({
  const trimmed = query.trim();
  if (!trimmed) {
  setResults([]);
+ setMoreOffset(null);
  setOpen(false);
  setLoading(false);
  return;
@@ -3493,12 +3501,13 @@ function FoodPickerCell({
  const { signal } = controller;
  debounceRef.current = setTimeout(async () => {
  try {
- const res = await fetch(`/api/food-search?q=${encodeURIComponent(trimmed)}&lang=${lang}`, { signal });
+ const res = await fetch(`/api/food-search?q=${encodeURIComponent(trimmed)}&lang=${lang}&limit=12`, { signal });
  if (res.ok) {
  const data = await res.json();
  if (signal.aborted) return; // late-body belt
- const rows: FoodSearchRow[] = (data.results ?? []).slice(0, 8);
+ const rows: FoodSearchRow[] = (data.results ?? []).slice(0, 12);
  setResults(rows);
+ setMoreOffset(typeof data.nextOffset === "number" ? data.nextOffset : null);
  if (userTypedRef.current) setOpen(rows.length > 0);
  }
  } catch {
@@ -3512,6 +3521,28 @@ function FoodPickerCell({
  controller.abort();
  };
  }, [query, lang]);
+
+ // FOOD-LIBRARY-COMPLETENESS: append the NEXT page of library rows for
+ // the SAME query (owned by the current query's controller — a stale
+ // «المزيد» click can never splice rows into a newer query's list).
+ const loadMore = async () => {
+ if (loadingMore || moreOffset === null) return;
+ setLoadingMore(true);
+ const trimmed = query.trim();
+ try {
+ const res = await fetch(`/api/food-search?q=${encodeURIComponent(trimmed)}&lang=${lang}&limit=12&offset=${moreOffset}`);
+ if (res.ok) {
+ const data = await res.json();
+ const rows: FoodSearchRow[] = (data.results ?? []).filter((r) => r.source === "local");
+ setResults((prev) => [...prev, ...rows]);
+ setMoreOffset(typeof data.nextOffset === "number" ? data.nextOffset : null);
+ }
+ } catch {
+ /* best-effort — the button stays for a retry */
+ } finally {
+ setLoadingMore(false);
+ }
+ };
 
  return (
  <Popover open={open} onOpenChange={setOpen}>
@@ -3568,6 +3599,17 @@ function FoodPickerCell({
  </span>
  </button>
  ))}
+ {moreOffset !== null && (
+ <button
+ type="button"
+ onMouseDown={(e) => e.preventDefault()}
+ onClick={() => void loadMore()}
+ className="mt-1 flex w-full items-center justify-center gap-1.5 rounded-md border border-dashed px-2 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+ >
+ {loadingMore ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Search className="h-3.5 w-3.5" />}
+ {isAr ? "المزيد من المكتبة…" : "More from the library…"}
+ </button>
+ )}
  </PopoverContent>
  </Popover>
  );

@@ -606,6 +606,11 @@ export async function generateNutritionPlanAI(
     dietType: targets.dietType,
     mealsCount: overrides?.mealsCount,
     constraints: constraints ?? null,
+    // SWAP-QUALITY 2026-10-25 (owner order item 2 — «تنوع منطقي
+    // للأطعمة»): the client's previous-plan food names ride the local
+    // engine as a BEST-EFFORT variety list (never empties a category —
+    // the same PHASE-62 VARIETY law the AI prompt's avoid-block follows).
+    avoidNames: (ctx.recent_plan_names ?? []).slice(0, 60),
   });
   const localVerdict = validateNutritionPlanAIOutput(
     { meals: local.meals } as unknown as Record<string, unknown>,

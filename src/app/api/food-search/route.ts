@@ -3,7 +3,7 @@ import { FOODS } from "@/lib/foods";
 import { searchQuerySchema } from "@/lib/validation/schemas";
 
 /**
- * GET /api/food-search?q=chicken+breast[&lang=ar|en]
+ * GET /api/food-search?q=chicken+breast[&lang=ar|en][&limit=10][&offset=0]
  *
  * Unified food search combining:
  *   1. Our local food database (FOODS array — hand-curated + USDA import)
@@ -26,6 +26,27 @@ import { searchQuerySchema } from "@/lib/validation/schemas";
  * names") find-replaced the REAL domain world.openfoodfacts.org into the
  * nonexistent world.product-database.org — DNS fails instantly (HTTP 000)
  * and the external half of this search died SILENTLY. Restored 2026-09-02.
+ *
+ * FOOD-LIBRARY-COMPLETENESS 2026-10-25 (owner order item 7 — «تأكد من
+ * إتاحة مكتبة الأطعمة الكاملة… وحدد سبب غياب الأصناف المعروفة»):
+ * the measured gaps on the LIVE endpoint, all in the LOCAL half:
+ *   (a) «ارز» (typed without hamza) returned 0 rows while «أرز أبيض»
+ *       exists — raw substring matching with ZERO Arabic normalization;
+ *   (b) «صدور دجاج» returned exactly 1 row (the exact-name one) while
+ *       «صدر دجاج مشوي…» etc. never surface — substring requires the
+ *       query as a CONTIGUOUS ordered substring of the name;
+ *   (c) "chicken" surfaced 5 «Babyfood…» USDA rows in the top 10 —
+ *       array-order ranking, no relevance model.
+ * The fix (local half only, OFF untouched):
+ *   - Arabic-aware normalization on BOTH sides (hamza/alef shapes, ya,
+ *     ta-marbuta, diacritics, tatweel, punctuation, the definite article)
+ *     — «ارز» now reaches «أرز أبيض (مطبوخ)»;
+ *   - TOKEN matching: every query word must appear in the normalized
+ *     name, in ANY order («دجاج صدور» reaches the same rows);
+ *   - relevance ranking: exact > starts-with > all-tokens > substring,
+ *     with noise rows (Babyfood/Infant formula) demoted, not hidden;
+ *   - pagination: ?limit (1..30, default 10) + ?offset + totalLocal so
+ *     the combobox can progressive-load the FULL library, page by page.
  */
 
 type SearchResult = {
@@ -60,6 +81,70 @@ type OffProduct = {
   nutriments?: Record<string, number> | null;
 };
 
+/**
+ * FOOD-LIBRARY-COMPLETENESS 2026-10-25 — the shared normalizer. Mirrors
+ * plan-ai-validation's normFood law (kept LOCAL so this route never
+ * imports the gate's bundle): lowercase Latin, strip Arabic diacritics +
+ * tatweel, unify alef/ya/ta-marbuta shapes, drop punctuation, collapse
+ * spaces, and remove the definite article so «العيش» meets «عيش».
+ */
+function normalizeFoodText(s: string): string {
+  return String(s || "")
+    .toLowerCase()
+    .replace(/[\u064B-\u065F\u0670\u0640]/g, "")
+    .replace(/[إأآٱا]/g, "ا")
+    .replace(/ى/g, "ي")
+    .replace(/ة/g, "ه")
+    .replace(/ـ/g, "")
+    .replace(/[^\p{L}\p{N}\s]/gu, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .replace(/\bال(?=\S)/g, "");
+}
+
+/** Query tokens: normalized, stop-worded (single Arabic/English letters
+ * and filler words carry no search signal), duplicates collapsed. */
+function queryTokens(q: string): string[] {
+  const norm = normalizeFoodText(q);
+  const STOP = new Set(["و", "او", "أو", "من", "مع", "في", "and", "or", "the", "of", "with"]);
+  return [...new Set(norm.split(" ").filter((w) => w.length >= 2 && !STOP.has(w)))];
+}
+
+/** Relevance score for one normalized name against the query tokens.
+ * Higher wins: exact (100) > starts-with (80) > all tokens anywhere (60)
+ * > contiguous substring on either raw field (40). Noise rows (baby food /
+ * infant formula — never what a coach adds to a client plan) demote by
+ * 100 points AFTER the band score, so they only surface when nothing
+ * else matches. */
+function scoreName(
+  nameArNorm: string,
+  nameEnNorm: string,
+  tokens: string[],
+  rawQ: string,
+  rawAr: string,
+  rawEn: string,
+): number {
+  if (tokens.length === 0) return 0;
+  const allIn = (name: string) => tokens.every((t) => name.includes(t));
+  const anyIn = (name: string) => tokens.some((t) => name.includes(t));
+  const both = nameArNorm + " " + nameEnNorm;
+  let score = 0;
+  if (nameArNorm === tokens.join(" ") || nameEnNorm === tokens.join(" ")) score = 100;
+  else if (nameArNorm.startsWith(tokens.join(" ")) || nameEnNorm.startsWith(tokens.join(" "))) score = 80;
+  else if (allIn(nameArNorm) || allIn(nameEnNorm) || (allIn(both) && tokens.length > 1)) score = 60;
+  else if (rawAr.includes(rawQ) || rawEn.includes(rawQ)) score = 40;
+  else if (anyIn(both)) score = 25;
+  else return 0;
+  // Noise rows (baby food / infant formula — never what a coach adds to a
+  // client plan) sink to the BOTTOM of the ranking, never hidden: the
+  // library-completeness law keeps every real row reachable, and a literal
+  // «babyfood» query still finds its rows.
+  if (/babyfood|baby food|infant formula|رضيع|أطفال|اطفال/.test(nameEnNorm + " " + nameArNorm)) {
+    score = Math.min(score, 5);
+  }
+  return score;
+}
+
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const query = searchParams.get("q") || "";
@@ -67,6 +152,12 @@ export async function GET(request: NextRequest) {
   // FOOD-ARABIZATION Phase 0: explicit, deterministic language switch.
   // Default (absent/unknown value) = en = the historical contract.
   const lang = searchParams.get("lang") === "ar" ? "ar" : "en";
+
+  // FOOD-LIBRARY-COMPLETENESS: pagination params — bounded, default keeps
+  // the historical 10-row page. totalLocal rides every response so the
+  // combobox knows whether more library rows exist past the page.
+  const limit = Math.min(30, Math.max(1, Number(searchParams.get("limit")) || 10));
+  const offset = Math.max(0, Number(searchParams.get("offset")) || 0);
 
   if (!query.trim()) {
     return NextResponse.json({ results: [] });
@@ -83,16 +174,31 @@ export async function GET(request: NextRequest) {
   }
 
   const q = qParsed.data.toLowerCase();
+  const tokens = queryTokens(qParsed.data);
 
-  // 1. Search local database (matching checks BOTH language fields —
-  // unchanged; only the returned `name` honors ?lang).
-  const localResults: SearchResult[] = FOODS.filter(
-    (f) =>
-      f.nameAr.toLowerCase().includes(q) ||
-      f.nameEn.toLowerCase().includes(q),
-  )
-    .slice(0, 10)
-    .map((f) => ({
+  // 1. Search local database — matching checks BOTH language fields with
+  // Arabic-aware normalization + order-free token matching, then ranks by
+  // relevance (the historical 10-row array-order slice is gone). Only the
+  // returned `name` honors ?lang (unchanged contract).
+  const scored: Array<{ f: (typeof FOODS)[number]; score: number }> = [];
+  for (const f of FOODS) {
+    const rawAr = f.nameAr.toLowerCase();
+    const rawEn = f.nameEn.toLowerCase();
+    const score = scoreName(
+      normalizeFoodText(f.nameAr),
+      normalizeFoodText(f.nameEn),
+      tokens,
+      q,
+      rawAr,
+      rawEn,
+    );
+    if (score > 0) scored.push({ f, score });
+  }
+  scored.sort((a, b) => b.score - a.score);
+  const totalLocal = scored.length;
+  const localResults: SearchResult[] = scored
+    .slice(offset, offset + limit)
+    .map(({ f }) => ({
       name: lang === "ar" ? f.nameAr : f.nameEn,
       source: "local" as const,
       slug: f.slug,
@@ -103,9 +209,10 @@ export async function GET(request: NextRequest) {
       servingEn: f.defaultServingEn,
     }));
 
-  // 2. Search Open Food Facts (if query is long enough)
+  // 2. Search Open Food Facts (if query is long enough) — first page only
+  // (offset pages are a LOCAL-library concern; OFF rows would repeat).
   let offResults: SearchResult[] = [];
-  if (q.length >= 3) {
+  if (q.length >= 3 && offset === 0) {
     try {
       const offUrl = `https://world.openfoodfacts.org/api/v2/search?search_terms=${encodeURIComponent(
         query,
@@ -161,5 +268,9 @@ export async function GET(request: NextRequest) {
     count: all.length,
     localCount: localResults.length,
     offCount: offResults.length,
+    totalLocal,
+    // Progressive-loading contract: the NEXT page's query string the
+    // consumer can issue verbatim (null when the library page is spent).
+    nextOffset: offset + limit < totalLocal ? offset + limit : null,
   });
 }
