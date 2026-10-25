@@ -244,7 +244,10 @@ describe("MEMBER-SWAP-DURABILITY 3 — exercise_regenerate materializes server-s
     };
     // The target slot was REPLACED with a real library-backed exercise
     // (deterministic fallback — the pool draws a safe chest alternative):
-    const replaced = merged.days[0].exercises[1];
+    const replaced = merged.days[0].exercises[1] as {
+      name: string;
+      sets: number;
+    };
     expect(typeof replaced.name).toBe("string");
     expect(replaced.name.length).toBeGreaterThan(1);
     expect(replaced.sets).toBeGreaterThanOrEqual(1);
