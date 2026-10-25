@@ -124,6 +124,12 @@ export const PLAN_AI_SANITY = {
   /** Keto item carb ceiling (g) — the ketogenic band is 20-50g NET for
    * the WHOLE day, so a single item above this is definitionally off-diet. */
   ketoItemCarbsMax: 12,
+  /** KETO-LAW 2026-10-25 (owner mandatory correction — «استبعد الحليب
+   * العادي والرائب العادي من خطط الكيتو افتراضيًا… ولا تسمح بأي صنف أو
+   * وجبة تتجاوز حدود الكيتو المعتمدة»): the MEAL-level net-carb ceiling
+   * — one meal may not spend more than half the ketogenic day band
+   * (mirrors the local engine's mealCarbBudget law). */
+  ketoMealCarbsMax: 25,
   /** Low-carb item carb ceiling (g) — ~25% of kcal as carbs for the day
    * allows a starch SIDE in a low-carb meal, not a >35g carb item. */
   lowCarbItemCarbsMax: 35,
@@ -235,6 +241,10 @@ const DIET_FORBIDDEN_TOKENS: Record<ConstraintDietType, string[]> = {
     // grains & starches
     "ارز", "رز ابيض", "خبز", "عيش", "توست", "شوفان", "مكرونه", "مكرونة", "باستا", "سباجيتي",
     "بطاطس", "بطاطا", "كينوا", "برغل", "بلغر", "كسكسي", "فريك", "ذره", "ذرة", "فطير", "بيتزا", "كريب", "بان كيك",
+    // ARAB-CONTEXT 2026-10-25 (owner order item 3): soy proteins are not
+    // keto-default foods in the Arab culinary context — blocked for keto
+    // and low_carb by name (vegan/vegetarian tables never list them).
+    "توفو", "تمبه", "سييتان",
     // legumes (net-carb dense — not ketogenic protein sources)
     "عدس", "حمص", "فاصوليا", "فول مدمس", "لوبيا", "بقول",
     // sugars & syrups
@@ -245,12 +255,14 @@ const DIET_FORBIDDEN_TOKENS: Record<ConstraintDietType, string[]> = {
     "rice", "bread", "toast", "oats", "oatmeal", "pasta", "spaghetti", "potato", "sweet potato",
     "quinoa", "bulgur", "couscous", "corn", "pizza", "pancake", "sugar", "honey", "jam", "juice",
     "dates", "raisins", "banana", "mango", "grapes", "figs", "pineapple", "watermelon", "soda",
-    "lentils", "chickpeas", "beans", "edamame",
+    "lentils", "chickpeas", "beans", "edamame", "tofu", "tempeh", "seitan",
   ],
   low_carb: [
     // dense sugar sources only — starch portions ride the carb-gram ceiling
     "سكر", "عسل", "مربي", "عصير", "غازيه", "تمر", "بلح", "زبيب", "حلاوه", "حلاوة", "كيك", "بسكويت", "جاتو",
-    "sugar", "honey", "jam", "juice", "dates", "raisins", "cake", "cookies", "soda",
+    // ARAB-CONTEXT 2026-10-25: same soy-protein default block as keto.
+    "توفو", "تمبه", "سييتان",
+    "sugar", "honey", "jam", "juice", "dates", "raisins", "cake", "cookies", "soda", "tofu", "tempeh", "seitan",
   ],
   vegetarian: [
     "لحم", "دجاج", "فراخ", "سمك", "سلطات بحريه", "سلمون", "تونه", "تونة", "جمبري", "روبيان", "استاكوزا", "كابوريا",
@@ -275,13 +287,81 @@ const DIET_FORBIDDEN_TOKENS: Record<ConstraintDietType, string[]> = {
 
 /** Vegan dairy tokens carry a plant-alternative guard (coconut/soy/oat/
  * almond milks are vegan staples — they must NOT trip the dairy match).
- * Applies to BOTH the vegan diet tokens AND dairy-allergy family tokens. */
+ * Applies to BOTH the vegan diet tokens AND dairy-allergy family tokens.
+ * KETO-LAW 2026-10-25: the guard now ALSO covers the keto dairy class and
+ * grew English plant terms (coconut/almond/soy/oat/rice) — "Coconut Milk"
+ * was a measured vegan false-positive class (the guard was Arabic-only). */
 const VEGAN_DAIRY_TOKENS = [
   "جبن", "جبنة", "لبنه", "لبن زبادي", "حليب", "زبادي", "قريش", "موزاريلا", "شيدر", "بارميزان",
   "كريمه", "كريمة", "زبده", "زبدة", "عسل", "كاسترد", "بوظه", "ايس كريم",
   "cheese", "milk", "yogurt", "yoghurt", "cream", "butter", "whey", "casein", "honey", "custard", "ice cream", "gelato",
 ];
-const PLANT_BASED_GUARD = /جوز هند|جوزهند|صويا|نباتي|شوفان|لوز|بذر الكتان|ارز|رز/;
+const PLANT_BASED_GUARD = /جوز هند|جوزهند|صويا|نباتي|شوفان|لوز|بذر الكتان|ارز|رز|coconut|almond|soy|soya|oat|rice|plant/;
+
+/* ─────────────── KETO DAIRY LAW 2026-10-25 (owner mandatory correction) ───────────────
+ *
+ * MEASURED PRODUCTION EVIDENCE (read read-only, 2026-10-25):
+ *   - the approved keto plan of ai_jobs#a26cf95e's client carried
+ *     «لبن رايب» in BOTH breakfast and lunch (11.8g carbs at 245g — under
+ *     the 12g item ceiling, so the gram gate never fired);
+ *   - the same day's live food_item_regenerate (row 2384a8a9, done) fell
+ *     back to the local DB and answered «زبادي عادي قليل الدسم» — regular
+ *     low-fat yogurt AS the keto replacement (7g carbs/100g).
+ *
+ * THE LAW: under keto, REGULAR milk (any fat % — «كامل الدسم وحده لا
+ * يكفي»), rayeb/buttermilk, and regular yogurt are excluded BY DEFAULT;
+ * UNSWEETENED Greek yogurt («زبادي يوناني») stays allowed (its
+ * 3.6g/100g density still rides the 12g item + 25g meal carb ceilings);
+ * any SWEETENED/flavored dairy (محلى/بالفواكه/بنكهة…) is blocked outright
+ * (ميّز بين المنتجات غير المحلاة والمضاف إليها سكر). Cheeses and creams
+ * are untouched (keto staples). Plant milks ride the guard above. The
+ * name alone is the trigger here because the dairy CLASS is banned — the
+ * per-quantity carb math still governs everything else.
+ * One law, three surfaces: local generation pools (safeFoodsFor), the
+ * external-generation gate, and the meal/item swap gates — all consume
+ * checkItemConstraints.
+ * ────────────────────────────────────────────────────────────────────────────────── */
+
+/** Milk/rayeb/regular-yogurt class tokens (matched on normFood(name)). */
+const KETO_DAIRY_TOKENS = [
+  "حليب", "لبن", "رايب", "رائب", "زبادي", "زبادى",
+  "milk", "yogurt", "yoghurt", "buttermilk", "laban", "rayeb", "labneh", "kefir",
+];
+/** Unsweetened Greek yogurt — the one yogurt-family exception. */
+const KETO_DAIRY_EXCEPTIONS = ["يوناني", "greek"];
+/** Sweetened/flavored markers — hard block under keto even for the
+ * exception (fruit/vanilla/chocolate wordings are SUGARED dairy: the
+ * library carries «زبادي يوناني بالفراولة/بالفانيليا» rows that must
+ * never ride the Greek exception). */
+const KETO_SWEETENED_MARKERS = [
+  "محلى", "محلي", "بالسكر", "سكر مضاف", "مضاف", "بالفواكه", "فواكه", "فاكهه", "بنكهه", "نكهه", "بالعسل", "شوكولاته", "شوكولاتة", "معسل",
+  "فراوله", "فانيلا", "فانيليا", "توت", "خوخ", "مشمش", "كرز",
+  "sweetened", "flavored", "flavour", "fruit", "chocolate", "sugar", "honey", "candied",
+  "vanilla", "strawberry", "berry", "berries", "peach", "blueberry", "raspberry",
+];
+
+/** The keto dairy-class violation for ONE food name — null when compliant.
+ * Pure + normFood-matched; exported for the food-search ranking (same law,
+ * one definition). Order of checks (each one a hard law):
+ *   1. dairy CLASS match? (milk/rayeb/regular yogurt families)
+ *   2. sweetened/flavored? → violation (even Greek, even plant milks —
+ *      «حليب اللوز المحلى» is a sugar drink, not a keto staple)
+ *   3. plant milk (unsweetened)? → pass (vegan/keto staple)
+ *   4. unsweetened Greek? → pass (carb ceilings govern the portion)
+ *   5. otherwise → the class violation */
+export function ketoDairyViolation(food: string): string | null {
+  const name = normFood(food);
+  if (!name) return null;
+  const isDairyClass = KETO_DAIRY_TOKENS.some((t) => name.includes(normFood(t)));
+  if (!isDairyClass) return null;
+  if (KETO_SWEETENED_MARKERS.some((m) => name.includes(normFood(m)))) {
+    return `الصنف «${food}» منتج ألبان محلى/بنكهة — ممنوع في الكيتو (السكر المضاف يخرج عن النطاق المعتمد)`;
+  }
+  if (PLANT_BASED_GUARD.test(name)) return null; // unsweetened plant milks pass
+  const isException = KETO_DAIRY_EXCEPTIONS.some((e) => name.includes(normFood(e)));
+  if (isException) return null; // unsweetened Greek yogurt — carb ceilings govern
+  return `الصنف «${food}» من الحليب/الرائب العادي — مستبعد من الكيتو افتراضيًا (اللاكتوز يرفع الكربوهيدرات الصافية مهما كانت نسبة الدسم)`;
+}
 
 /** Allergen category → family expansion (CONSERVATIVE: category words
  * only — a named single food stays a plain containment token). */
@@ -411,6 +491,13 @@ export function checkItemConstraints(
     const forbidden = hits(DIET_FORBIDDEN_TOKENS[constraints.dietType]);
     if (forbidden) {
       return `الصنف «${food}» مخالف لنظام ${constraints.dietType === "keto" ? "الكيتو" : constraints.dietType === "low_carb" ? "قليل الكربوهيدرات" : constraints.dietType === "vegan" ? "النباتي الصرف" : "النباتي"} (يحتوي «${forbidden}»)`;
+    }
+    // KETO DAIRY LAW 2026-10-25 — the milk/rayeb/regular-yogurt class with
+    // the Greek-unsweetened exception and the sweetened hard-block. Runs for
+    // keto ONLY (low_carb's 50-150g day band legitimately fits liquid dairy).
+    if (constraints.dietType === "keto") {
+      const dairy = ketoDairyViolation(food);
+      if (dairy) return dairy;
     }
     const carbs = typeof macros.carbs_g === "number" ? macros.carbs_g : null;
     if (constraints.dietType === "keto" && carbs !== null && carbs > PLAN_AI_SANITY.ketoItemCarbsMax) {
@@ -588,6 +675,24 @@ function unwrapMeals(raw: unknown): unknown[] | null {
   return null;
 }
 
+/** KETO-LAW 2026-10-25: the MEAL-level carb ceiling — one keto meal may
+ * not exceed ketoMealCarbsMax net carbs. Only fires when at least one
+ * item carries carbs data (a meal with zero carb fields is token-checked
+ * per item, not gram-checked — library grounding normally fills numbers). */
+function ketoMealCarbViolation(mealName: string, mealItems: AIItemLike[], constraints?: ClientItemConstraints | null): string | null {
+  if (constraints?.dietType !== "keto") return null;
+  const measured = mealItems.filter((i) => typeof i.carbs_g === "number");
+  if (measured.length === 0) return null;
+  const sum = measured.reduce((s, i) => s + (i.carbs_g || 0), 0);
+  // 0.05g rounding tolerance — the per-item carbs are 0.1g-rounded values;
+  // a 25.04g sum is a rounding artifact, not a band breach (same law as
+  // the item ceiling's 12.05 pin in the canary battery).
+  if (sum > PLAN_AI_SANITY.ketoMealCarbsMax + 0.05) {
+    return `الوجبة «${mealName}» تجمع ${Math.round(sum)}جم كربوهيدرات — أعلى من سقف وجبة الكيتو (${PLAN_AI_SANITY.ketoMealCarbsMax}جم)`;
+  }
+  return null;
+}
+
 /* ─────────────────── Full nutrition plan validation ─────────────────── */
 
 export type NutritionPlanVerdict =
@@ -642,6 +747,10 @@ export function validateNutritionPlanAIOutput(
       if (violation) return { ok: false, error: `meal "${name}": ${violation}` };
       items.push(v.value);
     }
+    // KETO-LAW 2026-10-25: the meal-level carb ceiling on the FULL plan too
+    // (the item ceilings alone let randomized draws accumulate past it).
+    const mealCarbs = ketoMealCarbViolation(name, items, constraints);
+    if (mealCarbs) return { ok: false, error: `meal "${name}": ${mealCarbs}` };
     const modelTotalProtein = coerceNumber(meal.total_protein_g ?? meal.total_protein);
     meals.push(
       recomputeMealTotals({
@@ -746,6 +855,11 @@ export function validateRegeneratedMeal(
     if (violation) return { ok: false, error: violation };
     items.push(v.value);
   }
+  // KETO-LAW 2026-10-25: the meal-level carb ceiling rides the swap gate
+  // too — a "keto" replacement meal summing past the ceiling is rejected
+  // with the same named reason (the repair directive names the exact meal).
+  const mealCarbs = ketoMealCarbViolation(name, items, constraints);
+  if (mealCarbs) return { ok: false, error: mealCarbs };
   const modelTotalProtein = coerceNumber(mealRaw.total_protein_g ?? mealRaw.total_protein);
   const meal = recomputeMealTotals({
     name,

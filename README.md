@@ -168,7 +168,48 @@ ledger-based — `src/lib/refund.ts`).
   plans) or throws honestly so the original element stays untouched
   (regenerations). Regenerations also carry the client's own context
   (allergies, diet, goal, injuries, training location), and the member's
-  weekly swap quota is burned only when a swap actually SUCCEEDS
+  weekly swap quota is burned only when a swap actually SUCCEEDS.
+  Cultural-context defaults (2026-10-25): tofu never surfaces as a
+  default protein outside vegan/vegetarian plans, day-level rotation
+  keeps a food from repeating across the day's meals (cooking fats
+  excepted on keto), portions are physically bounded (no 533g egg-white
+  items), and the local food bench gained three USDA-anchored Egyptian
+  vegetables (arugula, beetroot, artichoke)
+- **Durable swaps — «حتى نجاح الحفظ» (2026-10-25)** — a meal/item swap
+  now SURVIVES the coach leaving the plan editor mid-wait: the swap
+  payload names the owning plan (`planId`/`clientId`/`mealIdx`/`itemIdx`
+  through the enqueue whitelist) and the queue RUNNER materializes the
+  gated replacement straight into the `plans` row (fresh fetch → the swap
+  delta only → the editor's own `recomputeNutritionTotals`), so the
+  result never again depends on a live browser poller (the measured
+  2026-10-25 failure: both live swap jobs finished `done` in `ai_jobs`
+  while neither result ever reached the saved plan). Best-effort by
+  design — a materialization hiccup never fails the job; the in-editor
+  path keeps applying the result live, and the success toast says
+  whether it auto-saved.
+- **Keto dairy law — MANDATORY (2026-10-25)** — regular milk (ANY fat
+  percentage — full-fat alone proves nothing), rayeb and regular yogurt
+  are excluded from keto plans BY DEFAULT, sweetened/flavored dairy
+  (including fruit/vanilla Greek yogurt and sweetened plant milks) is
+  banned outright, and UNSWEETENED Greek yogurt is the single
+  yogurt-family exception (its portion still rides the 12g-per-item carb
+  ceiling). One shared rule (`ketoDairyViolation`) governs all three
+  surfaces: the local generator's pools, the external-generation quality
+  gate (named-reason rejection + one repair retry), and the manual swap
+  gates. A new 25g-per-meal keto carb ceiling rides the same gates, and
+  the local engine closes its own meal-carb budget deterministically.
+  The manual-edit drawer passes `?diet=keto` to `/api/food-search`:
+  keto-unsafe rows sink to the bottom carrying a «غير كيتو» badge —
+  visible and pickable, the coach decides.
+- **Mobile food drawer (2026-10-25)** — on phones (≤639px) the food
+  picker is a full-width BOTTOM SHEET (a portal dialog no clipping
+  container can trap): its own scroll region with overscroll-containment
+  (no scroll chaining into the plan modal), 44px touch rows, the
+  «المزيد من المكتبة…» progressive-load button INSIDE the scrollable
+  list (the deep library tail is thumb-reachable), a 16px search field
+  (no iOS viewport zoom), and close-without-pick commits the typed text
+  exactly like the desktop blur law. The desktop popover combobox is
+  unchanged.
 - **Plan editor (2026-10-24)** — the coach's plan modal header WRAPS on
   phones (the measured root of the clipped screen + unreachable
   تعديل/توليد buttons was an unwrappable `shrink-0` action cluster:

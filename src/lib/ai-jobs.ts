@@ -236,6 +236,21 @@ export function sanitizeJobPayload(type: AiJobType, raw: unknown): Json {
           const d = str(p.dietType, 20);
           return (DIET_TYPES as readonly string[]).includes(d) ? d : undefined;
         })(),
+        // SWAP-DURABILITY 2026-10-25 (owner order item 1 — «أصلح تبديل…
+        // وجبة كاملة من واجهة المدرب حتى نجاح الحفظ»): the swap targets the
+        // OWNING plan row server-side. Measured production evidence: both
+        // swap jobs of 2026-10-25 13:29Z finished `done` in ai_jobs yet the
+        // results never reached the saved plan — the browser poller died
+        // with the editor the coach navigated away from. The RUNNER now
+        // materializes the gated replacement into plans.content itself
+        // (strict UUID + bounded index — hostile values degrade to
+        // undefined and materialization silently skips).
+        planId: UUIDish(p.planId),
+        clientId: UUIDish(p.clientId),
+        mealIdx: (() => {
+          const n = num(p.mealIdx);
+          return n !== undefined && Number.isFinite(n) && n >= 0 ? Math.min(30, Math.round(n)) : undefined;
+        })(),
       };
     }
     case "exercise_regenerate": {
@@ -275,6 +290,19 @@ export function sanitizeJobPayload(type: AiJobType, raw: unknown): Json {
         dietType: (() => {
           const d = str(p.dietType, 20);
           return (DIET_TYPES as readonly string[]).includes(d) ? d : undefined;
+        })(),
+        // SWAP-DURABILITY 2026-10-25: same law as meal_regenerate — the
+        // runner materializes the item replacement into the owning plan row
+        // server-side (strict UUID + bounded indices, best-effort).
+        planId: UUIDish(p.planId),
+        clientId: UUIDish(p.clientId),
+        mealIdx: (() => {
+          const n = num(p.mealIdx);
+          return n !== undefined && Number.isFinite(n) && n >= 0 ? Math.min(30, Math.round(n)) : undefined;
+        })(),
+        itemIdx: (() => {
+          const n = num(p.itemIdx);
+          return n !== undefined && Number.isFinite(n) && n >= 0 ? Math.min(40, Math.round(n)) : undefined;
         })(),
       };
     }

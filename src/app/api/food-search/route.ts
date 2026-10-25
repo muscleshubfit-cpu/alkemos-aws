@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { FOODS } from "@/lib/foods";
 import { searchQuerySchema } from "@/lib/validation/schemas";
+// KETO-LAW 2026-10-25: the manual-edit drawer (التبديل اليدوي) ranks
+// keto-safe rows first when the OWNING plan is keto (?diet=keto) — the
+// same constraint law the generation/swap gates use, imported from the
+// PURE gate module (zero imports — no bundle concern).
+import { checkItemConstraints } from "@/lib/plan-ai-validation";
 
 /**
  * GET /api/food-search?q=chicken+breast[&lang=ar|en][&limit=10][&offset=0]
@@ -62,6 +67,10 @@ type SearchResult = {
   };
   image?: string;
   brand?: string;
+  /** KETO-LAW 2026-10-25: present only under ?diet=keto — false = this row
+   * breaches the keto limits at a reference 150g portion (the drawer
+   * badges it «غير كيتو» and the ranking sinks it). */
+  ketoOk?: boolean;
   /** PLAN-EDIT-2026-10-24 (owner order — coach plan-editor autocomplete):
    * the LOCAL row's default serving size (grams + Arabic/English label)
    * so the editor can prefill "150 جرام" on pick. Open Food Facts rows
@@ -145,6 +154,20 @@ function scoreName(
   return score;
 }
 
+/** KETO-LAW 2026-10-25 — is this library row keto-safe? The gate's own
+ * tables (dairy law + forbidden tokens + the item carb ceiling) evaluated
+ * at a REFERENCE 150g portion: a row that would breach the keto limits at
+ * a typical serving carries ketoOk:false and sinks in the ranking. The
+ * row stays VISIBLE and pickable — the coach keeps full override freedom
+ * (default demotion, never a hidden row: the library-completeness law). */
+function rowKetoOk(nameA: string, nameB: string, carbsPer100g: number): boolean {
+  const macros = { carbs_g: Math.round((carbsPer100g || 0) * 1.5) };
+  return (
+    checkItemConstraints(nameA, macros, { dietType: "keto" }) === null &&
+    checkItemConstraints(nameB, macros, { dietType: "keto" }) === null
+  );
+}
+
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const query = searchParams.get("q") || "";
@@ -152,6 +175,10 @@ export async function GET(request: NextRequest) {
   // FOOD-ARABIZATION Phase 0: explicit, deterministic language switch.
   // Default (absent/unknown value) = en = the historical contract.
   const lang = searchParams.get("lang") === "ar" ? "ar" : "en";
+
+  // KETO-LAW 2026-10-25: ?diet=keto — the manual-edit drawer passes the
+  // OWNING plan's diet so keto plans rank keto-safe rows first.
+  const keto = searchParams.get("diet") === "keto";
 
   // FOOD-LIBRARY-COMPLETENESS: pagination params — bounded, default keeps
   // the historical 10-row page. totalLocal rides every response so the
@@ -184,7 +211,7 @@ export async function GET(request: NextRequest) {
   for (const f of FOODS) {
     const rawAr = f.nameAr.toLowerCase();
     const rawEn = f.nameEn.toLowerCase();
-    const score = scoreName(
+    let score = scoreName(
       normalizeFoodText(f.nameAr),
       normalizeFoodText(f.nameEn),
       tokens,
@@ -192,6 +219,12 @@ export async function GET(request: NextRequest) {
       rawAr,
       rawEn,
     );
+    // KETO-LAW 2026-10-25: keto-unsafe rows sink BELOW every keto-safe match
+    // (same demotion shape as the Babyfood noise floor — visible, ranked
+    // last). ketoOk rides the row so the drawer badges it «غير كيتو».
+    if (keto && !rowKetoOk(f.nameAr, f.nameEn, f.per100g?.carbs ?? 0)) {
+      score = Math.min(score, 10);
+    }
     if (score > 0) scored.push({ f, score });
   }
   scored.sort((a, b) => b.score - a.score);
@@ -207,6 +240,11 @@ export async function GET(request: NextRequest) {
       defaultGrams: f.defaultGrams,
       servingAr: f.defaultServingAr,
       servingEn: f.defaultServingEn,
+      // KETO-LAW: present only under ?diet=keto (additive optional field —
+      // the historical contract is unchanged for every other consumer).
+      ...(keto
+        ? { ketoOk: rowKetoOk(f.nameAr, f.nameEn, f.per100g?.carbs ?? 0) }
+        : {}),
     }));
 
   // 2. Search Open Food Facts (if query is long enough) — first page only

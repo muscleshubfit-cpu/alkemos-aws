@@ -454,6 +454,24 @@ function constraintPromptBlock(constraints?: ClientItemConstraints | null): stri
             ? "كل اللحوم والدواجن والأسماك والبيض والألبان ومشتقاتها (جبن/زبادي/زبدة/كريمة) والعسل"
             : "كل اللحوم والدواجن والأسماك والمأكولات البحرية";
     lines.push(`- النظام الغذائي الملتزم به العميل: ${label} — التزامًا كاملًا في كل صنف. ممنوع نهائيًا: ${forbidden}.`);
+    // KETO DAIRY LAW 2026-10-25 (owner mandatory correction — «استبعد الحليب
+    // العادي والرائب العادي من خطط الكيتو افتراضيًا، ولا تعتبر كامل الدسم
+    // وحده دليلًا على ملاءمة المنتج… ميّز بين المنتجات غير المحلاة
+    // والمنتجات المضاف إليها سكر»): the prompt states the law AND the gate
+    // enforces it token-wise on every item (checkItemConstraints →
+    // ketoDairyViolation) — one repair retry names the exact rejection.
+    if (constraints.dietType === "keto") {
+      lines.push(
+        "- قانون ألبان الكيتو: الحليب العادي (أي نسبة دسم — كامل الدسم وحده لا يكفي) والرائب والزبادي العادي واللبن ممنوعة افتراضيًا — الجبن والأجبان الصلبة والزبادي اليوناني غير المحلى فقط مسموحة، وأي منتج ألبان محلى أو بالفواكه أو بنكهة ممنوع نهائيًا. الكربوهيدرات الفعلية لكل كمية هي الحكم: لا صنف يتجاوز 12جم كارب ولا وجبة تتعدى 25جم.",
+      );
+    }
+    // ARAB-CONTEXT 2026-10-25 (owner order item 3): culturally off-default
+    // proteins stay out unless the client asked for them.
+    if (constraints.dietType !== "vegan" && constraints.dietType !== "vegetarian") {
+      lines.push(
+        "- استخدم أصنافًا عربية/مصرية متوفرة تلائم السياق الثقافي — التوفو ومنتجات الصويا المشابهة لا تُقترح افتراضيًا (فقط لو طلبها العميل صراحة).",
+      );
+    }
   }
   if (constraints?.allergyTokens?.length) {
     lines.push(`- حساسيات العميل (ممنوع نهائيًا أي صنف يحتويها): ${[...new Set(constraints.allergyTokens)].slice(0, 25).join("، ")}.`);

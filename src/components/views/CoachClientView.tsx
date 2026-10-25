@@ -40,6 +40,10 @@ import { useNav } from "@/hooks/use-nav";
 import { useAuth } from "@/hooks/use-auth";
 import { Modal } from "@/components/ui/modal";
 import { Popover, PopoverAnchor, PopoverContent } from "@/components/ui/popover";
+// MOBILE-DRAWER 2026-10-25: the food picker's phone surface — a portal
+// bottom sheet (Radix Dialog) that no clipping container can trap.
+import { Dialog, DialogContent, DialogClose, DialogTitle } from "@/components/ui/dialog";
+import { useMediaQuery } from "@/hooks/use-media-query";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -1528,6 +1532,9 @@ export function CoachClientView({ clientId }: { clientId: string }) {
  },
  location: String((fitQ?.data as { location?: unknown } | null)?.location ?? "") || undefined,
  }}
+ // SWAP-DURABILITY 2026-10-25: the owning client rides the editor so the
+ // swap payloads can name the plan + client for server-side materialization.
+ clientId={clientId}
  />
  )}
 
@@ -1843,6 +1850,7 @@ function PlanViewerModal({
  onRegenerate,
  onTargetRegenerate,
  regenContext,
+ clientId,
 }: {
  plan: Plan;
  onClose: () => void;
@@ -1852,6 +1860,10 @@ function PlanViewerModal({
   *  (meals, quantities, totals) preserving the client's context. */
  onTargetRegenerate?: (newTarget: number, dietType?: DietType) => void;
  regenContext?: { clientContext: Record<string, unknown>; location?: string };
+ /** SWAP-DURABILITY 2026-10-25: the owning client id rides the swap
+  *  payloads so the runner's server-side materialization can verify the
+  *  plan belongs to the client the coach was editing. */
+ clientId?: string;
 }) {
  const { t, lang } = useI18n();
  // STAGE-254: bilingual toasts — the modal is fully bilingual already, the
@@ -2290,7 +2302,15 @@ function PlanViewerModal({
  // rides the swap (keto plan → keto replacement meal, enforced by the
  // server-side quality gate — not just the prompt).
  ...(planDietType ? { dietType: planDietType } : {}),
- });
+ // SWAP-DURABILITY 2026-10-25 (owner order item 1 — «حتى نجاح الحفظ»):
+ // the owning plan rides the payload so the RUNNER materializes the
+ // gated replacement into plans.content server-side — the swap survives
+ // the coach navigating away mid-wait (the measured 13:29Z production
+ // failure: both jobs `done`, neither result ever reached the saved plan).
+ planId: plan.id,
+ clientId,
+ mealIdx,
+ }, { onQueued: () => toast.info(isAr ? "دخل الطابور — الوجبة البديلة تتولد في الخلفية وتُحفظ في الخطة تلقائيًا عند جهوزها" : "Queued — the replacement generates in the background and saves into the plan when ready") });
  // Job results are job-type-specific JSON — the engine’s "done" result always carries
  // a replacement meal with this exact shape (same runtime semantics as before).
  // The server gate already validated + coerced it; the double-check below
@@ -2317,7 +2337,11 @@ function PlanViewerModal({
   return next;
  });
  setContent(recomputeNutritionTotals(newContent));
- toast.success(isAr ? "تم إعادة توليد الوجبة!" : "Meal regenerated!");
+ toast.success(
+  result?.materialized
+  ? isAr ? "تم إعادة توليد الوجبة وحفظها في الخطة تلقائيًا ✅" : "Meal regenerated and auto-saved ✅"
+  : isAr ? "تم إعادة توليد الوجبة! — اضغط «حفظ» لتثبيتها" : "Meal regenerated! — press Save to apply",
+ );
  } catch (e) {
  toast.error((e instanceof Error ? e.message : "") || (isAr ? "فشل إعادة التوليد" : "Regeneration failed"));
  } finally {
@@ -2388,7 +2412,13 @@ function PlanViewerModal({
  // PLAN-REGEN-CONSTRAINTS 2026-10-24: the owning plan's diet rides the
  // single-item swap too (server-side gate enforcement).
  ...(planDietType ? { dietType: planDietType } : {}),
- });
+ // SWAP-DURABILITY 2026-10-25: same law as the meal swap — the runner
+ // persists the gated ±15% replacement into the owning plan row.
+ planId: plan.id,
+ clientId,
+ mealIdx,
+ itemIdx,
+ }, { onQueued: () => toast.info(isAr ? "دخل الطابور — البديل يتولد في الخلفية ويُحفظ في الخطة تلقائيًا عند جهوزه" : "Queued — the replacement generates in the background and saves into the plan when ready") });
  // Job results are job-type-specific JSON — narrow to the item contract the engine honors.
  const rep = (result.replacement ?? null) as NutritionPlanContent["meals"][number]["items"][number] | null;
  if (!rep?.food) throw new Error(isAr ? "لم يتم إرجاع بديل صالح من الذكاء الاصطناعي" : "The AI did not return a valid replacement");
@@ -2412,7 +2442,11 @@ function PlanViewerModal({
   return next;
  });
  setContent(recomputed);
- toast.success(isAr ? "تم استبدال الصنف ✅ — اضغط \"حفظ\" لتثبيت التعديل." : "Item replaced ✅ — press \"Save\" to apply the change.");
+ toast.success(
+  result?.materialized
+  ? isAr ? "تم استبدال الصنف وحفظه في الخطة تلقائيًا ✅" : "Item replaced and auto-saved ✅"
+  : isAr ? "تم استبدال الصنف ✅ — اضغط \"حفظ\" لتثبيت التعديل." : "Item replaced ✅ — press \"Save\" to apply the change.",
+ );
  } catch (e) {
  toast.error((e instanceof Error ? e.message : "") || (isAr ? "فشل استبدال الصنف" : "Failed to replace the item"));
  } finally {
@@ -3106,6 +3140,9 @@ function PlanViewerModal({
  isAr={isAr}
  mealIdx={mealIdx}
  itemIdx={itemIdx}
+ // KETO-LAW 2026-10-25: the owning plan's diet rides the library search —
+ // keto plans rank keto-safe rows first and badge the demoted ones.
+ diet={planDietType}
  onPick={pickLibraryFood}
  onRename={(mi, ii, v) => updateMealItem(mi, ii, "food", v)}
  />
@@ -3419,7 +3456,10 @@ function PlanViewerModal({
 /** A food-library row as returned by /api/food-search — the fields the
  *  editor's combobox consumes (local rows also carry their default
  *  serving since PLAN-EDIT-2026-10-24, and the pagination envelope since
- *  FOOD-LIBRARY-COMPLETENESS 2026-10-25). */
+ *  FOOD-LIBRARY-COMPLETENESS 2026-10-25).
+ *  KETO-LAW 2026-10-25: rows carry ketoOk (false = the keto dairy law or
+ *  the carb density demotes this row for keto plans) so the picker can
+ *  badge it without re-implementing the gate's tables client-side. */
 type FoodSearchRow = {
  name: string;
  source: "local" | "openfoodfacts";
@@ -3427,6 +3467,7 @@ type FoodSearchRow = {
  defaultGrams?: number;
  servingAr?: string;
  servingEn?: string;
+ ketoOk?: boolean;
 };
 
 /**
@@ -3448,6 +3489,7 @@ function FoodPickerCell({
  isAr,
  mealIdx,
  itemIdx,
+ diet,
  onPick,
  onRename,
 }: {
@@ -3456,6 +3498,10 @@ function FoodPickerCell({
  isAr: boolean;
  mealIdx: number;
  itemIdx: number;
+ /** KETO-LAW 2026-10-25: the OWNING plan's resolved diet — "keto" rides the
+  *  search request (?diet=keto) so the library ranks keto-safe rows first
+  *  and flags the demoted ones (the coach keeps full override freedom). */
+ diet?: string | null;
  onPick: (mealIdx: number, itemIdx: number, row: FoodSearchRow) => void;
  onRename: (mealIdx: number, itemIdx: number, value: string) => void;
 }) {
@@ -3463,6 +3509,18 @@ function FoodPickerCell({
  const [results, setResults] = useState<FoodSearchRow[]>([]);
  const [loading, setLoading] = useState(false);
  const [open, setOpen] = useState(false);
+ // MOBILE-DRAWER 2026-10-25 (owner order item 2 — «أصلح التمرير واللمس
+ // والارتفاع وتداخل الحاويات في درج اختيار الأصناف»): phones swap the
+ // 256px popover for a FULL-WIDTH bottom sheet. The measured failure:
+ // the popover anchored inside the meal table's overflow-x-auto wrapper
+ // inside the modal's own scroll region — clipped/overlapping containers,
+ // 288px of list no thumb could scroll reliably, and «المزيد» unreachable
+ // below the fold. The sheet is a portal dialog: fixed to the viewport
+ // (no clipping ancestor), 60dvh dedicated scroll region with
+ // overscroll-contain (scroll chaining to the modal killed inner
+ // scrolling on iOS), 44px touch rows, and load-more INSIDE the scroll.
+ const [sheetOpen, setSheetOpen] = useState(false);
+ const isMobile = useMediaQuery("(max-width: 639px)");
  // FOOD-LIBRARY-COMPLETENESS 2026-10-25 (owner order item 7): the FULL
  // library behind the combobox — the first page carries 12 ranked rows
  // and «المزيد» progressive-loads the next page from the SAME query while
@@ -3483,6 +3541,8 @@ function FoodPickerCell({
  setQuery(value);
  }, [value]);
 
+ const dietParam = diet === "keto" ? "&diet=keto" : "";
+
  useEffect(() => {
  if (debounceRef.current) clearTimeout(debounceRef.current);
  const trimmed = query.trim();
@@ -3501,14 +3561,19 @@ function FoodPickerCell({
  const { signal } = controller;
  debounceRef.current = setTimeout(async () => {
  try {
- const res = await fetch(`/api/food-search?q=${encodeURIComponent(trimmed)}&lang=${lang}&limit=12`, { signal });
+ // KETO-LAW 2026-10-25: the owning plan's diet rides the search so
+ // keto plans rank keto-safe rows first (demoted rows stay visible,
+ // flagged ketoOk:false — the coach keeps the override).
+ const res = await fetch(`/api/food-search?q=${encodeURIComponent(trimmed)}&lang=${lang}&limit=12${dietParam}`, { signal });
  if (res.ok) {
  const data = await res.json();
  if (signal.aborted) return; // late-body belt
  const rows: FoodSearchRow[] = (data.results ?? []).slice(0, 12);
  setResults(rows);
  setMoreOffset(typeof data.nextOffset === "number" ? data.nextOffset : null);
- if (userTypedRef.current) setOpen(rows.length > 0);
+ // MOBILE-DRAWER: the sheet is the phone surface — the popover open
+ // state is a desktop-only concern now.
+ if (userTypedRef.current && !isMobile) setOpen(rows.length > 0);
  }
  } catch {
  // silent — includes the AbortError of a superseded query.
@@ -3520,7 +3585,9 @@ function FoodPickerCell({
  if (debounceRef.current) clearTimeout(debounceRef.current);
  controller.abort();
  };
- }, [query, lang]);
+ // sheetOpen rides the deps so OPENING the sheet searches the current
+ // item's name immediately (the coach sees matches without retyping).
+ }, [query, lang, dietParam, sheetOpen, isMobile]);
 
  // FOOD-LIBRARY-COMPLETENESS: append the NEXT page of library rows for
  // the SAME query (owned by the current query's controller — a stale
@@ -3530,7 +3597,7 @@ function FoodPickerCell({
  setLoadingMore(true);
  const trimmed = query.trim();
  try {
- const res = await fetch(`/api/food-search?q=${encodeURIComponent(trimmed)}&lang=${lang}&limit=12&offset=${moreOffset}`);
+ const res = await fetch(`/api/food-search?q=${encodeURIComponent(trimmed)}&lang=${lang}&limit=12&offset=${moreOffset}${dietParam}`);
  if (res.ok) {
  const data = await res.json();
  const rows: FoodSearchRow[] = (data.results ?? []).filter((r) => r.source === "local");
@@ -3544,6 +3611,144 @@ function FoodPickerCell({
  }
  };
 
+ // Shared per-row rendering (keto badge rides both surfaces when the
+ // owning plan is keto — flagged rows stay pickable, the coach decides).
+ const renderRow = (r: FoodSearchRow, i: number, onChoose: () => void, opts?: { touch?: boolean }) => (
+ <button
+ key={`${r.name}-${i}`}
+ type="button"
+ // Classic combobox guard (desktop popover only): keep focus in the
+ // input while choosing — the click then lands onPick WITHOUT a
+ // preceding blur-rename race. The sheet has no blur-rename race.
+ onMouseDown={opts?.touch ? undefined : (e) => e.preventDefault()}
+ onClick={onChoose}
+ className={
+ opts?.touch
+ ? "flex min-h-11 w-full flex-col items-start gap-0.5 rounded-lg px-3 py-2.5 text-start transition-colors hover:bg-accent active:bg-accent"
+ : "flex w-full flex-col items-start gap-0.5 rounded-md px-2 py-1.5 text-start transition-colors hover:bg-accent"
+ }
+ >
+ <span className="flex w-full items-center gap-2">
+ <span className="min-w-0 flex-1 truncate text-sm font-medium" dir="auto">{r.name}</span>
+ {diet === "keto" && r.ketoOk === false && (
+ <Badge variant="outline" className="shrink-0 border-amber-500/40 text-[10px] text-amber-600 dark:text-amber-400">
+ {isAr ? "غير كيتو" : "not keto"}
+ </Badge>
+ )}
+ </span>
+ <span className="text-[11px] text-muted-foreground">
+ {r.source === "local" ? (isAr ? "المكتبة" : "Library") : isAr ? "منتج" : "Product"}
+ {" · "}
+ {r.per100g.calories} {isAr ? "سعرة/١٠٠جم" : "kcal/100g"}
+ {` · P${r.per100g.protein} C${r.per100g.carbs} F${r.per100g.fat}`}
+ </span>
+ </button>
+ );
+
+ // ── MOBILE: the bottom-sheet drawer (owner order item 2). Full-width
+ // portal dialog — no clipping ancestor, its OWN scroll region
+ // (overscroll-contain kills the modal's scroll chaining on iOS), 44px
+ // touch rows, and «المزيد» INSIDE the scrollable list so the deep
+ // library tail is reachable by thumb. Closing without a pick commits
+ // the typed text as a free-form custom item (the desktop blur law).
+ if (isMobile) {
+ return (
+ <>
+ <button
+ type="button"
+ onClick={() => {
+ userTypedRef.current = true;
+ setSheetOpen(true);
+ }}
+ className="flex h-10 w-full items-center gap-2 rounded-md border border-input bg-transparent px-3 text-start text-sm font-medium shadow-xs"
+ dir="auto"
+ >
+ <Search className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+ <span className="truncate">{value || (isAr ? "اختر من المكتبة…" : "Pick from the library…")}</span>
+ </button>
+ <Dialog
+ open={sheetOpen}
+ onOpenChange={(o) => {
+ setSheetOpen(o);
+ if (!o) {
+ // Free-text commit on close — same law as the desktop blur:
+ // the typed name stays; macros are NOT guessed.
+ onRename(mealIdx, itemIdx, query.trim());
+ }
+ }}
+ >
+ <DialogContent
+ showCloseButton={false}
+ // Bottom-sheet overrides over the centered default (tailwind-merge
+ // dedupes the conflicting position utilities). 85dvh ceiling keeps
+ // the sheet inside short viewports WITH the on-screen keyboard.
+ className="inset-x-0 bottom-0 left-0 top-auto flex max-h-[85dvh] w-full translate-x-0 translate-y-0 flex-col gap-0 overflow-hidden rounded-t-2xl border p-0 sm:max-w-full"
+ >
+ <DialogTitle className="sr-only">
+ {isAr ? "اختيار صنف من مكتبة الأطعمة" : "Pick a food from the library"}
+ </DialogTitle>
+ <div className="flex shrink-0 items-center gap-2 border-b p-3">
+ <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
+ <Input
+ value={query}
+ onChange={(e) => {
+ userTypedRef.current = true;
+ setQuery(e.target.value);
+ }}
+ placeholder={isAr ? "اكتب اسم الصنف…" : "Food name…"}
+ // text-base (16px) — smaller inputs trigger iOS viewport zoom.
+ className="h-10 flex-1 text-base"
+ dir="auto"
+ autoFocus
+ />
+ <DialogClose
+ type="button"
+ aria-label={isAr ? "إغلاق" : "Close"}
+ className="ring-offset-background focus:ring-ring hover:bg-accent hover:text-muted-foreground flex h-9 w-9 shrink-0 items-center justify-center rounded-md transition-colors focus:ring-2 focus:ring-offset-2 focus:outline-hidden"
+ >
+ <X className="h-4 w-4" />
+ </DialogClose>
+ </div>
+ {/* THE drawer's scroll region: flex child with min-h-0 so it takes
+ the remaining sheet height; overscroll-contain + touch scrolling
+ keep the thumb scrolling THIS list, never the modal behind it. */}
+ <div
+ className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-2 [scrollbar-thin]"
+ style={{ WebkitOverflowScrolling: "touch" }}
+ >
+ {loading && (
+ <div className="flex items-center justify-center gap-2 py-6 text-sm text-muted-foreground">
+ <Loader2 className="h-4 w-4 animate-spin" />
+ {isAr ? "بحث…" : "Searching…"}
+ </div>
+ )}
+ {!loading && results.length === 0 && query.trim() && (
+ <div className="py-6 text-center text-sm text-muted-foreground">
+ {isAr ? "لا نتائج — جرّب اسمًا آخر، أو أغلق الدرج لاستخدام النص المكتوب كما هو" : "No matches — try another name, or close to keep the typed text"}
+ </div>
+ )}
+ {results.map((r, i) => renderRow(r, i, () => {
+ onPick(mealIdx, itemIdx, r);
+ setSheetOpen(false);
+ }, { touch: true }))}
+ {moreOffset !== null && (
+ <button
+ type="button"
+ onClick={() => void loadMore()}
+ className="mt-1 flex min-h-11 w-full items-center justify-center gap-1.5 rounded-lg border border-dashed px-3 py-2.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+ >
+ {loadingMore ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Search className="h-3.5 w-3.5" />}
+ {isAr ? "المزيد من المكتبة…" : "More from the library…"}
+ </button>
+ )}
+ </div>
+ </DialogContent>
+ </Dialog>
+ </>
+ );
+ }
+
+ // ── DESKTOP: the popover combobox (unchanged behavior + keto badge).
  return (
  <Popover open={open} onOpenChange={setOpen}>
  <PopoverAnchor asChild>
@@ -3577,28 +3782,10 @@ function FoodPickerCell({
  collisionPadding={8}
  className="max-h-72 w-64 overflow-y-auto p-1"
  >
- {results.map((r, i) => (
- <button
- key={`${r.name}-${i}`}
- type="button"
- // Classic combobox guard: keep focus in the input while choosing —
- // the click then lands onPick WITHOUT a preceding blur-rename race.
- onMouseDown={(e) => e.preventDefault()}
- onClick={() => {
+ {results.map((r, i) => renderRow(r, i, () => {
  onPick(mealIdx, itemIdx, r);
  setOpen(false);
- }}
- className="flex w-full flex-col items-start gap-0.5 rounded-md px-2 py-1.5 text-start transition-colors hover:bg-accent"
- >
- <span className="w-full truncate text-sm font-medium" dir="auto">{r.name}</span>
- <span className="text-[11px] text-muted-foreground">
- {r.source === "local" ? (isAr ? "المكتبة" : "Library") : isAr ? "منتج" : "Product"}
- {" · "}
- {r.per100g.calories} {isAr ? "سعرة/١٠٠جم" : "kcal/100g"}
- {` · P${r.per100g.protein} C${r.per100g.carbs} F${r.per100g.fat}`}
- </span>
- </button>
- ))}
+ }))}
  {moreOffset !== null && (
  <button
  type="button"

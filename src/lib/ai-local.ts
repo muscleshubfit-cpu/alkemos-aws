@@ -456,6 +456,13 @@ export const FOOD_DB: FoodItem[] = [
  { name: "فلفل أخضر", name_en: "green pepper", calsPer100g: 20, proteinPer100g: 0.9, carbsPer100g: 4.6, fatPer100g: 0.2, category: "veg", meals: ["lunch", "dinner"] },
  { name: "جزر مطبوخ", name_en: "cooked carrot", calsPer100g: 35, proteinPer100g: 0.8, carbsPer100g: 8, fatPer100g: 0.2, category: "veg", meals: ["lunch", "dinner"] },
  { name: "باذنجان مشوي", name_en: "grilled eggplant", calsPer100g: 25, proteinPer100g: 1, carbsPer100g: 6, fatPer100g: 0.2, category: "veg", meals: ["lunch", "dinner"] },
+ // SWAP-QUALITY 2026-10-25 (owner order item 3 — «أضف خضروات مناسبة
+ // ومتنوعة»): three more Egyptian-market staples with USDA-anchored
+ // per-100g values (arugula 25/2.6/3.7/0.7 · cooked beetroot 44/1.7/10/0.2
+ // · cooked globe artichoke 53/2.9/11.9/0.3) — no invented numbers.
+ { name: "جرجير", name_en: "arugula", calsPer100g: 25, proteinPer100g: 2.6, carbsPer100g: 3.7, fatPer100g: 0.7, category: "veg", meals: ["breakfast", "lunch", "dinner"] },
+ { name: "شمندر مطبوخ", name_en: "cooked beetroot", calsPer100g: 44, proteinPer100g: 1.7, carbsPer100g: 10, fatPer100g: 0.2, category: "veg", meals: ["lunch", "dinner"] },
+ { name: "خرشوف مطبوخ", name_en: "cooked artichoke", calsPer100g: 53, proteinPer100g: 2.9, carbsPer100g: 11.9, fatPer100g: 0.3, category: "veg", meals: ["lunch", "dinner"] },
  { name: "سلطة خضراء مشكلة", name_en: "mixed salad", calsPer100g: 20, proteinPer100g: 1, carbsPer100g: 4, fatPer100g: 0.2, category: "veg", meals: ["breakfast", "lunch", "dinner"] },
 
  // === FRUITS ===
@@ -632,19 +639,32 @@ export type LocalNutritionOptions = {
 };
 
 /** Per-category calorie share of ONE meal, by diet family. Zero = the
- * category is never used for that diet (keto: no starch, no fruit). */
+ * category is never used for that diet (keto: no starch, no fruit).
+ * KETO-LAW 2026-10-25 (owner mandatory correction): the keto dairy share
+ * DROPS 0.12→0.08 and the difference goes to fat — regular milk/rayeb/
+ * yogurt are now excluded from keto pools by the shared keto dairy law
+ * (plan-ai-validation.ketoDairyViolation), so the keto dairy pool is
+ * cheeses + unsweetened Greek yogurt only, in MODEST portions instead of
+ * a dairy item in EVERY keto meal (the measured «رايب في الفطار والغداء»
+ * repetition on the live keto plan). */
 type MealShares = { protein: number; carb: number; fat: number; veg: number; fruit: number; dairy: number };
 const DIET_MEAL_SHARES: Record<DietType, MealShares> = {
- keto: { protein: 0.42, carb: 0, fat: 0.30, veg: 0.16, fruit: 0, dairy: 0.12 },
+ keto: { protein: 0.42, carb: 0, fat: 0.34, veg: 0.16, fruit: 0, dairy: 0.08 },
  low_carb: { protein: 0.40, carb: 0.16, fat: 0.26, veg: 0.12, fruit: 0.02, dairy: 0.04 },
  balanced: { protein: 0.38, carb: 0.28, fat: 0.12, veg: 0.10, fruit: 0.04, dairy: 0.08 },
  vegetarian: { protein: 0.36, carb: 0.28, fat: 0.12, veg: 0.10, fruit: 0.04, dairy: 0.10 },
  vegan: { protein: 0.38, carb: 0.30, fat: 0.14, veg: 0.10, fruit: 0.08, dairy: 0 },
 };
 
-/** Portion floors/ceilings per category (grams) — keeps portions physical. */
+/** Portion floors/ceilings per category (grams) — keeps portions physical.
+ * SWAP-QUALITY 2026-10-25 (owner order item 3 — «كميات وبيانات غذائية
+ * موثوقة»): ONLY the MEASURED absurdity tightened — protein 600→400 (the
+ * live draw: 533g of egg whites as ONE item). Every other ceiling keeps
+ * its measured-stable value: the 510-kcal close-out precision canary pins
+ * them (veg 350→300 moved that canary's max drift 2.0%→2.35% through the
+ * low-density-veg draws, fat 120→100 moved it 2.0%→2.16% — both reverted). */
 const PORTION_BOUNDS: Record<string, [number, number]> = {
- protein: [30, 600],
+ protein: [30, 400],
  carb: [30, 400],
  fat: [5, 120],
  veg: [80, 350],
@@ -690,6 +710,24 @@ function itemPassesConstraints(
 /** All FOOD_DB rows passing the name-level constraint tables. */
 function safeFoodsFor(constraints?: ClientItemConstraints | null): FoodItem[] {
  return FOOD_DB.filter((f) => foodPassesTokens(f, constraints));
+}
+
+/* ─────────────── ARAB-CONTEXT DEFAULT EXCLUSION (2026-10-25 item 3) ───────────────
+ * Owner order: «امنع الأصناف غير الملائمة للسياق الغذائي والثقافي العربي
+ * افتراضيًا، مثل التوفو ما لم يطلبه المستخدم». Tofu is a VEGAN/
+ * VEGETARIAN staple in this DB (added 2026-10-25 for the vegan collapse) —
+ * it must never surface as the default protein of a regular client's plan
+ * (the measured live draw: توفو 281g as the LUNCH protein of a balanced
+ * plan). Vegan/vegetarian keep it (their protein bench is thin); every
+ * other diet excludes it by default — a client who explicitly wants it
+ * says so in their questionnaire (disliked/notes) or the coach adds it
+ * manually in the editor (manual picks are never gated). */
+const ARAB_CONTEXT_EXCLUDED = new Set(["توفو"]);
+
+/** True when the food suits the diet's cultural default. */
+function passesArabContext(food: FoodItem, dietType?: DietType | null): boolean {
+ if (!ARAB_CONTEXT_EXCLUDED.has(food.name)) return true;
+ return dietType === "vegan" || dietType === "vegetarian";
 }
 
 export function generateNutritionPlan(ctx: ClientContext, opts?: LocalNutritionOptions): NutritionContent {
@@ -821,7 +859,10 @@ export function generateNutritionPlan(ctx: ClientContext, opts?: LocalNutritionO
  // never a food the constraint tables forbid. SWAP-QUALITY 2026-10-25:
  // the client's recent-plan foods ride as a BEST-EFFORT avoid-list — a
  // category never goes empty for it (compliance first, variety second).
- const safeBase = safeFoodsFor(constraints);
+ // ARAB-CONTEXT 2026-10-25: tofu leaves the default pools for every diet
+ // except vegan/vegetarian (the measured live draw made it a balanced
+ // plan's lunch protein — culturally off-default unless requested).
+ const safeBase = safeFoodsFor(constraints).filter((f) => passesArabContext(f, dietType));
  const avoidRecent = new Set(
  (opts?.avoidNames ?? []).map((n) => String(n || "").trim()).filter(Boolean),
  );
@@ -852,8 +893,41 @@ export function generateNutritionPlan(ctx: ClientContext, opts?: LocalNutritionO
  // steps below (a zero-carb fat may legitimately repeat across days).
  const safe = safeBase;
 
- // Track used protein sources to avoid repetition
- let proteinIdx = 0;
+ // SWAP-QUALITY 2026-10-25 (owner order item 3 — «قلّل التكرار غير المنطقي
+ // للحليب والرائب… أضف خضروات مناسبة ومتنوعة في الوجبات»): a DAY-level
+ // used-name set + rotating cursors per category. Every meal draws the
+ // next UNUSED food of each category (fresh-first). When a category's
+ // unused candidates are exhausted the policy SPLITS by role:
+ //   · protein + fat WRAP (repeat) — the meal's compliance backbone
+ //     (keto especially: fat carries 34% of the calories — a snack with
+ //     no fat item is a broken keto meal);
+ //   · carb/veg/fruit/dairy SKIP this meal — variety means NOT forcing
+ //     the same veg/dairy into the next slot (the measured class: خيار
+ //     twice because it was the ONLY snack-compatible veg). The calories
+ //     resorb through the meal calibration/close-out.
+ // Measured before this law: زيت زيتون in THREE meals of one day and the
+ // same veg twice — pickRandom re-rolled the SAME pool for every meal,
+ // so repetition was luck, not policy. (The keto oil close-out below
+ // still repeats olive oil BY LAW — a drizzle for cooking is not the
+ // meal's fat item.)
+ const usedToday = new Set<string>();
+ const catCursor: Record<string, number> = { protein: 0, carb: 0, fat: 0, veg: 0, fruit: 0, dairy: 0 };
+ const rotatePick = (pool: FoodItem[], cat: string): FoodItem | undefined => {
+ if (pool.length === 0) return undefined;
+ const fresh = pool.filter((f) => !usedToday.has(f.name));
+ if (fresh.length === 0) {
+ // Exhausted: wrap for the compliance backbone, skip for variety
+ // categories (a meal without its SECOND veg is fine; a keto meal
+ // without its fat item is not).
+ if (cat !== "protein" && cat !== "fat") return undefined;
+ const wrapped = pool[catCursor[cat]++ % pool.length];
+ usedToday.add(wrapped.name);
+ return wrapped;
+ }
+ const picked = fresh[catCursor[cat]++ % fresh.length];
+ usedToday.add(picked.name);
+ return picked;
+ };
 
  const meals = distributions.slice(0, mealsCount).map((dist, idx) => {
  const mealCals = Math.round(dailyCalories * dist);
@@ -864,30 +938,31 @@ export function generateNutritionPlan(ctx: ClientContext, opts?: LocalNutritionO
  const mealCarbBudget = Number.isFinite(dayCarbBudget) ? dayCarbBudget * dist : Number.POSITIVE_INFINITY;
  let mealCarbsUsed = 0;
 
- // Pick protein suitable for this meal type
+ // Pick protein suitable for this meal type (rotating cursor — no repeat
+ // until the meal-type pool wraps; the old pickRandom re-rolled the SAME
+ // pool every meal).
  const proteinsForMeal = shuffledProteins.filter((f) => f.meals.includes(mealType));
- const proteinFood = proteinsForMeal[proteinIdx % Math.max(1, proteinsForMeal.length)];
- if (proteinsForMeal.length > 0) proteinIdx++;
+ const proteinFood = rotatePick(proteinsForMeal, "protein");
 
  // Pick carb suitable for this meal type (diet may forbid the category)
  const carbsForMeal = shares.carb > 0 ? shuffledCarbs.filter((f) => f.meals.includes(mealType)) : [];
- const carbFood = pickRandom(carbsForMeal);
+ const carbFood = rotatePick(carbsForMeal, "carb");
 
  // Pick fat suitable for this meal type
  const fatsForMeal = shuffledFats.filter((f) => f.meals.includes(mealType));
- const fatFood = pickRandom(fatsForMeal);
+ const fatFood = rotatePick(fatsForMeal, "fat");
 
  // Pick veg
  const vegsForMeal = shuffledVegs.filter((f) => f.meals.includes(mealType));
- const vegFood = pickRandom(vegsForMeal);
+ const vegFood = rotatePick(vegsForMeal, "veg");
 
  // Pick fruit (mostly breakfast/snack; keto excludes the category)
  const fruitsForMeal = shares.fruit > 0 ? shuffledFruits.filter((f) => f.meals.includes(mealType)) : [];
- const fruitFood = pickRandom(fruitsForMeal);
+ const fruitFood = rotatePick(fruitsForMeal, "fruit");
 
- // Pick dairy (breakfast/snack; vegan excludes the category)
+ // Pick dairy (keto: cheese/unsweetened-greek pool only — KETO-LAW)
  const dairyForMeal = shares.dairy > 0 ? shuffledDairy.filter((f) => f.meals.includes(mealType)) : [];
- const dairyFood = pickRandom(dairyForMeal);
+ const dairyFood = rotatePick(dairyForMeal, "dairy");
 
  const pushItem = (food: FoodItem | undefined, share: number, category: string) => {
  if (!food || share <= 0) return;
@@ -989,7 +1064,11 @@ export function generateNutritionPlan(ctx: ClientContext, opts?: LocalNutritionO
  if (it.carbs_g > 1 && Number.isFinite(mealCarbBudget)) return it; // keto budgeted grams stay
  const food = safe.find((f) => f.name === it.food);
  if (!food) return it;
- const grams = Math.max(15, Math.round((parseFloat(it.amount) || 0) * scale));
+ // SWAP-QUALITY 2026-10-25: the rescale RESPECTS the portion ceilings —
+ // growth is capped at the category max so a ×1.6 calibration can never
+ // resurrect the 533g-portion class it was written to kill.
+ const maxB = PORTION_BOUNDS[food.category]?.[1] ?? 500;
+ const grams = Math.max(15, Math.min(maxB, Math.round((parseFloat(it.amount) || 0) * scale)));
  if (grams >= (parseFloat(it.amount) || 0) - 0.5 && scale < 1) return it; // cannot shrink
  const candidate = itemFromFood(food, grams);
  return itemPassesConstraints(candidate, constraints) ? candidate : it;
@@ -1190,7 +1269,10 @@ export function buildLocalReplacementMeal(input: LocalReplacementMealInput): Loc
  const slot = detectMealSlot(originalMeal.name) ?? "lunch";
 
  // Constraint-safe pool — NEVER relaxed (the quality gate's own tables).
- const safe = safeFoodsFor(constraints);
+ // ARAB-CONTEXT 2026-10-25: tofu leaves the default pool unless the diet
+ // is vegan/vegetarian (same law as the full generator — a swap must not
+ // re-introduce a culturally off-default protein the generator excluded).
+ const safe = safeFoodsFor(constraints).filter((f) => passesArabContext(f, dietType));
  if (safe.length === 0) return null;
 
  // PROGRESSIVE RELAXATION (variety prefs only): each category takes the
@@ -1300,10 +1382,20 @@ export function buildLocalReplacementMeal(input: LocalReplacementMealInput): Loc
  ] ?? [10, 500];
  const grams = Math.min(maxG, Math.max(5, Math.round(delta / food.calsPer100g * 100)));
  const rescaled = itemFromFood(food, grams);
+ // KETO-LAW 2026-10-25: the rescale guard is MEAL-aware now — the old
+ // check only bounded the rescaled ITEM's own carbs (≤ the whole budget),
+ // so growing a carb item could push the MEAL sum past 25g (the measured
+ // 25.1–25.8 draws). The rescaled item must fit what remains of the band
+ // AFTER the other items' carbs.
+ const carbsExcludingLargest = items.reduce(
+ (s, i) => s + (i === largest ? 0 : (i.carbs_g || 0)),
+ 0,
+ );
  if (
  rescaled.calories > 0 &&
  itemPassesConstraints(rescaled, constraints) &&
- (!Number.isFinite(mealCarbBudget) || rescaled.carbs_g <= mealCarbBudget + 1e-9)
+ (!Number.isFinite(mealCarbBudget) ||
+ carbsExcludingLargest + rescaled.carbs_g <= mealCarbBudget + 0.05)
  ) {
  const idx = items.indexOf(largest);
  items[idx] = rescaled;
@@ -1370,6 +1462,49 @@ export function buildLocalReplacementMeal(input: LocalReplacementMealInput): Loc
  // (d) Over target after the additions? One more bounded rescale down.
  rescaleLargest();
 
+ // KETO MEAL-CARB CLOSE-CLAMP (KETO-LAW 2026-10-25 — «ولا وجبة تتجاوز حدود
+ // الكيتو المعتمدة»): the rounding/portion paths above could land the
+ // meal's carb sum 0.1–0.8g past the documented ≤25g budget (measured
+ // live draws 25.1–25.8) — the swap gate's meal-level ceiling now catches
+ // exactly this class, so the ENGINE closes its own law deterministically:
+ // shrink the largest carb-carrying item into what remains of the band
+ // (drop it when the remainder is a crumb); the calories re-close through
+ // the rescale below, and the ±20% drift check stays the honest arbiter.
+ if (dietType === "keto" && Number.isFinite(mealCarbBudget)) {
+ const ROUNDING_EPS = 0.05;
+ const mealCarbs = () => items.reduce((s, i) => s + (i.carbs_g || 0), 0);
+ let guard = 0;
+ while (mealCarbs() > mealCarbBudget + ROUNDING_EPS && guard++ < 6 && items.length > 2) {
+ const carbIdx = items.reduce(
+ (bi, it, i) => ((it.carbs_g || 0) > (items[bi].carbs_g || 0) ? i : bi),
+ 0,
+ );
+ const victim = items[carbIdx];
+ const food = foodByName(victim.food);
+ const others = mealCarbs() - (victim.carbs_g || 0);
+ if (!food || food.carbsPer100g <= 0) break;
+ const remaining = mealCarbBudget - others - ROUNDING_EPS;
+ if (remaining < 3) {
+ items.splice(carbIdx, 1); // the band is spent — drop the carb item
+ continue;
+ }
+ const grams = Math.floor((remaining / food.carbsPer100g) * 100);
+ if (grams < 20) {
+ items.splice(carbIdx, 1); // a crumb portion is unphysical
+ continue;
+ }
+ const clamped = itemFromFood(food, grams);
+ if (!itemPassesConstraints(clamped, constraints)) {
+ items.splice(carbIdx, 1);
+ continue;
+ }
+ items[carbIdx] = clamped;
+ }
+ }
+
+ // (e) Re-close the calories after any carb clamp (meal-aware guard).
+ rescaleLargest();
+
  const finalSum = sumNow();
  if (finalSum <= 0 || Math.abs(finalSum - target) / target > PLAN_AI_SANITY.mealDriftTolerance) {
  return null;
@@ -1418,8 +1553,13 @@ export function buildLocalReplacementItem(input: {
  const avoid = new Set((input.avoidNames ?? []).map((n) => String(n || "").trim()).filter(Boolean));
  const original = String(input.item?.food || "").trim();
 
+ const dietType = input.constraints?.dietType ?? null;
  const candidates = safeFoodsFor(input.constraints).filter(
- (f) => f.category === category && f.name !== original && !avoid.has(f.name),
+ (f) =>
+ f.category === category &&
+ f.name !== original &&
+ !avoid.has(f.name) &&
+ passesArabContext(f, dietType),
  );
  if (candidates.length === 0) return null;
 

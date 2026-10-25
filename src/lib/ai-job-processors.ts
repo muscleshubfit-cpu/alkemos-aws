@@ -50,6 +50,140 @@ import {
 } from "@/lib/blog-images";
 import { sanitizeImageQuery } from "@/lib/image-safety";
 import { loadEvoNutritionKnowledge } from "@/lib/evo-nutrition-knowledge.server";
+// SWAP-DURABILITY 2026-10-25: the runner materializes gated meal/item swaps
+// into the owning plans row — the same pure totals math the coach editor
+// uses, imported from the zero-dep leaf (type-only from the generator).
+import { recomputeNutritionTotals } from "@/lib/nutrition-totals";
+import type { NutritionPlanContent } from "@/lib/plan-generator";
+
+/* ─────────────────── SWAP-DURABILITY 2026-10-25 (owner order item 1) ───────────────────
+ *
+ * THE MEASURED PRODUCTION DEFECT this law kills: both swap jobs enqueued
+ * 2026-10-25 13:29Z (ai_jobs 2384a8a9 food_item + 3ee1bcea meal, the
+ * owner's own live test) finished `done` on the runner — and their results
+ * NEVER reached the client's saved plan. The old contract kept the swap
+ * result ONLY inside ai_jobs.result + a browser poller (runAiJob) that
+ * dies the moment the coach navigates off the plan editor mid-wait
+ * (measured: the coach opened ANOTHER client's page 81 seconds after
+ * enqueuing). Full-plan generation already had the registry +
+ * server-side draft materialization law; articles got theirs after the
+ * «watched success, reported failure» incident. Meal/item swaps were the
+ * LAST result class whose persistence depended on a live tab.
+ *
+ * THE LAW: the swap payload carries the owning plan (planId + clientId +
+ * bounded indices — whitelisted by sanitizeJobPayload), and the RUNNER
+ * applies the gated replacement to plans.content server-side:
+ *   - fresh-fetch: the row is read at materialization time, so a coach
+ *     edit saved in the interim survives (only the swap delta rides on
+ *     top — no stale-content overwrite of unrelated items);
+ *   - the replacement rides the SAME pure recomputeNutritionTotals the
+ *     editor uses, so meal/plan totals stay coherent in the saved row;
+ *   - ownership sanity: the plan must belong to the payload's client;
+ *   - best-effort by design: a materialization hiccup NEVER fails the job
+ *     (the in-session poller path still applies the result live) — but
+ *     when it lands, the swap survives navigation, reloads and dead tabs.
+ * The UI keeps applying the result in-editor when its poller is alive —
+ * the two paths write the same bytes (idempotent content).
+ * ─────────────────────────────────────────────────────────────────────────────────────── */
+
+const SWAP_UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/** Pure MEAL-swap content transform — the editor's exact semantics
+ * (replace the meal at mealIdx, recompute every total). Null when the
+ * content shape or the index does not fit (never throws). Exported for
+ * the permanent canary battery. */
+export function applyMealSwapToContent(
+  content: unknown,
+  mealIdx: number,
+  replacementMeal: Record<string, unknown>,
+): NutritionPlanContent | null {
+  if (!content || typeof content !== "object") return null;
+  const c = content as Record<string, unknown>;
+  if (!Array.isArray(c.meals)) return null;
+  if (!Number.isInteger(mealIdx) || mealIdx < 0 || mealIdx >= c.meals.length) return null;
+  const items = (replacementMeal as { items?: unknown }).items;
+  if (!Array.isArray(items) || items.length === 0) return null;
+  const next = JSON.parse(JSON.stringify(c)) as NutritionPlanContent;
+  next.meals[mealIdx] = replacementMeal as NutritionPlanContent["meals"][number];
+  return recomputeNutritionTotals(next);
+}
+
+/** Pure ITEM-swap content transform — the editor's exact semantics
+ * (merge the replacement over the old item, recompute every total). */
+export function applyItemSwapToContent(
+  content: unknown,
+  mealIdx: number,
+  itemIdx: number,
+  replacementItem: Record<string, unknown>,
+): NutritionPlanContent | null {
+  if (!content || typeof content !== "object") return null;
+  const c = content as Record<string, unknown>;
+  if (!Array.isArray(c.meals)) return null;
+  if (!Number.isInteger(mealIdx) || mealIdx < 0 || mealIdx >= c.meals.length) return null;
+  const meal = c.meals[mealIdx] as { items?: unknown } | null;
+  const items = meal && Array.isArray(meal.items) ? meal.items : null;
+  if (!items || !Number.isInteger(itemIdx) || itemIdx < 0 || itemIdx >= items.length) return null;
+  const repFood = (replacementItem as { food?: unknown }).food;
+  if (typeof repFood !== "string" || !repFood.trim()) return null;
+  const next = JSON.parse(JSON.stringify(c)) as NutritionPlanContent;
+  const oldItem = next.meals[mealIdx].items[itemIdx] as Record<string, unknown>;
+  next.meals[mealIdx].items[itemIdx] = { ...oldItem, ...replacementItem } as NutritionPlanContent["meals"][number]["items"][number];
+  return recomputeNutritionTotals(next);
+}
+
+/** Runner-side swap persistence: apply the gated replacement to the owning
+ * plans row (fresh-fetch + delta + recompute). Best-effort — NEVER fails
+ * the job; returns { materialized: false } for every skipped case. */
+async function materializeSwapIntoPlan(
+  payload: Record<string, unknown>,
+  kind: "meal" | "item",
+  replacement: Record<string, unknown> | null,
+): Promise<{ materialized: boolean; plan_id?: string }> {
+  if (!isSupabaseAdminConfigured || !supabaseAdmin) return { materialized: false };
+  if (!replacement || typeof replacement !== "object") return { materialized: false };
+  const planId = String(payload?.planId ?? "");
+  const clientId = String(payload?.clientId ?? "");
+  if (!SWAP_UUID_RE.test(planId) || !SWAP_UUID_RE.test(clientId)) return { materialized: false };
+  const mealIdx = Number(payload?.mealIdx);
+  if (!Number.isInteger(mealIdx) || mealIdx < 0) return { materialized: false };
+
+  // Fresh fetch — the coach may have saved other edits while the queue
+  // processed; the swap delta rides on top of the LATEST committed state.
+  const { data: plan, error } = await supabaseAdmin
+    .from("plans")
+    .select("id, client_id, type, content")
+    .eq("id", planId)
+    .maybeSingle();
+  if (error || !plan) {
+    console.warn(`[swap-durability] plan fetch failed (job stays done): ${error?.message ?? "no row"}`);
+    return { materialized: false };
+  }
+  if (String(plan.client_id ?? "") !== clientId) {
+    console.warn("[swap-durability] plan/client mismatch — materialization skipped");
+    return { materialized: false };
+  }
+  if (String(plan.type ?? "") !== "meal") return { materialized: false };
+
+  const next =
+    kind === "meal"
+      ? applyMealSwapToContent(plan.content, mealIdx, replacement)
+      : applyItemSwapToContent(plan.content, mealIdx, Number(payload?.itemIdx), replacement);
+  if (!next) {
+    console.warn(`[swap-durability] content shape/index mismatch — materialization skipped (plan ${planId.slice(0, 8)})`);
+    return { materialized: false };
+  }
+
+  const { error: updateError } = await supabaseAdmin
+    .from("plans")
+    .update({ content: next as unknown as PlanContent })
+    .eq("id", planId);
+  if (updateError) {
+    console.warn(`[swap-durability] plans update failed (job stays done): ${updateError.message}`);
+    return { materialized: false };
+  }
+  console.log(`::notice::[swap-durability] ${kind} swap materialized into plans#${planId.slice(0, 8)} (mealIdx ${mealIdx})`);
+  return { materialized: true, plan_id: planId };
+}
 
 /* Shared quality knobs for heavy jobs (GHA sets AI_CHAIN_TOTAL_BUDGET_MS
  * = 480000 in process-ai-jobs.yml — generous per-model windows, strongest
@@ -606,10 +740,15 @@ async function runMealRegenerate(payload: Record<string, unknown>) {
       ? (payload.dietType as DietType)
       : undefined,
   );
+  // SWAP-DURABILITY 2026-10-25: persist the gated replacement into the
+  // owning plan row server-side — the swap survives the coach closing the
+  // tab mid-wait (the measured 2026-10-25 failure class). Best-effort.
+  const mat = await materializeSwapIntoPlan(payload, "meal", out.meal as unknown as Record<string, unknown>);
   return {
     replacement: out.meal,
     suggestions: out.suggestions,
     source: out.source,
+    ...(mat.materialized ? { materialized: true, plan_id: mat.plan_id } : {}),
   };
 }
 
@@ -640,7 +779,14 @@ async function runFoodItemRegenerate(payload: Record<string, unknown>) {
       ? (payload.dietType as DietType)
       : undefined,
   );
-  return { replacement: out.item, source: out.source };
+  // SWAP-DURABILITY 2026-10-25: same law as the meal swap — the runner
+  // persists the ±15% gated replacement into the owning plan row.
+  const mat = await materializeSwapIntoPlan(payload, "item", out.item as unknown as Record<string, unknown>);
+  return {
+    replacement: out.item,
+    source: out.source,
+    ...(mat.materialized ? { materialized: true, plan_id: mat.plan_id } : {}),
+  };
 }
 
 async function runDayRegenerate(payload: Record<string, unknown>) {
