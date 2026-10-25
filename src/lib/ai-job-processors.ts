@@ -24,6 +24,7 @@ import type { ClientContext } from "@/lib/ai-local";
 import { generateSocialPost } from "@/lib/social-posts";
 import { pickSmartTopic } from "@/lib/blog-topics";
 import { supabaseAdmin, isSupabaseAdminConfigured } from "@/lib/supabase/admin";
+import { decideSwapPlanOwnership } from "@/lib/plan-swap-ownership";
 
 import { weeksUnitAr } from "@/lib/utils";
 import type { PlanContent } from "@/lib/data/plans";
@@ -88,6 +89,13 @@ import type { NutritionPlanContent } from "@/lib/plan-generator";
 
 const SWAP_UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+/** MEMBER-SWAP-DURABILITY 2026-10-26: the runner receives the job's
+ *  requested_by (owner order items 1-2) so the ownership defense below can
+ *  verify the requester against the plan BEFORE any service-role write. */
+export type ProcessorCtx = {
+  requestedBy?: string | null;
+};
+
 /** Pure MEAL-swap content transform — the editor's exact semantics
  * (replace the meal at mealIdx, recompute every total). Null when the
  * content shape or the index does not fit (never throws). Exported for
@@ -131,13 +139,47 @@ export function applyItemSwapToContent(
   return recomputeNutritionTotals(next);
 }
 
+/** Pure EXERCISE-swap content transform — the editor's exact semantics
+ *  (merge the replacement over the old exercise at days[dayIdx].exercises[exIdx]).
+ *  Null when the content shape or the indices do not fit (never throws). */
+export function applyExerciseSwapToContent(
+  content: unknown,
+  dayIdx: number,
+  exIdx: number,
+  replacementExercise: Record<string, unknown>,
+): Record<string, unknown> | null {
+  if (!content || typeof content !== "object") return null;
+  const c = content as Record<string, unknown>;
+  if (!Array.isArray(c.days)) return null;
+  if (!Number.isInteger(dayIdx) || dayIdx < 0 || dayIdx >= c.days.length) return null;
+  const day = c.days[dayIdx] as { exercises?: unknown } | null;
+  const exercises = day && Array.isArray(day.exercises) ? day.exercises : null;
+  if (!exercises || !Number.isInteger(exIdx) || exIdx < 0 || exIdx >= exercises.length) return null;
+  const repName = (replacementExercise as { name?: unknown }).name;
+  if (typeof repName !== "string" || !repName.trim()) return null;
+  const next = JSON.parse(JSON.stringify(c)) as Record<string, unknown>;
+  const days = next.days as Array<{ exercises: Array<Record<string, unknown>> }>;
+  const oldEx = days[dayIdx].exercises[exIdx] as Record<string, unknown>;
+  days[dayIdx].exercises[exIdx] = { ...oldEx, ...replacementExercise };
+  return next;
+}
+
 /** Runner-side swap persistence: apply the gated replacement to the owning
  * plans row (fresh-fetch + delta + recompute). Best-effort — NEVER fails
- * the job; returns { materialized: false } for every skipped case. */
+ * the job; returns { materialized: false } for every skipped case.
+ *
+ * MEMBER-SWAP-DURABILITY 2026-10-26 — the OWNERSHIP DEFENSE: the payload's
+ * planId/clientId are browser-supplied; before any service-role write the
+ * REQUESTER (ai_jobs.requested_by) is re-verified against the plan (member
+ * → his own row; coach → assignment roster; admin → any; unresolvable →
+ * skip). The enqueue gate (/api/ai/jobs) is the primary layer; this is the
+ * belt that guarantees no byte ever lands in a plan the requester does not
+ * own even if a forged payload bypassed it. */
 async function materializeSwapIntoPlan(
   payload: Record<string, unknown>,
-  kind: "meal" | "item",
+  kind: "meal" | "item" | "exercise",
   replacement: Record<string, unknown> | null,
+  ctx?: ProcessorCtx,
 ): Promise<{ materialized: boolean; plan_id?: string }> {
   if (!isSupabaseAdminConfigured || !supabaseAdmin) return { materialized: false };
   if (!replacement || typeof replacement !== "object") return { materialized: false };
@@ -145,7 +187,7 @@ async function materializeSwapIntoPlan(
   const clientId = String(payload?.clientId ?? "");
   if (!SWAP_UUID_RE.test(planId) || !SWAP_UUID_RE.test(clientId)) return { materialized: false };
   const mealIdx = Number(payload?.mealIdx);
-  if (!Number.isInteger(mealIdx) || mealIdx < 0) return { materialized: false };
+  if (kind !== "exercise" && (!Number.isInteger(mealIdx) || mealIdx < 0)) return { materialized: false };
 
   // Fresh fetch — the coach may have saved other edits while the queue
   // processed; the swap delta rides on top of the LATEST committed state.
@@ -162,12 +204,61 @@ async function materializeSwapIntoPlan(
     console.warn("[swap-durability] plan/client mismatch — materialization skipped");
     return { materialized: false };
   }
-  if (String(plan.type ?? "") !== "meal") return { materialized: false };
+  const expectedType = kind === "exercise" ? "workout" : "meal";
+  if (String(plan.type ?? "") !== expectedType) return { materialized: false };
+
+  // OWNERSHIP DEFENSE (2026-10-26): resolve the requester and re-verify the
+  // same law the enqueue gate enforced. Fail-open ONLY for pre-identity
+  // legacy jobs (requested_by null) — no newer forged path can write.
+  const requestedBy = typeof ctx?.requestedBy === "string" ? ctx.requestedBy : "";
+  if (requestedBy) {
+    let role: string | null = null;
+    let assignment: { coach_id?: string } | null = null;
+    let siteAssignment: { coach_id?: string } | null = null;
+    const { data: profile } = await supabaseAdmin
+      .from("profiles")
+      .select("role")
+      .eq("id", requestedBy)
+      .maybeSingle();
+    role = (profile as { role?: string } | null)?.role ?? null;
+    if (role === "coach") {
+      const { data: ca } = await supabaseAdmin
+        .from("coach_assignments")
+        .select("coach_id")
+        .eq("client_id", clientId)
+        .eq("coach_id", requestedBy)
+        .maybeSingle();
+      assignment = (ca ?? null) as { coach_id?: string } | null;
+      if (!assignment) {
+        const { data: sca } = await supabaseAdmin
+          .from("site_coach_assignments")
+          .select("coach_id")
+          .eq("client_id", clientId)
+          .eq("coach_id", requestedBy)
+          .maybeSingle();
+        siteAssignment = (sca ?? null) as { coach_id?: string } | null;
+      }
+    }
+    const verdict = decideSwapPlanOwnership({
+      plan: { client_id: clientId },
+      requesterId: requestedBy,
+      requesterRole: role,
+      assignment,
+      siteAssignment,
+      payloadClientId: clientId,
+    });
+    if (!verdict.ok) {
+      console.warn(`[swap-durability] requester ${requestedBy.slice(0, 8)} failed the ownership defense (${verdict.code}) — materialization skipped, plan untouched`);
+      return { materialized: false };
+    }
+  }
 
   const next =
     kind === "meal"
       ? applyMealSwapToContent(plan.content, mealIdx, replacement)
-      : applyItemSwapToContent(plan.content, mealIdx, Number(payload?.itemIdx), replacement);
+      : kind === "item"
+        ? applyItemSwapToContent(plan.content, mealIdx, Number(payload?.itemIdx), replacement)
+        : applyExerciseSwapToContent(plan.content, Number(payload?.dayIdx), Number(payload?.exIdx), replacement);
   if (!next) {
     console.warn(`[swap-durability] content shape/index mismatch — materialization skipped (plan ${planId.slice(0, 8)})`);
     return { materialized: false };
@@ -722,15 +813,17 @@ async function runPlanWorkout(payload: Record<string, unknown>) {
   };
 }
 
-async function runMealRegenerate(payload: Record<string, unknown>) {
-  const ctx = payload.clientContext ? pickClientContext(payload.clientContext) : undefined;
+async function runMealRegenerate(payload: Record<string, unknown>, ctx?: ProcessorCtx) {
+  // (clientCtx — renamed from the historical local `ctx` so the new
+  // ProcessorCtx parameter cannot shadow it)
+  const clientCtx = payload.clientContext ? pickClientContext(payload.clientContext) : undefined;
   // EVO-4 (W4 E3): the swap-learning block (most-removed/most-accepted
   // foods, anonymized) steers what the model stops suggesting — fail-open.
   const { swapBlock } = await loadEvoNutritionKnowledge();
   const out = await regenerateMeal(
     (payload.meal || {}) as { name?: string; items?: Array<{ food: string; amount: string; calories: number }>; notes?: string },
     payload.targetCalories as number | undefined,
-    ctx,
+    clientCtx,
     payload.reason as string | undefined,
     Array.isArray(payload.avoid_names) ? (payload.avoid_names as string[]) : [],
     swapBlock,
@@ -743,7 +836,9 @@ async function runMealRegenerate(payload: Record<string, unknown>) {
   // SWAP-DURABILITY 2026-10-25: persist the gated replacement into the
   // owning plan row server-side — the swap survives the coach closing the
   // tab mid-wait (the measured 2026-10-25 failure class). Best-effort.
-  const mat = await materializeSwapIntoPlan(payload, "meal", out.meal as unknown as Record<string, unknown>);
+  // MEMBER-SWAP-DURABILITY 2026-10-26: ctx.requestedBy feeds the ownership
+  // defense (member swaps now carry plan targets too — unified law).
+  const mat = await materializeSwapIntoPlan(payload, "meal", out.meal as unknown as Record<string, unknown>, ctx);
   return {
     replacement: out.meal,
     suggestions: out.suggestions,
@@ -752,25 +847,42 @@ async function runMealRegenerate(payload: Record<string, unknown>) {
   };
 }
 
-async function runExerciseRegenerate(payload: Record<string, unknown>) {
+async function runExerciseRegenerate(payload: Record<string, unknown>, ctx?: ProcessorCtx) {
   const out = await substituteExercise({
     exercise: (payload.exercise || {}) as { name: string; sets?: number; reps?: string; rest?: string; focus?: string },
     reason: payload.reason as string | undefined,
     location: payload.location as string | undefined,
     clientContext: payload.clientContext ? pickClientContext(payload.clientContext) : undefined,
   });
-  return out; // { replacement(+exerciseSlug/image), alternatives[3], libraryMatched, source }
+  // MEMBER-SWAP-DURABILITY 2026-10-26 (owner order items 1-2): the exercise
+  // swap rides the SAME materialization law as meal/item swaps — the
+  // runner merges the gated replacement into the owning workout plan row
+  // server-side. Previously ONLY the browser poller applied exercise swaps
+  // (the coach editor's in-place merge / the member's PlansView), so a dead
+  // tab lost the result — the exact failure class 368 fixed for meals.
+  const mat = await materializeSwapIntoPlan(
+    payload,
+    "exercise",
+    (out.replacement ?? null) as Record<string, unknown> | null,
+    ctx,
+  );
+  return {
+    ...out,
+    ...(mat.materialized ? { materialized: true, plan_id: mat.plan_id } : {}),
+  };
 }
 
 /* Phase 79 (owner «الكوتشينج يستفيدوا من نفس الخصائص»): the two granular
  * regeneration tools that used to be admin-external-plans only are now
  * staff editing tools on the same GitHub Actions queue. */
 
-async function runFoodItemRegenerate(payload: Record<string, unknown>) {
-  const ctx = payload.clientContext ? pickClientContext(payload.clientContext) : undefined;
+async function runFoodItemRegenerate(payload: Record<string, unknown>, ctx?: ProcessorCtx) {
+  // (clientCtx — renamed from the historical local `ctx` so the new
+  // ProcessorCtx parameter cannot shadow it)
+  const clientCtx = payload.clientContext ? pickClientContext(payload.clientContext) : undefined;
   const out = await regenerateFoodItem(
     (payload.item || {}) as { food: string; amount: string; calories: number; alternatives?: string },
-    ctx,
+    clientCtx,
     Array.isArray(payload.avoid_names) ? (payload.avoid_names as string[]) : [],
     payload.note as string | undefined,
     // PLAN-REGEN-CONSTRAINTS 2026-10-24: the owning plan's diet re-imposed
@@ -781,7 +893,8 @@ async function runFoodItemRegenerate(payload: Record<string, unknown>) {
   );
   // SWAP-DURABILITY 2026-10-25: same law as the meal swap — the runner
   // persists the ±15% gated replacement into the owning plan row.
-  const mat = await materializeSwapIntoPlan(payload, "item", out.item as unknown as Record<string, unknown>);
+  // MEMBER-SWAP-DURABILITY 2026-10-26: ctx.requestedBy → ownership defense.
+  const mat = await materializeSwapIntoPlan(payload, "item", out.item as unknown as Record<string, unknown>, ctx);
   return {
     replacement: out.item,
     source: out.source,
@@ -1207,9 +1320,12 @@ async function runArticleGenerate(payload: Record<string, unknown>) {
 
 export type ProcessorResult = Record<string, unknown>;
 
+/** MEMBER-SWAP-DURABILITY 2026-10-26: processors MAY receive the job's
+ *  requested_by (the runner passes it) — the swap materializers use it for
+ *  the ownership defense. Older call shapes (payload-only) stay valid. */
 export const PROCESSORS: Record<
   string,
-  (payload: Record<string, unknown>) => Promise<ProcessorResult>
+  (payload: Record<string, unknown>, ctx?: ProcessorCtx) => Promise<ProcessorResult>
 > = {
   plan_nutrition: runPlanNutrition,
   plan_workout: runPlanWorkout,

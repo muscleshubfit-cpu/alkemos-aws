@@ -139,7 +139,16 @@ ledger-based — `src/lib/refund.ts`).
 
 ### For coaches (B2B)
 - **Client dashboard** — lifecycle filter tabs and per-client management
-  (overview, subscription, plans, AI plans, questionnaires, progress)
+  (overview, subscription, plans, AI plans, questionnaires, progress).
+  **The subscription shown is the ACTIVE one first (2026-10-26):** every
+  staff surface (client list, counters, assignments view, admin clients,
+  the client page header) picks the primary subscription by
+  effectively-ACTIVE first, then tier (pro > premium > coaching) — an
+  EXPIRED premium can never mask a RENEWED-ACTIVE coaching row (the
+  measured live state: a renewed training subscription rendered «منتهي»
+  while an old expired Premium kept being shown). Status badges render
+  the honest effective status (an `active` row past its end date reads
+  «منتهي»/Expired, never «مؤكد»/Confirmed)
 - **AI plans** — generation draws from the client's own balance
   (ownership-checked); manual edits and per-element regeneration are unlimited.
   The nutrition generator computes ALL calories/macros server-side
@@ -175,18 +184,26 @@ ledger-based — `src/lib/refund.ts`).
   excepted on keto), portions are physically bounded (no 533g egg-white
   items), and the local food bench gained three USDA-anchored Egyptian
   vegetables (arugula, beetroot, artichoke)
-- **Durable swaps — «حتى نجاح الحفظ» (2026-10-25)** — a meal/item swap
-  now SURVIVES the coach leaving the plan editor mid-wait: the swap
-  payload names the owning plan (`planId`/`clientId`/`mealIdx`/`itemIdx`
-  through the enqueue whitelist) and the queue RUNNER materializes the
-  gated replacement straight into the `plans` row (fresh fetch → the swap
-  delta only → the editor's own `recomputeNutritionTotals`), so the
-  result never again depends on a live browser poller (the measured
-  2026-10-25 failure: both live swap jobs finished `done` in `ai_jobs`
-  while neither result ever reached the saved plan). Best-effort by
-  design — a materialization hiccup never fails the job; the in-editor
-  path keeps applying the result live, and the success toast says
-  whether it auto-saved.
+- **Durable swaps — «حتى نجاح الحفظ» (2026-10-25, extended 2026-10-26)** —
+  EVERY swap kind (meal / item / exercise) on EVERY surface (the coach's
+  plan editor AND the member's `/plans` page) now SURVIVES a closed tab:
+  the swap payload names the owning plan (`planId`/`clientId`/bounded
+  indices through the enqueue whitelist) and the queue RUNNER materializes
+  the gated replacement straight into the `plans` row (fresh fetch → the
+  swap delta only → the editor's own `recomputeNutritionTotals` for meal
+  plans), so the result never again depends on a live browser poller (the
+  measured 2026-10-25 failure: both live swap jobs finished `done` in
+  `ai_jobs` while neither result ever reached the saved plan;
+  2026-10-26 closed the remaining gaps — the member's swaps carried no
+  plan targets and exercise swaps had no server-side persistence at all).
+  **Plan-target ownership gate (2026-10-26):** a swap whose payload names
+  a plan is verified at ENQUEUE time against the requester (member → his
+  own plan; coach → his assignment roster; admin → any) and re-verified by
+  the runner from `ai_jobs.requested_by` before the write — a hostile
+  member can no longer target another member's plan through the queue.
+  Best-effort by design — a materialization hiccup never fails the job;
+  the in-editor path keeps applying the result live, and the success toast
+  says whether it auto-saved.
 - **Keto dairy law — MANDATORY (2026-10-25)** — regular milk (ANY fat
   percentage — full-fat alone proves nothing), rayeb and regular yogurt
   are excluded from keto plans BY DEFAULT, sweetened/flavored dairy

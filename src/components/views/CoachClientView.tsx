@@ -64,7 +64,7 @@ import {
  getQuestionnaire,
  fetchProfile,
 } from "@/lib/data";
-import { pickPrimarySubscription } from "@/lib/subscription-view";
+import { pickPrimarySubscription, effectiveSubStatus } from "@/lib/subscription-view";
 import { getTier, type Duration, type TierId } from "@/lib/plans";
 import { MEMBERSHIPS } from "@/lib/memberships";
 import { resolveExerciseImage, getExerciseImage, getExerciseImages, getFallbackSVG } from "@/lib/exercise-images";
@@ -898,18 +898,17 @@ export function CoachClientView({ clientId }: { clientId: string }) {
  {sub.status && (
  <span
  className={`mt-1 inline-block rounded-full px-2 py-0.5 text-[10px] font-medium ${
- sub.status === "active"
+ effectiveSubStatus(sub) === "active"
  ? "bg-[#34c759]/10 text-[#34c759]"
- : sub.status === "pending"
- ? "bg-[#ff9500]/10 text-[#ff9500]"
- : "bg-[#6e6e73]/10 text-[#6e6e73]"
+ : "bg-[#ff3b30]/10 text-[#ff3b30]"
  }`}
  >
- {sub.status === "active"
+ {/* SUB-PICK 2026-10-26: honest EFFECTIVE status (Phase 247 law A6) —
+     the raw status column kept rendering «مؤكد» over a long-expired row
+     while the renewed coaching surfaced nowhere on this header. */}
+ {effectiveSubStatus(sub) === "active"
  ? lang === "ar" ? "مؤكد" : "Confirmed"
- : sub.status === "pending"
- ? lang === "ar" ? "بانتظار التأكيد" : "Pending"
- : sub.status}
+ : lang === "ar" ? "منتهي" : "Expired"}
  </span>
  )}
  <p className="text-xs text-muted-foreground">
@@ -972,7 +971,10 @@ export function CoachClientView({ clientId }: { clientId: string }) {
  const tierInfo = MEMBERSHIPS.find((m) => m.id === s.tier);
  const tierAr = tierInfo?.nameAr || s.tier;
  const tierEn = tierInfo?.nameEn || s.tier;
- const isActive = s.status === "active" && (!s.end_date || new Date(s.end_date).getTime() > Date.now());
+ {/* SUB-PICK 2026-10-26: one honest status law — this hand-rolled isActive
+     treated a NULL end_date as active and disagreed with effectiveSubStatus
+     (the Phase 247 law every other surface uses). Same definition now. */}
+ const isActive = effectiveSubStatus(s) === "active";
  return (
  <div key={s.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-[#f5f5f7] p-4">
  <div className="min-w-0 flex-1">
@@ -1963,6 +1965,15 @@ function PlanViewerModal({
  exercise: { name: ex.name, sets: ex.sets, reps: ex.reps, rest: ex.rest, focus },
  location: regenContext?.location,
  clientContext: regenContext?.clientContext,
+ // MEMBER-SWAP-DURABILITY 2026-10-26: the coach's exercise swap rides the
+ // same plan-target law as his meal/item swaps — the RUNNER merges the
+ // gated replacement into the owning workout plan row server-side, so the
+ // swap survives the coach navigating away mid-wait (previously exercise
+ // swaps had NO server-side persistence at all — only this live modal).
+ planId: plan.id,
+ clientId: plan.client_id,
+ dayIdx,
+ exIdx,
  });
  // Job results are job-type-specific JSON — narrow to the exercise contract the engine honors.
  const rep = (result.replacement ?? null) as WorkoutPlanContent["days"][number]["exercises"][number] | null;

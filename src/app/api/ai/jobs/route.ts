@@ -262,6 +262,56 @@ export async function POST(request: NextRequest) {
       } // end B2B gates (the site-coach branch above skips them)
     }
 
+    // ── MEMBER-SWAP-DURABILITY 2026-10-26 (owner order items 1-2) ──────
+    // PLAN-TARGET OWNERSHIP GATE: a swap payload that carries planId
+    // targets a plan row the RUNNER will later write into (service-role
+    // materialization). The browser-supplied planId/clientId were never
+    // verified against the REQUESTER before this frame — a hostile member
+    // could enqueue a swap onto ANOTHER member's plan (IDOR through the
+    // queue; the browser persist path /api/plans/member-edit WAS gated).
+    // The gate: client → his OWN plan; coach → his assigned roster
+    // (coach_assignments or site_coach_assignments); admin → any. The
+    // payload's clientId, when present, must match the plan's real
+    // client_id (forging defense). Runner-side defense-in-depth lives in
+    // materializeSwapIntoPlan (same law, verified from requested_by).
+    if (
+      authRequired &&
+      userId &&
+      (type === "meal_regenerate" ||
+        type === "exercise_regenerate" ||
+        type === "food_item_regenerate")
+    ) {
+      const planIdRaw = String(payload?.planId ?? "");
+      if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(planIdRaw)) {
+        const { supabaseAdmin, isSupabaseAdminConfigured } = await import(
+          "@/lib/supabase/admin"
+        );
+        if (!isSupabaseAdminConfigured || !supabaseAdmin) {
+          return NextResponse.json({ error: "Server not configured" }, { status: 501 });
+        }
+        const { verifySwapPlanOwnershipForEnqueue, swapOwnershipErrorMessage } = await import(
+          "@/lib/plan-swap-ownership"
+        );
+        const payloadClientId = String(payload?.clientId ?? "") || null;
+        const verdict = await verifySwapPlanOwnershipForEnqueue({
+          planId: planIdRaw,
+          requesterId: userId,
+          requesterRole: authRole ?? "client",
+          payloadClientId,
+          db: supabaseAdmin as unknown as Parameters<
+            typeof verifySwapPlanOwnershipForEnqueue
+          >[0]["db"],
+        });
+        if (!verdict.ok) {
+          const status = verdict.code === "not_found" ? 404 : 403;
+          return NextResponse.json(
+            { error: swapOwnershipErrorMessage(verdict, true), code: `swap_${verdict.code}` },
+            { status },
+          );
+        }
+      }
+    }
+
     // ── Enqueue via service-role (sanitization happens inside). ────────
     let id: string;
     try {

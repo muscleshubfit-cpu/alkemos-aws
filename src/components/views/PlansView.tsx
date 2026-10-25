@@ -355,6 +355,20 @@ export function PlansView() {
  clientContext: { name: profile?.full_name, ...(memberNutrition ? { nutrition: memberNutrition } : {}) },
  avoid_names: avoidNames,
  ...(planDiet ? { dietType: planDiet } : {}),
+ // MEMBER-SWAP-DURABILITY 2026-10-26 (owner order items 1-2 — «توحيد
+ // مصدر الخطط… وتبديل الوجبة أو الصنف يُحفظ ويظهر في جميع الواجهات
+ // المعنية»): the member's swap rides the SAME plan-target law the
+ // coach's editor has had since 368 — planId + clientId + mealIdx on the
+ // payload (whitelisted by sanitizeJobPayload, ownership-gated at the
+ // enqueue route, verified again by the runner before the write). The
+ // RUNNER now persists the gated replacement into plans.content
+ // server-side, so the member's swap survives a dead tab exactly like
+ // the coach's — previously ONLY the browser poller applied it and a
+ // closed tab lost the result (the exact 13:29Z failure class 368
+ // fixed for the coach flow but left open here).
+ planId,
+ clientId: profile.id,
+ mealIdx: mealIndex,
  });
  const pendingEntry: PendingSwap = {
  id: jobId,
@@ -398,6 +412,14 @@ export function PlansView() {
  const jobId = await enqueueAiJobClient("exercise_regenerate", {
  exercise: { ...exercise, focus },
  clientContext: { name: profile?.full_name },
+ // MEMBER-SWAP-DURABILITY 2026-10-26: the exercise swap rides the same
+ // plan-target law (sanitizer + ownership gate + runner materialization
+ // added in this frame) — previously exercise swaps had NO server-side
+ // persistence at all, even for coaches.
+ planId,
+ clientId: profile.id,
+ dayIdx: dayIndex,
+ exIdx: exIndex,
  });
  const pendingEntry: PendingSwap = {
  id: jobId,

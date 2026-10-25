@@ -164,7 +164,12 @@ async function main(): Promise<void> {
         console.log(`[ai-jobs] ▶ processing ${label}`);
         const processor = PROCESSORS[job.job_type];
         if (!processor) throw new Error(`no processor registered for ${job.job_type}`);
-        const result = await processor(job.payload ?? {});
+        // MEMBER-SWAP-DURABILITY 2026-10-26: the swap materializers verify
+        // the REQUESTER against the target plan before any service-role
+        // write — requested_by rides from the claimed job row.
+        const result = await processor(job.payload ?? {}, {
+          requestedBy: job.requested_by ?? null,
+        });
         await finishJob(job.id, result);
         await recordSwapOnSuccess(job);
         await recordPlanPoolOnSuccess(job);

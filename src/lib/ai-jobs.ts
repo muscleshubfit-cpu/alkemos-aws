@@ -266,6 +266,25 @@ export function sanitizeJobPayload(type: AiJobType, raw: unknown): Json {
         location: str(p.location, 60), // gym | home | …
         clientContext: pickClientContext(p.clientContext),
         reason: str(p.reason ?? p.note, 400), // e.g. knee injury / no machine
+        // MEMBER-SWAP-DURABILITY 2026-10-26 (owner order items 1-2): the
+        // exercise swap rides the same plan-target law as meal/item swaps —
+        // planId + clientId + bounded indices (strict UUID, hostile values
+        // degrade to undefined and materialization silently skips). The
+        // member's PlansView flow now carries them, so the RUNNER can
+        // persist the gated replacement into plans.content server-side
+        // (previously ONLY the browser poller applied exercise swaps — a
+        // dead tab lost the result, the exact 13:29Z failure class 368
+        // fixed for meals but left open here).
+        planId: UUIDish(p.planId),
+        clientId: UUIDish(p.clientId),
+        dayIdx: (() => {
+          const n = num(p.dayIdx);
+          return n !== undefined && Number.isFinite(n) && n >= 0 ? Math.min(20, Math.round(n)) : undefined;
+        })(),
+        exIdx: (() => {
+          const n = num(p.exIdx);
+          return n !== undefined && Number.isFinite(n) && n >= 0 ? Math.min(30, Math.round(n)) : undefined;
+        })(),
       };
     }
     case "food_item_regenerate": {
