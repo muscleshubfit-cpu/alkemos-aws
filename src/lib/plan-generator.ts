@@ -30,6 +30,11 @@ import {
   generateNutritionPlan,
   generateWorkoutPlan,
   loose,
+  buildLocalReplacementMeal,
+  buildLocalReplacementItem,
+  canonicalMealTitle,
+  canonicalizeMealTitles,
+  detectMealSlot,
   type ClientContext,
 } from "@/lib/ai-local";
 import { EXERCISES, CATEGORY_LABELS, EQUIPMENT_LABELS, LEVEL_LABELS, type Exercise } from "@/lib/exercises";
@@ -215,22 +220,50 @@ export type GeneratePlanResult = {
   source: string; // which model served the request
 };
 
-/* ─────────────────── PHASE 62 VARIETY ENGINE ───────────────────
- * The old "استخدم تنويع N" seed sentence was too weak: free models
- * weight the structured JSON contract far above it, and the anchored
- * few-shot examples pulled every plan toward the same foods/lifts.
- * Each generation now carries: (1) a ROTATED explicit direction
- * (cuisine emphasis for nutrition, training emphasis for workout),
- * (2) a hard no-copy law for the examples, and (3) an avoid-list of
- * names already used in the client's previous plans.
- * ───────────────────────────────────────────────────────────── */
-const NUTRITION_CUISINE_ROTATIONS = [
-  "اتجاه بحري (سمك، جمبري، تونا، سلمون) كأساس للبروتين",
-  "اتجاه شرقي بالفرن (دجاج/لحم بالفرن مع خضار مشكلة)",
-  "اتجاه نباتي جزئي (عدس، حمص، فاصوليا مع ألبان قليلة الدسم)",
-  "اتجاه مصري شعبي خفيف (مشويات، شوربات، محشيات صحية)",
-  "اتجاه متوسطي (زيت زيتون، جبن أبيض، زيتون، خضار مشوية)",
-  "اتجاه وجبات سريعة صحية (شكشوكة، سلطة تونا، راب دجاج، بول)",
+/* ─────────────────── VARIETY ENGINE — TITLES+DIET LAW 2026-10-25 ───────────────────
+ * PHASE 62 VARIETY, as amended by the owner order P1-3 (2026-10-25):
+ * «أزل فرض المأكولات البحرية كأساس للتوليد، واجعل التنويع متوافقًا مع
+ * النظام الغذائي وتفضيلات العميل». The old rotation carried
+ * «اتجاه بحري (سمك، جمبري، تونا، سلمون) كأساس للبروتين» as 1-of-6
+ * MANDATORY directions — ~1/6 of ALL generations pushed a seafood-first
+ * plan regardless of diet/allergies (the measured «خطط بحرية بالكامل»
+ * defect), and the model translated the direction into invented compound
+ * meal titles like «فطار بحري». The rotations are now:
+ *   (1) NO cuisine may dominate the PROTEIN BASE (no seafood direction);
+ *   (2) diet-incompatible directions are FILTERED (vegan/vegetarian never
+ *       get the meat-forward direction, keto never gets the
+ *       legume/stuffed-vegetables direction, …);
+ *   (3) a direction colliding with the client's allergy/banned tokens is
+ *       SKIPPED (a nut-allergic client is never pointed at a nut-forward
+ *       direction);
+ *   (4) meal TITLES stay canonical (see ai-local.canonicalMealTitle) —
+ *       variety lives in the FOODS, never in the meal name.
+ * ───────────────────────────────────────────────────────────────────── */
+const NUTRITION_CUISINE_ROTATIONS: Array<{
+  direction: string;
+  /** Diet families that must NOT receive this direction. */
+  excludeDiets?: DietType[];
+}> = [
+  {
+    direction: "اتجاه شرقي بالفرن (بروتين بالفرن مع خضار مشكلة)",
+    excludeDiets: ["vegetarian", "vegan"],
+  },
+  {
+    direction: "اتجاه نباتي جزئي (عدس، حمص، فاصوليا مع ألبان قليلة الدسم)",
+    excludeDiets: ["keto", "vegan"],
+  },
+  {
+    direction: "اتجاه مصري شعبي خفيف (مشويات، شوربات، أطباق شعبية صحية)",
+    excludeDiets: ["vegetarian", "vegan"],
+  },
+  {
+    direction: "اتجاه متوسطي (زيت زيتون، جبن أبيض، زيتون، خضار مشوية)",
+    excludeDiets: ["vegan"],
+  },
+  {
+    direction: "اتجاه وجبات سريعة صحية (شكشوكة، راب دجاج، بول، أطباق سريعة)",
+    excludeDiets: ["vegetarian", "vegan"],
+  },
 ];
 const WORKOUT_EMPHASIS_ROTATIONS = [
   "ابدأ الأسبوع بتركيز أعلى على الجزء العلوي واختم بالسفلي",
@@ -241,19 +274,83 @@ const WORKOUT_EMPHASIS_ROTATIONS = [
   "أضف لمسة تحمّل (تكرارات أعلى وراحات أقصر) للأيام الرئيسية",
 ];
 
+/** Diet-aware variety options (owner order P1-3). */
+export type VarietyOptions = {
+  /** The RESOLVED diet — incompatible directions are filtered out. */
+  dietType?: DietType | null;
+  /** The client's expanded allergy/banned tokens — a direction naming a
+   * banned food is skipped (never point the model at a conflict). */
+  constraintTokens?: string[];
+};
+
+/** Flatten the constraint bundle into its tokens (for direction filtering). */
+function constraintTokensOf(constraints?: ClientItemConstraints | null): string[] {
+  if (!constraints) return [];
+  return [...(constraints.allergyTokens ?? []), ...(constraints.bannedTokens ?? [])];
+}
+
+/** Normalize a short Arabic/Latin token the same way the gate does — the
+ * variety filter reuses the gate's own matching semantics (containment
+ * over normalized text) so a direction the gate would reject as a conflict
+ * is never selected in the first place. */
+function varietyNorm(s: string): string {
+  return String(s || "")
+    .toLowerCase()
+    .replace(/[\u064B-\u065F\u0670\u0640]/g, "")
+    .replace(/[إأآا]/g, "ا")
+    .replace(/ى/g, "ي")
+    .replace(/ة/g, "ه")
+    .replace(/ال(?=\S)/g, "")
+    .replace(/[^\p{L}\p{N}\s]/gu, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 export function buildVarietyBlock(
   kind: "nutrition" | "workout",
   seed: number,
   avoidNames: string[],
+  opts?: VarietyOptions,
 ): string {
-  const list = kind === "nutrition" ? NUTRITION_CUISINE_ROTATIONS : WORKOUT_EMPHASIS_ROTATIONS;
-  const direction = list[Math.abs(seed) % list.length];
+  if (kind === "workout") {
+    const direction = WORKOUT_EMPHASIS_ROTATIONS[Math.abs(seed) % WORKOUT_EMPHASIS_ROTATIONS.length];
+    const clean = avoidNames.filter((n) => typeof n === "string" && n.trim().length > 1);
+    const avoidBlock =
+      clean.length > 0
+        ? `\n\n⚠ أصناف/تمارين استُخدمت في خطط سابقة لنفس العميل — اختر بدائل مختلفة عنها قدر الإمكان:\n${clean.slice(0, 60).map((n) => `- ${n}`).join("\n")}`
+        : "";
+    return `\n\n⚠ تعليمات تنويع إلزامية لهذا التوليد (#${Math.abs(seed)}):\n- الاتجاه المطلوب هذه المرة: ${direction}\n- كل وجبة/يوم يجب أن يختلف في أصنافه وترتيبه عن باقي الوجبات/الأيام.\n- ممنوع نسخ أمثلة التعليمات الحرفية — اختر أصنافاً/تمارين جديدة مناسبة لبيانات العميل.${avoidBlock}`;
+  }
+
+  // NUTRITION — diet-aware direction selection (owner order P1-3):
+  // filter diet-incompatible directions, then skip directions naming a
+  // food the client is allergic to / has banned. When everything is
+  // filtered out (extreme allergy profiles), the block degrades to the
+  // avoid-list only — variety must never override safety.
+  const diet = opts?.dietType ?? null;
+  const tokens = (opts?.constraintTokens ?? []).map(varietyNorm).filter((t) => t.length >= 2);
+  const compatible = NUTRITION_CUISINE_ROTATIONS.filter(
+    (r) => !(diet && r.excludeDiets?.includes(diet)),
+  );
+  const safe = compatible.filter((r) => {
+    if (tokens.length === 0) return true;
+    const dir = varietyNorm(r.direction);
+    return !tokens.some((t) => dir.includes(t));
+  });
+  const pool = safe.length > 0 ? safe : [];
+  const direction =
+    pool.length > 0 ? pool[Math.abs(seed) % pool.length].direction : "تنويع حر متوافق مع قيود العميل";
+
   const clean = avoidNames.filter((n) => typeof n === "string" && n.trim().length > 1);
   const avoidBlock =
     clean.length > 0
       ? `\n\n⚠ أصناف/تمارين استُخدمت في خطط سابقة لنفس العميل — اختر بدائل مختلفة عنها قدر الإمكان:\n${clean.slice(0, 60).map((n) => `- ${n}`).join("\n")}`
       : "";
-  return `\n\n⚠ تعليمات تنويع إلزامية لهذا التوليد (#${Math.abs(seed)}):\n- الاتجاه المطلوب هذه المرة: ${direction}\n- كل وجبة/يوم يجب أن يختلف في أصنافه وترتيبه عن باقي الوجبات/الأيام.\n- ممنوع نسخ أمثلة التعليمات الحرفية — اختر أصنافاً/تمارين جديدة مناسبة لبيانات العميل.${avoidBlock}`;
+  return `\n\n⚠ تعليمات تنويع إلزامية لهذا التوليد (#${Math.abs(seed)}):
+- الاتجاه المطلوب هذه المرة: ${direction}
+- كل وجبة يجب أن تختلف في أصنافها وترتيبها عن باقي الوجبات.
+- ممنوع نسخ أمثلة التعليمات الحرفية — اختر أصنافاً جديدة مناسبة لبيانات العميل وقيوده.
+- قانون أسماء الوجبات: العناوين الأساسية فقط «الفطار/الإفطار، الغداء، العشاء، سناك (صباحي/مسائي عند التعدد)» — ممنوع اختلاق عناوين وصفية مركبة مثل «فطار بحري»؛ وصف الأطعمة يظهر في أصناف الوجبة نفسها لا في اسمها.${avoidBlock}`;
 }
 
 /**
@@ -421,15 +518,17 @@ export async function generateNutritionPlanAI(
   // resolved) + the questionnaire's allergy/disliked texts become
   // MANDATORY constraints on both the prompt and the gate.
   const constraints = constraintsFromContext(ctx, targets.dietType);
+  // NUTRITION-FALLBACK 2026-10-25: grounding loads ONCE for both paths —
+  // the AI gate AND the local fallback's gate share the same anchor.
+  const groundItem = await getGroundItemFn();
   // Add a randomization seed to the prompt so each generation produces
   // different meal/exercise choices even for the same client.
   const seed = Math.floor(Math.random() * 1000000);
-  const basePrompt = `${buildNutritionPrompt(ctx, name, overrides, targets)}${constraintPromptBlock(constraints)}${buildVarietyBlock("nutrition", seed, ctx.recent_plan_names ?? [])}${platformKnowledge ?? ""}`;
+  const basePrompt = `${buildNutritionPrompt(ctx, name, overrides, targets)}${constraintPromptBlock(constraints)}${buildVarietyBlock("nutrition", seed, ctx.recent_plan_names ?? [], { dietType: targets.dietType, constraintTokens: constraintTokensOf(constraints) })}${platformKnowledge ?? ""}`;
 
   try {
     // Use callFreeAIFallbackChain — OpenRouter + Groq interleaved (owner
     // directive). Chain self-clamps maxModels × timeoutMs ≤ 52s (Vercel Hobby).
-    const groundItem = await getGroundItemFn();
     const { value, model, provider } = await callValidatedChain(
       (repairNote) => basePrompt + repairNote,
       {
@@ -488,16 +587,72 @@ export async function generateNutritionPlanAI(
     console.error("[plan-generator] Nutrition plan AI failed:", e instanceof Error ? e.message : e);
   }
 
-  // Fallback: local rule-based generator — with the honest review flag so
-  // the coach banner explains WHY (AI gate rejected / providers down).
-  const local = generateNutritionPlan(ctx);
+  /* ── NUTRITION-FALLBACK 2026-10-25 (owner order P0-1: «اجعل الـfallback
+   * واعيًا بالنظام الغذائي والحساسيات والأطعمة الممنوعة وعدد الوجبات وهدف
+   * السعرات والماكروز. لا تسمح بحفظ أي خطة مخالفة، وأخضع مخرجاته لبوابة
+   * الجودة والتدقيق المستقل. إذا تعذر إنتاج نتيجة متوافقة، أوقف الحفظ
+   * واعرض سببًا واضحًا بدل تقديم خطة خاطئة») ──
+   *
+   * The measured defect this kills: the old fallback was diet-blind (its
+   * own BMR/TDEE math, rice/bread in every meal) while
+   * normalizeNutritionPlan stamped the requested keto card + keto macros
+   * on top — a mislabeled plan was SAVED. Now the local engine consumes
+   * the SAME resolved targets + constraints, its output passes the SAME
+   * gate + independent audit, and a non-compliant local plan STOPS THE
+   * SAVE with the named reason (honest failure over a wrong plan). */
+  const local = generateNutritionPlan(ctx, {
+    dailyCalories: targets.dailyCalories,
+    macros: targets.macros,
+    dietType: targets.dietType,
+    mealsCount: overrides?.mealsCount,
+    constraints: constraints ?? null,
+  });
+  const localVerdict = validateNutritionPlanAIOutput(
+    { meals: local.meals } as unknown as Record<string, unknown>,
+    targets.dailyCalories,
+    groundItem,
+    constraints,
+  );
+  if (!localVerdict.ok) {
+    // STOP THE SAVE — the job fails with the named reason; the coach sees
+    // exactly why no plan was produced instead of a mislabeled one.
+    throw new Error(
+      `تعذر إنتاج خطة متوافقة محليًا بعد رفض مخرجات مزودي AI — أوقفنا الحفظ بدل تقديم خطة مخالفة. السبب: ${localVerdict.error}`,
+    );
+  }
   const flaggedTargets: NutritionTargets = {
     ...targets,
     reviewFlags: [...targets.reviewFlags, "ai_output_rejected_local_fallback"],
   };
+  const localContent = normalizeNutritionPlan(local, overrides, flaggedTargets);
+  // The independent audit rides the fallback content too — same law as the
+  // AI path (owner order P0-1: «وأخضع مخرجاته لبوابة الجودة والتدقيق
+  // المستقل»).
+  const localAudit = auditNutritionPlan(localContent, {
+    dietType: targets.dietType,
+    allergyText: targets.allergyText,
+    dislikedText: targets.dislikedText,
+    anchorItem: groundItem,
+  });
+  localContent.audit = {
+    recomputed: localAudit.recomputed,
+    targetDriftPct: localAudit.targetDriftPct,
+    macroDriftPct: localAudit.macroDriftPct,
+    criticalFindings: localAudit.findings.filter((f) => f.severity === "critical").length,
+    findings: localAudit.findings,
+  };
+  if (localAudit.findings.some((f) => f.severity === "critical")) {
+    localContent.needs_review = {
+      flags: [
+        ...(localContent.needs_review?.flags ?? []),
+        "independent_audit_critical_findings",
+      ],
+      note: localContent.needs_review?.note ?? "التدقيق المستقل وجد ملاحظات جوهرية — راجع الأرقام قبل الاعتماد.",
+    };
+  }
   return {
     title: `خطة تغذية - ${name}`,
-    content: normalizeNutritionPlan(local, overrides, flaggedTargets),
+    content: localContent,
     source: "local-fallback",
   };
 }
@@ -651,7 +806,7 @@ ${coachNote ? `تعليمات الكوتش: ${coachNote}` : ""}
 أعد النتيجة بصيغة JSON فقط (بدون أسوار markdown):
 {
  "meal": {
-   "name": "اسم الوجبة",
+   "name": "اسم الوجبة (عنوان أساسي فقط: الفطار/الغداء/العشاء/سناك — ممنوع العناوين الوصفية المركبة)",
    "time": "وقت تقديم الوجبة (اختياري)",
    "items": [
      { "food": "اسم الطعام", "amount": "الكمية بالجرام (مثلاً: 150 جم)", "calories": 300, "protein_g": 30, "alternatives": "أو 180 جم سمك مشوي" }
@@ -670,46 +825,106 @@ ${coachNote ? `تعليمات الكوتش: ${coachNote}` : ""}
 قواعد إلزامية تُتحقق آليًا بوابة جودة المنصة قبل قبول نتيجتك — أي خرق يُرفض:
 - مجموع سعرات أصناف «meal.items» نفسها (وليس رقم total_calories المكتوب) لازم يقع ضمن ±20% من ${totalCals} سعرة.
 - 2 إلى 6 أصناف في الوجبة، وكل صنف بسعرات بين 5 و1500 وبكمية بالجرام.
+- اسم الوجبة عنوان أساسي فقط (الفطار/الغداء/العشاء/سناك) — وصف الأطعمة في الأصناف لا في الاسم.
 - استخدم أصناف عربية/مصرية متوفرة. لا تكرر نفس الأصناف الموجودة في الوجبة الحالية.`;
 
-  // AI-PLAN-QUALITY 2026-10-24: the result is GATED — items coerced +
-  // library-grounded, totals recomputed from items, and the meal must
-  // close within ±20% of totalCals (the demo planner's law, now the paid
-  // path's law). ONE repair retry names the exact rejection; a second
-  // failure THROWS so the caller keeps the original meal untouched —
-  // no unvalidated regeneration is ever returned, displayed, or saved.
+  // AI-PLAN-QUALITY 2026-10-24 + LOCAL-SWAP 2026-10-25 (owner order P0-2):
+  // the result is GATED — items coerced + library-grounded, totals
+  // recomputed from items, and the meal must close within ±20% of
+  // totalCals. ONE repair retry names the exact rejection. When the
+  // provider chain fails outright (down / keeps violating the gate — the
+  // measured free-tier drift), the LOCAL food DB builds the replacement:
+  // diet-aware, calorie-matched, constraint-checked by the SAME gate.
+  // Only when the local engine cannot produce a compliant equivalent
+  // either does this THROW — the caller keeps the original meal and the
+  // member sees an honest failure, never a fake success.
   const groundItem = await getGroundItemFn();
   let rawParsedRef: Record<string, unknown> | null = null;
-  const { value, model, provider } = await callValidatedChain(
-    (repairNote) => prompt + repairNote,
-    {
-      tag: "plan:nutrition-alt",
-      systemPrompt: NUTRITION_SYSTEM_PROMPT,
-      temperature: 0.8,
-      maxTokens: 2600,
-      jsonMode: true,
-      timeoutMs: 60_000,
-      maxModels: 3,
-    },
-    (parsed) => {
-      rawParsedRef =
-        parsed && typeof parsed === "object"
-          ? (parsed as Record<string, unknown>)
-          : null;
-      return validateRegeneratedMeal(parsed, totalCals, groundItem, constraints);
-    },
-  );
+  try {
+    const { value, model, provider } = await callValidatedChain(
+      (repairNote) => prompt + repairNote,
+      {
+        tag: "plan:nutrition-alt",
+        systemPrompt: NUTRITION_SYSTEM_PROMPT,
+        temperature: 0.8,
+        maxTokens: 2600,
+        jsonMode: true,
+        timeoutMs: 60_000,
+        maxModels: 3,
+      },
+      (parsed) => {
+        rawParsedRef =
+          parsed && typeof parsed === "object"
+            ? (parsed as Record<string, unknown>)
+            : null;
+        return validateRegeneratedMeal(parsed, totalCals, groundItem, constraints);
+      },
+    );
 
-  // Suggestions ride the SAME parsed payload — best-effort normalization
-  // (coerce calories, recompute totals, drop unusable entries). They are
-  // display-level extras; the gated meal above is the contract.
-  const suggestions = normalizeSuggestions(rawParsedRef);
+    // Suggestions ride the SAME parsed payload — best-effort normalization
+    // (coerce calories, recompute totals, drop unusable entries). They are
+    // display-level extras; the gated meal above is the contract.
+    const suggestions = normalizeSuggestions(rawParsedRef);
 
-  return {
-    meal: value as unknown as RegeneratedMeal,
-    suggestions,
-    source: `${provider}:${model}`,
-  };
+    // TITLES LAW 2026-10-25: the replacement's name is CANONICAL — a
+    // slot keyword from the ORIGINAL meal's name, never the model's
+    // invented compound title («فطار بحري» → «الفطار»).
+    const gated = value as unknown as RegeneratedMeal;
+    const shapedMeal: RegeneratedMeal = {
+      ...gated,
+      name: canonicalMealTitle(
+        typeof gated?.name === "string" ? (gated.name as string) : String(meal.name ?? ""),
+        detectSlotIndex(meal.name),
+        3,
+      ),
+    };
+
+    return {
+      meal: shapedMeal,
+      suggestions,
+      source: `${provider}:${model}`,
+    };
+  } catch (e) {
+    // LOCAL-SWAP FALLBACK (owner order P0-2: «استخدم قاعدة الأطعمة المحلية
+    // كبديل عند تعذر المزود، مع التحقق من النظام الغذائي والسعرات
+    // والماكروز والقيود. احتفظ بالوجبة الأصلية إذا فشل الاستبدال، ولا
+    // تعرض نجاحًا وهميًا»).
+    const localMeal = buildLocalReplacementMeal({
+      originalMeal: { name: meal.name, items: itemsNum, notes: meal.notes },
+      targetCalories: totalCals,
+      constraints: constraints ?? null,
+      avoidNames,
+    });
+    if (!localMeal) throw e; // honest failure — original meal stays
+    // The local replacement passes the SAME gate before shipping.
+    const verdict = validateRegeneratedMeal(
+      { meal: localMeal },
+      totalCals,
+      groundItem,
+      constraints,
+    );
+    if (!verdict.ok) throw e;
+    console.warn(
+      "[plan-generator] meal swap fell back to the local food DB (provider chain failed):",
+      e instanceof Error ? e.message : e,
+    );
+    return {
+      meal: localMeal as unknown as RegeneratedMeal,
+      suggestions: [],
+      source: "local-fallback:meal-swap",
+    };
+  }
+}
+
+/** TITLES LAW helper: positional index of the original meal inside a
+ * canonical 3-meal layout (best-effort — the keyword detection in
+ * canonicalMealTitle dominates when the name carries a slot word). */
+function detectSlotIndex(mealName: string | undefined | null): number {
+  const slot = detectMealSlot(mealName);
+  if (slot === "breakfast") return 0;
+  if (slot === "lunch") return 1;
+  if (slot === "snack") return 2;
+  return 1;
 }
 
 /** AI-PLAN-QUALITY 2026-10-24: coerce + recompute the display-level
@@ -1044,12 +1259,16 @@ const NUTRITION_SYSTEM_PROMPT = `أنت أخصائي تغذية رياضية م�
 - لكل وجبة: أضف حقل "meal_alternatives" يحتوي بالضبط على وجبتين بديلتين كاملتين (كل بديل بحصة سعرات مكافئة ±10%).
 - احسب المجموع الكلي للسعرات والبروتين لكل وجبة.
 
-⚠ قانون التنويع الإلزامي (PHASE 62):
+⚠ قانون التنويع الإلزامي (PHASE 62، كما عُدّل بأمر المالك 2026-10-25):
 - النموذج التوضيحي أدناه يشرح "الشكل" فقط — ممنوع منعاً باتاً نسخ أصنافه (بيض مسلوق، خبز بلدي، فول، شوفان، جبن قريش…) إلا إذا كان مناسبين فعلاً لبيانات العميل المحددة.
-- نوّع مصادر البروتين عبر الوجبات والأيام (سمك، دجاج، لحم قليل الدهن، تونا، جمبري، بيض، بقوليات، ألبان قليلة الدسم…).
-- نوّع مصادر الكارب (رز، بطاطس، بطاطا، مكرونة، بلغر، كسكسي، ذرة، خبز أسمر…) ولا تكرر نفس الكارب في كل وجبة.
+- نوّع مصادر البروتين عبر الوجبات والأيام (دجاج، لحم قليل الدهن، بيض، ألبان قليلة الدسم، بقوليات، وسمك/تونا باعتدال إن كان مناسبًا) — لا يجوز اعتماد مصدر واحد كأساس لكامل الخطة.
+- نوّع مصادر الكارب (رز، بطاطس، بطاطا، مكرونة، بلغر، كسكسي، ذرة، خبز أسمر…) ولا تكرر نفس الكارب في كل وجبة — إلا إذا كان النظام الغذائي المعتمد يمنع النشويات أصلًا (كيتو).
 - نوّع الخضار والفواكه والمكسرات والزيوت بين الوجبات.
 - إذا توفرت قائمة "أصناف استُخدمت سابقاً" في التعليمات فاختر أصنافاً مختلفة عنها قدر الإمكان.
+
+⚠ قانون أسماء الوجبات (أمر المالك 2026-10-25):
+- أسماء الوجبات من العناوين الأساسية فقط: «الفطار/الإفطار، الغداء، العشاء، سناك (صباحي/مسائي عند التعدد)».
+- ممنوع اختلاق عناوين وصفية مركبة مثل «فطار بحري» أو «وجبة المتوسطي الأولى» — وصف الأطعمة يظهر في أصناف الوجبة نفسها لا في اسمها، ولا تُنشأ عناوين غريبة إلا إذا طلب العميل صراحةً ذلك.
 
 تنسيق JSON المطلوب:
 {
@@ -1441,6 +1660,15 @@ export function normalizeNutritionPlan(
     };
   });
 
+  // ── TITLES LAW 2026-10-25 (owner order P1-3): meal names are CANONICAL
+  // base titles on every normalized plan — «فطار بحري»-style invented
+  // compounds collapse onto «الفطار» (keyword slot detection first,
+  // positional fallback second; multiple plain snacks get numbered).
+  // Applies to AI output, local fallback output, and legacy plans being
+  // re-normalized alike — one law at the single save-shaping chokepoint.
+  const canonicalTitles = canonicalizeMealTitles(meals);
+  const titledMeals = meals.map((m, i) => ({ ...m, name: canonicalTitles[i] }));
+
   // ── Deterministic number enforcement (#3 fix) ──────────────────────
   let daily_calories: number;
   if (overrides?.targetCalories && overrides.targetCalories > 0) {
@@ -1522,7 +1750,7 @@ export function normalizeNutritionPlan(
     supplements: plan.supplements as NutritionPlanContent["supplements"],
     health_notes: plan.health_notes as string[] | undefined,
     water_target: plan.water_target as string | undefined,
-    meals,
+    meals: titledMeals,
   };
 }
 
@@ -2144,36 +2372,65 @@ ${ctx ? `بيانات الشخص (راعِ الحساسية والأطعمة غ�
 أعد JSON فقط (بدون أسوار markdown):
 { "food": "اسم الصنف البديل", "amount": "الكمية", "calories": ${targetCals}, "alternatives": "أو بديل ثانٍ بالكمية" }`;
 
-  // AI-PLAN-QUALITY 2026-10-24: the replacement is GATED — valid name +
-  // amount and calories inside the promised ±15% band (library grounding
-  // may pull an inflated estimate back to the per-100g truth BEFORE the
-  // bound check). One repair retry; a second failure THROWS so the
-  // caller keeps the original item untouched.
+  // AI-PLAN-QUALITY 2026-10-24 + LOCAL-SWAP 2026-10-25 (owner order P0-2):
+  // the replacement is GATED — valid name + amount and calories inside the
+  // promised ±15% band (library grounding may pull an inflated estimate
+  // back to the per-100g truth BEFORE the bound check). One repair retry;
+  // when the provider chain fails outright, the LOCAL food DB builds the
+  // ±15% equivalent (same nutritional category, constraint-checked) —
+  // and only when no compliant local candidate exists does this THROW so
+  // the caller keeps the original item untouched (never a fake success).
   const groundItem = await getGroundItemFn();
-  const { value, model, provider } = await callValidatedChain(
-    (repairNote) => prompt + repairNote,
-    {
-      tag: "plan:item-regen",
-      systemPrompt:
-        "أنت أخصائي تغذية. تعيد JSON صالحاً فقط — صنف واحد بديل مكافئ دون أي نص إضافي.",
-      temperature: 0.7,
-      maxTokens: 400,
-      jsonMode: true,
-      timeoutMs: 30_000,
-      maxModels: 3,
-    },
-    (parsed) => validateRegeneratedFoodItem(parsed, targetCals, groundItem, constraints),
-  );
+  try {
+    const { value, model, provider } = await callValidatedChain(
+      (repairNote) => prompt + repairNote,
+      {
+        tag: "plan:item-regen",
+        systemPrompt:
+          "أنت أخصائي تغذية. تعيد JSON صالحاً فقط — صنف واحد بديل مكافئ دون أي نص إضافي.",
+        temperature: 0.7,
+        maxTokens: 400,
+        jsonMode: true,
+        timeoutMs: 30_000,
+        maxModels: 3,
+      },
+      (parsed) => validateRegeneratedFoodItem(parsed, targetCals, groundItem, constraints),
+    );
 
-  return {
-    item: {
-      food: value.food,
-      amount: value.amount || item.amount,
-      calories: value.calories,
-      alternatives: value.alternatives ?? item.alternatives,
-    },
-    source: `${provider}:${model}`,
-  };
+    return {
+      item: {
+        food: value.food,
+        amount: value.amount || item.amount,
+        calories: value.calories,
+        alternatives: value.alternatives ?? item.alternatives,
+      },
+      source: `${provider}:${model}`,
+    };
+  } catch (e) {
+    // LOCAL-SWAP FALLBACK (owner order P0-2 — same law as the meal swap).
+    const localItem = buildLocalReplacementItem({
+      item: { food: item.food, amount: item.amount, calories: targetCals },
+      constraints: constraints ?? null,
+      avoidNames: avoid,
+    });
+    if (!localItem) throw e; // honest failure — original item stays
+    // The local replacement passes the SAME ±15% gate before shipping.
+    const verdict = validateRegeneratedFoodItem(localItem, targetCals, groundItem, constraints);
+    if (!verdict.ok) throw e;
+    console.warn(
+      "[plan-generator] item swap fell back to the local food DB (provider chain failed):",
+      e instanceof Error ? e.message : e,
+    );
+    return {
+      item: {
+        food: verdict.value.food,
+        amount: verdict.value.amount || localItem.amount,
+        calories: verdict.value.calories,
+        alternatives: verdict.value.alternatives ?? localItem.alternatives ?? item.alternatives,
+      },
+      source: "local-fallback:item-swap",
+    };
+  }
 }
 
 /**

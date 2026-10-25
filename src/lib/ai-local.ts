@@ -11,6 +11,13 @@
  */
 
 import type { PlanContent } from "@/lib/data/plans";
+import { classifyDietText, type DietType } from "@/lib/diet-types";
+import {
+  buildClientConstraints,
+  checkItemConstraints,
+  PLAN_AI_SANITY,
+  type ClientItemConstraints,
+} from "@/lib/plan-ai-validation";
 
 export type ClientContext = {
  name?: string | null;
@@ -367,6 +374,13 @@ export const FOOD_DB: FoodItem[] = [
  // === PROTEINS — Other ===
  { name: "كبدة دجاج", name_en: "chicken liver", calsPer100g: 119, proteinPer100g: 17, carbsPer100g: 0.7, fatPer100g: 4.8, category: "protein", meals: ["lunch", "dinner"] },
  { name: "لحم رومي (ديك رومي)", name_en: "turkey", calsPer100g: 135, proteinPer100g: 30, carbsPer100g: 0, fatPer100g: 1, category: "protein", meals: ["lunch", "dinner"] },
+ // === PROTEINS — Plant (VEGAN staples — the measured gap: the local DB had
+ // ZERO vegan proteins, so vegan local plans collapsed to ~50% of target
+ // calories; owner order 2026-10-25 item 5 «اختبر كذلك النباتي») ===
+ { name: "فول مدمس", name_en: "cooked fava beans", calsPer100g: 110, proteinPer100g: 7.6, carbsPer100g: 19.6, fatPer100g: 0.4, category: "protein", meals: ["breakfast", "lunch"] },
+ { name: "عدس مطبوخ", name_en: "cooked lentils", calsPer100g: 116, proteinPer100g: 9, carbsPer100g: 20.1, fatPer100g: 0.4, category: "protein", meals: ["lunch", "dinner"] },
+ { name: "حمص مطبوخ", name_en: "cooked chickpeas", calsPer100g: 164, proteinPer100g: 8.9, carbsPer100g: 27.4, fatPer100g: 2.6, category: "protein", meals: ["lunch", "dinner", "snack"] },
+ { name: "توفو", name_en: "firm tofu", calsPer100g: 144, proteinPer100g: 17.3, carbsPer100g: 2.8, fatPer100g: 8.7, category: "protein", meals: ["lunch", "dinner"] },
 
  // === CARBS ===
  { name: "أرز بسمتي مطبوخ", name_en: "cooked basmati rice", calsPer100g: 130, proteinPer100g: 2.7, carbsPer100g: 28, fatPer100g: 0.3, category: "carb", meals: ["lunch", "dinner"] },
@@ -547,7 +561,105 @@ export function calcCaloriesForItem(foodName: string, amount: string): number | 
  return Math.round(food.calsPer100g * grams / 100);
 }
 
-export function generateNutritionPlan(ctx: ClientContext): NutritionContent {
+/* ══════════ NUTRITION-FALLBACK 2026-10-25 (owner order P0-1 + P0-2) ══════════
+ * The measured production defect: the local fallback was DIET-BLIND — it
+ * recomputed its own BMR/TDEE (ignoring the coach's target-calorie
+ * override), pushed rice/bread at 30% of every meal even for KETO plans,
+ * and normalizeNutritionPlan then stamped the keto card + keto macros ON
+ * TOP of that carb content (a mislabeled plan was SAVED).
+ *
+ * The law now:
+ *  - the fallback consumes the SAME server-resolved numbers the AI path
+ *    was asked to hit (dailyCalories / macros / dietType / mealsCount) —
+ *    never its own math when they exist;
+ *  - food selection is diet-aware (keto → no starch/fruit, fat-forward
+ *    portions; low_carb → starch share cut; vegetarian/vegan → no
+ *    meat/fish/dairy-per-diet) and constraint-checked with the SAME
+ *    checkItemConstraints the quality gate uses (one law, both engines);
+ *  - items carry per-item macros so the gate's keto/low-carb carb
+ *    ceilings and Atwater coherence checks are enforceable on fallback
+ *    output too;
+ *  - meal/item SWAPS get local food-DB replacements when the provider
+ *    chain fails (owner order P0-2) — calorie-matched and
+ *    constraint-checked, or honest null (caller keeps the original).
+ * ════════════════════════════════════════════════════════════════════════════ */
+
+/** Options carrying the SERVER-RESOLVED plan targets into the local engine. */
+export type LocalNutritionOptions = {
+ /** computeNutritionTargets().dailyCalories — wins over local BMR/TDEE math. */
+ dailyCalories?: number;
+ /** Diet-aware macro targets (computeMacrosForDiet / coach overrides). */
+ macros?: { protein_g: number; carbs_g: number; fat_g: number };
+ /** Resolved diet type (coach override > plan echo > questionnaire). */
+ dietType?: DietType;
+ /** Coach-requested meals count (2..6). */
+ mealsCount?: number;
+ /** The client's committed constraint bundle (diet + allergy + banned tokens). */
+ constraints?: ClientItemConstraints | null;
+};
+
+/** Per-category calorie share of ONE meal, by diet family. Zero = the
+ * category is never used for that diet (keto: no starch, no fruit). */
+type MealShares = { protein: number; carb: number; fat: number; veg: number; fruit: number; dairy: number };
+const DIET_MEAL_SHARES: Record<DietType, MealShares> = {
+ keto: { protein: 0.42, carb: 0, fat: 0.30, veg: 0.16, fruit: 0, dairy: 0.12 },
+ low_carb: { protein: 0.40, carb: 0.16, fat: 0.26, veg: 0.12, fruit: 0.02, dairy: 0.04 },
+ balanced: { protein: 0.38, carb: 0.28, fat: 0.12, veg: 0.10, fruit: 0.04, dairy: 0.08 },
+ vegetarian: { protein: 0.36, carb: 0.28, fat: 0.12, veg: 0.10, fruit: 0.04, dairy: 0.10 },
+ vegan: { protein: 0.38, carb: 0.30, fat: 0.14, veg: 0.10, fruit: 0.08, dairy: 0 },
+};
+
+/** Portion floors/ceilings per category (grams) — keeps portions physical. */
+const PORTION_BOUNDS: Record<string, [number, number]> = {
+ protein: [30, 600],
+ carb: [30, 400],
+ fat: [5, 120],
+ veg: [80, 350],
+ fruit: [60, 250],
+ dairy: [50, 350],
+};
+
+/** Build the item's macros from per-100g values at `grams`. */
+function itemFromFood(food: FoodItem, grams: number): {
+ food: string;
+ amount: string;
+ calories: number;
+ protein_g: number;
+ carbs_g: number;
+ fat_g: number;
+} {
+ const g = Math.max(1, Math.round(grams));
+ return {
+ food: food.name,
+ amount: `${g} جم`,
+ calories: Math.round(food.calsPer100g * g / 100),
+ protein_g: Math.round(food.proteinPer100g * g / 100 * 10) / 10,
+ carbs_g: Math.round(food.carbsPer100g * g / 100 * 10) / 10,
+ fat_g: Math.round(food.fatPer100g * g / 100 * 10) / 10,
+ };
+}
+
+/** Constraint-check a CANDIDATE food by NAME only (token tables), the
+ * cheap first pass before portion math exists. */
+function foodPassesTokens(food: FoodItem, constraints?: ClientItemConstraints | null): boolean {
+ return checkItemConstraints(food.name, { carbs_g: null }, constraints) === null;
+}
+
+/** Constraint-check a BUILT item (real portion macros — keto/low-carb carb
+ * ceilings included). Returns true when the item may ship. */
+function itemPassesConstraints(
+ it: { food: string; carbs_g: number },
+ constraints?: ClientItemConstraints | null,
+): boolean {
+ return checkItemConstraints(it.food, { carbs_g: it.carbs_g }, constraints) === null;
+}
+
+/** All FOOD_DB rows passing the name-level constraint tables. */
+function safeFoodsFor(constraints?: ClientItemConstraints | null): FoodItem[] {
+ return FOOD_DB.filter((f) => foodPassesTokens(f, constraints));
+}
+
+export function generateNutritionPlan(ctx: ClientContext, opts?: LocalNutritionOptions): NutritionContent {
  const nutrition = loose(ctx.nutrition);
  const fitness = loose(ctx.fitness);
  const measurements = ctx.recent_measurements || [];
@@ -577,61 +689,75 @@ export function generateNutritionPlan(ctx: ClientContext): NutritionContent {
 
  const tdee = Math.round(bmr * adjustedMultiplier);
 
+ // NUTRITION-FALLBACK 2026-10-25: the RESOLVED diet + constraints drive the
+ // whole engine. With opts (the plan-generator path) these are the
+ // server-resolved truth; standalone callers resolve from the
+ // questionnaire — either way the engine is no longer diet-blind.
+ const dietType: DietType = opts?.dietType ?? classifyDietText(nutrition.diet);
+ const constraints: ClientItemConstraints | null =
+ opts?.constraints ??
+ buildClientConstraints({
+ dietType,
+ allergyText: nutrition.allergies,
+ dislikedText: nutrition.disliked,
+ });
+
  let dailyCalories: number;
- let deficitSurplus: number;
- if (isFatLoss) {
- deficitSurplus = -Math.round(tdee * 0.20);
- dailyCalories = tdee + deficitSurplus;
- } else if (isMuscleGain) {
- deficitSurplus = Math.round(tdee * 0.10);
- dailyCalories = tdee + deficitSurplus;
+ if (opts?.dailyCalories && opts.dailyCalories > 0) {
+ // The server's target (coach override > questionnaire math) WINS.
+ dailyCalories = Math.round(opts.dailyCalories);
  } else {
- deficitSurplus = 0;
- dailyCalories = tdee;
+ let dc: number;
+ if (isFatLoss) dc = tdee - Math.round(tdee * 0.20);
+ else if (isMuscleGain) dc = tdee + Math.round(tdee * 0.10);
+ else dc = tdee;
+ dailyCalories = Math.round(dc / 10) * 10;
  }
- dailyCalories = Math.round(dailyCalories / 10) * 10;
 
  let proteinG: number, fatG: number, carbsG: number;
- if (isFatLoss) {
+ if (opts?.macros && opts.macros.protein_g > 0) {
+ // The server's diet-aware macros (coach override > computeMacrosForDiet) WIN.
+ proteinG = Math.round(opts.macros.protein_g);
+ carbsG = Math.round(opts.macros.carbs_g);
+ fatG = Math.round(opts.macros.fat_g);
+ } else if (dietType === "keto") {
+ // Standalone keto band — mirrors plan-generator.computeMacrosForDiet
+ // (single-source note: the resolved path always passes opts.macros).
+ proteinG = Math.round(weight * 2.0);
+ carbsG = Math.max(20, Math.min(50, Math.round((dailyCalories * 0.08) / 4)));
+ fatG = Math.max(Math.round(0.5 * weight), Math.round((dailyCalories - proteinG * 4 - carbsG * 4) / 9));
+ } else if (dietType === "low_carb") {
+ proteinG = Math.round(weight * 2.0);
+ carbsG = Math.max(50, Math.round((dailyCalories * 0.25) / 4));
+ fatG = Math.max(Math.round(0.6 * weight), Math.round((dailyCalories - proteinG * 4 - carbsG * 4) / 9));
+ } else if (isFatLoss) {
  proteinG = Math.round(weight * 2.4);
  fatG = Math.round(weight * 0.8);
  carbsG = Math.max(0, Math.round((dailyCalories - proteinG * 4 - fatG * 9) / 4));
- } else if (isMuscleGain) {
- proteinG = Math.round(weight * 2.0);
- fatG = Math.round(weight * 1.0);
- carbsG = Math.max(0, Math.round((dailyCalories - proteinG * 4 - fatG * 9) / 4));
  } else {
  proteinG = Math.round(weight * 2.0);
  fatG = Math.round(weight * 1.0);
  carbsG = Math.max(0, Math.round((dailyCalories - proteinG * 4 - fatG * 9) / 4));
  }
 
- const mealsCount = parseInt(String(nutrition.meals ?? "")) || 4;
- const diet = String(nutrition.diet || "").toLowerCase();
- const isVeg = diet.includes("veg") || diet.includes("نبات");
- const allergies = String(nutrition.allergies || "").toLowerCase();
- const disliked = String(nutrition.disliked || "").toLowerCase();
+ const requestedMeals =
+ Number(opts?.mealsCount ?? (parseInt(String(nutrition.meals ?? "")) || 4)) || 4;
+ const mealsCount = Math.min(8, Math.max(2, Math.round(requestedMeals)));
 
- // Filter foods by allergies + disliked + veg
- const availableFoods = FOOD_DB.filter((f) => {
- const name = f.name.toLowerCase();
- const nameEn = f.name_en.toLowerCase();
- if (allergies.split(",").some((a) => { const i = a.trim().toLowerCase(); return i && (name.includes(i) || nameEn.includes(i)); })) return false;
- if (disliked.split(",").some((d) => { const i = d.trim().toLowerCase(); return i && (name.includes(i) || nameEn.includes(i)); })) return false;
- if (isVeg && f.category === "protein" && !nameEn.includes("egg") && !nameEn.includes("yogurt") && !nameEn.includes("cheese") && !nameEn.includes("milk") && !nameEn.includes("buttermilk")) return false;
- return true;
- });
-
- // Meal distributions
+ // Meal distributions (position-based share of the daily target)
  const distributions = mealsCount === 3 ? [0.35, 0.35, 0.30]
  : mealsCount === 4 ? [0.25, 0.35, 0.15, 0.25]
  : mealsCount === 5 ? [0.20, 0.30, 0.10, 0.25, 0.15]
- : [0.20, 0.25, 0.10, 0.20, 0.10, 0.15];
+ : mealsCount === 6 ? [0.20, 0.05, 0.25, 0.10, 0.25, 0.15]
+ : mealsCount === 2 ? [0.55, 0.45]
+ : Array.from({ length: mealsCount }, () => 1 / mealsCount);
 
  const mealNames = mealsCount === 3 ? ["الفطار", "الغداء", "العشاء"]
  : mealsCount === 4 ? ["الفطار", "الغداء", "سناك", "العشاء"]
  : mealsCount === 5 ? ["الفطار", "سناك صباحي", "الغداء", "سناك", "العشاء"]
- : ["الفطار", "سناك صباحي", "الغداء", "سناك", "العشاء", "سناك مسائي"];
+ : mealsCount === 6 ? ["الفطار", "سناك صباحي", "الغداء", "سناك", "العشاء", "سناك مسائي"]
+ : mealsCount === 2 ? ["الفطار", "العشاء"]
+ : ["الفطار", "الغداء", "سناك", "العشاء"];
 
  // Map meal index to meal type
  const mealTypes: ("breakfast" | "lunch" | "dinner" | "snack")[] = mealsCount === 3
@@ -640,15 +766,44 @@ export function generateNutritionPlan(ctx: ClientContext): NutritionContent {
  ? ["breakfast", "lunch", "snack", "dinner"]
  : mealsCount === 5
  ? ["breakfast", "snack", "lunch", "snack", "dinner"]
- : ["breakfast", "snack", "lunch", "snack", "dinner", "snack"];
+ : mealsCount === 6
+ ? ["breakfast", "snack", "lunch", "snack", "dinner", "snack"]
+ : mealsCount === 2
+ ? ["breakfast", "dinner"]
+ : ["breakfast", "lunch", "snack", "dinner"];
 
- // Shuffle proteins for variety — different each generation
- const shuffledProteins = shuffle(availableFoods.filter((f) => f.category === "protein"));
- const shuffledCarbs = shuffle(availableFoods.filter((f) => f.category === "carb"));
- const shuffledFats = shuffle(availableFoods.filter((f) => f.category === "fat"));
- const shuffledVegs = shuffle(availableFoods.filter((f) => f.category === "veg"));
- const shuffledFruits = shuffle(availableFoods.filter((f) => f.category === "fruit"));
- const shuffledDairy = shuffle(availableFoods.filter((f) => f.category === "dairy"));
+ const shares = DIET_MEAL_SHARES[dietType];
+
+ // KETO DAY CARB BUDGET (structural, not lucky): the ketogenic band is
+ // 20-50g NET for the whole day. Per-item ceilings alone let randomized
+ // veg/dairy draws accumulate past it (measured worst draw: 79g). The
+ // budget = the server-resolved macro target when provided (clamped to
+ // the published band), spent ACROSS meals as items are built.
+ const dayCarbBudget =
+ dietType === "keto"
+ ? Math.max(20, Math.min(50, Math.round(opts?.macros?.carbs_g ?? (dailyCalories * 0.08) / 4)))
+ : Number.POSITIVE_INFINITY;
+
+ // Shuffle the SAFE pools for variety — different each generation, but
+ // never a food the constraint tables forbid.
+ const safe = safeFoodsFor(constraints);
+ const shuffledProteins = shuffle(safe.filter((f) => f.category === "protein"));
+ // PROTEIN FLOOR (owner order P0-1: «إذا تعذر إنتاج نتيجة متوافقة، أوقف
+ // الحفظ واعرض سببًا واضحًا»): a plan whose constraint-filtered food pools
+ // carry ZERO protein sources is not a plan — fats and greens cannot fake
+ // one (the measured degenerate draw: an oil-closed "keto day" at ~0g
+ // protein against a 190g target). Fail HERE with the named reason; the
+ // caller keeps nothing and surfaces the honest error.
+ if (shuffledProteins.length === 0) {
+ throw new Error(
+ `لا توجد أي مصادر بروتين متوافقة مع قيود هذا العميل (النظام: ${dietType === "keto" ? "كيتو" : dietType === "low_carb" ? "قليل الكربوهيدرات" : dietType === "vegan" ? "نباتي صرف" : dietType === "vegetarian" ? "نباتي" : "متوازن"}${constraints?.allergyTokens?.length ? ` · الحساسيات: ${[...new Set(constraints.allergyTokens)].slice(0, 8).join("، ")}` : ""}${constraints?.bannedTokens?.length ? ` · الممنوعات: ${[...new Set(constraints.bannedTokens)].slice(0, 8).join("، ")}` : ""}) — أوقفنا الحفظ بدل توليد خطة بلا بروتين. عدّل القيود أو أضف بدائل متوافقة.`,
+ );
+ }
+ const shuffledCarbs = shuffle(safe.filter((f) => f.category === "carb"));
+ const shuffledFats = shuffle(safe.filter((f) => f.category === "fat"));
+ const shuffledVegs = shuffle(safe.filter((f) => f.category === "veg"));
+ const shuffledFruits = shuffle(safe.filter((f) => f.category === "fruit"));
+ const shuffledDairy = shuffle(safe.filter((f) => f.category === "dairy"));
 
  // Track used protein sources to avoid repetition
  let proteinIdx = 0;
@@ -656,15 +811,19 @@ export function generateNutritionPlan(ctx: ClientContext): NutritionContent {
  const meals = distributions.slice(0, mealsCount).map((dist, idx) => {
  const mealCals = Math.round(dailyCalories * dist);
  const mealType = mealTypes[idx];
- const items: Array<{ food: string; amount: string; calories: number }> = [];
+ const items: Array<{ food: string; amount: string; calories: number; protein_g: number; carbs_g: number; fat_g: number }> = [];
+ // This meal's share of the keto day-carb band (proportional to its
+ // calorie share — early meals cannot starve the later ones).
+ const mealCarbBudget = Number.isFinite(dayCarbBudget) ? dayCarbBudget * dist : Number.POSITIVE_INFINITY;
+ let mealCarbsUsed = 0;
 
  // Pick protein suitable for this meal type
  const proteinsForMeal = shuffledProteins.filter((f) => f.meals.includes(mealType));
- const proteinFood = proteinsForMeal[proteinIdx % proteinsForMeal.length];
- if (proteinFood) proteinIdx++;
+ const proteinFood = proteinsForMeal[proteinIdx % Math.max(1, proteinsForMeal.length)];
+ if (proteinsForMeal.length > 0) proteinIdx++;
 
- // Pick carb suitable for this meal type
- const carbsForMeal = shuffledCarbs.filter((f) => f.meals.includes(mealType));
+ // Pick carb suitable for this meal type (diet may forbid the category)
+ const carbsForMeal = shares.carb > 0 ? shuffledCarbs.filter((f) => f.meals.includes(mealType)) : [];
  const carbFood = pickRandom(carbsForMeal);
 
  // Pick fat suitable for this meal type
@@ -675,76 +834,156 @@ export function generateNutritionPlan(ctx: ClientContext): NutritionContent {
  const vegsForMeal = shuffledVegs.filter((f) => f.meals.includes(mealType));
  const vegFood = pickRandom(vegsForMeal);
 
- // Pick fruit (mostly breakfast/snack)
- const fruitsForMeal = shuffledFruits.filter((f) => f.meals.includes(mealType));
+ // Pick fruit (mostly breakfast/snack; keto excludes the category)
+ const fruitsForMeal = shares.fruit > 0 ? shuffledFruits.filter((f) => f.meals.includes(mealType)) : [];
  const fruitFood = pickRandom(fruitsForMeal);
 
- // Pick dairy (breakfast/snack)
- const dairyForMeal = shuffledDairy.filter((f) => f.meals.includes(mealType));
+ // Pick dairy (breakfast/snack; vegan excludes the category)
+ const dairyForMeal = shares.dairy > 0 ? shuffledDairy.filter((f) => f.meals.includes(mealType)) : [];
  const dairyFood = pickRandom(dairyForMeal);
 
- // Calorie distribution per food category in the meal
- if (proteinFood) {
- const targetCals = Math.round(mealCals * 0.40);
- const grams = Math.max(30, Math.round(targetCals / proteinFood.calsPer100g * 100));
- const macros = calcMacros(proteinFood, grams);
- items.push({ food: proteinFood.name, amount: `${grams} جم`, calories: macros.calories });
+ const pushItem = (food: FoodItem | undefined, share: number, category: string) => {
+ if (!food || share <= 0) return;
+ const targetCals = Math.round(mealCals * share);
+ let grams = Math.round(targetCals / food.calsPer100g * 100);
+ const [minG, maxG] = PORTION_BOUNDS[category] ?? [10, 500];
+ grams = Math.min(maxG, Math.max(minG, grams));
+ // Keto greens cap: vegetables at their full portion bound can push the
+ // DAY's carbs past the ketogenic band even when each item passes the
+ // 12g ceiling (measured: 71g/day with carrot-heavy draws). For keto the
+ // veg portion shrinks so a single veg item never carries >10g carbs —
+ // the day stays inside the band while the plate keeps its greens.
+ if (dietType === "keto" && food.carbsPer100g > 0 && category === "veg") {
+ grams = Math.min(grams, Math.floor((10 / food.carbsPer100g) * 100));
+ grams = Math.max(minG, grams);
  }
- if (carbFood) {
- const targetCals = Math.round(mealCals * 0.30);
- const grams = Math.max(30, Math.round(targetCals / carbFood.calsPer100g * 100));
- const macros = calcMacros(carbFood, grams);
- items.push({ food: carbFood.name, amount: `${grams} جم`, calories: macros.calories });
+ let it = itemFromFood(food, grams);
+ // This meal's share of the keto day band: shrink carb-carrying items
+ // into what remains of the meal's sub-budget, then drop them when it is
+ // spent (greens and dairy yield their grams to the proteins/fats that
+ // carry the calories — bounded loss, the ±25% day band has headroom).
+ if (Number.isFinite(mealCarbBudget) && it.carbs_g > 0 && mealCarbsUsed + it.carbs_g > mealCarbBudget) {
+ const remaining = mealCarbBudget - mealCarbsUsed;
+ if (remaining < 3) return; // sub-budget spent — keep the day in the band
+ const budgetedGrams = Math.floor((remaining / food.carbsPer100g) * 100);
+ if (budgetedGrams < 20) return; // unphysical crumb — drop instead
+ it = itemFromFood(food, budgetedGrams);
  }
- if (fatFood) {
- const targetCals = Math.round(mealCals * 0.12);
- const grams = Math.max(5, Math.round(targetCals / fatFood.calsPer100g * 100));
- const macros = calcMacros(fatFood, grams);
- items.push({ food: fatFood.name, amount: `${grams} جم`, calories: macros.calories });
+ // Keto/low-carb carb ceiling at the REAL portion: shrink once, then drop.
+ if (!itemPassesConstraints(it, constraints)) {
+ const shrunk = Math.max(PORTION_BOUNDS[category]?.[0] ?? 10, Math.floor(grams * 0.5));
+ const candidate = itemFromFood(food, shrunk);
+ if (!itemPassesConstraints(candidate, constraints)) return;
+ it = candidate;
  }
- if (dairyFood && (mealType === "breakfast" || mealType === "snack")) {
- const targetCals = Math.round(mealCals * 0.08);
- const grams = Math.max(50, Math.round(targetCals / dairyFood.calsPer100g * 100));
- const macros = calcMacros(dairyFood, grams);
- items.push({ food: dairyFood.name, amount: `${grams} جم`, calories: macros.calories });
+ mealCarbsUsed += it.carbs_g;
+ items.push(it);
+ };
+
+ pushItem(proteinFood, shares.protein, "protein");
+ pushItem(carbFood, shares.carb, "carb");
+ pushItem(fatFood, shares.fat, "fat");
+ pushItem(dairyFood, shares.dairy, "dairy");
+ pushItem(vegFood, shares.veg, "veg");
+ pushItem(fruitFood, shares.fruit, "fruit");
+
+ // KETO CALORIE CLOSE-OUT: when the carb budget dropped the greens/dairy
+ // items (measured worst draw: avocado as the fat item spent the whole
+ // meal sub-budget → meal = protein+fat only = 72% of its calories), the
+ // gap is closed with a ZERO-CARB fat — olive oil, the ketogenic staple
+ // (a drizzle for the plate/cooking). Keeps the day inside the carb band
+ // AND inside the ±25% calorie band by construction, not by luck.
+ if (Number.isFinite(mealCarbBudget)) {
+ const mealSum0 = items.reduce((s, i) => s + i.calories, 0);
+ const gap = mealCals - mealSum0;
+ if (gap > 60) {
+ const oil = FOOD_DB.find((f) => f.name === "زيت زيتون");
+ // A DRIZZLE, not a meal: the close-out caps at 2 tablespoons (30g ≈
+ // 265 kcal) — degenerate draws with no protein source cannot fake a
+ // compliant plan out of oil alone; the gate then rejects honestly.
+ const OIL_CLOSE_MAX_G = 30;
+ if (oil && itemPassesConstraints({ food: oil.name, carbs_g: 0 }, constraints)) {
+ const existing = items.find((i) => i.food === oil.name);
+ if (existing) {
+ // scale the existing oil portion up (bounded) toward the gap
+ const food = safe.find((f) => f.name === oil.name) ?? oil;
+ const currentG = parseFloat(existing.amount) || 15;
+ const targetG = Math.min(OIL_CLOSE_MAX_G, Math.max(currentG, Math.round((existing.calories + gap) / food.calsPer100g * 100)));
+ const scaled = itemFromFood(food, targetG);
+ if (itemPassesConstraints(scaled, constraints)) {
+ const i = items.indexOf(existing);
+ items[i] = scaled;
  }
- if (vegFood) {
- const grams = 150;
- const macros = calcMacros(vegFood, grams);
- items.push({ food: vegFood.name, amount: `${grams} جم`, calories: macros.calories });
+ } else {
+ const grams = Math.min(OIL_CLOSE_MAX_G, Math.max(5, Math.round(gap / oil.calsPer100g * 100)));
+ const it = itemFromFood(oil, grams);
+ if (itemPassesConstraints(it, constraints)) items.push(it);
  }
- if (fruitFood && (mealType === "breakfast" || mealType === "snack")) {
- const grams = 100;
- const macros = calcMacros(fruitFood, grams);
- items.push({ food: fruitFood.name, amount: `${grams} جم`, calories: macros.calories });
+ }
+ }
+ }
+
+ // MEAL CALIBRATION: portion floors can overshoot the meal's calorie
+ // share with calorie-dense draws (measured: 50g halloumi = 160 kcal
+ // against a 40-kcal dairy share → vegetarian meals +26%). One guarded
+ // proportional rescale brings the meal back inside ±12% — floors keep
+ // portions physical (never below 15g), constraint checks keep diets
+ // honest, and keto carb items keep their budgeted grams.
+ {
+ const mealSum = items.reduce((s, i) => s + i.calories, 0);
+ if (mealSum > 0 && Math.abs(mealSum - mealCals) / mealCals > 0.12) {
+ const scale = Math.min(1.6, Math.max(0.6, mealCals / mealSum));
+ const carbsBefore = items.reduce((s, i) => s + i.carbs_g, 0);
+ const rescaled = items.map((it) => {
+ if (it.carbs_g > 1 && Number.isFinite(mealCarbBudget)) return it; // keto budgeted grams stay
+ const food = safe.find((f) => f.name === it.food);
+ if (!food) return it;
+ const grams = Math.max(15, Math.round((parseFloat(it.amount) || 0) * scale));
+ if (grams >= (parseFloat(it.amount) || 0) - 0.5 && scale < 1) return it; // cannot shrink
+ const candidate = itemFromFood(food, grams);
+ return itemPassesConstraints(candidate, constraints) ? candidate : it;
+ });
+ const newSum = rescaled.reduce((s, i) => s + i.calories, 0);
+ const carbsAfter = rescaled.reduce((s, i) => s + i.carbs_g, 0);
+ const improved = Math.abs(newSum - mealCals) < Math.abs(mealSum - mealCals) - 10;
+ const budgetSafe = !Number.isFinite(mealCarbBudget) || carbsAfter <= Math.max(mealCarbBudget + 2, carbsBefore);
+ if (improved && budgetSafe && rescaled.length === items.length) {
+ items.length = 0;
+ items.push(...rescaled);
+ }
+ }
  }
 
  let notes = "";
  if (idx === 0) notes = "تناولها خلال ساعة من الاستيقاظ — مهمة لتشغيل الأيض";
  else if (idx === mealsCount - 1) notes = "وجبة خفيفة قبل النوم بـ 2-3 ساعات";
  else if (mealType === "snack") notes = "وجبة خفيفة للحفاظ على الطاقة بين الوجبات الرئيسية";
- else notes = "وجبة رئيسية — ركّز على البروتين والكربوهيدرات";
+ else notes = "وجبة رئيسية — ركّز على البروتين";
 
  return { name: mealNames[idx] || `وجبة ${idx + 1}`, items, notes };
  });
 
  const goalText = isFatLoss ? "خسارة الدهون" : isMuscleGain ? "بناء العضلات" : "الحفاظ على الوزن";
+ const dietText = dietType === "keto" ? "كيتو (قليل الكربوهيدرات جدًا)"
+ : dietType === "low_carb" ? "قليل الكربوهيدرات"
+ : dietType === "vegan" ? "نباتي صرف"
+ : dietType === "vegetarian" ? "نباتي"
+ : "متوازن";
 
- const overview = `خطة تغذية مخصصة لـ ${ctx.name || "العميل"} بهدف ${goalText}.
+ const overview = `خطة تغذية مخصصة لـ ${ctx.name || "العميل"} بهدف ${goalText} — نظام ${dietText}.
 
  تحليل بياناتك:
 • الوزن: ${weight} كجم | الهدف: ${targetWeight} كجم
 • الطول: ${height} سم | العمر: ${age} سنة
 • معدل الأيض الأساسي (BMR): ${bmr} كالوري
 • إجمالي الاستهلاك (TDEE): ${tdee} كالوري
-• ${deficitSurplus < 0 ? `عجز يومي: ${Math.abs(deficitSurplus)} كالوري` : deficitSurplus > 0 ? `فائض يومي: ${deficitSurplus} كالوري` : "صيانة"}
 
  السعرات المستهدفة: ${dailyCalories} كالوري/يوم
  البروتين: ${proteinG}جم (≈${(proteinG * 4 / dailyCalories * 100).toFixed(0)}%)
  الكربوهيدرات: ${carbsG}جم (≈${(carbsG * 4 / dailyCalories * 100).toFixed(0)}%)
  الدهون: ${fatG}جم (≈${(fatG * 9 / dailyCalories * 100).toFixed(0)}%)
 
-${allergies ? ` تم استبعاد: ${allergies}\n` : ""}${disliked ? ` تم تجنب: ${disliked}\n` : ""}${isVeg ? " نظام نباتي\n" : ""}وزّع الوجبات على مدار اليوم لتحقيق أفضل امتصاص للبروتين.`;
+${String(nutrition.allergies || "").trim() ? ` تم استبعاد: ${nutrition.allergies}\n` : ""}${String(nutrition.disliked || "").trim() ? ` تم تجنب: ${nutrition.disliked}\n` : ""}وزّع الوجبات على مدار اليوم لتحقيق أفضل امتصاص للبروتين.`;
 
  return {
  overview,
@@ -752,6 +991,253 @@ ${allergies ? ` تم استبعاد: ${allergies}\n` : ""}${disliked ? ` تم ت
  macros: { protein_g: proteinG, carbs_g: carbsG, fat_g: fatG },
  meals,
  };
+}
+
+/* ══════════ MEAL TITLES LAW 2026-10-25 (owner order P1-3) ══════════
+ * Base titles only: «الفطار، الغداء، العشاء، سناك». The model (and the
+ * old variety engine) invented compound titles like «فطار بحري» — the
+ * title must be the MEAL SLOT, food descriptions live in items.
+ * ═══════════════════════════════════════════════════════════════════ */
+
+export type MealSlot = "breakfast" | "lunch" | "dinner" | "snack";
+
+export const BASE_MEAL_TITLES: Record<MealSlot, string> = {
+ breakfast: "الفطار",
+ lunch: "الغداء",
+ dinner: "العشاء",
+ snack: "سناك",
+};
+
+/** Detect the meal slot from a (possibly invented) meal name. */
+export function detectMealSlot(rawName: string | undefined | null): MealSlot | null {
+ const n = String(rawName || "");
+ if (!n.trim()) return null;
+ // Snack first — «سناك صباحي» contains «صباح» which would otherwise read
+ // as breakfast.
+ if (/سناك|سناكس|وجبه خفيفه|وجبة خفيفة|خفيفه|snack|سندويتش/.test(n)) return "snack";
+ if (/افطار|إفطار|فطور|فطار|breakfast/.test(n)) return "breakfast";
+ if (/غداء|غدا|lunch/.test(n)) return "lunch";
+ if (/عشاء|عشا|dinner/.test(n)) return "dinner";
+ return null;
+}
+
+/** The canonical title for a detected slot (snack variants keep their
+ * morning/evening qualifier when the original name carried it). */
+function slotTitle(slot: MealSlot, rawName: string): string {
+ if (slot === "snack") {
+ const n = String(rawName || "");
+ if (/صباح/.test(n)) return "سناك صباحي";
+ if (/مساء|مسائي|ليلي|قبل النوم/.test(n)) return "سناك مسائي";
+ return BASE_MEAL_TITLES.snack;
+ }
+ return BASE_MEAL_TITLES[slot];
+}
+
+/** Position-based fallback layout per meals count (mirrors the local
+ * generator's own mealNames table). */
+function positionalTitle(slotIndex: number, mealsCount: number): string {
+ const layouts: Record<number, string[]> = {
+ 2: ["الفطار", "العشاء"],
+ 3: ["الفطار", "الغداء", "العشاء"],
+ 4: ["الفطار", "الغداء", "سناك", "العشاء"],
+ 5: ["الفطار", "سناك صباحي", "الغداء", "سناك", "العشاء"],
+ 6: ["الفطار", "سناك صباحي", "الغداء", "سناك", "العشاء", "سناك مسائي"],
+ };
+ const layout = layouts[mealsCount] ?? layouts[4];
+ return layout[slotIndex] ?? `وجبة ${slotIndex + 1}`;
+}
+
+/** Canonicalize ONE meal title: keyword slot detection first, positional
+ * fallback second. «فطار بحري» → «الفطار»; «وجبة 1» (idx 0 of 4) → «الفطار». */
+export function canonicalMealTitle(
+ rawName: string | undefined | null,
+ slotIndex: number,
+ mealsCount: number,
+): string {
+ const raw = String(rawName || "").trim();
+ const slot = detectMealSlot(raw);
+ if (slot) return slotTitle(slot, raw);
+ return positionalTitle(slotIndex, mealsCount);
+}
+
+/** Canonicalize a whole meals array's titles. Plain duplicate «سناك»
+ * titles get sequential numbering (سناك 1، سناك 2) when a plan carries
+ * more than one unqualified snack. */
+export function canonicalizeMealTitles<T extends { name?: unknown }>(meals: T[]): string[] {
+ const count = meals.length;
+ const out = meals.map((m, i) => canonicalMealTitle(String(m?.name ?? ""), i, count));
+ const plainSnacks = out.filter((t) => t === BASE_MEAL_TITLES.snack).length;
+ if (plainSnacks > 1) {
+ let sn = 0;
+ for (let i = 0; i < out.length; i++) {
+ if (out[i] === BASE_MEAL_TITLES.snack) {
+ sn += 1;
+ if (sn < plainSnacks) out[i] = `${BASE_MEAL_TITLES.snack} ${sn}`;
+ else out[i] = `${BASE_MEAL_TITLES.snack} ${sn}`;
+ }
+ }
+ }
+ return out;
+}
+
+/* ══════════ LOCAL SWAP BUILDERS 2026-10-25 (owner order P0-2) ══════════
+ * When the provider chain cannot deliver a gate-passing replacement, the
+ * local food DB builds one: diet-aware (same constraint tables), calorie-
+ * matched to the original meal/item (±20% / ±15% — the gates' own bands),
+ * avoid-list aware. Returns null when no compliant replacement exists —
+ * the caller then keeps the original and fails honestly.
+ * ═══════════════════════════════════════════════════════════════════════ */
+
+export type LocalReplacementMealInput = {
+ originalMeal: { name?: string; items?: Array<{ food: string; amount: string; calories: number }>; notes?: string };
+ targetCalories: number;
+ constraints?: ClientItemConstraints | null;
+ avoidNames?: string[];
+};
+
+export type LocalReplacementMeal = {
+ name: string;
+ items: Array<{ food: string; amount: string; calories: number; protein_g: number; carbs_g: number; fat_g: number }>;
+ notes: string;
+};
+
+/** Build a full local replacement meal (provider-failure swap path). */
+export function buildLocalReplacementMeal(input: LocalReplacementMealInput): LocalReplacementMeal | null {
+ const { originalMeal, targetCalories, constraints } = input;
+ const target = Math.round(Number(targetCalories) || 0);
+ if (target < 60) return null; // degenerate anchor — no honest equivalent
+
+ const avoid = new Set((input.avoidNames ?? []).map((n) => String(n || "").trim()).filter(Boolean));
+ const originalFoods = new Set((originalMeal.items ?? []).map((i) => String(i?.food || "").trim()).filter(Boolean));
+
+ const dietType = constraints?.dietType ?? null;
+ const shares = DIET_MEAL_SHARES[dietType ?? "balanced"];
+ const slot = detectMealSlot(originalMeal.name) ?? "lunch";
+ const safe = safeFoodsFor(constraints).filter(
+ (f) => !avoid.has(f.name) && !originalFoods.has(f.name) && f.meals.includes(slot as "breakfast" | "lunch" | "dinner" | "snack"),
+ );
+
+ const pool = (cat: FoodItem["category"]) => shuffle(safe.filter((f) => f.category === cat));
+ const proteins = pool("protein");
+ const carbs = shares.carb > 0 ? pool("carb") : [];
+ const fats = pool("fat");
+ const vegs = pool("veg");
+ const dairies = shares.dairy > 0 ? pool("dairy") : [];
+
+ const proteinFood = proteins[0];
+ if (!proteinFood) return null; // no safe protein → no honest meal
+
+ const picks: Array<{ food: FoodItem; share: number; category: string }> = [
+ { food: proteinFood, share: shares.protein, category: "protein" },
+ ];
+ if (carbs[0]) picks.push({ food: carbs[0], share: shares.carb, category: "carb" });
+ if (fats[0]) picks.push({ food: fats[0], share: shares.fat, category: "fat" });
+ if ((slot === "breakfast" || slot === "snack") && dairies[0]) picks.push({ food: dairies[0], share: shares.dairy, category: "dairy" });
+ if (vegs[0]) picks.push({ food: vegs[0], share: shares.veg, category: "veg" });
+
+ const items: LocalReplacementMeal["items"] = [];
+ for (const p of picks) {
+ if (p.share <= 0) continue;
+ const [minG, maxG] = PORTION_BOUNDS[p.category] ?? [10, 500];
+ let grams = Math.round((target * p.share) / p.food.calsPer100g * 100);
+ grams = Math.min(maxG, Math.max(minG, grams));
+ let it = itemFromFood(p.food, grams);
+ if (!itemPassesConstraints(it, constraints)) {
+ const shrunk = Math.max(PORTION_BOUNDS[p.category]?.[0] ?? 10, Math.floor(grams * 0.5));
+ it = itemFromFood(p.food, shrunk);
+ if (!itemPassesConstraints(it, constraints)) continue;
+ }
+ items.push(it);
+ }
+ if (items.length < 2) return null;
+
+ // Close on the target: rescale the LARGEST item's grams so the meal total
+ // lands inside the ±20% gate band (aim ±10%).
+ const sum = items.reduce((s, i) => s + i.calories, 0);
+ if (sum <= 0) return null;
+ const drift = Math.abs(sum - target) / target;
+ if (drift > 0.45) return null; // pools too sparse to close — honest null
+ if (drift > 0.10) {
+ const largest = items.reduce((a, b) => (b.calories > a.calories ? b : a));
+ const food = safe.find((f) => f.name === largest.food) ?? null;
+ if (food) {
+ const delta = target - (sum - largest.calories);
+ const grams = Math.max(10, Math.round(delta / food.calsPer100g * 100));
+ const rescaled = itemFromFood(food, grams);
+ if (itemPassesConstraints(rescaled, constraints) && rescaled.calories > 0) {
+ const idx = items.indexOf(largest);
+ items[idx] = rescaled;
+ }
+ }
+ }
+
+ const finalSum = items.reduce((s, i) => s + i.calories, 0);
+ if (finalSum <= 0 || Math.abs(finalSum - target) / target > PLAN_AI_SANITY.mealDriftTolerance) {
+ return null;
+ }
+
+ return {
+ name: canonicalMealTitle(originalMeal.name, 1, 3),
+ items,
+ notes: "بديل محلي من قاعدة أطعمة المنصة — مكافئ بالسعرات ومطابق لقيود العميل.",
+ };
+}
+
+/** Infer a food name's category (for the single-item swap path). */
+function detectFoodCategory(name: string): FoodItem["category"] | null {
+ const hit = lookupFood(name);
+ if (hit) return hit.category;
+ const n = String(name || "");
+ if (/دجاج|لحم|سمك|فراخ|بيض|تونا|سلمون|جمبري|روبيان|كبده|كبدة|رومي|صدر/.test(n)) return "protein";
+ if (/ارز|أرز|رز|خبز|عيش|مكرونه|مكرونة|بطاطس|بطاطا|شوفان|كينوا|برغل|فريك|بلغر|كسكسي|معكرونه/.test(n)) return "carb";
+ if (/زيت|مكسرات|لوز|جوز|بندق|فستق|فول سوداني|زبده|زبدة|افوكادو|أفوكادو|بذور/.test(n)) return "fat";
+ if (/خضار|خيار|طماطم|طمام|خس|بروكلي|سبانخ|كوسه|كوسة|فلفل|جزر|باذنجان|سلطه|سلطة/.test(n)) return "veg";
+ if (/موز|تفاح|برتقال|فراوله|فراولة|عنب|بطيخ|كيوي|تمر|بلح|مانجو|اناناس|فاكهه|فاكهة/.test(n)) return "fruit";
+ if (/زبادي|جبن|جبنة|حليب|لبن|قريش|فيتا|موزاريلا|حلوم|بارميزان/.test(n)) return "dairy";
+ return null;
+}
+
+export type LocalReplacementItem = {
+ food: string;
+ amount: string;
+ calories: number;
+ protein_g?: number;
+ carbs_g?: number;
+ fat_g?: number;
+ alternatives?: string;
+};
+
+/** Build a single-item local replacement (provider-failure item swap). */
+export function buildLocalReplacementItem(input: {
+ item: { food: string; amount: string; calories: number };
+ constraints?: ClientItemConstraints | null;
+ avoidNames?: string[];
+}): LocalReplacementItem | null {
+ const target = Math.max(10, Math.round(Number(input.item?.calories) || 0));
+ const category = detectFoodCategory(String(input.item?.food || ""));
+ if (!category) return null;
+ const avoid = new Set((input.avoidNames ?? []).map((n) => String(n || "").trim()).filter(Boolean));
+ const original = String(input.item?.food || "").trim();
+
+ const candidates = safeFoodsFor(input.constraints).filter(
+ (f) => f.category === category && f.name !== original && !avoid.has(f.name),
+ );
+ if (candidates.length === 0) return null;
+
+ for (const cand of shuffle(candidates)) {
+ const grams = Math.max(5, Math.round(target / cand.calsPer100g * 100));
+ if (grams > 700) continue; // unphysical portion for this calorie level
+ const it = itemFromFood(cand, grams);
+ if (!itemPassesConstraints(it, input.constraints)) continue;
+ const drift = Math.abs(it.calories - target) / target;
+ if (drift > PLAN_AI_SANITY.itemDriftTolerance) continue;
+ const alt = candidates.find((c) => c !== cand);
+ return {
+ ...it,
+ alternatives: alt ? `أو ${alt.name} بكمية مكافئة` : undefined,
+ };
+ }
+ return null;
 }
 
 /* ----------------------------- Chat reply -------------------------------- */

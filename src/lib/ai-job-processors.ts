@@ -466,6 +466,43 @@ async function materializePlanDraftRow(
     console.error("[plan job] server-side draft materialization failed:", error.message);
     return null;
   }
+  // DRAFT-HYGIENE 2026-10-25 (owner order P1-4: «أوقف إنشاء المسودات
+  // المكررة»): the regeneration flow rides replacePlanId (sanitized
+  // UUID) on the payload — the RUNNER now swaps the superseded draft out
+  // itself, server-side, so dedupe no longer depends on the initiating
+  // browser still being open on the right device. Guards: the old row is
+  // deleted ONLY after the replacement draft EXISTS, and ONLY while it is
+  // still an unapproved, never-activated draft (approved/current plans
+  // are untouchable — the browser flow keeps its own guarded cleanup as
+  // a second belt). Best-effort + logged, never job-fatal.
+  const replacePlanId = String(payload?.replacePlanId ?? "");
+  if (UUID_RE.test(replacePlanId) && data?.id && replacePlanId !== data.id) {
+    try {
+      const { data: old } = await supabaseAdmin
+        .from("plans")
+        .select("id, status, is_current")
+        .eq("id", replacePlanId)
+        .maybeSingle();
+      if (old && old.status === "draft" && old.is_current !== true) {
+        const { error: delErr } = await supabaseAdmin
+          .from("plans")
+          .delete()
+          .eq("id", replacePlanId)
+          .eq("status", "draft")
+          .eq("is_current", false);
+        if (delErr) {
+          console.warn("[plan job] superseded draft cleanup failed:", delErr.message);
+        } else {
+          console.log(`[plan job] superseded draft removed: plans#${replacePlanId} → replaced by plans#${data.id}`);
+        }
+      }
+    } catch (cleanupError) {
+      console.warn(
+        "[plan job] superseded draft cleanup error (best-effort):",
+        cleanupError instanceof Error ? cleanupError.message : cleanupError,
+      );
+    }
+  }
   return data?.id ?? null;
 }
 

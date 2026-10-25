@@ -142,6 +142,16 @@ const num = (v: unknown): number | undefined => {
   const n = typeof v === "number" ? v : parseFloat(String(v));
   return Number.isFinite(n) ? n : undefined;
 };
+/** DRAFT-HYGIENE 2026-10-25: the regeneration flow's replacePlanId rides
+ * the sanitized payload so the RUNNER (not just the initiating browser)
+ * can swap the superseded draft out — strict UUID shape, anything else
+ * degrades to undefined (same law as every other whitelisted field). */
+const UUIDish = (v: unknown): string | undefined => {
+  const s = str(v, 64);
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(s)
+    ? s
+    : undefined;
+};
 
 function pickClientContext(cc: unknown) {
   // Same shape CoachClientView builds today — nothing else survives.
@@ -171,6 +181,10 @@ export function sanitizeJobPayload(type: AiJobType, raw: unknown): Json {
       return {
         clientId: str(p.clientId, 64),
         clientContext: pickClientContext(p.clientContext),
+        // DRAFT-HYGIENE 2026-10-25: the superseded draft's id (regeneration
+        // flow) — the runner deletes it AFTER the replacement draft exists
+        // and ONLY while it is still an unapproved draft.
+        replacePlanId: UUIDish(p.replacePlanId),
         overrides: {
           targetCalories: num(o.targetCalories),
           macros: (() => {

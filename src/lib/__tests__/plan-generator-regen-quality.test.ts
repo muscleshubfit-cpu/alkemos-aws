@@ -1,16 +1,20 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 /**
- * AI-PLAN-QUALITY 2026-10-24 (owner order items 2+4+5): the generation
- * and regeneration quality-contract battery. The provider chain is
- * MOCKED — these tests prove the ENGINE's behavior around the gate:
+ * AI-PLAN-QUALITY 2026-10-24 + LOCAL-SWAP 2026-10-25 (owner order P0-2):
+ * the generation and regeneration quality-contract battery. The provider
+ * chain is MOCKED — these tests prove the ENGINE's behavior around the
+ * gate:
  *
  *   - a valid payload passes and is normalized (totals recomputed);
  *   - an invalid payload triggers EXACTLY ONE repair retry whose prompt
  *     names the rejection reason;
- *   - a second invalid payload → full plans fall back to the local
- *     generator with the visible review flag; regenerations THROW so the
- *     caller keeps the original element untouched;
+ *   - a second invalid payload → full plans fall back to the (diet-aware,
+ *     gate-checked) local generator with the visible review flag; meal and
+ *     item swaps fall back to the LOCAL food DB replacement (calorie-
+ *     matched, constraint-checked) — and only throw when no compliant
+ *     local replacement exists either (the caller then keeps the original
+ *     element untouched);
  *   - the degenerate zero-calorie meal never reaches a provider call.
  */
 
@@ -226,15 +230,60 @@ describe("regenerateMeal — gate + retry + honest throw", () => {
     expect(out.suggestions[0].total_calories).toBe(280);
   });
 
-  it("drifted replacement → ONE repair retry naming the reason → second failure THROWS", async () => {
+  it("drifted replacement twice → LOCAL food-DB replacement (±20%, gated) — the provider failure no longer kills the swap", async () => {
     const drifted = { meal: { name: "x", items: [{ food: "بيتزا", amount: "كاملة", calories: 1800 }] } };
     chainState.responses.push(
       { text: JSON.stringify(drifted), model: "m1", provider: "openrouter" },
       { text: JSON.stringify(drifted), model: "m2", provider: "groq" },
     );
-    await expect(regenerateMeal(currentMeal, 510)).rejects.toThrow("بوابة الجودة");
+    const out = await regenerateMeal(currentMeal, 510);
+    // The repair retry still named the rejection before the fallback fired.
     expect(chainState.prompts).toHaveLength(2);
     expect(chainState.prompts[1]).toContain("محاولتك السابقة رُفضت");
+    // The local replacement is the honest, gated fallback.
+    expect(out.source).toBe("local-fallback:meal-swap");
+    const meal = out.meal as unknown as { name: string; items: Array<{ calories: number }>; total_calories?: number };
+    const total = meal.items.reduce((s, i) => s + i.calories, 0);
+    expect(Math.abs(total - 510) / 510).toBeLessThanOrEqual(0.2);
+    expect(meal.items.length).toBeGreaterThanOrEqual(2);
+    // TITLES LAW: the replacement's name is canonical (a base title), never
+    // an invented compound — and never the drifted model's "x".
+    expect(["الفطار", "الغداء", "العشاء", "سناك"]).toContain(meal.name);
+  });
+
+  it("provider chain DOWN → LOCAL replacement still lands (no scripted response = chain throw)", async () => {
+    chainState.responses.length = 0; // every call throws "no scripted response"
+    const out = await regenerateMeal(currentMeal, 510);
+    expect(out.source).toBe("local-fallback:meal-swap");
+    const meal = out.meal as unknown as { items: Array<{ calories: number }> };
+    const total = meal.items.reduce((s, i) => s + i.calories, 0);
+    expect(Math.abs(total - 510) / 510).toBeLessThanOrEqual(0.2);
+  });
+
+  it("no compliant local replacement either (empty safe pools) → HONEST THROW, original stays", async () => {
+    // A keto + vegetarian + fish/nut/egg/dairy-allergic profile empties the
+    // local protein pool → neither the provider nor the local DB can serve
+    // a compliant meal → regenerateMeal THROWS (never a fake success).
+    chainState.responses.length = 0;
+    const hostile: ClientContext = {
+      name: "عميل القيود القاسية",
+      nutrition: {
+        gender: "male",
+        weight: "80",
+        height: "180",
+        age: "30",
+        meals: "3",
+        diet: "كيتو",
+        allergies: "بيض، سمك، مكسرات، ألبان، صويا",
+        disliked: "دجاج، لحم، رومي، كبدة",
+      },
+      fitness: {},
+      recent_measurements: [],
+      recent_plan_names: [],
+    };
+    await expect(
+      regenerateMeal(currentMeal, 510, hostile, undefined, [], undefined, "keto"),
+    ).rejects.toThrow();
   });
 
   it("a meal with NO calorie anchor fails honestly BEFORE any provider call", async () => {
@@ -281,13 +330,31 @@ describe("regenerateFoodItem — ±15% enforced with one retry", () => {
     expect(out.item.food).toBe("زبادي يوناني");
   });
 
-  it("out-of-band twice → throws (the original item stays untouched at the caller)", async () => {
+  it("out-of-band twice → LOCAL food-DB replacement (±15%, gated) — never a fake success, never a dead swap", async () => {
     chainState.responses.push(
       { text: JSON.stringify({ food: "بيتزا", amount: "طبق", calories: 900 }), model: "m1", provider: "openrouter" },
       { text: JSON.stringify({ food: "بيتزا", amount: "طبق", calories: 950 }), model: "m2", provider: "groq" },
     );
-    await expect(regenerateFoodItem(original)).rejects.toThrow("بوابة الجودة");
+    const out = await regenerateFoodItem(original);
     expect(chainState.prompts).toHaveLength(2);
+    expect(out.source).toBe("local-fallback:item-swap");
+    // ±15% calorie equivalence to the original 140 kcal.
+    expect(Math.abs(out.item.calories - 140) / 140).toBeLessThanOrEqual(0.15);
+    // Same nutritional category (dairy ↔ dairy), never the pizza drift.
+    expect(out.item.food).not.toContain("بيتزا");
+  });
+
+  it("no compliant local candidate (hostile constraints empty the category) → HONEST THROW, original stays", async () => {
+    chainState.responses.length = 0;
+    await expect(
+      regenerateFoodItem(original, {
+        name: "عميل",
+        nutrition: { allergies: "زبادي، جبن، حليب، لبن، ألبان، بيض" },
+        fitness: {},
+        recent_measurements: [],
+        recent_plan_names: [],
+      }),
+    ).rejects.toThrow();
   });
 });
 

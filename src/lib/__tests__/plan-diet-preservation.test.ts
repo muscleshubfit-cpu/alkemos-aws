@@ -175,18 +175,41 @@ describe("the keto-loss incident replay (whole-plan regeneration)", () => {
     expect(res.source).toBe("test:test-model");
   });
 
-  it("WITH the resolved diet: a HIGH-CARB answer is REJECTED by the gate, repaired once, then honest failure keeps keto out of the bin", async () => {
+  it("WITH the resolved diet: a HIGH-CARB answer is REJECTED by the gate, repaired once, then the DIET-AWARE local fallback ships a KETO-COMPLIANT plan", async () => {
     chainState.responses.push({ text: carbPlanJson(1800), model: "t", provider: "t" });
     chainState.responses.push({ text: carbPlanJson(1800), model: "t", provider: "t" });
     const res = await generateNutritionPlanAI(ketoClient, {
       targetCalories: 1800,
       dietType: "keto",
     });
-    // Both attempts violated keto → honest LOCAL fallback with the visible
-    // review flag — never a carb plan presented as the client's keto.
+    // Both attempts violated keto → the LOCAL fallback with the visible
+    // review flag — and (NUTRITION-FALLBACK 2026-10-25) the fallback's
+    // CONTENT is now keto-clean: no starch, no high-sugar fruit, the nut
+    // allergy respected, and the day closes on the 1800 target.
     expect(res.source).toBe("local-fallback");
     const fallbackPlan = res.content as import("@/lib/plan-generator").NutritionPlanContent;
     expect(fallbackPlan.needs_review?.flags).toContain("ai_output_rejected_local_fallback");
+    // The audit now rides the fallback content too (same law as the AI path).
+    expect(fallbackPlan.audit?.recomputed.meals_total_calories.value).toBeGreaterThan(0);
+    const allFoods = fallbackPlan.meals.flatMap((m) => m.items.map((i) => i.food));
+    for (const food of allFoods) {
+      expect(String(food)).not.toMatch(/أرز|رز|خبز|عيش|شوفان|مكرونة|بطاطس|بطاطا|موز|عنب|بطيخ|تمر|بلح|كينوا|برغل|فريك/);
+    }
+    // The keto carb band holds on the recomputed items (≤ 50g for the day).
+    const dayCarbs = fallbackPlan.meals.reduce(
+      (s, m) => s + m.items.reduce((x, i) => x + (i.carbs_g ?? 0), 0),
+      0,
+    );
+    expect(dayCarbs).toBeLessThanOrEqual(60);
+    // The nut allergy is respected by the fallback's food selection.
+    for (const food of allFoods) {
+      expect(String(food)).not.toMatch(/لوز|جوز|فستق|بندق|كاجو|مكسرات|فول سوداني/);
+    }
+    // The day closes within the gate's ±25% of the 1800 target.
+    const mealsTotal = fallbackPlan.meals.reduce((s, m) => s + (m.total_calories ?? 0), 0);
+    expect(Math.abs(mealsTotal - 1800) / 1800).toBeLessThanOrEqual(0.25);
+    // The keto card is HONEST now: the label matches the content.
+    expect(fallbackPlan.data_analysis?.diet_type).toBe("كيتو");
     // The repair retry named the keto violation
     expect(chainState.prompts[1]).toContain("كيتو");
   });

@@ -788,7 +788,10 @@ describe("marketing-surface MSA (Phase 178 — §12.42)", () => {
     expect(checkout).toContain("موافقة المدرب");
     const aiLocal = readFileSync("src/lib/ai-local.ts", "utf8");
     expect(aiLocal).toContain("الكربوهيدرات: ${carbsG}");
-    expect(aiLocal).toContain("ركّز على البروتين والكربوهيدرات");
+    // NUTRITION-FALLBACK 2026-10-25: the meal note dropped «والكربوهيدرات»
+    // deliberately — «ركّز على البروتين والكربوهيدرات» was diet-blind advice
+    // inside a keto plan's meals; the MSA-clean core phrase survives.
+    expect(aiLocal).toContain("ركّز على البروتين");
     const externalPlan = readFileSync("src/lib/external-plan-text.ts", "utf8");
     expect(externalPlan).toContain("كربوهيدرات ${m.carbs_g ?? 0} جم");
     const seo = readFileSync("src/lib/seo.ts", "utf8");

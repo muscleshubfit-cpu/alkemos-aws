@@ -25,6 +25,7 @@ import {
  AlertTriangle,
  Search,
  Target,
+ X,
 } from "lucide-react";
 // #5 fix: lazy-load recharts (~600KB) — only loaded when progress tab is opened
 import dynamic from "next/dynamic";
@@ -75,6 +76,8 @@ import {
  readPendingPlanJobs,
  readSavedPlanJobIds,
  addSavedPlanJobId,
+ readDismissedPlanJobIds,
+ addDismissedPlanJobId,
  selectRecoverablePlanJobs,
  planJobTypeToKind,
  type PendingPlanJob,
@@ -307,10 +310,15 @@ export function CoachClientView({ clientId }: { clientId: string }) {
  const res = await fetch("/api/ai/jobs?limit=20");
  if (!res.ok) return;
  const data = await res.json().catch(() => null);
+ // DRAFT-HYGIENE 2026-10-25: dismissed jobs (this device) + the age
+ // ceiling (7d) now shape the card — the coach can clear entries he does
+ // not want, and stale generations stop cluttering the client page.
  const picked = selectRecoverablePlanJobs(
  data?.jobs ?? [],
  new Set(readSavedPlanJobIds()),
  new Set(readPendingPlanJobs().map((e) => e.id)),
+ Date.now(),
+ new Set(readDismissedPlanJobIds()),
  );
  setRecoverableJobs(picked);
  } catch {
@@ -462,6 +470,16 @@ export function CoachClientView({ clientId }: { clientId: string }) {
  }
  };
 
+ /** DRAFT-HYGIENE 2026-10-25 (owner order P1-4): dismiss a recoverable
+ * job on THIS device — the «خطط جاهزة لم تُحفظ» card finally has a way
+ * out that is not "save it". The finished job row itself is untouched
+ * (ai_jobs history + the server-side draft, when materialized). */
+ const dismissRecoverableJob = (job: RecoverableJobInput) => {
+ addDismissedPlanJobId(job.id);
+ setRecoverableJobs((prev) => prev.filter((j) => j.id !== job.id));
+ toast.info(isAr ? "تم تجاهل هذا العنصر — لن يظهر مرة أخرى على هذا الجهاز." : "Dismissed — this entry won't appear again on this device.");
+ };
+
  /** Enqueue a plan job and register a resilient watcher for it. */
  const queuePlanJob = async (
  planType: "workout" | "nutrition",
@@ -477,7 +495,15 @@ export function CoachClientView({ clientId }: { clientId: string }) {
  try {
  const jobId = await enqueueAiJobClient(
  planType === "workout" ? "plan_workout" : "plan_nutrition",
- { clientId, clientContext, overrides },
+ {
+ clientId,
+ clientContext,
+ overrides,
+ // DRAFT-HYGIENE 2026-10-25: the superseded draft's id rides the
+ // payload so the RUNNER swaps it out server-side once the
+ // replacement exists (no longer browser/device-dependent).
+ ...(replacePlan?.id ? { replacePlanId: replacePlan.id } : {}),
+ },
  );
  const entry: PendingPlanJob = {
  id: jobId,
@@ -1301,6 +1327,7 @@ export function CoachClientView({ clientId }: { clientId: string }) {
  وصلت {new Date(j.finished_at ?? j.created_at ?? Date.now()).toLocaleString(isAr ? "ar-EG" : "en-US", { hour: "2-digit", minute: "2-digit", day: "numeric", month: "short" })}
  </span>
  </div>
+ <div className="flex items-center gap-1.5">
  <Button
  size="sm"
  className="gap-1.5"
@@ -1310,6 +1337,19 @@ export function CoachClientView({ clientId }: { clientId: string }) {
  {recoveringId === j.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
  حفظ كمسودة
  </Button>
+ {/* DRAFT-HYGIENE 2026-10-25: the dismiss path the card never had —
+ hides THIS entry on THIS device without touching any data. */}
+ <Button
+ size="sm"
+ variant="ghost"
+ className="h-7 px-2 text-xs text-muted-foreground hover:text-destructive"
+ onClick={() => dismissRecoverableJob(j)}
+ title={isAr ? "تجاهل — إخفاء هذا العنصر على هذا الجهاز" : "Dismiss — hide this entry on this device"}
+ >
+ <X className="h-3.5 w-3.5" />
+ تجاهل
+ </Button>
+ </div>
  </div>
  ))}
  </div>

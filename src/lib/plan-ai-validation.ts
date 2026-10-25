@@ -235,6 +235,8 @@ const DIET_FORBIDDEN_TOKENS: Record<ConstraintDietType, string[]> = {
     // grains & starches
     "ارز", "رز ابيض", "خبز", "عيش", "توست", "شوفان", "مكرونه", "مكرونة", "باستا", "سباجيتي",
     "بطاطس", "بطاطا", "كينوا", "برغل", "بلغر", "كسكسي", "فريك", "ذره", "ذرة", "فطير", "بيتزا", "كريب", "بان كيك",
+    // legumes (net-carb dense — not ketogenic protein sources)
+    "عدس", "حمص", "فاصوليا", "فول مدمس", "لوبيا", "بقول",
     // sugars & syrups
     "سكر", "عسل", "مربي", "عصير", "غازيه", "مشروب سكري",
     // dried & high-sugar fruits
@@ -243,6 +245,7 @@ const DIET_FORBIDDEN_TOKENS: Record<ConstraintDietType, string[]> = {
     "rice", "bread", "toast", "oats", "oatmeal", "pasta", "spaghetti", "potato", "sweet potato",
     "quinoa", "bulgur", "couscous", "corn", "pizza", "pancake", "sugar", "honey", "jam", "juice",
     "dates", "raisins", "banana", "mango", "grapes", "figs", "pineapple", "watermelon", "soda",
+    "lentils", "chickpeas", "beans", "edamame",
   ],
   low_carb: [
     // dense sugar sources only — starch portions ride the carb-gram ceiling
@@ -250,7 +253,7 @@ const DIET_FORBIDDEN_TOKENS: Record<ConstraintDietType, string[]> = {
     "sugar", "honey", "jam", "juice", "dates", "raisins", "cake", "cookies", "soda",
   ],
   vegetarian: [
-    "لحم", "دجاج", "فراخ", "سمك", "سلطات بحريه", "سلمون", "تونه", "تونة", "جمبري", "استاكوزا", "كابوريا",
+    "لحم", "دجاج", "فراخ", "سمك", "سلطات بحريه", "سلمون", "تونه", "تونة", "جمبري", "روبيان", "استاكوزا", "كابوريا",
     "انشوجه", "سردين", "ماكريل", "كفته", "كباب", "برجر", "سجق", "بسطرمه", "مرقه لحم", "مرقه دجاج", "ستيك",
     "meat", "beef", "lamb", "mutton", "chicken", "turkey", "fish", "salmon", "tuna", "shrimp", "prawn",
     "crab", "lobster", "anchovy", "sardine", "mackerel", "burger", "sausage", "bacon", "steak", "kebab", "meatball",
@@ -258,7 +261,7 @@ const DIET_FORBIDDEN_TOKENS: Record<ConstraintDietType, string[]> = {
   vegan: [
     // vegetarian table + animal products + dairy (dairy tokens carry the
     // plant-alternative guard below — coconut/soy/oat/almond milks pass)
-    "لحم", "دجاج", "فراخ", "سمك", "سلمون", "تونه", "تونة", "جمبري", "استاكوزا", "كابوريا", "انشوجه", "سردين",
+    "لحم", "دجاج", "فراخ", "سمك", "سلمون", "تونه", "تونة", "جمبري", "روبيان", "استاكوزا", "كابوريا", "انشوجه", "سردين",
     "ماكريل", "كفته", "كباب", "برجر", "سجق", "بسطرمه", "مرقه لحم", "مرقه دجاج", "ستيك",
     "بيض", "بيضه", "بيضة", "اومليت", "جلاتين",
     "جبن", "جبنة", "لبنه", "حليب", "زبادي", "قريش", "موزاريلا", "شيدر", "بارميزان",
@@ -293,7 +296,7 @@ const ALLERGEN_EXPANSION: Array<{ category: RegExp; family: string[] }> = [
     "milk", "yogurt", "cheese", "cream", "butter", "whey", "casein",
   ] },
   { category: /سمك|اسماك|أسم|seafood|fish\b/, family: [
-    "سمك", "سلمون", "تونه", "تونة", "جمبري", "استاكوزا", "كابوريا", "سردين", "ماكريل", "انشوجه",
+    "سمك", "سلمون", "تونه", "تونة", "جمبري", "روبيان", "استاكوزا", "كابوريا", "سردين", "ماكريل", "انشوجه", "بلح البحر",
     "fish", "salmon", "tuna", "shrimp", "prawn", "crab", "lobster", "sardine", "anchovy",
   ] },
   { category: /جلوتين|gluten|قمح|wheat\b/, family: [

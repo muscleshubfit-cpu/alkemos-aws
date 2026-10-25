@@ -42,17 +42,33 @@ export type PendingPlanJob = {
 const PREFIX = "mhe:";
 export const PENDING_PLAN_JOBS_KEY = `${PREFIX}pending-plan-jobs`;
 export const SAVED_PLAN_JOB_IDS_KEY = `${PREFIX}saved-plan-jobs`;
+/* DRAFT-HYGIENE 2026-10-25 (owner order P1-4): a DISMISSED store — the
+ * recovery card's «خطط جاهزة لم تُحفظ» previously had NO dismiss path: the
+ * only way to clear an entry was saving it, and the saved-id registry was
+ * per-device localStorage, so the same finished job re-appeared on every
+ * other browser forever. Dismissal is per-device (same law as the saved
+ * store) and now feeds selectRecoverablePlanJobs directly. */
+export const DISMISSED_PLAN_JOB_IDS_KEY = `${PREFIX}dismissed-plan-jobs`;
 
 /** Entries older than this are pruned on read (worker TTL is ~3 attempts). */
 export const PLAN_JOB_TTL_MS = 24 * 60 * 60_000;
 /** Registry caps — protect localStorage from unbounded growth. */
 export const PENDING_PLAN_JOBS_CAP = 40;
 export const SAVED_PLAN_JOB_IDS_CAP = 100;
+export const DISMISSED_PLAN_JOB_IDS_CAP = 100;
 /**
  * Jobs younger than this are considered "a watcher may still be live" —
  * the recovery card hides them to avoid racing an attached watcher.
  */
 export const RECOVERY_GRACE_MS = 5 * 60_000;
+/**
+ * DRAFT-HYGIENE 2026-10-25 (owner order P1-4: «إخفاء العناصر القديمة»):
+ * jobs finished longer ago than this are no longer offered in the
+ * recovery card — a week-old unsaved generation is stale food data the
+ * coach never chose to keep, not a "ready plan" worth cluttering the
+ * client page (the row remains in ai_jobs history regardless).
+ */
+export const RECOVERY_MAX_AGE_MS = 7 * 24 * 60 * 60_000;
 
 /* ────────────────────────── pending registry ────────────────────────── */
 
@@ -117,6 +133,31 @@ export function addSavedPlanJobId(id: string): void {
   }
 }
 
+/* ───────────────── dismissed-id store (DRAFT-HYGIENE 2026-10-25) ───────────────── */
+
+export function readDismissedPlanJobIds(): string[] {
+  try {
+    const raw = localStorage.getItem(DISMISSED_PLAN_JOB_IDS_KEY);
+    const list = raw ? (JSON.parse(raw) as string[]) : [];
+    return Array.isArray(list) ? list.filter((v) => typeof v === "string") : [];
+  } catch {
+    return [];
+  }
+}
+
+export function addDismissedPlanJobId(id: string): void {
+  const set = new Set(readDismissedPlanJobIds());
+  set.add(id);
+  try {
+    localStorage.setItem(
+      DISMISSED_PLAN_JOB_IDS_KEY,
+      JSON.stringify([...set].slice(-DISMISSED_PLAN_JOB_IDS_CAP)),
+    );
+  } catch {
+    /* storage full/blocked — dismissal degrades to in-session rescan */
+  }
+}
+
 /* ───────────────────────── recovery selection ───────────────────────── */
 
 export type RecoverableJobInput = {
@@ -141,8 +182,10 @@ export function planJobTypeToKind(jobType: string): PlanJobKind | null {
 /**
  * Pure core of the recovery card: from the coach's own recent ai_jobs rows,
  * pick plan jobs that (a) finished, (b) were never saved as drafts,
- * (c) still carry the clientId needed to materialize them, and
- * (d) are older than the live-watcher grace window.
+ * (c) still carry the clientId needed to materialize them, (d) are older
+ * than the live-watcher grace window, (e) are NEWER than the recovery age
+ * ceiling (DRAFT-HYGIENE 2026-10-25 — stale generations stop cluttering
+ * the client page), and (f) were not DISMISSED on this device.
  * `pendingIds` comes from the registry read at the call site.
  */
 export function selectRecoverablePlanJobs(
@@ -150,15 +193,19 @@ export function selectRecoverablePlanJobs(
   savedIds: ReadonlySet<string>,
   pendingIds: ReadonlySet<string>,
   now: number = Date.now(),
+  dismissedIds?: ReadonlySet<string>,
 ): RecoverableJobInput[] {
   return jobs.filter((j) => {
     if (!PLAN_JOB_TYPES.includes(j.job_type)) return false;
     if (j.status !== "done") return false;
     if (savedIds.has(j.id) || pendingIds.has(j.id)) return false;
+    if (dismissedIds?.has(j.id)) return false;
     const clientId = j.payload?.clientId;
     if (typeof clientId !== "string" || !clientId) return false;
     const created = j.created_at ? Date.parse(j.created_at) : NaN;
     if (!Number.isFinite(created)) return false;
-    return now - created >= RECOVERY_GRACE_MS;
+    if (now - created < RECOVERY_GRACE_MS) return false;
+    if (now - created > RECOVERY_MAX_AGE_MS) return false;
+    return true;
   });
 }
