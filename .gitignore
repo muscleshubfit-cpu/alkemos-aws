@@ -72,9 +72,15 @@ pnpm-lock.yaml
 #   scripts/gdrive/oauth-token-helper.html → one-time LOCAL OAuth token minter for the backup owner (GD-1-ALT, BACKUP-STRATEGY-2026-10-03 §5 — gdrive-oauth-smoke-test.yml + the GDRIVE_OAUTH_TOKEN secret source; hit the same /scripts/* blanket trap as geo/ — exception added in the same frame)
 #   scripts/vercel/ignore-step.sh → Vercel Ignored Build Step law carrier (VERCEL-IGNORE-HARDENING-2026-10-04 — vercel.json ignoreCommand delegates here because the inline field is hard-capped at 256 chars by Vercel's schema; hit the same /scripts/* blanket trap as gdrive/ — exception added in the same frame)
 /scripts/*
+!/scripts/qa/
+!/scripts/qa/**
+scripts/qa/**/__pycache__/
 !/scripts/blog-runner/
 !/scripts/ai-jobs-runner/
 !/scripts/vercel-cleanup/
+#   scripts/qa/ → the QA test-accounts channel tool (QA-TEST-ACCOUNTS-2026-10-26, owner directive
+#   2026-10-26 — the single guarded lifecycle instrument of the Test-Accounts Channel; hit the
+#   same /scripts/* blanket trap as geo/ and vercel/ — exception added in the same frame)
 !/scripts/legacy-msa-patches/
 !/scripts/check-stale-refs.sh
 !/scripts/migration_audit.py

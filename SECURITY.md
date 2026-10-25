@@ -241,6 +241,20 @@ Any of the following:
   write SQL (`DELETE`/`UPDATE`/`TRUNCATE`/`DROP`) against production
   (AGENTS.md §3.3; read-only verification queries are allowed when
   necessary).
+- **QA Test-Accounts Channel exception (owner directive 2026-10-26 —
+  AGENTS.md §3.3/§6, full policy
+  `docs/QA-TEST-ACCOUNTS-2026-10-26.md`):** agents may use the
+  service-role key from the environment (`SUPABASE_SERVICE_ROLE_KEY` —
+  never committed, never printed) for the guarded QA test-account
+  lifecycle ONLY: creating/logging in as/resetting accounts under the
+  reserved domain `@alkemos-test.com` with `profiles.is_test_account=true`,
+  exclusively via `scripts/qa/test_accounts.py` (auth user through the
+  Supabase admin API — no direct `auth.users` SQL; every write
+  domain-guarded; the tool refuses every non-test target). This covers
+  test accounts of ANY role including admin, used for live interface
+  testing through the real app. Every other write-SQL rule in this
+  section is unchanged: real rows, real accounts, `DELETE`/`TRUNCATE`/
+  `DROP` of any kind, and RLS stay owner-only.
 - Migrations are applied to production **automatically** by the
   Supabase–GitHub integration when the commit lands on `main`
   (Phase 120 law correction, owner directive 2026-09-05 — the
@@ -402,6 +416,11 @@ These are in addition to the general operating rules in `AGENTS.md`:
     never runs them). The owner runs SQL by hand ONLY on the
     documented manual path (the `auth.users` exception + legacy
     `RUN_ON_SUPABASE_*`/`VERIFY_*` files) — AGENTS.md §3.3/§6.
+    Exception (owner directive 2026-10-26): QA test accounts under
+    the reserved `@alkemos-test.com` domain follow the Test-Accounts
+    Channel (admin-API user creation + domain-scoped profile writes
+    via `scripts/qa/test_accounts.py`) — see §6 above; everything
+    else here is unchanged.
 12. **Always update this file** when adding a new env var, a new
     external service, a new auth flow, or a new data category.
 13. **Auth-flow change — complete-invite adoption (H1-2026 fix,
