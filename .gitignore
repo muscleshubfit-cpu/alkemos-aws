@@ -93,6 +93,8 @@ pnpm-lock.yaml
 !/scripts/generate-search-indexes.ts
 !/scripts/v1_contrast_matrix.py
 !/scripts/worklog_rotate.py
+#   scripts/repro/ → REGEN-ROOTCAUSE-2 (2026-10-26) committed evidence instruments: regen-repro.mts replays the EXACT production ai_jobs payloads through the real engine (the plan-regeneration job-killer reproduction) + fetch-ai-job-fixtures.py (READ-ONLY payload fetcher). Hit the same /scripts/* blanket trap as geo/ — exception added in the same frame. The fixtures themselves (scripts/repro/repro-fixtures/) stay IGNORED — real client data, never committed.
+!/scripts/repro/
 !/scripts/geo/
 !/scripts/external-mirror/
 !/scripts/gdrive/
@@ -160,3 +162,7 @@ ar2_logs.zip
 
 # Local live-verification screenshots (worklog: لقطات محلية فقط)
 /testing/
+
+# REGEN-ROOTCAUSE-2: production ai_jobs payload fixtures fetched read-only by
+# scripts/repro/fetch-ai-job-fixtures.py — real client data, NEVER committed.
+scripts/repro/repro-fixtures/

@@ -643,11 +643,21 @@ export async function generateNutritionPlanAI(
       `تعذر إنتاج خطة متوافقة محليًا بعد رفض مخرجات مزودي AI — أوقفنا الحفظ بدل تقديم خطة مخالفة. السبب: ${localVerdict.error}`,
     );
   }
+  // REGEN-ROOTCAUSE-2 2026-10-26 — SAVE THE VALIDATED COPY: the gate
+  // validates a GROUNDED, coerced clone of the local meals; the pre-fix
+  // code saved the RAW local output instead, so (a) the gate never
+  // validated what was actually persisted and (b) grounding corrections
+  // could never reach the saved plan. The validated meals are now the
+  // content's meals — the gate's contract and the saved bytes agree by
+  // construction (with the ranked matcher + FOOD_DB sync the grounded
+  // values equal the local values, so this is identity for coherent rows
+  // and a genuine correction for drifted ones).
+  const validatedLocal = { ...local, meals: localVerdict.value.meals };
   const flaggedTargets: NutritionTargets = {
     ...targets,
     reviewFlags: [...targets.reviewFlags, "ai_output_rejected_local_fallback"],
   };
-  const localContent = normalizeNutritionPlan(local, overrides, flaggedTargets);
+  const localContent = normalizeNutritionPlan(validatedLocal, overrides, flaggedTargets);
   // The independent audit rides the fallback content too — same law as the
   // AI path (owner order P0-1: «وأخضع مخرجاته لبوابة الجودة والتدقيق
   // المستقل»).
@@ -931,8 +941,12 @@ ${coachNote ? `تعليمات الكوتش: ${coachNote}` : ""}
       "[plan-generator] meal swap fell back to the local food DB (provider chain failed):",
       e instanceof Error ? e.message : e,
     );
+    // REGEN-ROOTCAUSE-2 2026-10-26: ship the VALIDATED meal (grounded +
+    // coerced by the same gate that approved it) — the same law the item
+    // swap already followed; the raw local meal and the gate's copy can
+    // differ by grounding corrections that must reach the saved plan.
     return {
-      meal: localMeal as unknown as RegeneratedMeal,
+      meal: verdict.value as unknown as RegeneratedMeal,
       suggestions: [],
       source: "local-fallback:meal-swap",
     };

@@ -719,7 +719,13 @@ async function recordSwap(
     .from("plan_swaps")
     .insert({
       user_id: userId,
-      plan_id: "api-swap", // no specific plan when swapping via API
+      // REGEN-ROOTCAUSE-2 2026-10-26: plan_id is a NULLABLE uuid column —
+      // the legacy "api-swap" placeholder failed EVERY insert with
+      // «invalid input syntax for type uuid» (measured live in the runner
+      // log + the production table had 0 rows ever), so the weekly swap
+      // quota ledger stayed empty and client limits were never enforced.
+      // NULL is the schema's own "no specific plan" value.
+      plan_id: null,
       swap_type: swapType,
     });
   if (error) {

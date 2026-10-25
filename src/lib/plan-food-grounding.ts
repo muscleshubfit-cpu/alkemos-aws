@@ -65,11 +65,101 @@ function lookupExact(q: string): Food | null {
   return exactIndex!.get(normalizeFoodName(q)) ?? null;
 }
 
-/** Containment lookup — the shorter name inside the longer one (≥4 chars). */
+/* ── REGEN-ROOTCAUSE-2 2026-10-26 — RANKED containment matching ──
+ * MEASURED DEFECT (the plan-regeneration job-killer): the old
+ * lookupContains returned the FIRST substring-containment candidate in
+ * FOODS array order, so «شوفان مطبوخ» (cooked oats, 71 kcal/100g) hit the
+ * DRY «شوفان» row at index 14 (389 kcal/100g) before the semantically
+ * correct «شوفان مطبوخ بالماء» row at index 1924 — the gate's grounding
+ * re-priced one breakfast item +954 kcal, the day drifted past ±25%, the
+ * local fallback was rejected and the regeneration job FAILED. Same
+ * class: «بيض مقلي» matched «مشروم أبيض — مقلي سريعًا» because the raw
+ * substring "بيض مقلي" sits inside "ا**بيض مقلي** سريعا" (fried eggs
+ * grounded as stir-fried mushrooms, −87%).
+ *
+ * THE FIX — three ranked tiers (first tier with a candidate wins):
+ *   T1 SPECIALIZATION: rows covering EVERY query token with ≤3 extra
+ *      tokens (cooked-state/variety variants of the queried food);
+ *      fewest extra wins. «شوفان مطبوخ» → «شوفان مطبوخ بالماء» (71) ✓ ·
+ *      «جبن موزاريلا قليلة الدسم» → «جبنة موزاريلا — قليلة الدسم» (254,
+ *      via feminine-taa token equivalence) ✓ · «فاصوليا خضراء» → the
+ *      plain green-bean rows, NOT «فاصوليا بينتو…» (+4 extra) ✓.
+ *      The +3 cap also keeps «فريك مطبوخ» (freekeh) OFF the semantically
+ *      different «فريكة قمح ناعمة…» farina rows (+5 extra → no anchor,
+ *      the item's own estimate stands — the pre-fix behavior).
+ *   T2 GENERALIZATION: rows whose every token sits inside the query
+ *      (the row drops a qualifier) — LONGEST covered row wins. «شوفان
+ *      مطبوخ» with no T1 row would anchor «شوفان»; «صدور دجاج مشوية»
+ *      anchors «صدور دجاج».
+ *   T3 LEGACY: raw substring containment, first match — unchanged
+ *      reachability (EN plurals, glued compounds); unreachable for any
+ *      query that has a T1/T1-token candidate.
+ * Token equivalence: feminine taa — «جبنة» ≡ «جبن», «مطبوخة» ≡ «مطبوخ». */
+const tokenize = (norm: string): string[] => norm.split(" ").filter(Boolean);
+/** Feminine-taa token equivalence: «جبنه» ≡ «جبن», «مطبوخه» ≡ «مطبوخ». */
+const tokenKey = (t: string): string => (t.endsWith("ه") && t.length >= 3 ? t.slice(0, -1) : t);
+
+/* REGEN-ROOTCAUSE-2: form tokens that change FOOD DENSITY by multiples
+ * (dried/dry/ground) — an EXTRA one of these (absent from the query)
+ * disqualifies a T1 candidate from the fewest-extra shortcut: «لبن رايب»
+ * must anchor a FLUID row (~40-62), never «لبن رايب مجفف» (387, +868%
+ * measured inflation class). Fat-level/prep tokens (قليل الدسم، بالملح،
+ * نيء، معلب، مجمد) do NOT change density multiples and stay unpenalized. */
+const DENSITY_FORM_TOKENS = new Set(["مجفف", "جاف", "مطحون", "مركز"]);
+
+const T1_MAX_EXTRA_TOKENS = 3;
+
 function lookupContains(q: string): Food | null {
   const nq = normalizeFoodName(q);
   if (nq.length < 4) return null;
   buildIndexes();
+  const qSet = new Set(tokenize(nq).map(tokenKey));
+  if (qSet.size === 0) return null;
+  let t1: { food: Food; densityExtra: boolean; extra: number } | null = null;
+  let t2: { food: Food; rowLen: number } | null = null;
+  for (const { ar, en, food } of normalizedRows!) {
+    for (const rowNorm of [ar, en]) {
+      if (rowNorm.length < 4) continue;
+      const rSet = new Set(tokenize(rowNorm).map(tokenKey));
+      if (rSet.size === 0) continue;
+      let coversAllQuery = true;
+      for (const t of qSet) {
+        if (!rSet.has(t)) {
+          coversAllQuery = false;
+          break;
+        }
+      }
+      if (coversAllQuery) {
+        const extra = rSet.size - qSet.size;
+        if (extra <= T1_MAX_EXTRA_TOKENS) {
+          const densityExtra = [...rSet].some(
+            (t) => DENSITY_FORM_TOKENS.has(t) && !qSet.has(t),
+          );
+          const better =
+            !t1 ||
+            (t1.densityExtra && !densityExtra) ||
+            (t1.densityExtra === densityExtra && extra < t1.extra);
+          if (better) t1 = { food, densityExtra, extra };
+        }
+        continue;
+      }
+      // T2: every ROW token inside the query (row drops a qualifier).
+      let coveredByQuery = true;
+      for (const t of rSet) {
+        if (!qSet.has(t)) {
+          coveredByQuery = false;
+          break;
+        }
+      }
+      if (coveredByQuery && (!t2 || rSet.size > t2.rowLen)) {
+        t2 = { food, rowLen: rSet.size };
+      }
+    }
+  }
+  if (t1) return t1.food;
+  if (t2) return t2.food;
+  // T3 legacy — raw substring containment (first match), only when the
+  // ranked tiers found nothing.
   for (const { ar, en, food } of normalizedRows!) {
     if (ar.length >= 4 && (ar.includes(nq) || nq.includes(ar))) return food;
     if (en.length >= 4 && (en.includes(nq) || nq.includes(en))) return food;

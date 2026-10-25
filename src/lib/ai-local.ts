@@ -371,7 +371,7 @@ export const FOOD_DB: FoodItem[] = [
  { name: "سردين معلب بالزيت", name_en: "canned sardines in oil", calsPer100g: 208, proteinPer100g: 24.6, carbsPer100g: 0, fatPer100g: 11.5, category: "protein", meals: ["lunch", "dinner", "snack"] },
  // === PROTEINS — Eggs ===
  { name: "بيض كامل مسلوق", name_en: "boiled whole egg", calsPer100g: 155, proteinPer100g: 13, carbsPer100g: 1.1, fatPer100g: 11, category: "protein", meals: ["breakfast", "dinner"] },
- { name: "بيض مقلي", name_en: "fried egg", calsPer100g: 196, proteinPer100g: 14, carbsPer100g: 1, fatPer100g: 15, category: "protein", meals: ["breakfast", "dinner"] },
+ { name: "بيض مقلي", name_en: "fried egg", calsPer100g: 196, proteinPer100g: 13.6, carbsPer100g: 0.8, fatPer100g: 14.8, category: "protein", meals: ["breakfast", "dinner"] }, // REGEN-ROOTCAUSE-2: macros synced to its TRUE anchor «بيضة مقلية» (USDA Egg, whole, cooked, fried — 196) — the ranked matcher reaches it via the ة token equivalence; the old matcher routed it to «مشروم أبيض — مقلي سريعًا» (26)
  { name: "أومليت بالخضار", name_en: "veggie omelette", calsPer100g: 154, proteinPer100g: 11, carbsPer100g: 3, fatPer100g: 11, category: "protein", meals: ["breakfast", "dinner"] },
  { name: "بياض البيض", name_en: "egg white", calsPer100g: 52, proteinPer100g: 11, carbsPer100g: 0.7, fatPer100g: 0.2, category: "protein", meals: ["breakfast", "dinner", "snack"] },
  // === PROTEINS — Other ===
@@ -432,11 +432,11 @@ export const FOOD_DB: FoodItem[] = [
  { name: "زبادي عادي قليل الدسم", name_en: "low fat yogurt", calsPer100g: 63, proteinPer100g: 5.3, carbsPer100g: 7, fatPer100g: 1.6, category: "dairy", meals: ["breakfast", "snack"] },
  { name: "جبن قريش", name_en: "cottage cheese", calsPer100g: 98, proteinPer100g: 11, carbsPer100g: 3.4, fatPer100g: 4.3, category: "dairy", meals: ["breakfast", "snack"] },
  { name: "جبن فيتا", name_en: "feta cheese", calsPer100g: 264, proteinPer100g: 14, carbsPer100g: 4.1, fatPer100g: 21, category: "dairy", meals: ["breakfast", "lunch"] },
- { name: "جبن موزاريلا قليلة الدسم", name_en: "low fat mozzarella", calsPer100g: 141, proteinPer100g: 14, carbsPer100g: 3.1, fatPer100g: 7, category: "dairy", meals: ["breakfast", "lunch"] },
+ { name: "جبن موزاريلا قليلة الدسم", name_en: "low fat mozzarella", calsPer100g: 254, proteinPer100g: 24.3, carbsPer100g: 2.8, fatPer100g: 15.9, category: "dairy", meals: ["breakfast", "lunch"] }, // REGEN-ROOTCAUSE-2: 141→254 (USDA Cheese, mozzarella, part skim — the row «جبنة موزاريلا — قليلة الدسم» it grounds to)
  { name: "جبن حلوم مشوي", name_en: "grilled halloumi", calsPer100g: 321, proteinPer100g: 22, carbsPer100g: 2.2, fatPer100g: 25, category: "dairy", meals: ["breakfast", "lunch"] },
  { name: "جبن بارميزان", name_en: "parmesan", calsPer100g: 431, proteinPer100g: 38, carbsPer100g: 4.1, fatPer100g: 29, category: "dairy", meals: ["lunch", "dinner"] },
  { name: "حليب بقري 2%", name_en: "milk 2%", calsPer100g: 50, proteinPer100g: 3.3, carbsPer100g: 5, fatPer100g: 2, category: "dairy", meals: ["breakfast", "snack"] },
- { name: "لبن رايب", name_en: "buttermilk", calsPer100g: 40, proteinPer100g: 3.3, carbsPer100g: 4.8, fatPer100g: 0.9, category: "dairy", meals: ["breakfast", "lunch", "snack"] },
+ { name: "لبن رايب", name_en: "buttermilk", calsPer100g: 62, proteinPer100g: 3.2, carbsPer100g: 4.9, fatPer100g: 3.3, category: "dairy", meals: ["breakfast", "lunch", "snack"] }, // REGEN-ROOTCAUSE-2: 40→62 (USDA Milk, buttermilk, fluid, whole — its ranked anchor; the old 40 matched the lowfat row only by array order)
 
  // === VEGETABLES ===
  { name: "بروكلي مطبوخ", name_en: "cooked broccoli", calsPer100g: 35, proteinPer100g: 2.4, carbsPer100g: 7, fatPer100g: 0.4, category: "veg", meals: ["lunch", "dinner"] },
@@ -446,7 +446,7 @@ export const FOOD_DB: FoodItem[] = [
  { name: "قرنبيط مطبوخ", name_en: "cooked cauliflower", calsPer100g: 25, proteinPer100g: 1.9, carbsPer100g: 5, fatPer100g: 0.3, category: "veg", meals: ["lunch", "dinner"] },
  { name: "فطر مطبوخ", name_en: "cooked mushrooms", calsPer100g: 22, proteinPer100g: 3.1, carbsPer100g: 3.3, fatPer100g: 0.3, category: "veg", meals: ["lunch", "dinner"] },
  { name: "بامية مطبوخة", name_en: "cooked okra", calsPer100g: 33, proteinPer100g: 1.9, carbsPer100g: 7.5, fatPer100g: 0.2, category: "veg", meals: ["lunch", "dinner"] },
- { name: "ملفوف مطبوخ", name_en: "cooked cabbage", calsPer100g: 25, proteinPer100g: 1.3, carbsPer100g: 5.8, fatPer100g: 0.1, category: "veg", meals: ["lunch", "dinner"] },
+ { name: "ملفوف مسلوق", name_en: "boiled cabbage", calsPer100g: 23, proteinPer100g: 1.3, carbsPer100g: 5.5, fatPer100g: 0.1, category: "veg", meals: ["lunch", "dinner"] }, // REGEN-ROOTCAUSE-2: «ملفوف مطبوخ»→«ملفوف مسلوق» 25→23 (USDA Cabbage, common, cooked, boiled, drained — its exact anchor; the old name lexically hit «ملفوف نابا — مطبوخ» 12)
  { name: "سبانخ مطبوخة", name_en: "cooked spinach", calsPer100g: 23, proteinPer100g: 3, carbsPer100g: 3.8, fatPer100g: 0.3, category: "veg", meals: ["lunch", "dinner"] },
  { name: "كوسة مطبوخة", name_en: "cooked zucchini", calsPer100g: 15, proteinPer100g: 1.1, carbsPer100g: 3, fatPer100g: 0.3, category: "veg", meals: ["lunch", "dinner"] },
  { name: "فاصوليا خضراء", name_en: "green beans", calsPer100g: 35, proteinPer100g: 1.8, carbsPer100g: 7, fatPer100g: 0.1, category: "veg", meals: ["lunch", "dinner"] },
@@ -458,9 +458,9 @@ export const FOOD_DB: FoodItem[] = [
  { name: "باذنجان مشوي", name_en: "grilled eggplant", calsPer100g: 25, proteinPer100g: 1, carbsPer100g: 6, fatPer100g: 0.2, category: "veg", meals: ["lunch", "dinner"] },
  // SWAP-QUALITY 2026-10-25 (owner order item 3 — «أضف خضروات مناسبة
  // ومتنوعة»): three more Egyptian-market staples with USDA-anchored
- // per-100g values (arugula 25/2.6/3.7/0.7 · cooked beetroot 44/1.7/10/0.2
+ // per-100g values (arugula 25/2.6/3.6/0.7 · cooked beetroot 44/1.7/10/0.2
  // · cooked globe artichoke 53/2.9/11.9/0.3) — no invented numbers.
- { name: "جرجير", name_en: "arugula", calsPer100g: 25, proteinPer100g: 2.6, carbsPer100g: 3.7, fatPer100g: 0.7, category: "veg", meals: ["breakfast", "lunch", "dinner"] },
+ { name: "جرجير بري", name_en: "arugula", calsPer100g: 25, proteinPer100g: 2.6, carbsPer100g: 3.6, fatPer100g: 0.7, category: "veg", meals: ["breakfast", "lunch", "dinner"] }, // REGEN-ROOTCAUSE-2: «جرجير»→«جرجير بري» (the Egyptian everyday green IS arugula — «أروغولا (جرجير بري)» 25 — not the library's watercress row «جرجير — نيء» 11 the bare name lexically anchors to)
  { name: "شمندر مطبوخ", name_en: "cooked beetroot", calsPer100g: 44, proteinPer100g: 1.7, carbsPer100g: 10, fatPer100g: 0.2, category: "veg", meals: ["lunch", "dinner"] },
  { name: "خرشوف مطبوخ", name_en: "cooked artichoke", calsPer100g: 53, proteinPer100g: 2.9, carbsPer100g: 11.9, fatPer100g: 0.3, category: "veg", meals: ["lunch", "dinner"] },
  { name: "سلطة خضراء مشكلة", name_en: "mixed salad", calsPer100g: 20, proteinPer100g: 1, carbsPer100g: 4, fatPer100g: 0.2, category: "veg", meals: ["breakfast", "lunch", "dinner"] },
