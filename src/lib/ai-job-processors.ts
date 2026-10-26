@@ -272,7 +272,18 @@ async function materializeSwapIntoPlan(
     console.warn(`[swap-durability] plans update failed (job stays done): ${updateError.message}`);
     return { materialized: false };
   }
-  console.log(`::notice::[swap-durability] ${kind} swap materialized into plans#${planId.slice(0, 8)} (mealIdx ${mealIdx})`);
+  // HONEST-LOG 2026-10-27 (live QA round, Task QA-TEST-ACCOUNTS-2026-10-26):
+  // the notice used to print «(mealIdx NaN)» for EXERCISE swaps (mealIdx is
+  // meal/item-only) — a misleading label on a correct materialization,
+  // measured live in drain run 40415604767. Each kind now names its own
+  // real indices.
+  const idxLabel =
+    kind === "exercise"
+      ? `(dayIdx ${Number(payload?.dayIdx)} exIdx ${Number(payload?.exIdx)})`
+      : kind === "item"
+        ? `(mealIdx ${mealIdx} itemIdx ${Number(payload?.itemIdx)})`
+        : `(mealIdx ${mealIdx})`;
+  console.log(`::notice::[swap-durability] ${kind} swap materialized into plans#${planId.slice(0, 8)} ${idxLabel}`);
   return { materialized: true, plan_id: planId };
 }
 

@@ -255,6 +255,31 @@ def cmd_fixture_subs(email: str) -> None:
 def cmd_fixture_assignment(coach: str, member: str) -> None:
     c = must_be_test_profile(coach, expect_role="coach")
     m = must_be_test_profile(member, expect_role="client")
+    # coach_assignments is the 1:1 source of truth (ROLE MODEL v2 LAW) and
+    # a fresh member is AUTO-ASSIGNED to a site admin by the 0030A trigger
+    # — so a duplicate INSERT dies on the unique client_id key. When the
+    # test member already carries the auto-assignment, RETARGET that row
+    # to the test coach (both ends verified test accounts above).
+    st, rows = http(
+        "GET", f"/rest/v1/coach_assignments?select=coach_id"
+        f"&client_id=eq.{m['id']}")
+    if st != 200 or not isinstance(rows, list):
+        die(f"assignment lookup failed (HTTP {st})")
+    if rows:
+        old_coach = rows[0].get("coach_id", "")
+        if old_coach == c["id"]:
+            print(f"ALREADY ASSIGNED test coach {coach} to test member "
+                  f"{member} — nothing to do")
+            return
+        st, body = http(
+            "PATCH", f"/rest/v1/coach_assignments?client_id=eq.{m['id']}",
+            {"coach_id": c["id"]})
+        if st not in (200, 204):
+            die(f"assignment retarget failed (HTTP {st}): {str(body)[:300]}")
+        print(f"REASSIGNED test member {member}: coach "
+              f"{str(old_coach)[:8]}… (0030A auto-assignment) -> test "
+              f"coach {coach}")
+        return
     st, body = http("POST", "/rest/v1/coach_assignments",
                     {"coach_id": c["id"], "client_id": m["id"]})
     if st not in (200, 201):
@@ -271,7 +296,7 @@ def cmd_verify_client_subs(email: str) -> None:
         die(f"no profile for {email}")
     st, rows = http(
         "GET",
-        "subscriptions?select=id,tier,months,start_date,end_date,status,"
+        "/rest/v1/subscriptions?select=id,tier,months,start_date,end_date,status,"
         f"subscription_type,created_at&client_id=eq.{p['id']}"
         "&order=created_at.asc")
     if st != 200:
