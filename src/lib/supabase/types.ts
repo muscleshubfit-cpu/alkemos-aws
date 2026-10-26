@@ -1395,24 +1395,50 @@ export type Database = {
         Relationships: [];
       };
       plan_swaps: {
+        // PLAN-TYPE 2026-10-27 (Task QA-TEST-ACCOUNTS-2026-10-26 live QA
+        // round): mirrors the MEASURED live production shape (read-only
+        // via the PostgREST OpenAPI spec) — the repo migrations/types
+        // were missing the NOT NULL plan_type column (the reason every
+        // ledger insert ever failed) plus the member-swap durability
+        // columns (day_index/item_index/old_item/new_item/reason, all
+        // nullable). The DB leads here, exactly like migration 0063's
+        // "types generated FROM the live database" posture.
         Row: {
           id: string;
           user_id: string;
           plan_id: string | null;
+          plan_type: string;
           swap_type: string;
+          day_index: number | null;
+          item_index: number | null;
+          old_item: Json | null;
+          new_item: Json | null;
+          reason: string | null;
           created_at: string;
         };
         Insert: {
           id?: string;
           user_id: string;
           plan_id?: string | null;
+          plan_type: string;
           swap_type: string;
+          day_index?: number | null;
+          item_index?: number | null;
+          old_item?: Json | null;
+          new_item?: Json | null;
+          reason?: string | null;
           created_at?: string;
         };
         Update: {
           user_id?: string;
           plan_id?: string | null;
+          plan_type?: string;
           swap_type?: string;
+          day_index?: number | null;
+          item_index?: number | null;
+          old_item?: Json | null;
+          new_item?: Json | null;
+          reason?: string | null;
         };
         Relationships: [];
       };

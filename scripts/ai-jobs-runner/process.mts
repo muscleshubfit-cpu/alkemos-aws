@@ -84,8 +84,23 @@ async function main(): Promise<void> {
       const userId = String(job.requested_by || "");
       if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userId)) return;
       const { recordSwapUsage } = await import("../../src/lib/tier-limits");
-      await recordSwapUsage(userId, job.job_type === "meal_regenerate" ? "meal" : "exercise");
-      console.log(`[ai-jobs] usage recorded: ${job.job_type} → plan_swaps(${userId.slice(0, 8)}…)`);
+      // HONEST-LEDGER 2026-10-26 (live QA round, Task
+      // QA-TEST-ACCOUNTS-2026-10-26): recordSwapUsage now RETURNS the
+      // insert's truth — this log must never say «usage recorded» again
+      // unless the plan_swaps row actually landed (measured live: the
+      // runner printed the success line while the insert was dying on
+      // the NOT NULL plan_type column — GHA drain run 40246588409).
+      const recorded = await recordSwapUsage(userId, job.job_type === "meal_regenerate" ? "meal" : "exercise");
+      if (recorded) {
+        console.log(`[ai-jobs] usage recorded: ${job.job_type} → plan_swaps(${userId.slice(0, 8)}…)`);
+      } else {
+        // The truth: the job is done, but the weekly quota ledger was
+        // NOT updated — the member got this swap outside the recorded
+        // balance (see the [tier-limits] recordSwap error above).
+        console.warn(
+          `[ai-jobs] usage NOT recorded: ${job.job_type} → plan_swaps insert FAILED for ${userId.slice(0, 8)}… (job stays done)`,
+        );
+      }
     } catch (e) {
       console.warn("[ai-jobs] swap usage recording failed (job stays done):", e instanceof Error ? e.message : e);
     }

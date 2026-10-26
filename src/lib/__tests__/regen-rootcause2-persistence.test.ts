@@ -194,4 +194,24 @@ describe("REGEN-ROOTCAUSE-2 — the swap-quota ledger insert (the dead plan_swap
     expect(payload.plan_id).toBeNull();
     expect(JSON.stringify(payload)).not.toContain("api-swap");
   });
+
+  // PLAN-TYPE 2026-10-27 (live QA round defect #2): the production
+  // plan_swaps carries a NOT NULL plan_type the insert never filled —
+  // every ledger row died on it (GHA drain run 40246588409). The insert
+  // must now carry the derived plan type AND report its truth.
+  it("recordSwapUsage fills the live NOT NULL plan_type (meal swap → 'meal', exercise swap → 'workout') and returns the insert's truth", async () => {
+    await expect(recordSwapUsage("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee", "meal")).resolves.toBe(true);
+    expect(dbState.state.tierInserts).toHaveLength(1);
+    expect(dbState.state.tierInserts[0][0]).toMatchObject({
+      plan_type: "meal",
+      swap_type: "meal",
+    });
+
+    await expect(recordSwapUsage("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee", "exercise")).resolves.toBe(true);
+    expect(dbState.state.tierInserts).toHaveLength(2);
+    expect(dbState.state.tierInserts[1][0]).toMatchObject({
+      plan_type: "workout",
+      swap_type: "exercise",
+    });
+  });
 });

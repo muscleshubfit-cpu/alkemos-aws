@@ -640,8 +640,8 @@ export async function checkSwapQuota(
 export async function recordSwapUsage(
   userId: string,
   swapType: "meal" | "exercise",
-): Promise<void> {
-  await recordSwap(userId, swapType);
+): Promise<boolean> {
+  return recordSwap(userId, swapType);
 }
 
 /* ─────────────── PLAN-POOL BILLING POLICY (PLAN-REGEN-CONSTRAINTS 2026-10-24) ───────────────
@@ -709,12 +709,33 @@ export function planPoolBillingForRequester(
 
 /**
  * Record a swap in the plan_swaps table.
+ *
+ * HONEST-LEDGER 2026-10-26 (live QA round, Task QA-TEST-ACCOUNTS-2026-10-26):
+ * the insert's success is now RETURNED (boolean) — the runner logged
+ * «usage recorded» unconditionally while the production insert was
+ * failing on the live-only NOT NULL `plan_type` column (measured live:
+ * runner log «[tier-limits] recordSwap error: null value in column
+ * "plan_type" …» followed by «[ai-jobs] usage recorded» — a lie).
+ * Callers MUST report the returned truth; a false return means the
+ * weekly quota ledger was NOT updated (limits silently unenforced).
+ *
+ * PLAN-TYPE 2026-10-27 (same live QA round, defect #2 — the ledger has
+ * been dead since birth): the production plan_swaps table carries a
+ * NOT NULL `plan_type` column the repo migrations/types never had
+ * (live OpenAPI, read-only: plan_swaps = id/user_id/plan_id?/
+ * plan_type NOT NULL/swap_type/day_index?/item_index?/old_item?/
+ * new_item?/reason?/created_at — the table held ZERO rows ever, so no
+ * writer ever satisfied it). The ledger row's plan_type is derived
+ * from the swap action — meal swap → the member's MEAL plan ('meal'),
+ * exercise swap → the member's WORKOUT plan ('workout') — the exact
+ * domain of the plans.type enum (0001_init.sql). Both live drain runs
+ * of the QA round measured the empty table directly.
  */
 async function recordSwap(
   userId: string,
   swapType: "meal" | "exercise",
-): Promise<void> {
-  if (!isSupabaseAdminConfigured || !supabaseAdmin) return;
+): Promise<boolean> {
+  if (!isSupabaseAdminConfigured || !supabaseAdmin) return false;
   const { error } = await supabaseAdmin
     .from("plan_swaps")
     .insert({
@@ -726,9 +747,16 @@ async function recordSwap(
       // quota ledger stayed empty and client limits were never enforced.
       // NULL is the schema's own "no specific plan" value.
       plan_id: null,
+      // PLAN-TYPE 2026-10-27: NOT NULL on production — the missing value
+      // is what killed the insert even after the uuid fix above (live
+      // error: «null value in column "plan_type" of relation "plan_swaps"
+      // violates not-null constraint», GHA drain run 40246588409).
+      plan_type: swapType === "meal" ? "meal" : "workout",
       swap_type: swapType,
     });
   if (error) {
     console.error("[tier-limits] recordSwap error:", error.message);
+    return false;
   }
+  return true;
 }

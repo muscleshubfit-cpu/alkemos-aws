@@ -130,4 +130,24 @@ describe("success-only swap quota (AI-PLAN-QUALITY 2026-10-24)", () => {
     expect(h.inserts[0].row.user_id).toBe(USER);
     expect(h.inserts[0].row.swap_type).toBe("exercise");
   });
+
+  // PLAN-TYPE 2026-10-27 (live QA round, Task QA-TEST-ACCOUNTS-2026-10-26,
+  // defect #2): the production table's NOT NULL plan_type was never filled
+  // by the insert — the ledger stayed empty (0 rows ever) while the runner
+  // logged «usage recorded». The row must now carry the derived plan type
+  // and the return value must be the insert's own truth.
+  it("recordSwapUsage fills the live NOT NULL plan_type and returns true on the landed insert (HONEST-LEDGER)", async () => {
+    await expect(recordSwapUsage(USER, "meal")).resolves.toBe(true);
+    expect(h.inserts[h.inserts.length - 1].row).toMatchObject({
+      swap_type: "meal",
+      plan_type: "meal",
+      plan_id: null,
+    });
+    await expect(recordSwapUsage(USER, "exercise")).resolves.toBe(true);
+    expect(h.inserts[h.inserts.length - 1].row).toMatchObject({
+      swap_type: "exercise",
+      plan_type: "workout",
+      plan_id: null,
+    });
+  });
 });
