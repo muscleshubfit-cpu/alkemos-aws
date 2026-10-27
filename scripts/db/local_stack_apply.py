@@ -56,6 +56,24 @@ def psql_in_container(container: str, path: str,
     return p.returncode, (p.stdout + p.stderr)[-600:]
 
 
+def manual_family() -> list[str]:
+    """The documented manual-era bootstrap files (INDEX.md §1/§2: the
+    RUN_ON_SUPABASE_* family — the files production was ACTUALLY built
+    from before the auto family took over). Best-effort bootstrap order:
+    numeric prefix where present, else filename order. VERIFY_* read-only
+    owner scripts are excluded."""
+    out = []
+    for name in os.listdir(MIGRATIONS_DIR):
+        if name.startswith("RUN_ON_SUPABASE_ORIGINAL_"):
+            out.append(("0", name))  # originals first (0006-0023 era)
+        elif name.startswith("RUN_ON_SUPABASE_"):
+            out.append(("1", name))
+    def key(item):
+        m = re.search(r"_(\d{3,4}[A-Z]?)_", item[1])
+        return (item[0], m.group(1).zfill(6) if m else "999999", item[1])
+    return [n for _c, n in sorted(out, key=key)]
+
+
 def main() -> int:
     container = container_name()
     probe = subprocess.run(["docker", "inspect", container],
@@ -70,6 +88,19 @@ def main() -> int:
                if line.strip()}
     files = sorted(n for n in os.listdir(MIGRATIONS_DIR)
                    if APPLICABLE_RE.match(n))
+
+    print(f"test-stack bootstrap: the documented manual family first "
+          f"(best-effort — the auto family alone cannot bootstrap a fresh "
+          f"database; production was built from the manual era: "
+          f"docs/DB-MIGRATION-PIPELINE-2026-10-27.md §4)")
+    for name in manual_family():
+        path = os.path.join(MIGRATIONS_DIR, name)
+        rc, out = psql_in_container(container, path)
+        if rc == 0:
+            print(f"  ok        {name}")
+        else:
+            print(f"  warn      {name} (manual-era file — best-effort "
+                  f"bootstrap, non-gated):\n    {out[:200]}")
 
     print(f"test-stack apply: {len(files)} applicable files "
           f"({len(changed)} attributed to this change)")

@@ -52,7 +52,12 @@ import sys
 
 REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(
     os.path.abspath(__file__)), "..", ".."))
-MIGRATIONS_DIR = os.path.join(REPO_ROOT, "supabase", "migrations")
+# The production applier reads the repo's real migrations dir; tests may
+# point it at a synthetic fixture directory (MIGRATIONS_DIR env override
+# — used by db-migrate.yml's mechanism test on the local stack).
+MIGRATIONS_DIR = os.environ.get(
+    "MIGRATIONS_DIR",
+    os.path.join(REPO_ROOT, "supabase", "migrations"))
 APPLICABLE_RE = re.compile(r"^(\d{14}|\d{4})_.+\.sql$")
 DEFAULT_FLOOR = "20261003060000"  # 0100 — last PROVEN applied (probe PASS)
 LOCK_TAG = "alkemos_migration_pipeline"
@@ -102,6 +107,24 @@ def ledger_columns(db_url: str) -> list[str]:
     return [c.strip() for c in out.splitlines() if c.strip()]
 
 
+def ensure_ledger(db_url: str) -> None:
+    """Bootstrap the CLI's bookkeeping table if the target lacks it (the
+    local test stack boots without it when no migrations dir exists at
+    start; 0054 documented this table as bookkeeping-ONLY — no product
+    data). Uses the supabase CLI's own DDL shape."""
+    if ledger_columns(db_url):
+        return
+    rc, out = psql(db_url, (
+        "create schema if not exists supabase_migrations; "
+        "create table if not exists supabase_migrations.schema_migrations( "
+        "id bigserial primary key, version text not null unique, "
+        "name text, statements text[] not null default ARRAY[]::text[])"))
+    if rc != 0:
+        die(1, f"cannot bootstrap the migration ledger: {out[-300:]}")
+    print("bootstrapped supabase_migrations.schema_migrations "
+          "(bookkeeping table — was missing on the target)")
+
+
 def read_ledger(db_url: str) -> tuple[set[str], str]:
     cols = ledger_columns(db_url)
     if not cols:
@@ -135,7 +158,16 @@ def record_version(db_url: str, version: str, name: str,
     sql = ("insert into supabase_migrations.schema_migrations "
            f"({', '.join(fields)}) values ({', '.join(values)}) "
            "on conflict (version) do nothing")
-    return psql(db_url, sql)
+    rc, out = psql(db_url, sql, fatal=False)
+    if rc != 0 and ("no unique" in out.lower() or "42P10" in out):
+        # target table without UNIQUE(version) — guarded insert instead
+        sql = ("insert into supabase_migrations.schema_migrations "
+               f"({', '.join(fields)}) "
+               f"select {', '.join(values)} where not exists "
+               f"(select 1 from supabase_migrations.schema_migrations "
+               f"where version = '{version}')")
+        rc, out = psql(db_url, sql)
+    return rc, out
 
 
 def main() -> int:
@@ -168,6 +200,7 @@ def main() -> int:
     floor = os.environ.get("SAFETY_FLOOR", DEFAULT_FLOOR)
 
     # ---- read state ---------------------------------------------------------
+    ensure_ledger(db_url)
     applied, err = read_ledger(db_url)
     if err:
         return die(1, f"cannot read the migration ledger: {err}")

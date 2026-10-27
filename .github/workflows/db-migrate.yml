@@ -106,13 +106,54 @@ jobs:
           sudo tar -xzf /tmp/supa.tar.gz -C /usr/local/bin supabase
           supabase --version
 
-      - name: Boot the local Supabase stack (throwaway test database)
-        run: supabase start --ignore-health-check
+      # `supabase start` AUTO-APPLIES supabase/migrations on boot (measured
+      # live 2026-10-27: it skips RUN_ON_*/VERIFY_* by name-pattern and runs
+      # the timestamped family) — and the legacy chain CANNOT bootstrap a
+      # fresh database (0001 references public.profiles before creating it;
+      # production was bootstrapped via the documented manual era). So: boot
+      # CLEAN with the dir hidden, then run our own attribution-aware chain
+      # check + the real-applier mechanism test below.
+      - name: Boot the local Supabase stack (clean — migrations hidden)
+        run: |
+          mv supabase/migrations /tmp/migrations-hidden
+          mkdir -p supabase/migrations
+          supabase start --ignore-health-check
+          rm -rf supabase/migrations
+          mv /tmp/migrations-hidden supabase/migrations
 
-      - name: Apply the migration chain on the test stack (new files hard-gated)
+      - name: Chain reality check on the test stack (new files hard-gated)
         env:
           CHANGED_FILES: ${{ steps.changed.outputs.files }}
         run: python3 scripts/db/local_stack_apply.py
+
+      # THE mechanism test: the REAL production applier (ledger-driven,
+      # ordered, transactional, recorded, verified) end-to-end on the local
+      # stack against a synthetic pending set — dry-run lists them, apply
+      # records them, re-run is a no-op (the ledger never re-runs), and a
+      # ledger wipe re-applies them safely (idempotency law).
+      - name: Mechanism test — the REAL applier on the local stack DB
+        env:
+          SUPABASE_DB_URL: postgres://postgres:postgres@localhost:54322/postgres
+        run: |
+          FIX="$RUNNER_TEMP/mech-test-migrations"
+          mkdir -p "$FIX"
+          printf 'create table if not exists public.pipeline_mech_a(id int);\n' \
+            > "$FIX/20261027000000_9001_mech_a.sql"
+          printf 'alter table public.pipeline_mech_a add column if not exists note text;\n' \
+            > "$FIX/20261027000100_9002_mech_b.sql"
+          printf 'create table if not exists public.pipeline_mech_b as select 1 as x;\n' \
+            > "$FIX/20261027000200_9003_mech_c.sql"
+          echo '--- dry-run: expect 3 pending, nothing applied'
+          MIGRATIONS_DIR="$FIX" python3 scripts/db/apply_migrations.py --dry-run
+          echo '--- apply: expect 3 applied + recorded + ledger verified'
+          MIGRATIONS_DIR="$FIX" python3 scripts/db/apply_migrations.py
+          echo '--- re-run: expect nothing pending (ledger blocks re-runs)'
+          MIGRATIONS_DIR="$FIX" python3 scripts/db/apply_migrations.py
+          echo '--- ledger wipe + re-apply: idempotency law (safe re-runs)'
+          psql "$SUPABASE_DB_URL" -tAc \
+            "delete from supabase_migrations.schema_migrations where version like '2026102700%';"
+          MIGRATIONS_DIR="$FIX" python3 scripts/db/apply_migrations.py
+          echo '--- mechanism test GREEN'
 
   apply:
     name: apply via ledger (SUPABASE_DB_URL)
