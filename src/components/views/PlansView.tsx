@@ -64,7 +64,19 @@ function readPendingSwaps(): PendingSwap[] {
  try {
  const raw = localStorage.getItem(AI_PENDING_KEY);
  const list = raw ? (JSON.parse(raw) as PendingSwap[]) : [];
- return Array.isArray(list) ? list.filter((e) => Date.now() - e.createdAt < AI_SWAP_TTL_MS) : [];
+ // TTL + FIX 2026-10-27: entries WITHOUT a usable id are unwatchable
+ // garbage from the pre-fix jobId bug (enqueue returned undefined →
+ // JSON.stringify dropped the field). They can never be polled or
+ // removed by removePendingSwap(id) — pruning them self-heals the
+ // permanent «جاري التبديل» badge for members carrying legacy rows.
+ return Array.isArray(list)
+ ? list.filter(
+ (e) =>
+ typeof e?.id === "string" &&
+ e.id.length > 0 &&
+ Date.now() - e.createdAt < AI_SWAP_TTL_MS,
+ )
+ : [];
  } catch {
  return [];
  }

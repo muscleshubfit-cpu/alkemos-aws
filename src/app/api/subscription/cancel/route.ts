@@ -97,32 +97,38 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  // 3. Ring the admin bell (best-effort, deduped per member per day)
-  try {
-    const { data: adm } = await supabaseAdmin
-      .from("profiles")
-      .select("id")
-      .eq("role", "admin")
-      .order("created_at", { ascending: true })
-      .limit(1)
-      .maybeSingle();
-    if (adm) {
-      const dedupType = `subscription_cancel_request:${auth.id}:${new Date()
-        .toISOString()
-        .slice(0, 10)}`;
-      await supabaseAdmin.from("admin_notifications").insert({
-        type: dedupType,
-        title: "طلب إلغاء اشتراك",
-        body: `${auth.email ?? auth.id} طلب إلغاء اشتراكه (${rows[0].tier}) — يستمر الاشتراك حتى نهاية آخر مدة مدفوعة (${new Date(rows[0].end_date).toLocaleDateString("ar-EG")}). راجع صفحة المدفوعات لو محتاج تعمل استرداد.`,
-        link: "/admin/payments",
-        target_role: "coach",
-        target_coach_id: (adm as { id: string }).id,
-        payload: { email: auth.email ?? auth.id, tier: rows[0].tier, end_iso: rows[0].end_date },
-        read: false,
-      });
+  // 3. Ring the admin bell (best-effort, deduped per member per day).
+  // FIX 2026-10-27 (live-measured duplicate): the insert ran even when
+  // `pending` was empty (alreadyRequested re-request), landing a second
+  // identical bell row — the documented per-member-per-day dedup is now
+  // enforced by only ringing on the FIRST actual request.
+  if (pending.length > 0) {
+    try {
+      const { data: adm } = await supabaseAdmin
+        .from("profiles")
+        .select("id")
+        .eq("role", "admin")
+        .order("created_at", { ascending: true })
+        .limit(1)
+        .maybeSingle();
+      if (adm) {
+        const dedupType = `subscription_cancel_request:${auth.id}:${new Date()
+          .toISOString()
+          .slice(0, 10)}`;
+        await supabaseAdmin.from("admin_notifications").insert({
+          type: dedupType,
+          title: "طلب إلغاء اشتراك",
+          body: `${auth.email ?? auth.id} طلب إلغاء اشتراكه (${rows[0].tier}) — يستمر الاشتراك حتى نهاية آخر مدة مدفوعة (${new Date(rows[0].end_date).toLocaleDateString("ar-EG")}). راجع صفحة المدفوعات لو محتاج تعمل استرداد.`,
+          link: "/admin/payments",
+          target_role: "coach",
+          target_coach_id: (adm as { id: string }).id,
+          payload: { email: auth.email ?? auth.id, tier: rows[0].tier, end_iso: rows[0].end_date },
+          read: false,
+        });
+      }
+    } catch (e) {
+      console.error("[api/subscription/cancel] admin notification error (non-blocking):", e);
     }
-  } catch (e) {
-    console.error("[api/subscription/cancel] admin notification error (non-blocking):", e);
   }
 
   return NextResponse.json({

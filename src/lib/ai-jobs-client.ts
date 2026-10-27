@@ -74,7 +74,18 @@ export async function enqueueAiJobClient(
     // 429 carries tier-limit messages meant for the user as-is.
     throw new Error(data?.error || "تعذّر إرسال الطلب. حاول مرة أخرى.");
   }
-  return (data as Pending).id;
+  // FIX 2026-10-27 (live-measured): POST /api/ai/jobs responds with
+  // `jobId` (camelCase) — this helper read `id` and returned undefined,
+  // so every localStorage watcher registry (mhe:pending-swaps ·
+  // mhe:pending-plan-jobs · mhe:pending-article-job) stored id-less
+  // entries, polled ?id=undefined (400 Bad id) and never applied the
+  // finished job — the member saw a permanent «جاري التبديل» badge
+  // plus a false timeout toast. Accept the canonical `jobId` first,
+  // keep `id` as a belt-and-suspenders fallback.
+  const jobId =
+    (data as { jobId?: string; id?: string }).jobId ??
+    (data as Pending).id;
+  return jobId;
 }
 
 export async function getAiJob(id: string): Promise<AiJobRow> {

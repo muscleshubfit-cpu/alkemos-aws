@@ -47,13 +47,18 @@ export async function GET(request: NextRequest) {
     auth: { persistSession: false, autoRefreshToken: false },
   });
 
-  // Build query — join with profiles to get user info
+  // Build query — flat select, then resolve user info with ONE .in()
+  // profiles lookup (the house pattern from /api/admin/site-assignments).
+  // FIX 2026-10-27 (live-measured 500): saved_results.user_id references
+  // auth.users(id), NOT profiles — there is no FK for PostgREST to resolve
+  // a `profiles!inner(...)` embed, so the old single query died with
+  // «Could not find a relationship between 'saved_results' and 'profiles'
+  // in the schema cache» and the admin page surfaced the raw error.
   let query = supabase
     .from("saved_results")
-    .select(
-      "id, tool_slug, title, result_data, created_at, user_id, profiles!inner(full_name, email)",
-      { count: "exact" },
-    )
+    .select("id, tool_slug, title, result_data, created_at, user_id", {
+      count: "exact",
+    })
     .order("created_at", { ascending: false })
     .range(offset, offset + limit - 1);
 
@@ -71,23 +76,45 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  // saved_results.user_id references auth.users (no direct profiles FK),
-  // so the transitive profiles embed cannot be statically resolved by the
-  // generated types (Relationships: []). One documented boundary cast —
-  // the runtime query is unchanged and PostgREST resolves it live.
-  type SavedResultWithUser = Database["public"]["Tables"]["saved_results"]["Row"] & {
-    profiles: { full_name: string | null; email: string | null } | null;
-  };
-  const results = ((data || []) as unknown as SavedResultWithUser[]).map((r) => ({
-    id: r.id,
-    tool_slug: r.tool_slug,
-    title: r.title,
-    result_data: r.result_data,
-    created_at: r.created_at,
-    user_id: r.user_id,
-    user_name: r.profiles?.full_name || "—",
-    user_email: r.profiles?.email || "—",
-  }));
+  // Resolve the page's user_ids against profiles in ONE follow-up query
+  // (saved_results.user_id → auth.users, no profiles FK — see note above).
+  const rows = (data || []) as Array<{
+    id: string;
+    tool_slug: SavedToolSlug;
+    title: string | null;
+    result_data: Database["public"]["Tables"]["saved_results"]["Row"]["result_data"];
+    created_at: string;
+    user_id: string;
+  }>;
+  const userIds = [...new Set(rows.map((r) => r.user_id))];
+  const nameOf = new Map<string, { full_name: string | null; email: string | null }>();
+  if (userIds.length > 0) {
+    const { data: prof, error: pErr } = await supabase
+      .from("profiles")
+      .select("id, full_name, email")
+      .in("id", userIds);
+    if (pErr) {
+      // Non-fatal: the listing still renders — unknown users show «—».
+      console.error("[admin/saved-results] profiles lookup failed:", pErr.message);
+    } else {
+      for (const p of prof ?? []) {
+        nameOf.set(p.id, { full_name: p.full_name, email: p.email });
+      }
+    }
+  }
+  const results = rows.map((r) => {
+    const p = nameOf.get(r.user_id);
+    return {
+      id: r.id,
+      tool_slug: r.tool_slug,
+      title: r.title,
+      result_data: r.result_data,
+      created_at: r.created_at,
+      user_id: r.user_id,
+      user_name: p?.full_name || "—",
+      user_email: p?.email || "—",
+    };
+  });
 
   return NextResponse.json({
     results,
