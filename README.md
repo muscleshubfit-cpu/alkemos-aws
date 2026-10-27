@@ -363,8 +363,12 @@ alkemos/
   and role-aware RPCs for the admin roster
 - The schema evolves through a **versioned migration registry** —
   `supabase/migrations/` with [`INDEX.md`](./supabase/migrations/INDEX.md) as
-  the binding ledger; migrations apply to production automatically through the
-  Supabase–GitHub integration
+  the binding ledger; migrations apply to production through the repo-owned
+  pipeline (`deploy-aws.yml` runs the ledger-driven applier
+  `scripts/db/apply_migrations.py` BEFORE the code goes live, and the
+  `migration-state-audit` gate verifies application daily + on every push —
+  a green deploy is never assumed as proof; see
+  [`docs/DB-MIGRATION-PIPELINE-2026-10-27.md`](./docs/DB-MIGRATION-PIPELINE-2026-10-27.md))
 - TypeScript DB types are generated from the schema
   (`src/lib/supabase/types.ts`)
 - Daily automated JSON backups run to a **private** repository
@@ -528,7 +532,12 @@ demo coach `ahmed@coach.app` / `coach123`, demo client
 Apply `supabase/migrations/` to your Supabase project (numeric files first,
 then timestamped files in order — or simply `supabase db push` with the CLI).
 The registry, naming laws, and manual-script rules live in
-[`supabase/migrations/INDEX.md`](./supabase/migrations/INDEX.md).
+[`supabase/migrations/INDEX.md`](./supabase/migrations/INDEX.md). On THIS
+repo's production the apply is automated by the repo-owned pipeline
+(`.github/workflows/db-migrate.yml` + the `migrate` job in `deploy-aws.yml`, ledger-driven
+`scripts/db/apply_migrations.py`), with application verified by the
+migration-state audit — see
+[`docs/DB-MIGRATION-PIPELINE-2026-10-27.md`](./docs/DB-MIGRATION-PIPELINE-2026-10-27.md).
 
 ### Deployment (AWS Lightsail — production origin)
 

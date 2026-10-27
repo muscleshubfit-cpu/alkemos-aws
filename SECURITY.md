@@ -255,12 +255,19 @@ Any of the following:
   testing through the real app. Every other write-SQL rule in this
   section is unchanged: real rows, real accounts, `DELETE`/`TRUNCATE`/
   `DROP` of any kind, and RLS stay owner-only.
-- Migrations are applied to production **automatically** by the
-  Supabase–GitHub integration when the commit lands on `main`
-  (Phase 120 law correction, owner directive 2026-09-05 — the
-  Supabase Preview gate stops a failing migration BEFORE production;
-  auto-apply proven since Phase 61). This is the DEFAULT and only
-  ordinary path — the same law lives in AGENTS.md §3.3/§6.
+- Migrations are applied to production by the **repo-owned pipeline**
+  (owner directive 2026-10-27 — `docs/DB-MIGRATION-PIPELINE-2026-10-27.md`):
+  the ledger-driven applier `scripts/db/apply_migrations.py` runs inside
+  deploy-aws.yml's `migrate` job BEFORE the code goes live, and the
+  `migration-state-audit` gate verifies on every push + daily that the
+  latest migration is actually applied (filing a `migration-drift` issue
+  on drift). The previously trusted Supabase–GitHub integration applied
+  0100 on 2026-10-02 (PRE-cutover repo) and never followed the project
+  to the alkemos-aws repo created 2026-10-09 — 0101/0102/0103 landed
+  unapplied under green deploys, with zero GitHub-side failure signals;
+  a green code deploy is NEVER proof of DB migration application. This is the
+  DEFAULT and only ordinary path — the same law lives in AGENTS.md
+  §3.3/§6.
 - The ONLY manual path is the documented exception set: the
   `auth.users` migrations (0040/0050/0055/0066 — an auto-migration
   failing on integration-role auth privileges would block the whole
@@ -410,10 +417,12 @@ These are in addition to the general operating rules in `AGENTS.md`:
     service-role key bypasses RLS — if it leaks, the database is
     fully compromised.
 11. **Never apply SQL to production yourself.** Migrations are
-    idempotent files under `supabase/migrations/`; the
-    Supabase–GitHub integration applies them automatically when the
-    commit lands on `main` (Phase 120 law correction — the agent
-    never runs them). The owner runs SQL by hand ONLY on the
+    idempotent files under `supabase/migrations/`; the repo-owned
+    pipeline applies them (`scripts/db/apply_migrations.py`, ledger-
+    driven, inside deploy-aws.yml before the code goes live — owner
+    directive 2026-10-27; the agent never runs them from a session).
+    The migration-state audit gate verifies application and flags
+    drift loudly. The owner runs SQL by hand ONLY on the
     documented manual path (the `auth.users` exception + legacy
     `RUN_ON_SUPABASE_*`/`VERIFY_*` files) — AGENTS.md §3.3/§6.
     Exception (owner directive 2026-10-26): QA test accounts under

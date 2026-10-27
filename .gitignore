@@ -172,3 +172,15 @@ ar2_logs.zip
 # REGEN-ROOTCAUSE-2: production ai_jobs payload fixtures fetched read-only by
 # scripts/repro/fetch-ai-job-fixtures.py — real client data, NEVER committed.
 scripts/repro/repro-fixtures/
+
+#   scripts/db/ → the DB migration pipeline (DB-MIGRATION-PIPELINE-2026-10-27,
+#   owner directive 2026-10-27): migration_probes.py (declarative per-migration
+#   probes — the state gate is blind without them) + migration_state.py (the
+#   read-only application gate) + apply_migrations.py (ledger-driven applier,
+#   runs in deploy-aws.yml + db-migrate.yml) + migration_hygiene.py (static
+#   gates) + local_stack_apply.py (test-stack runner) + file_drift_issue.sh
+#   (auto drift issue). Hit the same /scripts/* blanket trap as qa/ — exception
+#   added in the same frame.
+!/scripts/db/
+!/scripts/db/*
+scripts/db/__pycache__/

@@ -1,0 +1,82 @@
+# Migration state audit (DB-MIGRATION-PIPELINE-2026-10-27)
+#
+# WHY THIS EXISTS — the 2026-10-27 incident (owner order: «عالج جذريًا
+# مشكلة عدم تطبيق ترحيل Supabase تلقائيًا … لا تعتبر نجاح نشر الكود دليلًا
+# على تطبيق ترحيلات قاعدة البيانات»):
+#   The Supabase–GitHub integration applied migrations SILENTLY — zero
+#   GitHub-side check runs, statuses or deployments — so nobody could see
+#   it die. It last applied a migration on 2026-10-02 (0100, commit
+#   5d3b3b2a — on the PRE-cutover repo); the alkemos-aws repo was created
+#   2026-10-09 (AWS cutover) with the integration never re-linked, so 0101
+#   (2026-10-25, the first migration on the new repo) and 0102 (2026-10-26)
+#   piled up unapplied while the code that needed them kept deploying green. The admin list kept
+#   showing client 87cd7ba6 as an EXPIRED premium because the pick lives
+#   inside a DB function body 0102 redefines.
+#
+# WHAT THIS GATE DOES (read-only):
+#   Runs scripts/db/migration_state.py — declarative probes
+#   (scripts/db/migration_probes.py) against PRODUCTION via PostgREST:
+#   schema fingerprints from the OpenAPI spec + row-state asserts + the
+#   strongest class: behavioral probes through the app's own admin code
+#   path (QA admin session → the exact RPC the admin list uses).
+#   Verdict RED until the LATEST repo migration is proven applied.
+#
+# VISIBILITY LAW: on drift this gate (a) fails loudly, (b) files ONE
+#   deduplicated issue (label migration-drift) with the evidence and the
+#   two fix paths, so silent drift is structurally impossible again.
+#
+# Runs: every push to main + daily 06:10 UTC + manual dispatch.
+name: Migration state audit (latest migration applied on prod?)
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "10 6 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: migration-state-audit
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  audit:
+    name: state probes (read-only)
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Checkout (pinned v4 — 2026-10-10 audit)
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+
+      - name: Probe production state (verdict from scripts/db/migration_probes.py)
+        env:
+          SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          QA_PROBE_EMAIL: ${{ secrets.QA_PROBE_EMAIL }}
+          QA_PROBE_PASSWORD: ${{ secrets.QA_PROBE_PASSWORD }}
+          MIGRATION_STATE_JSON: ${{ runner.temp }}/state.json
+        run: |
+          set +e
+          python3 scripts/db/migration_state.py
+          rc=$?
+          echo "STATE_RC=$rc" >> "$GITHUB_ENV"
+          exit 0  # the issue step below must still run on drift
+
+      - name: File/dedupe the drift issue (evidence + fix paths)
+        if: env.STATE_RC != '0'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          STATE_JSON: ${{ runner.temp }}/state.json
+          REPO: ${{ github.repository }}
+        run: bash scripts/db/file_drift_issue.sh
+
+      - name: Final verdict (propagates the probe exit code)
+        if: ${{ always() }}
+        run: |
+          [ "${STATE_RC:-2}" = "0" ] && echo "migration state: GREEN" && exit 0
+          exit 1

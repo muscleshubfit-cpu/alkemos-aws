@@ -172,8 +172,90 @@ jobs:
       - name: Unit tests — vitest run
         run: npx --no-install vitest run
 
+  # =====================================================================
+  # DB migrations (DB-MIGRATION-PIPELINE-2026-10-27): apply BEFORE the
+  # code that needs them goes live — a green deploy is NOT proof of DB
+  # migration application (the 2026-10-27 incident: 0101/0102 landed
+  # 2026-10-25/26 while the externally-hosted Supabase–GitHub integration
+  # had silently died after 0100 — zero GitHub-side failure signals —
+  # so the admin list kept showing an expired premium via a DB function
+  # body 0102 redefines).
+  #
+  # Ordering law: SUPABASE_DB_URL provisioned → the ledger-driven applier
+  # (scripts/db/apply_migrations.py) runs pending migrations in order, one
+  # transaction each. Secret not provisioned → the migration-state gate
+  # decides: a push that SHIPS applicable migration files without a way
+  # to apply them BLOCKS this deploy (the exact incident class); pushes
+  # without migration changes get a read-only advisory verdict that never
+  # blocks. Runbook: docs/DB-MIGRATION-PIPELINE-2026-10-27.md.
+  # =====================================================================
+  migrate:
+    name: db migrate (apply or gate — before the code goes live)
+    needs: test
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      HAS_DB_URL: ${{ secrets.SUPABASE_DB_URL != '' }}
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0 — pinned 2026-10-10 audit
+        with:
+          fetch-depth: 2
+
+      - name: Did this push ship applicable migration files?
+        id: changed
+        run: |
+          if [ "$GITHUB_EVENT_NAME" = "push" ] && [ -n "${{ github.event.before }}" ] \
+             && git cat-file -e "${{ github.event.before }}" 2>/dev/null; then
+            RANGE="${{ github.event.before }}..HEAD"
+          else
+            RANGE="HEAD^..HEAD"
+          fi
+          SQL_CHANGED=$(git diff --name-only "$RANGE" -- 'supabase/migrations/*.sql' 2>/dev/null \
+            | grep -E 'supabase/migrations/([0-9]{14}|[0-9]{4})_.+\.sql$' || true)
+          if [ -n "$SQL_CHANGED" ]; then echo "sql=true" >> "$GITHUB_OUTPUT";
+          else echo "sql=false" >> "$GITHUB_OUTPUT"; fi
+          echo "applicable migration files shipped: ${SQL_CHANGED:-none}"
+
+      - name: Apply pending migrations (ledger-driven · SUPABASE_DB_URL path)
+        if: steps.changed.outputs.sql == 'true' && env.HAS_DB_URL == 'true'
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: python3 scripts/db/apply_migrations.py
+
+      - name: Gate — migrations shipped but no apply channel (BLOCKS deploy)
+        if: steps.changed.outputs.sql == 'true' && env.HAS_DB_URL != 'true'
+        env:
+          SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          QA_PROBE_EMAIL: ${{ secrets.QA_PROBE_EMAIL }}
+          QA_PROBE_PASSWORD: ${{ secrets.QA_PROBE_PASSWORD }}
+        run: |
+          set +e
+          python3 scripts/db/migration_state.py
+          rc=$?
+          if [ "$rc" != "0" ]; then
+            echo "::error::This push ships migration files the repo has NO channel to apply (SUPABASE_DB_URL not provisioned) and the state gate is RED. Deploying the code without its migration is the 2026-10-27 incident class — deploy blocked."
+            echo "::error::Provision the one-time secret (docs/DB-MIGRATION-PIPELINE-2026-10-27.md §5) or reconnect the Supabase-GitHub integration, then re-run."
+            exit 1
+          fi
+          echo "state gate GREEN — migrations already applied; deploy proceeds"
+
+      - name: Advisory state check (no migration files shipped — never blocks)
+        if: steps.changed.outputs.sql != 'true'
+        env:
+          SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          QA_PROBE_EMAIL: ${{ secrets.QA_PROBE_EMAIL }}
+          QA_PROBE_PASSWORD: ${{ secrets.QA_PROBE_PASSWORD }}
+        run: |
+          python3 scripts/db/migration_state.py \
+            && echo "migration state: GREEN" \
+            || echo "::warning::migration state gate is RED — see the migration-state-audit workflow and the open migration-drift issue (this push ships no migrations; deploy proceeds)"
+
   build-and-deploy:
-    needs: test # owner order 2026-10-19: deploy only on a green gate
+    needs: [test, migrate] # owner order 2026-10-19 + 2026-10-27: green gate AND applied migrations before the code goes live
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:

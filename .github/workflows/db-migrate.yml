@@ -1,0 +1,185 @@
+# DB migrate pipeline (DB-MIGRATION-PIPELINE-2026-10-27)
+#
+# The repo-owned replacement for the externally-hosted Supabase–GitHub
+# integration that never followed the project to this repo (last applied
+# 0100 on 2026-10-02 on the PRE-cutover repo; alkemos-aws was created
+# 2026-10-09 with the integration never re-linked — 0101/0102/0103 missed
+# with zero GitHub-side failure signals, code kept deploying green on top
+# of unapplied migrations).
+#
+# THREE jobs:
+#   validate  — runs on PRs + pushes touching supabase/migrations/**:
+#               (a) static hygiene (scripts/db/migration_hygiene.py —
+#               name law, duplicate versions, INDEX rows, probe law);
+#               (b) REAL execution of the migration chain on a throwaway
+#               LOCAL Supabase stack (docker) — a suitable test database:
+#               files added by this change must apply cleanly (pre-existing
+#               baseline failures are reported as warnings — the history
+#               is what it is; the law covers NEW migrations).
+#   apply     — workflow_dispatch ONLY (the push-path apply lives inside
+#               deploy-aws.yml's migrate job, serialized with deploys).
+#               Uses SUPABASE_DB_URL (one-time owner provision) with the
+#               ledger-driven applier (scripts/db/apply_migrations.py):
+#               applies ONLY unrecorded migrations, in order, one
+#               transaction each, records them, verifies, reloads the
+#               PostgREST schema cache. Safety floor halts any
+#               re-application of history (the Phase-61 class).
+#   state     — the read-only verdict (scripts/db/migration_state.py) so
+#               a dispatch run reports the end state through the app's own
+#               admin code path, not just the ledger.
+#
+# Until SUPABASE_DB_URL is provisioned, apply explains the one-time
+# click-path (docs/DB-MIGRATION-PIPELINE-2026-10-27.md §5) and the state
+# gate keeps drift loudly visible — never silent.
+name: DB migrate (pipeline — validate on test stack · apply via ledger)
+
+on:
+  pull_request:
+    paths:
+      - "supabase/migrations/**"
+      - "scripts/db/**"
+      - ".github/workflows/db-migrate.yml"
+  push:
+    branches: [main]
+    paths:
+      - "supabase/migrations/**"
+      - "scripts/db/**"
+      - ".github/workflows/db-migrate.yml"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Print what WOULD be applied (ledger diff) — no changes"
+        required: false
+        type: boolean
+        default: false
+
+concurrency:
+  group: db-migrate-${{ github.event_name }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  validate:
+    name: hygiene + test-stack apply (supabase local)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout (pinned v4 — 2026-10-10 audit)
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+
+      - name: Static hygiene gate (names · duplicates · INDEX · probes)
+        run: python3 scripts/db/migration_hygiene.py
+
+      - name: Changed migration files in this change (attribution)
+        id: changed
+        run: |
+          if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
+            RANGE="origin/${{ github.base_ref }}...HEAD"
+          elif [ "$GITHUB_EVENT_NAME" = "push" ]; then
+            RANGE="${{ github.event.before }}..HEAD"
+          else
+            RANGE=""
+          fi
+          if [ -n "$RANGE" ]; then
+            git fetch --quiet origin "${{ github.base_ref || 'main' }}" 2>/dev/null || true
+            CHANGED=$(git diff --name-only $RANGE -- 'supabase/migrations/*.sql' 2>/dev/null \
+              | grep -E 'supabase/migrations/([0-9]{14}|[0-9]{4})_.+\.sql$' || true)
+          else
+            CHANGED=""
+          fi
+          {
+            echo "files<<CHANGED_EOF"
+            echo "$CHANGED"
+            echo "CHANGED_EOF"
+          } >> "$GITHUB_OUTPUT"
+          echo "changed count: $(echo "$CHANGED" | grep -c . || true)"
+
+      - name: Install pinned Supabase CLI (v2.122.0)
+        run: |
+          curl -fsSL -o /tmp/supa.tar.gz \
+            https://github.com/supabase/cli/releases/download/v2.122.0/supabase_linux_amd64.tar.gz
+          sudo tar -xzf /tmp/supa.tar.gz -C /usr/local/bin supabase
+          supabase --version
+
+      - name: Boot the local Supabase stack (throwaway test database)
+        run: supabase start --ignore-health-check
+
+      - name: Apply the migration chain on the test stack (new files hard-gated)
+        env:
+          CHANGED_FILES: ${{ steps.changed.outputs.files }}
+        run: python3 scripts/db/local_stack_apply.py
+
+  apply:
+    name: apply via ledger (SUPABASE_DB_URL)
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      HAS_DB_URL: ${{ secrets.SUPABASE_DB_URL != '' }}
+    steps:
+      - name: Checkout (pinned v4 — 2026-10-10 audit)
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+
+      - name: Apply pending migrations (ledger-driven · ordered · transactional)
+        if: env.HAS_DB_URL == 'true'
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          if [ "${{ inputs.dry_run }}" = "true" ]; then
+            python3 scripts/db/apply_migrations.py --dry-run
+          else
+            python3 scripts/db/apply_migrations.py
+          fi
+
+      - name: One-time provisioning missing → exact click-path (never silent)
+        if: env.HAS_DB_URL != 'true'
+        run: |
+          echo "::error::SUPABASE_DB_URL repo secret is not provisioned — the pipeline cannot apply migrations."
+          echo "::error::One-time setup (2 minutes): Supabase dashboard → Settings → Database → Connection string → URI → GitHub repo Settings → Secrets → Actions → New repository secret SUPABASE_DB_URL. Then re-run this workflow."
+          echo "::error::Alternative: Supabase dashboard → Integrations → GitHub → reconnect (applies the backlog on the next push; the state audit keeps watching either way)."
+          echo "::error::Full runbook: docs/DB-MIGRATION-PIPELINE-2026-10-27.md §5"
+          exit 1
+
+  state:
+    name: post-apply state verdict (behavioral probes)
+    needs: [apply]
+    if: always() && needs.apply.result != 'skipped'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Checkout (pinned v4 — 2026-10-10 audit)
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+
+      - name: Probe production (latest migration proven applied?)
+        env:
+          SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          QA_PROBE_EMAIL: ${{ secrets.QA_PROBE_EMAIL }}
+          QA_PROBE_PASSWORD: ${{ secrets.QA_PROBE_PASSWORD }}
+          MIGRATION_STATE_JSON: ${{ runner.temp }}/state.json
+        run: |
+          set +e
+          python3 scripts/db/migration_state.py
+          rc=$?
+          echo "STATE_RC=$rc" >> "$GITHUB_ENV"
+          exit 0
+
+      - name: File/dedupe the drift issue (evidence + fix paths)
+        if: env.STATE_RC != '0'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          STATE_JSON: ${{ runner.temp }}/state.json
+          REPO: ${{ github.repository }}
+        run: bash scripts/db/file_drift_issue.sh
+
+      - name: Final verdict
+        if: ${{ always() }}
+        run: |
+          [ "${STATE_RC:-2}" = "0" ] && echo "migration state: GREEN" && exit 0
+          exit 1
