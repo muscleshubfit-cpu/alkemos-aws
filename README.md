@@ -107,8 +107,15 @@ no entrance beats, no arrows on its CTAs).
 
 \* One unified monthly pool for nutrition + workout generations combined —
 only successful generations count; failed attempts and edits never burn quota.
+For members, the pool AGGREGATES every distinct effectively-active paid
+subscription (owner order 2026-10-28 «تجميع حصص الاشتراكات المدفوعة»):
+Premium (4) + Pro (8) = 12 generations for the entitled period, Coaching
+stacks its 8 the same way — usage burned before an upgrade keeps counting
+against the aggregate (2 used → 10 remaining, never reset, never
+double-counted; a tier's contribution ends with its paid period).
 Prices, quotas, and tier features are defined in a single source:
-`src/lib/memberships.ts` + the quota engine `src/lib/tier-limits.ts`.
+`src/lib/memberships.ts` + the quota engine `src/lib/tier-limits.ts`
+(the aggregate resolver: `src/lib/membership-tier.ts`).
 Every paid tier carries a 7-day conditional refund (no-features-used,
 ledger-based — `src/lib/refund.ts`).
 

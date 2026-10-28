@@ -143,9 +143,11 @@ export async function POST(request: NextRequest) {
     // 2026-09-02 one-balance law (weekly 1+1/2+2 + monthly 4+4/8+8) was
     // itself superseded by the Phase 183 UNIFIED monthly pool: ONE
     // success-only budget per client identity (nutrition + workout
-    // COMBINED: free 2 · premium 4 · pro 8 · coaching 8), fed by coach
-    // AND EVO AND planner generations (owner decree 2026-09-13
-    // «البوول الموحد»). Editing tools (meal/
+    // COMBINED), fed by coach AND EVO AND planner generations (owner
+    // decree 2026-09-13 «البوول الموحد»). Owner order 2026-10-28
+    // «تجميع حصص الاشتراكات المدفوعة»: the pool size is the AGGREGATE
+    // of every distinct effectively-active paid tier (free 2 · premium
+    // 4 · pro 8 · coaching 8; premium+pro = 12). Editing tools (meal/
     // exercise regenerate — staff-bypassed above) and manual uploads stay
     // UNLIMITED. Admins remain unlimited (staff quota semantics). A coach
     // may also only generate for his OWN clients — ownership verified
@@ -237,7 +239,9 @@ export async function POST(request: NextRequest) {
       // pool «البوول الموحد»): «توليد الخطط بيتحسب من الرصيد سواء عن
       // طريق المدرب او عن طريق ايفو» — the coach's generation burns
       // the CLIENT's UNIFIED plan balance (ONE pool for nutrition +
-      // workout COMBINED: free 2 · premium 4 · pro 8 · coaching 8,
+      // workout COMBINED, sized 2026-10-28 as the AGGREGATE of every
+      // distinct effectively-active paid tier: free 2 · premium 4 ·
+      // pro 8 · coaching 8; premium+pro = 12,
       // success-only via ai_plan_usage — the member's widget and this
       // gate read the same ledger). The old per-kind split and weekly
       // caps are retired (Phase 183).

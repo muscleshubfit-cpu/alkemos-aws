@@ -6,13 +6,16 @@ import { monthStartUtc, checkUnifiedPlanQuota } from "@/lib/tier-limits";
 /**
  * COACH AI QUOTA READOUT — GET /api/coach/ai-usage?clientId=<uuid>
  *
- * Phase 183 (owner decree 2026-09-13 «البوول الموحد»):
+ * Phase 183 (owner decree 2026-09-13 «البوول الموحد») + owner order
+ * 2026-10-28 «تجميع حصص الاشتراكات المدفوعة»:
  * the CLIENT's plan balance is the ONLY quota — ONE unified monthly
- * pool (nutrition + workout COMBINED: free 2 · premium 4 · pro 8 ·
- * coaching 8), success-only via ai_plan_usage (migration 0085), fed by
- * BOTH the coach's generate button and the member's EVO chat / planner
- * pages. `used` mirrors /api/ai/quota exactly. `coachOwn` still reports
- * this coach's own done generations for the month, informational only.
+ * pool (nutrition + workout COMBINED) sized as the AGGREGATE of every
+ * distinct effectively-active paid tier (free 2 · premium 4 · pro 8 ·
+ * coaching 8; premium+pro = 12), success-only via ai_plan_usage
+ * (migration 0085), fed by BOTH the coach's generate button and the
+ * member's EVO chat / planner pages. `used` mirrors /api/ai/quota
+ * exactly. `coachOwn` still reports this coach's own done
+ * generations for the month, informational only.
  *
  * Coach counting source = ai_jobs rows (requested_by = this coach, done,
  * payload->>'clientId' = this client) — failed generations never burn

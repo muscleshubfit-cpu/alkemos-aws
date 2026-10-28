@@ -23,8 +23,10 @@ import {
  *     incognito window NO LONGER shows a reset 2/2 balance. No raw
  *     values stored. No signup wall — guests see their remaining
  *     generations exactly like members do.
- *   - authed callers:  their tier's pool (free 2 · premium 4 ·
- *     pro 8 · coaching 8).
+ *   - authed callers:  their AGGREGATED paid pool (owner order
+ *     2026-10-28 «تجميع حصص الاشتراكات المدفوعة» — every distinct
+ *     effectively-active paid tier contributes its pool once:
+ *     free 2 · premium 4 · pro 8 · coaching 8; premium+pro = 12).
  *
  * Display ALWAYS reads the same ledger enforcement counts
  * (checkUnifiedPlanQuota) — the meter matches what is enforced.

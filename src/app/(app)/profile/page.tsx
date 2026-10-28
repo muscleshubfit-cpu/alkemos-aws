@@ -86,6 +86,34 @@ export default function ProfilePage() {
   const limits = getLimits(tier);
   const membership = MEMBERSHIPS.find((m) => m.id === tier);
 
+  // AGGREGATED PAID-POOL (owner order 2026-10-28 «تجميع حصص الاشتراكات
+  // المدفوعة»): the plan-pool line shows the AGGREGATED monthly pool —
+  // every distinct effectively-active paid tier contributes its pool
+  // once (premium 4 + pro 8 = 12). The single-source for that number is
+  // the METER (/api/ai/quota — the same checkUnifiedPlanQuota verdict
+  // the generation gates enforce; meter == enforcement law), NOT a
+  // client-side recomputation. Other limits below stay per-tier
+  // (best-tier feature gates — ads/saves/chat/swap semantics unchanged).
+  const [planPoolLimit, setPlanPoolLimit] = useState<number | null>(null);
+  useEffect(() => {
+    if (!profile || isCoach || isAdmin) return;
+    let cancelled = false;
+    fetch("/api/ai/quota")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j) => {
+        if (cancelled || !j?.plans || j.plans.unlimited) return;
+        if (typeof j.plans.limit === "number" && j.plans.limit > 0) {
+          setPlanPoolLimit(j.plans.limit);
+        }
+      })
+      .catch(() => {
+        // fail-soft: the per-tier number below stays (honest best-effort)
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [profile, isCoach, isAdmin]);
+
   useEffect(() => {
     if (profile) {
       setFullName(profile.full_name || "");
@@ -637,7 +665,7 @@ export default function ProfilePage() {
                 { label: isAr ? "EVO رسائل يوميًا" : "EVO messages a day", value: limits.evoChatDailyLimit === null ? "∞" : `${limits.evoChatDailyLimit}` },
                 // Unified pool (2026-09-13): ONE monthly budget for
                 // nutrition + workout AI generations combined.
-                { label: isAr ? "توليدات خطط AI/شهر" : "AI plan gens/mo", value: `${limits.aiPlanMonthlyLimit}` },
+                { label: isAr ? "توليدات خطط AI/شهر" : "AI plan gens/mo", value: `${planPoolLimit ?? limits.aiPlanMonthlyLimit}` },
                 { label: isAr ? "تبديلات/أسبوع" : "Swaps/week", value: limits.evoSwapLimit === 0 ? "—" : limits.evoSwapLimit === null ? "∞" : `${limits.evoSwapLimit}` },
                 { label: isAr ? "حفظ نتائج" : "Saved results", value: limits.savedResultsLimit === null ? "∞" : `${limits.savedResultsLimit}` },
                 { label: isAr ? "جداول وجبات" : "Meal plans saved", value: limits.mealPlannerMaxSaved === null ? "∞" : `${limits.mealPlannerMaxSaved}` },

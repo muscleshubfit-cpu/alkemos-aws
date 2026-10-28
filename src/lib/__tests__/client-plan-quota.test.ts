@@ -32,11 +32,13 @@ import {
 const h = vi.hoisted(() => {
   // count returned per (table, identity key)
   const counts: Record<string, number> = {};
-  // subscriptions rows for the fallback tier lookup
-  const subTiers: string[] = [];
+  // subscriptions ROWS for the aggregated-pool DB fetch (owner order
+  // 2026-10-28 «تجميع حصص الاشتراكات المدفوعة» — full rows, not bare
+  // tier strings: the pool aggregates over the active+expiry window)
+  const subRows: Array<{ tier: string; status: string; end_date: string }> = [];
   // captured inserts per table
   const inserts: Array<{ table: string; row: Record<string, unknown> }> = [];
-  return { counts, subTiers, inserts };
+  return { counts, subRows, inserts };
 });
 
 type CountRow = { count: number | null; error: unknown };
@@ -58,7 +60,7 @@ vi.mock("@/lib/supabase/admin", () => {
         return Promise.resolve({
           count: null,
           error: null,
-          data: h.subTiers.map((tier) => ({ tier })),
+          data: h.subRows,
         } as unknown as CountRow);
       }
       return Promise.resolve({
@@ -114,12 +116,15 @@ vi.mock("@/lib/supabase/admin", () => {
   };
 });
 
+/** A future ISO date for effectively-active fixture rows. */
+const futureIso = () => new Date(Date.now() + 30 * 86400000).toISOString();
+
 const USER = "11111111-1111-1111-1111-111111111111";
 
 describe("unified AI plan pool (Phase 183 — «البوول الموحد»)", () => {
   beforeEach(() => {
     for (const k of Object.keys(h.counts)) delete h.counts[k];
-    h.subTiers.length = 0;
+    h.subRows.length = 0;
     h.inserts.length = 0;
   });
 
@@ -137,6 +142,7 @@ describe("unified AI plan pool (Phase 183 — «البوول الموحد»)", (
   });
 
   it("member pool: premium 4 — 2 used → allowed, remaining 2", async () => {
+    h.subRows.push({ tier: "premium", status: "active", end_date: futureIso() });
     h.counts[`ai_plan_usage:${USER}`] = 2;
     const r = await checkUnifiedPlanQuota({ userId: USER, tierHint: "premium" });
     expect(r.allowed).toBe(true);
@@ -146,6 +152,7 @@ describe("unified AI plan pool (Phase 183 — «البوول الموحد»)", (
   });
 
   it("member pool blocks at the tier limit (pro 8, combined kinds)", async () => {
+    h.subRows.push({ tier: "pro", status: "active", end_date: futureIso() });
     h.counts[`ai_plan_usage:${USER}`] = 8; // e.g. 5 nutrition + 3 workout
     const r = await checkUnifiedPlanQuota({ userId: USER, tierHint: "pro" });
     expect(r.allowed).toBe(false);
@@ -221,8 +228,8 @@ describe("unified AI plan pool (Phase 183 — «البوول الموحد»)", (
     expect(r.limit).toBe(2);
   });
 
-  it("DB-tier fallback: no active subscription → free pool (2)", async () => {
-    h.subTiers.length = 0;
+  it("DB-fallback: no active subscription → free pool (2)", async () => {
+    h.subRows.length = 0;
     h.counts[`ai_plan_usage:${USER}`] = 1;
     const r = await checkUnifiedPlanQuota({ userId: USER });
     expect(r.tier).toBe("free");
@@ -230,11 +237,14 @@ describe("unified AI plan pool (Phase 183 — «البوول الموحد»)", (
     expect(r.allowed).toBe(true); // 1/2
   });
 
-  it("DB-tier fallback picks the highest active tier (pro)", async () => {
-    h.subTiers.push("premium", "pro");
+  it("DB-fallback: stacked premium+pro rows AGGREGATE (4+8=12 — owner order 2026-10-28), display tier stays pro", async () => {
+    h.subRows.push(
+      { tier: "premium", status: "active", end_date: futureIso() },
+      { tier: "pro", status: "active", end_date: futureIso() },
+    );
     const r = await checkUnifiedPlanQuota({ userId: USER });
-    expect(r.tier).toBe("pro");
-    expect(r.limit).toBe(8);
+    expect(r.tier).toBe("pro"); // display tier: best membership wins
+    expect(r.limit).toBe(12); // pool: aggregated, not best-tier
   });
 
   it("staff bypass: unlimited, no ledger read", async () => {

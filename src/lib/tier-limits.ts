@@ -28,6 +28,11 @@
 
 import { supabaseAdmin, isSupabaseAdminConfigured } from "@/lib/supabase/admin";
 import { MEMBERSHIPS, getLimits, type MembershipTier } from "@/lib/memberships";
+import {
+  resolveMembershipTier,
+  resolveUnifiedPlanPoolLimit,
+  type SubscriptionTierRow,
+} from "@/lib/membership-tier";
 import { createHash } from "node:crypto";
 
 /** Plan-quota domain (mirrors EvoPlanDomain in evo-intent.ts). */
@@ -42,33 +47,51 @@ function sanitizeTier(tier: unknown): MembershipTier | null {
 }
 
 /**
- * Fallback tier resolution when a route has no pre-computed auth tier.
- * Uses the service-role admin client (RLS-bypassing) with active + expiry
- * filtering — mirrors getAuthUser()'s logic in auth-server.ts.
+ * Fallback subscription-rows fetch when a route has no pre-computed
+ * auth subs list. Uses the service-role admin client (RLS-bypassing)
+ * with the SAME active + expiry filtering the auth entry points apply
+ * (status='active' AND end_date > now) — mirrors getAuthUser()'s
+ * window in auth-server.ts.
+ *
+ * Returns null when the admin client is unavailable or the read fails
+ * (fail-safe: checkUnifiedPlanQuota then falls back to the single-tier
+ * hint pool — never to unlimited, never above the entitlement).
  */
-async function resolveTierFromDb(userId: string): Promise<MembershipTier> {
-  if (!isSupabaseAdminConfigured || !supabaseAdmin) return "free";
+async function fetchActiveSubTierRows(
+  userId: string,
+): Promise<SubscriptionTierRow[] | null> {
+  if (!isSupabaseAdminConfigured || !supabaseAdmin) return null;
   try {
-    const { data: subs } = await supabaseAdmin
+    const { data, error } = await supabaseAdmin
       .from("subscriptions")
-      .select("tier")
+      .select("tier, status, end_date")
       .eq("client_id", userId)
       .eq("status", "active")
       .gt("end_date", new Date().toISOString());
-
-    if (!subs || subs.length === 0) return "free";
-
-    const tiers = subs.map((s) => sanitizeTier(s.tier)).filter(Boolean);
-    if (tiers.includes("pro")) return "pro";
-    if (tiers.includes("premium")) return "premium";
-    if (tiers.includes("coaching")) return "coaching";
-    return "free";
+    if (error) {
+      console.error("[tier-limits] fetchActiveSubTierRows error:", error.message);
+      return null;
+    }
+    return (data ?? []) as SubscriptionTierRow[];
   } catch (e) {
-    console.error("[tier-limits] resolveTierFromDb error:", e instanceof Error ? e.message : e);
-    // Fail CLOSED for limit purposes? No — fail OPEN would grant unlimited.
-    // Fail SAFE: an unknown user counts as free (10 msgs/day), never premium.
-    return "free";
+    console.error(
+      "[tier-limits] fetchActiveSubTierRows error:",
+      e instanceof Error ? e.message : e,
+    );
+    return null;
   }
+}
+
+/**
+ * Best-tier DB fallback for the FEATURE limits (EVO chat daily + weekly
+ * swaps — best-membership semantics, NOT the plan pool). Returns "free"
+ * when the rows are unreadable — an unknown user never inherits premium
+ * limits (fail-safe, unchanged).
+ */
+async function resolveTierFromDb(userId: string): Promise<MembershipTier> {
+  const rows = await fetchActiveSubTierRows(userId);
+  if (!rows) return "free";
+  return resolveMembershipTier("client", rows);
 }
 
 /**
@@ -108,6 +131,14 @@ export function swapLimitForTier(tier: MembershipTier): number | null {
  *   benefit). Guests get the free pool — no signup wall.
  * Reads aiPlanMonthlyLimit straight from memberships.ts so the
  * advertised numbers ARE the enforced numbers.
+ *
+ * MEMBERS (owner order 2026-10-28 «تجميع حصص الاشتراكات المدفوعة»):
+ * the enforced member limit is the AGGREGATE over every distinct
+ * active paid tier — resolveUnifiedPlanPoolLimit() in
+ * membership-tier.ts (the single source of truth for that law);
+ * this per-tier helper remains the GUEST pool size + the building
+ * block + the fail-safe fallback when the subscription rows cannot
+ * be read (never above the entitlement, never unlimited).
  */
 export function unifiedPlanPoolFor(tier: MembershipTier): number {
   return getLimits(tier).aiPlanMonthlyLimit;
@@ -207,12 +238,16 @@ export type UnifiedPlanQuotaVerdict = {
 };
 
 /**
- * THE unified-pool gate (owner decree 2026-09-13).
+ * THE unified-pool gate (owner decree 2026-09-13 «البوول الموحد» +
+ * owner order 2026-10-28 «تجميع حصص الاشتراكات المدفوعة»).
  *
  * Identity resolution:
- *   - userId + tierHint  → member pool for their tier (hint trusted
- *     first — it comes from getAuthUser()'s active+expiry filtering;
- *     fallback re-resolves via the service-role admin client).
+ *   - userId             → member pool = the AGGREGATE of every distinct
+ *     paid tier held as an effectively-active subscription (rows read
+ *     via the service-role admin client with the SAME active+expiry
+ *     filters as getAuthUser(); `tierHint` stays the display-tier hint
+ *     and the fail-safe single-tier fallback when the rows are
+ *     unreadable — never unlimited, never above the entitlement).
  *   - guestKey           → the FREE pool (2/month). No signup wall:
  *     guests generate within the free quota; the signup nudge stays
  *     soft (benefits only, never a block).
@@ -233,8 +268,27 @@ export async function checkUnifiedPlanQuota(opts: {
     };
   }
   if (opts.userId) {
-    const tier = sanitizeTier(opts.tierHint) ?? (await resolveTierFromDb(opts.userId));
-    const limit = unifiedPlanPoolFor(tier);
+    // AGGREGATED PAID-POOL LAW (owner order 2026-10-28 «تجميع حصص
+    // الاشتراكات المدفوعة»): the member limit is the SUM of every
+    // distinct paid tier held as an effectively-active subscription
+    // (premium 4 + pro 8 + coaching 8 — stacking, not best-tier-wins).
+    // The rows are read from the SAME active + expiry window the auth
+    // entry points use; `tierHint` remains the DISPLAY-tier hint (and
+    // the fail-safe single-tier fallback when the rows cannot be read).
+    // The usage ledger below is identity-keyed (0085) — activations
+    // structurally never zero or double it.
+    const rows = await fetchActiveSubTierRows(opts.userId);
+    const hintTier = sanitizeTier(opts.tierHint);
+    const tier: MembershipTier = hintTier
+      ?? (rows ? resolveMembershipTier("client", rows) : "free");
+    // Fail-safe: rows unavailable (admin client unconfigured / read
+    // error) → the single-tier hint pool at most — NEVER unlimited and
+    // never above the entitled aggregate (a stacked member is briefly
+    // under-granted on a transient read failure, never over-granted).
+    const limit =
+      rows !== null
+        ? resolveUnifiedPlanPoolLimit(rows)
+        : unifiedPlanPoolFor(hintTier ?? "free");
     const used = await countPlanRowsBy("user_id", opts.userId);
     return {
       allowed: used < limit,

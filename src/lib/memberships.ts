@@ -22,6 +22,19 @@
  *   - The old weekly cap (1+1 / 2+2) is RETIRED with the per-kind split.
  *   - The pool resets on the 1st, UTC. Previously generated plans stay
  *     visible/accessible even after the pool is exhausted.
+ *   - AGGREGATED PAID-POOL (owner order 2026-10-28 «تجميع حصص
+ *     الاشتراكات المدفوعة» — supersedes the previous best-tier-wins
+ *     sizing for the plan pool): a MEMBER's pool is the SUM of every
+ *     distinct effectively-active paid tier's aiPlanMonthlyLimit —
+ *     Premium (4) + Pro (8) = 12 for the entitled period; usage burned
+ *     before the upgrade keeps counting against the aggregate (2 used
+ *     → 10 remaining, NOT 6). One contribution per tier per month
+ *     (renewals extend the same row — never counted twice); expired or
+ *     cancelled-and-lapsed rows stop contributing at end_date. The
+ *     enforcement single source: resolveUnifiedPlanPoolLimit() in
+ *     src/lib/membership-tier.ts + checkUnifiedPlanQuota() in
+ *     src/lib/tier-limits.ts. The per-tier numbers below are the
+ *     building blocks (and stay the advertised per-tier pools).
  * Other limits reset monthly. Ads show on Free + Premium tiers only
  * (Pro+ are ad-free).
  */

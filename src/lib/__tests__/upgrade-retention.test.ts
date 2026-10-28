@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import {
   resolveMembershipTier,
+  resolveUnifiedPlanPoolLimit,
   type SubscriptionTierRow,
 } from "@/lib/membership-tier";
 import {
@@ -40,8 +41,8 @@ import {
  *   B. THE UNIFIED-POOL VERDICT across the upgrade (tier-limits.ts +
  *      mocked ai_plan_usage ledger) — the PARTIAL-CONSUMPTION scenario the
  *      owner ordered: a member who burned 2 of his 4 premium generations,
- *      then upgrades, MUST read {used:2, limit:8, remaining:6} — not
- *      {0,8,8} (zeroed) and not {2,12,10} (stacked double-grant).
+ *      then upgrades, MUST read {used:2, limit:12, remaining:10} — not
+ *      {0,12,12} (zeroed) and not {2,8,6} (best-tier-only).
  *   C. THE DB STACKING LAW (migration source pins): unique(client_id,tier)
  *      (0011 — a client holds one row PER TIER, stacking not replacement)
  *      · extend_subscription keyed on (client_id,tier) with an INSERT
@@ -56,6 +57,18 @@ import {
  *   F. THE LIVE-MEASURED M3 FIXTURE — the exact production rows of the
  *      Phase-374 upgraded account (read-only, 2026-10-27) as a regression
  *      fixture: premium row INTACT beside the new pro row.
+ *
+ * PHASE 376 SUPERSESSION (owner order 2026-10-28 «تجميع حصص الاشتراكات
+ * المدفوعة»): the PLAN-POOL sizing law FLIPPED from best-tier-wins
+ * (upgrade → limit 8) to the AGGREGATE of every distinct effectively-
+ * active paid tier (premium 4 + pro 8 = 12; used 2 → remaining 10, NOT
+ * 6). The RETENTION invariants this canary was built for are UNCHANGED
+ * and still enforced below: usage never zeroed · the premium row never
+ * destroyed · renewal extends its OWN row (never double-counted) ·
+ * cancel keeps access to end_date · meter == enforcement. Only the
+ * limit arithmetic flipped — the (c) «stacked double-grant» reading of
+ * 375 is now THE LAW (an activation is a paid entitlement, not a
+ * replacement). The full new-law matrix: plan-pool-aggregation.test.ts.
  */
 
 const src = (rel: string) => readFileSync(join(process.cwd(), rel), "utf8");
@@ -119,24 +132,26 @@ const m3Rows = (): SubscriptionTierRow[] => {
 // ─────────────────────────────────────────────────────────────────────
 
 describe("A) resolveMembershipTier — the premium→pro lifecycle ladder", () => {
-  it("premium only (before the upgrade) → premium (pool 4)", () => {
+  it("premium only (before the upgrade) → premium (aggregate pool 4)", () => {
     const tier = resolveMembershipTier("client", [active("premium")]);
     expect(tier).toBe("premium");
-    expect(unifiedPlanPoolFor(tier)).toBe(4);
+    expect(resolveUnifiedPlanPoolLimit([active("premium")])).toBe(4);
   });
 
-  it("premium + pro BOTH active (the upgraded account) → pro (best membership wins — pool 8, NOT 4+8)", () => {
+  it("premium + pro BOTH active (the upgraded account) → display tier pro, AGGREGATED pool 12 (4+8 — the 376 law)", () => {
     const tier = resolveMembershipTier("client", [
       active("premium"),
       active("pro"),
     ]);
     expect(tier).toBe("pro");
-    // THE POLICY (spec "Alkemos — Membership & Plan Changes", decree
-    // 2026-09-13): the pool is a TIER property of ONE identity — the
-    // upgrade replaces the EFFECTIVE limit (4→8), never adds the rows'
-    // limits. 12 would be the stacked double-grant.
-    expect(unifiedPlanPoolFor(tier)).toBe(8);
-    expect(unifiedPlanPoolFor(tier)).not.toBe(12);
+    // PHASE 376 (owner order 2026-10-28 «تجميع حصص الاشتراكات المدفوعة»):
+    // the member pool AGGREGATES every distinct active paid tier — the
+    // upgrade ADDS the paid pro entitlement (4+8=12). The per-tier helper
+    // stays the building block (8 = pro alone); 8 is now the WRONG
+    // member verdict (the superseded best-tier-only reading).
+    expect(resolveUnifiedPlanPoolLimit([active("premium"), active("pro")])).toBe(12);
+    expect(unifiedPlanPoolFor(tier)).toBe(8); // per-tier building block
+    expect(resolveUnifiedPlanPoolLimit([active("premium"), active("pro")])).not.toBe(8);
   });
 
   it("premium EXPIRED + pro still active (the post-upgrade months-later state) → pro unchanged", () => {
@@ -162,7 +177,9 @@ describe("A) resolveMembershipTier — the premium→pro lifecycle ladder", () =
   it("BOTH expired (the whole stack lapses) → free (pool 2)", () => {
     const tier = resolveMembershipTier("client", []);
     expect(tier).toBe("free");
-    expect(unifiedPlanPoolFor(tier)).toBe(2);
+    expect(resolveUnifiedPlanPoolLimit([])).toBe(2);
+    // expired rows leaking through the pre-filter contribute NOTHING
+    expect(resolveUnifiedPlanPoolLimit([expired("premium"), expired("pro")])).toBe(2);
   });
 
   it("coaching stacked under the upgrade (premium+pro+coaching) → pro (membership_tier reports the MEMBERSHIP)", () => {
@@ -181,11 +198,12 @@ describe("A) resolveMembershipTier — the premium→pro lifecycle ladder", () =
     if (rows.length === 2) {
       // While both production rows are effectively active.
       expect(tier).toBe("pro");
-      expect(unifiedPlanPoolFor(tier)).toBe(8);
+      expect(resolveUnifiedPlanPoolLimit(rows)).toBe(12); // 4+8 (376 law)
     } else {
       // After 2026-11-27 both rows lapse together (same-day activation,
       // same 1-month term) → free, per the same law.
       expect(tier).toBe("free");
+      expect(resolveUnifiedPlanPoolLimit(rows)).toBe(2);
     }
   });
 });
@@ -199,9 +217,10 @@ const h = vi.hoisted(() => {
   // count returned per (table, identity key) — ai_plan_usage rows are
   // keyed by USER (0085: user_id XOR guest_key), never by subscription.
   const counts: Record<string, number> = {};
-  // subscriptions rows for the DB-tier fallback path.
-  const subTiers: string[] = [];
-  return { counts, subTiers };
+  // subscriptions ROWS for the aggregated-pool DB fetch (owner order
+  // 2026-10-28 — full rows: the pool aggregates the active+expiry window)
+  const subRows: Array<{ tier: string; status: string; end_date: string }> = [];
+  return { counts, subRows };
 });
 
 type CountRow = { count: number | null; error: unknown };
@@ -223,7 +242,7 @@ vi.mock("@/lib/supabase/admin", () => {
         return Promise.resolve({
           count: null,
           error: null,
-          data: h.subTiers.map((tier) => ({ tier })),
+          data: h.subRows,
         } as unknown as CountRow);
       }
       return Promise.resolve({ count: h.counts[`${table}:${identity}`] ?? 0, error: null });
@@ -253,57 +272,70 @@ vi.mock("@/lib/supabase/admin", () => {
 
 const MEMBER = "22222222-2222-2222-2222-222222222222";
 
-describe("B) checkUnifiedPlanQuota — partial consumption then upgrade (the 374 gap)", () => {
+describe("B) checkUnifiedPlanQuota — partial consumption then upgrade (the 374 gap, under the 376 aggregate law)", () => {
   beforeEach(() => {
     for (const k of Object.keys(h.counts)) delete h.counts[k];
-    h.subTiers.length = 0;
+    h.subRows.length = 0;
   });
 
   it("BEFORE the upgrade: 2 of the 4 premium generations burned → {used:2, limit:4, remaining:2}", async () => {
+    h.subRows.push({ tier: "premium", status: "active", end_date: iso(30 * DAY) });
     h.counts[`ai_plan_usage:${MEMBER}`] = 2; // e.g. 1 nutrition + 1 workout
     const v = await checkUnifiedPlanQuota({ userId: MEMBER, tierHint: "premium" });
     expect(v).toMatchObject({ used: 2, limit: 4, remaining: 2, allowed: true, tier: "premium" });
   });
 
-  it("THE UPGRADE VERDICT: same member, pro row added — {used:2, limit:8, remaining:6} — usage NOT zeroed, pool NOT stacked", async () => {
+  it("THE UPGRADE VERDICT (376 law): same member, pro row added — {used:2, limit:12, remaining:10} — usage NOT zeroed, pool AGGREGATED", async () => {
     // The ledger is identity-keyed (0085): activating a subscription row
-    // never touches it. Only the resolved tier changes (premium→pro).
+    // never touches it. The pool aggregates the paid rows (4+8=12).
+    h.subRows.push(
+      { tier: "premium", status: "active", end_date: iso(30 * DAY) },
+      { tier: "pro", status: "active", end_date: iso(30 * DAY) },
+    );
     h.counts[`ai_plan_usage:${MEMBER}`] = 2;
     const v = await checkUnifiedPlanQuota({ userId: MEMBER, tierHint: "pro" });
-    expect(v).toMatchObject({ used: 2, limit: 8, remaining: 6, allowed: true, tier: "pro" });
+    expect(v).toMatchObject({ used: 2, limit: 12, remaining: 10, allowed: true, tier: "pro" });
     // The two wrong implementations this canary kills:
-    expect(v.used).not.toBe(0); // (b) zeroed ledger → {0,8,8}
-    expect(v.remaining).not.toBe(8);
-    expect(v.limit).not.toBe(12); // (c) stacked pools → {2,12,10}
-    expect(v.remaining).not.toBe(10);
+    expect(v.used).not.toBe(0); // (b) zeroed ledger → {0,12,12}
+    expect(v.remaining).not.toBe(12);
+    expect(v.limit).not.toBe(8); // superseded best-tier-only → {2,8,6}
+    expect(v.remaining).not.toBe(6);
   });
 
-  it("EXHAUSTED premium at the upgrade moment: 4/4 blocked as premium, unblocked as pro with exactly the 4 new units", async () => {
+  it("EXHAUSTED premium at the upgrade moment: 4/4 blocked as premium, unblocked as premium+pro with exactly the 8 new paid units", async () => {
     h.counts[`ai_plan_usage:${MEMBER}`] = 4;
+    h.subRows.push({ tier: "premium", status: "active", end_date: iso(30 * DAY) });
     const before = await checkUnifiedPlanQuota({ userId: MEMBER, tierHint: "premium" });
     expect(before.allowed).toBe(false);
     expect(before.remaining).toBe(0);
+    h.subRows.push({ tier: "pro", status: "active", end_date: iso(30 * DAY) });
     const after = await checkUnifiedPlanQuota({ userId: MEMBER, tierHint: "pro" });
-    expect(after).toMatchObject({ used: 4, limit: 8, remaining: 4, allowed: true });
+    expect(after).toMatchObject({ used: 4, limit: 12, remaining: 8, allowed: true });
   });
 
   it("upgrade does NOT grant a fresh month-window: the ledger keeps counting the SAME calendar month (pool resets on the 1st only)", async () => {
-    // 7 successes this month (4 as premium + 3 as pro) → 1 left, blocked at 8.
-    h.counts[`ai_plan_usage:${MEMBER}`] = 7;
+    // 11 successes this month (4 as premium + 7 as pro) → 1 left, blocked at 12.
+    h.subRows.push(
+      { tier: "premium", status: "active", end_date: iso(30 * DAY) },
+      { tier: "pro", status: "active", end_date: iso(30 * DAY) },
+    );
+    h.counts[`ai_plan_usage:${MEMBER}`] = 11;
     const v = await checkUnifiedPlanQuota({ userId: MEMBER, tierHint: "pro" });
-    expect(v).toMatchObject({ used: 7, limit: 8, remaining: 1, allowed: true });
-    h.counts[`ai_plan_usage:${MEMBER}`] = 8;
+    expect(v).toMatchObject({ used: 11, limit: 12, remaining: 1, allowed: true });
+    h.counts[`ai_plan_usage:${MEMBER}`] = 12;
     const blocked = await checkUnifiedPlanQuota({ userId: MEMBER, tierHint: "pro" });
     expect(blocked.allowed).toBe(false);
     expect(blocked.remaining).toBe(0);
   });
 
-  it("DB-fallback path (no tierHint — the /api/ai/jobs enqueue gate shape): stacked rows resolve ONE tier → limit 8, never 12", async () => {
-    h.subTiers.push("premium", "pro");
+  it("DB-fallback path (no tierHint — the /api/ai/jobs enqueue gate shape): stacked rows AGGREGATE → limit 12, display tier pro", async () => {
+    h.subRows.push(
+      { tier: "premium", status: "active", end_date: iso(30 * DAY) },
+      { tier: "pro", status: "active", end_date: iso(30 * DAY) },
+    );
     const v = await checkUnifiedPlanQuota({ userId: MEMBER });
     expect(v.tier).toBe("pro");
-    expect(v.limit).toBe(8);
-    expect(v.limit).not.toBe(12);
+    expect(v.limit).toBe(12);
   });
 
   it("every other tier limit steps with the SAME single-tier law (swap weekly 3→6, saved-results 50→200, ads off at pro)", () => {

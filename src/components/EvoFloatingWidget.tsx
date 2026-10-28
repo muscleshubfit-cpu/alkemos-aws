@@ -597,8 +597,12 @@ export function EvoFloatingWidget() {
             {/* PHASE 69 — QUOTA METER: the advertised plan quotas are now
                 VISIBLE (same tamper-proof ledger the server counts).
                 Phase 183 (2026-09-13 «البوول الموحد»): ONE unified
-                monthly pool — nutrition + workout COMBINED (2/4/8/8);
-                the old per-kind + weekly split display is retired.
+                monthly pool — nutrition + workout COMBINED; the old
+                per-kind + weekly split display is retired. Owner
+                order 2026-10-28 «تجميع حصص الاشتراكات المدفوعة»:
+                a member's pool AGGREGATES every distinct active paid
+                tier (2/4/8/8; premium+pro = 12) — the meter below
+                reads the same enforcement counts either way.
                 Owner directive 2026-09-13: the meter is for EVERYONE —
                 free users and guests see their own pool too (the quota
                 route reads the same enforcement counts via ?guestId). */}

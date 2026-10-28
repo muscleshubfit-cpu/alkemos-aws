@@ -1,4 +1,4 @@
-import type { MembershipTier } from "@/lib/memberships";
+import { getLimits, type MembershipTier } from "@/lib/memberships";
 
 // Re-export so server contexts can import the tier type from the
 // resolver module (auth-server.ts re-exports it onward, preserving
@@ -94,4 +94,88 @@ export function resolveMembershipTier(
 
   if (hasCoaching) return "coaching";
   return "free";
+}
+
+/**
+ * KNOWN PAID TIERS for the aggregated plan pool (owner order
+ * 2026-10-28 «تجميع حصص الاشتراكات المدفوعة»): every tier that
+ * carries a paid `aiPlanMonthlyLimit`, with the 0045 legacy rows
+ * (starter/elite) mapped to their successor tiers so a stray legacy
+ * row can never downgrade a paying client's pool — and so a legacy
+ * row DEDUPS against its live sibling (starter + premium = ONE
+ * premium contribution, never two).
+ * Unknown tier strings contribute NOTHING (they must never fall
+ * through to the free limits and silently add 2).
+ */
+const POOL_TIERS: Record<string, MembershipTier> = {
+  premium: "premium",
+  pro: "pro",
+  coaching: "coaching",
+  // 0045 legacy compat (same map as LEGACY_TIER_MAP above)
+  starter: "premium",
+  elite: "pro",
+};
+
+/**
+ * AGGREGATED PAID-POOL LAW (owner order 2026-10-28 «تجميع حصص
+ * الاشتراكات المدفوعة» — supersedes the previous single-tier pool
+ * for the AI plan pool ONLY; the display tier above keeps its
+ * best-membership semantics for badges/feature gates).
+ *
+ * The member's unified monthly AI plan-generation pool = the SUM of
+ * `aiPlanMonthlyLimit` over every DISTINCT paid tier held as an
+ * effectively-active subscription:
+ *
+ *   Premium (4) + Pro (8) = 12 for the entitled period — a member who
+ *   burned 2 before the upgrade keeps {used:2, remaining:10}, NOT 6.
+ *
+ * Rules (the order's invariants):
+ *   - Only rows inside their paid entitlement window count
+ *     (status === "active" AND end_date > now). Callers pre-filter
+ *     the same way (auth entry points + the tier-limits DB fetch),
+ *     but this is a MONEY path — the function re-verifies defensively
+ *     so an expired/cancelled-status row can never contribute, and no
+ *     quota is granted outside the paid period or after its end.
+ *   - A cancellation (Phase 68) keeps status "active" until end_date
+ *     — a cancelled-but-unexpired row STILL contributes (access
+ *     continues until end_date, exactly like the entitlement itself).
+ *   - ONE contribution per distinct (mapped) tier — the DB's
+ *     unique(client_id, tier) constraint (0011) structurally caps one
+ *     row per tier, and extend_subscription (0018/0042) renews the
+ *     SAME row instead of inserting a sibling, so a renewal never
+ *     double-counts; the dedup here guarantees it even against stray
+ *     duplicate rows («لا تحتسب الحصة نفسها مرتين»).
+ *   - No active paid row → the FREE pool (2). The free pool is the
+ *     no-membership baseline — it never stacks on top of paid pools.
+ *   - The usage ledger (ai_plan_usage, 0085) is identity-keyed and
+ *     untouched by activations — used/remaining are computed by the
+ *     caller from that ledger; this function owns the LIMIT only.
+ *
+ * Pool numbers come straight from memberships.ts (single source) —
+ * free 2 · premium 4 · pro 8 · coaching 8.
+ */
+export function resolveUnifiedPlanPoolLimit(
+  subs: ReadonlyArray<SubscriptionTierRow> | null | undefined,
+  now: Date = new Date(),
+): number {
+  const freePool = getLimits("free").aiPlanMonthlyLimit;
+  if (!subs || subs.length === 0) return freePool;
+  const nowMs = now.getTime();
+  const counted = new Set<MembershipTier>();
+  let total = 0;
+  for (const s of subs) {
+    // Entitlement window — defensive re-verification (money path).
+    if (s.status !== "active") continue;
+    if (!s.end_date) continue;
+    const endMs = new Date(s.end_date).getTime();
+    if (!Number.isFinite(endMs) || endMs <= nowMs) continue;
+    // Known paid tiers only; unknown strings contribute nothing.
+    const tier = POOL_TIERS[s.tier];
+    if (!tier) continue;
+    // One contribution per distinct mapped tier — never twice.
+    if (counted.has(tier)) continue;
+    counted.add(tier);
+    total += getLimits(tier).aiPlanMonthlyLimit;
+  }
+  return counted.size === 0 ? freePool : total;
 }
