@@ -199,11 +199,26 @@ def main() -> int:
     else:
         print("== step 3 · member generates 2 plans (official demo route) ==")
         for i in (1, 2):
-            st, body = http("POST", f"{APP}/api/ai/meal-plan-demo",
-                            {"calories": 2000, "system": "balanced",
-                             "language": "en", "notes": ""}, cookies=m_ck)
-            ok = st == 200 and body.get("plan") is not None
-            check(f"generation #{i} success (HTTP {st})", ok, str(body)[:100] if not ok else "")
+            # A FAILED generation burns NOTHING (success-only law — proven
+            # live 2026-10-28: a 422 "chain call failed" attempt returned
+            # quota {used:1,...} unchanged), so retrying a transient
+            # provider failure is honest: only a SUCCESS moves the meter.
+            # Max 3 attempts / 45s apart — a persistent provider outage
+            # fails honestly (the probe does not fake used=2).
+            ok = False
+            for attempt in (1, 2, 3):
+                st, body = http("POST", f"{APP}/api/ai/meal-plan-demo",
+                                {"calories": 2000, "system": "balanced",
+                                 "language": "en", "notes": ""}, cookies=m_ck)
+                ok = st == 200 and body.get("plan") is not None
+                if ok:
+                    break
+                print(f"      gen #{i} attempt {attempt} failed (HTTP {st}) "
+                      f"— retrying in 45s (failed attempts burn nothing)")
+                import time
+                time.sleep(45)
+            check(f"generation #{i} success (HTTP {st})", ok,
+                  str(body)[:100] if not ok else "")
             if not ok:
                 print(f"      body: {str(body)[:300]}")
     q2 = quota(m_ck)
