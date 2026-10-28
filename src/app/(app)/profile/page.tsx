@@ -288,26 +288,48 @@ export default function ProfilePage() {
     }
   };
 
-  const updateProfile = async (updates: Database["public"]["Tables"]["profiles"]["Update"]) => {
-    if (!profile || !supabase) return;
+  /**
+   * PROFILE-SAVE HONESTY FIX 2026-10-29 (FULL-ACCOUNTS-FUNCTIONAL-QA
+   * finding, live round): the old updateProfile swallowed the Supabase
+   * error (console.error only, no throw) — handleSave's try block then
+   * ALWAYS reached toast.success, so a failing update (RLS/network/
+   * expired session) showed «Changes saved» over unsaved data. Same
+   * honesty class as the DRAFT-DELETE FIX 2026-10-24 (deletePlan): the
+   * user must hear the truth. The contract is now boolean — callers
+   * toast success ONLY on a real 204.
+   */
+  const updateProfile = async (
+    updates: Database["public"]["Tables"]["profiles"]["Update"],
+  ): Promise<boolean> => {
+    if (!profile || !supabase) return false;
     const { error } = await supabase
       .from("profiles")
       .update(updates)
       .eq("id", profile.id);
     if (error) {
       console.error("[profile] Update failed:", error.message);
+      return false;
     }
+    return true;
   };
 
   const handleSave = async () => {
     if (!profile) return;
     setSaving(true);
     try {
-      await updateProfile({
+      const ok = await updateProfile({
         full_name: fullName.trim(),
         phone: phone.trim(),
       });
-      toast.success(isAr ? "تم حفظ التغييرات" : "Changes saved");
+      if (ok) {
+        toast.success(isAr ? "تم حفظ التغييرات" : "Changes saved");
+      } else {
+        toast.error(
+          isAr
+            ? "تعذر حفظ التغييرات — تحقق من اتصالك وحاول مرة أخرى"
+            : "Could not save your changes — check your connection and try again",
+        );
+      }
     } catch (e) {
       toast.error(e instanceof Error ? e.message : (isAr ? "فشل الحفظ" : "Save failed"));
     } finally {
