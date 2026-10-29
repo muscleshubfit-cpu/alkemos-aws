@@ -227,6 +227,19 @@ def final_state_verification(uid: str | None, steps, tables,
               f"(expect exactly −1)")
     else:
         print(f"  total profiles now: {total_after}")
+
+    # residual accounts under the reserved test domains (the unflagged pair
+    # is the OWNER's decision domain — reported here, never touched)
+    st, dom_rows = http("GET", "/rest/v1/profiles?select=id,email"
+                        "&email=like.*@alkemos-test.com")
+    if st == 200 and isinstance(dom_rows, list):
+        dom = [r.get("email") for r in dom_rows]
+        st2, dom_rows2 = http("GET", "/rest/v1/profiles?select=id,email"
+                              "&email=like.*@musclehub-test.com")
+        if st2 == 200 and isinstance(dom_rows2, list):
+            dom += [r.get("email") for r in dom_rows2]
+        print(f"  profiles under reserved test domains: {len(dom)} "
+              f"({', '.join(dom) if dom else 'none'})")
     return au2 is None and st_p == 200 and not left
 
 
