@@ -188,16 +188,25 @@ console.log(JSON.stringify(recent.map(summarize), null, 2));
     ),
   );
 
-  // 5c. research fallback — the route's 24h window scan (pattern encoded
-  //      exactly like supabase-js .like() does: quotes + colon).
+  // 5c. research fallback — the route's 24h window scan, in the FIXED
+  //     form (2026-10-30b): bounded window fetch + client-side parse-gate,
+  //     exactly what the route now does after the like() 42883 fix (the
+  //     operator A/B probes below keep the broken form for the record).
   const since24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
   let fallback = { rows: 0, error: null };
   try {
-    const fbPattern = encodeURIComponent('"researchSource":"fallback"');
-    const fbRows = await rest(
-      `blog_generation_queue?select=id,language,created_at&created_at=gte.${since24h}&article_bundle=like.*${fbPattern}*&limit=50`,
+    const fbWindow = await rest(
+      `blog_generation_queue?select=id,language,created_at,article_bundle&created_at=gte.${since24h}&order=created_at.desc&limit=50`,
     );
-    fallback.rows = fbRows.length;
+    const hits = fbWindow.filter((r) => {
+      if (typeof r.article_bundle !== "string" || !r.article_bundle) return false;
+      try {
+        return JSON.parse(r.article_bundle)?.researchSource === "fallback";
+      } catch {
+        return false;
+      }
+    });
+    fallback.rows = hits.length;
   } catch (e) {
     fallback.error = String(e).slice(0, 200);
   }
