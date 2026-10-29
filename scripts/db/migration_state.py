@@ -12,23 +12,30 @@ WHAT IT DOES (read-only — zero writes, any environment):
   2. Runs the declarative probes from `scripts/db/migration_probes.py`
      against PRODUCTION via PostgREST (service-role key) — schema probes from
      the OpenAPI spec, row-state probes, and (strongest) behavioral probes
-     that call the real RPCs as the QA admin (Test-Accounts Channel,
-     AGENTS.md §6) — the same code path the admin UI uses.
+     that call the real RPCs as an EPHEMERAL QA admin (auto-provisioned and
+     hard-deleted within the run by `scripts/db/probe_session.py`, same
+     Test-Accounts Channel guards — QA-TEST-ACCOUNTS-CLOSE 2026-10-29) —
+     the same code path the admin UI uses.
   3. Verdict:
        APPLIED        every probe of the LATEST migration passes
        NOT-APPLIED    a probe fails (measurable drift — the exact 2026-10-27
                       incident class: 0102's active-first pick absent)
-       UNVERIFIABLE   the latest migration has no registry row, or a required
-                      secret is missing — BOTH are red: the law demands a
-                      probe per migration and provisioned probe secrets.
+       UNVERIFIABLE   the latest migration has no registry row, or the
+                      ephemeral probe session cannot be provisioned — BOTH
+                      are red: the law demands a probe per migration and a
+                      working probe identity.
 
   Exit codes: 0 = green · 1 = drift/red · 2 = configuration error.
   Never prints client PII (matched rows report asserted fields only) and never
-  prints any key or password.
+  prints any key, password, or token.
 
 USAGE
-  SUPABASE_URL=… SUPABASE_SERVICE_ROLE_KEY=… [NEXT_PUBLIC_SUPABASE_ANON_KEY=…
-  QA_PROBE_EMAIL=… QA_PROBE_PASSWORD=…] python3 scripts/db/migration_state.py
+  SUPABASE_URL=… SUPABASE_SERVICE_ROLE_KEY=… NEXT_PUBLIC_SUPABASE_ANON_KEY=… \
+  python3 scripts/db/migration_state.py
+  (No QA-account secrets needed: behavioral probes self-provision an
+  ephemeral test admin via scripts/db/probe_session.py — created, used,
+  and deleted inside this run. The legacy QA_PROBE_EMAIL/QA_PROBE_PASSWORD
+  repo secrets were retired with the 2026-10-29 closure.)
 """
 
 from __future__ import annotations
@@ -44,6 +51,7 @@ from datetime import datetime, timezone
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 
+import probe_session  # noqa: E402
 from migration_probes import PROBES, TRANSFORMS  # noqa: E402
 
 REPO_ROOT = os.path.abspath(os.path.join(HERE, "..", ".."))
@@ -130,22 +138,18 @@ def run_probe(check: dict, env: dict, swagger: dict) -> tuple[bool, str]:
         return ok, f"{check['transform']}={value} (expect {check['expect']})"
 
     if t == "rpc_behavior":
-        if not (env.get("qa_email") and env.get("qa_password")
-                and env.get("anon")):
+        if not env.get("anon"):
             return False, (
-                "QA admin probe secrets missing — provision repo secrets "
-                "QA_PROBE_EMAIL + QA_PROBE_PASSWORD (Test-Accounts Channel "
-                "credentials) and NEXT_PUBLIC_SUPABASE_ANON_KEY — see "
-                "docs/DB-MIGRATION-PIPELINE-2026-10-27.md §5")
-        # sign in (password grant) — never print the password
-        st, body = http(
-            "POST", env["sb"] + "/auth/v1/token?grant_type=password",
-            env["anon"],
-            body={"email": env["qa_email"], "password": env["qa_password"]})
-        if st != 200 or not isinstance(body, dict) or not body.get("access_token"):
-            return False, f"QA admin sign-in failed (HTTP {st}): " \
-                          f"{str(body)[:140]}"
-        jwt = body["access_token"]
+                "NEXT_PUBLIC_SUPABASE_ANON_KEY missing — the behavioral "
+                "probe needs it for the password grant (see "
+                "docs/DB-MIGRATION-PIPELINE-2026-10-27.md §5)")
+        if not env.get("probe_jwt"):
+            return False, (
+                "probe session missing — the ephemeral QA-admin session "
+                "could not be provisioned this run "
+                "(scripts/db/probe_session.py); see the provisioning error "
+                "above")
+        jwt = env["probe_jwt"]
         st, rows = http("POST",
                         env["sb"] + f"/rest/v1/rpc/{check['rpc']}",
                         env["anon"], token=jwt, body=check["body"])
@@ -186,8 +190,6 @@ def main() -> int:
     service = os.environ.get("SUPABASE_SERVICE_ROLE_KEY", "")
     anon = os.environ.get("NEXT_PUBLIC_SUPABASE_ANON_KEY",
                           os.environ.get("SUPABASE_ANON_KEY", ""))
-    qa_email = os.environ.get("QA_PROBE_EMAIL", "")
-    qa_password = os.environ.get("QA_PROBE_PASSWORD", "")
 
     if not sb or not service:
         return _die_config(
@@ -195,8 +197,7 @@ def main() -> int:
             "SUPABASE_SERVICE_ROLE_KEY must be set (repo Actions secrets "
             "already carry them)")
 
-    env = {"sb": sb, "service": service, "anon": anon,
-           "qa_email": qa_email, "qa_password": qa_password}
+    env = {"sb": sb, "service": service, "anon": anon}
 
     files = applicable_migrations()
     if not files:
@@ -214,16 +215,44 @@ def main() -> int:
     env["swagger"] = swagger
 
     by_file = {p["file"]: p for p in PROBES}
-    results = []
-    for p in PROBES:  # ordered registry — advisory anchors first
-        checks = []
-        for c in p["checks"]:
-            ok, detail = run_probe(c, env, swagger)
-            checks.append({"check": c["type"], "ok": ok, "detail": detail})
-        passed = all(c["ok"] for c in checks)
-        results.append({"label": p["label"], "strength": p["strength"],
-                        "applies_to": p["file"], "passed": passed,
-                        "checks": checks})
+
+    # ---- ephemeral QA-admin session for the behavioral probes ----------
+    # (QA-TEST-ACCOUNTS-CLOSE 2026-10-29: the gate no longer depends on a
+    # persistent test admin or QA_PROBE_* secrets. The session is created,
+    # used, and hard-deleted inside THIS run — cleanup happens even when a
+    # probe fails, and crashed-run leftovers are swept by the next run.)
+    needs_session = any(c["type"] == "rpc_behavior"
+                        for p in PROBES for c in p["checks"])
+    probe_email = ""
+    if needs_session:
+        for note in probe_session.cleanup_stale(sb, service):
+            print(f"- probe-session stale sweep: {note}")
+        try:
+            probe_email, probe_password = probe_session.create(sb, service)
+            env["probe_jwt"] = probe_session.signin(sb, anon,
+                                                    probe_email, probe_password)
+            print(f"- probe session: {probe_email} (ephemeral QA admin, "
+                  "deleted at the end of this run)")
+        except Exception as e:
+            print(f"::error::ephemeral probe session could not be "
+                  f"provisioned: {e}")
+            env["probe_jwt"] = ""
+
+    try:
+        results = []
+        for p in PROBES:  # ordered registry — advisory anchors first
+            checks = []
+            for c in p["checks"]:
+                ok, detail = run_probe(c, env, swagger)
+                checks.append({"check": c["type"], "ok": ok, "detail": detail})
+            passed = all(c["ok"] for c in checks)
+            results.append({"label": p["label"], "strength": p["strength"],
+                            "applies_to": p["file"], "passed": passed,
+                            "checks": checks})
+    finally:
+        if probe_email:
+            print(f"- probe session cleanup: "
+                  f"{probe_session.destroy(sb, service, probe_email)}")
 
     # ---- verdict: EVERY registered probe must pass --------------------------
     # (not just the latest — the 2026-10-27 reconciliation proved why: 0103
@@ -234,7 +263,8 @@ def main() -> int:
     latest_probe = by_file.get(latest_file)
     failing = [r for r in results if not r["passed"]]
     unverifiable = any(
-        "secrets missing" in c["detail"]
+        ("session missing" in c["detail"]
+         or "ANON_KEY missing" in c["detail"])
         for r in results for c in r["checks"] if not c["ok"])
     if latest_probe is None:
         verdict = "UNVERIFIABLE"

@@ -201,8 +201,6 @@ jobs:
           SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
-          QA_PROBE_EMAIL: ${{ secrets.QA_PROBE_EMAIL }}
-          QA_PROBE_PASSWORD: ${{ secrets.QA_PROBE_PASSWORD }}
           MIGRATION_STATE_JSON: ${{ runner.temp }}/state.json
         run: |
           set +e

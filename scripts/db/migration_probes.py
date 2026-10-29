@@ -29,9 +29,13 @@ CHECK TYPES:
   swagger_table      — table present in the spec.
   swagger_column     — column present on a table in the spec.
   rest_rows          — GET a PostgREST path, apply a named transform, compare.
-  rpc_behavior       — call an RPC as the QA admin (needs QA_PROBE_* secrets)
-                       and assert fields on one returned row. THE strongest:
-                       it exercises auth + RLS + the function body itself.
+  rpc_behavior       — call an RPC as an EPHEMERAL QA admin (auto-provisioned
+                       and hard-deleted within the run by
+                       scripts/db/probe_session.py — QA-TEST-ACCOUNTS-CLOSE
+                       2026-10-29; the legacy QA_PROBE_* repo secrets are
+                       retired) and assert fields on one returned row. THE
+                       strongest: it exercises auth + RLS + the function
+                       body itself.
 
 PRIVACY: probes must never print client PII. rpc_behavior rows are matched by
   client UUID and only the asserted fields are reported (repo is public).

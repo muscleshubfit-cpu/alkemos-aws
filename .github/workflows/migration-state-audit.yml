@@ -18,7 +18,10 @@
 #   (scripts/db/migration_probes.py) against PRODUCTION via PostgREST:
 #   schema fingerprints from the OpenAPI spec + row-state asserts + the
 #   strongest class: behavioral probes through the app's own admin code
-#   path (QA admin session → the exact RPC the admin list uses).
+#   path (an EPHEMERAL QA admin session, auto-provisioned and deleted
+#   within the run by scripts/db/probe_session.py — since the
+#   QA-TEST-ACCOUNTS-CLOSE 2026-10-29 closure the gate carries no
+#   persistent test-account dependency and no QA_PROBE_* secrets).
 #   Verdict RED until the LATEST repo migration is proven applied.
 #
 # VISIBILITY LAW: on drift this gate (a) fails loudly, (b) files ONE
@@ -57,8 +60,6 @@ jobs:
           SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
-          QA_PROBE_EMAIL: ${{ secrets.QA_PROBE_EMAIL }}
-          QA_PROBE_PASSWORD: ${{ secrets.QA_PROBE_PASSWORD }}
           MIGRATION_STATE_JSON: ${{ runner.temp }}/state.json
         run: |
           set +e
