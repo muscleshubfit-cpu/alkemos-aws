@@ -149,9 +149,11 @@ def swagger_tables() -> dict:
     if st != 200 or not isinstance(spec, dict):
         print(f"FATAL: cannot read OpenAPI spec (HTTP {st})")
         sys.exit(1)
-    return {t: list(((spec.get("definitions") or {}).get(t, {})
-                     .get("properties", {})) or {}).keys()
-            for t in (spec.get("definitions") or {})}
+    out = {}
+    for t, d in (spec.get("definitions") or {}).items():
+        props = d.get("properties") if isinstance(d, dict) else None
+        out[t] = list(props.keys()) if isinstance(props, dict) else []
+    return out
 
 
 def count_rows(table: str, col: str, value: str) -> int | str:
