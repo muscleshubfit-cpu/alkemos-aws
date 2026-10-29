@@ -163,6 +163,73 @@ def count_rows(table: str, col: str, value: str) -> int | str:
     return len(rows) if isinstance(rows, list) else "?"
 
 
+def final_state_verification(uid: str | None, steps, tables,
+                             total_before) -> bool:
+    """Post-state evidence (read-only): residuals when the uid is known,
+    login-impossibility probes, real-data integrity. Returns the
+    gone-verdict (auth user AND profile both absent)."""
+    print("\n[post-verify] residual check:")
+    au2 = auth_user_by_email()
+    print(f"  auth user by email: {'GONE' if au2 is None else 'STILL THERE!'}")
+    st_p, left = http("GET", "/rest/v1/profiles?select=id"
+                      f"&email=eq.{q(TARGET_EMAIL)}")
+    print(f"  profile by email: "
+          f"{'GONE' if (st_p == 200 and not left) else f'LEFT: {left}'}")
+    if uid:
+        for table, col in steps:
+            n = count_rows(table, col, uid)
+            print(f"  {table}.{col}: {n}")
+        if "tool_leads" in tables and "email" in tables["tool_leads"]:
+            print(f"  tool_leads.email: "
+                  f"{count_rows('tool_leads', 'email', TARGET_EMAIL)}")
+        if "coach_wallet_transactions" in tables and \
+                "created_by" in tables["coach_wallet_transactions"]:
+            print(f"  wallet rows still attributed (must be 0): "
+                  f"{count_rows('coach_wallet_transactions', 'created_by', uid)}")
+
+    # login-impossibility probes (no real credential is ever known/printed)
+    if ANON:
+        st, body = http("POST", "/auth/v1/token?grant_type=password",
+                        key=ANON,
+                        body={"email": TARGET_EMAIL,
+                              "password": "definitely-not-the-password-#1"})
+        msg = _err(body)
+        print(f"  password-grant probe: HTTP {st} ({msg}) — "
+              "no credential can sign in")
+        st, body = http("POST", "/auth/v1/recover", key=ANON,
+                        body={"email": TARGET_EMAIL})
+        msg = _err(body)
+        note = (" — enumeration protection on; Admin-API absence above "
+                "is the definitive proof" if st == 200 else "")
+        print(f"  password-recover probe: HTTP {st} ({msg}){note}")
+    else:
+        print("  (anon key absent — Admin-API absence above is the proof)")
+
+    # real-data integrity (the untouched-customer proof, with end dates)
+    st, subs = http("GET", "/rest/v1/subscriptions?select=tier,status,end_date"
+                    "&client_id=eq.87cd7ba6-9e25-4fec-a7b6-b75ed1e2e09b")
+    if st == 200 and isinstance(subs, list):
+        real_subs = "; ".join("{}[status={}, end={}]".format(
+            s.get("tier"), s.get("status"), str(s.get("end_date"))[:10])
+            for s in subs)
+    else:
+        real_subs = "HTTP {}".format(st)
+    print(f"  real client 87cd7ba6 subscriptions intact: "
+          f"{len(subs) if st == 200 else 'HTTP ' + str(st)} ({real_subs})")
+    st, rp = http("GET", "/rest/v1/profiles?select=id,email,role"
+                  "&email=eq.samarsamy0992@gmail.com")
+    print(f"  real client samarsamy0992 present: "
+          f"{rp[0]['role'] if (st == 200 and rp) else 'MISSING!'}")
+    st, pr2 = http("GET", "/rest/v1/profiles?select=id")
+    total_after = len(pr2) if (st == 200 and isinstance(pr2, list)) else "?"
+    if total_before != "?":
+        print(f"  total profiles: {total_before} → {total_after} "
+              f"(expect exactly −1)")
+    else:
+        print(f"  total profiles now: {total_after}")
+    return au2 is None and st_p == 200 and not left
+
+
 def main() -> int:
     mode = "EXECUTE" if EXECUTE else "DRY-RUN"
     print(f"== legacy QA-admin cleanup ({mode}) — target: {TARGET_EMAIL} ==")
@@ -176,8 +243,11 @@ def main() -> int:
                         f"&email=eq.{q(TARGET_EMAIL)}")
         prof_left = left if (st == 200 and left) else []
         if not prof_left:
-            print("[verdict] account already absent everywhere "
-                  "(idempotent no-op) — nothing to delete.")
+            print("[identity] account already absent everywhere "
+                  "(idempotent no-op) — running the full post-state "
+                  "verification anyway.")
+            final_state_verification(None, [], {}, "?")
+            print("\n[verdict] ALREADY ABSENT & VERIFIED")
             return 0
         print(f"[verdict] ABORTED: profile row(s) exist without an auth "
               f"user ({len(prof_left)}) — unexpected state, owner review "
@@ -304,59 +374,7 @@ def main() -> int:
     time.sleep(0.5)
 
     # ---- 5) post-verification ---------------------------------------------
-    print("\n[post-verify] residual check:")
-    au2 = auth_user_by_email()
-    print(f"  auth user by email: {'GONE' if au2 is None else 'STILL THERE!'}")
-    st, left = http("GET", "/rest/v1/profiles?select=id"
-                    f"&email=eq.{q(TARGET_EMAIL)}")
-    print(f"  profile by email: "
-          f"{'GONE' if (st == 200 and not left) else f'LEFT: {left}'}")
-    for table, col in steps:
-        n = count_rows(table, col, uid)
-        print(f"  {table}.{col}: {n}")
-    if "tool_leads" in tables and "email" in tables["tool_leads"]:
-        print(f"  tool_leads.email: "
-              f"{count_rows('tool_leads', 'email', TARGET_EMAIL)}")
-    if "coach_wallet_transactions" in tables and \
-            "created_by" in tables["coach_wallet_transactions"]:
-        print(f"  wallet rows still attributed (must be 0): "
-              f"{count_rows('coach_wallet_transactions', 'created_by', uid)}")
-
-    # login-impossibility probes (no real credential is ever known/printed)
-    if ANON:
-        st, body = http("POST", "/auth/v1/token?grant_type=password", key=ANON,
-                        body={"email": TARGET_EMAIL,
-                              "password": "definitely-not-the-password-#1"})
-        msg = _err(body)
-        print(f"  password-grant probe: HTTP {st} ({msg}) — "
-              "no credential can sign in")
-        st, body = http("POST", "/auth/v1/recover", key=ANON,
-                        body={"email": TARGET_EMAIL})
-        msg = _err(body)
-        print(f"  password-recover probe: HTTP {st} ({msg})")
-    else:
-        print("  (anon key absent — Admin-API absence above is the proof)")
-
-    # real-data integrity
-    st, subs = http("GET", "/rest/v1/subscriptions?select=tier,status,end_date"
-                    "&client_id=eq.87cd7ba6-9e25-4fec-a7b6-b75ed1e2e09b")
-    if st == 200 and isinstance(subs, list):
-        real_subs = "; ".join("{}/{}".format(s["tier"], s["status"])
-                              for s in subs)
-    else:
-        real_subs = "HTTP {}".format(st)
-    print(f"  real client 87cd7ba6 subscriptions intact: "
-          f"{len(subs) if st == 200 else 'HTTP ' + str(st)} ({real_subs})")
-    st, rp = http("GET", "/rest/v1/profiles?select=id,email,role"
-                  "&email=eq.samarsamy0992@gmail.com")
-    print(f"  real client samarsamy0992 present: "
-          f"{rp[0]['role'] if (st == 200 and rp) else 'MISSING!'}")
-    st, pr2 = http("GET", "/rest/v1/profiles?select=id")
-    total_after = len(pr2) if (st == 200 and isinstance(pr2, list)) else "?"
-    print(f"  total profiles: {total_before} → {total_after} "
-          f"(expect exactly −1)")
-
-    gone = (au2 is None and st == 200 and not left)
+    gone = final_state_verification(uid, steps, tables, total_before)
     print(f"\n[verdict] {'DELETED & VERIFIED' if gone else 'INCOMPLETE — see residuals above'}")
     return 0 if gone else 3
 
