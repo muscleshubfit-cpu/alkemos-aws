@@ -83,14 +83,20 @@ vi.mock("@/lib/supabase/admin", () => ({
 }));
 
 import { GET as queueHealthGET, DELETE as queueHealthDELETE } from "@/app/api/ai/queue-health/route";
+import { bundleResearchSource } from "@/lib/blog-queue";
 
 const REQ = { url: "http://localhost:3000/api/ai/queue-health" } as unknown as NextRequest;
 
-/** program the GET route's scans: ai_jobs census + clean blog scans */
-function scans(aiJobsRows: Row[], pairingRows: Row[] = [], fallbackRows: Row[] = []) {
+/** program the GET route's scans: ai_jobs census + clean blog scans.
+ * 2026-10-30b: the fallback scan fetches the window and parse-gates
+ * client-side (bundleResearchSource) — the old `.like()` prefilter
+ * answered PostgREST 42883 on every live call (no LIKE for jsonb) so
+ * the alert could never fire; the repair scan dropped the same broken
+ * prefilter (projection key unchanged). */
+function scans(aiJobsRows: Row[], pairingRows: Row[] = [], fallbackWindowRows: Row[] = []) {
   SCRIPTED["ai_jobs|status, job_type, created_at, finished_at"] = { rows: aiJobsRows };
   SCRIPTED["blog_generation_queue|language, pair_id"] = { rows: pairingRows };
-  SCRIPTED["blog_generation_queue|language, created_at"] = { rows: fallbackRows };
+  SCRIPTED["blog_generation_queue|id, language, created_at, article_bundle"] = { rows: fallbackWindowRows };
   SCRIPTED["blog_generation_queue|article_bundle"] = { rows: [] };
   SCRIPTED["blog_generation_queue|status, article_bundle"] = { rows: [] };
 }
@@ -170,6 +176,61 @@ describe("queue-health clearable-scope — GET contract", () => {
     expect(body.clearableFailedJobs).toBe(1);
     expect(body.issues.some((i: string) => i.includes("1 مهمة فشلت نهائيًا"))).toBe(true);
     expect(body.issues.some((i: string) => i.includes("0/8") && i.includes("pair_id (0%)"))).toBe(true);
+  });
+
+  it("a fallback-stamped row in the 24h window NOW raises the alert (impossible before the 42883 fix)", async () => {
+    // The exact dishonest-green the fix closes: P0 fell back to the
+    // static curated pool (bundle stamped researchSource:fallback) and
+    // the old like() prefilter errored 42883 on every call, so the
+    // issue could never appear. Parse-gated fetch-and-filter sees it.
+    const fbBundle = JSON.stringify({ research0: { keywords: [] }, researchSource: "fallback" });
+    scans(
+      [{ status: "done", job_type: "article_generate", created_at: minsAgo(60), finished_at: minsAgo(50) }],
+      [],
+      [
+        { id: "row-fb-en", language: "en", created_at: minsAgo(200), article_bundle: fbBundle },
+        { id: "row-fb-ar", language: "ar", created_at: minsAgo(100), article_bundle: fbBundle },
+        { id: "row-model", language: "en", created_at: minsAgo(50), article_bundle: JSON.stringify({ research0: {}, researchSource: "model" }) },
+        { id: "row-legacy", language: "ar", created_at: minsAgo(30), article_bundle: null },
+        // stray prose mention must NOT count (parse-gate law)
+        { id: "row-prose", language: "en", created_at: minsAgo(10), article_bundle: JSON.stringify({ topic: "the fallback story" }) },
+      ],
+    );
+    const res = await queueHealthGET(REQ);
+    const body = await res.json();
+    expect(res.status).toBe(200);
+    expect(body.ok).toBe(false);
+    expect(
+      body.issues.some((i: string) => i.includes("2 صف توليد مدونة") && i.includes("EN 1 · AR 1")),
+    ).toBe(true);
+  });
+
+  it("model-researched rows only → no fallback issue (the honest green)", async () => {
+    scans(
+      [{ status: "done", job_type: "article_generate", created_at: minsAgo(60), finished_at: minsAgo(50) }],
+      [],
+      [
+        { id: "row-model-1", language: "en", created_at: minsAgo(50), article_bundle: JSON.stringify({ researchSource: "model" }) },
+        { id: "row-legacy-1", language: "ar", created_at: minsAgo(30), article_bundle: null },
+      ],
+    );
+    const body = await (await queueHealthGET(REQ)).json();
+    expect(body.ok).toBe(true);
+    expect(body.issues).toEqual([]);
+  });
+
+  it("bundleResearchSource — the defensive reader (string/null/garbage/legacy/prose)", () => {
+    expect(bundleResearchSource(JSON.stringify({ researchSource: "fallback" }))).toBe("fallback");
+    expect(bundleResearchSource(JSON.stringify({ researchSource: "model" }))).toBe("model");
+    expect(bundleResearchSource(null)).toBeNull();
+    expect(bundleResearchSource("")).toBeNull();
+    expect(bundleResearchSource("not json")).toBeNull();
+    // unknown stamp values (a future arm) read as null — never as fallback
+    expect(bundleResearchSource(JSON.stringify({ researchSource: "gemini" }))).toBeNull();
+    // prose mention is not the stamp
+    expect(bundleResearchSource(JSON.stringify({ topic: "fallback happened" }))).toBeNull();
+    // a bare scalar bundle is not a stamped row
+    expect(bundleResearchSource("\"fallback\"")).toBeNull();
   });
 });
 

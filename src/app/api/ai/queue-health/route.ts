@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin, authRequired } from "@/lib/auth-server";
 import { supabaseAdmin, isSupabaseAdminConfigured } from "@/lib/supabase/admin";
-import { parseBundleRepairLoop } from "@/lib/blog-queue";
+import { parseBundleRepairLoop, bundleResearchSource } from "@/lib/blog-queue";
 
 /**
  * AI QUEUE HEALTH — project-wide early-warning dashboard data.
@@ -78,23 +78,39 @@ export async function GET(request: NextRequest) {
   // shipping STATIC curated-pool topics — the root of the measured
   // cannibalization clusters (C3/F4). Rows inserted since the law carry
   // researchSource:"fallback" in their bundle (stamped by the P0 route);
-  // this best-effort scan surfaces them in the admin panel so a
-  // fallback day is NEVER silent. Degrades open (a scan failure never
-  // breaks the panel).
+  // this scan surfaces them in the admin panel so a fallback day is NEVER
+  // silent. Degrades open (a scan failure never breaks the panel).
+  //
+  // 2026-10-30 (owner order «زر مسح التنبيه…» — measured live, run
+  // 40934223546): the old server-side `.like("article_bundle", …)`
+  // prefilter answered PostgREST 42883 on EVERY call — article_bundle is
+  // a jsonb column and Postgres has no LIKE for jsonb — so the scan
+  // silently no-op'd and the fallback alert could NEVER fire (a
+  // dishonest green on exactly the axis this strip exists for). The
+  // bundles are stored as jsonb STRING scalars (double-encoded text), so
+  // no server-side operator can see their keys either (arrow `->>` sees
+  // nothing on a string scalar). Fixed the countAutomatedPublishedToday
+  // way: bounded window fetch + client-side parse-gate
+  // (bundleResearchSource) — a stray prose mention of "fallback" can
+  // never count, only the exact top-level stamp does.
   try {
     const since = new Date(now - 24 * 60 * 60 * 1000).toISOString();
     const { data: fbRows, error: fbErr } = await supabaseAdmin
       .from("blog_generation_queue")
-      .select("language, created_at")
+      .select("id, language, created_at, article_bundle")
       .gte("created_at", since)
-      .like("article_bundle", '%"researchSource":"fallback"%')
       .limit(50);
-    if (!fbErr && fbRows && fbRows.length > 0) {
-      const en = fbRows.filter((r) => r.language === "en").length;
-      const ar = fbRows.length - en;
-      issues.push(
-        `⚠ ${fbRows.length} صف توليد مدونة في آخر 24 ساعة جاء موضعه من القائمة الثابتة لا من بحث حقيقي (EN ${en} · AR ${ar}) — سلسلة النماذج فشلت في P0 تلك التشغيلات`,
-      );
+    if (!fbErr && Array.isArray(fbRows)) {
+      const fbHits = (
+        fbRows as Array<{ language?: string | null; article_bundle?: string | null }>
+      ).filter((r) => bundleResearchSource(r.article_bundle ?? null) === "fallback");
+      if (fbHits.length > 0) {
+        const en = fbHits.filter((r) => r.language === "en").length;
+        const ar = fbHits.length - en;
+        issues.push(
+          `⚠ ${fbHits.length} صف توليد مدونة في آخر 24 ساعة جاء موضعه من القائمة الثابتة لا من بحث حقيقي (EN ${en} · AR ${ar}) — سلسلة النماذج فشلت في P0 تلك التشغيلات`,
+        );
+      }
     }
   } catch {
     /* blog-fallback scan is best-effort — panel stays honest without it */
@@ -201,15 +217,22 @@ export async function GET(request: NextRequest) {
       .eq("status", "published")
       .gte("created_at", sinceRepair)
       .limit(300);
+    // 2026-10-30 (same 42883 measurement as the fallback scan above):
+    // the old `.like("article_bundle", '%"repairLoop"%')` server-side
+    // prefilter errored on every live call (no LIKE for jsonb), so the
+    // stamped-row half of the counter never saw a single row. The window
+    // is fetched whole and parse-gated client-side instead — the parse
+    // gate below is UNCHANGED law: a stray substring inside topic prose
+    // must never count as a repaired row (only a structurally valid
+    // repairLoop stamp does).
     const { data: repRows, error: repErr } = await supabaseAdmin
       .from("blog_generation_queue")
       .select("status, article_bundle")
       .gte("created_at", sinceRepair)
-      .like("article_bundle", '%"repairLoop"%')
       .limit(300);
     if (!pubErr && !repErr && Array.isArray(pubRows) && Array.isArray(repRows)) {
       const published = pubRows.length;
-      // Parse-gate the like() hits — a stray substring inside topic
+      // Parse-gate the window rows — a stray substring inside topic
       // prose must never count as a repaired row. (Cast mirrors
       // countAutomatedPublishedToday: the generated client types
       // article_bundle as Json; the column is a string in practice.)

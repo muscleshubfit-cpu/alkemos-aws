@@ -343,6 +343,31 @@ export function bundleMarksCoachRequest(bundleJson: string | null): boolean {
 }
 
 /**
+ * Pure: read the `researchSource` stamp from a bundle JSON string.
+ * AUDIT_REPORT §9-1.3 stamps P0's research arm outcome as a top-level
+ * `"fallback" | "model"` marker; this is the defensive reader the
+ * queue-health fallback scan parses rows with (2026-10-30 — see its
+ * comment for why the scan fetches + parses instead of filtering
+ * server-side). Defensive against every bundle shape (raw string /
+ * null / garbage / legacy rows without the stamp): anything that is
+ * not exactly "fallback" or "model" reads as null, so a stray prose
+ * mention can never count as a fallback day.
+ */
+export function bundleResearchSource(
+  bundleJson: string | null,
+): "fallback" | "model" | null {
+  if (!bundleJson) return null;
+  try {
+    const parsed = JSON.parse(bundleJson) as { researchSource?: unknown } | null;
+    if (parsed === null || typeof parsed !== "object") return null;
+    const v = (parsed as { researchSource?: unknown }).researchSource;
+    return v === "fallback" || v === "model" ? v : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Stamp `coachRequested: true` onto a queue row's bundle (best-effort,
  * never throws). Used by P0 when an ADOPTED/JOINED row is consumed by a
  * coach-triggered run — the row then bypasses the P5 daily quota.

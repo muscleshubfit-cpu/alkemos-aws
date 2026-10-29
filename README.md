@@ -456,6 +456,13 @@ are computed from real pipeline rows on every probe: they show an honest
 "clears when its cause is resolved" note instead of a dead dismissal
 button, never a cosmetic zero — the 2026-10-30 fix for the button that
 cleared 0 records while the pairing alert (0/6) correctly stayed red.
+The same fix also revived two structurally dead scans measured live:
+`like()` filters over the jsonb `article_bundle` column answered
+PostgREST 42883 on every call (no LIKE for jsonb), so the research
+fallback alert could never fire and the R5 repair counter never
+counted — both now fetch their bounded window and parse-gate the
+bundle client-side (`bundleResearchSource`), the
+`countAutomatedPublishedToday` precedent.
 Arabic Latin-purity repair is likewise **localized**: a deterministic
 dictionary pass arabizes known fitness/supplement terms with zero AI
 calls, and only the remaining tokens go to a tiny conversion call
