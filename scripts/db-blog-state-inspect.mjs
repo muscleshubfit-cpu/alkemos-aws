@@ -203,4 +203,73 @@ console.log(JSON.stringify(recent.map(summarize), null, 2));
   }
   console.log("== QUEUE-HEALTH CENSUS: research fallback (24h window) ==");
   console.log(JSON.stringify(fallback, null, 2));
+
+  // 5d. OPERATOR PROBES (2026-10-30, same owner order — the route's two
+  //     `like()` scans over article_bundle): the live census above caught
+  //     PostgREST 42883 ("no operator matches") on `like` — the classic
+  //     jsonb-vs-LIKE failure. These probes settle the column's live
+  //     type/shape and which operator actually works, BEFORE any route
+  //     change: (a) OpenAPI column type, (b) typeof one live bundle value,
+  //     (c) like vs arrow (->> eq / not-is-null) for BOTH markers.
+  try {
+    const specRes = await fetch(`${SUPABASE_URL}/rest/v1/`, {
+      headers: { apikey: SERVICE_KEY, Authorization: `Bearer ${SERVICE_KEY}` },
+    });
+    if (specRes.ok) {
+      const spec = await specRes.json();
+      const props =
+        spec?.definitions?.blog_generation_queue?.properties ?? null;
+      const types = {};
+      for (const [k, v] of Object.entries(props || {})) types[k] = v?.format || v?.type;
+      console.log("== BUNDLE PROBE: blog_generation_queue column types (OpenAPI) ==");
+      console.log(JSON.stringify({ article_bundle: types.article_bundle ?? "UNKNOWN", pair_id: types.pair_id ?? "UNKNOWN" }, null, 2));
+    } else {
+      console.log("== BUNDLE PROBE: OpenAPI fetch failed ==", specRes.status);
+    }
+  } catch (e) {
+    console.log("== BUNDLE PROBE: OpenAPI error ==", String(e).slice(0, 150));
+  }
+
+  try {
+    const sample = await rest(
+      "blog_generation_queue?select=id,article_bundle&order=created_at.desc&limit=1",
+    );
+    const s = sample[0];
+    const b = s?.article_bundle;
+    console.log("== BUNDLE PROBE: live value shape ==");
+    console.log(
+      JSON.stringify(
+        {
+          id: s?.id,
+          typeof: typeof b,
+          is_object: b !== null && typeof b === "object",
+          keys: b !== null && typeof b === "object" ? Object.keys(b).slice(0, 8) : null,
+          head_60: typeof b === "string" ? b.slice(0, 60) : null,
+        },
+        null,
+        2,
+      ),
+    );
+  } catch (e) {
+    console.log("== BUNDLE PROBE: sample error ==", String(e).slice(0, 150));
+  }
+
+  // (c) operator A/B: the exact filters the route needs, tried live.
+  const probes = [
+    ["like (current route form — researchSource)", `article_bundle=like.*${encodeURIComponent('"researchSource":"fallback"')}*`],
+    ["arrow eq (researchSource)", `article_bundle->>researchSource=eq.fallback`],
+    ["like (current route form — repairLoop)", `article_bundle=like.*${encodeURIComponent('"repairLoop"')}*`],
+    ["arrow not-null (repairLoop)", `article_bundle->>repairLoop=not.is.null`],
+  ];
+  console.log("== BUNDLE PROBE: operator A/B on article_bundle ==");
+  for (const [label, filter] of probes) {
+    try {
+      const rows = await rest(
+        `blog_generation_queue?select=id&${filter}&limit=25`,
+      );
+      console.log(JSON.stringify({ probe: label, ok: true, rows: rows.length }));
+    } catch (e) {
+      console.log(JSON.stringify({ probe: label, ok: false, error: String(e).slice(0, 160) }));
+    }
+  }
 }
