@@ -137,9 +137,9 @@ def auth_user_by_email() -> dict | None:
     if st != 200 or not isinstance(page, dict):
         print(f"FATAL: admin user list failed (HTTP {st}): {str(page)[:200]}")
         sys.exit(1)
-    users = [u for u in page.get("users", [])
+    users = [u for u in (page.get("users") or [])
              if u.get("email", "").lower() == TARGET_EMAIL]
-    if len(page.get("users", [])) >= 1000:
+    if len(page.get("users") or []) >= 1000:
         print("WARN: user page looks full (1000) — verify no pagination cut")
     return users[0] if users else None
 
@@ -149,9 +149,9 @@ def swagger_tables() -> dict:
     if st != 200 or not isinstance(spec, dict):
         print(f"FATAL: cannot read OpenAPI spec (HTTP {st})")
         sys.exit(1)
-    return {t: list((spec.get("definitions", {}).get(t, {})
-                     .get("properties", {}) or {}).keys())
-            for t in spec.get("definitions", {})}
+    return {t: list(((spec.get("definitions") or {}).get(t, {})
+                     .get("properties", {})) or {}).keys()
+            for t in (spec.get("definitions") or {})}
 
 
 def count_rows(table: str, col: str, value: str) -> int | str:
@@ -187,7 +187,7 @@ def main() -> int:
           f" · last_sign_in={str(au.get('last_sign_in_at'))[:19]}")
     print(f"  email_confirmed={'yes' if au.get('email_confirmed_at') else 'no'}"
           f" · phone={au.get('phone') or '-'}"
-          f" · providers={','.join(i.get('provider','?') for i in au.get('identities', [])) or 'email'}")
+          f" · providers={','.join(i.get('provider', '?') for i in (au.get('identities') or [])) or 'email'}")
 
     # ---- 2) link to the user profile + identity gate ----------------------
     st, profs = http("GET", "/rest/v1/profiles?select=id,email,full_name,"
