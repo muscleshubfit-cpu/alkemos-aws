@@ -9,7 +9,8 @@ import { parseBundleRepairLoop } from "@/lib/blog-queue";
  * GET /api/ai/queue-health   (coach-only)
  * → { counts: {queued, processing, done, failed},
  *     oldestQueuedMinutes, lastDone: {type, finishedAt} | null,
- *     lastRunnerRunAt: string | null, ok: boolean, issues: string[] }
+ *     lastRunnerRunAt: string | null, ok: boolean, issues: string[],
+ *     clearableFailedJobs: number }
  *
  * OWNER DIRECTIVE (2026-08-28, «محتاج اتاكد ان مفيش مشاكل مشابهة تحصل
  * مستقبلا فى المشروع كله»): the 2026-08-28 incidents were all "silent
@@ -243,6 +244,16 @@ export async function GET(request: NextRequest) {
     lastRunnerRunAt,
     pairing,
     repair,
+    // CLEARABLE-SCOPE CONTRACT (2026-10-30, owner order «زر مسح التنبيه يعرض
+    // تم مسح 0 بينما يظل التنبيه الأحمر 0/6 pair_id ظاهرًا»): the issues array
+    // mixes FAILED ai_jobs rows (transient diagnostics the DELETE actually
+    // removes) with LIVE conditions computed from real pipeline rows
+    // (stuck queue · research fallback · pairing adoption · stale runner) —
+    // none of which any record-deletion can honestly resolve. This field is
+    // the explicit contract for what the dismissal CAN clear: the UI offers
+    // the clear button ONLY when it is > 0, so a live-state alert is never
+    // offered a dismissal that would clear 0 records and stay red.
+    clearableFailedJobs: counts.failed,
     ok: issues.length === 0,
     issues,
   });
@@ -266,6 +277,15 @@ export async function GET(request: NextRequest) {
  * (select ids → `.delete().in("id", …)`) and wrapped in try/catch so the
  * route can ONLY ever answer JSON — the toast now shows a real message
  * (or an Arabic fallback with the HTTP code) instead of a cryptic stub.
+ *
+ * CLEARABLE-SCOPE (2026-10-30, same owner order as the GET contract
+ * above): this verb's scope is EXACTLY the failed ai_jobs rows — the
+ * records behind the «N مهمة فشلت نهائيًا» issue and nothing else. The
+ * other alert sources (blog_generation_queue pairing/fallback scans,
+ * stuck-queue math, runner staleness) are LIVE conditions over real
+ * generation history: deleting those rows would destroy published-article
+ * records, so they are NEVER touched here — they clear when their cause
+ * resolves, and the UI never offers this button for them.
  */
 export async function DELETE(request: NextRequest) {
   if (authRequired) {

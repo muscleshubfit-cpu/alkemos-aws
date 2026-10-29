@@ -38,7 +38,7 @@ jobs:
         with:
           node-version: 24
 
-      - name: Read blog_posts state (target slugs + duplicate census + review census + 5 recent)
+      - name: Read blog_posts state (target slugs + duplicate census + review census + 5 recent) + queue-health census (ai_jobs · pairing · fallback — 2026-10-30)
         env:
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}

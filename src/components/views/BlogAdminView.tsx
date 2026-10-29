@@ -66,7 +66,7 @@ export function BlogAdminView() {
   // PROJECT-WIDE PREVENTION (2026-08-28): one-glance AI pipeline health —
   // the 2026-08-28 incidents were all SILENT failures (stuck queue,
   // invisible results, dishonest greens). This strip makes rot visible.
-  const [qHealth, setQHealth] = useState<{ ok: boolean; issues: string[]; counts?: Record<string, number>; lastRunnerRunAt?: string | null } | null>(null);
+  const [qHealth, setQHealth] = useState<{ ok: boolean; issues: string[]; counts?: Record<string, number>; lastRunnerRunAt?: string | null; clearableFailedJobs?: number } | null>(null);
   const [qClearing, setQClearing] = useState(false);
   const [genJob, setGenJob] = useState<{ id: string; topic: string } | null>(null);
   const activeGenWatcher = useRef<string | null>(null);
@@ -240,6 +240,18 @@ export function BlogAdminView() {
   // يد»): the red health banner counted FAILED queue rows forever — this
   // is the manual dismissal: DELETE the failed jobs from ai_jobs, then
   // re-probe so the strip reflects the cleaned queue immediately.
+  //
+  // CLEARABLE-SCOPE GATE (2026-10-30, owner order «زر مسح التنبيه يعرض تم
+  // مسح 0 بينما يظل التنبيه الأحمر 0/6 pair_id ظاهرًا»): the button is
+  // offered ONLY when the API reports clearable failed-job records
+  // (clearableFailedJobs > 0) — the one alert source a record-deletion
+  // can actually resolve. Live-state alerts (pairing adoption, research
+  // fallback, stuck queue, stale runner) are computed from real pipeline
+  // rows every probe: they stay red until their cause is fixed and are
+  // NEVER offered a dismissal that would clear 0 records (the dishonest
+  // «تم مسح 0 ✅» + still-red strip this order closed). The toast is
+  // equally honest: 0 deleted (a race — cleared elsewhere) reads as a
+  // neutral no-records message, never a fake success.
   const clearFailedJobs = async () => {
     if (qClearing) return;
     setQClearing(true);
@@ -253,11 +265,20 @@ export function BlogAdminView() {
         throw new Error(
           data?.error || (isAr ? `تعذّر المسح (كود ${res.status})` : `Clear failed (HTTP ${res.status})`),
         );
+      const deleted = typeof data?.deleted === "number" ? data.deleted : 0;
+      if (deleted > 0) {
+        toast.success(isAr ? `تم مسح ${deleted} سجل مهمة فاشلة ✅ — أعيد فحص الحالة` : `Cleared ${deleted} failed-job records ✅ — health re-probed`);
+      } else {
+        toast.info(
+          isAr
+            ? "لا توجد سجلات مهام فاشلة للمسح — التنبيهات المعروضة تعكس حالة حية تُحل بمعالجة سببها لا بالمسح"
+            : "No failed-job records to clear — the alerts shown reflect a live state that resolves by fixing its cause, not by dismissing",
+        );
+      }
       const h = await fetch("/api/ai/queue-health");
       if (h.ok) setQHealth(await h.json());
-      toast.success(isAr ? `تم مسح ${data?.deleted ?? 0} مهمة فاشلة من السجل ✅` : `Cleared ${data?.deleted ?? 0} failed jobs ✅`);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : (isAr ? "تعذّر مسح التنبيه" : "Couldn't clear the alert"));
+      toast.error(e instanceof Error ? e.message : (isAr ? "تعذّر مسح سجلات المهام الفاشلة" : "Couldn't clear the failed-job records"));
     } finally {
       setQClearing(false);
     }
@@ -495,14 +516,27 @@ export function BlogAdminView() {
                 <span>🔴 {qHealth.issues.join(" · ")}</span>
                 {/* Manual dismissal — deletes the failed queue rows so the
                     alert is clearable, not eternal (stuck-queue issues, if
-                    any, are recomputed live and stay honest). */}
-                <button
-                  onClick={() => void clearFailedJobs()}
-                  disabled={qClearing}
-                  className="rounded-md border border-rose-300 px-2 py-0.5 font-medium transition-colors hover:bg-rose-50 disabled:opacity-50"
-                >
-                  {qClearing ? (isAr ? "جارٍ المسح…" : "Clearing…") : (isAr ? "🗑 مسح التنبيه" : "🗑 Dismiss")}
-                </button>
+                    any, are recomputed live and stay honest).
+                    CLEARABLE-SCOPE GATE (2026-10-30): the button appears
+                    ONLY when the probe reports clearable failed-job records;
+                    live-state alerts (pairing/fallback/stuck-queue/runner)
+                    carry the honest note instead — they clear when their
+                    cause resolves, never by record deletion. */}
+                {(qHealth.clearableFailedJobs ?? 0) > 0 ? (
+                  <button
+                    onClick={() => void clearFailedJobs()}
+                    disabled={qClearing}
+                    className="rounded-md border border-rose-300 px-2 py-0.5 font-medium transition-colors hover:bg-rose-50 disabled:opacity-50"
+                  >
+                    {qClearing ? (isAr ? "جارٍ المسح…" : "Clearing…") : (isAr ? `🗑 مسح سجلات المهام الفاشلة (${qHealth.clearableFailedJobs})` : `🗑 Clear failed-job records (${qHealth.clearableFailedJobs})`)}
+                  </button>
+                ) : (
+                  <span className="text-rose-500/80">
+                    {isAr
+                      ? "تنبيه حالة حية يُحسب من البيانات الفعلية — يختفي تلقائيًا متى زال سببه (لا سجلات فاشلة للمسح)"
+                      : "Live-state alert computed from real data — it clears automatically once its cause is resolved (no failed-job records to clear)"}
+                  </span>
+                )}
               </p>
             ))}
           </div>

@@ -446,6 +446,16 @@ cycle count (`REPAIRS_USED`), and `GET /api/ai/queue-health` (admin) carries
 a `repair` counter over a 14-day window — `published` · `afterRepair` ·
 `exhausted` · `sharePct` · `recoveryPct` — so «repair-first vs regenerate»
 is read from database truth, not guessed.
+The health strip's red banner also separates what a dismissal can honestly
+fix from what it cannot: the response carries `clearableFailedJobs` — the
+count of failed `ai_jobs` rows the DELETE verb actually removes — and the
+admin blog panel offers the clear button ONLY when that count is > 0, with
+a scoped label («clear failed-job records (N)»). Live-state alerts
+(bilingual-pairing adoption, research fallback, stuck queue, stale runner)
+are computed from real pipeline rows on every probe: they show an honest
+"clears when its cause is resolved" note instead of a dead dismissal
+button, never a cosmetic zero — the 2026-10-30 fix for the button that
+cleared 0 records while the pairing alert (0/6) correctly stayed red.
 Arabic Latin-purity repair is likewise **localized**: a deterministic
 dictionary pass arabizes known fitness/supplement terms with zero AI
 calls, and only the remaining tokens go to a tiny conversion call

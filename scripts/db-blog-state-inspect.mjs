@@ -124,3 +124,83 @@ const recent = await rest(
 );
 console.log("== 5 MOST RECENTLY UPDATED ROWS ==");
 console.log(JSON.stringify(recent.map(summarize), null, 2));
+
+// ── 5. QUEUE-HEALTH CENSUS (2026-10-30, owner order «زر مسح التنبيه يعرض
+//      تم مسح 0 بينما يظل التنبيه الأحمر 0/6 pair_id ظاهرًا»): reproduces
+//      the EXACT three scans GET /api/ai/queue-health runs, read-only, so
+//      the strip's numbers can be verified against database truth from a
+//      dispatch-only channel. Prints counts + per-row identity (id/lang/
+//      status/dates) — never bundle bodies, never secrets.
+{
+  // 5a. ai_jobs census (route reads the 500 newest rows).
+  const jobRows = await rest(
+    "ai_jobs?select=id,status,job_type,created_at,finished_at&order=created_at.desc&limit=500",
+  );
+  const jobCounts = { queued: 0, processing: 0, done: 0, failed: 0, other: 0 };
+  for (const r of jobRows) {
+    const st = String(r.status || "");
+    if (st in jobCounts) jobCounts[st] += 1;
+    else jobCounts.other += 1;
+  }
+  const failedRows = jobRows.filter((r) => r.status === "failed");
+  console.log("== QUEUE-HEALTH CENSUS: ai_jobs (500 newest) ==");
+  console.log(
+    JSON.stringify(
+      {
+        scanned: jobRows.length,
+        counts: jobCounts,
+        clearableFailedJobs: failedRows.length,
+        failed_ids: failedRows.map((r) => r.id),
+      },
+      null,
+      2,
+    ),
+  );
+
+  // 5b. pairing adoption — the route's 7-day window scan.
+  const sincePair = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+  const pairRows = await rest(
+    `blog_generation_queue?select=id,language,pair_id,status,created_at&created_at=gte.${sincePair}&order=created_at.desc&limit=100`,
+  );
+  const paired = pairRows.filter(
+    (r) => typeof r.pair_id === "string" && r.pair_id.length > 0,
+  );
+  const pct = pairRows.length > 0 ? Math.round((paired.length / pairRows.length) * 100) : 100;
+  console.log("== QUEUE-HEALTH CENSUS: pairing adoption (7-day window) ==");
+  console.log(
+    JSON.stringify(
+      {
+        window_since: sincePair,
+        rows: pairRows.length,
+        paired: paired.length,
+        pct,
+        alert_fires: pairRows.length >= 4 && pct < 25,
+        per_row: pairRows.map((r) => ({
+          id: r.id,
+          lang: r.language,
+          status: r.status,
+          pair_id: r.pair_id,
+          created_at: r.created_at,
+        })),
+      },
+      null,
+      2,
+    ),
+  );
+
+  // 5c. research fallback — the route's 24h window scan (pattern encoded
+  //      exactly like supabase-js .like() does: quotes + colon).
+  const since24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+  let fallback = { rows: 0, error: null };
+  try {
+    const fbPattern = encodeURIComponent('"researchSource":"fallback"');
+    const fbRows = await rest(
+      `blog_generation_queue?select=id,language,created_at&created_at=gte.${since24h}&article_bundle=like.*${fbPattern}*&limit=50`,
+    );
+    fallback.rows = fbRows.length;
+  } catch (e) {
+    fallback.error = String(e).slice(0, 200);
+  }
+  console.log("== QUEUE-HEALTH CENSUS: research fallback (24h window) ==");
+  console.log(JSON.stringify(fallback, null, 2));
+}
