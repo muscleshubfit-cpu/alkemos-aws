@@ -1,0 +1,63 @@
+# QA legacy admin cleanup (QA-TEST-ACCOUNTS-CLOSE addendum — owner order
+# 2026-10-29 evening: «احذف حساب الاختبار القديم التالي من بيئة الإنتاج
+# في Alkemos: QA Admin Test / alkemos.qa.admin@gmail.com»).
+#
+# WHY THIS EXISTS: the 0073-era QA admin predates the Test-Accounts Channel
+# (a @gmail.com address without the reserved-domain + is_test_account pair),
+# so it survived the 18-account wipe of QA-TEST-ACCOUNTS-CLOSE — that scope
+# required BOTH channel conditions. This one-time dispatchable tool deletes
+# exactly that account through the same sanctioned machinery the
+# migration-state gate uses since 49358a97 (Actions + service key + GoTrue
+# ADMIN API for the auth user — never direct auth.users SQL; data rows via
+# PostgREST, the 0095 v2 map).
+#
+# SAFETY: scripts/qa/legacy_admin_cleanup.py is identity-gated (email
+# exact + full_name "QA Admin Test" + role admin + 0073 era + auth↔profile
+# id match) and aborts on any mismatch or payment-evidence column BEFORE
+# deleting anything. dry_run=true (the default) is census-only. Wallet law
+# (0066): coach_wallet_transactions.created_by is NULLIFIED, rows kept.
+#
+# FUTURE-ACCOUNTS LAW: this deletion does NOT forbid future test accounts
+# — those stay allowed under the Test-Accounts Channel (AGENTS §3.3/§6 +
+# docs/QA-TEST-ACCOUNTS-2026-10-26.md). Idempotent: re-running after the
+# account is gone is a clean no-op.
+#
+# Runs: manual dispatch ONLY (never on push/schedule — a deletion tool
+# must never fire as a side effect of anything).
+name: QA legacy admin cleanup (one-time, identity-gated)
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run (census + identity verification only)"
+        type: boolean
+        default: true
+
+concurrency:
+  group: qa-legacy-admin-cleanup
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  cleanup:
+    name: legacy QA-admin cleanup (guarded)
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Checkout (pinned v4 — 2026-10-10 audit)
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+
+      - name: Run the guarded cleanup (dry-run or execute)
+        env:
+          SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+        run: |
+          if [ "${{ inputs.dry_run }}" = "true" ]; then
+            python3 scripts/qa/legacy_admin_cleanup.py --dry-run
+          else
+            python3 scripts/qa/legacy_admin_cleanup.py --execute
+          fi
