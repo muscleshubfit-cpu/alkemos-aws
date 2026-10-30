@@ -85,6 +85,19 @@ const NICHE_EN =
 const NICHE_AR =
   "التدريب والتغذية الرياضية عبر الإنترنت (Alkemos): التمارين، بناء العضلات، حرق الدهون، الأكل الصحي، المكملات، الاستشفاء";
 
+/** PHASE 5-A (owner order 2026-10-31 «تمرير الاستعلام المناسب» §10-أ):
+ *  the concise REAL search queries for the Tavily arm — one per language.
+ *  First-cut discovery queries (trending questions/keywords in the
+ *  niche, phrased the way real people search — the Phase-3 battery
+ *  measured Tavily answering 10/11 directly-relevant Arabic results on
+ *  natural-language queries). Quality is measured LIVE by the
+ *  grounded-failover probe and the first monitored AR run — never
+ *  assumed from connection success (owner decision #7). */
+const TAVILY_SEARCH_QUERY_AR =
+  "الأسئلة الأكثر بحثًا الآن في التغذية الرياضية وكمال الأجسام وحرق الدهون والمكملات الغذائية";
+const TAVILY_SEARCH_QUERY_EN =
+  "most searched questions right now in sports nutrition muscle building fat loss and supplements";
+
 // PHASE 171 (blog-audit proposal ب — 2026-09-10): the weak local
 // parseJSONLoose (strict JSON.parse + a {…} regex — NO truncation repair,
 // NO control-character escaping) was DELETED. P0/P1/P2/P4 in the
@@ -389,8 +402,9 @@ export function fallbackResearch(lang: "en" | "ar", recentTitles: string[] = [])
 }
 
 /**
- * PHASE 0 — ONE REAL grounded Gemini search per language (owner order
- * 2026-10-06 Phase 344). No chain, no simulation, no curated substitute:
+ * PHASE 0 — ONE REAL grounded search per language (owner order 2026-10-06
+ * Phase 344; ladder re-ordered PHASE 5-A 2026-10-31 — Tavily first per the
+ * approved §6-أ design). No chain, no simulation, no curated substitute:
  * a failed or ungrounded attempt THROWS (the route's 500 → the runner's
  * step-level ×3 retry rides out transient overload; a final failure dies
  * red instead of silently publishing fake research).
@@ -461,10 +475,15 @@ Return STRICT JSON only, no markdown fences:
   "topics":   [ "..." ]   // exactly 5 specific, non-generic article topic suggestions NOT overlapping with the recent titles above; EACH must target a long-tail keyword above; VARY the article types across the 5 (guide / myth-busting / comparison / step-by-step plan / science deep-dive); suggestions must differ from the recent coverage at the SEARCH-INTENT and ANGLE level (different reader goal, not just different wording)
 }`;
 
-  // PHASE 344 + BLOG-PROVIDER-FAILOVER 2026-10-16: the REAL grounded call —
-  // now a CROSS-PROVIDER failover walk (gemini googleSearch → openrouter
-  // web plugin → groq browser_search; NVIDIA honestly excluded — no
-  // grounded-search capability). jsonMode is intentionally omitted: the
+  // PHASE 344 + BLOG-PROVIDER-FAILOVER 2026-10-16 + PHASE 5-A 2026-10-31:
+  // the REAL grounded call — now a CROSS-PROVIDER failover walk in the
+  // §6-أ ladder order (tavily search API → groq browser_search → gemini
+  // googleSearch dormant-last; the openrouter web arm was REMOVED from
+  // the effective ladder — dead default model + paid plugin, P0-2).
+  // NVIDIA honestly excluded — no grounded-search capability. The Tavily
+  // arm receives the LANGUAGE-APPROPRIATE concise search query + the lang
+  // (the §10-أ «تمرير الاستعلام المناسب» law) while every LLM arm keeps
+  // the full research prompt below. jsonMode is intentionally omitted: the
   // gemini arm suppresses the JSON mime-type with tools anyway (REST
   // rejects JSON-mode + tool use), so the STRICT-JSON instruction above +
   // the 161.5-hardened parseJSON carry the contract (the Groq Phase 177
@@ -476,6 +495,8 @@ Return STRICT JSON only, no markdown fences:
   try {
     const { text, model, grounding, provider } = await callGroundedSearch(prompt, {
       tag: "blog:research",
+      lang,
+      searchQuery: lang === "ar" ? TAVILY_SEARCH_QUERY_AR : TAVILY_SEARCH_QUERY_EN,
       systemPrompt:
         "You are a strict JSON API endpoint. The user message describes the research task; your ENTIRE response MUST be a single valid JSON object matching the requested schema — no prose, no markdown, no commentary, no code fences. The JSON object starts with { and ends with }.",
       temperature: 0.7,

@@ -228,19 +228,24 @@ describe("Phase 177 — dead-model purge (14-day live audit, owner order «ال�
       }
     });
 
-    it("GEMINI-FIRST law (Phase 343, owner order 2026-10-06) — gemini leads the strongest chain", () => {
-      expect(INTERLEAVED_STRONGEST_CHAIN[0].provider).toBe("gemini");
-      expect(INTERLEAVED_STRONGEST_CHAIN[0].model).toBe("gemini-3.5-flash");
+    it("GEMINI-FIRST CANCELLED (Phase 5-A, owner order 2026-10-31 «إلغاء قانون Gemini-First نهائيًا، بما يشمل السلاسل الثقيلة») — gemini is the TAIL of the strongest chain; the pre-343 head is restored", () => {
+      expect(INTERLEAVED_STRONGEST_CHAIN[0].provider).toBe("openrouter");
+      expect(INTERLEAVED_STRONGEST_CHAIN[0].model).toBe("nvidia/nemotron-3-ultra-550b-a55b:free");
+      const last = INTERLEAVED_STRONGEST_CHAIN[INTERLEAVED_STRONGEST_CHAIN.length - 1];
+      expect(last.provider).toBe("gemini");
+      expect(last.model).toBe("gemini-3.5-flash");
+      // ZERO forced priority anywhere: gemini appears exactly once, last.
+      expect(INTERLEAVED_STRONGEST_CHAIN.filter((e) => e.provider === "gemini")).toHaveLength(1);
     });
 
-    it("strongest-first law intact below gemini — openrouter ultra-550b is slot 2", () => {
-      expect(INTERLEAVED_STRONGEST_CHAIN[1].provider).toBe("openrouter");
-      expect(INTERLEAVED_STRONGEST_CHAIN[1].model).toBe("nvidia/nemotron-3-ultra-550b-a55b:free");
+    it("strongest-first law intact at the head — openrouter ultra-550b is slot 1 (the pre-343 order)", () => {
+      expect(INTERLEAVED_STRONGEST_CHAIN[0].provider).toBe("openrouter");
+      expect(INTERLEAVED_STRONGEST_CHAIN[0].model).toBe("nvidia/nemotron-3-ultra-550b-a55b:free");
     });
 
-    it("best live performer sits in slot 3 (groq/gpt-oss-120b, 85.3%)", () => {
-      expect(INTERLEAVED_STRONGEST_CHAIN[2].provider).toBe("groq");
-      expect(INTERLEAVED_STRONGEST_CHAIN[2].model).toBe("openai/gpt-oss-120b");
+    it("best live performer sits in slot 2 (groq/gpt-oss-120b, 85.3%)", () => {
+      expect(INTERLEAVED_STRONGEST_CHAIN[1].provider).toBe("groq");
+      expect(INTERLEAVED_STRONGEST_CHAIN[1].model).toBe("openai/gpt-oss-120b");
     });
 
     it("all four providers are represented (interleave + rotation inputs)", () => {
@@ -281,14 +286,18 @@ describe("Phase 177 — dead-model purge (14-day live audit, owner order «ال�
       expect(idx120).toBeLessThan(idxLightning);
     });
 
-    it("GEMINI-FIRST law (Phase 343) — gemini leads the fast chain (EVO) too", () => {
-      expect(INTERLEAVED_FAST_CHAIN[0].provider).toBe("gemini");
-      expect(INTERLEAVED_FAST_CHAIN[0].model).toBe("gemini-3.5-flash");
+    it("GEMINI-FIRST CANCELLED (Phase 5-A) — gemini is the TAIL of the fast chain (EVO); the speed law head is restored", () => {
+      expect(INTERLEAVED_FAST_CHAIN[0].provider).toBe("groq");
+      expect(INTERLEAVED_FAST_CHAIN[0].model).toBe("openai/gpt-oss-20b");
+      const last = INTERLEAVED_FAST_CHAIN[INTERLEAVED_FAST_CHAIN.length - 1];
+      expect(last.provider).toBe("gemini");
+      expect(last.model).toBe("gemini-3.5-flash");
+      expect(INTERLEAVED_FAST_CHAIN.filter((e) => e.provider === "gemini")).toHaveLength(1);
     });
 
-    it("speed law intact below gemini — gpt-oss-20b (fastest TTFT) is slot 2", () => {
-      expect(INTERLEAVED_FAST_CHAIN[1].model).toBe("openai/gpt-oss-20b");
-      expect(INTERLEAVED_FAST_CHAIN[1].provider).toBe("groq");
+    it("speed law intact at the head — gpt-oss-20b (fastest TTFT) is slot 1", () => {
+      expect(INTERLEAVED_FAST_CHAIN[0].model).toBe("openai/gpt-oss-20b");
+      expect(INTERLEAVED_FAST_CHAIN[0].provider).toBe("groq");
     });
   });
 

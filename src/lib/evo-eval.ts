@@ -13,8 +13,13 @@
  * time on a stable input — exactly what "يرافق كل تغيير برومبت" needs.
  * RAG/personalization quality is deliberately out of scope here.
  *
- * THE JUDGE rides the SAME 3-provider chain (fast chain — cheapest models
- * first) — no new provider, no new key. Judge output is strict JSON,
+ * THE JUDGE rides the SAME provider chain as production EVO chat (the fast
+ * chain — cheapest models first; post-5-A: groq-20b → groq-120b → nvidia →
+ * openrouter, gemini as the keyless-skipped tail) — no new provider, no
+ * new key (the Phase-4 §12-7 "add GEMINI_API_KEY to the eval" proposal was
+ * REJECTED by the owner 2026-10-31: the eval measures the production
+ * selection mechanism, which the Gemini-first cancellation aligned).
+ * Judge output is strict JSON,
  * parsed defensively (parseEvalVerdict never throws — an unusable verdict
  * becomes null and the runner records a soft error instead of a score).
  */

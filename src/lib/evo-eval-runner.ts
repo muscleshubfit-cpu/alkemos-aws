@@ -19,7 +19,13 @@
  *   always printed (visible, counted), they only fail the run when they
  *   push the run below that majority floor.
  * - Provider tags: "evo-eval" (answers) and "evo-eval-judge" (judge) —
- *   both ride callFreeAIFallbackChain (UNIVERSAL MODEL SWITCHER law).
+ *   both ride callFreeAIFallbackChain (UNIVERSAL MODEL SWITCHER law) with
+ *   chain:"fast" — the SAME selection mechanism production EVO chat uses
+ *   (EVAL FIDELITY LAW, Phase 5-A 2026-10-31: the workflow deliberately
+ *   carries NO gemini key — the owner rejected the §12-7 key-add; the
+ *   post-cancellation production fast chain is led by the 3 providers the
+ *   eval has keys for, with gemini as a tail entry the eval's maxModels
+ *   clamp never reaches).
  *
  * CLEANING: answers get the same user-visible sanitizers as the chat route
  * (think-block strip + sanitizeLatexToPlain + stripMarkdownSyntax) so the

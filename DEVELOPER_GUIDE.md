@@ -598,8 +598,8 @@ bun run build
 
 ### الـ AI Layer (المسار الموحد)
 
-> **المزودون أربعة:** Gemini (أولوية أولى — قانون gemini-first 343 بأمر المالك 2026-10-06، مجاني) + OpenRouter + Groq + NVIDIA NIM — القانون الكامل
-> (المساران القانونيان، تعليق تدوير الرائد عند توفر مفتاح Gemini، ميزانية الـ52 ثانية) بيتُه
+> **المزودون أربعة + ذراع بحث:** OpenRouter + Groq + NVIDIA NIM + Gemini (إدخال ذيل عادي بكلتا السلسلتين — **قانون gemini-first أُلغي بأمر المالك 2026-10-31**؛ التدوير الثلاثي يقود كل نداء) + **Tavily ذراع البحث الأولى** بالسلم المُسنَد (بحث/استخراج فقط — لا توليد أبدًا) — القانون الكامل
+> (المساران القانونيان، سلم البحث المُسنَد tavily→groq→gemini خامدة، ميزانية الـ52 ثانية) بيتُه
 > **`AGENTS.md` §8**، والتنفيذ وخريطة الموديلات الحية بيتُها
 > **`src/lib/ai-provider.ts`**. خلاصة الدوال:
 
@@ -607,7 +607,8 @@ bun run build
 |---|---|---|
 | `callAI(prompt, options)` | المدخل العام الموحد | موجّه لمزود واحد بالإعدادات — أخطاء صادقة (لا تبديل صامت بين المزودين) |
 | `callAIWithFallback(prompt, options)` | **Plans, Articles, Research** — جودة عالية | Sequential — أقوى نموذج أولاً ثم التالي عند الفشل |
-| `callFreeAIFallbackChain(prompt, options)` | **EVO chat وكل المسارات المجانية** | سلسلة متشابكة رباعية المزودين (gemini-first عند توفر GEMINI_API_KEY ↔ openrouter ↔ groq ↔ nvidia) بميزانية مقيدة ≤52s — بلا مفتاح Gemini السلوك القديم حرفيًا |
+| `callFreeAIFallbackChain(prompt, options)` | **EVO chat وكل المسارات المجانية** | سلسلة متشابكة رباعية المزودين (تدوير ثلاثي openrouter↔groq↔nvidia للرائد + Gemini ذيلًا — قانون gemini-first أُلغي 2026-10-31) بميزانية مقيدة ≤52s — بلا مفتاح Gemini يُتخطى الإدخال بلا استهلاك محاولات |
+| `callGroundedSearch(prompt, options)` | **البحث المُسنَد (P0 بحث المدونة)** | سلم §6-أ: Tavily (بحث حقيقي بأرصدة مستقلة + توليف JSON على السلسلة العادية ببوابة أدلة URL حية) → Groq browser_search → Gemini خامدة (`GEMINI_GROUNDED_ENABLED=0` يعطلها بلا نشر) — ذراع OR web خارج السلم |
 | `callFreeOpenRouterRace(prompt, options, raceCount)` | **التبديلات (Swap) فقط** — سرعة | سباق توازي — أول رد ناجح يفوز |
 | local fallback (`src/lib/ai-local.ts`) | فشل كل المزودات | مولّد محلي حتمي لتدهور رشيق |
 

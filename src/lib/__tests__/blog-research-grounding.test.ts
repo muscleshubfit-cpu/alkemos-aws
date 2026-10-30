@@ -95,7 +95,7 @@ describe("Phase 344 — the grounded call lives in the native adapter (no consum
   });
 });
 
-describe("Phase 344 — default gemini model switched 3.8-flash → 3.5-flash (chains + registry)", () => {
+describe("Phase 344/5-A — default gemini model 3.5-flash + the CANCELLED gemini-first law", () => {
   it("the registry default is 3.5-flash and no 3.8-flash default remains in the live code", () => {
     expect(providerSrc).toContain('defaultModel: "gemini-3.5-flash"');
     expect(providerSrc).not.toContain('defaultModel: "gemini-3.8-flash"');
@@ -103,13 +103,35 @@ describe("Phase 344 — default gemini model switched 3.8-flash → 3.5-flash (c
     expect(providerSrc).not.toContain('"gemini-3.8-flash" leads');
   });
 
-  it("GEMINI-FIRST law intact — gemini still LEADS both chains (now on 3.5-flash)", () => {
+  it("GEMINI-FIRST CANCELLED (Phase 5-A, owner order 2026-10-31 «إلغاء قانون Gemini-First نهائيًا») — both chain gemini entries ride the TAIL, none leads", () => {
     // Both chain gemini entries (strongest + fast) are 3.5-flash — the
-    // behavioral chain-lead pins live in ai-provider.test.ts ([0].model).
+    // behavioral chain-lead pins live in ai-provider.test.ts ([0] and
+    // [last]).
     const switched = providerSrc.match(
       /\{ provider: "gemini", model: "gemini-3\.5-flash" \}/g,
     );
     expect(switched?.length).toBe(2);
     expect(providerSrc).not.toContain('{ provider: "gemini", model: "gemini-3.8-flash" }');
+    // the CANCELLED law's enforcement text is gone from the live code:
+    expect(providerSrc).not.toContain("gemini-first (owner 2026-10-06)");
+    expect(providerSrc).not.toContain("rotation suspended");
+  });
+});
+
+describe("PHASE 5-A — blog-research passes the language + the appropriate search query (§10-أ)", () => {
+  it("the grounded call carries lang + the language-appropriate searchQuery for the Tavily arm", () => {
+    expect(researchSrc).toContain("await callGroundedSearch(prompt, {");
+    expect(researchSrc).toContain("lang,");
+    expect(researchSrc).toContain(
+      "searchQuery: lang === \"ar\" ? TAVILY_SEARCH_QUERY_AR : TAVILY_SEARCH_QUERY_EN,",
+    );
+    expect(researchSrc).toContain("const TAVILY_SEARCH_QUERY_AR =");
+    expect(researchSrc).toContain("const TAVILY_SEARCH_QUERY_EN =");
+  });
+
+  it("the §6-أ ladder comment names the new arm order (tavily → groq → gemini dormant; OR removed)", () => {
+    expect(researchSrc).toContain("tavily search API → groq browser_search → gemini");
+    expect(researchSrc).toContain("REMOVED from");
+    expect(researchSrc).toContain("the effective ladder");
   });
 });

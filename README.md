@@ -317,7 +317,7 @@ ledger-based — `src/lib/refund.ts`).
 | UI | React 19 · Tailwind CSS 4 · shadcn/ui |
 | Language | TypeScript 5 (strict) |
 | Database | Supabase — Postgres, Auth, Storage, Row Level Security |
-| AI | OpenRouter + Groq + NVIDIA NIM, one unified layer (`src/lib/ai-provider.ts`) |
+| AI | OpenRouter + Groq + NVIDIA NIM + Gemini + the Tavily search arm, one unified layer (`src/lib/ai-provider.ts`) |
 | Payments | PayPal + manual review |
 | Email | Brevo REST API |
 | Charts | Recharts (lazy-loaded) |
@@ -405,13 +405,18 @@ derive from their single sources (`memberships.ts`, `refund.ts`, …).
 
 ### AI layer
 One unified provider layer (`src/lib/ai-provider.ts`) is the only path to any
-model — OpenRouter, Groq, and NVIDIA NIM — offering sequential
+model — OpenRouter, Groq, NVIDIA NIM, and Gemini (a native adapter riding
+both chains as an ordinary tail entry — the Gemini-first priority law was
+cancelled by owner order 2026-10-31, so the three-way lead rotation spreads
+load across providers on every call) — offering sequential
 strongest-model chains, a `Promise.any` race mode for fast swaps, and SSE
-streaming for chat. Every sequential path is budget-clamped so
-`maxModels × timeoutMs` never exceeds ~52s (the serverless limit), and
-long-running generation (the blog pipeline, queued AI jobs) runs on GitHub
-Actions runners instead of serverless functions. Gemini leads both chains
-when its key is configured. Plan generation and regeneration outputs pass a
+streaming for chat. Blog research rides a real-search arm ladder
+(Tavily search API → Groq browser_search → a dormant Gemini grounding arm)
+where every arm must return live URL evidence. Every sequential path is
+budget-clamped so `maxModels × timeoutMs` never exceeds ~52s (the
+serverless limit), and long-running generation (the blog pipeline, queued
+AI jobs) runs on GitHub Actions runners instead of serverless functions.
+Plan generation and regeneration outputs pass a
 mandatory quality gate (`src/lib/plan-ai-validation.ts`) with food-library
 grounding (`src/lib/plan-food-grounding.ts`) — a provider answering 200 is
 not evidence of quality.

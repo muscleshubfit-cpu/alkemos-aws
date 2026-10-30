@@ -80,10 +80,13 @@ jobs:
       # THIRD PROVIDER (2026-09-09 owner addition): NVIDIA NIM joins the
       # fallback-chain key bundle (integrate.api.nvidia.com, nvapi- keys).
       NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
-      # ── GEMINI-FIRST ARM (Phase 343, owner order 2026-10-06, free tier) ──
-      # Optional BY DESIGN: missing/empty → the chain skips the gemini entry
-      # and the ladder behaves byte-identically to pre-343 (no preflight —
-      # the hard-required floor stays GROQ + NVIDIA exactly as before).
+      # ── GEMINI (Phase 343 arm — first-priority law CANCELLED 2026-10-31,
+      #    Phase 5-A owner order «إلغاء قانون Gemini-First نهائيًا») ──
+      # Optional BY DESIGN: gemini rides the generation chains as an
+      # ordinary TAIL entry (never a lead — the 3-way rotation leads).
+      # Missing/empty → the chain skips the gemini entry without consuming
+      # attempt budget (no preflight — the hard-required floor stays
+      # GROQ + NVIDIA exactly as before).
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
       # Gemini usage counters (weekly report source) — optional, fail-soft.
       UPSTASH_REDIS_REST_URL: ${{ secrets.UPSTASH_REDIS_REST_URL }}

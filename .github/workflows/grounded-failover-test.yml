@@ -7,15 +7,26 @@ name: Grounded failover test (AI providers)
 # code changes, NO deploy, NO schedule.
 #
 # Measures (scripts/ai-grounded-failover-probe.mts):
-#   1. Each grounded arm separately — gemini googleSearch ladder ·
-#      openrouter web plugin · groq compound. (NVIDIA: excluded by
-#      design — its chat API has no web-search tool; printed as such.)
+#   1. Each grounded arm separately — tavily search API (+ chain
+#      synthesis — PHASE 5-A 2026-10-31, the new ladder leader) ·
+#      groq browser_search · gemini googleSearch ladder (dormant arm).
+#      The openrouter web plugin is probed for DIAGNOSTICS ONLY (removed
+#      from the effective ladder — dead default model + paid plugin).
+#      (NVIDIA: excluded by design — its chat API has no web-search
+#      tool; printed as such.)
 #   2. The end-to-end callGroundedSearch walk — THE failover verdict:
-#      green iff some provider answered with live-search evidence.
-#   3. The generation chain failover (P1/P2/P4-class).
+#      green iff some provider answered with live-search evidence
+#      (the §6-أ ladder: tavily → groq → gemini dormant).
+#   3. The generation chain failover (P1/P2/P4-class — post-5-A the
+#      3-way rotation leads; gemini rides the tail slot).
 #   4. The quota-cooldown registry state (futile-repeat avoidance —
 #      AI_PROVIDER_COOLDOWN_MS is ON here exactly like the blog
 #      workflows, so the probe demonstrates the live skip too).
+#
+# QUALITY LAW (owner decision #7, Phase 5-A): connection success is NOT
+# evidence of research quality — the probe prints the SOURCE URLS and an
+# answer sample for owner inspection; the evidence counts are the
+# quality-visible part of the verdict.
 #
 # Discipline (aws-ai-test precedent): prints provider/model names,
 # durations, statuses, evidence counts and short snippets ONLY — no
@@ -49,6 +60,12 @@ jobs:
       AI_PROVIDER_COOLDOWN_MS: "1800000"
 
       # ── Provider keys (the EXISTING secrets — no new keys, owner law) ──
+      # TAVILY_API_KEY (PHASE 5-A 2026-10-31): the search-arm secret created
+      # by the owner for the Phase-3 live battery — now the FIRST arm of the
+      # production §6-أ grounded-search ladder (free Researcher plan, basic
+      # search = 1 credit; NO paid service). Absent → the arm reports an
+      # honest configuration failure (never fatal — a measurement).
+      TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
       GEMINI_API_KEY2: ${{ secrets.GEMINI_API_KEY2 }}
       OPENROUTER_API: ${{ secrets.OPENROUTER_API }}
@@ -79,7 +96,10 @@ jobs:
             missing=1
           fi
           if [ -z "$GEMINI_API_KEY" ]; then
-            echo "⚠ GEMINI_API_KEY absent — arm 1 will report a configuration failure (honest, not fatal)"
+            echo "⚠ GEMINI_API_KEY absent — the dormant gemini arm will report a configuration failure (honest, not fatal)"
+          fi
+          if [ -z "$TAVILY_API_KEY" ]; then
+            echo "⚠ TAVILY_API_KEY absent — the tavily arm (ladder leader) will report a configuration failure (honest, not fatal)"
           fi
           if [ "$missing" -eq 1 ]; then
             echo "❌ Preflight failed — fix the secrets above and re-run."

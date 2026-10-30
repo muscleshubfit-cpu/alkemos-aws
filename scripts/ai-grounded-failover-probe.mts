@@ -1,6 +1,7 @@
 /**
  * scripts/ai-grounded-failover-probe.mts — LIVE provider-failover probe
- * (BLOG-PROVIDER-FAILOVER 2026-10-16, owner order «اختبر التبديل الفعلي»).
+ * (BLOG-PROVIDER-FAILOVER 2026-10-16, owner order «اختبر التبديل الفعلي»;
+ * PHASE 5-A 2026-10-31 — the Tavily search arm joins the probe).
  *
  * Dispatch-only measuring instrument (grounded-failover-test.yml) — the
  * same discipline as aws-ai-test/gsc-connection-test: REAL calls against
@@ -10,19 +11,31 @@
  *
  * WHAT IT MEASURES (in order):
  *   1. Each grounded-search arm SEPARATELY with a tiny real prompt —
- *      gemini googleSearch ladder · openrouter web plugin · groq
- *      browser_search (GROQ-2: the compound-successor tool).
- *      Per arm: PASS/FAIL, model, HTTP status class, live-evidence counts
- *      (searchQueries/sources), latency, and the failure message when red.
+ *      tavily search API (+ chain synthesis) · groq browser_search
+ *      (GROQ-2: the compound-successor tool) · gemini googleSearch ladder
+ *      (dormant — 0/114 measured). Per arm: PASS/FAIL, model, HTTP status
+ *      class, live-evidence counts (searchQueries/sources), latency, and
+ *      the failure message when red. The openrouter web arm is probed for
+ *      DIAGNOSTICS ONLY (it was removed from the effective ladder — dead
+ *      default model 404 + paid plugin 402, P0-2) and a 402/404 there is
+ *      an expected measurement, never a verdict input.
  *      (NVIDIA is NOT probed for grounding: its OpenAI-compatible chat API
  *      has no web-search tool — excluded by design, documented honestly.)
  *   2. The CROSS-PROVIDER end-to-end call callGroundedSearch() — the actual
- *      failover walk. With the cooldown registry ON, arms that failed with
- *      quota-class errors in step 1 are SKIPPED here (the "avoid futile
- *      repeats" law, demonstrated live).
+ *      failover walk (the §6-أ ladder: tavily → groq → gemini dormant).
+ *      With the cooldown registry ON, arms that failed with quota-class
+ *      errors in step 1 are SKIPPED here (the "avoid futile repeats" law,
+ *      demonstrated live).
  *   3. The generation chain callFreeAIFallbackChain() — provider failover
- *      for P1/P2/P4-class calls.
+ *      for P1/P2/P4-class calls (post-5-A: the 3-way rotation leads;
+ *      gemini rides the TAIL slot).
  *   4. The active cooldown registry state (secret-free scopes only).
+ *
+ * QUALITY LAW (owner decision #7, Phase 5-A 2026-10-31): connection success
+ * is NOT evidence of research quality — the probe therefore prints the
+ * SOURCE URLS and an answer sample for human/owner inspection, and the
+ * per-arm evidence counts (sources/searchQueries) are the quality-visible
+ * part of the verdict.
  *
  * EXIT LAW (honest): exit 0 iff the end-to-end callGroundedSearch returned
  * a REAL grounded answer from SOME provider (the failover works — someone
@@ -32,8 +45,8 @@
  *
  * Usage (GitHub Actions runner, secrets in env):
  *   npx --no-install tsx scripts/ai-grounded-failover-probe.mts
- * Env: GEMINI_API_KEY [GEMINI_API_KEY2] OPENROUTER_API [OPENROUTER_API_KEY]
- *      GROQ_API_KEY NVIDIA_API_KEY
+ * Env: TAVILY_API_KEY GEMINI_API_KEY [GEMINI_API_KEY2]
+ *      OPENROUTER_API [OPENROUTER_API_KEY] GROQ_API_KEY NVIDIA_API_KEY
  *      AI_PROVIDER_COOLDOWN_MS (recommended 1800000 — demonstrates the
  *      cooldown skip live) [AI_PROVIDER_COOLDOWN=0 to disable]
  */
@@ -42,11 +55,13 @@ import {
   callGeminiGroundedSearch,
   callOpenRouterGroundedSearch,
   callGroqGroundedSearch,
+  callTavilySearch,
   callGroundedSearch,
   callFreeAIFallbackChain,
   getGeminiGroundedKeys,
   getOpenRouterKeys,
   getOpenRouterGroundedModel,
+  getTavilyKey,
 } from "../src/lib/ai-provider";
 import {
   activeCooldowns,
@@ -55,6 +70,11 @@ import {
 
 const PROBE_PROMPT =
   "What is the current World Health Organization guidance on weekly physical activity for adults? Answer in 2-3 short sentences and ground your answer on the live web sources you find.";
+
+/** The concise REAL search query for the Tavily arm (§10-أ — the research
+ * prompt itself is a generation brief, not a search string). */
+const PROBE_SEARCH_QUERY =
+  "current WHO guidance weekly physical activity adults";
 
 const ARM_OPTS = {
   tag: "failover-probe",
@@ -321,8 +341,8 @@ async function dumpGroqBrowserResponse(): Promise<void> {
 }
 
 async function main(): Promise<void> {
-  console.log("=== AI GROUNDED-FAILOVER LIVE PROBE (BLOG-PROVIDER-FAILOVER 2026-10-16 · GROQ-2 round 2026-10-17) ===");
-  console.log(`env: gemini keys=${maskKeys(getGeminiGroundedKeys().length)} · openrouter keys=${maskKeys(getOpenRouterKeys().length)} · groq=${process.env.GROQ_API_KEY ? "configured" : "MISSING"} · nvidia=${process.env.NVIDIA_API_KEY ? "configured" : "MISSING"} · cooldown=${process.env.AI_PROVIDER_COOLDOWN_MS || "off"}`);
+  console.log("=== AI GROUNDED-FAILOVER LIVE PROBE (BLOG-PROVIDER-FAILOVER 2026-10-16 · GROQ-2 2026-10-17 · PHASE 5-A TAVILY 2026-10-31) ===");
+  console.log(`env: tavily=${getTavilyKey() ? "configured" : "MISSING"} · gemini keys=${maskKeys(getGeminiGroundedKeys().length)} · openrouter keys=${maskKeys(getOpenRouterKeys().length)} · groq=${process.env.GROQ_API_KEY ? "configured" : "MISSING"} · nvidia=${process.env.NVIDIA_API_KEY ? "configured" : "MISSING"} · cooldown=${process.env.AI_PROVIDER_COOLDOWN_MS || "off"}`);
   console.log("");
 
   // ── 0) GROQ-2 response-shape dump FIRST (TPM window still fresh) ────
@@ -332,16 +352,35 @@ async function main(): Promise<void> {
 
   // ── 1) Per-arm probes (each is a REAL search call) ──────────────────
   console.log("--- [1/4] Per-arm grounded probes ---");
-  const geminiOk = await probeArm("gemini googleSearch (ladder)", () =>
-    callGeminiGroundedSearch(PROBE_PROMPT, { ...ARM_OPTS, tag: "failover-probe:gemini" }),
-  );
-  console.log("");
-  const orOk = await probeArm("openrouter web plugin", () =>
-    callOpenRouterGroundedSearch(PROBE_PROMPT, { ...ARM_OPTS, tag: "failover-probe:openrouter" }),
-  );
+  // PHASE 5-A: the tavily search arm leads the probe exactly as it leads
+  // the production §6-أ ladder. Tavily key absent → an honest SKIPPED line
+  // (never a crash) — the e2e walk below reports the same gap.
+  let tavilyOk = false;
+  if (getTavilyKey()) {
+    tavilyOk = await probeArm("tavily search API (+ chain synthesis)", () =>
+      callTavilySearch(PROBE_PROMPT, {
+        ...ARM_OPTS,
+        tag: "failover-probe:tavily",
+        searchQuery: PROBE_SEARCH_QUERY,
+      }),
+    );
+  } else {
+    console.log("ARM tavily search API: SKIPPED — no TAVILY_API_KEY (honest config gap)");
+  }
   console.log("");
   const groqOk = await probeArm("groq browser_search", () =>
     callGroqGroundedSearch(PROBE_PROMPT, { ...ARM_OPTS, tag: "failover-probe:groq" }),
+  );
+  console.log("");
+  const geminiOk = await probeArm("gemini googleSearch (ladder — dormant arm)", () =>
+    callGeminiGroundedSearch(PROBE_PROMPT, { ...ARM_OPTS, tag: "failover-probe:gemini" }),
+  );
+  console.log("");
+  // DIAGNOSTICS-ONLY since PHASE 5-A (the OR web arm was REMOVED from the
+  // effective ladder — P0-2: dead default model 404 + paid plugin 402). A
+  // 402/404 here is an EXPECTED measurement, never a verdict input.
+  const orOk = await probeArm("openrouter web plugin (OFF-LADDER diagnostics)", () =>
+    callOpenRouterGroundedSearch(PROBE_PROMPT, { ...ARM_OPTS, tag: "failover-probe:openrouter" }),
   );
   console.log("");
   console.log("ARM NVIDIA NIM: EXCLUDED-BY-DESIGN (no web-search tool in its OpenAI-compatible chat API — an ungrounded answer would violate the real-search law; NVIDIA stays a generation-chain provider)");
@@ -354,13 +393,14 @@ async function main(): Promise<void> {
 
 
   // ── 2) The end-to-end cross-provider failover walk ──────────────────
-  console.log("--- [2/4] End-to-end callGroundedSearch (the actual failover) ---");
+  console.log("--- [2/4] End-to-end callGroundedSearch (the actual failover — §6-أ ladder: tavily → groq → gemini dormant) ---");
   let e2eOk = false;
   const t0 = Date.now();
   try {
     const r = await callGroundedSearch(PROBE_PROMPT, {
       ...ARM_OPTS,
       tag: "failover-probe:e2e",
+      searchQuery: PROBE_SEARCH_QUERY,
     });
     console.log(`E2E FAILover: PASS — ${r.provider}:${r.model} answered with live-search evidence (${ms(t0)}ms, sources=${r.grounding.sources.length})`);
     console.log(`  answer_sample  : ${r.text.replace(/\s+/g, " ").slice(0, 160)}`);
@@ -405,9 +445,10 @@ async function main(): Promise<void> {
   // ── Summary + honest exit ───────────────────────────────────────────
   console.log("");
   console.log("=== PROBE SUMMARY ===");
-  console.log(`arm gemini      : ${geminiOk ? "PASS" : "FAIL"}`);
-  console.log(`arm openrouter  : ${orOk ? "PASS" : "FAIL"}`);
+  console.log(`arm tavily      : ${tavilyOk ? "PASS" : getTavilyKey() ? "FAIL" : "SKIPPED-no-key"}`);
   console.log(`arm groq        : ${groqOk ? "PASS" : "FAIL"}`);
+  console.log(`arm gemini      : ${geminiOk ? "PASS" : "FAIL (dormant arm — expected red while the free tier has no grounding)"}`);
+  console.log(`arm openrouter  : ${orOk ? "PASS (off-ladder diagnostics)" : "FAIL (off-ladder diagnostics — expected: dead default model + paid plugin)"}`);
   console.log(`arm nvidia      : EXCLUDED-BY-DESIGN (no grounded-search capability)`);
   console.log(`e2e failover    : ${e2eOk ? "PASS (some provider returned a REAL grounded answer)" : "FAIL (no grounded answer from any arm)"}`);
   console.log(`cooldowns active: ${cds.length}`);

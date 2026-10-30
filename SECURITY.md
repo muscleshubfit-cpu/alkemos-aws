@@ -120,21 +120,46 @@ Any of the following:
 
 ### 3.1 AI provider keys
 
-> **Updated (2026-09-09, Phase 161 — owner directive «تم اضافة مفتاح
-> NVIDIA_API_KEY»):** THREE providers — OpenRouter, Groq, NVIDIA NIM.
-> (The 2026-08-27 "only two providers" note was superseded; any doc
-> still claiming two is stale.)
+> **Updated (2026-10-31, Phase 5-A — owner orders «إلغاء قانون Gemini-First
+> نهائيًا» + «تنفيذ ذراع البحث Tavily»):** FOUR generation providers —
+> OpenRouter, Groq, NVIDIA NIM, Gemini — plus Tavily as the SEARCH arm
+> (search/extraction only, never a generator). The Gemini-first law (343)
+> is CANCELLED: gemini rides both chains as an ordinary TAIL entry (never
+> a lead) and the grounded walk's DORMANT last arm. (The 2026-09-09
+> "three providers" note and the 2026-10-06 first-priority note were both
+> superseded; any doc still claiming either is stale.)
 
 - Stored as server-side env vars only (`OPENROUTER_API`, with
-  `OPENROUTER_API_KEY` accepted as an alias, `GROQ_API_KEY`, and
-  `NVIDIA_API_KEY` — NIM is OpenAI-compatible at
+  `OPENROUTER_API_KEY` accepted as an alias, `GROQ_API_KEY`,
+  `NVIDIA_API_KEY`, `GEMINI_API_KEY` + optional `GEMINI_API_KEY2`, and
+  `TAVILY_API_KEY` — NIM is OpenAI-compatible at
   `integrate.api.nvidia.com`).
-- Gemini native SDK / OpenAI / Anthropic / DeepSeek integrations were
+- **GEMINI (native adapter, 2026-10-06 owner order; first-priority law
+  cancelled 2026-10-31):** the native generativelanguage REST adapter
+  lives INSIDE `src/lib/ai-provider.ts` (the only native-shape code —
+  `callAI`/`callAIStream` translate; `x-goog-api-key` header). The
+  Gemini SDK stays banned; a gemini entry is a TAIL slot of both chains
+  (skipped keyless without consuming attempt budget) and the dormant
+  last arm of the grounded search (`GEMINI_GROUNDED_ENABLED=0` removes
+  it without a deploy). Usage tracked per-tag to Upstash
+  (`src/lib/ai-usage-gemini.ts`, fail-soft).
+- **TAVILY (search arm, 2026-10-31 Phase 5-A — owner order «تنفيذ ذراع
+  البحث Tavily»):** free Researcher plan (1000 credits/month, basic
+  search = 1 credit, NO card — the no-paid-service law). Consumed by
+  `callTavilySearch` ONLY (the FIRST arm of the §6-أ grounded-search
+  ladder: REAL search → live-URL evidence gate → research-JSON synthesis
+  on the ordinary generation chain). It is NEVER a generation provider
+  and never enters the chains. Absent key = the arm fails honestly and
+  the walk falls to groq. Source: repo Actions secret since Phase 3;
+  passed by the blog workflows + the grounded-failover probe. Rotation:
+  owner-side dashboard (the /usage meter lags — measured Phase 3).
+- Gemini SDK / OpenAI / Anthropic / DeepSeek direct integrations were
   REMOVED from the codebase. Never reintroduce a direct third-party AI
   HTTP call without owner approval (§7 category: new external call).
 - Read by `src/lib/ai-provider.ts` (`getOpenRouterKey()` /
-  `getGroqKey()` / `getNvidiaKey()` / `getEnvConfig()`) — server-only.
-  This file must NEVER be imported by a client component.
+  `getGroqKey()` / `getNvidiaKey()` / `getGeminiKey()` / `getTavilyKey()`
+  / `getEnvConfig()`) — server-only. This file must NEVER be imported by
+  a client component.
 - The "AI Settings" page (admin-only) stores per-admin overrides in
   HTTP-only cookies on the admin's browser. The override path:
   `mergeOverride()` in `ai-provider.ts`. The key is never returned

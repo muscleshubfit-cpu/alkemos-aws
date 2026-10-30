@@ -10,18 +10,28 @@
  * OWNER DIRECTIVE (2026-10-06, «أضف Gemini كمزود AI جديد مع المزودين
  * الحاليين، واجعله الاختيار الأول في المدونة بكل خطوات توليدها وتوليد خطط
  * الذكاء الاصطناعي ومحادثات EVO»): a FOURTH provider joins — gemini
- * (Google AI Studio auth key, FREE tier, env: GEMINI_API_KEY). GEMINI-FIRST
- * LAW: when the gemini key is configured, a gemini entry LEADS both chains
- * (strongest = blog pipeline + AI plans · fast = EVO chat) and the 3-way
- * lead rotation is suspended; the ladder AFTER gemini, the dual-key pool,
- * the Groq R3 clamp and every queue mechanism stay byte-identical, and with
- * the key absent the pre-343 behavior is verbatim. Gemini uses the NATIVE
- * generativelanguage REST API (NOT OpenAI-compatible): the translation
- * adapters are the only native-shape code in the platform and live below
- * (callAI / callAIStream branch on provider === "gemini"). Model override:
- * GEMINI_MODEL. Usage of the free tier is tracked per-tag to Upstash
- * (src/lib/ai-usage-gemini.ts) feeding docs/ai/gemini-weekly-usage-report.md
- * (weekly workflow gemini-weekly-usage-report.yml).
+ * (Google AI Studio auth key, FREE tier, env: GEMINI_API_KEY) on the
+ * NATIVE generativelanguage REST API (NOT OpenAI-compatible): the
+ * translation adapters are the only native-shape code in the platform and
+ * live below (callAI / callAIStream branch on provider === "gemini").
+ * Model override: GEMINI_MODEL. Usage of the free tier is tracked per-tag
+ * to Upstash (src/lib/ai-usage-gemini.ts) feeding
+ * docs/ai/gemini-weekly-usage-report.md (weekly workflow
+ * gemini-weekly-usage-report.yml).
+ *
+ * GEMINI-FIRST LAW (343) — CANCELLED (owner order 2026-10-31, Phase 5-A
+ * «إلغاء قانون Gemini-First نهائيًا، بما يشمل السلاسل الثقيلة، وإزالة أي
+ * أولوية إجبارية لـ Gemini دون المساس بضوابط جودة المخرجات»): gemini
+ * entries NO LONGER lead either chain — the 3-way lead rotation
+ * (openrouter → groq → nvidia) runs on EVERY strongest-chain call again,
+ * and gemini rides both ladders as an ordinary TAIL entry (positioned on
+ * measured AVAILABILITY — 66/271 weekly success = 24.4%, the worst of the
+ * four providers — while its OUTPUT quality stays a valid last-resort
+ * lottery ticket under the QUALITY-FIRST law). The native adapter, the
+ * GEMINI_MODEL knob, the usage tracker and the dormant grounded arm all
+ * STAY; only the forced priority is gone. In the grounded-search walk the
+ * gemini googleSearch arm is the DORMANT LAST arm (0/114 measured — see
+ * callGroundedSearch).
  *
  * PHASE 344 (owner order 2026-10-06 «بحث خارجي حقيقي [Google Search
  * grounding] يدخل نتائج البحث الفعلية في توليد المقال» + «تبديل إصدار
@@ -893,12 +903,32 @@ export async function callGeminiGroundedSearch(
  * ─────────────────────────────────────────────────────────────────────── */
 
 /** Cross-provider grounded-search result — same contract the gemini arm
- *  returns; `provider`/`model` name the arm that actually answered. */
+ *  returns; `provider`/`model` name the arm that actually answered.
+ *  PHASE 5-A (owner order 2026-10-31): `provider` widens to include
+ *  "tavily" — the search-API arm answers under its own id while `model`
+ *  names the SYNTHESIS model that produced the text (Tavily itself is a
+ *  search/extraction API, never a generator — the Phase-4 §5 provider
+ *  law). */
+export type GroundedSearchArmProvider = AIProvider | "tavily";
+
 export type GroundedSearchResult = {
   text: string;
-  provider: AIProvider;
+  provider: GroundedSearchArmProvider;
   model: string;
   grounding: GeminiGrounding;
+};
+
+/** Options for the cross-provider grounded search (PHASE 5-A, owner order
+ *  2026-10-31 «نفّذ المرحلة (أ)…ذراع البحث Tavily وفق §10»): search-only
+ *  arms (Tavily) need the caller's CONCISE search query — the research
+ *  prompt itself is a generation brief, not a search string («تمرير
+ *  الاستعلام المناسب» §10-أ); `lang` feeds the §6-أ language-split arm
+ *  ladder (Phase B will lead EN with Exa). */
+export type GroundedSearchOptions = CallAIOptions & {
+  /** Concise, language-appropriate REAL search query for search-API arms. */
+  searchQuery?: string;
+  /** Language of the research (§6-أ ladder split). */
+  lang?: "ar" | "en";
 };
 
 /** OpenRouter web-search plugin body — a REAL search ride-along: the
@@ -1049,12 +1079,223 @@ function mergeDedupedSources(...lists: GeminiGroundingSource[][]): GeminiGroundi
   return out;
 }
 
+/* ───────────────────────────────────────────────────────────────────────
+ * ARM 1 — TAVILY SEARCH API (PHASE 5-A, owner order 2026-10-31 «ابدأ
+ * المرحلة الخامسة — تنفيذ ذراع البحث Tavily» — executing the Phase-4
+ * §6-أ/§12-1 approved design, the §10-أ frame). Tavily is a SEARCH /
+ * EXTRACTION provider, never a generator (the Phase-4 §5 provider law —
+ * Tavily and Exa are search arms only): the arm therefore composes TWO
+ * honest stages —
+ *   (1) a REAL basic search (1 credit on the Researcher plan's 1000/month
+ *       cap; Phase-3 measured 8/8 ok, 10/11 directly-relevant Arabic
+ *       results, avg 1807ms) whose live result URLs ARE the evidence;
+ *   (2) a research-JSON synthesis call on the ORDINARY generation chain
+ *       (callFreeAIFallbackChain — the post-Gemini-first rotation ladder)
+ *       grounded on the REAL snippets + raw_content passed in the prompt.
+ * The SEARCH itself is independent of LLM quotas (Tavily credits) — P0 no
+ * longer depends on search-capable chat models alone (the P0-1/P0-2 root
+ * cause: gemini grounding unavailable on the free tier, OR web arm dead
+ * 404 + paid 402, leaving Groq browser_search the only live arm).
+ * EVIDENCE GATE (law 344, identical to every arm): a 200 answer with ZERO
+ * usable result URLs is NOT research — honest failure, the walk moves to
+ * the next arm. Cooldown law: 429/402/401/403/404-class failures cool the
+ * `grounded:tavily` scope for the window like every arm.
+ * ROLLBACK (§10-أ): remove the arm from the ladder (one line in
+ * groundedArmOrder) or stop passing TAVILY_API_KEY to the workflows —
+ * the key-absent arm fails honestly and the walk degrades to groq as
+ * before. NO paid service is ever called (basic search only — the
+ * free-tier law).
+ * ─────────────────────────────────────────────────────────────────────── */
+
+const TAVILY_SEARCH_URL = "https://api.tavily.com/search";
+/** Tavily's documented query cap — the fallback clip for arm callers that
+ *  pass no dedicated searchQuery. */
+const TAVILY_QUERY_MAX_CHARS = 400;
+/** Per-result raw_content excerpt cap in the synthesis prompt — bounds the
+ *  synthesis payload while keeping real evidence depth (Phase-3 measured
+ *  raw_content up to 22,155 chars per result — must be clipped). */
+const TAVILY_RAW_EXCERPT_CHARS = 1_200;
+
+/** TAVILY (Phase 5-A — search-arm key, the Phase-3 owner-created secret):
+ * Researcher plan, free, no card. Consumed by callTavilySearch ONLY — it
+ * is never a generation provider and never enters the chains. */
+export function getTavilyKey(): string {
+  return process.env.TAVILY_API_KEY || "";
+}
+
+/** Search-depth ops knob — "basic" = 1 credit (default, the measured
+ *  Phase-3 shape); "advanced" = 2 credits (owner opt-in, no deploy). */
+export function getTavilySearchDepth(): "basic" | "advanced" {
+  return process.env.TAVILY_SEARCH_DEPTH === "advanced" ? "advanced" : "basic";
+}
+
+/** Max-results ops knob (default 10 — the Phase-3 battery shape). */
+export function getTavilyMaxResults(): number {
+  const raw = Number(process.env.TAVILY_MAX_RESULTS);
+  return Number.isFinite(raw) && raw >= 1 && raw <= 20 ? Math.floor(raw) : 10;
+}
+
+/** Optional authority-domain restriction (comma-separated). Phase-3
+ *  measured include_domains honored 100% (all results from the 14
+ *  authority domains). EMPTY by default: the discovery research query
+ *  wants trending topics/questions across the real web — the
+ *  authority-domain law lives at the P4/P5 citation gates where it
+ *  belongs (the honest-citation law is unchanged). */
+export function getTavilyIncludeDomains(): string[] {
+  return (process.env.TAVILY_INCLUDE_DOMAINS || "")
+    .split(",")
+    .map((d) => d.trim().toLowerCase())
+    .filter(Boolean);
+}
+
+export async function callTavilySearch(
+  prompt: string,
+  options: GroundedSearchOptions = {},
+): Promise<GroundedSearchResult> {
+  const key = getTavilyKey();
+  if (!key) {
+    throw new Error(
+      "callTavilySearch: TAVILY_API_KEY is not configured — the Tavily search arm is unavailable, and no simulated/curated substitute is allowed (owner order 2026-10-06).",
+    );
+  }
+  const LP = "[tavily-grounded]" + (options.tag ? ` [${options.tag}]` : "");
+  const cdScope = "grounded:tavily";
+  const cd = cooldownState(cdScope);
+  if (cd) {
+    throw new Error(
+      `callTavilySearch: quota-cooldown until ${new Date(cd.until).toISOString()} — skipped, no call made (${cd.reason.slice(0, 120)})`,
+    );
+  }
+  const query =
+    (options.searchQuery || "").trim() ||
+    prompt.replace(/\s+/g, " ").trim().slice(0, TAVILY_QUERY_MAX_CHARS);
+  if (query.length === 0) {
+    throw new Error(
+      "callTavilySearch: empty search query (searchQuery option or prompt) — honest failure, no call made",
+    );
+  }
+  if (!options.searchQuery) {
+    console.warn(
+      `${LP} no searchQuery option — falling back to the first ${TAVILY_QUERY_MAX_CHARS} chars of the prompt (Tavily's documented query cap); pass a concise language-appropriate query for best quality`,
+    );
+  }
+
+  const includeDomains = getTavilyIncludeDomains();
+  const timeoutMs = options.timeoutMs ?? 60_000;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  let body: Record<string, unknown>;
+  try {
+    const res = await fetch(TAVILY_SEARCH_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${key}`,
+      },
+      body: JSON.stringify({
+        query,
+        search_depth: getTavilySearchDepth(),
+        max_results: getTavilyMaxResults(),
+        include_answer: false,
+        include_raw_content: true,
+        ...(includeDomains.length > 0 ? { include_domains: includeDomains } : {}),
+      }),
+      signal: controller.signal,
+    });
+    if (!res.ok) {
+      const text = await res.text().catch(() => "");
+      const msg = `Tavily /search HTTP ${res.status}: ${text.slice(0, 300)}`;
+      const cls = classifyForCooldown(msg);
+      if (cls) markCooldown(cdScope, `${cls}: ${msg.slice(0, 120)}`);
+      throw new Error(`callTavilySearch: ${msg}`);
+    }
+    body = (await res.json()) as Record<string, unknown>;
+  } finally {
+    clearTimeout(timer);
+  }
+
+  // EVIDENCE EXTRACTION — the live result URLs ARE this arm's evidence
+  // (the Phase-3 measured response shape: results[] {title,url,content,
+  // raw_content,score}).
+  const results = Array.isArray(body.results)
+    ? (body.results as Array<Record<string, unknown>>)
+    : [];
+  const sources = mergeDedupedSources(
+    results.map((r) => ({
+      title: typeof r.title === "string" ? r.title.trim() : "",
+      url: typeof r.url === "string" ? r.url.trim() : "",
+    })),
+  );
+  // THE LIVE-EVIDENCE GATE (law 344): a 200 answer with zero usable URLs
+  // is NOT research — honest failure; the walk moves to the next arm.
+  if (sources.length === 0) {
+    throw new Error(
+      `callTavilySearch: Tavily answered 200 with ZERO usable result URLs (results=${results.length}) — fails the live-evidence gate (law 344); no substitute allowed`,
+    );
+  }
+
+  // SYNTHESIS — the research JSON is generated on the ORDINARY chain,
+  // grounded on the REAL search results below (never model memory alone:
+  // every URL the model may cite is in the prompt, and the arm's own
+  // grounding.sources come from the Tavily response, not the model).
+  const resultsBlock = results
+    .map((r, i) => {
+      const title = typeof r.title === "string" ? r.title.trim() : "";
+      const url = typeof r.url === "string" ? r.url.trim() : "";
+      const content = typeof r.content === "string" ? r.content.trim() : "";
+      const raw = typeof r.raw_content === "string" ? r.raw_content.trim() : "";
+      const excerpt = raw
+        ? `\n   excerpt: ${raw.slice(0, TAVILY_RAW_EXCERPT_CHARS)}`
+        : "";
+      return `${i + 1}. ${title}\n   url: ${url}\n   snippet: ${content.slice(0, 600)}${excerpt}`;
+    })
+    .join("\n");
+  const synthesisPrompt = `REAL LIVE WEB SEARCH RESULTS (fetched just now via the Tavily search API — query: "${query}") — these are your EVIDENCE BASE; model memory alone is NOT acceptable as the evidence base:
+${resultsBlock}
+
+NOTE: you have NO live-search tool in this call — the search results above ARE the live-search evidence (do not claim to use a search tool; ground every keyword/FAQ/topic judgment on the results above).
+
+${prompt}`;
+  const synthesisTag = `${options.tag || "grounded"}:tavily-synth`;
+  const synth = await callFreeAIFallbackChain(synthesisPrompt, {
+    tag: synthesisTag,
+    systemPrompt:
+      options.systemPrompt ??
+      "You are a strict JSON API endpoint. The user message describes the research task; your ENTIRE response MUST be a single valid JSON object matching the requested schema — no prose, no markdown, no commentary, no code fences. The JSON object starts with { and ends with }.",
+    temperature: options.temperature ?? 0.7,
+    maxTokens: options.maxTokens ?? 2_500,
+    // The search already spent part of the caller's window; the synthesis
+    // chain gets the remainder (its own ≤52s/GHA-600s budget law still
+    // clamps per-model timeouts internally).
+    timeoutMs: Math.max(timeoutMs - 5_000, 20_000),
+  });
+  console.log(
+    `${LP} search ok (depth=${getTavilySearchDepth()}, results=${results.length}, sources=${sources.length}) → synthesis by ${synth.provider}/${synth.model}`,
+  );
+  return {
+    text: synth.text,
+    provider: "tavily",
+    model: synth.model,
+    grounding: { searchQueries: [query], sources },
+  };
+}
+
 /**
- * ARM 2 — OpenRouter REAL web search (the documented `web` plugin) on the
+ * ARM — OpenRouter REAL web search (the documented `web` plugin) on the
  * EXISTING key pool. Every attempt is a REAL search-augmented call; the
  * honest evidence gate rejects 200-without-annotations answers. Exhaustion
  * errors (429/402/401/403) cool the key for the window when the registry
  * is enabled; all keys failed → one honest aggregate error.
+ *
+ * REMOVED FROM THE EFFECTIVE LADDER (PHASE 5-A, owner order 2026-10-31 —
+ * the Phase-4 §6-أ/§12-1 approved design): TWO live proofs measured the
+ * arm dead on the free path — (1) its default model
+ * nvidia/nemotron-3-super-120b-a12b:free is ABSENT from the live catalog
+ * (404 BEFORE the credit point — P0-2) and (2) the web plugin bills
+ * per-search credits the never-purchased accounts answer 402 for. The
+ * function STAYS for direct diagnostics (the live probe measures it
+ * separately) but the callGroundedSearch walk NEVER reaches it. Full
+ * deletion is a separate cleanup frame (Phase-4 §12-10).
  */
 export async function callOpenRouterGroundedSearch(
   prompt: string,
@@ -1565,12 +1806,23 @@ export async function callGroqGroundedSearch(
 }
 
 /**
- * THE CROSS-PROVIDER GROUNDED SEARCH (owner order 2026-10-16): real-search
- * arms in fixed failover order —
- *   1. Gemini native googleSearch (model ladder + dual key)
- *   2. OpenRouter `web` plugin (REAL search, URL annotations)
- *   3. Groq `browser_search` built-in tool (REAL live web walk, citations
+ * THE CROSS-PROVIDER GROUNDED SEARCH (owner order 2026-10-16; ladder
+ * RE-ORDERED by PHASE 5-A owner order 2026-10-31 — executing the Phase-4
+ * §6-أ/§12-1 approved design, the §10-أ frame): real-search arms in fixed
+ * failover order —
+ *   1. Tavily search API (REAL search on its own credits + chain
+ *      synthesis — independent of LLM quotas; AR-first per the measured
+ *      10/11 Arabic win)
+ *   2. Groq `browser_search` built-in tool (REAL live web walk, citations
  *      — GROQ-2 2026-10-17, the compound successor)
+ *   3. Gemini native googleSearch — DORMANT LAST arm (0/114 grounded
+ *      successes over three measured weeks: grounding is unavailable on
+ *      the current free tier; the cooldown registry makes re-trying it
+ *      cheap). Ops knob: GEMINI_GROUNDED_ENABLED=0 removes it from the
+ *      walk without a deploy (the §6-أ owner kill-switch).
+ *   The OpenRouter `web` plugin arm was REMOVED from the effective ladder
+ *   (P0-2: default model dead 404 + plugin bills credits 402 — two live
+ *   proofs); its code stays above for direct diagnostics only.
  *   (NVIDIA NIM: no grounded-search capability — honestly excluded; it
  *    never receives a call on this path.)
  * A quota-class failure moves the walk to the NEXT provider; every arm
@@ -1578,56 +1830,50 @@ export async function callGroqGroundedSearch(
  * error naming every arm's state. The AR/EN pairing, workflow, and all
  * gates live ABOVE this layer (blog-research) and are untouched.
  */
+export type GroundedArmId = "tavily" | "groq" | "gemini";
+
+/** The effective arm ladder — language-split per §6-أ. PHASE 5-A ships
+ *  the Tavily arm FIRST for BOTH languages (AR-first per the measured
+ *  Arabic win; EN rides Tavily until Phase B lands Exa as the EN leader
+ *  — the lang parameter is plumbed NOW so Phase B changes the ORDER
+ *  only, never the contract). GEMINI_GROUNDED_ENABLED=0 drops the
+ *  dormant gemini tail arm (deploy-free rollback, §6-أ). */
+export function groundedArmOrder(lang?: "ar" | "en"): GroundedArmId[] {
+  void lang; // Phase B: "en" will lead with the exa arm (§6-أ final state)
+  const geminiEnabled = process.env.GEMINI_GROUNDED_ENABLED !== "0";
+  return geminiEnabled ? ["tavily", "groq", "gemini"] : ["tavily", "groq"];
+}
+
 export async function callGroundedSearch(
   prompt: string,
-  options: CallAIOptions = {},
+  options: GroundedSearchOptions = {},
 ): Promise<GroundedSearchResult> {
   const armFailures: string[] = [];
+  const arms = groundedArmOrder(options.lang);
 
-  // ARM 1 — Gemini native Google-Search grounding.
-  try {
-    const r = await callGeminiGroundedSearch(prompt, options);
-    if (armFailures.length === 0) return r;
-    console.warn(
-      `[grounded-search] gemini answered after ${armFailures.length} earlier arm failure(s)`,
-    );
-    return r;
-  } catch (e) {
-    armFailures.push(
-      `[gemini googleSearch] ${(e instanceof Error ? e.message : String(e)).slice(0, 600)}`,
-    );
-    console.warn(
-      `[grounded-search] arm 1/3 (gemini googleSearch) failed → moving to openrouter web: ${(e instanceof Error ? e.message : String(e)).slice(0, 180)}`,
-    );
-  }
-
-  // ARM 2 — OpenRouter REAL web search (web plugin).
-  try {
-    const r = await callOpenRouterGroundedSearch(prompt, options);
-    console.warn(
-      `[grounded-search] openrouter web answered after ${armFailures.length} earlier arm failure(s)`,
-    );
-    return r;
-  } catch (e) {
-    armFailures.push(
-      `[openrouter web] ${(e instanceof Error ? e.message : String(e)).slice(0, 600)}`,
-    );
-    console.warn(
-      `[grounded-search] arm 2/3 (openrouter web) failed → moving to groq browser_search: ${(e instanceof Error ? e.message : String(e)).slice(0, 180)}`,
-    );
-  }
-
-  // ARM 3 — Groq browser_search REAL live web walk.
-  try {
-    const r = await callGroqGroundedSearch(prompt, options);
-    console.warn(
-      `[grounded-search] groq browser_search answered after ${armFailures.length} earlier arm failure(s)`,
-    );
-    return r;
-  } catch (e) {
-    armFailures.push(
-      `[groq browser_search] ${(e instanceof Error ? e.message : String(e)).slice(0, 600)}`,
-    );
+  for (let i = 0; i < arms.length; i++) {
+    const arm = arms[i];
+    try {
+      const r =
+        arm === "tavily"
+          ? await callTavilySearch(prompt, options)
+          : arm === "groq"
+            ? await callGroqGroundedSearch(prompt, options)
+            : await callGeminiGroundedSearch(prompt, options);
+      if (armFailures.length > 0) {
+        console.warn(
+          `[grounded-search] ${arm} answered after ${armFailures.length} earlier arm failure(s)`,
+        );
+      }
+      return r;
+    } catch (e) {
+      const msg = (e instanceof Error ? e.message : String(e)).slice(0, 600);
+      armFailures.push(`[${arm}] ${msg}`);
+      const next = i < arms.length - 1 ? arms[i + 1] : null;
+      console.warn(
+        `[grounded-search] arm ${i + 1}/${arms.length} (${arm}) failed${next ? ` → moving to ${next}` : " (last arm)"}: ${msg.slice(0, 180)}`,
+      );
+    }
   }
 
   // NVIDIA NIM — excluded BY DESIGN (no native web-search tool in its
@@ -1636,7 +1882,11 @@ export async function callGroundedSearch(
 
   const cds = activeCooldowns();
   throw new Error(
-    `callGroundedSearch: every grounded-search arm failed — gemini(googleSearch) → openrouter(web plugin) → groq(browser_search). NVIDIA NIM has no grounded-search capability (honestly excluded). No simulated/curated substitute is allowed (owner order 2026-10-06). Arm errors: ${armFailures.join(" || ")}${cds.length ? ` || ACTIVE COOLDOWNS: ${cds.map((c) => `${c.scope} until ${new Date(c.until).toISOString()}`).join("; ")}` : ""}`,
+    `callGroundedSearch: every grounded-search arm failed — tavily(search API) → groq(browser_search)${
+      process.env.GEMINI_GROUNDED_ENABLED === "0"
+        ? " [gemini dormant arm DISABLED via GEMINI_GROUNDED_ENABLED=0]"
+        : " → gemini(googleSearch, dormant last arm)"
+    }. The openrouter web arm was REMOVED from the effective ladder (dead default model 404 + paid plugin 402 — P0-2, two live proofs). NVIDIA NIM has no grounded-search capability (honestly excluded). No simulated/curated substitute is allowed (owner order 2026-10-06). Arm errors: ${armFailures.join(" || ")}${cds.length ? ` || ACTIVE COOLDOWNS: ${cds.map((c) => `${c.scope} until ${new Date(c.until).toISOString()}`).join("; ")}` : ""}`,
   );
 }
 
@@ -2122,18 +2372,18 @@ const GROQ_CLAMP_FLOOR = 3_800; // min output room a clamped groq entry must kee
  * catalog ids can retire at any time; verify by LIVE CALL, never by name.
  */
 export const INTERLEAVED_STRONGEST_CHAIN: Array<{ provider: AIProvider; model: string }> = [
-  // GEMINI-FIRST LAW (Phase 343, owner order 2026-10-06 «اجعله الاختيار
-  // الأول»): leads the chain for the blog pipeline + AI plans whenever
-  // GEMINI_API_KEY is configured (free tier). LIVE-VERIFIED 2026-10-05 via
-  // the owner key (run 37384032599: v1beta/gemini-3.8-flash → 200 "OK").
-  // With no key the entry is skipped without consuming attempt budget and
-  // the pre-343 ladder below runs byte-identically.
-  // PHASE 344 (owner order «تبديل إصدار نموذج Gemini»): the leading model
-  // switched 3.8-flash → 3.5-flash — the 2026-10-06 production review
-  // measured transient free-tier 503 "model overloaded" on 3.8-flash;
-  // 3.5-flash is the same-tier prior stable version on the free plan.
-  // GEMINI_MODEL still overrides at runtime; the ladder below is untouched.
-  { provider: "gemini", model: "gemini-3.5-flash" },
+  // GEMINI-FIRST LAW (343) — CANCELLED (owner order 2026-10-31, Phase 5-A
+  // «إلغاء قانون Gemini-First نهائيًا، بما يشمل السلاسل الثقيلة»): the
+  // gemini entry no longer leads — the pre-343 ladder below is restored as
+  // the effective head, the 3-way lead rotation (openrouter → groq →
+  // nvidia) runs on EVERY call again (see callFreeAIFallbackChain), and
+  // gemini rides as the ordinary TAIL entry — a last-resort lottery ticket
+  // positioned on measured AVAILABILITY (66/271 weekly success = 24.4%,
+  // the worst of the four providers — gemini-weekly-usage-report.md week
+  // 2026-10-18→24), NOT on output quality. With no GEMINI_API_KEY the
+  // entry is skipped without consuming attempt budget (unchanged).
+  // GEMINI_MODEL still overrides at runtime; the 344 model switch
+  // (3.8-flash → 3.5-flash, measured 503-overload evidence) stays.
   { provider: "openrouter", model: "nvidia/nemotron-3-ultra-550b-a55b:free" },
   { provider: "groq", model: "openai/gpt-oss-120b" },
   // BLOG-RECOVERY-3 round-3 (2026-10-21, live run 39632881785): BOTH
@@ -2148,12 +2398,25 @@ export const INTERLEAVED_STRONGEST_CHAIN: Array<{ provider: AIProvider; model: s
   { provider: "groq", model: "openai/gpt-oss-20b" },
   { provider: "nvidia", model: "nvidia/nemotron-3-ultra-550b-a55b" },
   { provider: "groq", model: "qwen/qwen3.8-27b" },
+  // The gemini tail (post-5-A position — see the law note above).
+  { provider: "gemini", model: "gemini-3.5-flash" },
 ];
 
 /** Alternating-lead rotation counter (see callFreeAIFallbackChain below). */
 let chainCallSeq = 0;
 /** Round-robin cursor across configured OpenRouter accounts (dual-key pool). */
 let orKeyCursor = 0;
+
+/** TEST-ONLY seam (the ai-provider-cooldown `__resetCooldownForTests`
+ *  precedent, added PHASE 5-A): resets the 3-way lead-rotation counter so
+ *  chain canaries are DETERMINISTIC under the restored rotation (the
+ *  gemini-first law's rotation suspension — which made chain order static
+ *  for key-configured tests — was cancelled 2026-10-31). Never called by
+ *  production code. */
+export function __resetChainRotationForTests(): void {
+  chainCallSeq = 0;
+  orKeyCursor = 0;
+}
 
 /**
  * OWNER DIRECTIVE #1 (2026-08-27): EVO chat needs “very fast free models
@@ -2173,17 +2436,18 @@ let orKeyCursor = 0;
  * consecutive Groq entries up front are safe (a 429 falls through fast).
  */
 export const INTERLEAVED_FAST_CHAIN: Array<{ provider: AIProvider; model: string }> = [
-  // GEMINI-FIRST LAW (Phase 343, owner order 2026-10-06): EVO chat tries
-  // Gemini first when GEMINI_API_KEY is configured (streamGenerateContent
-  // SSE — TTFT comparable to Groq's LPU in live smoke). Fallback ladder
-  // below is untouched; no key → entry skipped, groq leads as before.
-  // PHASE 344: model switched 3.8-flash → 3.5-flash with the strongest
-  // chain (same measured 503-overload evidence; GEMINI_MODEL still wins).
-  { provider: "gemini", model: "gemini-3.5-flash" },
+  // GEMINI-FIRST LAW (343) — CANCELLED (owner order 2026-10-31, Phase 5-A):
+  // the pre-343 speed ladder is restored as the head (groq-first speed
+  // law intact — gpt-oss-20b leads) and gemini rides as the ordinary TAIL
+  // entry (last-resort; the fast chain never rotates BY DESIGN). With no
+  // GEMINI_API_KEY the entry is skipped without consuming attempt budget.
+  // PHASE 344's model choice (3.5-flash) and the GEMINI_MODEL knob stay.
   { provider: "groq", model: "openai/gpt-oss-20b" }, // smallest — usually <1s TTFT (82.6% live)
   { provider: "groq", model: "openai/gpt-oss-120b" }, // quality slot, still LPU-fast (85.3% live)
   { provider: "nvidia", model: "nvidia/nemotron-3.5-lightning-30b-a3b" }, // NIM fast (3B active — 33.3% live)
   { provider: "openrouter", model: "nvidia/nemotron-3-super-120b-a12b:free" }, // provider diversity tail (47.9% live)
+  // The gemini tail (post-5-A position — SSE streaming-capable last resort).
+  { provider: "gemini", model: "gemini-3.5-flash" },
 ];
 
 export async function callFreeAIFallbackChain(
@@ -2212,19 +2476,6 @@ export async function callFreeAIFallbackChain(
       "[ai-fallback-chain] No AI providers configured. Set OPENROUTER_API and/or GROQ_API_KEY and/or NVIDIA_API_KEY and/or GEMINI_API_KEY.",
     );
   }
-
-  // ── PROVIDER-LEAD ROTATION (2026-08-27 owner directive "parallel or alternating"; 3-way since 2026-09-09) ──
-  // Every call rotates which provider LEADS the chain: openrouter → groq →
-  // nvidia → openrouter … Without this, entry #1 of
-  // INTERLEAVED_STRONGEST_CHAIN (a strong OpenRouter model) succeeds almost
-  // every time → the other providers are never reached and their free
-  // budgets idle while OpenRouter's ~50/day free ceiling burns. With
-  // rotation, each provider's own strength order stays intact and the load
-  // is spread across ALL configured keys. Lead slots of unconfigured
-  // providers degrade gracefully (the next configured provider's first
-  // entry simply leads). The fast chain keeps groq-first (speed law) and
-  // never rotates.
-  chainCallSeq += 1;
 
   // GROQ BIG-PAYLOAD GUARD — R3 per-entry clamp (2026-09-29; hard data from
   // dispatch logs): Groq free tier enforces an 8000 TPM ceiling COUNTING both
@@ -2262,41 +2513,47 @@ export async function callFreeAIFallbackChain(
   type ChainEntry = { provider: AIProvider; model: string; maxTokens?: number };
   let activeChain0: ChainEntry[] =
     options.chain === "fast" ? INTERLEAVED_FAST_CHAIN : INTERLEAVED_STRONGEST_CHAIN;
+  // Unconditional (pre-343 verbatim): the counter advances on EVERY chain
+  // call — fast-chain calls included — so the strongest-chain rotation
+  // resumes in phase across mixed call types.
+  chainCallSeq += 1;
   if (options.chain !== "fast") {
-    if (geminiKey) {
-      // GEMINI-FIRST LAW (Phase 343, owner order 2026-10-06 «اجعله الاختيار
-      // الأول»): with the gemini key configured, gemini leads the chain for
-      // blog + plans (and EVO via the fast chain) on EVERY call — the 3-way
-      // lead rotation is SUSPENDED. The ladder after the gemini entry, the
-      // dual-key pool, and the Groq R3 clamp below are untouched; removing
-      // the key restores the pre-343 rotation verbatim (chainCallSeq keeps
-      // counting so the rotation resumes in phase).
-      console.log(
-        `${LP} gemini-first (owner 2026-10-06): ${process.env.GEMINI_MODEL || "gemini-3.5-flash"} leads, rotation suspended (call #${chainCallSeq}, orKeys=${openrouterKeys.length})`,
-      );
-    } else {
-      const LEAD_SEQ: AIProvider[] = ["openrouter", "groq", "nvidia"];
-      const leadProvider = LEAD_SEQ[(chainCallSeq - 1) % LEAD_SEQ.length];
-      const leadConfigured =
-        leadProvider === "openrouter"
-          ? openrouterKeys.length > 0
-          : leadProvider === "groq"
-            ? !!groqKey && !skipGroq
-            : !!nvidiaKey;
-      if (leadConfigured && leadProvider !== "openrouter") {
-        const firstIdx = activeChain0.findIndex((e) => e.provider === leadProvider);
-        if (firstIdx > 0) {
-          activeChain0 = [
-            activeChain0[firstIdx],
-            ...activeChain0.slice(0, firstIdx),
-            ...activeChain0.slice(firstIdx + 1),
-          ];
-        }
+    // ── PROVIDER-LEAD ROTATION (2026-08-27 owner directive "parallel or
+    // alternating"; 3-way since 2026-09-09; RESTORED on every call by the
+    // Phase 5-A Gemini-first cancellation, owner order 2026-10-31) ──
+    // Every call rotates which provider LEADS the chain: openrouter → groq
+    // → nvidia → openrouter … Without this, entry #1 of
+    // INTERLEAVED_STRONGEST_CHAIN (a strong OpenRouter model) succeeds almost
+    // every time → the other providers are never reached and their free
+    // budgets idle while OpenRouter's ~50/day free ceiling burns. With
+    // rotation, each provider's own strength order stays intact and the load
+    // is spread across ALL configured keys. Lead slots of unconfigured
+    // providers degrade gracefully (the next configured provider's first
+    // entry simply leads). The fast chain keeps groq-first (speed law) and
+    // never rotates. Gemini is NEVER a lead provider (not in LEAD_SEQ) —
+    // the cancelled gemini-first law is gone; gemini answers only from its
+    // TAIL slot when every rotated lead has failed.
+    const LEAD_SEQ: AIProvider[] = ["openrouter", "groq", "nvidia"];
+    const leadProvider = LEAD_SEQ[(chainCallSeq - 1) % LEAD_SEQ.length];
+    const leadConfigured =
+      leadProvider === "openrouter"
+        ? openrouterKeys.length > 0
+        : leadProvider === "groq"
+          ? !!groqKey && !skipGroq
+          : !!nvidiaKey;
+    if (leadConfigured && leadProvider !== "openrouter") {
+      const firstIdx = activeChain0.findIndex((e) => e.provider === leadProvider);
+      if (firstIdx > 0) {
+        activeChain0 = [
+          activeChain0[firstIdx],
+          ...activeChain0.slice(0, firstIdx),
+          ...activeChain0.slice(firstIdx + 1),
+        ];
       }
-      console.log(
-        `${LP} lead=${leadConfigured ? leadProvider : "openrouter(fallback)"} (call #${chainCallSeq}, orKeys=${openrouterKeys.length})`,
-      );
     }
+    console.log(
+      `${LP} lead=${leadConfigured ? leadProvider : "openrouter(fallback)"} (call #${chainCallSeq}, orKeys=${openrouterKeys.length})`,
+    );
     if (skipGroq) activeChain0 = activeChain0.filter((e) => e.provider !== "groq");
     // R3: surviving groq entries carry their own clamped max_tokens; every
     // other entry keeps the caller's value (byte-identical to pre-R3).

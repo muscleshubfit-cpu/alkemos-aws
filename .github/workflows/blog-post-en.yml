@@ -115,16 +115,29 @@ jobs:
       GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
       NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
 
-      # ── GEMINI-FIRST ARM (Phase 343, owner order 2026-10-06, free tier) ──
-      # Optional BY DESIGN: missing/empty → the chain skips the gemini entry
-      # and the ladder behaves byte-identically to pre-343 (no preflight).
+      # ── TAVILY SEARCH ARM (PHASE 5-A, owner order 2026-10-31 — §10-أ) ──
+      # The FIRST arm of the §6-أ grounded-search ladder (tavily → groq →
+      # gemini dormant). The secret EXISTS in repo Actions secrets since the
+      # Phase-3 live battery; it is now consumed by the production blog
+      # P0 research (callTavilySearch — basic search = 1 credit of the free
+      # Researcher plan's 1000/month; NO paid service, no card). Missing/
+      # empty → the arm fails honestly and the walk falls to groq (no
+      # preflight: an optional arm, exactly like the gemini tail).
+      TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
+
+      # ── GEMINI (Phase 343 arm — first-priority law CANCELLED 2026-10-31,
+      #    Phase 5-A owner order «إلغاء قانون Gemini-First نهائيًا») ──
+      # Optional BY DESIGN: gemini rides BOTH generation chains as an
+      # ordinary TAIL entry (never a lead — the 3-way rotation leads) and
+      # the grounded walk's DORMANT LAST arm. Missing/empty → the entries
+      # are skipped without consuming attempt budget (no preflight).
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
       # BLOG-RECOVERY 2026-10-16 (RC2 relief): optional SECOND free-tier
       # Google AI key — Gemini bills the Google-Search grounding quota
       # PER PROJECT, so a second key (new project) = an independent
       # grounded bucket. Empty/absent secret → single-key behavior.
-      # Consumed by the grounded-search ladder in callGeminiGroundedSearch
-      # (P0 research); the gemini-first chain stays on the primary key.
+      # Consumed by the dormant grounded-search arm in
+      # callGeminiGroundedSearch (P0 research last resort).
       GEMINI_API_KEY2: ${{ secrets.GEMINI_API_KEY2 }}
       # Gemini usage counters (weekly report source) — optional, fail-soft.
       UPSTASH_REDIS_REST_URL: ${{ secrets.UPSTASH_REDIS_REST_URL }}

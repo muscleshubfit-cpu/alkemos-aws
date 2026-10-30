@@ -5,7 +5,7 @@ name: EVO weekly eval (quality harness)
 #
 #   A fixed reference set of AR/EN questions is answered with the REAL
 #   production system prompt (anonymous baseline) via the standard
-#   3-provider chain, then scored by a cheap judge model on the SAME
+#   provider chain, then scored by a cheap judge model on the SAME
 #   chain. One evo_eval_runs row per question (migration 0081) — the
 #   quality curve that accompanies every prompt change, surfaced on
 #   /admin/evo-analytics.
@@ -14,6 +14,19 @@ name: EVO weekly eval (quality harness)
 #   same env family as process-ai-jobs.yml. THURSDAY 21:00 UTC = Friday
 #   00:00 Africa/Cairo — a mid-week curve point away from the Sunday
 #   knowledge refresh (evo-weekly-learning.yml).
+#
+#   EVAL FIDELITY LAW (PHASE 5-A, owner order 2026-10-31 — decision #2,
+#   REJECTING the Phase-4 §12-7 proposal): NO GEMINI_API_KEY is added to
+#   this workflow, ever. The eval rides the SAME provider-selection
+#   mechanism as production (callFreeAIFallbackChain, chain:"fast" —
+#   EVO chat's own ladder): after the Gemini-first cancellation the
+#   production fast chain leads with groq-20b → groq-120b → nvidia →
+#   openrouter (the 3 providers this workflow has keys for), and gemini
+#   rides the TAIL slot only — beyond the eval's maxModels clamp
+#   (answers maxModels 3 · judge maxModels 2) and skipped keyless
+#   anyway. The pre-5-A integrity gap (P1-3: eval measured a chain the
+#   gemini-first law kept divergent from production) is closed BY THE
+#   CANCELLATION, not by adding a key.
 # ============================================================
 
 on:

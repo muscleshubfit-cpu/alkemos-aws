@@ -4,7 +4,11 @@ import {
   callGeminiGroundedSearch,
   callOpenRouterGroundedSearch,
   callGroqGroundedSearch,
+  callTavilySearch,
   callFreeAIFallbackChain,
+  groundedArmOrder,
+  getTavilyKey,
+  __resetChainRotationForTests,
 } from "@/lib/ai-provider";
 import {
   __resetCooldownForTests,
@@ -22,19 +26,35 @@ import { join } from "node:path";
  * افحص دعم البحث المُسنَد لدى كل مزوّد، ولا تستبدله بتوليد عادي أو نتائج
  * وهمية»).
  *
+ * PHASE 5-A (owner order 2026-10-31 «ابدأ المرحلة الخامسة — المرحلة (أ):
+ * تنفيذ ذراع البحث Tavily» + «إلغاء قانون Gemini-First نهائيًا») — the
+ * ladder RE-ORDERED per the Phase-4 §6-أ/§12-1 approved design:
+ *
  * Pinned here:
- *   • The walk order gemini(googleSearch) → openrouter(web plugin) →
- *     groq(browser_search — GROQ-2 2026-10-17: the compound-successor
- *     built-in tool on the GPT-OSS ladder) — NVIDIA NEVER receives a
- *     grounded call (no grounded-search capability; honestly excluded).
- *   • Every arm is a REAL search call (plugin body / browser_search tool)
- *     and every arm enforces the honest live-evidence gate — a 200 without
- *     annotations/citations FAILS and falls through, never masquerades.
+ *   • The walk order tavily(search API) → groq(browser_search) →
+ *     gemini(googleSearch, DORMANT last arm) — the openrouter web arm is
+ *     REMOVED from the effective ladder (dead default model 404 + paid
+ *     plugin 402 — P0-2) and NEVER receives a call from the walk; NVIDIA
+ *     NEVER receives a grounded call (no capability; honestly excluded).
+ *   • The TAVILY ARM contract: a REAL basic search whose result URLs ARE
+ *     the evidence (the live-evidence gate — zero usable URLs = honest
+ *     failure, law 344) + a research-JSON synthesis on the ordinary
+ *     generation chain whose prompt CONTAINS the real URLs (grounding
+ *     proof — never model memory alone); the caller's searchQuery rides
+ *     the search body (§10-أ «تمرير الاستعلام المناسب»).
+ *   • Every arm is a REAL search call and every arm enforces the honest
+ *     live-evidence gate — a 200 without citations/annotations/URLs FAILS
+ *     and falls through, never masquerades.
  *   • Quota-class failures cool the scope (AI_PROVIDER_COOLDOWN_MS opt-in):
  *     the second call SKIPS the drained arm with zero network calls, and
  *     the chain skips a drained provider WITHOUT consuming attempt budget
  *     (NVIDIA becomes reachable within the same maxModels).
  *   • Cooldown marks survive a process restart via the state file.
+ *   • GEMINI_GROUNDED_ENABLED=0 removes the dormant gemini arm without a
+ *     deploy (the §6-أ kill-switch).
+ *   • The generation chains: the 3-way lead rotation runs on every
+ *     strongest-chain call (gemini-first cancelled; gemini rides the
+ *     tail slot only — pinned in ai-provider.test.ts).
  */
 
 const ENV_KEYS = [
@@ -42,6 +62,7 @@ const ENV_KEYS = [
   "GEMINI_API_KEY2",
   "GEMINI_MODEL",
   "GEMINI_GROUNDED_MODELS",
+  "GEMINI_GROUNDED_ENABLED",
   "OPENROUTER_API",
   "OPENROUTER_API_KEY",
   "GROQ_API_KEY",
@@ -49,6 +70,10 @@ const ENV_KEYS = [
   "OPENROUTER_GROUNDED_MODEL",
   "GROQ_GROUNDED_MODEL",
   "GROQ_GROUNDED_MODELS",
+  "TAVILY_API_KEY",
+  "TAVILY_SEARCH_DEPTH",
+  "TAVILY_MAX_RESULTS",
+  "TAVILY_INCLUDE_DOMAINS",
   "AI_PROVIDER_COOLDOWN_MS",
   "AI_PROVIDER_COOLDOWN",
   "AI_COOLDOWN_STATE_FILE",
@@ -67,6 +92,10 @@ beforeEach(() => {
   stateFile = join(mkdtempSync(join(tmpdir(), "gf-")), "cooldown.json");
   process.env.AI_COOLDOWN_STATE_FILE = stateFile;
   __resetCooldownForTests({ deleteFile: true });
+  // PHASE 5-A: the gemini-first rotation suspension is GONE — reset the
+  // rotation counter so every canary starts at a deterministic lead
+  // (call #1 → openrouter leads the strongest chain).
+  __resetChainRotationForTests();
 });
 
 afterEach(() => {
@@ -115,6 +144,33 @@ const GROQ_TPD_429 = {
       "Rate limit reached for model `openai/gpt-oss-120b` in organization `org_x` service tier `on_demand` on tokens per day (TPD): Limit 200,000, Used 198,932, Requested 4,000. Please try again in 4h 2m 3s.",
     type: "rate_limit_error",
   },
+};
+
+/** Tavily quota/credit exhaustion body (search-arm analog of CREDITS_402 —
+ *  the Researcher plan's monthly 1000-credit cap). */
+const TAVILY_CREDITS_429 = {
+  detail: "Usage limit reached. Not enough credits to complete this request.",
+};
+
+/** Tavily /search success — the LIVE-MEASURED Phase-3 shape (run 41075269014):
+ *  results[] of {title,url,content,raw_content,score}. */
+const TAVILY_SEARCH_OK = {
+  results: [
+    {
+      title: "Protein intake for muscle building",
+      url: "https://www.nasm.org/protein-intake",
+      content: "NASM guidance on daily protein intake for muscle building.",
+      raw_content: "Protein intake of 1.6-2.2 g/kg body weight supports muscle hypertrophy.",
+      score: 0.97,
+    },
+    {
+      title: "PubMed — protein supplementation",
+      url: "https://pubmed.ncbi.nlm.nih.gov/22150333",
+      content: "A meta-analysis of protein supplementation and resistance training.",
+      raw_content: "",
+      score: 0.91,
+    },
+  ],
 };
 
 const OR_WEB_OK = {
@@ -197,6 +253,19 @@ const GROQ_BROWSER_OK_XGROQ = {
 
 const CHAIN_PONG = { choices: [{ message: { content: "PONG" } }] };
 
+/** A synthesis-chain answer shaped like the P0 research JSON (what the
+ *  tavily arm's chain call actually returns in production). */
+const CHAIN_RESEARCH_JSON = {
+  choices: [
+    {
+      message: {
+        content:
+          '{"keywords":[{"keyword":"how much protein per day","searchVolume":"high"}],"faqs":[],"topics":["How much protein do you really need per day to build muscle"]}',
+      },
+    },
+  ],
+};
+
 type FetchLog = { url: string; auth?: string; body?: Record<string, unknown> };
 
 type RouteResult = { ok: boolean; status: number; payload: unknown };
@@ -232,56 +301,44 @@ function groqUrl(url: string): boolean {
 function nvidiaUrl(url: string): boolean {
   return url.includes("integrate.api.nvidia.com");
 }
+function tavilyUrl(url: string): boolean {
+  return url.includes("api.tavily.com");
+}
+
+/** The §10-أ search query blog-research passes to the tavily arm. */
+const SEARCH_QUERY =
+  "most searched questions right now in sports nutrition muscle building fat loss and supplements";
+
+/* ══════════════════════════════════════════════════════════════════════
+ * 0. The §6-أ ladder shape (PHASE 5-A order canary)
+ * ══════════════════════════════════════════════════════════════════════ */
+
+describe("PHASE 5-A — the §6-أ grounded-arm ladder (order canary)", () => {
+  it("default order: tavily → groq → gemini (dormant last arm)", () => {
+    expect(groundedArmOrder()).toEqual(["tavily", "groq", "gemini"]);
+    expect(groundedArmOrder("ar")).toEqual(["tavily", "groq", "gemini"]);
+    expect(groundedArmOrder("en")).toEqual(["tavily", "groq", "gemini"]); // Phase B leads EN with exa
+  });
+
+  it("GEMINI_GROUNDED_ENABLED=0 drops the dormant gemini arm (deploy-free §6-أ kill-switch)", () => {
+    process.env.GEMINI_GROUNDED_ENABLED = "0";
+    expect(groundedArmOrder()).toEqual(["tavily", "groq"]);
+    expect(groundedArmOrder("ar")).toEqual(["tavily", "groq"]);
+  });
+});
 
 /* ══════════════════════════════════════════════════════════════════════
  * 1. The cross-provider walk — provider transition on quota drain
  *    (cooldown OFF: pure failover mechanics, canaries' default env)
- * ═════════════════════════════════════════════════════════════════════ */
+ * ══════════════════════════════════════════════════════════════════════ */
 
-describe("cross-provider walk — gemini quota drain moves to openrouter web", () => {
-  it("gemini 429 everywhere → openrouter web plugin answers with REAL annotation evidence", async () => {
-    process.env.GEMINI_API_KEY = "AIza-test-key";
-    process.env.OPENROUTER_API = "sk-or-test-key";
-    const log: FetchLog[] = [];
-    stubRoutingFetch(log, (url) =>
-      geminiKeyOk(url)
-        ? { ok: false, status: 429, payload: QUOTA_429 }
-        : { ok: true, status: 200, payload: OR_WEB_OK },
-    );
-
-    const out = await callGroundedSearch("research", { tag: "blog:research" });
-
-    expect(out.provider).toBe("openrouter");
-    expect(out.model).toBe("nvidia/nemotron-3-super-120b-a12b:free");
-    expect(out.text).toContain("1.6 g/kg");
-    expect(out.grounding.sources.map((s) => s.url)).toEqual([
-      "https://examine.com/protein",
-      "https://pubmed.ncbi.nlm.nih.gov/22150333",
-    ]);
-    expect(out.grounding.sources[0].title).toBe("Protein | Examine");
-
-    // walk order: 3 REAL gemini grounded attempts (the ladder — 3.8-pro
-    // retired 2026-10-20: measured 404 on the live key), then ONE
-    // openrouter web call — groq/nvidia NEVER called.
-    expect(log).toHaveLength(4);
-    expect(log.slice(0, 3).every((c) => geminiKeyOk(c.url))).toBe(true);
-    expect(orUrl(log[3].url)).toBe(true);
-    expect(log.some((c) => groqUrl(c.url) || nvidiaUrl(c.url))).toBe(false);
-    // the openrouter attempt IS a real search call: web plugin in the body,
-    // NO response_format (STRICT-JSON prompt contract carries JSON).
-    expect(log[3].body?.plugins).toEqual([{ id: "web", max_results: 5 }]);
-    expect(log[3].body?.response_format).toBeUndefined();
-    expect(log[3].auth).toBe("Bearer sk-or-test-key");
-  });
-
-  it("gemini 429 + openrouter 402 (no plugin credits) → groq browser_search answers with citations", async () => {
-    process.env.GEMINI_API_KEY = "AIza-test-key";
-    process.env.OPENROUTER_API = "sk-or-test-key";
+describe("cross-provider walk — tavily quota drain moves to groq browser_search", () => {
+  it("tavily 429 (credits exhausted) → groq browser_search answers with REAL citation evidence; the openrouter web arm is NEVER called (off-ladder)", async () => {
+    process.env.TAVILY_API_KEY = "tvly-test-key";
     process.env.GROQ_API_KEY = "gsk-test-key";
     const log: FetchLog[] = [];
     stubRoutingFetch(log, (url) => {
-      if (geminiKeyOk(url)) return { ok: false, status: 429, payload: QUOTA_429 };
-      if (orUrl(url)) return { ok: false, status: 402, payload: CREDITS_402 };
+      if (tavilyUrl(url)) return { ok: false, status: 429, payload: TAVILY_CREDITS_429 };
       return { ok: true, status: 200, payload: GROQ_BROWSER_OK };
     });
 
@@ -293,30 +350,53 @@ describe("cross-provider walk — gemini quota drain moves to openrouter web", (
       "https://www.nasm.org/protein-intake",
       "https://pubmed.ncbi.nlm.nih.gov/22150333",
     ]);
-    // 3 gemini + 1 openrouter + 1 groq, NVIDIA never called
-    expect(log).toHaveLength(5);
-    expect(groqUrl(log[4].url)).toBe(true);
-    expect(log.some((c) => nvidiaUrl(c.url))).toBe(false);
-    // groq browser_search body: the built-in tool rides the call (the REAL
-    // search ride-along — GROQ-2), reasoning_format hidden (GPT-OSS law),
-    // NO response_format (STRICT-JSON prompt contract carries JSON)
-    expect(log[4].body?.tools).toEqual([{ type: "browser_search" }]);
-    expect(log[4].body?.reasoning_format).toBe("hidden");
-    expect(log[4].body?.plugins).toBeUndefined();
-    expect(log[4].body?.response_format).toBeUndefined();
-    expect(log[4].auth).toBe("Bearer gsk-test-key");
+    // walk order: ONE tavily search attempt (429 — honest error), then ONE
+    // groq browser_search call — gemini (keyless config error) and the
+    // off-ladder openrouter web arm are NEVER called; NVIDIA never called.
+    expect(log).toHaveLength(2);
+    expect(tavilyUrl(log[0].url)).toBe(true);
+    expect(log[0].auth).toBe("Bearer tvly-test-key");
+    expect(groqUrl(log[1].url)).toBe(true);
+    expect(log.some((c) => orUrl(c.url) || nvidiaUrl(c.url) || geminiKeyOk(c.url))).toBe(false);
+    // the groq attempt IS a real search call: browser_search tool in the
+    // body, reasoning_format hidden (GPT-OSS law), NO response_format.
+    expect(log[1].body?.tools).toEqual([{ type: "browser_search" }]);
+    expect(log[1].body?.reasoning_format).toBe("hidden");
+    expect(log[1].body?.response_format).toBeUndefined();
+    expect(log[1].auth).toBe("Bearer gsk-test-key");
+  });
+
+  it("tavily 429 + groq TPD-drained → the DORMANT gemini arm answers as the last resort", async () => {
+    process.env.TAVILY_API_KEY = "tvly-test-key";
+    process.env.GROQ_API_KEY = "gsk-test-key";
+    process.env.GEMINI_API_KEY = "AIza-test-key";
+    const log: FetchLog[] = [];
+    stubRoutingFetch(log, (url) => {
+      if (tavilyUrl(url)) return { ok: false, status: 429, payload: TAVILY_CREDITS_429 };
+      if (groqUrl(url)) return { ok: false, status: 429, payload: GROQ_TPD_429 };
+      return { ok: true, status: 200, payload: GEMINI_GROUNDED_OK };
+    });
+
+    const out = await callGroundedSearch("research", { tag: "blog:research" });
+
+    expect(out.provider).toBe("gemini");
+    expect(out.grounding.searchQueries).toEqual(["how much protein per day"]);
+    expect(out.grounding.sources.map((s) => s.url)).toEqual([
+      "https://examine.com/protein",
+    ]);
+    // 1 tavily + 2 groq ladder models (120b/20b, both TPD-drained) + the
+    // gemini ladder's first model — openrouter NEVER called (off-ladder).
+    expect(log).toHaveLength(4);
+    expect(tavilyUrl(log[0].url)).toBe(true);
+    expect(log.slice(1, 3).every((c) => groqUrl(c.url))).toBe(true);
+    expect(geminiKeyOk(log[3].url)).toBe(true);
+    expect(log.some((c) => orUrl(c.url) || nvidiaUrl(c.url))).toBe(false);
   });
 
   it("groq legacy message.citations shape still answers (documented location #1)", async () => {
-    process.env.GEMINI_API_KEY = "AIza-test-key";
-    process.env.OPENROUTER_API = "sk-or-test-key";
     process.env.GROQ_API_KEY = "gsk-test-key";
     const log: FetchLog[] = [];
-    stubRoutingFetch(log, (url) => {
-      if (geminiKeyOk(url)) return { ok: false, status: 429, payload: QUOTA_429 };
-      if (orUrl(url)) return { ok: false, status: 402, payload: CREDITS_402 };
-      return { ok: true, status: 200, payload: GROQ_BROWSER_OK_CITED };
-    });
+    stubRoutingFetch(log, () => ({ ok: true, status: 200, payload: GROQ_BROWSER_OK_CITED }));
 
     const out = await callGroundedSearch("research");
     expect(out.provider).toBe("groq");
@@ -324,11 +404,12 @@ describe("cross-provider walk — gemini quota drain moves to openrouter web", (
       "https://www.nasm.org/protein-intake",
       "https://pubmed.ncbi.nlm.nih.gov/22150333",
     ]);
+    // tavily + gemini are keyless (honest config errors, zero fetches) —
+    // groq answers on the FIRST real call.
+    expect(log).toHaveLength(1);
   });
 
   it("groq 400 «Parsing failed» under reasoning_format hidden → flips to parsed and succeeds (LIVE-MEASURED split, run 39061588932)", async () => {
-    process.env.GEMINI_API_KEY = "AIza-test-key";
-    process.env.OPENROUTER_API = "sk-or-test-key";
     process.env.GROQ_API_KEY = "gsk-test-key";
     const log: FetchLog[] = [];
     const fake = vi.fn(async (url: string, init?: RequestInit) => {
@@ -339,11 +420,7 @@ describe("cross-provider walk — gemini quota drain moves to openrouter web", (
       let ok = true;
       let status = 200;
       let payload: unknown = GROQ_BROWSER_OK;
-      if (geminiKeyOk(String(url))) {
-        ok = false; status = 429; payload = QUOTA_429;
-      } else if (orUrl(String(url))) {
-        ok = false; status = 402; payload = CREDITS_402;
-      } else if (body.reasoning_format === "hidden") {
+      if (groqUrl(String(url)) && body.reasoning_format === "hidden") {
         // the measured gpt-oss-20b failure under "hidden"
         ok = false; status = 400;
         payload = { error: { message: "Parsing failed. The model generated output that could not be parsed. Please adjust your prompt.", type: "invalid_request_error" } };
@@ -367,8 +444,6 @@ describe("cross-provider walk — gemini quota drain moves to openrouter web", (
 
   it("groq 429 TPM (per-minute token bucket) → waits Groq's own hint and retries; NEVER marks the 30-min quota registry", { timeout: 15_000 }, async () => {
     process.env.AI_PROVIDER_COOLDOWN_MS = "600000";
-    process.env.GEMINI_API_KEY = "AIza-test-key";
-    process.env.OPENROUTER_API = "sk-or-test-key";
     process.env.GROQ_API_KEY = "gsk-test-key";
     const log: FetchLog[] = [];
     let groqCall = 0;
@@ -380,11 +455,7 @@ describe("cross-provider walk — gemini quota drain moves to openrouter web", (
       let ok = true;
       let status = 200;
       let payload: unknown = GROQ_BROWSER_OK;
-      if (geminiKeyOk(String(url))) {
-        ok = false; status = 429; payload = QUOTA_429;
-      } else if (orUrl(String(url))) {
-        ok = false; status = 402; payload = CREDITS_402;
-      } else {
+      if (groqUrl(String(url))) {
         groqCall++;
         if (groqCall === 1) {
           // the measured TPM body (probe run 39061337401): per-minute token
@@ -412,15 +483,9 @@ describe("cross-provider walk — gemini quota drain moves to openrouter web", (
   });
 
   it("groq citations are also accepted from x_groq (documented location #2)", async () => {
-    process.env.GEMINI_API_KEY = "AIza-test-key";
-    process.env.OPENROUTER_API = "sk-or-test-key";
     process.env.GROQ_API_KEY = "gsk-test-key";
     const log: FetchLog[] = [];
-    stubRoutingFetch(log, (url) => {
-      if (geminiKeyOk(url)) return { ok: false, status: 429, payload: QUOTA_429 };
-      if (orUrl(url)) return { ok: false, status: 402, payload: CREDITS_402 };
-      return { ok: true, status: 200, payload: GROQ_BROWSER_OK_XGROQ };
-    });
+    stubRoutingFetch(log, () => ({ ok: true, status: 200, payload: GROQ_BROWSER_OK_XGROQ }));
 
     const out = await callGroundedSearch("research");
     expect(out.provider).toBe("groq");
@@ -431,8 +496,6 @@ describe("cross-provider walk — gemini quota drain moves to openrouter web", (
   });
 
   it("groq ladder: the leader 404s (dead id) → gpt-oss-20b answers (the GROQ-2 compound-decommission law)", async () => {
-    process.env.GEMINI_API_KEY = "AIza-test-key";
-    process.env.OPENROUTER_API = "sk-or-test-key";
     process.env.GROQ_API_KEY = "gsk-test-key";
     const log: FetchLog[] = [];
     const fake = vi.fn(async (url: string, init?: RequestInit) => {
@@ -443,15 +506,7 @@ describe("cross-provider walk — gemini quota drain moves to openrouter web", (
       let ok = true;
       let status = 200;
       let payload: unknown = GROQ_BROWSER_OK;
-      if (geminiKeyOk(String(url))) {
-        ok = false;
-        status = 429;
-        payload = QUOTA_429;
-      } else if (orUrl(String(url))) {
-        ok = false;
-        status = 402;
-        payload = CREDITS_402;
-      } else if (body.model === "openai/gpt-oss-120b") {
+      if (groqUrl(String(url)) && body.model === "openai/gpt-oss-120b") {
         // the LIVE shape of the decommissioned-id failure (run 39019592155):
         // 404 model_not_found — the ladder must fall to the next model
         ok = false;
@@ -493,32 +548,28 @@ describe("cross-provider walk — gemini quota drain moves to openrouter web", (
     expect(log[1].body?.max_tokens).toBe(5000);
   });
 
-  it("openrouter reasoning models: empty content + reasoning_details + annotations still answers (LIVE-PROBED run 38843366143)", async () => {
-    process.env.GEMINI_API_KEY = "AIza-test-key";
+  it("openrouter reasoning models: empty content + reasoning_details + annotations still answers (LIVE-PROBED run 38843366143 — direct arm diagnostics)", async () => {
     process.env.OPENROUTER_API = "sk-or-test-key";
     const log: FetchLog[] = [];
-    stubRoutingFetch(log, (url) => {
-      if (geminiKeyOk(url)) return { ok: false, status: 429, payload: QUOTA_429 };
-      return {
-        ok: true,
-        status: 200,
-        payload: {
-          choices: [
-            {
-              message: {
-                content: null,
-                reasoning_details: [{ text: "The WHO guidance recommends 150-300 minutes of moderate activity weekly." }],
-                annotations: [
-                  { type: "url", url: "https://www.who.int/news-room/fact-sheets/detail/physical-activity", title: "WHO" },
-                ],
-              },
+    stubRoutingFetch(log, () => ({
+      ok: true,
+      status: 200,
+      payload: {
+        choices: [
+          {
+            message: {
+              content: null,
+              reasoning_details: [{ text: "The WHO guidance recommends 150-300 minutes of moderate activity weekly." }],
+              annotations: [
+                { type: "url", url: "https://www.who.int/news-room/fact-sheets/detail/physical-activity", title: "WHO" },
+              ],
             },
-          ],
-        },
-      };
-    });
+          },
+        ],
+      },
+    }));
 
-    const out = await callGroundedSearch("research", { maxTokens: 400 });
+    const out = await callOpenRouterGroundedSearch("research", { maxTokens: 400 });
     expect(out.provider).toBe("openrouter");
     expect(out.text).toContain("150-300 minutes");
     expect(out.grounding.sources.map((s) => s.url)).toEqual([
@@ -527,85 +578,93 @@ describe("cross-provider walk — gemini quota drain moves to openrouter web", (
   });
 
   it("the OR arm enforces a 10000-token floor (LIVE-PROBED: 400 dies inside the reasoning CoT; 6000 truncates the ARABIC research mid-JSON — kw:10/topics:0, run 38849540488)", async () => {
-    process.env.GEMINI_API_KEY = "AIza-test-key";
     process.env.OPENROUTER_API = "sk-or-test-key";
     const log: FetchLog[] = [];
-    stubRoutingFetch(log, (url) =>
-      geminiKeyOk(url)
-        ? { ok: false, status: 429, payload: QUOTA_429 }
-        : { ok: true, status: 200, payload: OR_WEB_OK },
-    );
-    await callGroundedSearch("research", { maxTokens: 400 });
-    expect(log[3].body?.max_tokens).toBe(10000);
+    stubRoutingFetch(log, () => ({ ok: true, status: 200, payload: OR_WEB_OK }));
+    await callOpenRouterGroundedSearch("research", { maxTokens: 400 });
+    expect(log[0].body?.max_tokens).toBe(10000);
     // a caller above the floor keeps their own value (never clamped DOWN)
-    await callGroundedSearch("research", { maxTokens: 12000 });
-    expect(log[7].body?.max_tokens).toBe(12000);
+    await callOpenRouterGroundedSearch("research", { maxTokens: 12000 });
+    expect(log[1].body?.max_tokens).toBe(12000);
   });
 
-  it("all three arms fail → ONE honest aggregate error; NVIDIA never receives a call", async () => {
-    process.env.GEMINI_API_KEY = "AIza-test-key";
-    process.env.OPENROUTER_API = "sk-or-test-key";
+  it("every ladder arm fails → ONE honest aggregate error; the openrouter web arm NEVER receives a call (off-ladder); NVIDIA never receives a call", async () => {
+    process.env.TAVILY_API_KEY = "tvly-test-key";
     process.env.GROQ_API_KEY = "gsk-test-key";
+    process.env.GEMINI_API_KEY = "AIza-test-key";
     const log: FetchLog[] = [];
     stubRoutingFetch(log, (url) => {
-      if (geminiKeyOk(url)) return { ok: false, status: 429, payload: QUOTA_429 };
-      if (orUrl(url)) return { ok: false, status: 402, payload: CREDITS_402 };
-      return { ok: false, status: 429, payload: GROQ_TPD_429 };
+      if (tavilyUrl(url)) return { ok: false, status: 429, payload: TAVILY_CREDITS_429 };
+      if (groqUrl(url)) return { ok: false, status: 429, payload: GROQ_TPD_429 };
+      return { ok: false, status: 429, payload: QUOTA_429 };
     });
 
     const err = (await callGroundedSearch("research").catch((e: Error) => e)) as Error;
     expect(err.message).toContain("every grounded-search arm failed");
-    expect(err.message).toContain("gemini(googleSearch)");
-    expect(err.message).toContain("openrouter(web plugin)");
+    expect(err.message).toContain("tavily(search API)");
     expect(err.message).toContain("groq(browser_search)");
+    expect(err.message).toContain("gemini(googleSearch, dormant last arm)");
+    expect(err.message).toContain("REMOVED from the effective ladder");
     expect(err.message).toContain("NVIDIA NIM has no grounded-search capability");
     expect(err.message).toContain("no simulated/curated substitute");
     expect(err.message).toContain("AI API error 429");
-    expect(err.message).toContain("AI API error 402");
-    // NVIDIA is excluded BY DESIGN — zero calls to integrate.api.nvidia.com
-    expect(log.some((c) => nvidiaUrl(c.url))).toBe(false);
+    // 1 tavily + 2 groq ladder + 3 gemini ladder = 6 REAL attempts; the
+    // off-ladder OR arm and the excluded NVIDIA make ZERO calls.
+    expect(log).toHaveLength(6);
+    expect(log.some((c) => orUrl(c.url) || nvidiaUrl(c.url))).toBe(false);
   });
 
-  it("no keys configured → the aggregate names every arm's configuration error", async () => {
+  it("no keys configured → the aggregate names every ladder arm's configuration error (tavily + groq + gemini)", async () => {
     const log: FetchLog[] = [];
     stubRoutingFetch(log, () => ({ ok: true, status: 200, payload: OR_WEB_OK }));
     const err = (await callGroundedSearch("research").catch((e: Error) => e)) as Error;
-    expect(err.message).toContain("GEMINI_API_KEY is not configured");
-    expect(err.message).toContain("no OpenRouter key configured");
+    expect(err.message).toContain("TAVILY_API_KEY is not configured");
     expect(err.message).toContain("GROQ_API_KEY is not configured");
+    expect(err.message).toContain("GEMINI_API_KEY is not configured");
     expect(log).toHaveLength(0);
   });
 
-  it("gemini healthy → arm 1 answers and openrouter/groq are never called", async () => {
-    process.env.GEMINI_API_KEY = "AIza-test-key";
+  it("tavily healthy → the FIRST arm answers and groq/gemini are never called (search + chain synthesis)", async () => {
+    process.env.TAVILY_API_KEY = "tvly-test-key";
     process.env.OPENROUTER_API = "sk-or-test-key";
-    process.env.GROQ_API_KEY = "gsk-test-key";
     const log: FetchLog[] = [];
-    stubRoutingFetch(log, () => ({ ok: true, status: 200, payload: GEMINI_GROUNDED_OK }));
-    const out = await callGroundedSearch("research");
-    expect(out.provider).toBe("gemini");
-    expect(out.grounding.searchQueries).toEqual(["how much protein per day"]);
-    expect(log).toHaveLength(1);
-    expect(log.some((c) => orUrl(c.url) || groqUrl(c.url))).toBe(false);
+    stubRoutingFetch(log, (url) => {
+      if (tavilyUrl(url)) return { ok: true, status: 200, payload: TAVILY_SEARCH_OK };
+      return { ok: true, status: 200, payload: CHAIN_RESEARCH_JSON };
+    });
+
+    const out = await callGroundedSearch("research", { tag: "blog:research", searchQuery: SEARCH_QUERY });
+
+    expect(out.provider).toBe("tavily");
+    expect(out.model).toBe("nvidia/nemotron-3-ultra-550b-a55b:free"); // the synthesis model
+    expect(out.text).toContain("How much protein do you really need per day");
+    expect(out.grounding.searchQueries).toEqual([SEARCH_QUERY]);
+    expect(out.grounding.sources.map((s) => s.url)).toEqual([
+      "https://www.nasm.org/protein-intake",
+      "https://pubmed.ncbi.nlm.nih.gov/22150333",
+    ]);
+    // ONE tavily search + ONE synthesis chain call — groq/gemini/nvidia never called.
+    expect(log).toHaveLength(2);
+    expect(tavilyUrl(log[0].url)).toBe(true);
+    expect(orUrl(log[1].url)).toBe(true);
+    expect(log.some((c) => groqUrl(c.url) || geminiKeyOk(c.url) || nvidiaUrl(c.url))).toBe(false);
   });
 
-  it("ops knobs swap the arm models without a deploy (OPENROUTER_GROUNDED_MODEL / GROQ_GROUNDED_MODEL)", async () => {
-    process.env.GEMINI_API_KEY = "AIza-test-key";
+  it("ops knobs swap the arm models without a deploy (GROQ_GROUNDED_MODEL / OPENROUTER_GROUNDED_MODEL — direct arm calls)", async () => {
     process.env.OPENROUTER_API = "sk-or-test-key";
     process.env.GROQ_API_KEY = "gsk-test-key";
     process.env.OPENROUTER_GROUNDED_MODEL = "custom/or-model:free";
     process.env.GROQ_GROUNDED_MODEL = "groq/custom-browser";
     const log: FetchLog[] = [];
     stubRoutingFetch(log, (url) => {
-      if (geminiKeyOk(url)) return { ok: false, status: 429, payload: QUOTA_429 };
-      if (orUrl(url)) return { ok: true, status: 200, payload: OR_WEB_OK };
-      return { ok: true, status: 200, payload: GROQ_BROWSER_OK };
+      if (groqUrl(url)) return { ok: true, status: 200, payload: GROQ_BROWSER_OK };
+      return { ok: true, status: 200, payload: OR_WEB_OK };
     });
 
-    const orOut = await callGroundedSearch("research");
+    const orOut = await callOpenRouterGroundedSearch("research");
     expect(orOut.provider).toBe("openrouter");
     expect(orOut.model).toBe("custom/or-model:free");
-    expect(String(log[3].body?.model)).toBe("custom/or-model:free");
+    expect(String(log[0].body?.model)).toBe("custom/or-model:free");
 
     const groqOut = await callGroqGroundedSearch("research");
     expect(groqOut.model).toBe("groq/custom-browser");
@@ -613,107 +672,326 @@ describe("cross-provider walk — gemini quota drain moves to openrouter web", (
 });
 
 /* ══════════════════════════════════════════════════════════════════════
- * 2. The honest evidence gates — plain generation can NEVER masquerade
- * ═════════════════════════════════════════════════════════════════════ */
+ * 1b. PHASE 5-A — the Tavily search arm contract (callTavilySearch)
+ * ══════════════════════════════════════════════════════════════════════ */
 
-describe("honest evidence gates — no live-search evidence = honest failure", () => {
-  it("openrouter 200 WITHOUT annotations fails the gate → the walk falls to groq", async () => {
-    process.env.GEMINI_API_KEY = "AIza-test-key";
+describe("PHASE 5-A — the Tavily search arm (REAL search + chain synthesis)", () => {
+  it("the search body: the caller's searchQuery, basic depth (1 credit), raw content on, NO include_domains by default", async () => {
+    process.env.TAVILY_API_KEY = "tvly-test-key";
     process.env.OPENROUTER_API = "sk-or-test-key";
+    const log: FetchLog[] = [];
+    stubRoutingFetch(log, (url) => {
+      if (tavilyUrl(url)) return { ok: true, status: 200, payload: TAVILY_SEARCH_OK };
+      return { ok: true, status: 200, payload: CHAIN_RESEARCH_JSON };
+    });
+
+    await callTavilySearch("the full research brief", {
+      tag: "blog:research",
+      searchQuery: SEARCH_QUERY,
+    });
+
+    expect(log).toHaveLength(2);
+    const search = log[0].body ?? {};
+    expect(search.query).toBe(SEARCH_QUERY);
+    expect(search.search_depth).toBe("basic"); // 1 credit — the free-tier law
+    expect(search.max_results).toBe(10);
+    expect(search.include_raw_content).toBe(true);
+    expect(search.include_answer).toBe(false);
+    expect(search.include_domains).toBeUndefined(); // unrestricted discovery default
+    expect(log[0].auth).toBe("Bearer tvly-test-key");
+  });
+
+  it("the synthesis prompt CONTAINS the real search URLs + snippets (grounding proof — never model memory alone)", async () => {
+    process.env.TAVILY_API_KEY = "tvly-test-key";
+    process.env.OPENROUTER_API = "sk-or-test-key";
+    const log: FetchLog[] = [];
+    stubRoutingFetch(log, (url) => {
+      if (tavilyUrl(url)) return { ok: true, status: 200, payload: TAVILY_SEARCH_OK };
+      return { ok: true, status: 200, payload: CHAIN_RESEARCH_JSON };
+    });
+
+    await callTavilySearch("the full research brief", {
+      tag: "blog:research",
+      searchQuery: SEARCH_QUERY,
+      systemPrompt: "You are a strict JSON API endpoint.",
+    });
+
+    const synth = log[1];
+    expect(synth.body?.model).toBe("nvidia/nemotron-3-ultra-550b-a55b:free");
+    const messages = JSON.stringify(synth.body?.messages);
+    // BOTH live URLs ride the synthesis prompt (the evidence base):
+    expect(messages).toContain("https://www.nasm.org/protein-intake");
+    expect(messages).toContain("https://pubmed.ncbi.nlm.nih.gov/22150333");
+    // …the raw_content excerpt too (measured depth, clipped):
+    expect(messages).toContain("1.6-2.2 g/kg");
+    // …the search-tool adapter note + the original brief:
+    expect(messages).toContain("NO live-search tool in this call");
+    expect(messages).toContain("the full research brief");
+    expect(messages).toContain(SEARCH_QUERY);
+    // the caller's systemPrompt rides the synthesis (strict-JSON law):
+    expect(messages).toContain("strict JSON API endpoint");
+  });
+
+  it("200 with ZERO usable result URLs → the live-evidence gate fails honestly (law 344) → the walk falls to groq", async () => {
+    process.env.TAVILY_API_KEY = "tvly-test-key";
     process.env.GROQ_API_KEY = "gsk-test-key";
     const log: FetchLog[] = [];
     stubRoutingFetch(log, (url) => {
-      if (geminiKeyOk(url)) return { ok: false, status: 429, payload: QUOTA_429 };
-      if (orUrl(url)) {
-        return {
-          ok: true,
-          status: 200,
-          payload: { choices: [{ message: { content: "answer from model memory" } }] },
-        };
-      }
+      if (tavilyUrl(url)) return { ok: true, status: 200, payload: { results: [] } };
       return { ok: true, status: 200, payload: GROQ_BROWSER_OK };
     });
 
-    const out = await callGroundedSearch("research");
-    expect(out.provider).toBe("groq"); // the ungrounded OR answer did NOT pass
-    expect(orUrl(log[3].url)).toBe(true);
-    expect(groqUrl(log[4].url)).toBe(true);
+    // the DIRECT arm call rejects with the gate error…
+    await expect(
+      callTavilySearch("research", { tag: "blog:research", searchQuery: SEARCH_QUERY }),
+    ).rejects.toThrow(/ZERO usable result URLs.*live-evidence gate/);
+    // …and the WALK falls through to groq (a 200-without-URLs answer is
+    // NOT research — never a fake pass).
+    const out = await callGroundedSearch("research", { searchQuery: SEARCH_QUERY });
+    expect(out.provider).toBe("groq");
+  });
+
+  it("a 429/credit-exhausted search → markCooldown(grounded:tavily) + the walk falls to groq; the SECOND call skips tavily entirely", async () => {
+    process.env.AI_PROVIDER_COOLDOWN_MS = "600000";
+    process.env.TAVILY_API_KEY = "tvly-test-key";
+    process.env.GROQ_API_KEY = "gsk-test-key";
+    const log: FetchLog[] = [];
+    stubRoutingFetch(log, (url) => {
+      if (tavilyUrl(url)) return { ok: false, status: 429, payload: TAVILY_CREDITS_429 };
+      return { ok: true, status: 200, payload: GROQ_BROWSER_OK };
+    });
+
+    const out1 = await callGroundedSearch("research", { searchQuery: SEARCH_QUERY });
+    expect(out1.provider).toBe("groq");
+    expect(log).toHaveLength(2); // 1 tavily (429) + 1 groq
+    const cds = activeCooldowns();
+    expect(cds.some((c) => c.scope === "grounded:tavily")).toBe(true);
+
+    const out2 = await callGroundedSearch("research", { searchQuery: SEARCH_QUERY });
+    expect(out2.provider).toBe("groq");
+    // the second call made ZERO tavily attempts — the drained arm was
+    // skipped from cooldown memory (the futile-repeat law).
+    const call2 = log.slice(2);
+    expect(call2).toHaveLength(1);
+    expect(groqUrl(call2[0].url)).toBe(true);
+  });
+
+  it("no TAVILY_API_KEY → honest configuration error; the walk degrades to groq exactly as before the arm existed", async () => {
+    process.env.GROQ_API_KEY = "gsk-test-key";
+    const log: FetchLog[] = [];
+    stubRoutingFetch(log, () => ({ ok: true, status: 200, payload: GROQ_BROWSER_OK }));
+
+    expect(getTavilyKey()).toBe("");
+    const out = await callGroundedSearch("research", { searchQuery: SEARCH_QUERY });
+    expect(out.provider).toBe("groq");
+    expect(log).toHaveLength(1); // zero tavily/gemini fetches — keyless arms
+  });
+
+  it("search OK but the synthesis chain all-fails → the arm fails honestly → the walk falls to groq browser_search (a REAL search call, not plain generation)", async () => {
+    process.env.TAVILY_API_KEY = "tvly-test-key";
+    process.env.OPENROUTER_API = "sk-or-test-key";
+    process.env.GROQ_API_KEY = "gsk-test-key";
+    const log: FetchLog[] = [];
+    const fake = vi.fn(async (url: string, init?: RequestInit) => {
+      const headers = new Headers(init?.headers);
+      const auth = headers.get("authorization") || "";
+      const body = JSON.parse(String(init?.body)) as Record<string, unknown>;
+      log.push({ url, auth, body });
+      if (tavilyUrl(String(url))) {
+        return {
+          ok: true, status: 200,
+          json: async () => TAVILY_SEARCH_OK,
+          text: async () => JSON.stringify(TAVILY_SEARCH_OK),
+        } as unknown as Response;
+      }
+      // The synthesis chain (plain chat, NO tools) fails everywhere…
+      if (!body.tools) {
+        return {
+          ok: false, status: 429,
+          json: async () => QUOTA_429,
+          text: async () => JSON.stringify(QUOTA_429),
+        } as unknown as Response;
+      }
+      // …while the groq ARM call (browser_search WITH tools) answers.
+      return {
+        ok: true, status: 200,
+        json: async () => GROQ_BROWSER_OK,
+        text: async () => JSON.stringify(GROQ_BROWSER_OK),
+      } as unknown as Response;
+    });
+    vi.stubGlobal("fetch", fake);
+
+    const out = await callGroundedSearch("research", { searchQuery: SEARCH_QUERY });
+    expect(out.provider).toBe("groq");
+    expect(out.model).toBe("openai/gpt-oss-120b");
+    // the walk: tavily search (OK) → synthesis chain (or-ultra 429 →
+    // groq-120b plain 429 → chain exhausted → arm throws) → groq ARM
+    // (browser_search) answers.
+    const tavilyCalls = log.filter((c) => tavilyUrl(c.url));
+    expect(tavilyCalls).toHaveLength(1);
+    const plainChat = log.filter((c) => !c.body?.tools && (orUrl(c.url) || groqUrl(c.url)));
+    expect(plainChat.length).toBeGreaterThanOrEqual(2); // or-ultra + groq-120b synthesis attempts
+    const armCall = log.find((c) => Array.isArray(c.body?.tools as unknown));
+    expect(armCall).toBeDefined();
+    expect(armCall?.body?.tools).toEqual([{ type: "browser_search" }]);
+  });
+
+  it("TAVILY_INCLUDE_DOMAINS restricts the search (the Phase-3 measured authority filter) and TAVILY_SEARCH_DEPTH=advanced switches depth", async () => {
+    process.env.TAVILY_API_KEY = "tvly-test-key";
+    process.env.OPENROUTER_API = "sk-or-test-key";
+    process.env.TAVILY_INCLUDE_DOMAINS = "who.int, mayoclinic.org";
+    process.env.TAVILY_SEARCH_DEPTH = "advanced";
+    const log: FetchLog[] = [];
+    stubRoutingFetch(log, (url) => {
+      if (tavilyUrl(url)) return { ok: true, status: 200, payload: TAVILY_SEARCH_OK };
+      return { ok: true, status: 200, payload: CHAIN_RESEARCH_JSON };
+    });
+
+    await callTavilySearch("research", { searchQuery: SEARCH_QUERY });
+    expect(log[0].body?.include_domains).toEqual(["who.int", "mayoclinic.org"]);
+    expect(log[0].body?.search_depth).toBe("advanced");
+  });
+
+  it("no searchQuery option → the prompt's first 400 chars become the query (the documented fallback, Tavily's cap)", async () => {
+    process.env.TAVILY_API_KEY = "tvly-test-key";
+    process.env.OPENROUTER_API = "sk-or-test-key";
+    const log: FetchLog[] = [];
+    stubRoutingFetch(log, (url) => {
+      if (tavilyUrl(url)) return { ok: true, status: 200, payload: TAVILY_SEARCH_OK };
+      return { ok: true, status: 200, payload: CHAIN_RESEARCH_JSON };
+    });
+
+    const longPrompt = "A".repeat(1000);
+    await callTavilySearch(longPrompt, { tag: "probe" });
+    expect(log[0].body?.query).toBe("A".repeat(400));
+  });
+});
+
+/* ══════════════════════════════════════════════════════════════════════
+ * 1c. PHASE 5-A — GEMINI_GROUNDED_ENABLED (the dormant-arm kill-switch)
+ * ══════════════════════════════════════════════════════════════════════ */
+
+describe("PHASE 5-A — GEMINI_GROUNDED_ENABLED kill-switch (§6-أ)", () => {
+  it("=0 → the dormant gemini arm is REMOVED from the walk (zero gemini fetches; the aggregate names the disablement)", async () => {
+    process.env.GEMINI_GROUNDED_ENABLED = "0";
+    process.env.TAVILY_API_KEY = "tvly-test-key";
+    process.env.GROQ_API_KEY = "gsk-test-key";
+    process.env.GEMINI_API_KEY = "AIza-test-key";
+    const log: FetchLog[] = [];
+    stubRoutingFetch(log, (url) => {
+      if (tavilyUrl(url)) return { ok: false, status: 429, payload: TAVILY_CREDITS_429 };
+      if (groqUrl(url)) return { ok: false, status: 429, payload: GROQ_TPD_429 };
+      return { ok: true, status: 200, payload: GEMINI_GROUNDED_OK };
+    });
+
+    const err = (await callGroundedSearch("research").catch((e: Error) => e)) as Error;
+    expect(err.message).toContain("every grounded-search arm failed");
+    expect(err.message).toContain("DISABLED via GEMINI_GROUNDED_ENABLED=0");
+    // the walk attempted ONLY tavily + the groq ladder — the disabled
+    // gemini arm never fired a fetch (nor did the off-ladder OR arm).
+    expect(log).toHaveLength(3);
+    expect(log.some((c) => geminiKeyOk(c.url) || orUrl(c.url))).toBe(false);
+  });
+});
+
+/* ══════════════════════════════════════════════════════════════════════
+ * 2. The honest evidence gates — plain generation can NEVER masquerade
+ * ══════════════════════════════════════════════════════════════════════ */
+
+describe("honest evidence gates — no live-search evidence = honest failure", () => {
+  it("openrouter 200 WITHOUT annotations fails the gate (direct arm) — plain generation never masquerades as research", async () => {
+    process.env.OPENROUTER_API = "sk-or-test-key";
+    stubRoutingFetch([], () => ({
+      ok: true,
+      status: 200,
+      payload: { choices: [{ message: { content: "answer from model memory" } }] },
+    }));
+    await expect(callOpenRouterGroundedSearch("research")).rejects.toThrow(
+      /no web-search evidence.*not built on live search/,
+    );
   });
 
   it("groq 200 WITHOUT citations fails the gate → the aggregate reports it honestly", { timeout: 20_000 }, async () => {
     // BLOG-RECOVERY 2026-10-20: the evidence-less 200 now re-walks the
     // SAME model twice (2s pauses) before the honest failure — the gate
     // itself is unchanged; the timeout covers the two pauses on slow CI.
-    process.env.GEMINI_API_KEY = "AIza-test-key";
-    process.env.OPENROUTER_API = "sk-or-test-key";
     process.env.GROQ_API_KEY = "gsk-test-key";
-    stubRoutingFetch([], (url) => {
-      if (geminiKeyOk(url)) return { ok: false, status: 429, payload: QUOTA_429 };
-      if (orUrl(url)) return { ok: false, status: 402, payload: CREDITS_402 };
-      return {
-        ok: true,
-        status: 200,
-        payload: { choices: [{ message: { content: "memory-only answer" } }] },
-      };
-    });
+    stubRoutingFetch([], () => ({
+      ok: true,
+      status: 200,
+      payload: { choices: [{ message: { content: "memory-only answer" } }] },
+    }));
     const err = (await callGroundedSearch("research").catch((e: Error) => e)) as Error;
-    expect(err.message).toContain("no web-search evidence");
     expect(err.message).toContain("not built on live search");
+  });
+
+  it("tavily 200 WITHOUT usable URLs fails the gate → the aggregate reports it honestly", async () => {
+    process.env.TAVILY_API_KEY = "tvly-test-key";
+    const log: FetchLog[] = [];
+    stubRoutingFetch(log, (url) => {
+      if (tavilyUrl(url)) return { ok: true, status: 200, payload: { results: [{ title: "no url here" }] } };
+      return { ok: false, status: 429, payload: QUOTA_429 };
+    });
+    const err = (await callGroundedSearch("research", { searchQuery: SEARCH_QUERY }).catch((e: Error) => e)) as Error;
+    expect(err.message).toContain("ZERO usable result URLs");
+    expect(err.message).toContain("live-evidence gate");
+    expect(log).toHaveLength(1); // only the tavily call — groq/gemini keyless
   });
 });
 
 /* ══════════════════════════════════════════════════════════════════════
  * 3. The cooldown registry in the grounded walk («تجنب تكرار المحاولات
  *    الفاشلة») — OPT-IN via AI_PROVIDER_COOLDOWN_MS
- * ═════════════════════════════════════════════════════════════════════ */
+ * ══════════════════════════════════════════════════════════════════════ */
 
 describe("quota cooldown in the grounded walk (AI_PROVIDER_COOLDOWN_MS on)", () => {
-  it("a 429-drained gemini ladder is SKIPPED on the second call — zero gemini fetches", async () => {
+  it("a 429-drained gemini ladder is SKIPPED on the second call — zero gemini fetches (the dormant last arm)", async () => {
     process.env.AI_PROVIDER_COOLDOWN_MS = "600000";
+    process.env.TAVILY_API_KEY = "tvly-test-key";
     process.env.GEMINI_API_KEY = "AIza-test-key";
-    process.env.OPENROUTER_API = "sk-or-test-key";
-    const log: FetchLog[] = [];
-    stubRoutingFetch(log, (url) =>
-      geminiKeyOk(url)
-        ? { ok: false, status: 429, payload: QUOTA_429 }
-        : { ok: true, status: 200, payload: OR_WEB_OK },
-    );
-
-    const out1 = await callGroundedSearch("research");
-    expect(out1.provider).toBe("openrouter");
-    expect(log).toHaveLength(4); // 3 futile gemini 429s (post-3.8-pro ladder) + 1 OR success
-
-    const out2 = await callGroundedSearch("research");
-    expect(out2.provider).toBe("openrouter");
-    // the second call made ZERO gemini attempts — the whole drained ladder
-    // was skipped from cooldown memory
-    const call2 = log.slice(4);
-    expect(call2).toHaveLength(1);
-    expect(call2.every((c) => orUrl(c.url))).toBe(true);
-  });
-
-  it("every arm drained → second call makes ZERO network calls and reports the skips honestly", async () => {
-    process.env.AI_PROVIDER_COOLDOWN_MS = "600000";
-    process.env.GEMINI_API_KEY = "AIza-test-key";
-    process.env.OPENROUTER_API = "sk-or-test-key";
-    process.env.GROQ_API_KEY = "gsk-test-key";
     const log: FetchLog[] = [];
     stubRoutingFetch(log, (url) => {
-      if (geminiKeyOk(url)) return { ok: false, status: 429, payload: QUOTA_429 };
-      if (orUrl(url)) return { ok: false, status: 402, payload: CREDITS_402 };
-      return { ok: false, status: 429, payload: GROQ_TPD_429 };
+      if (tavilyUrl(url)) return { ok: false, status: 503, payload: { error: { message: "transient upstream" } } };
+      return { ok: false, status: 429, payload: QUOTA_429 };
     });
 
     await expect(callGroundedSearch("research")).rejects.toThrow(/every grounded-search arm failed/);
     const call1Fetches = log.length;
-    expect(call1Fetches).toBe(6); // 3 gemini (post-3.8-pro ladder) + 1 openrouter + 2 groq ladder (120b/20b — safeguard removed round-4: 413 Request-too-large on the research prompt)
+    // tavily (transient 503 — retried next call, never cooled) + the
+    // 3-model gemini ladder (all 429 → cooled).
+    expect(call1Fetches).toBe(4);
+    expect(log.slice(1).every((c) => geminiKeyOk(c.url))).toBe(true);
+
+    await expect(callGroundedSearch("research")).rejects.toThrow(/every grounded-search arm failed/);
+    // the second call made ZERO gemini attempts — the whole drained ladder
+    // was skipped from cooldown memory; the transient tavily 503 re-fired.
+    const call2 = log.slice(call1Fetches);
+    expect(call2).toHaveLength(1);
+    expect(tavilyUrl(call2[0].url)).toBe(true);
+  });
+
+  it("every arm drained → second call makes ZERO network calls and reports the skips honestly", async () => {
+    process.env.AI_PROVIDER_COOLDOWN_MS = "600000";
+    process.env.TAVILY_API_KEY = "tvly-test-key";
+    process.env.GROQ_API_KEY = "gsk-test-key";
+    process.env.GEMINI_API_KEY = "AIza-test-key";
+    const log: FetchLog[] = [];
+    stubRoutingFetch(log, (url) => {
+      if (tavilyUrl(url)) return { ok: false, status: 429, payload: TAVILY_CREDITS_429 };
+      if (groqUrl(url)) return { ok: false, status: 429, payload: GROQ_TPD_429 };
+      return { ok: false, status: 429, payload: QUOTA_429 };
+    });
+
+    await expect(callGroundedSearch("research")).rejects.toThrow(/every grounded-search arm failed/);
+    const call1Fetches = log.length;
+    expect(call1Fetches).toBe(6); // 1 tavily + 2 groq ladder (120b/20b) + 3 gemini ladder
 
     const err = (await callGroundedSearch("research").catch((e: Error) => e)) as Error;
     expect(err.message).toMatch(/quota-cooldown until .+ — skipped, no call made/);
     expect(err.message).toContain("ACTIVE COOLDOWNS");
-    expect(err.message).toContain("grounded:gemini:key#1:gemini-3.5-flash");
-    expect(err.message).toContain("grounded:openrouter:key#1");
+    expect(err.message).toContain("grounded:tavily");
     expect(err.message).toContain("grounded:groq:openai/gpt-oss-120b");
+    expect(err.message).toContain("grounded:gemini:key#1:gemini-3.5-flash");
     // ZERO new network calls — the futile repeat is gone
     expect(log.length).toBe(call1Fetches);
   });
@@ -732,7 +1010,8 @@ describe("quota cooldown in the grounded walk (AI_PROVIDER_COOLDOWN_MS on)", () 
     expect(log.slice(0, 3).every((c) => geminiKeyOk(c.url))).toBe(true);
 
     await expect(callGroundedSearch("research")).rejects.toThrow(/every grounded-search arm failed/);
-    // gemini was re-attempted (3 more REAL calls — post-3.8-pro ladder) — 503 stays retryable
+    // gemini was re-attempted (3 more REAL calls — the post-3.8-pro
+    // ladder) — 503 stays retryable
     const call2Gemini = log.slice(call1Fetches).filter((c) => geminiKeyOk(c.url));
     expect(call2Gemini).toHaveLength(3);
   });
@@ -740,44 +1019,47 @@ describe("quota cooldown in the grounded walk (AI_PROVIDER_COOLDOWN_MS on)", () 
   it("AI_PROVIDER_COOLDOWN=0 kill-switch restores the no-cooldown walk", async () => {
     process.env.AI_PROVIDER_COOLDOWN_MS = "600000";
     process.env.AI_PROVIDER_COOLDOWN = "0";
+    process.env.TAVILY_API_KEY = "tvly-test-key";
+    process.env.GROQ_API_KEY = "gsk-test-key";
     process.env.GEMINI_API_KEY = "AIza-test-key";
-    process.env.OPENROUTER_API = "sk-or-test-key";
     const log: FetchLog[] = [];
-    stubRoutingFetch(log, (url) =>
-      geminiKeyOk(url)
-        ? { ok: false, status: 429, payload: QUOTA_429 }
-        : { ok: true, status: 200, payload: OR_WEB_OK },
-    );
+    stubRoutingFetch(log, (url) => {
+      if (tavilyUrl(url)) return { ok: false, status: 429, payload: TAVILY_CREDITS_429 };
+      if (groqUrl(url)) return { ok: false, status: 429, payload: GROQ_TPD_429 };
+      return { ok: false, status: 429, payload: QUOTA_429 };
+    });
 
-    await callGroundedSearch("research");
-    await callGroundedSearch("research");
-    // both calls walked the full gemini ladder (rollback knob = old walk;
-    // 2 × 3 models — post-3.8-pro ladder)
+    await callGroundedSearch("research").catch(() => undefined);
+    await callGroundedSearch("research").catch(() => undefined);
+    // both calls walked EVERYTHING again (rollback knob = old walk):
+    // 2 × (1 tavily + 2 groq + 3 gemini)
     expect(log.filter((c) => geminiKeyOk(c.url))).toHaveLength(6);
+    expect(log.filter((c) => tavilyUrl(c.url))).toHaveLength(2);
+    expect(log.filter((c) => groqUrl(c.url))).toHaveLength(4);
   });
 
   it("cooldown marks survive a process restart via the state file (cross-step persistence)", async () => {
     process.env.AI_PROVIDER_COOLDOWN_MS = "600000";
+    process.env.TAVILY_API_KEY = "tvly-test-key";
     process.env.GEMINI_API_KEY = "AIza-test-key";
-    process.env.OPENROUTER_API = "sk-or-test-key";
     const log: FetchLog[] = [];
-    stubRoutingFetch(log, (url) =>
-      geminiKeyOk(url)
-        ? { ok: false, status: 429, payload: QUOTA_429 }
-        : { ok: true, status: 200, payload: OR_WEB_OK },
-    );
+    stubRoutingFetch(log, (url) => {
+      if (tavilyUrl(url)) return { ok: false, status: 429, payload: TAVILY_CREDITS_429 };
+      return { ok: false, status: 429, payload: QUOTA_429 };
+    });
 
-    await callGroundedSearch("research");
+    await expect(callGroundedSearch("research")).rejects.toThrow(/every grounded-search arm failed/);
+    const call1Fetches = log.length;
+    expect(call1Fetches).toBe(4); // 1 tavily + 3 gemini ladder models
     await flushCooldownWrites();
     // simulate the NEXT STEP's fresh process (run-step.mts runs each phase
     // as its own process): memory wiped, file on disk
     __resetCooldownForTests();
 
-    const out = await callGroundedSearch("research");
-    expect(out.provider).toBe("openrouter");
-    // gemini skipped from the FILE state — only the OR call was made
-    expect(log.slice(4)).toHaveLength(1);
-    expect(log.slice(4).every((c) => orUrl(c.url))).toBe(true);
+    const err = (await callGroundedSearch("research").catch((e: Error) => e)) as Error;
+    expect(err.message).toMatch(/quota-cooldown until/);
+    // BOTH arms skipped from the FILE state — zero new network calls
+    expect(log.length).toBe(call1Fetches);
   });
 });
 
@@ -785,7 +1067,7 @@ describe("quota cooldown in the grounded walk (AI_PROVIDER_COOLDOWN_MS on)", () 
  * 4. The generation chain (P1/P2/P4) — a drained provider is skipped
  *    WITHOUT consuming attempt budget, so the walk REACHES the next
  *    provider (incl. NVIDIA) inside the same maxModels budget
- * ═════════════════════════════════════════════════════════════════════ */
+ * ══════════════════════════════════════════════════════════════════════ */
 
 describe("chain failover — provider cooldown frees attempt budget (callFreeAIFallbackChain)", () => {
   it("gemini+openrouter cooled → groq leads and answers (no fetch to the cooled providers)", async () => {
@@ -864,15 +1146,18 @@ describe("chain failover — provider cooldown frees attempt budget (callFreeAIF
       return { ok: true, status: 200, payload: CHAIN_PONG };
     });
 
-    // call 1: gemini 429 (marks chain:gemini) → openrouter answers
+    // call 1 (rotation pinned by beforeEach: openrouter leads): gemini is
+    // the TAIL now — openrouter answers, gemini never called.
     const out1 = await callFreeAIFallbackChain("Reply PONG", {
       tag: "test:chain", maxTokens: 10, timeoutMs: 5_000, maxModels: 3,
     });
     expect(out1.provider).toBe("openrouter");
     const call1 = log.length;
+    expect(log.slice(0, call1).some((c) => geminiKeyOk(c.url))).toBe(false);
 
-    // call 2: openrouter now 429s too → marked; groq answers. gemini is
-    // SKIPPED from call-1's cooldown — zero gemini fetches in call 2.
+    // call 2 (rotation re-pinned: openrouter leads again): openrouter now
+    // 429s too → marked; groq answers. gemini stays the untouched tail.
+    __resetChainRotationForTests();
     orStatus = 429;
     const out2 = await callFreeAIFallbackChain("Reply PONG", {
       tag: "test:chain", maxTokens: 10, timeoutMs: 5_000, maxModels: 3,
@@ -907,29 +1192,69 @@ describe("chain failover — provider cooldown frees attempt budget (callFreeAIF
     expect(err.message).toContain("Active quota-cooldowns");
     expect(log).toHaveLength(0);
   });
+
+  it("PHASE 5-A — the 3-way lead rotation runs on every strongest-chain call (gemini-first cancelled: the gemini key NEVER pins the lead)", async () => {
+    process.env.GEMINI_API_KEY = "AIza-test-key";
+    process.env.OPENROUTER_API = "sk-or-test-key";
+    process.env.GROQ_API_KEY = "gsk-test-key";
+    process.env.NVIDIA_API_KEY = "nvapi-test-key";
+    const log: FetchLog[] = [];
+    stubRoutingFetch(log, (url) => {
+      // groq-120b answers ONLY on groq-led calls (simulating the rotation
+      // deciding who gets the first slot); other providers 429.
+      if (groqUrl(url)) return { ok: true, status: 200, payload: CHAIN_PONG };
+      return { ok: false, status: 429, payload: QUOTA_429 };
+    });
+
+    // call #1 (post-reset): openrouter leads → or-ultra 429 → groq-120b
+    // answers (second slot) → gemini tail NEVER reached.
+    const out1 = await callFreeAIFallbackChain("Reply PONG", {
+      tag: "test:chain", maxTokens: 10, timeoutMs: 5_000, maxModels: 3,
+    });
+    expect(out1.provider).toBe("groq");
+    const call1 = log.length;
+    expect(log.slice(0, call1).some((c) => geminiKeyOk(c.url))).toBe(false);
+
+    // call #2: groq leads (rotation advanced) → groq-120b answers on the
+    // FIRST slot — still zero gemini fetches (the tail is beyond a healthy
+    // walk and never a forced lead).
+    __resetChainRotationForTests();
+    // advance the rotation to the groq lead: one throwaway chain call
+    // consumed by the 429 fixture (or-ultra lead)…
+    await callFreeAIFallbackChain("Reply PONG", {
+      tag: "test:chain", maxTokens: 10, timeoutMs: 5_000, maxModels: 3,
+    }).catch(() => undefined);
+    const out3 = await callFreeAIFallbackChain("Reply PONG", {
+      tag: "test:chain", maxTokens: 10, timeoutMs: 5_000, maxModels: 3,
+    });
+    expect(out3.provider).toBe("groq");
+    expect(log.some((c) => geminiKeyOk(c.url))).toBe(false);
+  });
 });
 
 /* ══════════════════════════════════════════════════════════════════════
- * 5. Backward compatibility — cooldown OFF (no env) keeps the exact
- *    pre-failover walk (the canary law: existing behavior untouched)
- * ═════════════════════════════════════════════════════════════════════ */
+ * 5. Backward compatibility — cooldown OFF (no env) keeps the honest
+ *    per-arm walk (the canary law: no cooldown memory without the env)
+ * ══════════════════════════════════════════════════════════════════════ */
 
-describe("cooldown OFF (absent env) — pre-failover walk preserved", () => {
+describe("cooldown OFF (absent env) — no-cooldown walk preserved", () => {
   it("the gemini ladder re-attempts every model on every call (no cooldown memory)", async () => {
+    process.env.TAVILY_API_KEY = "tvly-test-key";
+    process.env.GROQ_API_KEY = "gsk-test-key";
     process.env.GEMINI_API_KEY = "AIza-test-key";
-    process.env.OPENROUTER_API = "sk-or-test-key";
     const log: FetchLog[] = [];
-    stubRoutingFetch(log, (url) =>
-      geminiKeyOk(url)
-        ? { ok: false, status: 429, payload: QUOTA_429 }
-        : { ok: true, status: 200, payload: OR_WEB_OK },
-    );
-    await callGroundedSearch("research");
-    await callGroundedSearch("research");
-    // BOTH calls walked the full 3-model ladder (byte-identical to the
-    // pre-2026-10-16 walk minus the retired 3.8-pro — the registry is a
-    // no-op without the env)
+    stubRoutingFetch(log, (url) => {
+      if (tavilyUrl(url)) return { ok: false, status: 429, payload: TAVILY_CREDITS_429 };
+      if (groqUrl(url)) return { ok: false, status: 429, payload: GROQ_TPD_429 };
+      return { ok: false, status: 429, payload: QUOTA_429 };
+    });
+    await callGroundedSearch("research").catch(() => undefined);
+    await callGroundedSearch("research").catch(() => undefined);
+    // BOTH calls walked the full 3-model gemini ladder + the whole walk
+    // (byte-identical to the pre-cooldown behavior minus nothing).
     expect(log.filter((c) => geminiKeyOk(c.url))).toHaveLength(6);
+    expect(log.filter((c) => tavilyUrl(c.url))).toHaveLength(2);
+    expect(log.filter((c) => groqUrl(c.url))).toHaveLength(4);
   });
 
   it("callGeminiGroundedSearch keeps its own contract (the existing ladder canary's twin)", async () => {
