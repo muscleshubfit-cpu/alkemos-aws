@@ -277,3 +277,112 @@ export function runP5QualityGates(args: {
 
   return violations;
 }
+
+// ─────────────────────────────────────────────────────────────────────
+// PHASE 5-D (stage د — owner order 2026-10-31 «نفّذ جميع المراحل المتبقية»
+// approving Phase-4 §12-5): the MANUAL-PUBLISH BATTERY for AI drafts.
+//
+// THE GAP IT CLOSES (Phase-2 §7-د honest verdict): the article_generate
+// fallback path ships drafts with NO grounded research (by design) and
+// CANNOT publish itself (is_published=false always — humans are the
+// publish point), but the manual publish carried NO battery: the
+// Phase-2 measurement found 3/3 published ai:article_generate posts with
+// ZERO authority links and 2/3 below the length floor. The automated
+// path's deterministic battery lives in /api/cron/blog/p5-publish; the
+// editor writes straight to Supabase (no server hook) — so THIS light
+// battery runs in the editor (client-side) at the publish click, for
+// rows whose source === "ai:article_generate" ONLY (manual articles are
+// untouched — a human who wrote the content IS the review).
+//
+// THE BATTERY (Phase-2 §7-د verbatim — reuse, no new logic):
+//   1. Word floor 1000 — the SAME floor the automated P5 enforces
+//      (P5_WORD_FLOOR, Phase 323 owner order 1300→1000).
+//   2. G4 authority link ≥ 1 — the same findAuthorityLinks the P5
+//      battery uses (YMYL E-E-A-T floor).
+//   3. HEAD verification — the same verifyBodyLinks the P5 publish runs:
+//      CONFIRMED-dead (404/410) links are a VIOLATION named for the
+//      human to fix or remove (the automated path auto-removes them;
+//      the manual gate teaches instead of editing the owner's text).
+//      Inconclusive verdicts (403/405/429/timeout/CORS-opaque) stay
+//      fail-open exactly like P5 — an authority that refuses HEAD must
+//      never cost a good citation.
+// ─────────────────────────────────────────────────────────────────────
+
+import { verifyBodyLinks } from "./blog-link-verify";
+
+/** The ONE source value the battery applies to (Phase-2 measurement
+ *  class). Anything else — including every manual article — is exempt. */
+export const AI_DRAFT_SOURCE = "ai:article_generate";
+
+/** The manual-publish word floor — mirrors P5_WORD_FLOOR (blog-pipeline
+ *  keeps the automated constant; this is the SAME number by law). */
+export const AI_DRAFT_PUBLISH_WORD_FLOOR = 1000;
+
+/** Pure scoping decision (unit-tested): the battery applies ONLY when
+ *  the row is going published AND its source is the AI-draft class. */
+export function manualPublishBatteryApplies(
+  source: string | null | undefined,
+  goingPublished: boolean,
+): boolean {
+  return goingPublished && source === AI_DRAFT_SOURCE;
+}
+
+/**
+ * The light deterministic battery for a manually-published AI draft.
+ * Returns the violations (empty = publish may proceed) plus the link
+ * verdicts for the editor's teaching message. Pure reuse: the word
+ * count is the exact countWords expression from blog-pipeline (kept
+ * inline here so this module stays dependency-light and CLIENT-SAFE —
+ * blog-pipeline imports the server-only ai-provider layer; a parity
+ * canary in blog-draft-publish-battery.test.ts pins the two identical).
+ */
+export async function runAiDraftPublishBattery(args: {
+  lang: GateLang;
+  bodyMd: string;
+  /** TEST seam — verifyBodyLinks' own injectable fetch (no network in
+   *  canaries); production omits it and the real fetch runs. */
+  fetchImpl?: (url: string, init?: RequestInit) => Promise<Response>;
+}): Promise<{
+  violations: string[];
+  deadLinks: string[];
+  unverifiedLinks: string[];
+  wordCount: number;
+}> {
+  const { bodyMd } = args;
+
+  // (1) word floor — the countWords expression, byte-identical.
+  const wordCount = bodyMd.split(/\s+/).filter(Boolean).length;
+  const violations: string[] = [];
+  if (wordCount < AI_DRAFT_PUBLISH_WORD_FLOOR) {
+    violations.push(
+      `only ${wordCount} words (< ${AI_DRAFT_PUBLISH_WORD_FLOOR} floor — the automated pipeline enforces the same floor at P5)`,
+    );
+  }
+
+  // (3) HEAD verification FIRST (the P5 order): confirmed-dead links are
+  // named for the human; inconclusive stays fail-open.
+  const linkVerify = await verifyBodyLinks(
+    bodyMd,
+    args.fetchImpl ? { fetchImpl: args.fetchImpl } : undefined,
+  );
+  if (linkVerify.dead.length > 0) {
+    violations.push(
+      `${linkVerify.dead.length} confirmed-dead citation link(s): ${linkVerify.dead.slice(0, 3).join(", ")}`,
+    );
+  }
+
+  // (2) G4 authority floor — on the body the human is about to publish.
+  const authority = findAuthorityLinks(bodyMd);
+  if (authority.length < 1) {
+    violations.push(
+      `no external authority link (${EDITORIAL_AUTHORITY_DOMAINS.slice(0, 3).join("/")}… — YMYL E-E-A-T floor)`,
+    );
+  }
+
+  return {
+    violations,
+    deadLinks: linkVerify.dead,
+    unverifiedLinks: linkVerify.unverified,
+    wordCount,
+  };
+}

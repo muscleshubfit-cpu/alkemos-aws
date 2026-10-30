@@ -13,6 +13,7 @@ import { useI18n } from "@/lib/i18n";
 import { useRouter } from "next/navigation";
 import { BLOG_CATEGORIES, VALID_CATEGORY_IDS, getCategoryLabel, parseTableOfContents, renderMarkdown, isSafeUrl } from "@/lib/blog";
 import { adminGetPost, adminCreatePost, adminUpdatePost, calculateSEOScore, calculateWordCount, calculateReadingTime, type AdminBlogPost } from "@/lib/blog-admin";
+import { manualPublishBatteryApplies, runAiDraftPublishBattery } from "@/lib/blog-quality-gates";
 import { runAiJob, AI_ARTICLE_DRAFT_KEY, articleSlugFromTitle } from "@/lib/ai-jobs-client";
 import { toast } from "sonner";
 
@@ -343,6 +344,37 @@ export function BlogEditorView({ mode, postId }: { mode: "new" | "edit"; postId?
  // owner merely re-saves unpublished keeps its pending state.
  const nowIso = new Date().toISOString();
  const goingPublished = !!(publish ?? post.is_published);
+
+ // PHASE 5-D (stage د — Phase-4 §10-د/§12-5, owner order 2026-10-31
+ // «نفّذ جميع المراحل المتبقية»): the MANUAL-PUBLISH BATTERY for AI
+ // drafts. The article_generate fallback path ships drafts with NO
+ // grounded research (by design) and can never publish itself — the
+ // human IS the publish point — but the Phase-2 measurement caught
+ // 3/3 published AI drafts with ZERO authority links and 2/3 below the
+ // length floor. This is the closing gate: source='ai:article_generate'
+ // ONLY (manual articles are exempt — a human who wrote the content IS
+ // the review); the battery reuses the SAME deterministic laws the
+ // automated P5 publish enforces (word floor 1000 · G4 authority ≥1 ·
+ // HEAD link verification — confirmed-dead links named for the human,
+ // inconclusive fail-open). NO quality gate is bypassable on provider
+ // failure — a provider failure means the draft never existed, not a
+ // weakened gate (owner order 6).
+ if (manualPublishBatteryApplies(post.source, goingPublished)) {
+ const battery = await runAiDraftPublishBattery({
+ lang: ((post.language as "en" | "ar") || "ar") as "en" | "ar",
+ bodyMd: post.content || "",
+ });
+ if (battery.violations.length > 0) {
+ const details = battery.violations.join(" · ");
+ toast.error(
+ isAr
+ ? `بوابة جودة نشر مسودة AI (${battery.wordCount} كلمة): ${details} — أصلح المقال ثم انشر (المسودات اليدوية لا تخضع لهذه البوابة)`
+ : `AI-draft publish quality gate (${battery.wordCount} words): ${details} — fix the article, then publish (manual drafts are exempt)`,
+ { duration: 12_000 },
+ );
+ return;
+ }
+ }
  const updates = {
    ...post,
    is_published: publish ?? post.is_published,
