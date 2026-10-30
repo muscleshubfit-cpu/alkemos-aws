@@ -13413,3 +13413,22 @@ Stage Summary:
 - الحالة المُبلّغ عنها أُعيد إنتاجها بالدليل الحي قبل أي تعديل؛ الجذران (عرض الاشتراك بلا فحص صلاحية + تبديل غير متين/غير محرس) أُصلحا بقانون واحد لكل منهما، مع اختبارات دائمة تمنع عودتهما.
 - Push status: pushed (هذا الكوميت)
 
+
+<!-- rotated 2026-10-30 by scripts/worklog_rotate.py (Phase 288, ARCH-REMEDIATION): 1 entries moved verbatim from worklog.md -->
+---
+Task ID: SUB-PICK-MEMBER-SWAP-2026-10-26-LIVE-VERIF
+Agent: Main (Super Z)
+Task: التحقق الحي من نشر إطار SUB-PICK+MEMBER-SWAP (b09dae2+d488624) وقياس الأسطح المفتاحية على الكود الجديد.
+
+Work Log:
+- (كوميت الإطار b09dae2 فشل ببوابته هو: tsc على عداء GitHub التقط TS18046 وحيدًا بملف الاختبار الجديد — خطأ وصول .length على unknown أغفلته إعادة تشغيل tsc المحلية بعد إنشاء ملفات الاختبار؛ محليًا مررت tsc قبل إنشائها ثم vitest/eslint/build فقط) → كوميت إصلاح النمط d488624 (بلا إعادة كتابة تاريخ — القانون) · جولة الدفع 40229658688 على d488624: gate (tsc/eslint/vitest على عداء GitHub) ✓ · build-and-deploy ✓ · بطارية التحقق server+edge ✓ — بلا تراجع (rollback drill غير مُشعل).
+- docs parity 40229658661 ✓ · guard 40229658659 ✓ على الكوميت نفسه.
+- التحقق الحي المباشر: build-info=d488624 · 11 سطحًا مفتاحيًا 200 (/, /ar, /auth, /plans, /coach, /tools, /foods, /ar/tools, /diet-plan, /memberships, /dashboard).
+- **علامة الحزمة الحية (/charts):** الشانك المنشور 1kyijwoo4w1ky يحمل حرفيًا حمولتي تبديل العضو الموحدتين: meal_regenerate,{...,planId,clientId,mealIdx} + exercise_regenerate,{...,planId,clientId,dayIdx,exIdx} — قانون مستهدفات الخطة حي على سطح العضو.
+- سلاسة الميجريشن: rpc/get_coach_client_list_paged يرد 200 بعد النشر (الدالة تعمل — لا كسر مخطط)؛ سجل تطبيقات Supabase غير مكشوف عبر PostgREST (المخططات المكشوفة public/graphql_public فقط) — التطبيق التلقائي بتكامل Supabase-GitHub هو القانون الموثق منذ Phase 120.
+- ما تعذر حيًا (بصدق): العرض السلوكي لقوائم الأدمن بعد 0102 يحتاج جلسة أدمن/مدرب حقيقية (§3.3 تمنع إنشاءها) — التغطية: إعادة الإنتاج الحية قبل التعديل + الدبابيس المصدرية لميجريشن 0102 (المفتاح بكل مواضع الترتيب الخمسة) + أول فتح لقائمة عملاء بعد النشر سيظهر العميل 87cd7ba6 «فعّال/coaching» بدل «منتهي/premium» (قابل للتحقق بصريًا لحظة فتح الأدمن القائمة) · أول تبديل عضو/تمرين حي بعد النشر سيثبت التجسيد والحصص معًا (ai_jobs materialized:true + أول صف plan_swaps — قراءةً فقط).
+
+Stage Summary:
+- النسخة الحية تعمل على d488624 وكل قوانين الإطار قابلة للقياس عليها؛ علامات الحزمة تثبت حمولات العضو الموحدة حرفيًا.
+- Push status: pushed (كوميت التوثيق هذا)
+
