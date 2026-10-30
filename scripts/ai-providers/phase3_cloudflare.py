@@ -47,12 +47,18 @@ AI_TOKEN = os.environ.get("CLOUDFLARE_AI_TOKEN", "").strip()
 
 BASE = "https://api.cloudflare.com/client/v4"
 
-# The three owner-listed candidates (Phase-2 §8-ج) — nothing else is called.
-MODELS = [
+# The three owner-listed candidates (Phase-2 §8-ج) — nothing else is called
+# by default. CF_MODELS_OVERRIDE (workflow dispatch input) narrows or
+# substitutes the list (e.g. the 8B-fp8 variant when the -fast id is absent
+# from the catalog) — every id is STILL catalog-gated before any call.
+DEFAULT_MODELS = [
     "@cf/meta/llama-3.1-8b-instruct-fp8-fast",
     "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
     "@cf/meta/llama-4-scout-17b-16e-instruct",
 ]
+MODELS = [m.strip() for m in
+          (os.environ.get("CF_MODELS_OVERRIDE") or "").split(",")
+          if m.strip()] or DEFAULT_MODELS
 
 # Officially billing-only models (Phase-2 §4) — NEVER called; presence in
 # the catalog is only REPORTED to prove avoidance.
@@ -310,38 +316,48 @@ def graphql_usage_attempt() -> dict:
     """Best-effort: today's AI inference requests via GraphQL analytics.
 
     Requires Account Analytics:Read on the token; a permission failure is
-    an honest recorded outcome, not an error to hide.
+    an honest recorded outcome, not an error to hide. Two dimension-name
+    shapes are tried ("model" then "modelId") because the schema is not
+    published in the REST docs.
     """
     today = time.strftime("%Y-%m-%dT00:00:00Z", time.gmtime())
-    q = {"query": f"""{{
-      viewer {{
-        accounts(filter: {{accountTag: "{ACCOUNT_ID}"}}) {{
-          aiInferenceAdaptiveGroups(
-            limit: 50
-            filter: {{datetime_geq: "{today}"}}
-          ) {{
-            dimensions {{ datetime model }}
-            metrics {{ requests }}
+    for dim in ("model", "modelId"):
+        q = {"query": f"""{{
+          viewer {{
+            accounts(filter: {{accountTag: "{ACCOUNT_ID}"}}) {{
+              aiInferenceAdaptiveGroups(
+                limit: 50
+                filter: {{datetime_geq: "{today}"}}
+              ) {{
+                dimensions {{ datetime {dim} }}
+                metrics {{ requests }}
+              }}
+            }}
           }}
-        }}
-      }}
-    }}"""}
-    rec = http_json("POST", f"{BASE}/graphql", _hdrs(), q, 60)
-    out = {"ok": rec["ok"], "status": rec["status"], "error": rec["error"]}
-    data = rec["json"] or {}
-    out["errors"] = data.get("errors")
-    try:
-        groups = (data["data"]["viewer"]["accounts"][0]
-                  ["aiInferenceAdaptiveGroups"])
-        out["groups"] = [
-            {"datetime": g["dimensions"].get("datetime"),
-             "model": g["dimensions"].get("model"),
-             "requests": g["metrics"].get("requests")} for g in groups]
-        out["total_requests_today"] = sum(
-            g["metrics"].get("requests") or 0 for g in groups)
-    except Exception as e:
-        out["parse"] = f"{type(e).__name__}: {e}"
-    return out
+        }}"""}
+        rec = http_json("POST", f"{BASE}/graphql", _hdrs(), q, 60)
+        data = rec["json"] or {}
+        errs = data.get("errors")
+        if rec["ok"] and not errs:
+            out = {"ok": True, "status": rec["status"],
+                   "dimension_field_used": dim, "groups": []}
+            try:
+                groups = (data["data"]["viewer"]["accounts"][0]
+                          ["aiInferenceAdaptiveGroups"])
+                out["groups"] = [
+                    {"datetime": g["dimensions"].get("datetime"),
+                     dim: g["dimensions"].get(dim),
+                     "requests": g["metrics"].get("requests")} for g in groups]
+                out["total_requests_today"] = sum(
+                    g["metrics"].get("requests") or 0 for g in groups)
+            except Exception as e:
+                out["parse"] = f"{type(e).__name__}: {e}"
+            return out
+    return {"ok": False, "status": rec["status"], "error": rec["error"],
+            "errors": errs,
+            "note": "both dimension shapes rejected — schema differs from "
+                    "the guess; per-call REST usage.neurons remains the "
+                    "authoritative meter"}
 
 
 def main() -> int:
