@@ -639,27 +639,47 @@ async function callCloudflareGenerate(
       );
     }
 
-    const data = (await res.json()) as {
-      success?: boolean;
-      result?: {
-        response?: string | null;
+    // TOLERANT RESULT SHAPES (the live role probe run 41145194167 measured
+    // a 200 whose result carried NO string response — the Phase-3 Python
+    // battery already parsed BOTH shapes, mirror it exactly):
+    //   • result = {"response": "...", "usage": {...}} — the documented
+    //     chat shape (most @cf models).
+    //   • result = "..." — the plain-string shape (some models).
+    //   • result.response = {...} — a parsed JSON OBJECT under JSON mode:
+    //     re-serialized verbatim (the pairing/latin validators then judge
+    //     it — nothing is fabricated).
+    //   • result = {usage: {...}} with the TEXT elsewhere/absent → the
+    //     honest empty-response error now carries the RAW BODY (secret-
+    //     free, truncated) so the next probe measures the true shape.
+    const resultField: unknown = data?.result;
+    let rawText: string | null = null;
+    let usageBlock: { neurons?: number | string | null } | null | undefined;
+    if (typeof resultField === "string") {
+      rawText = resultField;
+    } else if (resultField && typeof resultField === "object") {
+      const r = resultField as {
+        response?: unknown;
         usage?: { neurons?: number | string | null } | null;
-      } | null;
-      errors?: Array<unknown> | null;
-    } | null;
-
-    const rawText = data?.result?.response;
+      };
+      usageBlock = r.usage;
+      if (typeof r.response === "string") {
+        rawText = r.response;
+      } else if (r.response && typeof r.response === "object") {
+        rawText = JSON.stringify(r.response);
+      }
+    }
     if (typeof rawText !== "string" || rawText.trim().length === 0) {
-      const apiErrors = data?.errors ? ` errors=${JSON.stringify(data.errors).slice(0, 300)}` : "";
+      const apiErrors = data?.errors ? ` errors=${JSON.stringify(data.errors).slice(0, 200)}` : "";
+      const rawBody = JSON.stringify(data ?? {}).slice(0, 300);
       throw new Error(
-        `AI provider cloudflare returned an empty response${apiErrors}`,
+        `AI provider cloudflare returned an empty response${apiErrors} raw_body=${rawBody}`,
       );
     }
 
     // Neurons: usage block is the authoritative meter (matched the
     // cf-ai-neurons header on every Phase-3 call); header is the fallback.
     const headerNeurons = Number(res.headers.get("cf-ai-neurons") ?? "");
-    const usageNeurons = Number(data?.result?.usage?.neurons ?? "");
+    const usageNeurons = Number(usageBlock?.neurons ?? "");
     const neurons = Number.isFinite(usageNeurons) && usageNeurons > 0
       ? usageNeurons
       : Number.isFinite(headerNeurons) && headerNeurons > 0

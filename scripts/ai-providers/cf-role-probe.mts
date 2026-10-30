@@ -165,6 +165,53 @@ async function cfGet(path: string): Promise<{ ok: boolean; status: number; json:
   return { ok: res.ok, status: res.status, json };
 }
 
+/** RAW SHAPE DIAGNOSTIC (added after the honest RED of run 41145194167:
+ *  a 200 whose result carried NO string response). ONE direct REST call
+ *  per shape hypothesis, printing the RAW body (secret-free, truncated)
+ *  so the adapter's tolerant parsing is grounded in the measured truth:
+ *    call A — plain chat (messages, no response_format)
+ *    call B — JSON mode (response_format json_object) on the SAME model
+ *  Both are honest measurements; neither is fatal by itself. */
+async function directShapeDiagnostic(): Promise<void> {
+  const token = getCloudflareAiToken();
+  const accountId = getCloudflareAccountId();
+  const model = CF_PAIRING_MODEL;
+  const cases: Array<{ label: string; body: Record<string, unknown> }> = [
+    {
+      label: "plain chat (messages only, max_tokens 80)",
+      body: { messages: [{ role: "user", content: "Reply with the single word: PONG" }], max_tokens: 80 },
+    },
+    {
+      label: "JSON mode (response_format json_object)",
+      body: {
+        messages: [{ role: "user", content: 'Return STRICT JSON only: {"pong": true}' }],
+        max_tokens: 80,
+        response_format: { type: "json_object" },
+      },
+    },
+  ];
+  for (const c of cases) {
+    const t0 = Date.now();
+    try {
+      const res = await fetch(
+        `${CF_BASE}/accounts/${encodeURIComponent(accountId)}/ai/run/${model}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          body: JSON.stringify(c.body),
+          signal: AbortSignal.timeout(30_000),
+        },
+      );
+      const raw = await res.text();
+      console.log(`SHAPE DIAG ${c.label}: HTTP ${res.status} · ${ms(t0)}ms · cf-ai-neurons=${res.headers.get("cf-ai-neurons") ?? "-"}`);
+      console.log(`  raw_body (≤400 chars): ${snippet(raw, 400)}`);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      console.log(`SHAPE DIAG ${c.label}: FETCH FAIL · ${ms(t0)}ms · ${snippet(msg, 200)}`);
+    }
+  }
+}
+
 async function preflightCatalog(): Promise<boolean> {
   const t0 = Date.now();
   const verify = await cfGet("/user/tokens/verify");
@@ -405,12 +452,13 @@ async function main(): Promise<number> {
   const strongestHasCf = INTERLEAVED_STRONGEST_CHAIN.some((e) => e.provider === "cloudflare");
   console.log(`STRUCTURAL: fast_chain_has_cloudflare=${fastHasCf} (must be false — EVO streaming exclusion) · strongest_chain_has_cloudflare=${strongestHasCf} (must be false — roles ride the tag-scoped entry only)`);
 
-  // Section 0 — token + catalog gate.
+  // Section 0 — token + catalog gate + the raw-shape diagnostic.
   const catalogOk = await preflightCatalog();
   if (!catalogOk) {
     console.log("PROBE RED: preflight failed (token verify or a role model absent from the live catalog) — the role cannot serve.");
     return 1;
   }
+  await directShapeDiagnostic();
 
   // Section 1 — pairing role.
   console.log("\n--- Section 1: pairing role (blog:pairing → 70b-fp8-fast) ---");
