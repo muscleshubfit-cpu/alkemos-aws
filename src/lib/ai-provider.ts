@@ -666,12 +666,25 @@ async function callCloudflareGenerate(
       const r = resultField as {
         response?: unknown;
         usage?: { neurons?: number | string | null } | null;
+        choices?: Array<{ message?: { content?: unknown } | null } | null> | null;
       };
       usageBlock = r.usage;
       if (typeof r.response === "string") {
         rawText = r.response;
       } else if (r.response && typeof r.response === "object") {
         rawText = JSON.stringify(r.response);
+      } else {
+        // The chat-completions migration (measured live by the shape
+        // diagnostic, probe run 41145616267): CF routes -fp8-fast to
+        // backend variants that answer in the OpenAI shape —
+        // result.choices[0].message.content. The legacy `response`
+        // field coexists today; this branch keeps the arm alive if CF
+        // ever drops it (the content is passed verbatim to the strict
+        // validators — nothing fabricated).
+        const c0 = Array.isArray(r.choices) ? r.choices[0] : null;
+        const content = c0?.message?.content;
+        if (typeof content === "string") rawText = content;
+        else if (content && typeof content === "object") rawText = JSON.stringify(content);
       }
     }
     if (typeof rawText !== "string" || rawText.trim().length === 0) {

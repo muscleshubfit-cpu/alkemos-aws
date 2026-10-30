@@ -204,7 +204,20 @@ async function directShapeDiagnostic(): Promise<void> {
       );
       const raw = await res.text();
       console.log(`SHAPE DIAG ${c.label}: HTTP ${res.status} · ${ms(t0)}ms · cf-ai-neurons=${res.headers.get("cf-ai-neurons") ?? "-"}`);
-      console.log(`  raw_body (≤400 chars): ${snippet(raw, 400)}`);
+      console.log(`  raw_body (≤1200 chars): ${snippet(raw, 1200)}`);
+      // Field-presence census — documents EXACTLY which tolerant-parser
+      // branch the adapter can use (response-as-string · response-as-object
+      // · choices[0].message.content · usage.neurons).
+      try {
+        const j = JSON.parse(raw) as { result?: Record<string, unknown> };
+        const r = j.result ?? {};
+        const choice0 = (r.choices as Array<{ message?: { content?: unknown } }> | undefined)?.[0];
+        console.log(
+          `  fields: result.response=${typeof r.response} · result.choices[0].message.content=${typeof choice0?.message?.content} · result.usage=${typeof r.usage}${r.usage && typeof r.usage === "object" ? ` (neurons=${(r.usage as { neurons?: unknown }).neurons ?? "-"})` : ""}`,
+        );
+      } catch {
+        console.log("  fields: raw body is not JSON");
+      }
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       console.log(`SHAPE DIAG ${c.label}: FETCH FAIL · ${ms(t0)}ms · ${snippet(msg, 200)}`);
