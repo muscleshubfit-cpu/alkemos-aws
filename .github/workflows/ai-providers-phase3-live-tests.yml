@@ -1,0 +1,81 @@
+name: AI providers phase-3 live tests
+
+# ============================================================
+# AI-PROVIDERS-EXPANSION PHASE 3 (owner order 2026-10-30) —
+# dispatch-only LIVE measurement battery for the NEW providers
+# (Tavily · Exa · Cloudflare Workers AI · Mistral), using ONLY
+# the owner-created repo secrets — never the production provider
+# keys, never a production code path, no deploy, no schedule.
+#
+# Instruments (scripts/ai-providers/, stdlib python3):
+#   phase3_tavily_exa.py — the 8 unified AR/EN queries on both
+#     search providers + Exa full-text /contents of the top-3
+#     results per query + Tavily /usage meter before/after.
+#   phase3_cloudflare.py — token verify → catalog presence →
+#     3 owner-listed models × (Arabic · planning · JSON-object ·
+#     JSON-schema · stability×3) with the cf-ai-neurons meter per
+#     call. Payment-billing-only models are NEVER called.
+#   phase3_mistral.py — mistral-small-latest AR/EN/JSON-mode +
+#     rate-limit headers (free-tier reality).
+#
+# Discipline (grounded-failover-test precedent): prints statuses,
+# latencies, meters, URLs and short content samples ONLY — no
+# secret values, no customer data. Failures are measurements and
+# exit 0 honestly (the verdict lives in the Phase-3 report).
+# ============================================================
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ai-providers-phase3-live-tests
+  cancel-in-progress: false
+
+jobs:
+  live-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+
+    env:
+      TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
+      EXA_API_KEY: ${{ secrets.EXA_API_KEY }}
+      MISTRAL_API_KEY: ${{ secrets.MISTRAL_API_KEY }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      CLOUDFLARE_AI_TOKEN: ${{ secrets.CLOUDFLARE_AI_TOKEN }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5 — pinned 2026-10-10 audit
+
+      - name: Preflight — new-provider secrets present (names only, fails fast)
+        run: |
+          echo "=== Preflight [ai-providers-phase3-live-tests]: checking the 5 owner-created secrets ==="
+          missing=0
+          for v in TAVILY_API_KEY EXA_API_KEY MISTRAL_API_KEY CLOUDFLARE_ACCOUNT_ID CLOUDFLARE_AI_TOKEN; do
+            if [ -z "${!v}" ]; then
+              echo "❌ Missing secret: $v"
+              missing=1
+            else
+              echo "✓ Present: $v (value never printed)"
+            fi
+          done
+          if [ "$missing" -eq 1 ]; then
+            echo "❌ Preflight failed — add the missing secrets and re-run."
+            exit 1
+          fi
+          echo "✓ All five provider secrets present"
+
+      - name: Tavily vs Exa — unified 8-query search comparison + contents extraction
+        continue-on-error: true
+        run: python3 scripts/ai-providers/phase3_tavily_exa.py
+
+      - name: Cloudflare Workers AI — token/catalog/3-model live battery
+        continue-on-error: true
+        run: python3 scripts/ai-providers/phase3_cloudflare.py
+
+      - name: Mistral — mistral-small-latest live battery
+        continue-on-error: true
+        run: python3 scripts/ai-providers/phase3_mistral.py
