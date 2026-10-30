@@ -317,7 +317,7 @@ ledger-based — `src/lib/refund.ts`).
 | UI | React 19 · Tailwind CSS 4 · shadcn/ui |
 | Language | TypeScript 5 (strict) |
 | Database | Supabase — Postgres, Auth, Storage, Row Level Security |
-| AI | OpenRouter + Groq + NVIDIA NIM + Gemini + the Tavily and Exa search arms, one unified layer (`src/lib/ai-provider.ts`) |
+| AI | OpenRouter + Groq + NVIDIA NIM + Gemini + Cloudflare Workers AI (fifth provider — first-wave agile roles only) + the Tavily and Exa search arms, one unified layer (`src/lib/ai-provider.ts`) |
 | Payments | PayPal + manual review |
 | Email | Brevo REST API |
 | Charts | Recharts (lazy-loaded) |
@@ -410,7 +410,13 @@ both chains as an ordinary tail entry — the Gemini-first priority law was
 cancelled by owner order 2026-10-31, so the three-way lead rotation spreads
 load across providers on every call) — offering sequential
 strongest-model chains, a `Promise.any` race mode for fast swaps, and SSE
-streaming for chat. Blog research rides a real-search arm ladder split by
+streaming for chat. Cloudflare Workers AI joined as the FIFTH provider
+(2026-10-31, stage ج) for the first-wave AGILE roles only: the bilingual
+blog-pairing call leads with `llama-3.3-70b-instruct-fp8-fast` and the
+Arabic latin-token conversion leads with `llama-4-scout-17b-16e-instruct`,
+with a central neuron meter (warning ≥80% · drain-guard barrier ≥95% of
+the 10k/day free allocation) and a `CF_ARM_ENABLED=0` kill switch — any
+CF failure falls to the ordinary chain. Blog research rides a real-search arm ladder split by
 language (English: Exa semantic search → Tavily → Groq browser_search → a
 dormant Gemini grounding arm; Arabic: Tavily → Groq → Exa with the
 English-equivalent query), where every arm must return live URL evidence

@@ -1309,8 +1309,12 @@ function applyLatinTokenMap(md: string, map: Map<string, string>): LatinTokenMap
  * mapping: the value must be a pure-MSA Arabic TERM, never a sentence,
  * never English junk (the we-need-to-replace class), never dialect
  * (the إيه×6 class of 09-17), never a URL/markdown fragment.
+ *
+ * EXPORTED (Phase 5-C / stage ج): the cf-role-probe live instrument
+ * validates each latin-token mapping value with THIS exact function —
+ * the same law production applies per-value inside translateLatinTokens.
  */
-function isValidArabicTermValue(v: string): boolean {
+export function isValidArabicTermValue(v: string): boolean {
   if (!v || v.length > 80) return false;
   if (!/[\u0600-\u06FF]/.test(v)) return false; // must carry Arabic
   if (/[A-Za-z]/.test(v)) return false; // zero Latin (junk responses)
@@ -1327,8 +1331,14 @@ function isValidArabicTermValue(v: string): boolean {
  * strongest free model (gpt-oss-120b, 85% live success) re-enters the
  * latin-repair path. Returns only per-value-accepted mappings for the
  * tokens actually requested.
+ *
+ * EXPORTED (Phase 5-C / stage ج): the cf-role-probe live instrument
+ * (scripts/ai-providers/cf-role-probe.mts) rides THIS function verbatim
+ * so the role probe measures the REAL production code path (chain tag
+ * blog:latin-tokens-ar → CF scout entry → isValidArabicTermValue) —
+ * the same law the pairing probe applies to runPairingSelection.
  */
-async function translateLatinTokens(
+export async function translateLatinTokens(
   tokens: string[],
 ): Promise<{ map: Map<string, string>; provider: string; model: string }> {
   const map = new Map<string, string>();

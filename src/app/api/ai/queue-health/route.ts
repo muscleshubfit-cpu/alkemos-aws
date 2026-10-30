@@ -2,6 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin, authRequired } from "@/lib/auth-server";
 import { supabaseAdmin, isSupabaseAdminConfigured } from "@/lib/supabase/admin";
 import { parseBundleRepairLoop, bundleResearchSource } from "@/lib/blog-queue";
+import {
+  cfNeuronsToday,
+  cfNeuronWarnLevel,
+  CF_NEURON_WARN_THRESHOLD,
+  CF_NEURON_DAY_LIMIT,
+} from "@/lib/ai-cf-usage";
 
 /**
  * AI QUEUE HEALTH — project-wide early-warning dashboard data.
@@ -189,6 +195,28 @@ export async function GET(request: NextRequest) {
     /* pairing scan is best-effort — panel stays honest without it */
   }
 
+  // ── CF NEURON WARNING (Phase 5-C / stage ج — §8-ج design, §12-4 owner
+  // approval): the Cloudflare Workers AI free allocation is 10,000
+  // neurons/day. The meter (ai-cf-usage.ts — Upstash daily key, fail-open)
+  // accumulates result.usage.neurons from every CF role call; at ≥80%
+  // (8,000) this strip warns so the owner can watch the headroom BEFORE
+  // the ≥95% barrier starts skipping CF calls honestly. Advisory only
+  // — never blocks a call; a metering outage degrades open (null).
+  let cfNeurons: { used: number; warnThreshold: number; dayLimit: number } | null = null;
+  try {
+    const used = await cfNeuronsToday();
+    if (used > 0) {
+      cfNeurons = { used, warnThreshold: CF_NEURON_WARN_THRESHOLD, dayLimit: CF_NEURON_DAY_LIMIT };
+      if (await cfNeuronWarnLevel()) {
+        issues.push(
+          `⚠ استهلاك Cloudflare بلغ ${Math.round(used)} عصبونًا من ${CF_NEURON_DAY_LIMIT.toLocaleString("en-US")} اليومي (تجاوز عتبة التحذير ${CF_NEURON_WARN_THRESHOLD.toLocaleString("en-US")} — حاجز المنع عند 95%)`,
+        );
+      }
+    }
+  } catch {
+    /* CF neuron meter is best-effort — panel stays honest without it */
+  }
+
   // ── R5 REPAIR-LOOP COUNTER (Execution-Path Audit §10 Phase R5,
   // 2026-09-30 — «عدّاد إصلاح في /api/ai/queue-health»): measures
   // «repair-first vs regenerate» from DB truth. P5 stamps a
@@ -267,6 +295,7 @@ export async function GET(request: NextRequest) {
     lastRunnerRunAt,
     pairing,
     repair,
+    cfNeurons,
     // CLEARABLE-SCOPE CONTRACT (2026-10-30, owner order «زر مسح التنبيه يعرض
     // تم مسح 0 بينما يظل التنبيه الأحمر 0/6 pair_id ظاهرًا»): the issues array
     // mixes FAILED ai_jobs rows (transient diagnostics the DELETE actually

@@ -68,9 +68,13 @@
  * This file MUST be server-only — it never exposes API keys to the client.
  */
 
-export type AIProvider = "openrouter" | "groq" | "nvidia" | "gemini";
+export type AIProvider = "openrouter" | "groq" | "nvidia" | "gemini" | "cloudflare";
 
 import { trackGeminiUsage } from "./ai-usage-gemini";
+import {
+  cfNeuronBarrierTripped,
+  trackCfUsage,
+} from "./ai-cf-usage";
 import {
   activeCooldowns,
   classifyForCooldown,
@@ -125,6 +129,80 @@ export function getGeminiKey(): string {
   return process.env.GEMINI_API_KEY || "";
 }
 
+/* ── CLOUDFLARE WORKERS AI (Phase 5-C / stage ج — FIFTH provider,
+ * owner order 2026-10-31 «نفّذ جميع المراحل المتبقية» approving §12-3
+ * of the Phase-4 unified-architecture report) ────────────────────────────
+ *
+ * FREE tier: 10,000 neurons/day, no card (Phase-3 measured). The two
+ * repo secrets exist since the Phase-3 live battery (created by the
+ * owner with Workers AI:Read; the two legacy zone-scoped cfut_ tokens
+ * carry NO Workers-AI permission and are NOT used — Phase-2 §8-ج note).
+ *
+ * SCOPE LAW (§6-ب/§6-ج): CF serves ONLY the first-wave AGILE ROLES —
+ * blog:pairing (llama-3.3-70b-instruct-fp8-fast — measured 7/7, valid
+ * JSON in BOTH modes, precise MSA numbers) and blog:latin-tokens-ar
+ * (llama-4-scout-17b-16e-instruct — measured literal-exact ×3, Jaccard
+ * 1.0). It is NEVER added to the heavy generation chains, NEVER to the
+ * fast/streaming chain (no streaming in JSON mode — EVO is excluded
+ * STRUCTURALLY), and llama-3.1-8b-fp8 is EXCLUDED from every JSON role
+ * (its json_object output failed parsing and json_schema was refused
+ * by the API verbatim — Phase-3 live evidence).
+ *
+ * NEURON BUDGET (§8-ج): first wave ≈ 450 neurons/day (4.5%) — metered
+ * per call via result.usage.neurons in ai-cf-usage.ts; WARNING at ≥80%
+ * (queue-health strip), BARRIER at ≥95% skips every new CF call
+ * honestly and the role falls to the next provider.
+ *
+ * Ops knobs: CF_ARM_ENABLED=0 disables the whole arm without a deploy
+ * (zero-effect rollback — the GROQ_MAX_TOKENS_CLAMP pattern); the roles
+ * also degrade honestly when the secrets are absent. */
+export function getCloudflareAiToken(): string {
+  return (process.env.CLOUDFLARE_AI_TOKEN || "").trim();
+}
+
+export function getCloudflareAccountId(): string {
+  return (process.env.CLOUDFLARE_ACCOUNT_ID || "").trim();
+}
+
+/** CF role models (§6-ب first wave — measured picks, nothing else). */
+export const CF_PAIRING_MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
+export const CF_SCOUT_MODEL = "@cf/meta/llama-4-scout-17b-16e-instruct";
+
+/** llama-3.1-8b* is EXCLUDED from every JSON role (Phase-3 live proof:
+ * json_object unparseable + json_schema refused by the API). This guard
+ * keeps future model overrides honest — any 8b id is rejected. */
+export function isCfJsonRoleModelAllowed(model: string): boolean {
+  return !/llama-3\.1-8b/i.test(model);
+}
+
+/** The kill switch: CF_ARM_ENABLED=0 → the arm is fully disabled
+ *  (no deploy, zero effect — the roles fall to the ordinary chain). */
+export function cfArmEnabled(): boolean {
+  if (process.env.CF_ARM_ENABLED === "0") return false;
+  return true;
+}
+
+/** CF config completeness (token + account id). */
+export function isCloudflareConfigured(): boolean {
+  return !!(getCloudflareAiToken() && getCloudflareAccountId());
+}
+
+/** The first-wave agile-role map: chain tag → CF model. §6-ب verbatim:
+ *  blog:pairing         → CF 70b-fp8-fast leads (fallback = chain)
+ *  blog:latin-tokens-ar → CF scout leads (dictionary already ran first)
+ * Any other tag → null (CF is NOT a general-purpose provider). */
+const CF_AGILE_ROLE_MODELS: Record<string, string> = {
+  "blog:pairing": CF_PAIRING_MODEL,
+  "blog:latin-tokens-ar": CF_SCOUT_MODEL,
+};
+
+export function cfRoleForTag(tag?: string): string | null {
+  if (!tag) return null;
+  const model = CF_AGILE_ROLE_MODELS[tag];
+  if (!model) return null;
+  return isCfJsonRoleModelAllowed(model) ? model : null;
+}
+
 export const AI_PROVIDERS: Record<
   AIProvider,
   {
@@ -174,6 +252,16 @@ export const AI_PROVIDERS: Record<
     docsUrl: "https://aistudio.google.com/app/apikey",
     keyPrefix: "AIza",
   },
+  cloudflare: {
+    label: "Cloudflare Workers AI (agile roles only)",
+    // The account-scoped run path is composed in the native adapter
+    // (callCloudflareGenerate): /accounts/{id}/ai/run/{model}.
+    baseUrl: "https://api.cloudflare.com/client/v4",
+    defaultModel: CF_PAIRING_MODEL,
+    envKey: "CLOUDFLARE_AI_TOKEN",
+    docsUrl: "https://developers.cloudflare.com/workers-ai/",
+    keyPrefix: "",
+  },
 };
 
 export type AIConfig = {
@@ -211,14 +299,20 @@ const PROVIDER_PRIORITY: AIProvider[] = ["openrouter", "groq", "nvidia", "gemini
 
 export function getEnvConfig(): AIConfig | null {
   const requested = (process.env.AI_PROVIDER as AIProvider) || "openrouter";
-  const provider: AIProvider = PROVIDER_PRIORITY.includes(requested)
-    ? requested
-    : "openrouter";
+  // Phase 5-C: cloudflare is honored when EXPLICITLY requested (a role-scoped
+  // single-call override) but is NEVER a general fallback — the priority
+  // list below stays CF-free (CF serves the agile roles through the chain's
+  // role-entry insertion only).
+  const provider: AIProvider =
+    PROVIDER_PRIORITY.includes(requested) || requested === "cloudflare"
+      ? requested
+      : "openrouter";
 
   const openrouterKey = getOpenRouterKey();
   const groqKey = getGroqKey();
   const nvidiaKey = getNvidiaKey();
   const geminiKey = getGeminiKey();
+  const cfKey = getCloudflareAiToken();
   const keyFor = (p: AIProvider) =>
     p === "openrouter"
       ? openrouterKey
@@ -226,10 +320,13 @@ export function getEnvConfig(): AIConfig | null {
         ? groqKey
         : p === "nvidia"
           ? nvidiaKey
-          : geminiKey;
+          : p === "gemini"
+            ? geminiKey
+            : cfKey;
 
   // Resolve the key for the chosen provider; if it's missing fall through
-  // to the first configured provider by priority.
+  // to the first configured provider by priority (CF never enters this
+  // fallback — a missing CF key degrades to the ordinary chain world).
   let apiKey = keyFor(provider);
   let resolvedProvider = provider;
   if (!apiKey) {
@@ -454,6 +551,133 @@ function isAbortError(e: unknown): boolean {
     e instanceof Error &&
     (e.name === "AbortError" || /aborted/i.test(e.message))
   );
+}
+
+/* ── CLOUDFLARE NATIVE ADAPTER (Phase 5-C / stage ج) ───────────────────────
+ *
+ * POST {baseUrl}/accounts/{accountId}/ai/run/{model} — the Workers AI
+ * REST shape measured call-by-call in the Phase-3 live battery
+ * (scripts/ai-providers/phase3_cloudflare.py, runs 41075269014 +
+ * 41076359852): request {messages, max_tokens, response_format?}, answer
+ * {success, result: {response, usage: {neurons, …}}, errors}. NOT
+ * OpenAI-compatible — hence a native branch exactly like Gemini's.
+ *
+ * Laws riding this adapter:
+ *   • Per-call timeout: hard 30s cap (measured max 15.8s + margin — §6-ج)
+ *     AND never above the caller's own timeoutMs.
+ *   • json_object mode is sent (both first-wave models measured valid in
+ *     BOTH JSON modes); llama-3.1-8b* never reaches here (role guard).
+ *   • Neuron accounting: result.usage.neurons (header cf-ai-neurons as
+ *     fallback) → trackCfUsage — fail-soft by construction.
+ *   • Errors surface as `AI API error {status} from cloudflare: …` so the
+ *     chain's existing exhaustion classifier (429/402/401/403/404 →
+ *     cooldown) applies unchanged. */
+async function callCloudflareGenerate(
+  cfg: AIConfig,
+  prompt: string,
+  options: CallAIOptions,
+): Promise<{ text: string; neurons: number }> {
+  const accountId = getCloudflareAccountId();
+  if (!accountId || !cfg.apiKey) {
+    throw new Error(
+      "Cloudflare Workers AI not configured. Set CLOUDFLARE_AI_TOKEN and CLOUDFLARE_ACCOUNT_ID.",
+    );
+  }
+
+  const messages: Array<{ role: string; content: string }> = [];
+  if (options.systemPrompt) {
+    messages.push({ role: "system", content: options.systemPrompt });
+  }
+  messages.push({ role: "user", content: prompt });
+
+  const body: Record<string, unknown> = {
+    messages,
+    max_tokens: options.maxTokens ?? 4096,
+    temperature: options.temperature ?? 0.7,
+  };
+  if (options.jsonMode) {
+    body.response_format = { type: "json_object" };
+  }
+
+  const started = Date.now();
+  // §6-ج: 30s hard cap per CF role call (measured max 15.8s + margin),
+  // never above the caller's own intent.
+  const timeoutMs = Math.min(options.timeoutMs ?? 30_000, 30_000);
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    const res = await fetch(
+      `${cfg.baseUrl}/accounts/${encodeURIComponent(accountId)}/ai/run/${cfg.model}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${cfg.apiKey}`,
+        },
+        body: JSON.stringify(body),
+        signal: controller.signal,
+      },
+    );
+
+    const latencyMs = Date.now() - started;
+
+    if (!res.ok) {
+      const text = await res.text().catch(() => "");
+      // Fail-soft accounting: a failed call consumed nothing measurable —
+      // still logged with ok=0 for the audit trail.
+      void trackCfUsage({
+        model: cfg.model,
+        neurons: 0,
+        ok: false,
+        status: res.status,
+        latencyMs,
+        tag: options.tag,
+      });
+      throw new Error(
+        `AI API error ${res.status} from cloudflare: ${text.slice(0, 500)}`,
+      );
+    }
+
+    const data = (await res.json()) as {
+      success?: boolean;
+      result?: {
+        response?: string | null;
+        usage?: { neurons?: number | string | null } | null;
+      } | null;
+      errors?: Array<unknown> | null;
+    } | null;
+
+    const rawText = data?.result?.response;
+    if (typeof rawText !== "string" || rawText.trim().length === 0) {
+      const apiErrors = data?.errors ? ` errors=${JSON.stringify(data.errors).slice(0, 300)}` : "";
+      throw new Error(
+        `AI provider cloudflare returned an empty response${apiErrors}`,
+      );
+    }
+
+    // Neurons: usage block is the authoritative meter (matched the
+    // cf-ai-neurons header on every Phase-3 call); header is the fallback.
+    const headerNeurons = Number(res.headers.get("cf-ai-neurons") ?? "");
+    const usageNeurons = Number(data?.result?.usage?.neurons ?? "");
+    const neurons = Number.isFinite(usageNeurons) && usageNeurons > 0
+      ? usageNeurons
+      : Number.isFinite(headerNeurons) && headerNeurons > 0
+        ? headerNeurons
+        : 0;
+    void trackCfUsage({
+      model: cfg.model,
+      neurons,
+      ok: true,
+      status: res.status,
+      latencyMs,
+      tag: options.tag,
+    });
+
+    return { text: rawText.trim(), neurons };
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 /** Non-streaming: POST /models/{model}:generateContent → joined text +
@@ -2360,6 +2584,13 @@ export async function callAI(
     return text;
   }
 
+  // CLOUDFLARE NATIVE ARM (Phase 5-C / stage ج): Workers AI REST is not
+  // OpenAI-compatible — translate here exactly like the Gemini arm.
+  if (cfg.provider === "cloudflare") {
+    const { text } = await callCloudflareGenerate(cfg, prompt, options);
+    return text;
+  }
+
   const messages: Array<{ role: string; content: string }> = [];
   if (options.systemPrompt) {
     messages.push({ role: "system", content: options.systemPrompt });
@@ -2901,15 +3132,19 @@ export async function callFreeAIFallbackChain(
   const groqKey = getGroqKey();
   const nvidiaKey = getNvidiaKey();
   const geminiKey = getGeminiKey();
+  const cfToken = getCloudflareAiToken();
+  const cfAccount = getCloudflareAccountId();
+  const cfConfigured = !!(cfToken && cfAccount);
 
   if (
     openrouterKeys.length === 0 &&
     !groqKey &&
     !nvidiaKey &&
-    !geminiKey
+    !geminiKey &&
+    !cfConfigured
   ) {
     throw new Error(
-      "[ai-fallback-chain] No AI providers configured. Set OPENROUTER_API and/or GROQ_API_KEY and/or NVIDIA_API_KEY and/or GEMINI_API_KEY.",
+      "[ai-fallback-chain] No AI providers configured. Set OPENROUTER_API and/or GROQ_API_KEY and/or NVIDIA_API_KEY and/or GEMINI_API_KEY and/or CLOUDFLARE_AI_TOKEN + CLOUDFLARE_ACCOUNT_ID.",
     );
   }
 
@@ -3009,6 +3244,59 @@ export async function callFreeAIFallbackChain(
     );
   }
 
+  // ── CLOUDFLARE AGILE-ROLE ENTRY (Phase 5-C / stage ج — §6-ب first wave,
+  // owner order 2026-10-31 «نفّذ جميع المراحل المتبقية» approving §12-3) ──
+  // CF rides the walk ONLY for the two first-wave roles (blog:pairing →
+  // 70b-fp8-fast · blog:latin-tokens-ar → scout) — a MEASURED role
+  // assignment under the NO-FORCED-PRIORITY law (Phase-3 live evidence:
+  // valid JSON in both modes, 7/7 calls each; every other task type keeps
+  // its existing chain untouched). The role entry LEADS the walk: pairing
+  // falls back to the ordinary chain on any CF failure exactly as §6-ب
+  // prescribes. Three honest skip conditions, each WITHOUT consuming
+  // attempt budget (the cooldown-skip pattern):
+  //   1. CF_ARM_ENABLED=0 (kill switch — zero-effect rollback), no
+  //      CLOUDFLARE_AI_TOKEN/CLOUDFLARE_ACCOUNT_ID, or an unrecognized
+  //      tag → no entry at all.
+  //   2. options.onDelta set (STREAMING): CF has NO streaming in JSON
+  //      mode — EVO's chat path is excluded STRUCTURALLY (§6-ب).
+  //   3. Neuron BARRIER ≥95% of the 10k/day free allocation (§8-ج): every
+  //      new CF call is skipped honestly and the role falls to the next
+  //      provider — the free allocation is never drained to zero.
+  let cfSkippedReason: string | null = null;
+  const cfRoleModel = cfRoleForTag(options.tag);
+  if (
+    cfRoleModel &&
+    cfArmEnabled() &&
+    cfConfigured &&
+    !options.onDelta &&
+    activeChain0.every((e) => e.provider !== "cloudflare")
+  ) {
+    if (await cfNeuronBarrierTripped()) {
+      cfSkippedReason =
+        "neuron barrier ≥95% of the 10k/day free allocation (§8-ج drain guard)";
+      console.warn(
+        `${LP} cloudflare role entry SKIPPED: ${cfSkippedReason} — the role falls to the ordinary chain`,
+      );
+    } else {
+      activeChain0 = [
+        { provider: "cloudflare" as AIProvider, model: cfRoleModel },
+        ...activeChain0,
+      ];
+      console.log(
+        `${LP} cloudflare role entry leads: ${cfRoleModel} (measured first-wave agile role — the ordinary chain follows as fallback)`,
+      );
+    }
+  } else if (cfRoleModel && !cfArmEnabled()) {
+    cfSkippedReason = "CF_ARM_ENABLED=0 (kill switch)";
+  } else if (cfRoleModel && !cfConfigured) {
+    cfSkippedReason = "CLOUDFLARE_AI_TOKEN/CLOUDFLARE_ACCOUNT_ID not configured";
+  } else if (cfRoleModel && options.onDelta) {
+    cfSkippedReason = "streaming call — CF excluded structurally (no streaming in JSON mode)";
+  }
+  if (cfSkippedReason) {
+    errors.push(`cloudflare: role entry skipped — ${cfSkippedReason}`);
+  }
+
   // ── Time-budget enforcement (Vercel Hobby guarantee) ──────────────────
   const requestedModels =
     options.maxModels ??
@@ -3061,6 +3349,10 @@ export async function callFreeAIFallbackChain(
       candidateKeys = [nvidiaKey];
     } else if (provider === "gemini" && geminiKey) {
       candidateKeys = [geminiKey];
+    } else if (provider === "cloudflare" && cfToken) {
+      // Phase 5-C: the CF role entry (inserted above for first-wave agile
+      // tags only). Single token — the account id rides the adapter.
+      candidateKeys = [cfToken];
     }
     if (candidateKeys.length === 0) {
       errors.push(`${provider}/${model}: key not configured`);
@@ -3172,6 +3464,7 @@ export async function callFreeAIFallbackChain(
       `Groq key: ${groqKey ? "present" : "MISSING"}.\n` +
       `NVIDIA key: ${nvidiaKey ? "present" : "MISSING"}.\n` +
       `Gemini key: ${geminiKey ? "present" : "MISSING"}.\n` +
+      `Cloudflare config: ${cfConfigured ? "present (token+account)" : "MISSING"}.\n` +
       (cds.length
         ? `Active quota-cooldowns: ${cds
             .map((c) => `${c.scope} until ${new Date(c.until).toISOString()}`)

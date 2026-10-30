@@ -1,0 +1,122 @@
+name: CF role probe (Workers AI — stage ج)
+
+# ============================================================
+# AI-PROVIDERS-EXPANSION Phase 5-C / stage ج (§10-ج1 of the
+# Phase-4 unified-architecture report; owner order 2026-10-31
+# «نفّذ جميع المراحل المتبقية» approving §12-3) — dispatch-only
+# LIVE ROLE probe for Cloudflare Workers AI, the FIFTH provider.
+#
+# THE OWNER'S RULE (Phase-4 §6 principle 4): no role moves to a new
+# provider before a FUNCTIONAL role probe runs the REAL production
+# code path — a generic API test is never enough.
+#
+# What scripts/ai-providers/cf-role-probe.mts measures:
+#   0. Token verify + catalog gate — BOTH first-wave role models
+#      (@cf/meta/llama-3.3-70b-instruct-fp8-fast for blog:pairing ·
+#      @cf/meta/llama-4-scout-17b-16e-instruct for
+#      blog:latin-tokens-ar) must be CURRENTLY listed; officially
+#      billing-only models are listed for AVOIDANCE proof only and
+#      are NEVER called (no-paid-consumption law).
+#   1. PAIRING role through the REAL chain machinery (tag
+#      blog:pairing, maxModels=1 → ONLY the CF entry walked), then
+#      validated by parsePairingJSON (the strict hard laws); then
+#      the INTEGRATED runPairingSelection call verbatim (CF leads,
+#      the ordinary chain follows as fallback).
+#   2. LATIN-TOKENS role the same way (tag blog:latin-tokens-ar,
+#      the real translateLatinTokens prompt) with every value
+#      validated by isValidArabicTermValue; then the integrated
+#      translateLatinTokens call verbatim.
+#   3. CONCURRENCY probe ×5/×10 (§8-ب6 — the mandatory pre-adoption
+#      item; CF's concurrency limits are unpublished).
+#   4. Neuron accounting per role (the SHARED production meter —
+#      cf:usage:{date}:neurons via result.usage.neurons).
+#
+# EXIT LAW (honest): exit 1 at ANY role parse failure, an absent
+# role model, or a fully-failed concurrency round. Connection
+# success is NOT the verdict — the parse validators are.
+#
+# Discipline (aws-ai-test / grounded-failover-test precedent):
+# REAL calls with the EXISTING repo secrets
+# (CLOUDFLARE_AI_TOKEN + CLOUDFLARE_ACCOUNT_ID — created by the
+# owner for the Phase-3 live battery with Workers AI:Read; the two
+# legacy zone-scoped cfut_ tokens carry NO Workers-AI permission
+# and are NOT used). Prints provider/model names, latencies,
+# statuses, neuron counts, parse verdicts and short snippets ONLY —
+# no secret values, no personal data, NO code changes, NO deploy.
+# ============================================================
+
+on:
+  workflow_dispatch:
+
+# MINIMAL permissions: contents:read is REQUIRED for actions/checkout.
+# Everything beyond repo read-access stays revoked.
+permissions:
+  contents: read
+
+concurrency:
+  group: cf-role-probe
+  cancel-in-progress: false
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    env:
+      # Same cooldown window as the blog pipelines — the probe must run
+      # EXACTLY the production wiring of the failover mechanism.
+      AI_PROVIDER_COOLDOWN_MS: "1800000"
+
+      # ── Cloudflare Workers AI (the FIFTH provider — stage ج) ──
+      # The EXISTING repo secrets from the Phase-3 live battery. Free
+      # tier: 10,000 neurons/day, NO card, NO paid service. Absent → the
+      # probe reports an honest configuration RED (nothing to probe).
+      CLOUDFLARE_AI_TOKEN: ${{ secrets.CLOUDFLARE_AI_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      # ── Ordinary chain keys (for the INTEGRATED role paths — CF leads,
+      #    these follow as the production fallback) ──
+      OPENROUTER_API: ${{ secrets.OPENROUTER_API }}
+      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+      GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+      NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+
+      # ── The SHARED neuron meter (same store as the Gemini counters) ──
+      # Fail-soft: absent → the meter degrades to in-process counting.
+      UPSTASH_REDIS_REST_URL: ${{ secrets.UPSTASH_REDIS_REST_URL }}
+      UPSTASH_REDIS_REST_TOKEN: ${{ secrets.UPSTASH_REDIS_REST_TOKEN }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5 — pinned 2026-10-10 audit
+
+      - name: Preflight — Cloudflare secrets present (fails fast, names the missing ones)
+        run: |
+          echo "=== Preflight [cf-role-probe]: checking Cloudflare secrets ==="
+          missing=0
+          for v in CLOUDFLARE_AI_TOKEN CLOUDFLARE_ACCOUNT_ID; do
+            if [ -z "${!v}" ]; then
+              echo "❌ Missing secret: $v"
+              missing=1
+            fi
+          done
+          if [ "$missing" -eq 1 ]; then
+            echo "❌ Preflight failed — fix the secrets above and re-run."
+            exit 1
+          fi
+          echo "✓ Cloudflare secrets present (token + account id)"
+
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5 — pinned 2026-10-10 audit
+        with:
+          node-version: 22
+
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2 — pinned 2026-10-10 audit
+        with:
+          bun-version: 1.3.14
+
+      - name: Install dependencies (frozen bun.lock = production tree)
+        run: bun install --frozen-lockfile
+
+      - name: Run the live CF ROLE probe (REAL production code paths)
+        run: npx --no-install tsx scripts/ai-providers/cf-role-probe.mts

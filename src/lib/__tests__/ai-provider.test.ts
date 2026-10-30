@@ -117,8 +117,16 @@ describe("Phase 161 — NVIDIA NIM provider contract", () => {
       expect(AI_PROVIDERS.nvidia.docsUrl).toContain("nvidia");
     });
 
-    it("registry has exactly the four allowed providers (Phase 343 — owner order 2026-10-06 added gemini)", () => {
-      expect(Object.keys(AI_PROVIDERS).sort()).toEqual(["gemini", "groq", "nvidia", "openrouter"]);
+    it("registry has exactly the five allowed providers (Phase 343 added gemini; Phase 5-C/stage ج 2026-10-31 added cloudflare)", () => {
+      expect(Object.keys(AI_PROVIDERS).sort()).toEqual(["cloudflare", "gemini", "groq", "nvidia", "openrouter"]);
+    });
+
+    it("cloudflare entry (Phase 5-C — stage ج): account-scoped baseUrl + CLOUDFLARE_AI_TOKEN env + pairing role model", () => {
+      expect(AI_PROVIDERS.cloudflare).toBeDefined();
+      expect(AI_PROVIDERS.cloudflare.baseUrl).toBe("https://api.cloudflare.com/client/v4");
+      expect(AI_PROVIDERS.cloudflare.envKey).toBe("CLOUDFLARE_AI_TOKEN");
+      expect(AI_PROVIDERS.cloudflare.defaultModel).toBe("@cf/meta/llama-3.3-70b-instruct-fp8-fast");
+      expect(AI_PROVIDERS.cloudflare.docsUrl).toContain("cloudflare.com");
     });
 
     it("gemini entry: native generativelanguage baseUrl + GEMINI_API_KEY env + AIza prefix", () => {

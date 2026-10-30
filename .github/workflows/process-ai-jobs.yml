@@ -88,6 +88,16 @@ jobs:
       # attempt budget (no preflight — the hard-required floor stays
       # GROQ + NVIDIA exactly as before).
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      # ── CLOUDFLARE WORKERS AI — FIFTH provider (Phase 5-C / stage ج,
+      #    owner order 2026-10-31 «نفّذ جميع المراحل المتبقية» approving
+      #    §12-3) ──
+      # The first-wave AGILE ROLES only (blog:pairing → 70b-fp8-fast ·
+      # blog:latin-tokens-ar → scout). Free tier 10,000 neurons/day, NO
+      # card. Missing/empty or CF_ARM_ENABLED=0 → the role entries are
+      # skipped honestly without consuming attempt budget and the ordinary
+      # chain serves the call (no preflight — an optional role arm).
+      CLOUDFLARE_AI_TOKEN: ${{ secrets.CLOUDFLARE_AI_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       # Gemini usage counters (weekly report source) — optional, fail-soft.
       UPSTASH_REDIS_REST_URL: ${{ secrets.UPSTASH_REDIS_REST_URL }}
       UPSTASH_REDIS_REST_TOKEN: ${{ secrets.UPSTASH_REDIS_REST_TOKEN }}

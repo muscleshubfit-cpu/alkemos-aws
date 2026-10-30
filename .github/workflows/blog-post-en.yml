@@ -138,6 +138,21 @@ jobs:
       # preflight: an optional arm, exactly like the gemini tail).
       TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
 
+      # ── CLOUDFLARE WORKERS AI — FIFTH provider (Phase 5-C / stage ج,
+      #    owner order 2026-10-31 «نفّذ جميع المراحل المتبقية» approving
+      #    §12-3) ──
+      # The first-wave AGILE ROLES only: blog:pairing leads with
+      # llama-3.3-70b-instruct-fp8-fast and blog:latin-tokens-ar leads with
+      # llama-4-scout-17b-16e-instruct — measured Phase-3 picks (valid JSON
+      # in both modes; 8b-fp8 EXCLUDED from every JSON role). Free tier
+      # 10,000 neurons/day, NO card. Missing/empty or CF_ARM_ENABLED=0 →
+      # the role entries are skipped honestly WITHOUT consuming attempt
+      # budget and the ordinary chain serves the call (no preflight: an
+      # optional role arm, exactly like the search arms). The shared
+      # neuron meter (ai-cf-usage.ts) counts against these same secrets.
+      CLOUDFLARE_AI_TOKEN: ${{ secrets.CLOUDFLARE_AI_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
       # ── GEMINI (Phase 343 arm — first-priority law CANCELLED 2026-10-31,
       #    Phase 5-A owner order «إلغاء قانون Gemini-First نهائيًا») ──
       # Optional BY DESIGN: gemini rides BOTH generation chains as an

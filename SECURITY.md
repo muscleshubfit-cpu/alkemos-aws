@@ -178,12 +178,42 @@ Any of the following:
   Source: repo Actions secret since Phase 3; passed by the blog
   workflows + the grounded-failover probe. Rotation: owner-side
   dashboard (credit balance).
+- **CLOUDFLARE WORKERS AI (fifth generation provider — 2026-10-31 Phase
+  6-C / stage ج, owner order «نفّذ جميع المراحل المتبقية» approving §12-3):**
+  free tier 10,000 neurons/day, NO card (the no-paid-service law;
+  officially billing-only catalog models are NEVER called — avoidance
+  proven in the cf-role-probe preflight). TWO secrets:
+  `CLOUDFLARE_AI_TOKEN` (Bearer auth, Workers AI:Read — created by the
+  owner for the Phase-3 live battery; the two legacy zone-scoped `cfut_`
+  tokens carry NO Workers-AI permission and are NOT used) +
+  `CLOUDFLARE_ACCOUNT_ID` (the `/accounts/{id}/ai/run/{model}` REST
+  path — NOT OpenAI-shape; the native adapter lives inside
+  `src/lib/ai-provider.ts`). SCOPE LAW: consumed by the FIRST-WAVE
+  AGILE ROLES only — the `blog:pairing` chain tag leads with
+  `@cf/meta/llama-3.3-70b-instruct-fp8-fast` and `blog:latin-tokens-ar`
+  leads with `@cf/meta/llama-4-scout-17b-16e-instruct` (Phase-3
+  measured picks); NEVER the heavy generation chains, NEVER the
+  streaming/fast chain (no streaming in JSON mode — EVO excluded
+  structurally), and `llama-3.1-8b*` excluded from every JSON role (its
+  json_object output failed parsing and its json_schema was refused by
+  the API — live Phase-3 evidence). NEURON BUDGET (§8-ج,
+  `src/lib/ai-cf-usage.ts`): every call meters `result.usage.neurons`
+  into the Upstash daily key `cf:usage:{date}:neurons` (same store as
+  the Gemini counters; in-process degradation without Upstash);
+  WARNING ≥80% (queue-health strip) · BARRIER ≥95% skips every new CF
+  call honestly and the role falls to the ordinary chain — the free
+  allocation is never drained to zero. Rollback without code:
+  `CF_ARM_ENABLED=0` (kill switch) or absent secrets — the role entries
+  are skipped without consuming attempt budget. Absent secrets never
+  block anything (optional role arm). Rotation: owner-side dashboard
+  (Workers AI usage); scope never enters any client bundle.
 - Gemini SDK / OpenAI / Anthropic / DeepSeek direct integrations were
   REMOVED from the codebase. Never reintroduce a direct third-party AI
   HTTP call without owner approval (§7 category: new external call).
 - Read by `src/lib/ai-provider.ts` (`getOpenRouterKey()` /
   `getGroqKey()` / `getNvidiaKey()` / `getGeminiKey()` / `getTavilyKey()`
-  / `getExaKey()` / `getEnvConfig()`) — server-only. This file must
+  / `getExaKey()` / `getCloudflareAiToken()` + `getCloudflareAccountId()`
+  / `getEnvConfig()`) — server-only. This file must
   NEVER be imported by a client component.
 - The "AI Settings" page (admin-only) stores per-admin overrides in
   HTTP-only cookies on the admin's browser. The override path:
