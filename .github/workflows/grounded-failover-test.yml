@@ -7,16 +7,23 @@ name: Grounded failover test (AI providers)
 # code changes, NO deploy, NO schedule.
 #
 # Measures (scripts/ai-grounded-failover-probe.mts):
-#   1. Each grounded arm separately — tavily search API (+ chain
-#      synthesis — PHASE 5-A 2026-10-31, the new ladder leader) ·
-#      groq browser_search · gemini googleSearch ladder (dormant arm).
-#      The openrouter web plugin is probed for DIAGNOSTICS ONLY (removed
-#      from the effective ladder — dead default model + paid plugin).
+#   1. Each grounded arm separately — exa search API (+ /contents
+#      full-text deepening + chain synthesis — PHASE 5-B 2026-10-31,
+#      the EN-ladder leader) · tavily search API (+ chain synthesis —
+#      PHASE 5-A, the AR-ladder leader / EN arm #2) · groq browser_search
+#      · gemini googleSearch ladder (dormant arm). The openrouter web
+#      plugin is probed for DIAGNOSTICS ONLY (removed from the effective
+#      ladder — dead default model + paid plugin).
 #      (NVIDIA: excluded by design — its chat API has no web-search
 #      tool; printed as such.)
-#   2. The end-to-end callGroundedSearch walk — THE failover verdict:
-#      green iff some provider answered with live-search evidence
-#      (the §6-أ ladder: tavily → groq → gemini dormant).
+#   1b. The Phase-4 §13-6 complementary measurement: ONE Exa search
+#      restricted to authority domains (includeDomains) — the result
+#      domains + honored share printed for human inspection (~$0.004).
+#   2. The end-to-end callGroundedSearch walk — TWICE, once per §6-أ
+#      language ladder (EN: exa → tavily → groq → gemini dormant · AR:
+#      tavily → groq → exa(EN-equivalent query) → gemini dormant).
+#      THE verdict: green iff EVERY walk got a live-search-grounded
+#      answer from some provider.
 #   3. The generation chain failover (P1/P2/P4-class — post-5-A the
 #      3-way rotation leads; gemini rides the tail slot).
 #   4. The quota-cooldown registry state (futile-repeat avoidance —
@@ -30,7 +37,7 @@ name: Grounded failover test (AI providers)
 #
 # Discipline (aws-ai-test precedent): prints provider/model names,
 # durations, statuses, evidence counts and short snippets ONLY — no
-# secret values, no personal data. Honest exit: 1 iff the end-to-end
+# secret values, no personal data. Honest exit: 1 iff an end-to-end
 # walk produced no grounded answer (per-arm failures are measurements
 # and never fatal).
 # ============================================================
@@ -60,9 +67,17 @@ jobs:
       AI_PROVIDER_COOLDOWN_MS: "1800000"
 
       # ── Provider keys (the EXISTING secrets — no new keys, owner law) ──
+      # EXA_API_KEY (PHASE 5-B 2026-10-31): the search-arm secret created
+      # by the owner for the Phase-3 live battery — now the FIRST arm of
+      # the §6-أ EN ladder and the third arm of the AR ladder (semantic
+      # search + optional /contents full-text deepening on the free
+      # $10/month recurring credit; NO card, NO paid service). Absent →
+      # the arm reports an honest configuration failure (never fatal — a
+      # measurement).
+      EXA_API_KEY: ${{ secrets.EXA_API_KEY }}
       # TAVILY_API_KEY (PHASE 5-A 2026-10-31): the search-arm secret created
-      # by the owner for the Phase-3 live battery — now the FIRST arm of the
-      # production §6-أ grounded-search ladder (free Researcher plan, basic
+      # by the owner for the Phase-3 live battery — the FIRST arm of the AR
+      # §6-أ ladder and second on EN (free Researcher plan, basic
       # search = 1 credit; NO paid service). Absent → the arm reports an
       # honest configuration failure (never fatal — a measurement).
       TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
@@ -99,7 +114,10 @@ jobs:
             echo "⚠ GEMINI_API_KEY absent — the dormant gemini arm will report a configuration failure (honest, not fatal)"
           fi
           if [ -z "$TAVILY_API_KEY" ]; then
-            echo "⚠ TAVILY_API_KEY absent — the tavily arm (ladder leader) will report a configuration failure (honest, not fatal)"
+            echo "⚠ TAVILY_API_KEY absent — the tavily arm (AR-ladder leader) will report a configuration failure (honest, not fatal)"
+          fi
+          if [ -z "$EXA_API_KEY" ]; then
+            echo "⚠ EXA_API_KEY absent — the exa arm (EN-ladder leader) will report a configuration failure (honest, not fatal)"
           fi
           if [ "$missing" -eq 1 ]; then
             echo "❌ Preflight failed — fix the secrets above and re-run."

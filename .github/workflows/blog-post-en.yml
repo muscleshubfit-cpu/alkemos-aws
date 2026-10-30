@@ -115,6 +115,19 @@ jobs:
       GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
       NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
 
+      # ── EXA SEARCH ARM (PHASE 5-B, owner order 2026-10-31 «دمج وتفعيل
+      #    Exa» — §10-ب) ──
+      # The FIRST arm of the §6-أ EN ladder (exa → tavily → groq → gemini
+      # dormant) and the THIRD arm of the AR ladder (searching with the
+      # English-equivalent query). The secret EXISTS in repo Actions secrets
+      # since the Phase-3 live battery; it is now consumed by the production
+      # blog P0 research (callExaSearch — semantic search + the optional
+      # /contents full-text deepening on the FREE $10/month recurring
+      # credit, NO card, NO paid service). Missing/empty → the arm fails
+      # honestly and the walk falls to tavily/groq (no preflight: an
+      # optional arm, exactly like the gemini tail).
+      EXA_API_KEY: ${{ secrets.EXA_API_KEY }}
+
       # ── TAVILY SEARCH ARM (PHASE 5-A, owner order 2026-10-31 — §10-أ) ──
       # The FIRST arm of the §6-أ grounded-search ladder (tavily → groq →
       # gemini dormant). The secret EXISTS in repo Actions secrets since the

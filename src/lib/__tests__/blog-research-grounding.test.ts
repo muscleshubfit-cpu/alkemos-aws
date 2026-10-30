@@ -118,20 +118,50 @@ describe("Phase 344/5-A — default gemini model 3.5-flash + the CANCELLED gemin
   });
 });
 
-describe("PHASE 5-A — blog-research passes the language + the appropriate search query (§10-أ)", () => {
-  it("the grounded call carries lang + the language-appropriate searchQuery for the Tavily arm", () => {
+describe("PHASE 5-A/5-B — blog-research passes the language + the appropriate search queries (§10-أ/§10-ب)", () => {
+  it("the grounded call carries lang + the language-appropriate searchQuery + the ENGLISH-equivalent query for the Exa arm", () => {
     expect(researchSrc).toContain("await callGroundedSearch(prompt, {");
     expect(researchSrc).toContain("lang,");
     expect(researchSrc).toContain(
       "searchQuery: lang === \"ar\" ? TAVILY_SEARCH_QUERY_AR : TAVILY_SEARCH_QUERY_EN,",
     );
+    // PHASE 5-B (§6-أ «Exa بالاستعلام الإنجليزي المكافئ"): the AR walk's
+    // exa arm searches in English — the P0 caller passes the equivalent.
+    expect(researchSrc).toContain("searchQueryEn: TAVILY_SEARCH_QUERY_EN,");
     expect(researchSrc).toContain("const TAVILY_SEARCH_QUERY_AR =");
     expect(researchSrc).toContain("const TAVILY_SEARCH_QUERY_EN =");
   });
 
-  it("the §6-أ ladder comment names the new arm order (tavily → groq → gemini dormant; OR removed)", () => {
-    expect(researchSrc).toContain("tavily search API → groq browser_search → gemini");
+  it("the §6-أ ladder comment names the FINAL language-split arm order (EN exa-first · AR tavily-first; OR removed)", () => {
+    expect(researchSrc).toContain("exa(search API) → tavily → groq(browser_search) → gemini");
+    expect(researchSrc).toContain("tavily → groq → exa WITH THE");
+    expect(researchSrc).toContain("ENGLISH-EQUIVALENT QUERY");
     expect(researchSrc).toContain("REMOVED from");
     expect(researchSrc).toContain("the effective ladder");
+  });
+
+  it("PHASE 5-B — the §6-أ full-text deepening rides the bundle with the researchDepth stamp", () => {
+    // the artifact carries the optional fields…
+    expect(researchSrc).toContain('researchDepth?: "full-text" | "snippets";');
+    expect(researchSrc).toContain("fullText?: GroundedFullTextPage[];");
+    // …attached AUTHORITATIVELY from the grounded arm result (never model
+    // JSON echoes):
+    expect(researchSrc).toContain("if (researchDepth) data.researchDepth = researchDepth;");
+    expect(researchSrc).toContain("if (fullText && fullText.length > 0) data.fullText = fullText;");
+  });
+});
+
+describe("PHASE 5-B — researchDigest passes the full text with the researchDepth stamp (§10-ب)", () => {
+  it("the digest renders the DEEP EVIDENCE block when fullText is present, stamped researchDepth", () => {
+    expect(pipelineSrc).toContain("RESEARCH DEPTH:");
+    expect(pipelineSrc).toContain("FULL TEXT of the top");
+    expect(pipelineSrc).toContain("extracted live");
+    expect(pipelineSrc).toContain("p.text.slice(0, 1_200)");
+  });
+
+  it("legacy/snippets-only rows stay byte-identical (the §6-أ soft law: a failed deepening = a normal bundle)", () => {
+    // the deep block is conditional on fullText presence — nothing else in
+    // the digest changed:
+    expect(pipelineSrc).toContain('const deep = (r.fullText ?? []).length');
   });
 });

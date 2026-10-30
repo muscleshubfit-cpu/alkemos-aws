@@ -910,14 +910,34 @@ export async function callGeminiGroundedSearch(
  *  "tavily" — the search-API arm answers under its own id while `model`
  *  names the SYNTHESIS model that produced the text (Tavily itself is a
  *  search/extraction API, never a generator — the Phase-4 §5 provider
- *  law). */
-export type GroundedSearchArmProvider = AIProvider | "tavily";
+ *  law). PHASE 5-B (owner order 2026-10-31 «دمج وتفعيل Exa»): `provider`
+ *  widens again to "exa", and the §6-أ optional full-text deepening adds
+ *  two OPTIONAL fields — `researchDepth` ("full-text" when the bundle
+ *  carries extracted page text, "snippets" otherwise) and `fullText`
+ *  (the top ≤3 deepened pages). The core contract (text + live-URL
+ *  sources + provider/model traceability) is UNCHANGED — the extras are
+ *  absent for every legacy arm answer and every snippets-only walk. */
+export type GroundedSearchArmProvider = AIProvider | "tavily" | "exa";
+
+/** One deepened page — the §6-أ optional extraction (Exa /contents primary,
+ *  Tavily Extract alternative): the page's live URL + its extracted full
+ *  text (capped). Rides the research bundle so P1/P2 prompts can ground
+ *  on REAL page text, never model memory. */
+export type GroundedFullTextPage = {
+  title: string;
+  url: string;
+  text: string;
+};
 
 export type GroundedSearchResult = {
   text: string;
   provider: GroundedSearchArmProvider;
   model: string;
   grounding: GeminiGrounding;
+  /** §6-أ stamp — "full-text" iff fullText below is non-empty. */
+  researchDepth?: "full-text" | "snippets";
+  /** §6-أ optional deepening — top ≤3 pages with extracted full text. */
+  fullText?: GroundedFullTextPage[];
 };
 
 /** Options for the cross-provider grounded search (PHASE 5-A, owner order
@@ -925,10 +945,16 @@ export type GroundedSearchResult = {
  *  arms (Tavily) need the caller's CONCISE search query — the research
  *  prompt itself is a generation brief, not a search string («تمرير
  *  الاستعلام المناسب» §10-أ); `lang` feeds the §6-أ language-split arm
- *  ladder (Phase B will lead EN with Exa). */
+ *  ladder. PHASE 5-B (Exa arm): `searchQueryEn` carries the ENGLISH-
+ *  equivalent query for ARABIC runs — the §6-أ law («Exa بالاستعلام
+ *  الإنجليزي المكافئ»): Exa's semantic map measured 2/40 Arabic results
+ *  (Phase 3), so the AR walk's Exa arm searches in English while the
+ *  synthesis stays Arabic. */
 export type GroundedSearchOptions = CallAIOptions & {
   /** Concise, language-appropriate REAL search query for search-API arms. */
   searchQuery?: string;
+  /** English-equivalent query for the Exa arm on Arabic runs (§6-أ). */
+  searchQueryEn?: string;
   /** Language of the research (§6-أ ladder split). */
   lang?: "ar" | "en";
 };
@@ -1110,6 +1136,7 @@ function mergeDedupedSources(...lists: GeminiGroundingSource[][]): GeminiGroundi
  * ─────────────────────────────────────────────────────────────────────── */
 
 const TAVILY_SEARCH_URL = "https://api.tavily.com/search";
+const TAVILY_EXTRACT_URL = "https://api.tavily.com/extract";
 /** Tavily's documented query cap — the fallback clip for arm callers that
  *  pass no dedicated searchQuery. */
 const TAVILY_QUERY_MAX_CHARS = 400;
@@ -1117,6 +1144,22 @@ const TAVILY_QUERY_MAX_CHARS = 400;
  *  synthesis payload while keeping real evidence depth (Phase-3 measured
  *  raw_content up to 22,155 chars per result — must be clipped). */
 const TAVILY_RAW_EXCERPT_CHARS = 1_200;
+
+/** §6-أ (Phase 5-B): how many top pages the optional full-text deepening
+ *  carries into the research bundle (Exa /contents measured shape: top 3
+ *  per query — 24/24 pages extracted in Phase 3). */
+const GROUNDED_FULLTEXT_PAGES = 3;
+/** §6-أ (Phase 5-B): per-page full-text cap riding the bundle (the design
+ *  text: "maxCharacters ~5000" — the Phase-3 /contents shape). Ops knob
+ *  EXA_CONTENTS_MAX_CHARS / TAVILY full-text clamp below share this cap. */
+const GROUNDED_FULLTEXT_PAGE_CHARS = 5_000;
+
+function getGroundedFullTextMaxChars(): number {
+  const raw = Number(process.env.EXA_CONTENTS_MAX_CHARS);
+  return Number.isFinite(raw) && raw >= 500 && raw <= 20_000
+    ? Math.floor(raw)
+    : GROUNDED_FULLTEXT_PAGE_CHARS;
+}
 
 /** TAVILY (Phase 5-A — search-arm key, the Phase-3 owner-created secret):
  * Researcher plan, free, no card. Consumed by callTavilySearch ONLY — it
@@ -1274,11 +1317,375 @@ ${prompt}`;
   console.log(
     `${LP} search ok (depth=${getTavilySearchDepth()}, results=${results.length}, sources=${sources.length}) → synthesis by ${synth.provider}/${synth.model}`,
   );
+  // PHASE 5-B (§6-أ optional deepening, ZERO extra network calls): the
+  // search response ALREADY carries each page's raw_content (the body
+  // asked include_raw_content:true since Phase 5-A — measured up to 22,155
+  // chars/page). The top ≤3 pages with raw text become the bundle's
+  // fullText and stamp researchDepth — "snippets" when no page carried
+  // raw text (honest stamp, never an article failure).
+  const fullText = results
+    .filter((r) => typeof r.raw_content === "string" && r.raw_content.trim().length > 0)
+    .slice(0, GROUNDED_FULLTEXT_PAGES)
+    .map((r) => ({
+      title: typeof r.title === "string" ? r.title.trim() : "",
+      url: typeof r.url === "string" ? r.url.trim() : "",
+      text: String(r.raw_content).trim().slice(0, getGroundedFullTextMaxChars()),
+    }))
+    .filter((p) => p.url.length > 0 && p.text.length > 0);
   return {
     text: synth.text,
     provider: "tavily",
     model: synth.model,
     grounding: { searchQueries: [query], sources },
+    researchDepth: fullText.length > 0 ? "full-text" : "snippets",
+    ...(fullText.length > 0 ? { fullText } : {}),
+  };
+}
+
+/* ───────────────────────────────────────────────────────────────────────
+ * ARM — EXA SEARCH API (PHASE 5-B, owner order 2026-10-31 «ابدأ المرحلة
+ * 5-ب: دمج وتفعيل Exa في منظومة البحث» — executing the Phase-4 §6-أ/§12-1
+ * approved language-split ladder's FINAL state: EN leads with Exa, AR
+ * reaches Exa third with the ENGLISH-equivalent query). Exa is a SEARCH /
+ * EXTRACTION provider, never a generator (the Phase-4 §5 provider law) —
+ * the arm composes the same TWO honest stages as the Tavily arm, plus the
+ * §6-أ/§12-2 optional full-text deepening:
+ *   (1) a REAL semantic search (POST api.exa.ai/search {query, numResults,
+ *       type:"auto"} — the Phase-3 LIVE-MEASURED shape: 8/8 ok, 80/80
+ *       results, 46% from the 14 authority domains, μ=529ms, ≈$0.056 per
+ *       full battery round of the FREE $10/month credit — no card, the
+ *       free-plan law);
+ *   (2) §6-أ OPTIONAL DEEPENING (never fails the article): Exa
+ *       /contents {ids: top-3 urls, text:{maxCharacters:5000}} — the
+ *       winning Phase-3 shape (24/24 pages, 115,318 chars) — with Tavily
+ *       /extract as the documented ALTERNATIVE extractor (1 credit per 5
+ *       URLs on the same free plan) when /contents fails. Failure of BOTH
+ *       = a snippets-only bundle stamped researchDepth:"snippets" (honest,
+ *       soft — the design law «فشل التعميق = حزمة عادية بلا نص كامل»);
+ *   (3) a research-JSON synthesis call on the ORDINARY generation chain
+ *       (callFreeAIFallbackChain — the rotation ladder) grounded on the
+ *       REAL snippets + the extracted full text in the prompt.
+ * THE AR→EN QUERY LAW (§6-أ «Exa بالاستعلام الإنجليزي المكافئ»): Exa's
+ * semantic map measured 2/40 Arabic results (Phase 3 — it maps Arabic
+ * queries onto the English science literature), so on ARABIC runs the arm
+ * searches with options.searchQueryEn (the English-equivalent query the
+ * P0 caller generates) while the synthesis stays Arabic. English runs use
+ * options.searchQuery directly.
+ * EVIDENCE GATE (law 344, identical to every arm): a 200 answer with ZERO
+ * usable result URLs is NOT research — honest failure, the walk moves to
+ * the next arm. Cooldown law: 429/402/401/403/404-class failures cool the
+ * `grounded:exa` scope for the window like every arm (an exhausted free
+ * $10/month credit is a quota-class failure — the walk falls to Tavily).
+ * ROLLBACK (§10-ب): remove "exa" from groundedArmOrder (one line) or stop
+ * passing EXA_API_KEY to the workflows — the key-absent arm fails honestly
+ * and the walk degrades to tavily/groq exactly as before the arm existed.
+ * NO paid service is ever called (the free $10/month recurring credit on
+ * the no-card plan; expected load ~$2–5/month per the Phase-4 §5-ج
+ * estimate — the owner's no-paid-service law).
+ * ─────────────────────────────────────────────────────────────────────── */
+
+const EXA_SEARCH_URL = "https://api.exa.ai/search";
+const EXA_CONTENTS_URL = "https://api.exa.ai/contents";
+/** Exa query clip for callers that pass no query at all (mirrors the
+ *  Tavily cap — a search query is a short string, not a research brief). */
+const EXA_QUERY_MAX_CHARS = 400;
+
+/** EXA (Phase 5-B — search-arm key, the Phase-3 owner-created secret): free
+ *  plan, $10/month recurring usage credit + $10 onboarding, no card, 10
+ *  QPS. Consumed by callExaSearch ONLY — never a generation provider,
+ *  never in the chains. */
+export function getExaKey(): string {
+  return process.env.EXA_API_KEY || "";
+}
+
+/** numResults ops knob (default 10 — the Phase-3 battery shape that
+ *  measured 80/80 results). */
+export function getExaNumResults(): number {
+  const raw = Number(process.env.EXA_NUM_RESULTS);
+  return Number.isFinite(raw) && raw >= 1 && raw <= 20 ? Math.floor(raw) : 10;
+}
+
+/** Per-page /contents cap (maxCharacters) — shared with the Tavily arm's
+ *  raw_content full-text clamp via getGroundedFullTextMaxChars (§6-أ
+ *  "maxCharacters ~5000"). */
+export function getExaContentsMaxChars(): number {
+  return getGroundedFullTextMaxChars();
+}
+
+/** Optional authority-domain restriction (comma-separated) — Exa officially
+ *  supports includeDomains (up to 1200 entries [رسمي]); the Phase-3
+ *  complementary live measurement rides the probe. EMPTY by default: the
+ *  discovery research query stays unrestricted exactly like the Tavily
+ *  arm's knob — the authority-domain law lives at the P4/P5 citation
+ *  gates where it belongs. */
+export function getExaIncludeDomains(): string[] {
+  return (process.env.EXA_INCLUDE_DOMAINS || "")
+    .split(",")
+    .map((d) => d.trim().toLowerCase())
+    .filter(Boolean);
+}
+
+/** §6-أ optional deepening — ONE Exa /contents call for the top URLs (the
+ *  Phase-3 winning shape {"ids": urls, "text": {"maxCharacters": N}}),
+ *  with Tavily /extract as the documented ALTERNATIVE extractor. Every
+ *  failure is SOFT: returns [] (a snippets-only bundle — never an article
+ *  failure). Never throws. */
+async function deepenFullText(
+  urls: string[],
+  titlesByUrl: Map<string, string>,
+  timeoutMs: number,
+  tag: string,
+): Promise<GroundedFullTextPage[]> {
+  if (urls.length === 0) return [];
+  const maxChars = getExaContentsMaxChars();
+  const capped = urls.slice(0, GROUNDED_FULLTEXT_PAGES);
+  const LP = `[exa-grounded:${tag}]`;
+
+  // (a) primary extractor — Exa /contents
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      const res = await fetch(EXA_CONTENTS_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-api-key": getExaKey() },
+        body: JSON.stringify({ ids: capped, text: { maxCharacters: maxChars } }),
+        signal: controller.signal,
+      });
+      if (!res.ok) {
+        const text = await res.text().catch(() => "");
+        console.warn(
+          `${LP} /contents HTTP ${res.status} — soft failure, trying the Tavily Extract alternative (§6-أ): ${text.slice(0, 160)}`,
+        );
+      } else {
+        const body = (await res.json()) as { results?: Array<Record<string, unknown>> };
+        const pages = (body.results ?? [])
+          .map((r) => ({
+            title: typeof r.title === "string" ? r.title.trim() : "",
+            url: typeof r.url === "string" ? r.url.trim() : "",
+            text: typeof r.text === "string" ? r.text.trim() : "",
+          }))
+          .filter((p) => p.url.length > 0 && p.text.length > 0)
+          .map((p) => ({
+            title: p.title || titlesByUrl.get(p.url) || "",
+            url: p.url,
+            text: p.text.slice(0, maxChars),
+          }));
+        if (pages.length > 0) {
+          console.log(`${LP} full-text deepening ok via exa /contents (${pages.length}/${capped.length} pages)`);
+          return pages.slice(0, GROUNDED_FULLTEXT_PAGES);
+        }
+        console.warn(`${LP} /contents 200 with zero usable pages — soft failure, trying the Tavily Extract alternative (§6-أ)`);
+      }
+    } finally {
+      clearTimeout(timer);
+    }
+  } catch (e) {
+    console.warn(
+      `${LP} /contents transport error — soft failure, trying the Tavily Extract alternative (§6-أ): ${e instanceof Error ? e.message.slice(0, 160) : String(e)}`,
+    );
+  }
+
+  // (b) the documented ALTERNATIVE extractor — Tavily /extract (1 credit
+  //     per 5 URLs on the same free Researcher plan; only when the key is
+  //     present and the tavily arm isn't cooled — a cooled tavily is a
+  //     drained quota we must not poke for an OPTIONAL step).
+  const tavilyKey = getTavilyKey();
+  if (!tavilyKey || cooldownState("grounded:tavily")) {
+    console.warn(`${LP} Tavily Extract alternative unavailable (${!tavilyKey ? "no key" : "tavily arm cooled"}) — snippets-only bundle (researchDepth:"snippets")`);
+    return [];
+  }
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      const res = await fetch(TAVILY_EXTRACT_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${tavilyKey}` },
+        body: JSON.stringify({ urls: capped }),
+        signal: controller.signal,
+      });
+      if (!res.ok) {
+        const text = await res.text().catch(() => "");
+        console.warn(`${LP} Tavily Extract HTTP ${res.status} — soft failure: ${text.slice(0, 160)}`);
+        return [];
+      }
+      const body = (await res.json()) as { results?: Array<Record<string, unknown>> };
+      const pages = (body.results ?? [])
+        .map((r) => ({
+          title: titlesByUrl.get(String(r.url ?? "")) ?? "",
+          url: typeof r.url === "string" ? r.url.trim() : "",
+          text: typeof r.raw_content === "string" ? r.raw_content.trim() : "",
+        }))
+        .filter((p) => p.url.length > 0 && p.text.length > 0)
+        .map((p) => ({ ...p, text: p.text.slice(0, maxChars) }));
+      if (pages.length > 0) {
+        console.log(`${LP} full-text deepening ok via the Tavily Extract alternative (${pages.length}/${capped.length} pages)`);
+        return pages.slice(0, GROUNDED_FULLTEXT_PAGES);
+      }
+      console.warn(`${LP} Tavily Extract 200 with zero usable pages — snippets-only bundle (researchDepth:"snippets")`);
+      return [];
+    } finally {
+      clearTimeout(timer);
+    }
+  } catch (e) {
+    console.warn(
+      `${LP} Tavily Extract transport error — soft failure: ${e instanceof Error ? e.message.slice(0, 160) : String(e)}`,
+    );
+    return [];
+  }
+}
+
+export async function callExaSearch(
+  prompt: string,
+  options: GroundedSearchOptions = {},
+): Promise<GroundedSearchResult> {
+  const key = getExaKey();
+  if (!key) {
+    throw new Error(
+      "callExaSearch: EXA_API_KEY is not configured — the Exa search arm is unavailable, and no simulated/curated substitute is allowed (owner order 2026-10-06).",
+    );
+  }
+  const LP = "[exa-grounded]" + (options.tag ? ` [${options.tag}]` : "");
+  const cdScope = "grounded:exa";
+  const cd = cooldownState(cdScope);
+  if (cd) {
+    throw new Error(
+      `callExaSearch: quota-cooldown until ${new Date(cd.until).toISOString()} — skipped, no call made (${cd.reason.slice(0, 120)})`,
+    );
+  }
+  // THE AR→EN QUERY LAW (§6-أ): English runs use searchQuery; Arabic runs
+  // use the English-equivalent query (Exa measured 2/40 Arabic results —
+  // its semantic map answers Arabic intents with the ENGLISH science
+  // literature); the no-query fallback clips the prompt like Tavily.
+  const query =
+    (options.lang === "ar"
+      ? ((options.searchQueryEn || options.searchQuery || "").trim() ||
+        prompt.replace(/\s+/g, " ").trim().slice(0, EXA_QUERY_MAX_CHARS))
+      : ((options.searchQuery || "").trim() ||
+        prompt.replace(/\s+/g, " ").trim().slice(0, EXA_QUERY_MAX_CHARS)));
+  if (query.length === 0) {
+    throw new Error(
+      "callExaSearch: empty search query (searchQuery/searchQueryEn option or prompt) — honest failure, no call made",
+    );
+  }
+  if (options.lang === "ar" && !options.searchQueryEn && !options.searchQuery) {
+    console.warn(
+      `${LP} Arabic run with NO searchQueryEn — falling back to the prompt clip (Exa's semantic map is English-first; pass the English-equivalent query for best quality)`,
+    );
+  }
+
+  const includeDomains = getExaIncludeDomains();
+  const timeoutMs = options.timeoutMs ?? 60_000;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  let body: Record<string, unknown>;
+  try {
+    const res = await fetch(EXA_SEARCH_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-api-key": key },
+      body: JSON.stringify({
+        query,
+        numResults: getExaNumResults(),
+        type: "auto",
+        ...(includeDomains.length > 0 ? { includeDomains } : {}),
+      }),
+      signal: controller.signal,
+    });
+    if (!res.ok) {
+      const text = await res.text().catch(() => "");
+      const msg = `Exa /search HTTP ${res.status}: ${text.slice(0, 300)}`;
+      const cls = classifyForCooldown(msg);
+      if (cls) markCooldown(cdScope, `${cls}: ${msg.slice(0, 120)}`);
+      throw new Error(`callExaSearch: ${msg}`);
+    }
+    body = (await res.json()) as Record<string, unknown>;
+  } finally {
+    clearTimeout(timer);
+  }
+
+  // EVIDENCE EXTRACTION — the live result URLs ARE this arm's evidence
+  // (the Phase-3 measured response shape: results[] {url,title,text,
+  // publishedDate,author}).
+  const results = Array.isArray(body.results)
+    ? (body.results as Array<Record<string, unknown>>)
+    : [];
+  const sources = mergeDedupedSources(
+    results.map((r) => ({
+      title: typeof r.title === "string" ? r.title.trim() : "",
+      url: typeof r.url === "string" ? r.url.trim() : "",
+    })),
+  );
+  // THE LIVE-EVIDENCE GATE (law 344): a 200 answer with zero usable URLs
+  // is NOT research — honest failure; the walk moves to the next arm.
+  if (sources.length === 0) {
+    throw new Error(
+      `callExaSearch: Exa answered 200 with ZERO usable result URLs (results=${results.length}) — fails the live-evidence gate (law 344); no substitute allowed`,
+    );
+  }
+
+  // §6-أ OPTIONAL DEEPENING — full text for the top ≤3 result pages (Exa
+  // /contents primary, Tavily Extract alternative; soft on every failure).
+  const titlesByUrl = new Map(
+    results
+      .filter((r) => typeof r.url === "string" && typeof r.title === "string")
+      .map((r) => [String(r.url).trim(), String(r.title).trim()]),
+  );
+  const fullText = await deepenFullText(
+    sources.map((s) => s.url),
+    titlesByUrl,
+    Math.min(timeoutMs, 60_000),
+    options.tag || "grounded",
+  );
+
+  // SYNTHESIS — the research JSON is generated on the ORDINARY chain,
+  // grounded on the REAL search results + the extracted full text below
+  // (never model memory alone: every URL the model may cite is in the
+  // prompt, and the arm's own grounding.sources come from the Exa
+  // response, not the model).
+  const fullTextByUrl = new Map(fullText.map((p) => [p.url, p.text]));
+  const resultsBlock = results
+    .map((r, i) => {
+      const title = typeof r.title === "string" ? r.title.trim() : "";
+      const url = typeof r.url === "string" ? r.url.trim() : "";
+      const snippet = typeof r.text === "string" ? r.text.trim() : "";
+      const published = typeof r.publishedDate === "string" ? r.publishedDate.trim() : "";
+      const deep = fullTextByUrl.get(url);
+      const deepBlock = deep
+        ? `\n   full_text (extracted live via Exa /contents): ${deep.slice(0, TAVILY_RAW_EXCERPT_CHARS)}`
+        : "";
+      return `${i + 1}. ${title}${published ? ` (${published})` : ""}\n   url: ${url}\n   snippet: ${snippet.slice(0, 600)}${deepBlock}`;
+    })
+    .join("\n");
+  const synthesisPrompt = `REAL LIVE WEB SEARCH RESULTS (fetched just now via the Exa semantic search API — query: "${query}") — these are your EVIDENCE BASE; model memory alone is NOT acceptable as the evidence base:
+${resultsBlock}
+
+NOTE: you have NO live-search tool in this call — the search results above ARE the live-search evidence (do not claim to use a search tool; ground every keyword/FAQ/topic judgment on the results above).
+
+${prompt}`;
+  const synthesisTag = `${options.tag || "grounded"}:exa-synth`;
+  const synth = await callFreeAIFallbackChain(synthesisPrompt, {
+    tag: synthesisTag,
+    systemPrompt:
+      options.systemPrompt ??
+      "You are a strict JSON API endpoint. The user message describes the research task; your ENTIRE response MUST be a single valid JSON object matching the requested schema — no prose, no markdown, no commentary, no code fences. The JSON object starts with { and ends with }.",
+    temperature: options.temperature ?? 0.7,
+    maxTokens: options.maxTokens ?? 2_500,
+    // The search (+ optional extraction) already spent part of the caller's
+    // window; the synthesis chain gets the remainder (its own ≤52s/GHA-600s
+    // budget law still clamps per-model timeouts internally).
+    timeoutMs: Math.max(timeoutMs - (fullText.length > 0 ? 10_000 : 5_000), 20_000),
+  });
+  console.log(
+    `${LP} search ok (numResults=${getExaNumResults()}, results=${results.length}, sources=${sources.length}, fullText=${fullText.length}/${GROUNDED_FULLTEXT_PAGES}) → synthesis by ${synth.provider}/${synth.model}`,
+  );
+  return {
+    text: synth.text,
+    provider: "exa",
+    model: synth.model,
+    grounding: { searchQueries: [query], sources },
+    researchDepth: fullText.length > 0 ? "full-text" : "snippets",
+    ...(fullText.length > 0 ? { fullText } : {}),
   };
 }
 
@@ -1809,19 +2216,22 @@ export async function callGroqGroundedSearch(
 
 /**
  * THE CROSS-PROVIDER GROUNDED SEARCH (owner order 2026-10-16; ladder
- * RE-ORDERED by PHASE 5-A owner order 2026-10-31 — executing the Phase-4
- * §6-أ/§12-1 approved design, the §10-أ frame): real-search arms in fixed
- * failover order —
- *   1. Tavily search API (REAL search on its own credits + chain
- *      synthesis — independent of LLM quotas; AR-first per the measured
- *      10/11 Arabic win)
- *   2. Groq `browser_search` built-in tool (REAL live web walk, citations
- *      — GROQ-2 2026-10-17, the compound successor)
- *   3. Gemini native googleSearch — DORMANT LAST arm (0/114 grounded
- *      successes over three measured weeks: grounding is unavailable on
- *      the current free tier; the cooldown registry makes re-trying it
- *      cheap). Ops knob: GEMINI_GROUNDED_ENABLED=0 removes it from the
- *      walk without a deploy (the §6-أ owner kill-switch).
+ * RE-ORDERED by PHASE 5-A owner order 2026-10-31, FINAL language-split
+ * state completed by PHASE 5-B owner order 2026-10-31 «دمج وتفعيل Exa» —
+ * executing the Phase-4 §6-أ/§12-1 approved design): real-search arms in
+ * MEASURED, task-appropriate failover order split by language —
+ *   • ENGLISH walk (exa → tavily → groq → gemini dormant):
+ *     Exa leads on the measured EN evidence quality (80/80 results · 46%
+ *     authority domains · μ=529ms — Phase 3), then Tavily, then groq
+ *     browser_search, then the dormant gemini arm.
+ *   • ARABIC walk (tavily → groq → exa → gemini dormant):
+ *     Tavily leads on the measured AR relevance (10/11 Arabic results vs
+ *     Exa's 2/40 — Phase 3), groq browser_search second, then Exa WITH
+ *     THE ENGLISH-EQUIVALENT QUERY (§6-أ — its semantic map answers
+ *     Arabic intents with the English science literature), gemini last.
+ *   Every position is a MEASURED task-type/efficiency/availability call —
+ *   NO provider holds a forced priority (the owner's no-forced-priority
+ *   law); quota-class failures cool an arm and the walk moves on.
  *   The OpenRouter `web` plugin arm was REMOVED from the effective ladder
  *   (P0-2: default model dead 404 + plugin bills credits 402 — two live
  *   proofs); its code stays above for direct diagnostics only.
@@ -1832,18 +2242,34 @@ export async function callGroqGroundedSearch(
  * error naming every arm's state. The AR/EN pairing, workflow, and all
  * gates live ABOVE this layer (blog-research) and are untouched.
  */
-export type GroundedArmId = "tavily" | "groq" | "gemini";
+export type GroundedArmId = "exa" | "tavily" | "groq" | "gemini";
 
-/** The effective arm ladder — language-split per §6-أ. PHASE 5-A ships
- *  the Tavily arm FIRST for BOTH languages (AR-first per the measured
- *  Arabic win; EN rides Tavily until Phase B lands Exa as the EN leader
- *  — the lang parameter is plumbed NOW so Phase B changes the ORDER
- *  only, never the contract). GEMINI_GROUNDED_ENABLED=0 drops the
- *  dormant gemini tail arm (deploy-free rollback, §6-أ). */
+/** The effective arm ladder — language-split per §6-أ (the Phase-4
+ *  approved FINAL state, landed by Phase 5-B): EN leads with the Exa
+ *  semantic-search arm (measured 80/80 results · 46% authority · μ=529ms),
+ *  AR leads with Tavily (measured 10/11 Arabic results vs Exa's 2/40) and
+ *  reaches Exa THIRD with the English-equivalent query. A lang-less
+ *  caller gets the EN order (the research JSON contract is English-keyed
+ *  by construction — the same default the probe rides). Ops knobs:
+ *  GEMINI_GROUNDED_ENABLED=0 drops the dormant gemini tail arm;
+ *  GROUNDED_ARM_ORDER overrides the whole walk without a deploy (comma
+ *  subset of exa,tavily,groq,gemini — diagnostics/rollback).
+ *  THE NO-FORCED-PRIORITY LAW: every slot above is a measured
+ *  efficiency/availability/quota/task-type decision and every arm fails
+ *  over honestly — no provider is pinned by decree (owner order
+ *  2026-10-31 «لا أولوية إجبارية لمزود بعينه»). */
 export function groundedArmOrder(lang?: "ar" | "en"): GroundedArmId[] {
-  void lang; // Phase B: "en" will lead with the exa arm (§6-أ final state)
-  const geminiEnabled = process.env.GEMINI_GROUNDED_ENABLED !== "0";
-  return geminiEnabled ? ["tavily", "groq", "gemini"] : ["tavily", "groq"];
+  const geminiTail: GroundedArmId[] =
+    process.env.GEMINI_GROUNDED_ENABLED === "0" ? [] : ["gemini"];
+  const override = (process.env.GROUNDED_ARM_ORDER || "")
+    .split(",")
+    .map((a) => a.trim().toLowerCase())
+    .filter((a): a is GroundedArmId =>
+      a === "exa" || a === "tavily" || a === "groq" || a === "gemini");
+  if (override.length > 0) return override;
+  return lang === "ar"
+    ? (["tavily", "groq", "exa", ...geminiTail] as GroundedArmId[])
+    : (["exa", "tavily", "groq", ...geminiTail] as GroundedArmId[]);
 }
 
 export async function callGroundedSearch(
@@ -1857,11 +2283,13 @@ export async function callGroundedSearch(
     const arm = arms[i];
     try {
       const r =
-        arm === "tavily"
-          ? await callTavilySearch(prompt, options)
-          : arm === "groq"
-            ? await callGroqGroundedSearch(prompt, options)
-            : await callGeminiGroundedSearch(prompt, options);
+        arm === "exa"
+          ? await callExaSearch(prompt, options)
+          : arm === "tavily"
+            ? await callTavilySearch(prompt, options)
+            : arm === "groq"
+              ? await callGroqGroundedSearch(prompt, options)
+              : await callGeminiGroundedSearch(prompt, options);
       if (armFailures.length > 0) {
         console.warn(
           `[grounded-search] ${arm} answered after ${armFailures.length} earlier arm failure(s)`,
@@ -1883,8 +2311,14 @@ export async function callGroundedSearch(
   // «توليد عادي» the owner forbade as a search substitute.
 
   const cds = activeCooldowns();
+  const ladder =
+    process.env.GROUNDED_ARM_ORDER
+      ? `custom (GROUNDED_ARM_ORDER=${process.env.GROUNDED_ARM_ORDER})`
+      : options.lang === "ar"
+        ? "tavily(search API) → groq(browser_search) → exa(search API, EN-equivalent query)"
+        : "exa(search API) → tavily(search API) → groq(browser_search)";
   throw new Error(
-    `callGroundedSearch: every grounded-search arm failed — tavily(search API) → groq(browser_search)${
+    `callGroundedSearch: every grounded-search arm failed — ladder ${ladder}${
       process.env.GEMINI_GROUNDED_ENABLED === "0"
         ? " [gemini dormant arm DISABLED via GEMINI_GROUNDED_ENABLED=0]"
         : " → gemini(googleSearch, dormant last arm)"

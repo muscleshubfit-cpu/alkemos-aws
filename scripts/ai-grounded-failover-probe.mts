@@ -1,7 +1,10 @@
 /**
  * scripts/ai-grounded-failover-probe.mts — LIVE provider-failover probe
  * (BLOG-PROVIDER-FAILOVER 2026-10-16, owner order «اختبر التبديل الفعلي»;
- * PHASE 5-A 2026-10-31 — the Tavily search arm joins the probe).
+ * PHASE 5-A 2026-10-31 — the Tavily search arm joins the probe;
+ * PHASE 5-B 2026-10-31 — the Exa search arm joins + the language-split
+ * ladders are BOTH walked live + the §13-6 includeDomains complementary
+ * measurement).
  *
  * Dispatch-only measuring instrument (grounded-failover-test.yml) — the
  * same discipline as aws-ai-test/gsc-connection-test: REAL calls against
@@ -11,21 +14,26 @@
  *
  * WHAT IT MEASURES (in order):
  *   1. Each grounded-search arm SEPARATELY with a tiny real prompt —
- *      tavily search API (+ chain synthesis) · groq browser_search
+ *      exa search API (+ /contents full-text deepening + chain synthesis)
+ *      · tavily search API (+ chain synthesis) · groq browser_search
  *      (GROQ-2: the compound-successor tool) · gemini googleSearch ladder
  *      (dormant — 0/114 measured). Per arm: PASS/FAIL, model, HTTP status
- *      class, live-evidence counts (searchQueries/sources), latency, and
- *      the failure message when red. The openrouter web arm is probed for
- *      DIAGNOSTICS ONLY (it was removed from the effective ladder — dead
- *      default model 404 + paid plugin 402, P0-2) and a 402/404 there is
- *      an expected measurement, never a verdict input.
+ *      class, live-evidence counts (searchQueries/sources/fullText pages),
+ *      latency, and the failure message when red. The openrouter web arm
+ *      is probed for DIAGNOSTICS ONLY (it was removed from the effective
+ *      ladder — dead default model 404 + paid plugin 402, P0-2) and a
+ *      402/404 there is an expected measurement, never a verdict input.
  *      (NVIDIA is NOT probed for grounding: its OpenAI-compatible chat API
  *      has no web-search tool — excluded by design, documented honestly.)
- *   2. The CROSS-PROVIDER end-to-end call callGroundedSearch() — the actual
- *      failover walk (the §6-أ ladder: tavily → groq → gemini dormant).
- *      With the cooldown registry ON, arms that failed with quota-class
- *      errors in step 1 are SKIPPED here (the "avoid futile repeats" law,
- *      demonstrated live).
+ *   1b. The Phase-4 §13-6 complementary measurement (cheap, ~$0.004):
+ *      ONE Exa search restricted to authority domains (includeDomains) —
+ *      prints the result domains + the honored share for human inspection.
+ *   2. The CROSS-PROVIDER end-to-end walk callGroundedSearch() — TWICE,
+ *      once per §6-أ language ladder (EN: exa → tavily → groq → gemini
+ *      dormant · AR: tavily → groq → exa(EN-equivalent query) → gemini
+ *      dormant). With the cooldown registry ON, arms that failed with
+ *      quota-class errors in step 1 are SKIPPED here (the "avoid futile
+ *      repeats" law, demonstrated live).
  *   3. The generation chain callFreeAIFallbackChain() — provider failover
  *      for P1/P2/P4-class calls (post-5-A: the 3-way rotation leads;
  *      gemini rides the TAIL slot).
@@ -37,15 +45,15 @@
  * per-arm evidence counts (sources/searchQueries) are the quality-visible
  * part of the verdict.
  *
- * EXIT LAW (honest): exit 0 iff the end-to-end callGroundedSearch returned
- * a REAL grounded answer from SOME provider (the failover works — someone
- * answered with live-search evidence). Per-arm failures are MEASUREMENTS
- * (printed, never fatal); the end-to-end failure is the only red exit —
+ * EXIT LAW (honest): exit 0 iff EVERY end-to-end walk returned a REAL
+ * grounded answer from SOME provider (both §6-أ ladders work — the
+ * language split is production behavior). Per-arm failures are
+ * MEASUREMENTS (printed, never fatal); an end-to-end failure is red —
  * that is exactly "the failover did not produce a working search path".
  *
  * Usage (GitHub Actions runner, secrets in env):
  *   npx --no-install tsx scripts/ai-grounded-failover-probe.mts
- * Env: TAVILY_API_KEY GEMINI_API_KEY [GEMINI_API_KEY2]
+ * Env: EXA_API_KEY TAVILY_API_KEY GEMINI_API_KEY [GEMINI_API_KEY2]
  *      OPENROUTER_API [OPENROUTER_API_KEY] GROQ_API_KEY NVIDIA_API_KEY
  *      AI_PROVIDER_COOLDOWN_MS (recommended 1800000 — demonstrates the
  *      cooldown skip live) [AI_PROVIDER_COOLDOWN=0 to disable]
@@ -56,12 +64,14 @@ import {
   callOpenRouterGroundedSearch,
   callGroqGroundedSearch,
   callTavilySearch,
+  callExaSearch,
   callGroundedSearch,
   callFreeAIFallbackChain,
   getGeminiGroundedKeys,
   getOpenRouterKeys,
   getOpenRouterGroundedModel,
   getTavilyKey,
+  getExaKey,
 } from "../src/lib/ai-provider";
 import {
   activeCooldowns,
@@ -71,10 +81,17 @@ import {
 const PROBE_PROMPT =
   "What is the current World Health Organization guidance on weekly physical activity for adults? Answer in 2-3 short sentences and ground your answer on the live web sources you find.";
 
-/** The concise REAL search query for the Tavily arm (§10-أ — the research
- * prompt itself is a generation brief, not a search string). */
+/** The concise REAL search query for the search-API arms (§10-أ — the
+ * research prompt itself is a generation brief, not a search string). */
 const PROBE_SEARCH_QUERY =
   "current WHO guidance weekly physical activity adults";
+
+/** The ARABIC twin for the §6-أ AR-ladder walk (Phase 5-B: both language
+ * ladders are measured live — production runs them split by language). */
+const PROBE_PROMPT_AR =
+  "ما إرشادات منظمة الصحة العالمية الحالية للنشاط البدني الأسبوعي للبالغين؟ أجب في جملتين قصيرتين مستندًا إلى مصادر الويب الحية التي تجدها.";
+const PROBE_SEARCH_QUERY_AR =
+  "إرشادات منظمة الصحة العالمية للنشاط البدني الأسبوعي للبالغين";
 
 const ARM_OPTS = {
   tag: "failover-probe",
@@ -95,7 +112,7 @@ function maskKeys(count: number): string {
 
 async function probeArm(
   label: string,
-  fn: () => Promise<{ provider: string; model: string; text: string; grounding: { searchQueries: string[]; sources: { url: string; title: string }[] } }>,
+  fn: () => Promise<{ provider: string; model: string; text: string; researchDepth?: string; fullText?: { url: string; text: string }[]; grounding: { searchQueries: string[]; sources: { url: string; title: string }[] } }>,
 ): Promise<boolean> {
   const t0 = Date.now();
   try {
@@ -104,7 +121,7 @@ async function probeArm(
     console.log(`ARM ${label}: PASS`);
     console.log(`  provider/model : ${r.provider}:${r.model}`);
     console.log(`  latency_ms     : ${ms(t0)}`);
-    console.log(`  evidence       : searchQueries=${r.grounding.searchQueries.length} sources=${r.grounding.sources.length}`);
+    console.log(`  evidence       : searchQueries=${r.grounding.searchQueries.length} sources=${r.grounding.sources.length}${r.researchDepth ? ` researchDepth=${r.researchDepth}` : ""}${r.fullText ? ` fullTextPages=${r.fullText.length} fullTextChars=${r.fullText.reduce((n, p) => n + p.text.length, 0)}` : ""}`);
     for (const s of r.grounding.sources.slice(0, 3)) {
       console.log(`    - ${s.url}${s.title ? ` (${s.title.slice(0, 60)})` : ""}`);
     }
@@ -115,6 +132,55 @@ async function probeArm(
     console.log(`ARM ${label}: FAIL (${ms(t0)}ms)`);
     console.log(`  error          : ${msg.replace(/\s+/g, " ").slice(0, 500)}`);
     return false;
+  }
+}
+
+/** PHASE 5-B — the Phase-4 §13-6 complementary measurement (cheap ~$0.004):
+ *  ONE REAL Exa search with includeDomains restricted to a few of the 14
+ *  authority domains, printing every result domain + the honored share —
+ *  Exa's includeDomains behavior was never measured (Phase 3 tested
+ *  Tavily's only) and the Phase-4 plan requires it before the EN arm
+ *  merges. Public data only; a FAIL is a measurement, never fatal. */
+async function probeExaIncludeDomains(): Promise<void> {
+  const key = getExaKey();
+  if (!key) {
+    console.log("EXA includeDomains probe: SKIPPED — no EXA_API_KEY");
+    return;
+  }
+  const authority = ["nih.gov", "who.int", "mayoclinic.org"];
+  const t0 = Date.now();
+  try {
+    const res = await fetch("https://api.exa.ai/search", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-api-key": key },
+      body: JSON.stringify({
+        query: PROBE_SEARCH_QUERY,
+        numResults: 5,
+        type: "auto",
+        includeDomains: authority,
+      }),
+    });
+    const bodyText = await res.text();
+    if (!res.ok) {
+      console.log(`EXA includeDomains probe: FAIL — HTTP ${res.status}: ${bodyText.slice(0, 200)}`);
+      return;
+    }
+    const j = JSON.parse(bodyText) as { results?: Array<{ url?: string; title?: string }> };
+    const results = j.results ?? [];
+    const domains = results.map((r) => {
+      try {
+        return r.url ? new URL(r.url).hostname.replace(/^www\./, "") : "(no-url)";
+      } catch {
+        return "(bad-url)";
+      }
+    });
+    const honored = domains.filter((d) => authority.some((a) => d === a || d.endsWith(`.${a}`))).length;
+    console.log(`EXA includeDomains probe: ${res.status} — ${results.length} results in ${ms(t0)}ms`);
+    console.log(`  restricted to : ${authority.join(", ")}`);
+    console.log(`  result domains: ${domains.join(" · ") || "NONE"}`);
+    console.log(`  honored share : ${honored}/${results.length}${results.length > 0 ? ` (${Math.round((100 * honored) / results.length)}%)` : ""}`);
+  } catch (e) {
+    console.log(`EXA includeDomains probe: FAIL — ${e instanceof Error ? e.message.slice(0, 200) : String(e)}`);
   }
 }
 
@@ -341,8 +407,8 @@ async function dumpGroqBrowserResponse(): Promise<void> {
 }
 
 async function main(): Promise<void> {
-  console.log("=== AI GROUNDED-FAILOVER LIVE PROBE (BLOG-PROVIDER-FAILOVER 2026-10-16 · GROQ-2 2026-10-17 · PHASE 5-A TAVILY 2026-10-31) ===");
-  console.log(`env: tavily=${getTavilyKey() ? "configured" : "MISSING"} · gemini keys=${maskKeys(getGeminiGroundedKeys().length)} · openrouter keys=${maskKeys(getOpenRouterKeys().length)} · groq=${process.env.GROQ_API_KEY ? "configured" : "MISSING"} · nvidia=${process.env.NVIDIA_API_KEY ? "configured" : "MISSING"} · cooldown=${process.env.AI_PROVIDER_COOLDOWN_MS || "off"}`);
+  console.log("=== AI GROUNDED-FAILOVER LIVE PROBE (BLOG-PROVIDER-FAILOVER 2026-10-16 · GROQ-2 2026-10-17 · PHASE 5-A TAVILY 2026-10-31 · PHASE 5-B EXA 2026-10-31) ===");
+  console.log(`env: exa=${getExaKey() ? "configured" : "MISSING"} · tavily=${getTavilyKey() ? "configured" : "MISSING"} · gemini keys=${maskKeys(getGeminiGroundedKeys().length)} · openrouter keys=${maskKeys(getOpenRouterKeys().length)} · groq=${process.env.GROQ_API_KEY ? "configured" : "MISSING"} · nvidia=${process.env.NVIDIA_API_KEY ? "configured" : "MISSING"} · cooldown=${process.env.AI_PROVIDER_COOLDOWN_MS || "off"}`);
   console.log("");
 
   // ── 0) GROQ-2 response-shape dump FIRST (TPM window still fresh) ────
@@ -351,10 +417,26 @@ async function main(): Promise<void> {
   console.log("");
 
   // ── 1) Per-arm probes (each is a REAL search call) ──────────────────
-  console.log("--- [1/4] Per-arm grounded probes ---");
-  // PHASE 5-A: the tavily search arm leads the probe exactly as it leads
-  // the production §6-أ ladder. Tavily key absent → an honest SKIPPED line
-  // (never a crash) — the e2e walk below reports the same gap.
+  console.log("--- [1/4] Per-arm grounded probes (the EN-ladder order: exa → tavily → groq → gemini) ---");
+  // PHASE 5-B: the exa search arm leads the probe exactly as it leads the
+  // production §6-أ EN ladder (search → optional /contents deepening →
+  // chain synthesis). Exa key absent → an honest SKIPPED line (never a
+  // crash) — the e2e walks below report the same gap.
+  let exaOk = false;
+  if (getExaKey()) {
+    exaOk = await probeArm("exa search API (+ /contents deepening + chain synthesis)", () =>
+      callExaSearch(PROBE_PROMPT, {
+        ...ARM_OPTS,
+        tag: "failover-probe:exa",
+        lang: "en",
+        searchQuery: PROBE_SEARCH_QUERY,
+      }),
+    );
+  } else {
+    console.log("ARM exa search API: SKIPPED — no EXA_API_KEY (honest config gap)");
+  }
+  console.log("");
+  // PHASE 5-A: the tavily search arm (the AR-ladder leader; EN arm #2).
   let tavilyOk = false;
   if (getTavilyKey()) {
     tavilyOk = await probeArm("tavily search API (+ chain synthesis)", () =>
@@ -385,29 +467,53 @@ async function main(): Promise<void> {
   console.log("");
   console.log("ARM NVIDIA NIM: EXCLUDED-BY-DESIGN (no web-search tool in its OpenAI-compatible chat API — an ungrounded answer would violate the real-search law; NVIDIA stays a generation-chain provider)");
   console.log("");
-  // ── 1b) SELF-DIAGNOSIS on arm failures (permanent instrument value:
+  // ── 1b) The Phase-4 §13-6 complementary measurement (Exa includeDomains)
+  console.log("--- [1b/4] Exa includeDomains complementary probe (§13-6, ~$0.004) ---");
+  await probeExaIncludeDomains();
+  console.log("");
+  // ── 1c) SELF-DIAGNOSIS on arm failures (permanent instrument value:
   // live shapes/ids drift — the probe NAMES them instead of guessing)
   if (!orOk) await diagnoseOrWebShape();
   if (!groqOk) await diagnoseGroqModels();
   console.log("");
 
 
-  // ── 2) The end-to-end cross-provider failover walk ──────────────────
-  console.log("--- [2/4] End-to-end callGroundedSearch (the actual failover — §6-أ ladder: tavily → groq → gemini dormant) ---");
-  let e2eOk = false;
+  // ── 2) The end-to-end cross-provider failover walks (BOTH §6-أ ladders)
+  console.log("--- [2/4] End-to-end callGroundedSearch ×2 (the §6-أ language split: EN exa→tavily→groq→gemini · AR tavily→groq→exa(EN query)→gemini) ---");
+  let e2eEnOk = false;
   const t0 = Date.now();
   try {
     const r = await callGroundedSearch(PROBE_PROMPT, {
       ...ARM_OPTS,
-      tag: "failover-probe:e2e",
+      tag: "failover-probe:e2e-en",
+      lang: "en",
       searchQuery: PROBE_SEARCH_QUERY,
     });
-    console.log(`E2E FAILover: PASS — ${r.provider}:${r.model} answered with live-search evidence (${ms(t0)}ms, sources=${r.grounding.sources.length})`);
+    console.log(`E2E EN FAILover: PASS — ${r.provider}:${r.model} answered with live-search evidence (${ms(t0)}ms, sources=${r.grounding.sources.length}${r.researchDepth ? `, depth=${r.researchDepth}` : ""})`);
     console.log(`  answer_sample  : ${r.text.replace(/\s+/g, " ").slice(0, 160)}`);
-    e2eOk = true;
+    e2eEnOk = true;
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
-    console.log(`E2E FAILover: FAIL (${ms(t0)}ms) — no provider produced a grounded answer`);
+    console.log(`E2E EN FAILover: FAIL (${ms(t0)}ms) — no provider produced a grounded answer on the EN ladder`);
+    console.log(`  error          : ${msg.replace(/\s+/g, " ").slice(0, 800)}`);
+  }
+  console.log("");
+  let e2eArOk = false;
+  const t1 = Date.now();
+  try {
+    const r = await callGroundedSearch(PROBE_PROMPT_AR, {
+      ...ARM_OPTS,
+      tag: "failover-probe:e2e-ar",
+      lang: "ar",
+      searchQuery: PROBE_SEARCH_QUERY_AR,
+      searchQueryEn: PROBE_SEARCH_QUERY,
+    });
+    console.log(`E2E AR FAILover: PASS — ${r.provider}:${r.model} answered with live-search evidence (${ms(t1)}ms, sources=${r.grounding.sources.length}${r.researchDepth ? `, depth=${r.researchDepth}` : ""})`);
+    console.log(`  answer_sample  : ${r.text.replace(/\s+/g, " ").slice(0, 160)}`);
+    e2eArOk = true;
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    console.log(`E2E AR FAILover: FAIL (${ms(t1)}ms) — no provider produced a grounded answer on the AR ladder`);
     console.log(`  error          : ${msg.replace(/\s+/g, " ").slice(0, 800)}`);
   }
   console.log("");
@@ -445,18 +551,20 @@ async function main(): Promise<void> {
   // ── Summary + honest exit ───────────────────────────────────────────
   console.log("");
   console.log("=== PROBE SUMMARY ===");
-  console.log(`arm tavily      : ${tavilyOk ? "PASS" : getTavilyKey() ? "FAIL" : "SKIPPED-no-key"}`);
-  console.log(`arm groq        : ${groqOk ? "PASS" : "FAIL"}`);
-  console.log(`arm gemini      : ${geminiOk ? "PASS" : "FAIL (dormant arm — expected red while the free tier has no grounding)"}`);
-  console.log(`arm openrouter  : ${orOk ? "PASS (off-ladder diagnostics)" : "FAIL (off-ladder diagnostics — expected: dead default model + paid plugin)"}`);
-  console.log(`arm nvidia      : EXCLUDED-BY-DESIGN (no grounded-search capability)`);
-  console.log(`e2e failover    : ${e2eOk ? "PASS (some provider returned a REAL grounded answer)" : "FAIL (no grounded answer from any arm)"}`);
+  console.log(`arm exa        : ${exaOk ? "PASS" : getExaKey() ? "FAIL" : "SKIPPED-no-key"}`);
+  console.log(`arm tavily     : ${tavilyOk ? "PASS" : getTavilyKey() ? "FAIL" : "SKIPPED-no-key"}`);
+  console.log(`arm groq       : ${groqOk ? "PASS" : "FAIL"}`);
+  console.log(`arm gemini     : ${geminiOk ? "PASS" : "FAIL (dormant arm — expected red while the free tier has no grounding)"}`);
+  console.log(`arm openrouter : ${orOk ? "PASS (off-ladder diagnostics)" : "FAIL (off-ladder diagnostics — expected: dead default model + paid plugin)"}`);
+  console.log(`arm nvidia     : EXCLUDED-BY-DESIGN (no grounded-search capability)`);
+  console.log(`e2e EN ladder  : ${e2eEnOk ? "PASS (some provider returned a REAL grounded answer on exa→tavily→groq→gemini)" : "FAIL (no grounded answer from any arm on the EN ladder)"}`);
+  console.log(`e2e AR ladder  : ${e2eArOk ? "PASS (some provider returned a REAL grounded answer on tavily→groq→exa→gemini)" : "FAIL (no grounded answer from any arm on the AR ladder)"}`);
   console.log(`cooldowns active: ${cds.length}`);
-  if (!e2eOk) {
-    console.log("PROBE VERDICT: RED — the cross-provider failover produced no working real-search path (see arm errors above; per-arm states are measurements, the e2e walk is the verdict).");
+  if (!e2eEnOk || !e2eArOk) {
+    console.log(`PROBE VERDICT: RED — ${!e2eEnOk ? "the EN ladder" : ""}${!e2eEnOk && !e2eArOk ? " and " : ""}${!e2eArOk ? "the AR ladder" : ""} produced no working real-search path (see arm errors above; per-arm states are measurements, the e2e walks are the verdict).`);
     process.exit(1);
   }
-  console.log("PROBE VERDICT: GREEN — the failover works: a provider answered with live-search evidence.");
+  console.log("PROBE VERDICT: GREEN — the failover works on BOTH §6-أ language ladders: a provider answered with live-search evidence on each walk.");
 }
 
 main().catch((e: unknown) => {

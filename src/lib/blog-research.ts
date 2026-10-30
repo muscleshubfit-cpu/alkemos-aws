@@ -44,6 +44,7 @@
  * Output is stored on the queue row inside `article_bundle.research0`.
  */
 import { callGroundedSearch, parseJSON } from "./ai-provider";
+import type { GroundedFullTextPage } from "./ai-provider";
 import {
   getRecentPostsByLanguage,
   getRecentGeneratedTopics,
@@ -69,6 +70,15 @@ export type LanguageResearch = {
    *  and downstream prompts stay byte-identical for them. */
   searchedQueries?: string[];
   sources?: ResearchSource[];
+  /** PHASE 5-B (§6-أ/§12-2 optional deepening): "full-text" when the
+   *  bundle carries extracted page text for the top results (Exa
+   *  /contents or Tavily raw_content), "snippets" otherwise. Optional →
+   *  legacy rows and snippets-only walks stay byte-identical. */
+  researchDepth?: "full-text" | "snippets";
+  /** PHASE 5-B: the top ≤3 deepened pages (live URL + extracted text,
+   *  capped) — attached AUTHORITATIVELY from the grounded arm result like
+   *  searchedQueries/sources (model JSON echoes never fabricate them). */
+  fullText?: GroundedFullTextPage[];
 };
 
 export type Phase0Result = {
@@ -475,28 +485,34 @@ Return STRICT JSON only, no markdown fences:
   "topics":   [ "..." ]   // exactly 5 specific, non-generic article topic suggestions NOT overlapping with the recent titles above; EACH must target a long-tail keyword above; VARY the article types across the 5 (guide / myth-busting / comparison / step-by-step plan / science deep-dive); suggestions must differ from the recent coverage at the SEARCH-INTENT and ANGLE level (different reader goal, not just different wording)
 }`;
 
-  // PHASE 344 + BLOG-PROVIDER-FAILOVER 2026-10-16 + PHASE 5-A 2026-10-31:
-  // the REAL grounded call — now a CROSS-PROVIDER failover walk in the
-  // §6-أ ladder order (tavily search API → groq browser_search → gemini
-  // googleSearch dormant-last; the openrouter web arm was REMOVED from
-  // the effective ladder — dead default model + paid plugin, P0-2).
+  // PHASE 344 + BLOG-PROVIDER-FAILOVER 2026-10-16 + PHASE 5-A 2026-10-31 +
+  // PHASE 5-B 2026-10-31 (Exa arm — the §6-أ FINAL language-split ladder):
+  // the REAL grounded call — a CROSS-PROVIDER failover walk where ENGLISH
+  // leads with exa(search API) → tavily → groq(browser_search) → gemini
+  // dormant, and ARABIC leads with tavily → groq → exa WITH THE
+  // ENGLISH-EQUIVALENT QUERY (§6-أ) — the openrouter web arm was REMOVED from
+  // the effective ladder (dead default model + paid plugin, P0-2).
   // NVIDIA honestly excluded — no grounded-search capability. The Tavily
-  // arm receives the LANGUAGE-APPROPRIATE concise search query + the lang
-  // (the §10-أ «تمرير الاستعلام المناسب» law) while every LLM arm keeps
-  // the full research prompt below. jsonMode is intentionally omitted: the
-  // gemini arm suppresses the JSON mime-type with tools anyway (REST
-  // rejects JSON-mode + tool use), so the STRICT-JSON instruction above +
-  // the 161.5-hardened parseJSON carry the contract (the Groq Phase 177
-  // pattern). GROQ-2 (2026-10-17, live run 39062486597): a systemPrompt
-  // now reinforces the STRICT-JSON law — the measured failure was the EN
-  // research answering in PROSE (no JSON object anywhere in the text)
-  // while the twin AR call parsed perfectly; the system channel is the
-  // strongest instruction location for agentic browser_search models.
+  // arm receives the LANGUAGE-APPROPRIATE concise search query; the Exa
+  // arm receives the same on EN runs and the ENGLISH EQUIVALENT
+  // (searchQueryEn) on AR runs — its semantic map measured 2/40 Arabic
+  // results (Phase 3) («تمرير الاستعلام المناسب» §10-أ/§10-ب) — while
+  // every LLM arm keeps the full research prompt below. jsonMode is
+  // intentionally omitted: the gemini arm suppresses the JSON mime-type
+  // with tools anyway (REST rejects JSON-mode + tool use), so the
+  // STRICT-JSON instruction above + the 161.5-hardened parseJSON carry
+  // the contract (the Groq Phase 177 pattern). GROQ-2 (2026-10-17, live
+  // run 39062486597): a systemPrompt now reinforces the STRICT-JSON law —
+  // the measured failure was the EN research answering in PROSE (no JSON
+  // object anywhere in the text) while the twin AR call parsed perfectly;
+  // the system channel is the strongest instruction location for agentic
+  // browser_search models.
   try {
-    const { text, model, grounding, provider } = await callGroundedSearch(prompt, {
+    const { text, model, grounding, provider, researchDepth, fullText } = await callGroundedSearch(prompt, {
       tag: "blog:research",
       lang,
       searchQuery: lang === "ar" ? TAVILY_SEARCH_QUERY_AR : TAVILY_SEARCH_QUERY_EN,
+      searchQueryEn: TAVILY_SEARCH_QUERY_EN,
       systemPrompt:
         "You are a strict JSON API endpoint. The user message describes the research task; your ENTIRE response MUST be a single valid JSON object matching the requested schema — no prose, no markdown, no commentary, no code fences. The JSON object starts with { and ends with }.",
       temperature: 0.7,
@@ -519,7 +535,13 @@ Return STRICT JSON only, no markdown fences:
       // (real queries + real result pages) — model JSON never fabricates it.
       data.searchedQueries = grounding.searchQueries;
       data.sources = grounding.sources;
-      console.log(`[blog-research] P0 ${lang} done (${provider}:${model} [grounded], kw:${data.keywords.length} faq:${data.faqs.length} topics:${data.topics.length} queries:${grounding.searchQueries.length} sources:${grounding.sources.length})`);
+      // PHASE 5-B (§6-أ/§12-2): the optional full-text deepening rides the
+      // bundle (top ≤3 pages + the researchDepth stamp) so P1's digest can
+      // ground the outline on REAL page text. Absent on snippets-only
+      // walks and legacy arms — the artifact simply lacks the fields.
+      if (researchDepth) data.researchDepth = researchDepth;
+      if (fullText && fullText.length > 0) data.fullText = fullText;
+      console.log(`[blog-research] P0 ${lang} done (${provider}:${model} [grounded], kw:${data.keywords.length} faq:${data.faqs.length} topics:${data.topics.length} queries:${grounding.searchQueries.length} sources:${grounding.sources.length}${researchDepth ? ` depth:${researchDepth}` : ""}${fullText && fullText.length ? ` fullText:${fullText.length}` : ""})`);
       return { data, source: `${provider}:${model}` };
     }
     // GROQ-2 diagnosis (2026-10-17): print the raw answer sample on an

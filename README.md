@@ -317,7 +317,7 @@ ledger-based — `src/lib/refund.ts`).
 | UI | React 19 · Tailwind CSS 4 · shadcn/ui |
 | Language | TypeScript 5 (strict) |
 | Database | Supabase — Postgres, Auth, Storage, Row Level Security |
-| AI | OpenRouter + Groq + NVIDIA NIM + Gemini + the Tavily search arm, one unified layer (`src/lib/ai-provider.ts`) |
+| AI | OpenRouter + Groq + NVIDIA NIM + Gemini + the Tavily and Exa search arms, one unified layer (`src/lib/ai-provider.ts`) |
 | Payments | PayPal + manual review |
 | Email | Brevo REST API |
 | Charts | Recharts (lazy-loaded) |
@@ -410,9 +410,13 @@ both chains as an ordinary tail entry — the Gemini-first priority law was
 cancelled by owner order 2026-10-31, so the three-way lead rotation spreads
 load across providers on every call) — offering sequential
 strongest-model chains, a `Promise.any` race mode for fast swaps, and SSE
-streaming for chat. Blog research rides a real-search arm ladder
-(Tavily search API → Groq browser_search → a dormant Gemini grounding arm)
-where every arm must return live URL evidence. Every sequential path is
+streaming for chat. Blog research rides a real-search arm ladder split by
+language (English: Exa semantic search → Tavily → Groq browser_search → a
+dormant Gemini grounding arm; Arabic: Tavily → Groq → Exa with the
+English-equivalent query), where every arm must return live URL evidence
+and the optional full-text deepening (Exa /contents with Tavily Extract as
+the alternative) never fails an article — no provider holds a forced
+priority (owner order 2026-10-31). Every sequential path is
 budget-clamped so `maxModels × timeoutMs` never exceeds ~52s (the
 serverless limit), and long-running generation (the blog pipeline, queued
 AI jobs) runs on GitHub Actions runners instead of serverless functions.

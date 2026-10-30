@@ -86,7 +86,14 @@ export const LANG_RULE: Record<"en" | "ar", string> = EDITORIAL_LANG_RULE;
  *  PHASE 344 (owner order «تدخل نتائج البحث الفعلية في عملية توليد
  *  المقال»): the REAL Google-Search evidence (searchedQueries + grounded
  *  result pages) rides the digest into the P1 outline prompt — empty for
- *  pre-344 bundle rows, whose digest stays byte-identical to before. */
+ *  pre-344 bundle rows, whose digest stays byte-identical to before.
+ *  PHASE 5-B (§10-ب «تمرير النص الكامل عند توفره بختم researchDepth»):
+ *  when the bundle carries the §6-أ optional full-text deepening (Exa
+ *  /contents or Tavily raw_content — top ≤3 pages), the digest appends a
+ *  DEEP EVIDENCE block with each page's live URL + a clipped excerpt of
+ *  its REAL extracted text, stamped with researchDepth. Absent → the
+ *  digest stays byte-identical to before (legacy rows and snippets-only
+ *  walks — the §6-أ law «فشل التعميق = حزمة عادية بلا نص كامل»). */
 function researchDigest(r: LanguageResearch): string {
   const kws = r.keywords.map((k) => `${k.keyword} (${k.searchVolume || "?"})`).join("; ");
   const faqs = r.faqs.map((f) => `Q: ${f.question}`).join(" | ");
@@ -96,7 +103,12 @@ function researchDigest(r: LanguageResearch): string {
   const srcs = (r.sources ?? []).length
     ? `\nTOP LIVE SEARCH RESULTS (real pages the research grounded on — title + URL):\n${(r.sources ?? []).slice(0, 8).map((s) => `- ${s.title || "(untitled)"} — ${s.url}`).join("\n")}`
     : "";
-  return `KEYWORDS: ${kws}\nCOMMON QUESTIONS: ${faqs}${queries}${srcs}`;
+  // PHASE 5-B — the §6-أ optional deepening: REAL page text (clipped per
+  // page to bound the P1 payload) grounds the outline's factual baseline.
+  const deep = (r.fullText ?? []).length
+    ? `\nRESEARCH DEPTH: ${r.researchDepth ?? "full-text"} — FULL TEXT of the top ${(r.fullText ?? []).length} evidence pages (extracted live — use their actual findings/numbers as the factual baseline, never model memory):\n${(r.fullText ?? []).map((p) => `- ${p.title || "(untitled)"} — ${p.url}\n  excerpt: ${p.text.slice(0, 1_200)}`).join("\n")}`
+    : "";
+  return `KEYWORDS: ${kws}\nCOMMON QUESTIONS: ${faqs}${queries}${srcs}${deep}`;
 }
 
 // ═══════════════════════════════════════════════════════════════

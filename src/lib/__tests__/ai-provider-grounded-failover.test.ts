@@ -5,9 +5,11 @@ import {
   callOpenRouterGroundedSearch,
   callGroqGroundedSearch,
   callTavilySearch,
+  callExaSearch,
   callFreeAIFallbackChain,
   groundedArmOrder,
   getTavilyKey,
+  getExaKey,
   __resetChainRotationForTests,
 } from "@/lib/ai-provider";
 import {
@@ -74,6 +76,11 @@ const ENV_KEYS = [
   "TAVILY_SEARCH_DEPTH",
   "TAVILY_MAX_RESULTS",
   "TAVILY_INCLUDE_DOMAINS",
+  "EXA_API_KEY",
+  "EXA_NUM_RESULTS",
+  "EXA_CONTENTS_MAX_CHARS",
+  "EXA_INCLUDE_DOMAINS",
+  "GROUNDED_ARM_ORDER",
   "AI_PROVIDER_COOLDOWN_MS",
   "AI_PROVIDER_COOLDOWN",
   "AI_COOLDOWN_STATE_FILE",
@@ -171,6 +178,60 @@ const TAVILY_SEARCH_OK = {
       score: 0.91,
     },
   ],
+};
+
+/** Exa /search success — the LIVE-MEASURED Phase-3 shape (run 41075269014):
+ *  results[] of {url,title,text,publishedDate,author} (score absent in
+ *  type:"auto" mode — measured). */
+const EXA_SEARCH_OK = {
+  results: [
+    {
+      title: "International Society of Sports Nutrition Position Stand: protein and exercise",
+      url: "https://pmc.ncbi.nlm.nih.gov/articles/PMC1234567",
+      text: "Protein intake of 1.6-2.2 g/kg body weight supports muscle hypertrophy and recovery.",
+      publishedDate: "2025-11-06",
+      author: "ISSN",
+    },
+    {
+      title: "Effect of creatine supplementation on kidney function",
+      url: "https://pubmed.ncbi.nlm.nih.gov/22150333",
+      text: "A systematic review and meta-analysis of creatine safety.",
+      publishedDate: "2025-10-02",
+      author: "PubMed",
+    },
+  ],
+};
+
+/** Exa /contents success — the Phase-3 WINNING shape {ids, text:{maxCharacters}}
+ *  (24/24 pages extracted): results[] of {url,title?,text}. */
+const EXA_CONTENTS_OK = {
+  results: [
+    {
+      url: "https://pmc.ncbi.nlm.nih.gov/articles/PMC1234567",
+      text: "FULL PAGE TEXT: The International Society of Sports Nutrition recommends 1.6-2.2 grams of protein per kilogram for building muscle.",
+    },
+    {
+      url: "https://pubmed.ncbi.nlm.nih.gov/22150333",
+      text: "FULL PAGE TEXT: Creatine is safe for healthy adults.",
+    },
+  ],
+};
+
+/** Tavily /extract success (the §6-أ ALTERNATIVE extractor): results[] of
+ *  {url,raw_content}. */
+const TAVILY_EXTRACT_OK = {
+  results: [
+    {
+      url: "https://pmc.ncbi.nlm.nih.gov/articles/PMC1234567",
+      raw_content: "EXTRACTED VIA TAVILY: 1.6-2.2 g/kg daily protein for hypertrophy.",
+    },
+  ],
+};
+
+/** Exa quota/credit exhaustion body (the free $10/month credit drained —
+ *  the search-arm analog of TAVILY_CREDITS_429). */
+const EXA_CREDITS_429 = {
+  detail: "Usage limit reached. Monthly free credits exhausted.",
 };
 
 const OR_WEB_OK = {
@@ -271,12 +332,15 @@ type FetchLog = { url: string; auth?: string; body?: Record<string, unknown> };
 type RouteResult = { ok: boolean; status: number; payload: unknown };
 type Route = (url: string, auth: string) => RouteResult;
 
-/** Route by URL + auth header; records every call (url, auth, body). */
+/** Route by URL + auth headers; records every call (url, auth, body). */
 function stubRoutingFetch(log: FetchLog[], route: Route) {
   const fake = vi.fn(async (url: string, init?: RequestInit) => {
     const headers = new Headers(init?.headers);
     const auth =
-      headers.get("x-goog-api-key") || headers.get("authorization") || "";
+      headers.get("x-goog-api-key") ||
+      headers.get("x-api-key") ||
+      headers.get("authorization") ||
+      "";
     log.push({ url, auth, body: JSON.parse(String(init?.body)) as Record<string, unknown> });
     const r = route(String(url), auth);
     return {
@@ -304,6 +368,9 @@ function nvidiaUrl(url: string): boolean {
 function tavilyUrl(url: string): boolean {
   return url.includes("api.tavily.com");
 }
+function exaUrl(url: string): boolean {
+  return url.includes("api.exa.ai");
+}
 
 /** The §10-أ search query blog-research passes to the tavily arm. */
 const SEARCH_QUERY =
@@ -313,17 +380,31 @@ const SEARCH_QUERY =
  * 0. The §6-أ ladder shape (PHASE 5-A order canary)
  * ══════════════════════════════════════════════════════════════════════ */
 
-describe("PHASE 5-A — the §6-أ grounded-arm ladder (order canary)", () => {
-  it("default order: tavily → groq → gemini (dormant last arm)", () => {
-    expect(groundedArmOrder()).toEqual(["tavily", "groq", "gemini"]);
-    expect(groundedArmOrder("ar")).toEqual(["tavily", "groq", "gemini"]);
-    expect(groundedArmOrder("en")).toEqual(["tavily", "groq", "gemini"]); // Phase B leads EN with exa
+describe("PHASE 5-A/5-B — the §6-أ grounded-arm ladder (order canary)", () => {
+  it("EN order: exa → tavily → groq → gemini (dormant last) — the Phase-4 approved FINAL state, landed by Phase 5-B", () => {
+    expect(groundedArmOrder("en")).toEqual(["exa", "tavily", "groq", "gemini"]);
+    // a lang-less caller gets the EN order (the research JSON contract is
+    // English-keyed by construction — the documented default)
+    expect(groundedArmOrder()).toEqual(["exa", "tavily", "groq", "gemini"]);
+  });
+
+  it("AR order: tavily → groq → exa (EN-equivalent query) → gemini — the §6-أ language split", () => {
+    expect(groundedArmOrder("ar")).toEqual(["tavily", "groq", "exa", "gemini"]);
   });
 
   it("GEMINI_GROUNDED_ENABLED=0 drops the dormant gemini arm (deploy-free §6-أ kill-switch)", () => {
     process.env.GEMINI_GROUNDED_ENABLED = "0";
-    expect(groundedArmOrder()).toEqual(["tavily", "groq"]);
-    expect(groundedArmOrder("ar")).toEqual(["tavily", "groq"]);
+    expect(groundedArmOrder()).toEqual(["exa", "tavily", "groq"]);
+    expect(groundedArmOrder("ar")).toEqual(["tavily", "groq", "exa"]);
+    expect(groundedArmOrder("en")).toEqual(["exa", "tavily", "groq"]);
+  });
+
+  it("GROUNDED_ARM_ORDER overrides the whole walk without a deploy (ops/rollback knob); an invalid value falls back to the built-in ladder", () => {
+    process.env.GROUNDED_ARM_ORDER = " tavily , gemini ";
+    expect(groundedArmOrder()).toEqual(["tavily", "gemini"]);
+    expect(groundedArmOrder("ar")).toEqual(["tavily", "gemini"]);
+    process.env.GROUNDED_ARM_ORDER = "nonsense,,";
+    expect(groundedArmOrder()).toEqual(["exa", "tavily", "groq", "gemini"]);
   });
 });
 
@@ -589,11 +670,13 @@ describe("cross-provider walk — tavily quota drain moves to groq browser_searc
   });
 
   it("every ladder arm fails → ONE honest aggregate error; the openrouter web arm NEVER receives a call (off-ladder); NVIDIA never receives a call", async () => {
+    process.env.EXA_API_KEY = "exa-test-key";
     process.env.TAVILY_API_KEY = "tvly-test-key";
     process.env.GROQ_API_KEY = "gsk-test-key";
     process.env.GEMINI_API_KEY = "AIza-test-key";
     const log: FetchLog[] = [];
     stubRoutingFetch(log, (url) => {
+      if (exaUrl(url)) return { ok: false, status: 429, payload: EXA_CREDITS_429 };
       if (tavilyUrl(url)) return { ok: false, status: 429, payload: TAVILY_CREDITS_429 };
       if (groqUrl(url)) return { ok: false, status: 429, payload: GROQ_TPD_429 };
       return { ok: false, status: 429, payload: QUOTA_429 };
@@ -601,6 +684,7 @@ describe("cross-provider walk — tavily quota drain moves to groq browser_searc
 
     const err = (await callGroundedSearch("research").catch((e: Error) => e)) as Error;
     expect(err.message).toContain("every grounded-search arm failed");
+    expect(err.message).toContain("exa(search API)");
     expect(err.message).toContain("tavily(search API)");
     expect(err.message).toContain("groq(browser_search)");
     expect(err.message).toContain("gemini(googleSearch, dormant last arm)");
@@ -608,16 +692,17 @@ describe("cross-provider walk — tavily quota drain moves to groq browser_searc
     expect(err.message).toContain("NVIDIA NIM has no grounded-search capability");
     expect(err.message).toContain("no simulated/curated substitute");
     expect(err.message).toContain("AI API error 429");
-    // 1 tavily + 2 groq ladder + 3 gemini ladder = 6 REAL attempts; the
-    // off-ladder OR arm and the excluded NVIDIA make ZERO calls.
-    expect(log).toHaveLength(6);
+    // 1 exa + 1 tavily + 2 groq ladder + 3 gemini ladder = 7 REAL attempts;
+    // the off-ladder OR arm and the excluded NVIDIA make ZERO calls.
+    expect(log).toHaveLength(7);
     expect(log.some((c) => orUrl(c.url) || nvidiaUrl(c.url))).toBe(false);
   });
 
-  it("no keys configured → the aggregate names every ladder arm's configuration error (tavily + groq + gemini)", async () => {
+  it("no keys configured → the aggregate names every ladder arm's configuration error (exa + tavily + groq + gemini)", async () => {
     const log: FetchLog[] = [];
     stubRoutingFetch(log, () => ({ ok: true, status: 200, payload: OR_WEB_OK }));
     const err = (await callGroundedSearch("research").catch((e: Error) => e)) as Error;
+    expect(err.message).toContain("EXA_API_KEY is not configured");
     expect(err.message).toContain("TAVILY_API_KEY is not configured");
     expect(err.message).toContain("GROQ_API_KEY is not configured");
     expect(err.message).toContain("GEMINI_API_KEY is not configured");
@@ -864,6 +949,349 @@ describe("PHASE 5-A — the Tavily search arm (REAL search + chain synthesis)", 
     const longPrompt = "A".repeat(1000);
     await callTavilySearch(longPrompt, { tag: "probe" });
     expect(log[0].body?.query).toBe("A".repeat(400));
+  });
+});
+
+/* ══════════════════════════════════════════════════════════════════════
+ * 1b-b. PHASE 5-B — the Exa search arm (callExaSearch: REAL semantic
+ *       search + OPTIONAL /contents full-text deepening + chain synthesis)
+ * ══════════════════════════════════════════════════════════════════════ */
+
+describe("PHASE 5-B — the Exa search arm (REAL search + optional deepening + chain synthesis)", () => {
+  it("the search body: the caller's searchQuery, numResults 10, type auto (the Phase-3 measured shape), x-api-key auth, NO includeDomains by default", async () => {
+    process.env.EXA_API_KEY = "exa-test-key";
+    process.env.OPENROUTER_API = "sk-or-test-key";
+    const log: FetchLog[] = [];
+    stubRoutingFetch(log, (url) => {
+      if (exaUrl(url) && url.includes("/search")) return { ok: true, status: 200, payload: EXA_SEARCH_OK };
+      if (exaUrl(url) && url.includes("/contents")) return { ok: true, status: 200, payload: EXA_CONTENTS_OK };
+      return { ok: true, status: 200, payload: CHAIN_RESEARCH_JSON };
+    });
+
+    await callExaSearch("the full research brief", {
+      tag: "blog:research",
+      searchQuery: SEARCH_QUERY,
+    });
+
+    const search = log.find((c) => exaUrl(c.url) && c.url.includes("/search"))?.body ?? {};
+    expect(search.query).toBe(SEARCH_QUERY);
+    expect(search.numResults).toBe(10);
+    expect(search.type).toBe("auto");
+    expect(search.includeDomains).toBeUndefined(); // unrestricted discovery default
+    expect(log.find((c) => exaUrl(c.url))?.auth).toBe("exa-test-key"); // the x-api-key header
+  });
+
+  it("the /contents deepening call: ids = top-3 result URLs, text.maxCharacters = 5000 (the Phase-3 WINNING shape)", async () => {
+    process.env.EXA_API_KEY = "exa-test-key";
+    process.env.OPENROUTER_API = "sk-or-test-key";
+    const log: FetchLog[] = [];
+    stubRoutingFetch(log, (url) => {
+      if (exaUrl(url) && url.includes("/search")) return { ok: true, status: 200, payload: EXA_SEARCH_OK };
+      if (exaUrl(url) && url.includes("/contents")) return { ok: true, status: 200, payload: EXA_CONTENTS_OK };
+      return { ok: true, status: 200, payload: CHAIN_RESEARCH_JSON };
+    });
+
+    const out = await callExaSearch("the full research brief", { searchQuery: SEARCH_QUERY });
+
+    const contents = log.find((c) => exaUrl(c.url) && c.url.includes("/contents"))?.body ?? {};
+    expect(contents.ids).toEqual([
+      "https://pmc.ncbi.nlm.nih.gov/articles/PMC1234567",
+      "https://pubmed.ncbi.nlm.nih.gov/22150333",
+    ]);
+    expect(contents.text).toEqual({ maxCharacters: 5_000 });
+    // the §6-أ stamp + pages ride the arm result:
+    expect(out.researchDepth).toBe("full-text");
+    expect(out.fullText?.map((p) => p.url)).toEqual([
+      "https://pmc.ncbi.nlm.nih.gov/articles/PMC1234567",
+      "https://pubmed.ncbi.nlm.nih.gov/22150333",
+    ]);
+    expect(out.fullText?.[0].text).toContain("FULL PAGE TEXT");
+    // 3 REAL calls total: search + contents + ONE synthesis chain call.
+    expect(log).toHaveLength(3);
+  });
+
+  it("the synthesis prompt CONTAINS the real search URLs + snippets + the EXTRACTED FULL TEXT (grounding proof — never model memory alone)", async () => {
+    process.env.EXA_API_KEY = "exa-test-key";
+    process.env.OPENROUTER_API = "sk-or-test-key";
+    const log: FetchLog[] = [];
+    stubRoutingFetch(log, (url) => {
+      if (exaUrl(url) && url.includes("/search")) return { ok: true, status: 200, payload: EXA_SEARCH_OK };
+      if (exaUrl(url) && url.includes("/contents")) return { ok: true, status: 200, payload: EXA_CONTENTS_OK };
+      return { ok: true, status: 200, payload: CHAIN_RESEARCH_JSON };
+    });
+
+    await callExaSearch("the full research brief", {
+      searchQuery: SEARCH_QUERY,
+      systemPrompt: "You are a strict JSON API endpoint.",
+    });
+
+    const synth = log.find((c) => orUrl(c.url));
+    expect(synth).toBeDefined();
+    const messages = JSON.stringify(synth?.body?.messages);
+    // BOTH live URLs ride the synthesis prompt (the evidence base):
+    expect(messages).toContain("https://pmc.ncbi.nlm.nih.gov/articles/PMC1234567");
+    expect(messages).toContain("https://pubmed.ncbi.nlm.nih.gov/22150333");
+    // …the snippet + the published date + the EXTRACTED full-text excerpt:
+    expect(messages).toContain("1.6-2.2 g/kg");
+    expect(messages).toContain("2025-11-06");
+    expect(messages).toContain("FULL PAGE TEXT");
+    expect(messages).toContain("extracted live via Exa /contents");
+    // …the search-tool adapter note + the original brief + the query:
+    expect(messages).toContain("NO live-search tool in this call");
+    expect(messages).toContain("the full research brief");
+    expect(messages).toContain(SEARCH_QUERY);
+    // the caller's systemPrompt rides the synthesis (strict-JSON law):
+    expect(messages).toContain("strict JSON API endpoint");
+  });
+
+  it("200 with ZERO usable result URLs → the live-evidence gate fails honestly (law 344) → the EN walk falls to tavily", async () => {
+    process.env.EXA_API_KEY = "exa-test-key";
+    process.env.TAVILY_API_KEY = "tvly-test-key";
+    process.env.OPENROUTER_API = "sk-or-test-key";
+    const log: FetchLog[] = [];
+    stubRoutingFetch(log, (url) => {
+      if (exaUrl(url)) return { ok: true, status: 200, payload: { results: [{ title: "no url here" }] } };
+      if (tavilyUrl(url)) return { ok: true, status: 200, payload: TAVILY_SEARCH_OK };
+      return { ok: true, status: 200, payload: CHAIN_RESEARCH_JSON };
+    });
+
+    // the DIRECT arm call rejects with the gate error…
+    await expect(
+      callExaSearch("research", { searchQuery: SEARCH_QUERY }),
+    ).rejects.toThrow(/ZERO usable result URLs.*live-evidence gate/);
+    // …and the EN WALK falls through to tavily (a 200-without-URLs answer is
+    // NOT research — never a fake pass).
+    const out = await callGroundedSearch("research", { lang: "en", searchQuery: SEARCH_QUERY });
+    expect(out.provider).toBe("tavily");
+  });
+
+  it("a 429/credit-exhausted search → markCooldown(grounded:exa) + the EN walk falls to tavily; the SECOND call skips exa entirely", async () => {
+    process.env.AI_PROVIDER_COOLDOWN_MS = "600000";
+    process.env.EXA_API_KEY = "exa-test-key";
+    process.env.TAVILY_API_KEY = "tvly-test-key";
+    process.env.OPENROUTER_API = "sk-or-test-key";
+    const log: FetchLog[] = [];
+    stubRoutingFetch(log, (url) => {
+      if (exaUrl(url)) return { ok: false, status: 429, payload: EXA_CREDITS_429 };
+      if (tavilyUrl(url)) return { ok: true, status: 200, payload: TAVILY_SEARCH_OK };
+      return { ok: true, status: 200, payload: CHAIN_RESEARCH_JSON };
+    });
+
+    const out1 = await callGroundedSearch("research", { lang: "en", searchQuery: SEARCH_QUERY });
+    expect(out1.provider).toBe("tavily");
+    expect(log.filter((c) => exaUrl(c.url))).toHaveLength(1);
+    const cds = activeCooldowns();
+    expect(cds.some((c) => c.scope === "grounded:exa")).toBe(true);
+
+    const out2 = await callGroundedSearch("research", { lang: "en", searchQuery: SEARCH_QUERY });
+    expect(out2.provider).toBe("tavily");
+    // the second call made ZERO exa attempts — the drained arm was skipped
+    // from cooldown memory (the futile-repeat law).
+    expect(log.filter((c) => exaUrl(c.url))).toHaveLength(1);
+  });
+
+  it("no EXA_API_KEY → honest configuration error; the EN walk degrades to tavily exactly as before the arm existed", async () => {
+    process.env.TAVILY_API_KEY = "tvly-test-key";
+    process.env.OPENROUTER_API = "sk-or-test-key";
+    const log: FetchLog[] = [];
+    stubRoutingFetch(log, (url) => {
+      if (tavilyUrl(url)) return { ok: true, status: 200, payload: TAVILY_SEARCH_OK };
+      return { ok: true, status: 200, payload: CHAIN_RESEARCH_JSON };
+    });
+
+    expect(getExaKey()).toBe("");
+    const out = await callGroundedSearch("research", { lang: "en", searchQuery: SEARCH_QUERY });
+    expect(out.provider).toBe("tavily");
+    expect(log.filter((c) => exaUrl(c.url))).toHaveLength(0);
+  });
+
+  it("AR walk: tavily first, and the Exa arm receives the ENGLISH-EQUIVALENT query (§6-أ «Exa بالاستعلام الإنجليزي المكافئ»)", async () => {
+    process.env.EXA_API_KEY = "exa-test-key";
+    process.env.TAVILY_API_KEY = "tvly-test-key";
+    process.env.GROQ_API_KEY = "gsk-test-key";
+    process.env.OPENROUTER_API = "sk-or-test-key";
+    const AR_QUERY = "الأسئلة الأكثر بحثًا الآن في التغذية الرياضية";
+    const log: FetchLog[] = [];
+    stubRoutingFetch(log, (url) => {
+      if (tavilyUrl(url)) return { ok: false, status: 429, payload: TAVILY_CREDITS_429 };
+      if (groqUrl(url)) return { ok: false, status: 429, payload: GROQ_TPD_429 };
+      if (exaUrl(url) && url.includes("/search")) return { ok: true, status: 200, payload: EXA_SEARCH_OK };
+      if (exaUrl(url) && url.includes("/contents")) return { ok: true, status: 200, payload: EXA_CONTENTS_OK };
+      return { ok: true, status: 200, payload: CHAIN_RESEARCH_JSON };
+    });
+
+    const out = await callGroundedSearch("the Arabic research brief", {
+      lang: "ar",
+      searchQuery: AR_QUERY,
+      searchQueryEn: SEARCH_QUERY,
+    });
+
+    // the AR ladder order: tavily (429) → groq ladder (2×TPD-drained) →
+    // exa answers (the third arm, with the EN-equivalent query).
+    expect(out.provider).toBe("exa");
+    expect(out.grounding.searchQueries).toEqual([SEARCH_QUERY]); // NOT the Arabic query
+    const exaSearch = log.find((c) => exaUrl(c.url) && c.url.includes("/search"))?.body ?? {};
+    expect(exaSearch.query).toBe(SEARCH_QUERY);
+    // the Arabic brief still rides the synthesis prompt (the language of
+    // the ANSWER stays Arabic — only the search is English):
+    const synth = log.find((c) => orUrl(c.url));
+    expect(JSON.stringify(synth?.body?.messages)).toContain("the Arabic research brief");
+  });
+
+  it("exa healthy → the EN FIRST arm answers and tavily/groq/gemini are never called (search + contents + chain synthesis)", async () => {
+    process.env.EXA_API_KEY = "exa-test-key";
+    process.env.OPENROUTER_API = "sk-or-test-key";
+    const log: FetchLog[] = [];
+    stubRoutingFetch(log, (url) => {
+      if (exaUrl(url) && url.includes("/search")) return { ok: true, status: 200, payload: EXA_SEARCH_OK };
+      if (exaUrl(url) && url.includes("/contents")) return { ok: true, status: 200, payload: EXA_CONTENTS_OK };
+      return { ok: true, status: 200, payload: CHAIN_RESEARCH_JSON };
+    });
+
+    const out = await callGroundedSearch("research", { lang: "en", searchQuery: SEARCH_QUERY });
+
+    expect(out.provider).toBe("exa");
+    expect(out.model).toBe("nvidia/nemotron-3-ultra-550b-a55b:free"); // the synthesis model
+    expect(out.text).toContain("How much protein do you really need per day");
+    expect(out.grounding.searchQueries).toEqual([SEARCH_QUERY]);
+    expect(out.grounding.sources.map((s) => s.url)).toEqual([
+      "https://pmc.ncbi.nlm.nih.gov/articles/PMC1234567",
+      "https://pubmed.ncbi.nlm.nih.gov/22150333",
+    ]);
+    // ONE exa search + ONE exa /contents + ONE synthesis chain call —
+    // tavily/groq/gemini never called.
+    expect(log).toHaveLength(3);
+    expect(log.some((c) => tavilyUrl(c.url) || groqUrl(c.url) || geminiKeyOk(c.url))).toBe(false);
+  });
+
+  it("/contents fails → the Tavily Extract ALTERNATIVE fires (§6-أ) and the deepening still lands (researchDepth stays full-text)", async () => {
+    process.env.EXA_API_KEY = "exa-test-key";
+    process.env.TAVILY_API_KEY = "tvly-test-key";
+    process.env.OPENROUTER_API = "sk-or-test-key";
+    const log: FetchLog[] = [];
+    stubRoutingFetch(log, (url) => {
+      if (exaUrl(url) && url.includes("/search")) return { ok: true, status: 200, payload: EXA_SEARCH_OK };
+      if (exaUrl(url) && url.includes("/contents")) return { ok: false, status: 500, payload: { error: "contents upstream boom" } };
+      if (tavilyUrl(url) && url.includes("/extract")) return { ok: true, status: 200, payload: TAVILY_EXTRACT_OK };
+      return { ok: true, status: 200, payload: CHAIN_RESEARCH_JSON };
+    });
+
+    const out = await callExaSearch("research", { searchQuery: SEARCH_QUERY });
+
+    // the alternative extractor WAS called with the top URLs…
+    const extract = log.find((c) => tavilyUrl(c.url) && c.url.includes("/extract"))?.body ?? {};
+    expect(extract.urls).toEqual([
+      "https://pmc.ncbi.nlm.nih.gov/articles/PMC1234567",
+      "https://pubmed.ncbi.nlm.nih.gov/22150333",
+    ]);
+    // …and its raw_content became the deepened page (title backfilled from
+    // the search result):
+    expect(out.researchDepth).toBe("full-text");
+    expect(out.fullText).toHaveLength(1);
+    expect(out.fullText?.[0].text).toContain("EXTRACTED VIA TAVILY");
+    expect(out.fullText?.[0].title).toContain("International Society of Sports Nutrition");
+    // the search results NEVER hit the tavily SEARCH endpoint (the walk arm
+    // stayed exa — the extract call is the §6-أ ALTERNATIVE extractor only):
+    expect(log.some((c) => tavilyUrl(c.url) && c.url.includes("/search"))).toBe(false);
+  });
+
+  it("BOTH extractors fail (no tavily key) → a snippets-only bundle stamped researchDepth:'snippets' — the article is NOT failed (§6-أ soft law)", async () => {
+    process.env.EXA_API_KEY = "exa-test-key";
+    process.env.OPENROUTER_API = "sk-or-test-key";
+    const log: FetchLog[] = [];
+    stubRoutingFetch(log, (url) => {
+      if (exaUrl(url) && url.includes("/search")) return { ok: true, status: 200, payload: EXA_SEARCH_OK };
+      if (exaUrl(url) && url.includes("/contents")) return { ok: false, status: 500, payload: { error: "contents upstream boom" } };
+      return { ok: true, status: 200, payload: CHAIN_RESEARCH_JSON };
+    });
+
+    const out = await callExaSearch("research", { searchQuery: SEARCH_QUERY });
+
+    // the ARM still succeeds — the deepening is optional by law:
+    expect(out.provider).toBe("exa");
+    expect(out.researchDepth).toBe("snippets");
+    expect(out.fullText).toBeUndefined();
+    expect(out.grounding.sources).toHaveLength(2); // the evidence gate still holds
+    expect(out.text).toContain("How much protein");
+  });
+
+  it("ops knobs swap arm behavior without a deploy (EXA_NUM_RESULTS / EXA_INCLUDE_DOMAINS / EXA_CONTENTS_MAX_CHARS)", async () => {
+    process.env.EXA_API_KEY = "exa-test-key";
+    process.env.OPENROUTER_API = "sk-or-test-key";
+    process.env.EXA_NUM_RESULTS = "5";
+    process.env.EXA_INCLUDE_DOMAINS = "nih.gov, who.int";
+    process.env.EXA_CONTENTS_MAX_CHARS = "1200";
+    const log: FetchLog[] = [];
+    stubRoutingFetch(log, (url) => {
+      if (exaUrl(url) && url.includes("/search")) return { ok: true, status: 200, payload: EXA_SEARCH_OK };
+      if (exaUrl(url) && url.includes("/contents")) return { ok: true, status: 200, payload: EXA_CONTENTS_OK };
+      return { ok: true, status: 200, payload: CHAIN_RESEARCH_JSON };
+    });
+
+    await callExaSearch("research", { searchQuery: SEARCH_QUERY });
+
+    const search = log.find((c) => exaUrl(c.url) && c.url.includes("/search"))?.body ?? {};
+    expect(search.numResults).toBe(5);
+    expect(search.includeDomains).toEqual(["nih.gov", "who.int"]);
+    const contents = log.find((c) => exaUrl(c.url) && c.url.includes("/contents"))?.body ?? {};
+    expect(contents.text).toEqual({ maxCharacters: 1_200 });
+  });
+});
+
+/* ══════════════════════════════════════════════════════════════════════
+ * 1b-c. PHASE 5-B — the Tavily arm's free full-text stamp (raw_content
+ *       already rides the search response — ZERO extra network calls)
+ * ══════════════════════════════════════════════════════════════════════ */
+
+describe("PHASE 5-B — the Tavily arm stamps researchDepth from raw_content (zero extra calls)", () => {
+  it("raw_content pages become fullText + the 'full-text' stamp — the search + synthesis call count is UNCHANGED (2)", async () => {
+    process.env.TAVILY_API_KEY = "tvly-test-key";
+    process.env.OPENROUTER_API = "sk-or-test-key";
+    const log: FetchLog[] = [];
+    stubRoutingFetch(log, (url) => {
+      if (tavilyUrl(url)) return { ok: true, status: 200, payload: TAVILY_SEARCH_OK };
+      return { ok: true, status: 200, payload: CHAIN_RESEARCH_JSON };
+    });
+
+    const out = await callTavilySearch("research", { searchQuery: SEARCH_QUERY });
+
+    expect(out.researchDepth).toBe("full-text");
+    // only the FIRST result carries raw_content in the fixture → one page:
+    expect(out.fullText?.map((p) => p.url)).toEqual(["https://www.nasm.org/protein-intake"]);
+    expect(out.fullText?.[0].text).toContain("1.6-2.2 g/kg");
+    // still EXACTLY the 5-A call shape: 1 search + 1 synthesis — the
+    // deepening consumed the response body it already had.
+    expect(log).toHaveLength(2);
+  });
+
+  it("no raw_content anywhere → the honest 'snippets' stamp and NO fullText field (legacy byte-identical shape)", async () => {
+    process.env.TAVILY_API_KEY = "tvly-test-key";
+    process.env.OPENROUTER_API = "sk-or-test-key";
+    const log: FetchLog[] = [];
+    stubRoutingFetch(log, (url) => {
+      if (tavilyUrl(url)) {
+        return {
+          ok: true,
+          status: 200,
+          payload: {
+            results: [
+              {
+                title: "Protein intake",
+                url: "https://www.nasm.org/protein-intake",
+                content: "snippet only",
+                raw_content: "",
+              },
+            ],
+          },
+        };
+      }
+      return { ok: true, status: 200, payload: CHAIN_RESEARCH_JSON };
+    });
+
+    const out = await callTavilySearch("research", { searchQuery: SEARCH_QUERY });
+    expect(out.researchDepth).toBe("snippets");
+    expect(out.fullText).toBeUndefined();
+    expect(out.grounding.sources).toHaveLength(1);
   });
 });
 
