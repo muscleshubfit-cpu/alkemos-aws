@@ -516,7 +516,22 @@ Return STRICT JSON only, no markdown fences:
       systemPrompt:
         "You are a strict JSON API endpoint. The user message describes the research task; your ENTIRE response MUST be a single valid JSON object matching the requested schema — no prose, no markdown, no commentary, no code fences. The JSON object starts with { and ends with }.",
       temperature: 0.7,
-      maxTokens: 2_500,
+      // PHASE 5-B live-measured fix (EN run 41129910118, 2026-10-31): the
+      // research synthesis truncation family — the run's 3 P0 attempts all
+      // died "invalid research JSON shape" (2× reasoning-prose + 1×
+      // keywords:10/topics:0 TRUNCATED mid-JSON) because the §6-أ evidence
+      // base grew (10 Exa sources + 3 full-text pages ≈ +2k tokens of
+      // grounding) while the output cap stayed 2_500: the CoT-heavy
+      // openrouter/nemotron-ultra (groq was honestly excluded from this
+      // call by the R3 payload law — ~7.3k tokens vs the 8k TPM window)
+      // burns 1.5–2.5k CoT tokens before the JSON and the 2_500 cap cut
+      // the document. SAME family + SAME remedy as PHASE 171 (P1 outline
+      // 2_600 → 4_000, the "verbose reasoning model burns hidden CoT
+      // against the cap and truncates the JSON mid-document" law): the P0
+      // research JSON is the same size class as the outline JSON
+      // (~700–900 tokens) — 4_000 gives CoT + document headroom, and the
+      // 161.5-hardened parseJSON keeps salvaging any residual truncation.
+      maxTokens: 4_000,
       // BLOG-PROVIDER-FAILOVER 2026-10-16 (live measurements, probe
       // 38844967928 + pipeline 38846158680): the OR web arm rides a
       // reasoning model whose CoT runs 30–90s on SHORT prompts and the
