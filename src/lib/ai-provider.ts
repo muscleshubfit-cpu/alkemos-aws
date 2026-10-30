@@ -201,9 +201,11 @@ export type AIConfigStatus = {
  * are returned. AI_PROVIDER values outside that set are ignored (default
  * wins). If the requested provider has no key, fall through to the first
  * configured one in priority order openrouter → groq → nvidia → gemini
- * (gemini sits LAST here by design: the single-call default stays
- * openrouter — the GEMINI-FIRST law (2026-10-06) lives in the CHAINS,
- * which cover blog + plans + EVO exactly as the owner ordered).
+ * (gemini sits LAST here by design — the single-call default stays
+ * openrouter. The GEMINI-FIRST law (2026-10-06) was CANCELLED 2026-10-31
+ * by the Phase 5-A owner order «إلغاء قانون Gemini-First نهائيًا، بما يشمل
+ * السلاسل الثقيلة»: gemini is never a lead anywhere — it rides the chain
+ * TAILS and this list's last slot on measured availability, not priority).
  */
 const PROVIDER_PRIORITY: AIProvider[] = ["openrouter", "groq", "nvidia", "gemini"];
 
