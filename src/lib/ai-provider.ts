@@ -639,6 +639,12 @@ async function callCloudflareGenerate(
       );
     }
 
+    const data = (await res.json()) as {
+      success?: boolean;
+      result?: unknown;
+      errors?: Array<unknown> | null;
+    } | null;
+
     // TOLERANT RESULT SHAPES (the live role probe run 41145194167 measured
     // a 200 whose result carried NO string response — the Phase-3 Python
     // battery already parsed BOTH shapes, mirror it exactly):
