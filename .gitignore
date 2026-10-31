@@ -176,6 +176,8 @@ ar2_logs.zip
 # scripts/repro/fetch-ai-job-fixtures.py — real client data, NEVER committed.
 scripts/repro/repro-fixtures/
 
+#   scripts/check-ai-router-guard.sh → AI-router registry guard (R6 of the approved unification plan, 2026-10-31 — guard-stale-refs.yml 4th step: sole-door over the five engine doors + registry completeness both ways through the REAL resolveRegistrySpec via tsx; hit the same /scripts/* blanket trap as the family — exception added in the same frame)
+!/scripts/check-ai-router-guard.sh
 #   scripts/db/ → the DB migration pipeline (DB-MIGRATION-PIPELINE-2026-10-27,
 #   owner directive 2026-10-27): migration_probes.py (declarative per-migration
 #   probes — the state gate is blind without them) + migration_state.py (the
