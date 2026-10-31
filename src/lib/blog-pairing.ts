@@ -32,6 +32,7 @@
  * This module is intentionally split so every pure piece is unit-testable
  * without a DB (see __tests__/blog-pairing.test.ts — 22 tests).
  */
+import { randomUUID } from "crypto";
 import { callFreeAIFallbackChain, parseJSON } from "./ai-provider";
 import { type LanguageResearch } from "./blog-research";
 import { ARTICLE_ANGLES } from "./blog-pipeline";
@@ -262,8 +263,17 @@ export type PairingSelectionResult = PairingChoice & { source: string };
  * stays worse than no pair: every parse/validation law is UNCHANGED —
  * retries only fight transport/model failure, never the strict JSON
  * contract.
+ *
+ * PHASE 5-E / stage هـ (owner order 2026-10-31 «نفّذ جميع المراحل
+ * المتبقية» approving Phase-4 §12-6, the Phase-1 §8-6 precedent): the
+ * retry budget is RAISED 2→3 and the chain walk deepened maxModels 3→4
+ * (the P4 precedent — more healthy entries beat two leading hiccups),
+ * AND the resume path gained its own pairing entry point
+ * (runResumePairingSelection below) — pairing was CREATE-only and
+ * resumed rows published unpaired forever (the measured 0/6 alert
+ * root, frame 380).
  */
-export const PAIRING_MAX_ATTEMPTS = 2;
+export const PAIRING_MAX_ATTEMPTS = 3;
 
 export async function runPairingSelection(
   enResearch: LanguageResearch,
@@ -296,8 +306,9 @@ Return STRICT JSON only:
         timeoutMs: 45_000,
         // AUDIT §9-2.5: 2 → 3 — a light call deserves a deeper walk of
         // the strong chain (the P4 precedent: more healthy entries beat
-        // two leading hiccups).
-        maxModels: 3,
+        // two leading hiccups). PHASE 5-E (§10-هـ): 3 → 4 — the same
+        // precedent, one slot deeper, riding the CF role entry lead.
+        maxModels: 4,
       });
       const choice = parsePairingJSON(text, {
         enCandidates: enResearch.topics,
@@ -321,4 +332,67 @@ Return STRICT JSON only:
     }
   }
   throw lastError ?? new Error("pairing: all attempts failed");
+}
+
+// ─────────────────────────────────────────────────────────────────
+// PHASE 5-E / stage هـ — RESUME PAIRING (JOIN at resume)
+// ─────────────────────────────────────────────────────────────────
+
+/**
+ * The RESUME-path pairing entry point (Phase-4 §10-هـ-1, the Phase-1
+ * §8-6(أ) recommendation — «جعل مسار الاستئناف يقرن (JOIN عند
+ * RESUME) — يعالج جذر تنبيه 0/6 مباشرة»).
+ *
+ * THE MEASURED ROOT (frame 380 + the Phase-1 audit §2.4): pairing ran
+ * at CREATE only. When BOTH languages' pairing calls failed (the free
+ * chain's old failure mode), each language landed a LEGACY unpaired
+ * row — and from then on every run RESUMED those rows (≤48h) instead
+ * of creating new ones, so no pairing call EVER ran again: the rows
+ * published unpaired forever (the 0/6 queue-health alert).
+ *
+ * THE FIX — the anti-blind law PRESERVED BY CONSTRUCTION: both rows
+ * already exist with their OWN sealed topics (my row may even have
+ * completed outline/content around its topic). So each language's
+ * candidate set is constrained to EXACTLY ONE topic — the row's own
+ * topic. parsePairingJSON's hard law (topicEn ∈ enCandidates, literal)
+ * then forces the model to echo both rows' topics VERBATIM or fail —
+ * the sealed brief can never rewrite either side's subject. What the
+ * call actually picks is the ONE shared angle (ARTICLE_ANGLES id), the
+ * only pairing decision that was never row-local. A wrong pair stays
+ * worse than no pair: on ANY failure the caller degrades to the exact
+ * plain-resume behavior (unpaired, honest).
+ */
+export type ResumePairInputs = {
+  myLang: "en" | "ar";
+  /** MY resumable row's own topic (sealed — never rewritten). */
+  myTopic: string;
+  /** MY row's bundle research (topics are replaced by [myTopic]). */
+  myResearch: LanguageResearch;
+  /** The OTHER language's candidate row topic (sealed — never rewritten). */
+  otherTopic: string;
+  /** The other row's bundle research (topics replaced by [otherTopic]). */
+  otherResearch: LanguageResearch;
+};
+
+export async function runResumePairingSelection(
+  inputs: ResumePairInputs,
+): Promise<SharedBrief> {
+  const { myLang, myTopic, myResearch, otherTopic, otherResearch } = inputs;
+  const enResearch: LanguageResearch =
+    myLang === "en"
+      ? { ...myResearch, topics: [myTopic] }
+      : { ...otherResearch, topics: [otherTopic] };
+  const arResearch: LanguageResearch =
+    myLang === "ar"
+      ? { ...myResearch, topics: [myTopic] }
+      : { ...otherResearch, topics: [otherTopic] };
+
+  const choice = await runPairingSelection(enResearch, arResearch);
+  return {
+    pairId: randomUUID(),
+    topicEn: choice.topicEn,
+    topicAr: choice.topicAr,
+    angleId: choice.angleId,
+    sealedAt: new Date().toISOString(),
+  };
 }

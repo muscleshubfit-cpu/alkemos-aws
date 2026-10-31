@@ -117,18 +117,18 @@ describe("runPairingSelection — the retry law (AUDIT §9-2.5)", () => {
     expect(chain).toHaveBeenCalledTimes(PAIRING_MAX_ATTEMPTS);
   });
 
-  it("walks a deeper chain per attempt (maxModels 3 — the light-call deep-walk fix)", async () => {
+  it("walks a deeper chain per attempt (maxModels 4 — the light-call deep-walk fix, deepened 3→4 by Phase 5-E/§10-هـ-2)", async () => {
     chain.mockResolvedValueOnce({ text: VALID_JSON, model: "m", provider: "openrouter" });
     await runPairingSelection(research(EN_TOPICS), research(AR_TOPICS));
     const opts = chain.mock.calls[0][1];
-    expect(opts.maxModels).toBe(3);
+    expect(opts.maxModels).toBe(4);
   });
 });
 
 describe("the widened windows (resilience for failed language days)", () => {
-  it("carries the widened freshness law (adopt 72h · join 48h)", () => {
+  it("carries the widened freshness law (adopt 72h · join 48h · attempts 3 — Phase 5-E/§10-هـ-2 raised 2→3)", () => {
     expect(ADOPT_MAX_AGE_HOURS).toBe(72);
     expect(JOIN_MAX_AGE_HOURS).toBe(48);
-    expect(PAIRING_MAX_ATTEMPTS).toBe(2);
+    expect(PAIRING_MAX_ATTEMPTS).toBe(3);
   });
 });

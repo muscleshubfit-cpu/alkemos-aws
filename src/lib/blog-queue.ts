@@ -562,3 +562,75 @@ export async function findRecentPairRows(
     return [];
   }
 }
+
+/**
+ * PHASE 5-E / stage هـ (owner order 2026-10-31 «نفّذ جميع المراحل
+ * المتبقية» approving Phase-4 §12-6 — the Phase-1 §8-6(أ)
+ * recommendation): the RESUME-PAIR candidate lookup.
+ *
+ * The freshest OTHER-language row within 48h that (a) sits in the
+ * research-bearing `researched` state, (b) carries NO pair_id (the
+ * measured 0/6 root: BOTH languages' pairing calls failed at CREATE),
+ * and (c) has a non-empty topic column. Such a row + MY unpaired
+ * resumable row are exactly the two sealed subjects a constrained
+ * resume-pairing call (runResumePairingSelection) can bind into ONE
+ * pair — each side's candidate set is its OWN row's topic, so the
+ * anti-blind law holds by construction.
+ *
+ * Returns null on no candidate OR any error (the route degrades to the
+ * plain resume — unpaired, honest).
+ */
+export async function findResumePairCandidate(
+  otherLang: "en" | "ar",
+): Promise<QueueItem | null> {
+  if (!isSupabaseAdminConfigured || !supabaseAdmin) return null;
+  try {
+    const since = new Date(Date.now() - 48 * 3_600_000).toISOString();
+    const { data, error } = await supabaseAdmin
+      .from("blog_generation_queue")
+      .select("*")
+      .eq("language", otherLang)
+      .eq("status", "researched")
+      .is("pair_id", null)
+      .not("topic", "is", null)
+      .order("created_at", { ascending: false })
+      .limit(1);
+    if (error) {
+      console.warn(
+        `[blog-queue] findResumePairCandidate degraded: ${error.message}`,
+      );
+      return null;
+    }
+    const row = (data as QueueItem[] | null)?.[0] ?? null;
+    if (row && (!row.topic || row.topic.trim().length < 10)) return null;
+    return row;
+  } catch (e) {
+    console.warn(
+      `[blog-queue] findResumePairCandidate degraded: ${e instanceof Error ? e.message : e}`,
+    );
+    return null;
+  }
+}
+
+/**
+ * PHASE 5-E / stage هـ — attach a sealed pair to an EXISTING queue row
+ * (the resume-pair write). Updates pair_id + article_bundle ONLY — the
+ * row's status and every completed artifact stay untouched (the resume
+ * continues from its own state; only the pairing linkage changes).
+ * Best-effort: returns the error string or null.
+ */
+export async function attachPairToQueueRow(
+  queueId: string,
+  pairId: string,
+  articleBundle: string,
+): Promise<string | null> {
+  if (!isSupabaseAdminConfigured || !supabaseAdmin) {
+    return "Supabase admin not configured.";
+  }
+  const { error } = await supabaseAdmin
+    .from("blog_generation_queue")
+    .update({ pair_id: pairId, article_bundle: articleBundle })
+    .eq("id", queueId);
+  if (error) return `Queue pair-attach ${queueId}: ${error.message}`;
+  return null;
+}

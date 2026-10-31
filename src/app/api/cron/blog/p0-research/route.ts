@@ -1,15 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { runBilingualResearchPair, runPhase0Research, researchUsedFallback } from "@/lib/blog-research";
 import { supabaseAdmin, isSupabaseAdminConfigured } from "@/lib/supabase/admin";
-import { getLangParam, findAdoptablePairRow, findRecentPairRows, findResumableRow, markQueueRowCoachRequested, type PipelineLang, type QueueItem } from "@/lib/blog-queue";
+import { getLangParam, findAdoptablePairRow, findRecentPairRows, findResumableRow, findResumePairCandidate, attachPairToQueueRow, markQueueRowCoachRequested, type PipelineLang, type QueueItem } from "@/lib/blog-queue";
 import {
   extractSharedBrief,
   isAdoptablePairRow,
   runPairingSelection,
+  runResumePairingSelection,
   withCoachTopic,
   JOIN_MAX_AGE_HOURS,
   type SharedBrief,
 } from "@/lib/blog-pairing";
+import type { LanguageResearch } from "@/lib/blog-research";
 import { verifyCronAuth } from "@/lib/cron-auth";
 import { randomUUID } from "crypto";
 import { cronBlogP0QuerySchema } from "@/lib/validation/schemas";
@@ -94,6 +96,131 @@ function briefOf(qi: Pick<QueueItem, "article_bundle">): SharedBrief | null {
   return extractSharedBrief(
     typeof qi.article_bundle === "string" ? safeParse(qi.article_bundle) : qi.article_bundle,
   );
+}
+
+/** PHASE 5-E / stage هـ — parse a queue row's bundle as an object (the
+ *  resume-pair input). Returns null for raw/garbage/missing bundles. */
+function bundleObjectOf(
+  qi: Pick<QueueItem, "article_bundle">,
+): Record<string, unknown> | null {
+  const parsed =
+    typeof qi.article_bundle === "string" ? safeParse(qi.article_bundle) : qi.article_bundle;
+  if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) return null;
+  return parsed as Record<string, unknown>;
+}
+
+/** PHASE 5-E / stage هـ — re-stringify a row's bundle with the sealed
+ *  brief merged in (every existing key — research0, researchSource, and
+ *  any completed outline/content artifacts — survives untouched; only
+ *  the sharedBrief key is added). Returns null on a non-object bundle
+ *  (the caller degrades to plain resume). */
+function bundleWithBriefMerged(
+  qi: Pick<QueueItem, "article_bundle">,
+  brief: SharedBrief,
+): string | null {
+  const parsed = bundleObjectOf(qi);
+  if (!parsed) return null;
+  return JSON.stringify({ ...parsed, sharedBrief: brief });
+}
+
+/** Minimal LanguageResearch for the constrained resume-pairing call —
+ *  topics are replaced by the row's own topic inside
+ *  runResumePairingSelection anyway; keywords/faqs only pad the prompt. */
+function minimalResearch(topic: string): LanguageResearch {
+  return { keywords: [], faqs: [], topics: [topic] };
+}
+
+/** Coerce a parsed research0 into a LanguageResearch (topics non-empty
+ *  required); null when unusable. */
+function asResearch(raw: unknown): LanguageResearch | null {
+  if (typeof raw !== "object" || raw === null || Array.isArray(raw)) return null;
+  const r = raw as { keywords?: unknown; faqs?: unknown; topics?: unknown };
+  const topics = Array.isArray(r.topics)
+    ? r.topics.filter((t): t is string => typeof t === "string" && t.trim().length > 0)
+    : [];
+  if (topics.length === 0) return null;
+  return {
+    keywords: Array.isArray(r.keywords) ? (r.keywords as LanguageResearch["keywords"]) : [],
+    faqs: Array.isArray(r.faqs) ? (r.faqs as LanguageResearch["faqs"]) : [],
+    topics,
+  };
+}
+
+/**
+ * PHASE 5-E / stage هـ (Phase-4 §10-هـ-1 / Phase-1 §8-6(أ) — «جعل مسار
+ * الاستئناف يقرن (JOIN عند RESUME)»): the RESUME-PAIR attempt for an
+ * UNPAIRED resumable row. Finds the other language's unpaired researched
+ * row (≤48h), runs the CONSTRAINED pairing call (each side's candidate
+ * set is its OWN row's topic — the anti-blind law holds by construction,
+ * the call only picks the shared angle), then attaches pair_id + merged
+ * brief to BOTH rows. Returns the pairId or null on ANY failure (the
+ * caller degrades to the exact plain-resume behavior — unpaired, honest).
+ */
+async function tryResumePair(
+  resumable: QueueItem,
+  lang: PipelineLang,
+  otherLang: PipelineLang,
+): Promise<string | null> {
+  if (resumable.pair_id) return null; // already paired — nothing to do
+  if (!resumable.topic || resumable.topic.trim().length < 10) return null;
+  try {
+    const other = await findResumePairCandidate(otherLang);
+    if (!other) return null;
+
+    const myResearch =
+      asResearch(bundleObjectOf(resumable)?.research0) ??
+      minimalResearch(resumable.topic);
+    const otherResearch =
+      asResearch(bundleObjectOf(other)?.research0) ??
+      minimalResearch(other.topic);
+
+    const brief = await runResumePairingSelection({
+      myLang: lang,
+      myTopic: resumable.topic,
+      myResearch,
+      otherTopic: other.topic,
+      otherResearch,
+    });
+
+    // Safety re-check (the constrained candidates make it structural, but
+    // a wrong pair is worse than no pair — assert both topics verbatim).
+    const mySide = lang === "ar" ? brief.topicAr : brief.topicEn;
+    const otherSide = otherLang === "ar" ? brief.topicAr : brief.topicEn;
+    if (mySide.trim() !== resumable.topic.trim() || otherSide.trim() !== other.topic.trim()) {
+      console.warn(
+        "[blog/p0-research] resume-pair rejected the sealed brief (topic mismatch) — plain resume",
+      );
+      return null;
+    }
+
+    const myBundle = bundleWithBriefMerged(resumable, brief);
+    const otherBundle = bundleWithBriefMerged(other, brief);
+    if (!myBundle || !otherBundle) return null;
+
+    const myErr = await attachPairToQueueRow(resumable.id, brief.pairId, myBundle);
+    if (myErr) {
+      console.warn(`[blog/p0-research] resume-pair my-row attach failed: ${myErr}`);
+      return null;
+    }
+    const otherErr = await attachPairToQueueRow(other.id, brief.pairId, otherBundle);
+    if (otherErr) {
+      // Best-effort twin attach (the CREATE law): MY row keeps the pair —
+      // the other language's JOIN rescues its side on its own window.
+      console.warn(
+        `[blog/p0-research] resume-pair other-row attach failed (JOIN will rescue): ${otherErr}`,
+      );
+    }
+
+    console.log(
+      `[blog/p0-research] RESUME-PAIRED rows ${resumable.id} (${lang}) + ${other.id} (${otherLang}) into pair ${brief.pairId} (angle=${brief.angleId}) — the 0/6 root closed`,
+    );
+    return brief.pairId;
+  } catch (e) {
+    console.warn(
+      `[blog/p0-research] resume-pair degraded: ${e instanceof Error ? e.message : e}`,
+    );
+    return null;
+  }
 }
 
 /** Focus-keyword placeholder from a topic (refined by P1's pickKeyword). */
@@ -238,13 +365,20 @@ export async function GET(request: NextRequest) {
         console.log(
           `[blog/p0-research] RESUME: my ${lang} row ${resumable.id} is "${resumable.status}" (≤48h, unpublished) — continuing it instead of creating a new row (completed stages skip idempotently)`,
         );
+        // PHASE 5-E / stage هـ (§10-هـ-1 — «جعل RESUME يقرن»): an UNPAIRED
+        // resumable row now gets its own pairing attempt BEFORE the resume
+        // proceeds — the measured 0/6 root was exactly here (pairing ran
+        // at CREATE only, so resumed rows published unpaired forever).
+        // Any failure degrades to the exact plain-resume behavior.
+        const resumePairId = await tryResumePair(resumable, lang, otherLang);
         if (coachRun) await markQueueRowCoachRequested(resumable.id);
         return NextResponse.json({
           ok: true,
           step: "p0",
           queueId: resumable.id,
           lang,
-          pairMode: "resumed" as const,
+          pairMode: resumePairId ? ("resume-paired" as const) : ("resumed" as const),
+          pairId: resumePairId ?? undefined,
           resumed: true,
           actual_status: resumable.status,
         });

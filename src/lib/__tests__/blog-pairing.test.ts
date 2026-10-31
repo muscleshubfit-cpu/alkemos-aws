@@ -275,3 +275,124 @@ describe("withCoachTopic (Phase 162 coach pipeline parity)", () => {
     expect(brief.topicAr).toBe(AR_TOPIC);
   });
 });
+
+/* ══════════════════════════════════════════════════════════════════════
+ * PHASE 5-E / stage هـ (owner order 2026-10-31 «نفّذ جميع المراحل
+ * المتبقية» approving Phase-4 §12-6): the retry-budget raise + the
+ * RESUME-PAIR entry point (runResumePairingSelection — «جعل مسار
+ * الاستئناف يقرن», the measured 0/6 queue-health alert root).
+ * ══════════════════════════════════════════════════════════════════════ */
+
+describe("PHASE 5-E — the pairing retry budget (§10-هـ-2)", () => {
+  it("PAIRING_MAX_ATTEMPTS is 3 (raised 2→3 — the Phase-1 §8-6(ب) recommendation, the P4 precedent)", async () => {
+    const { PAIRING_MAX_ATTEMPTS } = await import("@/lib/blog-pairing");
+    expect(PAIRING_MAX_ATTEMPTS).toBe(3);
+  });
+});
+
+describe("PHASE 5-E — runResumePairingSelection (the constrained resume pair)", () => {
+  // The chain is mocked at the module boundary: the resume-pair rides the
+  // REAL runPairingSelection prompt + parsePairingJSON laws — only the
+  // transport is substituted (the ai-provider canaries already pin the
+  // chain contract separately).
+  const EN_TOPIC_R = "creatine loading phase how much per day for muscle gain";
+  const AR_TOPIC_R = "جرعة الكرياتين اليومية لمرحلة التحميل لبناء العضلات";
+
+  const MY_RESEARCH = {
+    keywords: [{ keyword: "irrelevant", searchVolume: "1" }],
+    faqs: [{ question: "q?", answer: "a" }],
+    topics: ["some other topic my research once listed"],
+  };
+  const OTHER_RESEARCH = {
+    keywords: [],
+    faqs: [],
+    topics: ["other language research topics"],
+  };
+
+  async function withMockedChain(
+    answer: string,
+    fn: () => Promise<unknown>,
+  ): Promise<unknown> {
+    const { vi } = await import("vitest");
+    const mod = await import("@/lib/ai-provider");
+    const spy = vi.spyOn(mod, "callFreeAIFallbackChain").mockResolvedValue({
+      text: answer,
+      model: "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+      provider: "cloudflare",
+    });
+    try {
+      return await fn();
+    } finally {
+      spy.mockRestore();
+    }
+  }
+
+  it("seals a brief whose BOTH topics are the two rows' own topics VERBATIM (the anti-blind law by construction) and generates a fresh pairId", async () => {
+    const { runResumePairingSelection } = await import("@/lib/blog-pairing");
+    const answer = JSON.stringify({
+      topicEn: EN_TOPIC_R,
+      topicAr: AR_TOPIC_R,
+      angleId: "guide",
+    });
+    const brief = (await withMockedChain(answer, () =>
+      runResumePairingSelection({
+        myLang: "ar",
+        myTopic: AR_TOPIC_R,
+        myResearch: MY_RESEARCH,
+        otherTopic: EN_TOPIC_R,
+        otherResearch: OTHER_RESEARCH,
+      }),
+    )) as SharedBrief;
+
+    expect(brief.topicAr).toBe(AR_TOPIC_R);
+    expect(brief.topicEn).toBe(EN_TOPIC_R);
+    expect(brief.angleId).toBe("guide");
+    expect(brief.pairId).toMatch(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
+    );
+    expect(Date.parse(brief.sealedAt)).toBeGreaterThan(Date.now() - 60_000);
+  });
+
+  it("the constrained candidate sets REWRITE nothing: the model's answer is forced to echo both rows' topics or fail (a topic outside the single-candidate set is rejected → the caller degrades to plain resume)", async () => {
+    const { runResumePairingSelection } = await import("@/lib/blog-pairing");
+    // The model tries to "improve" the EN topic — parsePairingJSON must
+    // reject it (topicEn ∉ the single EN candidate), so the whole call
+    // throws after the retry budget (chain mocked to the same bad answer).
+    const badAnswer = JSON.stringify({
+      topicEn: "a rewritten topic the model invented",
+      topicAr: AR_TOPIC_R,
+      angleId: "guide",
+    });
+    await expect(
+      withMockedChain(badAnswer, () =>
+        runResumePairingSelection({
+          myLang: "en",
+          myTopic: EN_TOPIC_R,
+          myResearch: MY_RESEARCH,
+          otherTopic: AR_TOPIC_R,
+          otherResearch: OTHER_RESEARCH,
+        }),
+      ),
+    ).rejects.toThrow(/invalid JSON|all attempts failed/);
+  });
+
+  it("an angle OUTSIDE the closed ARTICLE_ANGLES set is rejected (the angle is the ONLY free pairing decision — and it stays law-bound)", async () => {
+    const { runResumePairingSelection } = await import("@/lib/blog-pairing");
+    const badAngle = JSON.stringify({
+      topicEn: EN_TOPIC_R,
+      topicAr: AR_TOPIC_R,
+      angleId: "nonexistent-angle",
+    });
+    await expect(
+      withMockedChain(badAngle, () =>
+        runResumePairingSelection({
+          myLang: "ar",
+          myTopic: AR_TOPIC_R,
+          myResearch: MY_RESEARCH,
+          otherTopic: EN_TOPIC_R,
+          otherResearch: OTHER_RESEARCH,
+        }),
+      ),
+    ).rejects.toThrow(/invalid JSON|all attempts failed/);
+  });
+});
