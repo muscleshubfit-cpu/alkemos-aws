@@ -1,0 +1,54 @@
+# WHY: ARTICLE-TREATMENT (owner order 2026-11-01 «أمر تنفيذ المرحلة التالية» —
+# clause 1: comprehensive treatment of the published article library · clause 2:
+# cross-language counterparts with bidirectional pairing). The repo-owned
+# dispatch-only channel that applies curated editorial rewrites (T-batches) and
+# inserts paired language counterparts (L-batches) to blog_posts.
+#
+# Channel law (same as content-audit-db-remediation / retro-pair-blog):
+# dispatch-only, DRY_RUN=1 by default (plan + quality battery, zero writes),
+# the service key never leaves GitHub secrets, quality gates run BEFORE any
+# write and a failing entry refuses individually, re-runs are idempotent.
+# Production pages pick new content up via the ISR revalidate window.
+name: Article treatment (dispatch-only)
+
+on:
+  workflow_dispatch:
+    inputs:
+      batch_file:
+        description: "Batch JSON path (e.g. scripts/blog-runner/article-treatment-batch-t1.json)"
+        required: true
+        default: "scripts/blog-runner/article-treatment-batch-t1.json"
+      dry_run:
+        description: "1 = plan only (zero writes) · 0 = apply"
+        required: false
+        default: "1"
+
+concurrency:
+  group: article-treatment
+  cancel-in-progress: false
+
+jobs:
+  treat:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5 — pinned 2026-10-10 audit
+
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2 — pinned 2026-10-10 audit
+        with:
+          bun-version: 1.3.14
+
+      - name: Install dependencies (frozen bun.lock = production tree)
+        run: bun install --frozen-lockfile
+
+      - name: Article treatment (quality battery before any write)
+        run: bun scripts/blog-runner/article-treatment.mts "${{ github.event.inputs.batch_file }}"
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          DRY_RUN: ${{ github.event.inputs.dry_run || '1' }}
+
+      - name: Summary
+        if: always()
+        run: echo "Article treatment finished — see the per-slug report above."
