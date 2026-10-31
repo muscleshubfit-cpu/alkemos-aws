@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { callFreeAIFallbackChain } from "@/lib/ai-provider";
+// R3 (AI-Router unification): the demo surfaces ride the central router —
+// policy resolves from ai-registry (workout-demo spec).
+import { dispatchAI } from "@/lib/ai-router";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
 import { enrichWorkoutPlanWithLibrary } from "@/lib/ai-workout-exercise-match";
 import { getAuthUser } from "@/lib/auth-server";
@@ -139,13 +141,10 @@ export async function POST(request: NextRequest) {
     // with a single bounded retry when the model misses the JSON shape
     // (the retry stays inside the SAME request so the burst slot is
     // spent once — and neither attempt burns the pool: success-only). ──
+    // R3: policy (3000 · 0.4 · json · 20s · engine-default depth 2)
+    // resolves from the registry — the call site keeps ONLY the prompt.
     const prompt = buildWorkoutPrompt(req);
-    const callOpts = {
-      maxTokens: 3000,
-      temperature: 0.4,
-      tag: "workout-demo",
-      timeoutMs: 20_000,
-      jsonMode: true,
+    const demoOverrides = {
       systemPrompt:
         "You are a JSON-only workout-plan generator. Your ENTIRE reply is a single JSON object — no prose, no reasoning, no step-by-step planning, no markdown fences, no commentary. Output the JSON immediately.",
     };
@@ -154,7 +153,7 @@ export async function POST(request: NextRequest) {
     let plan: WorkoutPlanVerdict = { ok: false, error: "chain call failed" };
     let rawText = "";
 
-    const first = await callFreeAIFallbackChain(prompt, callOpts).catch(() => null);
+    const first = await dispatchAI("workout-demo", prompt, demoOverrides).catch(() => null);
     if (first) {
       model = first.model;
       rawText = first.text;
@@ -162,10 +161,11 @@ export async function POST(request: NextRequest) {
     }
     if (!plan.ok) {
       // Retry #1 — same request, harder nudge. Still uncounted.
-      const second = await callFreeAIFallbackChain(
+      const second = await dispatchAI(
+        "workout-demo",
         prompt +
           '\n\nREMINDER: reply with ONE JSON object exactly like {"days":[{"name":"Day 1","focus":"...","exercises":[{"name":"...","sets":4,"reps":8}]}]} — nothing else.',
-        callOpts,
+        demoOverrides,
       ).catch(() => null);
       if (second) {
         model = second.model;

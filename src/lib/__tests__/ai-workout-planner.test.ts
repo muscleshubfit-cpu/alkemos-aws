@@ -200,16 +200,16 @@ describe("ai workout planner trial (§12.32)", () => {
     expect(src).toContain("workout-demo:");
     expect(src).toContain("BURST_GUARD");
     expect(src.indexOf("await rateLimit(")).toBeLessThan(
-      src.indexOf("await callFreeAIFallbackChain("),
+      src.indexOf("await dispatchAI("),
     );
     // The unified pool is checked BEFORE dispatch (read-only).
     expect(src).toContain("checkUnifiedPlanQuota");
     expect(src.indexOf("await checkUnifiedPlanQuota(")).toBeLessThan(
-      src.indexOf("await callFreeAIFallbackChain("),
+      src.indexOf("await dispatchAI("),
     );
     // SUCCESS-ONLY: the pool unit is recorded AFTER validation.
     expect(src.indexOf("await recordUnifiedPlanUsage(")).toBeGreaterThan(
-      src.indexOf("await callFreeAIFallbackChain("),
+      src.indexOf("await dispatchAI("),
     );
     // Guest identity (hashed) — no signup wall, no hard auth.
     expect(src).toContain("hashGuestKey");
@@ -220,12 +220,19 @@ describe("ai workout planner trial (§12.32)", () => {
     expect(src).not.toContain("requireCoach");
     // Member auto-save to the account (spec: plans always saved).
     expect(src).toContain("ai-planner");
-    // §12.28 live laws carried over from day one: 3000-token budget,
-    // 20s chain calls (no 504), JSON-only system prompt, bounded retry.
-    expect(src).toContain("maxTokens: 3000");
-    expect(src).toContain("timeoutMs: 20_000");
-    expect(src).toContain("jsonMode: true");
+    // §12.28 live laws carried over from day one — R3 (AI-Router
+    // unification): the SAME values now resolve from the registry
+    // (3000-token budget · 20s chain calls · JSON-only · bounded retry);
+    // the call site rides dispatchAI and must NOT carry policy inline.
+    expect(src).toContain('await dispatchAI("workout-demo"');
+    expect(src).not.toContain("maxTokens: 3000");
+    expect(src).not.toContain("timeoutMs: 20_000");
     expect(src).toContain("REMINDER: reply with ONE JSON object");
+    const registry = stripComments(readFileSync("src/lib/ai-registry.ts", "utf8"));
+    const spec = registry.slice(registry.indexOf('"workout-demo":'));
+    expect(spec).toContain("maxTokens: 3000");
+    expect(spec).toContain("timeoutMs: 20_000");
+    expect(spec).toContain("jsonMode: true");
   });
 
   it("SURFACE: bilingual page + full hreflang pair + schema layer", () => {

@@ -22,6 +22,7 @@
  */
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { readFileSync } from "node:fs";
 import {
   AI_FUNCTION_REGISTRY,
   listRegistryIds,
@@ -472,4 +473,50 @@ function baseCtx(over: Partial<Parameters<typeof resolveEffectiveChain>[1]> = {}
     groqClampEnabled: true,
     ...over,
   };
+}
+
+/* ─────────────── R3 — the plans family rides the router ONLY ───────────────
+ * Migration-frame canary (ت1 scoped to the plans family): after R3, the
+ * family's files contain ZERO direct engine calls — every dispatch goes
+ * through dispatchAI (policy from the registry). The demo canaries already
+ * pin the same for the two visitor routes; this generalizes it to the
+ * generator itself. */
+
+describe("R3 — plans family migrated: no direct engine calls remain", () => {
+  const PLANS_FILES = [
+    "src/lib/plan-generator.ts",
+    "src/app/api/ai/meal-plan-demo/route.ts",
+    "src/app/api/ai/workout-plan-demo/route.ts",
+  ];
+
+  it("every plans-family file dispatches through the router (no callFreeAIFallbackChain)", () => {
+    for (const f of PLANS_FILES) {
+      const src = readFileSync(f, "utf8");
+      expect(src, `${f} must not call the engine directly`).not.toContain("callFreeAIFallbackChain(");
+      expect(src, `${f} must not call grounded search`).not.toContain("callGroundedSearch(");
+    }
+  });
+
+  it("the generator carries NO inline routing policy (registry-owned only)", () => {
+    const src = stripInlineComments(readFileSync("src/lib/plan-generator.ts", "utf8"));
+    expect(src).not.toMatch(/\bmaxModels\s*:/);
+    expect(src).not.toMatch(/\btimeoutMs\s*:/);
+    expect(src).not.toMatch(/\bjsonMode\s*:/);
+    // systemPrompt overrides and payload maxTokens overrides ARE allowed
+    // (the closed override list) — temperature is policy and must be gone.
+    expect(src).not.toMatch(/temperature\s*:/);
+  });
+
+  it("both demo routes dispatch their registry ids", () => {
+    const meal = readFileSync("src/app/api/ai/meal-plan-demo/route.ts", "utf8");
+    expect(meal).toContain('dispatchAI("meal-demo"');
+    const workout = readFileSync("src/app/api/ai/workout-plan-demo/route.ts", "utf8");
+    expect(workout).toContain('dispatchAI("workout-demo"');
+  });
+});
+
+function stripInlineComments(s: string): string {
+  return s
+    .replace(/\/\*[\s\S]*?\*\//g, " ")
+    .replace(/(^|[^:])\/\/[^\n]*/g, "$1 ");
 }

@@ -161,17 +161,17 @@ describe("ai meal planner trial (§12.28)", () => {
     expect(src).toContain("meal-demo:");
     expect(src).toContain("BURST_GUARD");
     expect(src.indexOf("await rateLimit(")).toBeLessThan(
-      src.indexOf("await callFreeAIFallbackChain("),
+      src.indexOf("await dispatchAI("),
     );
     // The unified pool is checked BEFORE dispatch (read-only).
     expect(src).toContain("checkUnifiedPlanQuota");
     expect(src.indexOf("await checkUnifiedPlanQuota(")).toBeLessThan(
-      src.indexOf("await callFreeAIFallbackChain("),
+      src.indexOf("await dispatchAI("),
     );
     // SUCCESS-ONLY: the pool unit is recorded AFTER validation, never
     // before dispatch (failures/422 never burn the pool).
     expect(src.indexOf("await recordUnifiedPlanUsage(")).toBeGreaterThan(
-      src.indexOf("await callFreeAIFallbackChain("),
+      src.indexOf("await dispatchAI("),
     );
     // Guest identity (hashed) — no signup wall, no hard auth.
     expect(src).toContain("hashGuestKey");

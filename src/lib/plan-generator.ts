@@ -22,10 +22,16 @@
  */
 
 import {
-  callFreeAIFallbackChain,
   parseJSON,
-  type FallbackChainOptions,
 } from "@/lib/ai-provider";
+// R3 (AI-Router unification): the plans family migrated to the central
+// router — policy (maxTokens/timeoutMs/maxModels/jsonMode/temperature/chain)
+// resolves from ai-registry.ts via dispatchAI; call sites keep ONLY the
+// allowed overrides (systemPrompt · payload-contract maxTokens). The
+// golden canaries (ai-registry.test.ts) pin registry≡legacy≡the exact
+// pre-migration option blocks; AI_ROUTER_MODE=legacy serves the frozen
+// snapshot without a deploy.
+import { dispatchAI, type AICallOverrides } from "@/lib/ai-router";
 import {
   generateNutritionPlan,
   generateWorkoutPlan,
@@ -483,18 +489,23 @@ function constraintPromptBlock(constraints?: ClientItemConstraints | null): stri
 }
 
 /** One chain call + parse + validate, with ONE repair retry on gate
- * failure. Throws the gate error when both attempts fail validation. */
+ * failure. Throws the gate error when both attempts fail validation.
+ * R3: routing policy comes from the registry (dispatchAI resolves the
+ * tag + policy for fnId); `overrides` carries ONLY call context — the
+ * repair loop and the validators are the deterministic gates, untouched. */
 async function callValidatedChain<T>(
+  fnId: string,
   buildPrompt: (repairNote: string) => string,
-  options: FallbackChainOptions,
+  overrides: AICallOverrides,
   validate: (parsed: unknown, rawText: string) => { ok: true; value: T } | { ok: false; error: string },
 ): Promise<{ value: T; model: string; provider: string; repaired: boolean }> {
   const firstErrorHolder: string[] = [];
   for (let attempt = 0; attempt < 2; attempt++) {
     const repairNote = attempt === 0 ? "" : repairDirective(firstErrorHolder[0] ?? "مخرجات غير مطابقة للمخطط");
-    const { text, model, provider } = await callFreeAIFallbackChain(
+    const { text, model, provider } = await dispatchAI(
+      fnId,
       buildPrompt(repairNote),
-      options,
+      overrides,
     );
     const parsed = parseJSON<unknown>(text);
     const verdict = validate(parsed, text);
@@ -548,20 +559,9 @@ export async function generateNutritionPlanAI(
     // Use callFreeAIFallbackChain — OpenRouter + Groq interleaved (owner
     // directive). Chain self-clamps maxModels × timeoutMs ≤ 52s (Vercel Hobby).
     const { value, model, provider } = await callValidatedChain(
+      "plan:nutrition",
       (repairNote) => basePrompt + repairNote,
-      {
-        tag: "plan:nutrition",
-        systemPrompt: NUTRITION_SYSTEM_PROMPT,
-        temperature: 0.7,
-        // GHA-native budget (workflow sets AI_CHAIN_TOTAL_BUDGET_MS=180000):
-        // full plans now include 2 structured alternatives per meal.
-        maxTokens: 7000,
-        jsonMode: true,
-        timeoutMs: 70_000,
-        // QUALITY-FIRST LAW (2026-08-28i): 5 buckets — under provider
-        // saturation the strongest available model must stay reachable.
-        maxModels: 5,
-      },
+      { systemPrompt: NUTRITION_SYSTEM_PROMPT },
       (parsed) => validateNutritionPlanAIOutput(parsed, targets.dailyCalories, groundItem, constraints),
     );
     if (value.meals.length > 0) {
@@ -710,18 +710,9 @@ export async function generateWorkoutPlanAI(
   try {
     // OpenRouter + Groq only (owner directive) — clamped ≤ 52s.
     const { value, model, provider } = await callValidatedChain(
+      "plan:workout",
       (repairNote) => basePrompt + repairNote,
-      {
-        tag: "plan:workout",
-        systemPrompt: WORKOUT_SYSTEM_PROMPT,
-        temperature: 0.7,
-        maxTokens: 4000,
-        jsonMode: true,
-        timeoutMs: 35_000,
-        // QUALITY-FIRST LAW (2026-08-28i): 4 buckets + a humane 35s window
-        // (was 26s — too tight for a multi-week program on slow models).
-        maxModels: 4,
-      },
+      { systemPrompt: WORKOUT_SYSTEM_PROMPT },
       (parsed) => validateWorkoutPlanAIOutput(parsed),
     );
     if (value.days.length > 0) {
@@ -875,16 +866,9 @@ ${coachNote ? `تعليمات الكوتش: ${coachNote}` : ""}
   let rawParsedRef: Record<string, unknown> | null = null;
   try {
     const { value, model, provider } = await callValidatedChain(
+      "plan:nutrition-alt",
       (repairNote) => prompt + repairNote,
-      {
-        tag: "plan:nutrition-alt",
-        systemPrompt: NUTRITION_SYSTEM_PROMPT,
-        temperature: 0.8,
-        maxTokens: 2600,
-        jsonMode: true,
-        timeoutMs: 60_000,
-        maxModels: 3,
-      },
+      { systemPrompt: NUTRITION_SYSTEM_PROMPT },
       (parsed) => {
         rawParsedRef =
           parsed && typeof parsed === "object"
@@ -2023,20 +2007,12 @@ ${
 - أعد JSON صالح فقط (بدون نص إضافي، بدون أسوار markdown).`;
 
   try {
-    // OpenRouter + Groq only — clamped ≤ 52s.
-    const { text, model, provider } = await callFreeAIFallbackChain(
-      prompt,
-      {
-        tag: "plan:json-normalize",
-        systemPrompt:
-          "أنت مساعد ذكي لتحويل نصوص الخطط إلى JSON منظم. أعد JSON صالح فقط.",
-        temperature: 0.3, // low temp for faithful extraction
-        maxTokens: 4000,
-        jsonMode: true,
-        timeoutMs: 26_000,
-        maxModels: 2,
-      },
-    );
+    // R3: policy (temp 0.3 · 4000 · json · 26s · depth 2) resolves from the
+    // registry — OpenRouter + Groq only — clamped ≤ 52s.
+    const { text, model, provider } = await dispatchAI("plan:json-normalize", prompt, {
+      systemPrompt:
+        "أنت مساعد ذكي لتحويل نصوص الخطط إلى JSON منظم. أعد JSON صالح فقط.",
+    });
     const parsed = parseJSON<Record<string, unknown>>(text);
     if (parsed && (parsed.meals || parsed.days)) {
       const normalized =
@@ -2296,19 +2272,10 @@ ${candidateList}
  ]
 }`;
 
-    const { text, model } = await callFreeAIFallbackChain(
-      prompt,
-      {
-        tag: "plan:exercise-corrective",
-        systemPrompt:
-          "أنت مدرب لياقة تصحيحي. تعيد JSON صالحاً فقط وتلتزم حرفياً بقائمة التمارين المعتمدة المعطاة لك.",
-        temperature: 0.4,
-        maxTokens: 900,
-        jsonMode: true,
-        timeoutMs: 45_000,
-        maxModels: 2,
-      },
-    );
+    const { text, model } = await dispatchAI("plan:exercise-corrective", prompt, {
+      systemPrompt:
+        "أنت مدرب لياقة تصحيحي. تعيد JSON صالحاً فقط وتلتزم حرفياً بقائمة التمارين المعتمدة المعطاة لك.",
+    });
     const parsed = parseJSON<Record<string, unknown>>(text);
     const idx = Number(parsed?.choice_index);
     if (!parsed || !Number.isInteger(idx) || idx < 1 || idx > pool.length) {
@@ -2420,16 +2387,11 @@ ${ctx ? `بيانات الشخص (راعِ الحساسية والأطعمة غ�
   const groundItem = await getGroundItemFn();
   try {
     const { value, model, provider } = await callValidatedChain(
+      "plan:item-regen",
       (repairNote) => prompt + repairNote,
       {
-        tag: "plan:item-regen",
         systemPrompt:
           "أنت أخصائي تغذية. تعيد JSON صالحاً فقط — صنف واحد بديل مكافئ دون أي نص إضافي.",
-        temperature: 0.7,
-        maxTokens: 400,
-        jsonMode: true,
-        timeoutMs: 30_000,
-        maxModels: 3,
       },
       (parsed) => validateRegeneratedFoodItem(parsed, targetCals, groundItem, constraints),
     );
@@ -2517,16 +2479,11 @@ ${avoid.length > 0 ? `تمارين باقي أيام الخطة (ممنوع تك
   // one with a real name and bounded sets. One repair retry; a second
   // failure THROWS so the caller keeps the original day untouched.
   const { value, model, provider } = await callValidatedChain(
+    "plan:day-regen",
     (repairNote) => prompt + repairNote,
     {
-      tag: "plan:day-regen",
       systemPrompt:
         "أنت مدرب لياقة محترف. تعيد JSON صالحاً فقط — يوم تدريبي واحد بدون أي نص إضافي.",
-      temperature: 0.7,
-      maxTokens: 1200,
-      jsonMode: true,
-      timeoutMs: 45_000,
-      maxModels: 3,
     },
     (parsed) => validateRegeneratedWorkoutDay(parsed, { day: day.day, focus: day.focus }),
   );
