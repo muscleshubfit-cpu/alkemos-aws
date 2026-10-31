@@ -4,7 +4,7 @@
 > **Stack:** Next.js 16 · React 19 · TypeScript · Supabase · Tailwind CSS 4 · OpenRouter + Groq + NVIDIA NIM (AI) · Vercel
 > **Quality:** every push is audited by automated CI gates — types, lint, tests, schema-drift, docs parity, anti-regression
 > **Status:** in production · current live status: [`STATE.md`](./STATE.md)
-> **Last updated:** 2026-09-27 (Ph 286 — HOME-REFINE-286: the exact AI-allowance wording, four-fact colored macro cells on every food card (homepage + /foods), the complete wrapped category set, and a fully static hero)
+> **Last updated:** 2026-11-01 (Ph 390 — SEO-RECOVERY-EXEC P1-1: food-page editorial enrichment layer, bilingual, batch 1 = 20 curated foods with a uniqueness canary; the foods sitemap lastmod anchor follows the ship-date protocol)
 
 Alkemos is a bilingual (English + full Arabic RTL mirror) fitness and nutrition
 platform that unifies training, nutrition, and AI planning in one product:
@@ -71,7 +71,12 @@ no entrance beats, no arrows on its CTAs).
   search (`src/lib/foods.ts`); the hand-curated foods plus a bounded,
   batch-expanded USDA band carry real Arabic names (`SEO_FOOD_BAND` in
   `src/lib/seo-food-band.ts` is the single source for the band;
-  `/api/food-search` takes `?lang=ar|en` for language-matched result names)
+  `/api/food-search` takes `?lang=ar|en` for language-matched result names).
+  Curated food detail pages also carry an editorial enrichment layer —
+  a unique intro, usage context and FAQ per food, bilingual, rendered
+  server-side (`src/lib/foods-enrichment.ts`; batch 1 = 20 foods,
+  grows batch-by-batch — canaried for uniqueness in
+  `src/lib/__tests__/foods-enrichment.test.ts`)
 - **Workout programs** — 7 structured, ready-to-follow programs for home,
   home-equipment, and gym, from beginner to advanced
   (`src/lib/workout-programs.ts`)

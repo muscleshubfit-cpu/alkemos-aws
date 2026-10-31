@@ -10,6 +10,7 @@ import {
   TAG_LABELS,
   type Food,
 } from "@/lib/foods-shared";
+import type { FoodEnrichment } from "@/lib/foods-enrichment";
 import { ArrowLeft, Calculator, Target } from "lucide-react";
 import type { HubLinkMini } from "@/lib/hub-collections";
 
@@ -26,11 +27,21 @@ import type { HubLinkMini } from "@/lib/hub-collections";
  * AR mirror never bounces Arabic users (or crawlers) back to the EN
  * canonical route — and so every Arabic detail page has crawlable
  * Arabic internal links (SEO 404 fix, 2026-09-01).
+ *
+ * P1-1 ENRICHMENT (SEO-ADSENSE-RECOVERY-PLAN-2026-10-31, owner order
+ * 2026-11-01): `enrichment` carries the per-food unique editorial layer
+ * (intro / usage context / FAQ) resolved server-side via
+ * getFoodEnrichment() — undefined for foods outside the enriched
+ * batches, in which case nothing renders and the page is exactly what
+ * it was before. Bilingual through the same `lang` mechanism; NO
+ * FAQPage JSON-LD (retired by Google May 2026 — seo.ts law), the FAQ
+ * layer is user-visible HTML only.
  */
 export default function FoodDetailClient({
   food,
   related: relatedProp,
   collectionLinks: collectionLinksProp,
+  enrichment,
   lang: langProp,
 }: {
   food: Food | null;
@@ -40,6 +51,8 @@ export default function FoodDetailClient({
    *  URL-space law as `base` below). Empty for the USDA long tail
    *  (no tags → no collection links, honest linking only). */
   collectionLinks?: HubLinkMini[];
+  /** P1-1: unique editorial layer for enriched foods (server-resolved). */
+  enrichment?: FoodEnrichment | null;
   lang?: Lang;
 }) {
   const { lang: ctxLang } = useI18n();
@@ -170,6 +183,49 @@ export default function FoodDetailClient({
             </div>
           </div>
         </div>
+
+        {/* P1-1 ENRICHMENT — unique intro prose (SEO-ADSENSE-RECOVERY-PLAN
+            2026-10-31; owner order 2026-11-01). The header grid above is
+            shared chrome + data across all foods — this paragraph is the
+            per-food unique layer that drops the family's measured 42.8%
+            template duplication. Nothing renders for non-enriched foods. */}
+        {enrichment && (
+          <section className="mt-10">
+            <p className="text-base leading-relaxed text-[#1d1d1f]">
+              {isAr ? enrichment.intro.ar : enrichment.intro.en}
+            </p>
+          </section>
+        )}
+
+        {/* P1-1 ENRICHMENT — usage context: alternatives / plan / caution. */}
+        {enrichment && (
+          <section className="mt-8">
+            <h2 className="text-xl font-semibold tracking-tight">
+              {isAr ? `كيف تُدخل ${food.nameAr} في خطتك` : `How to fit ${food.nameEn} into your plan`}
+            </h2>
+            <div className="mt-4 grid gap-4 md:grid-cols-3">
+              {([
+                {
+                  title: isAr ? "بدائل عملية" : "Practical swaps",
+                  body: isAr ? enrichment.context.ar.alternatives : enrichment.context.en.alternatives,
+                },
+                {
+                  title: isAr ? "في التنشيف والتضخيم" : "On a cut and on a bulk",
+                  body: isAr ? enrichment.context.ar.plan : enrichment.context.en.plan,
+                },
+                {
+                  title: isAr ? "انتبه لـ" : "Watch out for",
+                  body: isAr ? enrichment.context.ar.caution : enrichment.context.en.caution,
+                },
+              ] as const).map((block) => (
+                <div key={block.title} className="rounded-2xl bg-[#f5f5f7] p-5">
+                  <h3 className="text-sm font-semibold text-[#1d1d1f]">{block.title}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-[#6e6e73]">{block.body}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* Macro Calculator */}
         <section className="mt-10 rounded-3xl bg-[#f5f5f7] p-6 md:p-8">
@@ -407,6 +463,24 @@ export default function FoodDetailClient({
                     {isAr ? `${rel.per100g.calories} سعرة · ${rel.per100g.protein} جم بروتين` : `${rel.per100g.calories} kcal · ${rel.per100g.protein}g protein`}
                   </p>
                 </a>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* P1-1 ENRICHMENT — per-food FAQ (visible HTML only; FAQPage
+            JSON-LD is retired — seo.ts law 2026-05). */}
+        {enrichment && (
+          <section className="mt-10">
+            <h2 className="text-xl font-semibold tracking-tight">
+              {isAr ? `أسئلة شائعة عن ${food.nameAr}` : `${food.nameEn} — frequently asked questions`}
+            </h2>
+            <div className="mt-4 divide-y divide-[#d2d2d7]">
+              {(isAr ? enrichment.faq.ar : enrichment.faq.en).map((item) => (
+                <div key={item.q} className="py-4">
+                  <h3 className="text-base font-medium text-[#1d1d1f]">{item.q}</h3>
+                  <p className="mt-1.5 text-sm leading-relaxed text-[#6e6e73]">{item.a}</p>
+                </div>
               ))}
             </div>
           </section>

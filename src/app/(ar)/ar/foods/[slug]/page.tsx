@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { FOODS, getFoodBySlug, getRelatedFoods } from "@/lib/foods";
+import { getFoodEnrichment } from "@/lib/foods-enrichment";
 import { getCollectionsForFoodTags, type HubLinkMini } from "@/lib/hub-collections";
 import { getBreadcrumbSchema, getReviewedWebPageSchema, jsonLd } from "@/lib/seo";
 import FoodDetailClient from "@/app/(en)/foods/[slug]/FoodDetailClient";
@@ -185,6 +186,7 @@ export default async function Page({
       <FoodDetailClient
         food={food ?? null}
         related={food ? getRelatedFoods(food) : []}
+        enrichment={food ? getFoodEnrichment(food.slug) ?? null : null}
         collectionLinks={food ? getCollectionsForFoodTags(food.tags).map(
           (c): HubLinkMini => ({
             href: `/collections/${c.slug}`,
