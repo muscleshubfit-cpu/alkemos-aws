@@ -135,7 +135,9 @@ Any of the following:
 
 - Stored as server-side env vars only (`OPENROUTER_API`, with
   `OPENROUTER_API_KEY` accepted as an alias, `GROQ_API_KEY`,
-  `NVIDIA_API_KEY`, `GEMINI_API_KEY` + optional `GEMINI_API_KEY2`,
+  `NVIDIA_API_KEY`, `GEMINI_API_KEY` (single optional tail key —
+  `GEMINI_API_KEY2` RETIRED permanently by owner order 2026-10-31,
+  AI-Router unification §6; no code path reads a second key),
   `TAVILY_API_KEY`, and `EXA_API_KEY` — NIM is OpenAI-compatible at
   `integrate.api.nvidia.com`).
 - **GEMINI (native adapter, 2026-10-06 owner order; first-priority law

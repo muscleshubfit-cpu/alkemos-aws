@@ -61,7 +61,6 @@ import { join } from "node:path";
 
 const ENV_KEYS = [
   "GEMINI_API_KEY",
-  "GEMINI_API_KEY2",
   "GEMINI_MODEL",
   "GEMINI_GROUNDED_MODELS",
   "GEMINI_GROUNDED_ENABLED",

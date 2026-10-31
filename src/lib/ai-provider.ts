@@ -1032,21 +1032,20 @@ function groundedModelCandidates(): string[] {
   ];
 }
 
-/** BLOG-RECOVERY 2026-10-16 (RC2 relief) — DUAL-KEY POOL for the grounded
- * ladder (the OpenRouter dual-key precedent, applied where it bites):
- * Gemini bills the Google-Search grounding quota PER PROJECT, and the
- * live probe (runs 38833407195 + 38834723820 vs aws-ai-test 38835797657)
- * measured the primary project's grounded quota drained across every
- * model family while NON-grounded calls on the same key kept succeeding.
- * A second free-tier key (GEMINI_API_KEY2, a NEW Google project) carries
- * an INDEPENDENT grounded bucket — the owner adds one secret and P0
- * resumes without any further code. Absent/empty = single-key behavior
- * byte-identical to the pre-relief ladder. */
+/** GEMINI_API_KEY2 — RETIRED (owner order 2026-10-31, AI-Router
+ * unification directive §6: «إلغاء بند GEMINI_API_KEY2 نهائيًا… لا نحتاج
+ * مفتاح Gemini ثانيًا، ولا يجوز أن يعتمد أي مسار على وجوده. يبقى Gemini
+ * مزودًا اختياريًا دون أولوية إجبارية»): the BLOG-RECOVERY 2026-10-16 RC2
+ * dual-key relief design (a second free-tier key from a NEW Google project
+ * carrying an independent grounded bucket) is retired VERBATIM — no code
+ * path reads GEMINI_API_KEY2 anymore and no path may depend on it. The
+ * dormant grounded arm (last arm of the §6-أ ladder) serves from the
+ * SINGLE primary GEMINI_API_KEY only; with the key absent the arm is
+ * skipped honestly (the standing behavior — gemini stays an OPTIONAL
+ * tail provider, never a forced priority). */
 export function getGeminiGroundedKeys(): string[] {
-  const keys = [process.env.GEMINI_API_KEY || "", process.env.GEMINI_API_KEY2 || ""]
-    .map((k) => k.trim())
-    .filter(Boolean);
-  return [...new Set(keys)];
+  const key = (process.env.GEMINI_API_KEY || "").trim();
+  return key ? [key] : [];
 }
 
 export async function callGeminiGroundedSearch(
