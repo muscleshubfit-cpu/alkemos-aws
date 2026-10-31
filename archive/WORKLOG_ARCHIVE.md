@@ -13875,3 +13875,26 @@ Stage Summary:
 - الخريطة الشاملة والتصميم الموحد وخطة التنفيذ والاختبارات محفوظة على main؛ القرارات العشرة (سلّم البحث · CF وأدواره وعدّاده · بطارية النشر اليدوي · إصلاحا الإقران · Mistral مستبعد…) بانتظار موافقة المالك §12 بالتقرير — لا شيء فُعّل أو رُبط أو استُبدل
 - Push status: pushed — كوميت توثيقي واحد [vercel skip] (docs-only؛ بوابات docs المحلية خضراء قبل الدفع)
 
+
+<!-- rotated 2026-10-31 by scripts/worklog_rotate.py (Phase 288, ARCH-REMEDIATION): 1 entries moved verbatim from worklog.md -->
+---
+Task ID: AI-PROVIDERS-EXPANSION-PHASE5A-TAVILY-ARM-2026-10-31
+Agent: Main (Super Z)
+Task: أمر المالك 2026-10-31 — المرحلة الخامسة (أ): تنفيذ ذراع البحث Tavily وفق تقرير المرحلة الرابعة §10، مع قرارين ملزمين: إلغاء قانون Gemini-First نهائيًا بما يشمل السلاسل الثقيلة، ورفض §12-7 (لا مفتاح Gemini للتقييم — آلية الإنتاج نفسها) + تصحيح كل نص يفرض إبقاءه + اختبار فعلي لا يعد نجاح الاتصال جودة.
+
+Work Log:
+- (نقطة الانطلاق) HEAD=origin/main=8a201bc9 نظيفة؛ قراءة المراجع الإلزامية (AGENTS §1–§4+§8+§12 · STATE · آخر worklog · تقارير المراحل 1–4 + §10-أ و§12)
+- (ذراع Tavily) callTavilySearch بذات عقد GroundedSearchResult: بحث أساسي حقيقي (1 رصيد من 1000/شهر — بلا بطاقة) ← بوابة الدليل 344 (صفر URLs=فشل صادق) ← توليف JSON البحث على callFreeAIFallbackChain بنتائج البحث الحية داخل البرومبت (قص raw_content بمحدد 1,200 محرف/نتيجة) + مقابض TAVILY_{SEARCH_DEPTH,MAX_RESULTS,INCLUDE_DOMAINS} + searchQuery/lang بالعقد الموسع (GroundedSearchOptions)
+- (السلم §6-أ) callGroundedSearch أعيد ترتيبه: tavily→groq→gemini خامدة (GEMINI_GROUNDED_ENABLED=0 يزيلها بلا نشر) — ذراع OR web أُزيلت من السلم الفعلي (كودها باقٍ للتشخيص — P0-2) وblog-research يمرر الاستعلام المناسب لكل لغة (TAVILY_SEARCH_QUERY_AR/EN)
+- (إلغاء Gemini-First) إدخالا Gemini نزلا للذيل بالسلسلتين وفرق تعليق التدوير حُذف — التدوير الثلاثي يعمل بكل نداء strongest (مبرر الذيل المقيس: توفرها 66/271=24.4% الأسوأ بين الأربعة)؛ ذيلها خارج حد maxModels بالتقييم فانطبقت أمانة القياس بلا مفتاح (قرار 2) — قانون EVAL FIDELITY بAGENTS §8 يمنع إضافة المفتاح مستقبلًا
+- (الاختبارات) ai-provider-grounded-failover.test.ts أُعيد (949→1,273 سطرًا؛ 40 اختبارًا: ترتيب السلم · عقد جسم البحث · إثبات الاستناد نصيًا (الروابط داخل برومبت التوليف) · البوابات · التبريد · مقبض التعطيل · قانون التدوير بممر __resetChainRotationForTests بنمط cooldown) + أوتاد ai-provider.test.ts وblog-research-grounding.test.ts من «gemini leads» إلى «gemini tail»
+- (البوابات) vitest 2,986/2,986 (182 ملفًا) · tsc 0 · eslint 0 · docs/parity · stale-refs · ui-wiring · docs_audit كلها خضراء (STATE 31,478B تحت السقف)
+- (السير والتوثيق) TAVILY_API_KEY ممرر لblog-post-{ar,en} وgrounded-failover-test (السر قائم منذ المرحلة 3 — لم ينشأ ولم يطبع) + المسبار الحي يقيس الذراع أولًا ويطبع المصادر والعينات (قرار 7) + AGENTS §8 (PROVIDER LAYER/BALANCE/EVAL FIDELITY) + SECURITY §3.1 + .env.example + DEVELOPER_GUIDE/README + تقرير المرحلة 4 مصحح ب7 مواضع مؤرخة (§12-1 نُفذ · §12-7 رُفض · شطب gemini-first) + طوابع تجاوز لتقارير 1–3 وتعافي 10-20
+- (الاختبار الحي — منفذ بعد الدفع) توكن GitHub وصل برسالة استكمال المالك: المسبار الحي GREEN (ذراع Tavily: PASS 9,918ms مصادر CDC+WHO مطبوعة · E2E PASS عبر tavily · التدوير #1←#2←#3 حي) · تشغيل AR المراقب: فشل صادق ببوابات جودة المحتوى (نفس فئة الكود القديم بالصباح — ليس انحدارًا؛ RESUME استأنف صفًا قديمًا فلم يُستهلك بحث) · تشغيل EN طازج الصف: نجاح كامل — بحث Tavily حي (kw:10 faq:10 topics:5 sources:2 + توأم عربي sources:3) → مقالة منشورة حية (8 H2 · 5 FAQ · NIH ODS+NASM متحققة HEAD) — قبل/بعد: تشغيل الليلة القديم مات بP0 (كل الأذرع فشلت) · 6 أبحاث = 6 رصيد من 1000 — التفاصيل §4-ب بالتقرير
+- (تنقيح نهائي أمر 3) مسح مستودعي ختامي لنصوص Gemini-First النشطة بعد الدفع: تعليق واحد متقادم بـgetEnvConfig («the law lives in the CHAINS») صُحّح داخل الفريم — بعده صفر نصوص نشطة (tsc 0 + 93/93 اختبارات المزود خضراء محليًا قبل الدفع)
+
+Stage Summary:
+- ذراع البحث Tavily حية بالكود والإنتاج (مسبار GREEN + مقالة EN منشورة عبر بحثها) وقانون Gemini-First ملغى نهائيًا بكل المسارات والتوثيق؛ 2,986/2,986 والبوابات خضراء محليًا وبالتكال (CI ×5)
+- Push status: **منفذ ومتحقق** — e4bca85c على main (8a201bc9 → e4bca85c؛ HEAD == origin/main؛ CI ×5 أخضر: quality/parity/migration/guard/deploy) + كوميت النتائج الحية التوثيقي هذا (§4-ب) يليه دافعًا على main
+
+---
