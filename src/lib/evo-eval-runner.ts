@@ -19,7 +19,8 @@
  *   always printed (visible, counted), they only fail the run when they
  *   push the run below that majority floor.
  * - Provider tags: "evo-eval" (answers) and "evo-eval-judge" (judge) —
- *   both ride callFreeAIFallbackChain (UNIVERSAL MODEL SWITCHER law) with
+ *   both ride dispatchAI through the central router (UNIVERSAL MODEL
+ *   SWITCHER law; R5 AI-Router unification) with the registry's
  *   chain:"fast" — the SAME selection mechanism production EVO chat uses
  *   (EVAL FIDELITY LAW, Phase 5-A 2026-10-31: the workflow deliberately
  *   carries NO gemini key — the owner rejected the §12-7 key-add; the
@@ -36,7 +37,7 @@
  * react-server condition). Server-only-ness is enforced by what this file
  * imports: supabase/admin + ai-provider never touch the client bundle.
  */
-import { callFreeAIFallbackChain } from "@/lib/ai-provider";
+import { dispatchAI } from "@/lib/ai-router";
 import { isSupabaseAdminConfigured, supabaseAdmin } from "@/lib/supabase/admin";
 import {
   buildSystemPrompt,
@@ -87,16 +88,13 @@ async function answerQuestion(
   question: EvalQuestion,
   systemPrompt: string,
 ): Promise<{ answer: string; provider: string; model: string }> {
-  const { text, provider, model } = await callFreeAIFallbackChain(
+  // R5: policy (0.6 · 800 · 20s · depth 3 · chain fast) resolves from the
+  // registry (evo-eval) — the eval rides the SAME production path through
+  // the central router (EVAL FIDELITY: the workflow carries no gemini key
+  // and the fast chain's tail entry stays beyond the maxModels clamp).
+  const { text, provider, model } = await dispatchAI(
+    "evo-eval",
     buildEvalAnswerPrompt(systemPrompt, question),
-    {
-      tag: "evo-eval",
-      chain: "fast",
-      temperature: 0.6,
-      maxTokens: 800,
-      timeoutMs: 20_000,
-      maxModels: 3,
-    },
   );
   // User-visible shape = what the judge grades (route parity).
   const cleaned = stripMarkdownSyntax(
@@ -114,16 +112,14 @@ async function judgeAnswer(
 ): Promise<{ score: number; safetyPass: boolean; languageMatch: boolean; notes: string }> {
   // ONE retry on an unparseable verdict — transient judge hiccups (429 /
   // chatter output) must not burn a question (RATE-LIMIT RESILIENCE LAW).
+  // R5: policy (0 · 300 · 15s · depth 2 · chain fast) resolves from the
+  // registry (evo-eval-judge) — the retry loop stays verbatim.
   let lastError: Error | null = null;
   for (let attempt = 0; attempt < 2; attempt++) {
-    const { text } = await callFreeAIFallbackChain(buildEvalJudgePrompt({ question, answer }), {
-      tag: "evo-eval-judge",
-      chain: "fast",
-      temperature: 0,
-      maxTokens: 300,
-      timeoutMs: 15_000,
-      maxModels: 2,
-    });
+    const { text } = await dispatchAI(
+      "evo-eval-judge",
+      buildEvalJudgePrompt({ question, answer }),
+    );
     const verdict = parseEvalVerdict(text);
     if (verdict) {
       // Boolean facts are CODE-computed, never judge-opinioned (168.2):

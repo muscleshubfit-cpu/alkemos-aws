@@ -617,3 +617,47 @@ describe("R4 — blog family migrated: no direct engine calls remain", () => {
     expect(social).toContain('dispatchAI(\n    input.language === "ar" ? "social-posts:ar" : "social-posts:en"');
   });
 });
+
+/* ─────────── R5 — the EVO family rides the router ONLY ─────────── */
+
+describe("R5 — EVO family migrated: no direct engine calls remain", () => {
+  const EVO_FILES = [
+    "src/app/api/ai/chat/route.ts",
+    "src/lib/evo-eval-runner.ts",
+  ];
+
+  it("every EVO-family file dispatches through the router", () => {
+    for (const f of EVO_FILES) {
+      const src = stripInlineComments(readFileSync(f, "utf8"));
+      expect(src, `${f} must not call the engine directly`).not.toContain("callFreeAIFallbackChain(");
+      expect(src, `${f} must not call grounded search directly`).not.toContain("callGroundedSearch(");
+    }
+  });
+
+  it("the four EVO call sites dispatch their registered ids (fast chain from the registry)", () => {
+    const chat = readFileSync("src/app/api/ai/chat/route.ts", "utf8");
+    // The streaming call keeps onDelta as the declared call-context override.
+    expect(chat).toContain('await dispatchAI(\n            "evo-chat",\n            fullPrompt,\n            { onDelta: (chunk) => send("delta", { text: chunk }) },\n          )');
+    expect(chat).toContain('await dispatchAI("evo-memory", prompt)');
+    const evalRunner = readFileSync("src/lib/evo-eval-runner.ts", "utf8");
+    expect(evalRunner).toContain('await dispatchAI(\n    "evo-eval",');
+    expect(evalRunner).toContain('await dispatchAI(\n      "evo-eval-judge",');
+  });
+
+  it("the eval rides the SAME production path (EVAL FIDELITY proven automatically)", () => {
+    // The audit's honesty clause: evo-eval/evo-eval-judge must resolve the
+    // SAME fast-chain ladder the interactive evo-chat uses — one ladder
+    // source, so the weekly eval measures the real production mechanism.
+    const chatSpec = AI_FUNCTION_REGISTRY["evo-chat"];
+    for (const id of ["evo-memory", "evo-eval", "evo-eval-judge"]) {
+      expect(AI_FUNCTION_REGISTRY[id].ladder, `${id} ladder`).toEqual(chatSpec.ladder);
+      expect(AI_FUNCTION_REGISTRY[id].policy.chain, `${id} chain`).toBe("fast");
+    }
+    // The ONLY EVO surface is the SSE route (entry surface law).
+    expect(chatSpec.entry.surface).toBe("vercel-stream");
+    expect(chatSpec.role.streaming, "evo-chat is the streaming spec").toBe(true);
+    // The retry loop (one judge retry) stays at the call site, verbatim.
+    const evalRunner = readFileSync("src/lib/evo-eval-runner.ts", "utf8");
+    expect(evalRunner).toContain("for (let attempt = 0; attempt < 2; attempt++)");
+  });
+});

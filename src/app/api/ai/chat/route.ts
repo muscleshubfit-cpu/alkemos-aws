@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse, after } from "next/server";
 import { createHash } from "crypto";
-import { callFreeAIFallbackChain, parseJSON } from "@/lib/ai-provider";
+import { parseJSON } from "@/lib/ai-provider";
+// R5 (AI-Router unification): the EVO family rides the registry — the
+// speed-first fast chain + the streaming contract resolve from
+// ai-registry.ts (chain:"fast" is registry policy; onDelta stays the
+// declared call-site override for SSE token streaming).
+import { dispatchAI } from "@/lib/ai-router";
 import { requireUser, isAuthConfigured, type AuthUser } from "@/lib/auth-server";
 import { clientIp } from "@/lib/rate-limit";
 import {
@@ -650,17 +655,13 @@ export async function POST(request: NextRequest) {
           // speed-first chain (fastest free models, accuracy-checked).
           // Phase 89: raw tokens stream to the user via onDelta while the
           // chain keeps its fast-order + key-rotation + fallback policy.
-          const { text: aiReply, model: aiModel, provider: aiProvider } = await callFreeAIFallbackChain(
+          // R5: policy (0.6 · 800 · 16s · depth 3 · chain fast) resolves
+          // from the registry (evo-chat — role.streaming); onDelta is the
+          // declared call-context override carrying the SSE deltas.
+          const { text: aiReply, model: aiModel, provider: aiProvider } = await dispatchAI(
+            "evo-chat",
             fullPrompt,
-            {
-              tag: "evo-chat",
-              temperature: 0.6,
-              maxTokens: 800,
-              timeoutMs: 16_000,
-              maxModels: 3,
-              chain: "fast",
-              onDelta: (chunk) => send("delta", { text: chunk }),
-            },
+            { onDelta: (chunk) => send("delta", { text: chunk }) },
           );
 
           if (aiReply && aiReply.trim().length > 5) {
@@ -948,17 +949,12 @@ async function recordMemoryProgress(
     }
 
     // Extraction — cheap fast chain (nemotron lightning / gpt-oss-20b class).
+    // R5: policy (0.2 · 400 · 12s · depth 2 · chain fast) resolves from the
+    // registry (evo-memory).
     const transcript = capTranscriptForExtraction(history, message, reply);
     const prompt = buildEvoMemoryPrompt(transcript);
     if (prompt) {
-      const { text } = await callFreeAIFallbackChain(prompt, {
-        tag: "evo-memory",
-        chain: "fast",
-        maxModels: 2,
-        temperature: 0.2,
-        maxTokens: 400,
-        timeoutMs: 12_000,
-      });
+      const { text } = await dispatchAI("evo-memory", prompt);
 
       // Dedup against a FRESH read of the user's active facts.
       const { data: existing } = await supabaseAdmin
