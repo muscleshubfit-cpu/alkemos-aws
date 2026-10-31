@@ -119,6 +119,8 @@ scripts/qa/**/__pycache__/
 !/scripts/seo-p212-live-audit.mjs
 !/scripts/ai-grounded-failover-probe.mts
 !/scripts/indexnow-submit.mjs
+#   scripts/bing-url-submit.mjs → Bing Content Submission API submitter (SEO-ADSENSE-RECOVERY-PLAN-2026-10-31 P1-4, owner execution order 2026-11-01 — bing-url-submission.yml dispatch-only; FIRST consumer of the BING_WEB_MASTER secret, never printed; hit the same /scripts/* blanket trap as indexnow-submit — exception added in the fixup frame E2-FIXUP after the live dispatch proved the file missing from the checkout, run 41238885866)
+!/scripts/bing-url-submit.mjs
 !/scripts/seo-p212-cls-risk.mjs
 #   scripts/plan-ai-probe.mts → LIVE real-provider plan-quality probe (PLAN-REGEN-CONSTRAINTS 2026-10-24 — plan-ai-probe.yml dispatch-only instrument: synthetic keto client through the real chain + gate + independent audit + one keto meal regen; zero DB writes, zero client-balance impact; hit the same /scripts/* blanket trap — exception added in the same frame)
 !/scripts/plan-ai-probe.mts
