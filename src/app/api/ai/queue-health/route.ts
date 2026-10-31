@@ -8,6 +8,16 @@ import {
   CF_NEURON_WARN_THRESHOLD,
   CF_NEURON_DAY_LIMIT,
 } from "@/lib/ai-cf-usage";
+// R2 (AI-Router unification, owner clause 3): the centralized
+// (provider×model×function) meters + the Tavily/Exa monthly quota strips.
+import {
+  readAIMeterDay,
+  tavilyCreditsThisMonth,
+  exaCostCentsThisMonth,
+  TAVILY_MONTH_CREDIT_LIMIT,
+  EXA_MONTH_USD_CENTS_LIMIT,
+  QUOTA_WARN_SHARE,
+} from "@/lib/ai-usage-meter";
 
 /**
  * AI QUEUE HEALTH — project-wide early-warning dashboard data.
@@ -288,6 +298,65 @@ export async function GET(request: NextRequest) {
     /* repair scan is best-effort — panel stays honest without it */
   }
 
+  // ── R2 PROVIDER×MODEL×FUNCTION USAGE (last 24h) + SEARCH QUOTAS ──
+  // (AI-Router unification frame R2, owner clause 3: «عدادات ومراقبة حسب
+  // المزود والنموذج والوظيفة»). Reads the ai:usage:{date}:* daily keys
+  // (SCAN+MGET, fail-open → null keeps the panel honest without it) plus
+  // the two MONTHLY search-quota meters (advisory strips — the free
+  // grants renew monthly; WARNING at 80%, never a barrier).
+  let providerUsage: {
+    windowHours: 24;
+    rows: Array<{
+      fn: string;
+      provider: string;
+      model: string;
+      calls: number;
+      ok: number;
+      empty: number;
+      fail: number;
+      quota: number;
+      tokensEst: number;
+    }>;
+  } | null = null;
+  try {
+    const rows = await readAIMeterDay();
+    if (rows.length > 0) providerUsage = { windowHours: 24, rows };
+  } catch {
+    /* usage meter is best-effort — panel stays honest without it */
+  }
+
+  let tavilyQuota: { usedCredits: number; monthLimit: number; warnAt: number } | null = null;
+  try {
+    const usedCredits = await tavilyCreditsThisMonth();
+    if (usedCredits !== null && usedCredits > 0) {
+      const warnAt = Math.floor(TAVILY_MONTH_CREDIT_LIMIT * QUOTA_WARN_SHARE);
+      tavilyQuota = { usedCredits: Math.round(usedCredits * 10) / 10, monthLimit: TAVILY_MONTH_CREDIT_LIMIT, warnAt };
+      if (usedCredits >= warnAt) {
+        issues.push(
+          `⚠ استهلاك Tavily بلغ ${Math.round(usedCredits)} رصيدًا من ${TAVILY_MONTH_CREDIT_LIMIT.toLocaleString("en-US")} شهريًا (تجاوز عتبة التحذير ${warnAt} — استشاري، المنحة تتجدد شهريًا)`,
+        );
+      }
+    }
+  } catch {
+    /* advisory strip only */
+  }
+
+  let exaQuota: { usedCents: number; monthLimit: number; warnAt: number } | null = null;
+  try {
+    const usedCents = await exaCostCentsThisMonth();
+    if (usedCents !== null && usedCents > 0) {
+      const warnAt = Math.floor(EXA_MONTH_USD_CENTS_LIMIT * QUOTA_WARN_SHARE);
+      exaQuota = { usedCents: Math.round(usedCents * 10) / 10, monthLimit: EXA_MONTH_USD_CENTS_LIMIT, warnAt };
+      if (usedCents >= warnAt) {
+        issues.push(
+          `⚠ استهلاك Exa بلغ $${(usedCents / 100).toFixed(2)} من المنحة الشهرية $10 (تجاوز عتبة التحذير $${(warnAt / 100).toFixed(2)} — استشاري، المنحة تتجدد شهريًا)`,
+        );
+      }
+    }
+  } catch {
+    /* advisory strip only */
+  }
+
   return NextResponse.json({
     counts,
     oldestQueuedMinutes: oldestQueuedMinutes === null ? null : Math.round(oldestQueuedMinutes),
@@ -296,6 +365,9 @@ export async function GET(request: NextRequest) {
     pairing,
     repair,
     cfNeurons,
+    providerUsage,
+    tavilyQuota,
+    exaQuota,
     // CLEARABLE-SCOPE CONTRACT (2026-10-30, owner order «زر مسح التنبيه يعرض
     // تم مسح 0 بينما يظل التنبيه الأحمر 0/6 pair_id ظاهرًا»): the issues array
     // mixes FAILED ai_jobs rows (transient diagnostics the DELETE actually

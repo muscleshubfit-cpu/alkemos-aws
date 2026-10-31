@@ -81,6 +81,46 @@ import {
   cooldownState,
   markCooldown,
 } from "./ai-provider-cooldown";
+// R2 (AI-Router unification, owner clause 3): the centralized
+// (provider×model×function) attempt meter — wired INSIDE the walk and the
+// arms (never at call sites). Fire-and-forget by law: a metering outage
+// must NEVER delay or disable generation (a 3s Upstash bound awaited per
+// failed attempt would otherwise stack inside tight Vercel budgets).
+import {
+  trackAIMeterAttempt,
+  trackTavilyCredits,
+  trackExaCostCents,
+  tavilySearchCredits,
+  tavilyExtractCredits,
+  EXA_SEARCH_CENTS,
+  EXA_CONTENTS_CENTS,
+} from "./ai-usage-meter";
+
+/** Fire-and-forget meter tap — never throws, never awaits at the call
+ *  site (the module itself swallows everything; this is belt+suspenders). */
+function meterTap(
+  fn: string | undefined,
+  provider: string,
+  model: string,
+  outcome: "ok" | "empty" | "fail" | "quota",
+  latencyMs: number,
+  tokensEst?: number,
+): void {
+  void trackAIMeterAttempt({
+    fn: fn || "direct",
+    provider,
+    model,
+    outcome,
+    latencyMs,
+    ...(tokensEst !== undefined ? { tokensEst } : {}),
+  }).catch(() => {});
+}
+
+/** Quota-class detection for the meter (mirrors the chain's own
+ *  looksLikeQuota classification — 401/402/429/403/quota/rate/credit). */
+function meterQuotaClass(msg: string): boolean {
+  return /\b(401|402|429|403)\b|quota|rate.?limit|credit|insufficient/i.test(msg);
+}
 
 /**
  * Canonical env-var reader for the allowed providers.
@@ -1086,6 +1126,8 @@ export async function callGeminiGroundedSearch(
         );
         continue;
       }
+      // R2 meter: t0 per key×model grounded attempt.
+      const armT0 = Date.now();
       try {
         const { text, grounding } = await callGeminiGenerate(cfg, prompt, {
           ...options,
@@ -1096,9 +1138,21 @@ export async function callGeminiGroundedSearch(
             `[gemini-grounded] key#${keyIdx + 1} ${model} succeeded after ${failures.length} earlier key/model failure(s)`,
           );
         }
+        // R2 meter: the dormant arm's successful googleSearch-grounded
+        // call (the standing per-tag gemini counters stay untouched —
+        // different key family, different report).
+        meterTap(options.tag, "gemini", `${model}+googleSearch`, "ok", Date.now() - armT0);
         return { text, provider: "gemini", model, grounding };
       } catch (e) {
         const msg = e instanceof Error ? e.message : String(e);
+        // R2 meter: the failed grounded attempt (quota-class vs fail).
+        meterTap(
+          options.tag,
+          "gemini",
+          `${model}+googleSearch`,
+          meterQuotaClass(msg) ? "quota" : "fail",
+          Date.now() - armT0,
+        );
         failures.push(`[key#${keyIdx + 1} ${model}] ${msg.slice(0, 240)}`);
         // Exhaustion-class failure (429 quota / 402 payment / 401-403 auth /
         // 404 model-gone) → cool this key×model for the window; transient
@@ -1489,6 +1543,7 @@ export async function callTavilySearch(
 
   const includeDomains = getTavilyIncludeDomains();
   const timeoutMs = options.timeoutMs ?? 60_000;
+  const t0 = Date.now();
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   let body: Record<string, unknown>;
@@ -1514,9 +1569,16 @@ export async function callTavilySearch(
       const msg = `Tavily /search HTTP ${res.status}: ${text.slice(0, 300)}`;
       const cls = classifyForCooldown(msg);
       if (cls) markCooldown(cdScope, `${cls}: ${msg.slice(0, 120)}`);
+      // R2 meter: the search-arm failure (quota-class vs ordinary fail).
+      meterTap(options.tag, "tavily", "search-api", meterQuotaClass(msg) ? "quota" : "fail", Date.now() - t0);
       throw new Error(`callTavilySearch: ${msg}`);
     }
     body = (await res.json()) as Record<string, unknown>;
+    // R2 quota meter (owner clause 3, gap D-3): the /search call consumed
+    // its credits (basic=1 · advanced=2 — official table) the moment it
+    // answered 200; the evidence gate below cannot un-consume them.
+    void trackTavilyCredits(tavilySearchCredits(getTavilySearchDepth()), options.tag);
+    meterTap(options.tag, "tavily", "search-api", "ok", Date.now() - t0);
   } finally {
     clearTimeout(timer);
   }
@@ -1702,6 +1764,7 @@ async function deepenFullText(
   const maxChars = getExaContentsMaxChars();
   const capped = urls.slice(0, GROUNDED_FULLTEXT_PAGES);
   const LP = `[exa-grounded:${tag}]`;
+  const t0 = Date.now();
 
   // (a) primary extractor — Exa /contents
   try {
@@ -1735,6 +1798,9 @@ async function deepenFullText(
           }));
         if (pages.length > 0) {
           console.log(`${LP} full-text deepening ok via exa /contents (${pages.length}/${capped.length} pages)`);
+          // R2 quota meter: the /contents request costs $1/1k = 0.1¢.
+          void trackExaCostCents(EXA_CONTENTS_CENTS, tag);
+          meterTap(tag, "exa", "contents-api", "ok", Date.now() - t0);
           return pages.slice(0, GROUNDED_FULLTEXT_PAGES);
         }
         console.warn(`${LP} /contents 200 with zero usable pages — soft failure, trying the Tavily Extract alternative (§6-أ)`);
@@ -1783,6 +1849,10 @@ async function deepenFullText(
         .map((p) => ({ ...p, text: p.text.slice(0, maxChars) }));
       if (pages.length > 0) {
         console.log(`${LP} full-text deepening ok via the Tavily Extract alternative (${pages.length}/${capped.length} pages)`);
+        // R2 quota meter: Tavily /extract costs 1 credit per 5 URLs
+        // (official table) — counted on the successful extraction only.
+        void trackTavilyCredits(tavilyExtractCredits(capped.length), tag);
+        meterTap(tag, "tavily", "extract-api", "ok", Date.now() - t0);
         return pages.slice(0, GROUNDED_FULLTEXT_PAGES);
       }
       console.warn(`${LP} Tavily Extract 200 with zero usable pages — snippets-only bundle (researchDepth:"snippets")`);
@@ -1839,6 +1909,7 @@ export async function callExaSearch(
 
   const includeDomains = getExaIncludeDomains();
   const timeoutMs = options.timeoutMs ?? 60_000;
+  const t0 = Date.now();
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   let body: Record<string, unknown>;
@@ -1859,9 +1930,16 @@ export async function callExaSearch(
       const msg = `Exa /search HTTP ${res.status}: ${text.slice(0, 300)}`;
       const cls = classifyForCooldown(msg);
       if (cls) markCooldown(cdScope, `${cls}: ${msg.slice(0, 120)}`);
+      // R2 meter: the search-arm failure (quota-class vs ordinary fail).
+      meterTap(options.tag, "exa", "search-api", meterQuotaClass(msg) ? "quota" : "fail", Date.now() - t0);
       throw new Error(`callExaSearch: ${msg}`);
     }
     body = (await res.json()) as Record<string, unknown>;
+    // R2 quota meter (owner clause 3, gap D-3): the /search request costs
+    // $4/1k = 0.4¢ against the free $10/month credit (Phase-3 measured
+    // ≈$0.004/search) — counted the moment it answered 200.
+    void trackExaCostCents(EXA_SEARCH_CENTS, options.tag);
+    meterTap(options.tag, "exa", "search-api", "ok", Date.now() - t0);
   } finally {
     clearTimeout(timer);
   }
@@ -2243,6 +2321,8 @@ export async function callGroqGroundedSearch(
     // Agentic browser walk (multi-hop navigate+read) needs the caller's
     // generous window (P0 passes 180s since 478a1afc); default stays 60s.
     const deadline = Date.now() + (options.timeoutMs ?? 60_000);
+    // R2 meter: t0 per model walk (all its internal attempts).
+    const t0 = Date.now();
     // 3 attempts per model max: primary → format-flip («Parsing failed»
     // 400) or TPM patient retry — never a hot loop.
     for (
@@ -2440,6 +2520,15 @@ export async function callGroqGroundedSearch(
             `${LP} ${model}+browser_search (reasoning_format ${reasoningFormat}) succeeded after ${failures.length} earlier model failure(s)`,
           );
         }
+        // R2 meter: the agentic browser_search arm's successful walk.
+        meterTap(
+          options.tag,
+          "groq",
+          `${model}+browser_search`,
+          "ok",
+          Date.now() - t0,
+          Math.ceil(prompt.length / 4) + Math.ceil(content.length / 4),
+        );
         return {
           text: content.trim(),
           provider: "groq",
@@ -2448,6 +2537,14 @@ export async function callGroqGroundedSearch(
         };
       } catch (e) {
         const msg = e instanceof Error ? e.message : String(e);
+        // R2 meter: the arm's failed walk (quota-class vs ordinary fail).
+        meterTap(
+          options.tag,
+          "groq",
+          `${model}+browser_search`,
+          meterQuotaClass(msg) ? "quota" : "fail",
+          Date.now() - t0,
+        );
         // A per-minute 429 (TPM/RPM bucket — seconds hint or per-minute
         // words, NO daily markers) is TRANSIENT, never a sustained
         // exhaustion — it must NOT poison the 30-min quota registry (the
@@ -3358,6 +3455,9 @@ export async function callFreeAIFallbackChain(
               options.onDelta?.(chunk);
             }
           : undefined;
+        // R2 meter: one t0 per attempt — the [ai-meter] line + daily
+        // (provider×model×function) counters are written at every exit.
+        const attemptT0 = Date.now();
         try {
           const { text } = streamTap
             ? {
@@ -3382,12 +3482,32 @@ export async function callFreeAIFallbackChain(
             console.log(
               `${LP} ${provider}/${model} succeeded${attemptNo ? " (after empty-retry)" : ""}${streamTap ? " (streamed)" : ""}`,
             );
+            meterTap(
+              options.tag,
+              provider,
+              model,
+              "ok",
+              Date.now() - attemptT0,
+              Math.ceil(prompt.length / 4) + Math.ceil(text.length / 4),
+            );
             return { text: text.trim(), model, provider };
           }
+          meterTap(options.tag, provider, model, "empty", Date.now() - attemptT0);
           throw new Error(`${model}: empty response`);
         } catch (e) {
           const msg = e instanceof Error ? e.message : String(e);
           errors.push(`${provider}/${model}: ${msg}`);
+          // R2 meter: the failure outcome (quota-class vs ordinary fail —
+          // an empty-response throw is already metered "empty" above).
+          if (!/empty response/i.test(msg)) {
+            meterTap(
+              options.tag,
+              provider,
+              model,
+              meterQuotaClass(msg) ? "quota" : "fail",
+              Date.now() - attemptT0,
+            );
+          }
           // BLOG-PROVIDER-FAILOVER (owner order 2026-10-16): exhaustion-class
           // failure (429 quota / 402 payment / 401-403 auth / 404 gone) →
           // cool the PROVIDER for the window so later calls skip it and the
