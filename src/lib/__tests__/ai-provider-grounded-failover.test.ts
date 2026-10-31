@@ -1600,6 +1600,60 @@ describe("chain failover — provider cooldown frees attempt budget (callFreeAIF
     expect(call2.some((c) => groqUrl(c.url))).toBe(true);
   });
 
+  it("P2-3 (Phase 5-F): a Groq PER-MINUTE 429 during the chain NEVER marks the provider — the next call still reaches groq (the search path's patient class, unified)", async () => {
+    process.env.AI_PROVIDER_COOLDOWN_MS = "600000";
+    process.env.OPENROUTER_API = "sk-or-test-key";
+    process.env.GROQ_API_KEY = "gsk-test-key";
+    process.env.NVIDIA_API_KEY = "nvapi-test-key";
+    const log: FetchLog[] = [];
+    let groqStatus = 200;
+    stubRoutingFetch(log, (url) => {
+      if (groqUrl(url)) {
+        return groqStatus === 200
+          ? { ok: true, status: 200, payload: CHAIN_PONG }
+          : {
+              ok: false,
+              status: 429,
+              // the measured per-minute shell: per-minute wording + a
+              // seconds-scale hint, NO daily markers (Limit/Used/Requested
+              // numbers with hours hints) — groq429PerMinuteClass territory
+              payload: {
+                error: {
+                  message:
+                    "Rate limit reached for model openai/gpt-oss-120b in organization org on tokens per minute (TPM): please try again in 12s.",
+                },
+              },
+            };
+      }
+      return { ok: true, status: 200, payload: CHAIN_PONG };
+    });
+
+    // call 1: openrouter pre-cooled so GROQ leads; every groq entry answers
+    // the PER-MINUTE 429 — the class must NOT cool groq, and the walk falls
+    // to NVIDIA which answers within the same budget.
+    const { markCooldown } = await import("@/lib/ai-provider-cooldown");
+    markCooldown("chain:openrouter", "quota: 429");
+    groqStatus = 429;
+    const out1 = await callFreeAIFallbackChain("Reply PONG", {
+      tag: "test:chain", maxTokens: 10, timeoutMs: 5_000, maxModels: 3,
+    });
+    expect(out1.provider).toBe("nvidia");
+    const used1 = log.length;
+    expect(log.slice(0, used1).some((c) => groqUrl(c.url))).toBe(true); // groq WAS tried (not skipped)
+
+    // call 2 (openrouter still cooled): groq answers again IMMEDIATELY —
+    // the per-minute class left it uncooled (a TPM hiccup must not evict
+    // the platform's best live survivor for 30 minutes). The pre-fix
+    // behavior would have skipped groq with zero network calls.
+    groqStatus = 200;
+    const out2 = await callFreeAIFallbackChain("Reply PONG", {
+      tag: "test:chain", maxTokens: 10, timeoutMs: 5_000, maxModels: 3,
+    });
+    expect(out2.provider).toBe("groq");
+    const call2 = log.slice(used1);
+    expect(call2.some((c) => groqUrl(c.url))).toBe(true);
+  });
+
   it("all four providers cooled → zero network calls, honest aggregate lists the cooldowns", async () => {
     process.env.AI_PROVIDER_COOLDOWN_MS = "600000";
     process.env.GEMINI_API_KEY = "AIza-test-key";

@@ -2901,72 +2901,6 @@ export { parseJSON } from "./parse-json";
  *   - nvidia/nemotron-3-ultra-550b-a55b : 550B total / 55B active, 1M ctx → STRONGEST (48% live)
  *   - nvidia/nemotron-3-super-120b-a12b : 120B / 12B active  → MIDDLE (48% live)
  */
-export const FREE_OPENROUTER_MODELS = [
-  "nvidia/nemotron-3-ultra-550b-a55b:free",
-  "nvidia/nemotron-3-super-120b-a12b:free",
-];
-
-/**
- * RACE multiple models in PARALLEL and return the FIRST one that succeeds.
- *
- * Uses Promise.any() — returns IMMEDIATELY when the first model responds with
- * valid text.
- *
- * STATUS (2026-08-27): its last consumer (the legacy swap route) was retired when all
- * plan swaps moved to the ai_jobs queue (GitHub Actions). The helper is kept
- * for future latency-critical paths, but NOTHING calls it today. Do not wire
- * it into new code without owner approval — the platform standard is
- * callFreeAIFallbackChain.
- *
- * Returns { text, model } on success, throws on total failure.
- */
-export async function callFreeOpenRouterRace(
-  prompt: string,
-  options: CallAIOptions = {},
-  raceCount = 3,
-): Promise<{ text: string; model: string }> {
-  const apiKey = getOpenRouterKey();
-  const baseUrl = "https://openrouter.ai/api/v1";
-  if (!apiKey) throw new Error("OPENROUTER_API not configured");
-
-  // Pick the top N models to race (largest first, as defined in FREE_OPENROUTER_MODELS)
-  const models = FREE_OPENROUTER_MODELS.slice(0, raceCount);
-
-  // Build promises that REJECT on failure (so Promise.any can skip them)
-  // and RESOLVE on success with { text, model }.
-  const promises = models.map(async (model) => {
-    try {
-      const { text } = await callAIWithFallback(prompt, options, {
-        provider: "openrouter",
-        apiKey,
-        model,
-        baseUrl,
-      });
-      if (text && text.trim().length > 0) {
-        return { text, model };
-      }
-      throw new Error(`${model}: empty response`);
-    } catch (e) {
-      throw new Error(`${model}: ${e instanceof Error ? e.message : e}`);
-    }
-  });
-
-  try {
-    // Promise.any returns as soon as the FIRST promise SUCCEEDS.
-    // It rejects with AggregateError only if ALL promises reject.
-    const result = await Promise.any(promises);
-    return result;
-  } catch (e) {
-    // All failed — collect errors from the AggregateError
-    const errors =
-      (e instanceof AggregateError
-        ? e.errors.map((err) => err.message).join("\n")
-        : "") || "Unknown error";
-    throw new Error(`All raced OpenRouter models failed:\n${errors}`);
-  }
-}
-
-
 // ─────────────────────────────────────────────────────────────────────────
 // UNIFIED AI FALLBACK CHAIN — OpenRouter + Groq + NVIDIA interleaved by strength
 //
@@ -3460,7 +3394,18 @@ export async function callFreeAIFallbackChain(
           // cool the PROVIDER for the window so later calls skip it and the
           // next provider leads. Transient (5xx/timeout/empty) stays
           // retryable as before (the ×3 step-retry rides it out).
-          const cls = classifyForCooldown(msg);
+          // P2-3 UNIFICATION (Phase 5-F / stage و, §10-و — the Phase-4
+          // gap): a Groq PER-MINUTE 429 (seconds-scale hint or per-minute
+          // wording, NO daily markers — groq429PerMinuteClass) is TRANSIENT.
+          // The grounded-search path already treats it patiently (BLOG-
+          // RECOVERY 2026-10-20: never a registry mark); the generation
+          // chain now matches — no cooldown mark for this class. The entry
+          // still fails over to the next provider exactly as before; only
+          // the 30-min provider freeze is lifted (a TPM hiccup must not
+          // evict the platform's best live survivor for half an hour).
+          const perMinuteGroq429 =
+            provider === "groq" && groq429PerMinuteClass(msg);
+          const cls = perMinuteGroq429 ? null : classifyForCooldown(msg);
           if (cls) {
             markCooldown(
               `chain:${provider}`,

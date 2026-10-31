@@ -3,7 +3,6 @@ import {
   AI_PROVIDERS,
   INTERLEAVED_FAST_CHAIN,
   INTERLEAVED_STRONGEST_CHAIN,
-  FREE_OPENROUTER_MODELS,
   callAI,
   getEnvConfig,
   getNvidiaKey,
@@ -309,13 +308,6 @@ describe("Phase 177 — dead-model purge (14-day live audit, owner order «ال�
     });
   });
 
-  describe("FREE_OPENROUTER_MODELS (shared list — future wiring protection)", () => {
-    it("purged of dead ids so nothing can resurrect them", () => {
-      for (const model of FREE_OPENROUTER_MODELS) {
-        expect(DEAD_IDS).not.toContain(model);
-      }
-    });
-  });
 });
 
 describe("Phase 177 — Groq json-mode 400 guard (35 live json_validate_failed failures)", () => {
