@@ -197,6 +197,7 @@ async function fetchAll(): Promise<Row[]> {
 
 const rows = await fetchAll();
 const byId = new Map(rows.map((r) => [r.id, r]));
+const metricById = new Map<string, Metric>();
 
 type Metric = {
   id: string;
@@ -278,6 +279,8 @@ const metrics: Metric[] = rows.map((r) => {
   };
 });
 
+for (const m of metrics) metricById.set(m.id, m);
+
 // ── corpus summary ────────────────────────────────────────────────────────
 
 const byLang = (l: "en" | "ar") => metrics.filter((m) => m.language === l);
@@ -358,9 +361,76 @@ const summary = {
   })(),
 };
 
+// ── PAIR PARITY (E8, owner order 2026-11-01 clause 3-d: «فحص النسختين
+// العربية والإنجليزية والتأكد من تكافئهما») — every bidirectional pair is
+// quality-compared: depth ratio, FAQ counts, authority links. A pair is
+// FLAGGED when one side lags (words ratio < 0.6 either way, or one side
+// <1000 words, or FAQ <4 on one side, or authority links 0 on one side).
+// Read-only measurement; the fix channel is the treatment batches.
+const pairParity = metrics
+  .filter((m) => m.pairing === "bidirectional" && m.language === "en")
+  .map((en) => {
+    const ar = metricById.get(en.linked_post_id!)!;
+    const ratio = ar.words / Math.max(1, en.words);
+    const flags: string[] = [];
+    if (ratio < 0.6) flags.push("ar_depth_lag");
+    if (ratio > 1.67) flags.push("en_depth_lag");
+    if (en.words < 1000) flags.push("en_under_floor");
+    if (ar.words < 1000) flags.push("ar_under_floor");
+    if (en.faq_items < 4) flags.push("en_faq_thin");
+    if (ar.faq_items < 4) flags.push("ar_faq_thin");
+    if (en.ext_domains.length === 0) flags.push("en_no_authority");
+    if (ar.ext_domains.length === 0) flags.push("ar_no_authority");
+    return {
+      en_slug: en.slug,
+      ar_slug: ar.slug,
+      en_words: en.words,
+      ar_words: ar.words,
+      depth_ratio: Number(ratio.toFixed(2)),
+      en_faq: en.faq_items,
+      ar_faq: ar.faq_items,
+      en_authority: en.ext_domains.length,
+      ar_authority: ar.ext_domains.length,
+      parity: flags.length === 0 ? "ok" : "flagged",
+      flags,
+    };
+  });
+
+// ── UNPAIRED LEDGER (E8, owner order clause 3-e: «أو توثيق عدم وجود نظير
+// حتى تتم معالجته») — the durable documentation of every published article
+// with no live counterpart. New pipeline articles land here the moment they
+// publish unpaired; L-batches consume the eligible entries.
+const unpairedLedger = metrics
+  .filter((m) => m.pairing === "unpaired" || m.pairing === "broken")
+  .sort((a, b) => b.words - a.words)
+  .map((m) => ({
+    slug: m.slug,
+    language: m.language,
+    words: m.words,
+    tier: tier(m),
+    faq: m.faq_items,
+    authority: m.ext_domains.length,
+    published_at: m.published_at,
+    // counterpart-worthiness policy (triage §4.3): A/B + core topics are
+    // eligible; D-tier must be treated first; the rest documented as-is.
+    eligible_for_counterpart: tier(m) === "A" || tier(m) === "B",
+  }));
+
+const pairParitySummary = {
+  pairs_measured: pairParity.length,
+  pairs_ok: pairParity.filter((p) => p.parity === "ok").length,
+  pairs_flagged: pairParity.filter((p) => p.parity === "flagged").length,
+};
+
 console.log(
   JSON.stringify(
-    { summary, articles: metrics.map((m) => ({ ...m, tier: tier(m) })) },
+    {
+      summary,
+      pair_parity_summary: pairParitySummary,
+      pair_parity: pairParity,
+      unpaired_ledger: unpairedLedger,
+      articles: metrics.map((m) => ({ ...m, tier: tier(m) })),
+    },
     null,
     2,
   ),
@@ -369,3 +439,7 @@ console.log(
 // compact human summary on stderr
 console.error("── blog corpus inventory (read-only) ──");
 console.error(JSON.stringify(summary, null, 2));
+console.error("pair parity:", JSON.stringify(pairParitySummary));
+console.error(
+  `unpaired ledger: ${unpairedLedger.length} (${unpairedLedger.filter((u) => u.eligible_for_counterpart).length} eligible A/B)`,
+);
