@@ -72,6 +72,16 @@ Any of the following:
   to purge stale deployments (Phase 145, owner directive 2026-09-08).
   The runner logs deployment UIDs and HTTP statuses only — never the
   token itself (§2.3).
+- GitHub Actions: `BING_WEB_MASTER` (Bing Webmaster Tools API key —
+  Content Submission API) stored ONLY as an encrypted repository
+  secret — consumed exclusively by
+  `bing-url-submission.yml` / `scripts/bing-url-submit.mjs`
+  (SEO-ADSENSE-RECOVERY-PLAN-2026-10-31 P1-4, owner execution order
+  2026-11-01). The key travels in the step env only; the request URL
+  embedding it is never logged, error output is scrubbed of
+  `apikey=…`, and the runner logs HTTP statuses and per-URL counts
+  exclusively (§2.3). Effective site verification in Bing WMT is the
+  owner's manual prerequisite (plan §9.2 / D-3).
 - The agent's own working clone of the repo: the agent must use the
   same `.env.local` pattern. The agent must NEVER commit `.env.local`
   or any file matching `.env*`.

@@ -1,0 +1,85 @@
+# Bing URL Submission (SEO-ADSENSE-RECOVERY-PLAN-2026-10-31 — P1-4,
+# owner execution order 2026-11-01 «إبدأ التنفيذ»).
+#
+# WHY: the comprehensive audit (2026-10-31) measured the repo secret
+# BING_WEB_MASTER (BWT API key, updated 2026-10-30) had ZERO consumers —
+# the Bing integration was never wired. This workflow is the consumer:
+# the Bing Content Submission API is the ownership-authenticated push
+# channel that complements IndexNow (which is key-file-based and already
+# running daily). IndexNow asks engines to re-crawl; SubmitUrls feeds
+# Bing's submission quota directly — both are honest, idempotent pushes.
+#
+# WHAT IT DOES: runs scripts/bing-url-submit.mjs —
+#   1. Fetches the six child sitemaps from the LIVE site (SITE_URL).
+#   2. Selects URLs whose <lastmod> is <= `days` old (input, default 3)
+#      or ALL URLs when `all` is true, capped at `limit` (default 10 —
+#      the MINIMUM BWT daily quota tier; raise only against a measured
+#      higher tier).
+#   3. POSTs one batch to the Bing Content Submission API
+#      (ssl.bing.com/webmaster/api.svc/2.0/SubmitUrls) with
+#      {siteUrl, urlList} — the documented JSON shape.
+#
+# PREREQUISITE (owner manual, plan §9.2 / decision D-3): alkemos.com
+# must be VERIFIED in Bing Webmaster Tools (Import-from-GSC is the
+# fastest path). Until then every dispatch honestly fails with HTTP 403
+# — that failure IS the designed signal that verification is missing.
+#
+# EXIT CODE LAW (honest): 0 = at least one URL accepted (per-URL
+# StatusCode 200/201); 1 = hard failure (403 = verification missing or
+# invalid key); 2 = quota (per-URL 400/405 or HTTP 429) — retry later.
+#
+# SECRET LAW (§3.2/§7): BING_WEB_MASTER is consumed from encrypted repo
+# secrets into the step env ONLY. The script never echoes it; the
+# request URL embedding it is never logged; error output is scrubbed.
+# Logs carry HTTP statuses and per-URL counts exclusively.
+#
+# SCHEDULE: deliberately NONE (dispatch-only). IndexNow already covers
+# the daily cadence (03:47 UTC); this channel is for post-verification
+# bootstrap and manual pushes. A schedule may be added by owner order
+# once D-3 is confirmed and the quota tier is measured.
+# REMOVAL: delete this file + scripts/bing-url-submit.mjs + the
+# CI_GATES row — nothing else depends on either.
+name: Bing URL submission (BWT API — dispatch only)
+
+on:
+  workflow_dispatch:
+    inputs:
+      days:
+        description: "Submit URLs whose sitemap <lastmod> is within N days (ignored when all=true)"
+        default: "3"
+      limit:
+        description: "Max URLs to submit (BWT daily quota — keep at/below the site's measured tier; default 10)"
+        default: "10"
+      all:
+        description: "Consider EVERY sitemap URL (still capped by limit)"
+        type: boolean
+        default: false
+
+concurrency:
+  group: bing-url-submission
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  submit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout (for scripts/bing-url-submit.mjs)
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+
+      - name: Submit URLs to Bing (BWT Content Submission API)
+        env:
+          BING_WEB_MASTER: ${{ secrets.BING_WEB_MASTER }}
+          SITE_URL: https://alkemos.com
+        run: |
+          ARGS=""
+          if [ "${{ github.event.inputs.all }}" = "true" ]; then
+            ARGS="--all"
+          elif [ -n "${{ github.event.inputs.days }}" ]; then
+            ARGS="--days ${{ github.event.inputs.days }}"
+          fi
+          ARGS="$ARGS --limit ${{ github.event.inputs.limit || '10' }}"
+          node scripts/bing-url-submit.mjs $ARGS
