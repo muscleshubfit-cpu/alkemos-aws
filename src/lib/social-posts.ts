@@ -17,7 +17,11 @@
  * Output is STRICT JSON so the UI can render copy-buttons per part.
  */
 
-import { callFreeAIFallbackChain, parseJSON } from "@/lib/ai-provider";
+import { parseJSON } from "@/lib/ai-provider";
+// R4 (AI-Router unification): social posts ride the registry
+// (social-posts template — the linkedin payload budget is the declared
+// maxTokens override in the closed list).
+import { dispatchAI } from "@/lib/ai-router";
 
 export type SocialPlatform = "facebook" | "instagram" | "x" | "linkedin";
 export type SocialTone = "professional" | "friendly" | "motivational";
@@ -162,19 +166,18 @@ export async function generateSocialPost(
 ): Promise<SocialPostResult> {
   const prompt = buildPrompt(input);
 
-  const { text, model, provider } = await callFreeAIFallbackChain(
+  // R4: policy (0.75 · json · 70s · depth 3 · base 2200 tokens) resolves
+  // from the registry; the linkedin payload contract overrides maxTokens
+  // (the declared closed-list override).
+  const { text, model, provider } = await dispatchAI(
+    input.language === "ar" ? "social-posts:ar" : "social-posts:en",
     prompt,
     {
-      tag: input.language === "ar" ? "social-posts:ar" : "social-posts:en",
       systemPrompt:
         input.language === "ar"
           ? "أنت كاتب محتوى تسويقي خبير. تعيد JSON صالحاً فقط — بلا أي نص خارج الـJSON."
           : "You are an expert marketing copywriter. Return ONLY valid JSON.",
-      temperature: 0.75,
-      maxTokens: input.platform === "linkedin" ? 2600 : 2200,
-      jsonMode: true,
-      timeoutMs: 70_000,
-      maxModels: 3,
+      ...(input.platform === "linkedin" ? { maxTokens: 2600 } : {}),
     },
   );
 

@@ -1,5 +1,7 @@
 import { parseJSON } from "@/lib/ai-provider";
-import { callFreeAIFallbackChain } from "@/lib/ai-provider";
+// R4 (AI-Router unification): topic suggestions ride the registry
+// (blog:topics template — Vercel-clamped light JSON).
+import { dispatchAI } from "@/lib/ai-router";
 import { supabaseAdmin, isSupabaseAdminConfigured } from "@/lib/supabase/admin";
 import type { Json } from "@/lib/supabase/types";
 import { findBlogIntentCollision } from "@/lib/intent-map";
@@ -654,21 +656,11 @@ Pick the single best, unique topic now strictly within the "${category}" pillar.
 IMPORTANT: Return the topic and focusKeyword in ${language === "ar" ? "ARABIC" : "ENGLISH"}.`;
 
   try {
-    const { text: raw } = await callFreeAIFallbackChain(
-      userPrompt,
-      {
-        tag: `blog:topics-${language}`,
-        systemPrompt,
-        temperature: 0.85,
-        // 800 (was 600): Groq json_validate_failed "max completion…" truncation
-        // observed 2026-08-28 — the topic JSON occasionally clipped at 600.
-        // Still far under the Groq 7200 eligibility line (≈2150 est).
-        maxTokens: 800,
-        jsonMode: true,
-        timeoutMs: 22_000,
-        maxModels: 2, // Vercel Hobby budget
-      },
-    );
+    // R4: policy (0.85 · 800 · json · 22s · depth 2 — the Vercel Hobby
+    // budget) resolves from the registry.
+    const { text: raw } = await dispatchAI(`blog:topics-${language}`, userPrompt, {
+      systemPrompt,
+    });
     console.log(`[blog-topics] Topic pick raw response (language: ${language}, length: ${raw.length})`);
 
     const parsed = parseJSON<Record<string, unknown>>(raw);

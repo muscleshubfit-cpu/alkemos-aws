@@ -33,7 +33,10 @@
  * without a DB (see __tests__/blog-pairing.test.ts — 22 tests).
  */
 import { randomUUID } from "crypto";
-import { callFreeAIFallbackChain, parseJSON } from "./ai-provider";
+import { parseJSON } from "./ai-provider";
+// R4 (AI-Router unification): pairing rides the registry (blog:pairing —
+// the measured CF 70b fixed-lead + ordinary-chain fallback).
+import { dispatchAI } from "./ai-router";
 import { type LanguageResearch } from "./blog-research";
 import { ARTICLE_ANGLES } from "./blog-pipeline";
 // PHASE 171 (blog-audit proposal ب): parsePairingJSON rides the
@@ -298,18 +301,9 @@ Return STRICT JSON only:
   let lastError: Error | null = null;
   for (let attempt = 1; attempt <= PAIRING_MAX_ATTEMPTS; attempt += 1) {
     try {
-      const { text, model, provider } = await callFreeAIFallbackChain(prompt, {
-        tag: "blog:pairing",
-        temperature: 0.3,
-        maxTokens: 400,
-        jsonMode: true,
-        timeoutMs: 45_000,
-        // AUDIT §9-2.5: 2 → 3 — a light call deserves a deeper walk of
-        // the strong chain (the P4 precedent: more healthy entries beat
-        // two leading hiccups). PHASE 5-E (§10-هـ): 3 → 4 — the same
-        // precedent, one slot deeper, riding the CF role entry lead.
-        maxModels: 4,
-      });
+      // R4: policy (0.3 · 400 · json · 45s · depth 4 — the §10-هـ deep walk
+      // riding the CF role lead) resolves from the registry.
+      const { text, model, provider } = await dispatchAI("blog:pairing", prompt);
       const choice = parsePairingJSON(text, {
         enCandidates: enResearch.topics,
         arCandidates: arResearch.topics,

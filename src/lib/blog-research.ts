@@ -43,8 +43,13 @@
  * The niche is fixed: fitness / nutrition / workouts / health.
  * Output is stored on the queue row inside `article_bundle.research0`.
  */
-import { callGroundedSearch, parseJSON } from "./ai-provider";
+import { parseJSON } from "./ai-provider";
 import type { GroundedFullTextPage } from "./ai-provider";
+// R4 (AI-Router unification): P0 research rides the registry through
+// dispatchGrounded — the §6-أ language-split arm ladder stays the engine's
+// groundedArmOrder(lang); policy (0.7 · 4000 · 180s) resolves from the
+// blog:research spec.
+import { dispatchGrounded } from "./ai-router";
 import {
   getRecentPostsByLanguage,
   getRecentGeneratedTopics,
@@ -508,41 +513,21 @@ Return STRICT JSON only, no markdown fences:
   // the system channel is the strongest instruction location for agentic
   // browser_search models.
   try {
-    const { text, model, grounding, provider, researchDepth, fullText } = await callGroundedSearch(prompt, {
-      tag: "blog:research",
-      lang,
-      searchQuery: lang === "ar" ? TAVILY_SEARCH_QUERY_AR : TAVILY_SEARCH_QUERY_EN,
-      searchQueryEn: TAVILY_SEARCH_QUERY_EN,
-      systemPrompt:
-        "You are a strict JSON API endpoint. The user message describes the research task; your ENTIRE response MUST be a single valid JSON object matching the requested schema — no prose, no markdown, no commentary, no code fences. The JSON object starts with { and ends with }.",
-      temperature: 0.7,
-      // PHASE 5-B live-measured fix (EN run 41129910118, 2026-10-31): the
-      // research synthesis truncation family — the run's 3 P0 attempts all
-      // died "invalid research JSON shape" (2× reasoning-prose + 1×
-      // keywords:10/topics:0 TRUNCATED mid-JSON) because the §6-أ evidence
-      // base grew (10 Exa sources + 3 full-text pages ≈ +2k tokens of
-      // grounding) while the output cap stayed 2_500: the CoT-heavy
-      // openrouter/nemotron-ultra (groq was honestly excluded from this
-      // call by the R3 payload law — ~7.3k tokens vs the 8k TPM window)
-      // burns 1.5–2.5k CoT tokens before the JSON and the 2_500 cap cut
-      // the document. SAME family + SAME remedy as PHASE 171 (P1 outline
-      // 2_600 → 4_000, the "verbose reasoning model burns hidden CoT
-      // against the cap and truncates the JSON mid-document" law): the P0
-      // research JSON is the same size class as the outline JSON
-      // (~700–900 tokens) — 4_000 gives CoT + document headroom, and the
-      // 161.5-hardened parseJSON keeps salvaging any residual truncation.
-      maxTokens: 4_000,
-      // BLOG-PROVIDER-FAILOVER 2026-10-16 (live measurements, probe
-      // 38844967928 + pipeline 38846158680): the OR web arm rides a
-      // reasoning model whose CoT runs 30–90s on SHORT prompts and the
-      // REAL research prompt aborted at 90s on key#2 (live: "This
-      // operation was aborted" ×3 attempts while the 402-rejected key#1
-      // answered instantly — key#2 was WORKING, just slow). 180s fits the
-      // GHA native runner budget comfortably (maxDuration=60 applies only
-      // to Vercel serverless; the blog steps run natively per the
-      // recovery report RC1).
-      timeoutMs: 180_000,
-    });
+    // R4: policy (0.7 · 4000 — the PHASE-5-B CoT-truncation fix · 180s —
+    // the real-prompt CoT window) resolves from the registry (blog:research).
+    const { text, model, grounding, provider, researchDepth, fullText } = await dispatchGrounded(
+      "blog:research",
+      prompt,
+      {
+        lang,
+        searchQuery: lang === "ar" ? TAVILY_SEARCH_QUERY_AR : TAVILY_SEARCH_QUERY_EN,
+        searchQueryEn: TAVILY_SEARCH_QUERY_EN,
+      },
+      {
+        systemPrompt:
+          "You are a strict JSON API endpoint. The user message describes the research task; your ENTIRE response MUST be a single valid JSON object matching the requested schema — no prose, no markdown, no commentary, no code fences. The JSON object starts with { and ends with }.",
+      },
+    );
     const parsed = parseJSON<Record<string, unknown>>(text);
     const data = parsed ? normalizeResearch(parsed) : null;
     if (data && data.topics.length > 0 && data.keywords.length >= 5) {

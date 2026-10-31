@@ -520,3 +520,100 @@ function stripInlineComments(s: string): string {
     .replace(/\/\*[\s\S]*?\*\//g, " ")
     .replace(/(^|[^:])\/\/[^\n]*/g, "$1 ");
 }
+
+/* ─────────── ت4 — the manual≡auto blog ENGINE-PARITY canary (R4) ───────────
+ * §6-و/§9-ت4 of the audit: the paired pipeline (automatic + manual dispatch,
+ * Phase 162) and the single-shot FALLBACK draft generator must resolve ONE
+ * policy from ONE source — the ONLY allowed deltas are the DECLARED
+ * draft-vs-pipeline contract differences (word contract · call count ·
+ * is_published), which live in docs/gates, never in routing. */
+
+describe("ت4 — blog engine parity: manual ≡ automatic resolve one policy", () => {
+  it("blog:draft-generate and ai-job:article-generate resolve IDENTICAL routing", () => {
+    const draft = resolveFunction("blog:draft-generate");
+    const tool = resolveFunction("ai-job:article-generate");
+    // One ladder + one policy (the routing must be indistinguishable).
+    expect(draft.options).toEqual({
+      tag: "blog:draft-generate",
+      temperature: 0.7,
+      maxTokens: 6000,
+      jsonMode: true,
+      timeoutMs: 120_000,
+      maxModels: 4,
+    });
+    expect({ ...tool.options, tag: undefined }).toEqual({ ...draft.options, tag: undefined });
+    expect(draft.spec.ladder).toEqual(tool.spec.ladder);
+    // The draft spec carries the historical metering tag (tags-are-the-ids).
+    expect(draft.spec.metering.scope).toBe("ai-job:article-generate");
+  });
+
+  it("the ONLY allowed deltas are declared docs/gates — never routing fields", () => {
+    const draft = AI_FUNCTION_REGISTRY["blog:draft-generate"];
+    const tool = AI_FUNCTION_REGISTRY["ai-job:article-generate"];
+    expect(draft.family).toBe("blog"); // registered in the BLOG family (§6-و)
+    expect(tool.family).toBe("tools");
+    // Routing fields byte-identical.
+    expect(draft.policy).toEqual(tool.policy);
+    expect(draft.role).toEqual(tool.role);
+    expect(draft.ladder).toEqual(tool.ladder);
+    // Deltas confined to documentation + gates + entry (the declared list).
+    expect(draft.doc.rationale).toContain("1100-1400");
+    expect(tool.doc.rationale).not.toContain("1100-1400");
+  });
+
+  it("both blog engines compose the editorial constitution from the SAME source (no-fork extends to the twin)", () => {
+    const pipelineSrc = readFileSync("src/lib/blog-pipeline.ts", "utf8");
+    const processorSrc = readFileSync("src/lib/ai-job-processors.ts", "utf8");
+    // Both import from the single editorial-law source (AGENTS §8 UNIFIED
+    // EDITORIAL CONSTITUTION) — a forked local copy in either is banned.
+    expect(pipelineSrc).toContain('from "./blog-editorial-law"');
+    expect(processorSrc).toContain('from "@/lib/blog-editorial-law"');
+    expect(pipelineSrc).not.toMatch(/const EDITORIAL_(?:ANSWER_FIRST|EEAT|FACT_GUARD)\s*[:=]/);
+    expect(processorSrc).not.toMatch(/const EDITORIAL_(?:ANSWER_FIRST|EEAT|FACT_GUARD)\s*[:=]/);
+    // Both carry the MSA law from the single source too.
+    expect(pipelineSrc).toContain('from "./blog-msa"');
+    expect(processorSrc).toContain('from "@/lib/blog-msa"');
+  });
+});
+
+/* ─────────── R4 — the blog family rides the router ONLY ─────────── */
+
+describe("R4 — blog family migrated: no direct engine calls remain", () => {
+  const BLOG_FILES = [
+    "src/lib/blog-pipeline.ts",
+    "src/lib/blog-pairing.ts",
+    "src/lib/blog-topics.ts",
+    "src/lib/blog-research.ts",
+    "src/lib/ai-job-processors.ts",
+    "src/lib/social-posts.ts",
+  ];
+
+  it("every blog-family file dispatches through the router", () => {
+    for (const f of BLOG_FILES) {
+      const src = stripInlineComments(readFileSync(f, "utf8"));
+      expect(src, `${f} must not call the engine directly`).not.toContain("callFreeAIFallbackChain(");
+      expect(src, `${f} must not call grounded search directly`).not.toContain("callGroundedSearch(");
+    }
+  });
+
+  it("the ten editor tools + the draft generator + research dispatch their registered ids", () => {
+    const processor = readFileSync("src/lib/ai-job-processors.ts", "utf8");
+    expect(processor).toContain("dispatchAI(`ai-job:${tool}`");
+    expect(processor).toContain('dispatchAI("ai-job:article-generate"');
+    const research = readFileSync("src/lib/blog-research.ts", "utf8");
+    expect(research).toContain('dispatchGrounded(\n      "blog:research"');
+    const pipeline = readFileSync("src/lib/blog-pipeline.ts", "utf8");
+    expect(pipeline).toContain("dispatchAI(`blog:pick-topic-${lang}`");
+    expect(pipeline).toContain("dispatchAI(`blog:outline-${lang}`");
+    expect(pipeline).toContain("dispatchAI(`blog:content-${lang}`");
+    expect(pipeline).toContain("dispatchAI(`blog:review-${lang}`");
+    expect(pipeline).toContain('dispatchAI("blog:latin-tokens-ar"');
+    expect(pipeline).toContain('dispatchAI("blog:latin-repair-ar"');
+    const pairing = readFileSync("src/lib/blog-pairing.ts", "utf8");
+    expect(pairing).toContain('dispatchAI("blog:pairing"');
+    const topics = readFileSync("src/lib/blog-topics.ts", "utf8");
+    expect(topics).toContain("dispatchAI(`blog:topics-${language}`");
+    const social = readFileSync("src/lib/social-posts.ts", "utf8");
+    expect(social).toContain('dispatchAI(\n    input.language === "ar" ? "social-posts:ar" : "social-posts:en"');
+  });
+});

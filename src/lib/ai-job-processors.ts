@@ -10,7 +10,13 @@
  * result that gets persisted into ai_jobs.result by the runner.
  */
 
-import { callFreeAIFallbackChain, parseJSON } from "@/lib/ai-provider";
+import { parseJSON } from "@/lib/ai-provider";
+// R4 (AI-Router unification): every article tool + the single-shot draft
+// generator ride the registry — EACH tool is its own registered spec
+// (ai-job:{tool}), so the per-tool policy (proofread's 0.3 · the 1400/1600
+// payload budgets · HEAVY/LIGHT windows) resolves by id; HEAVY/LIGHT stay
+// here only as the documented historical shape the specs carry.
+import { dispatchAI } from "@/lib/ai-router";
 import {
   generateNutritionPlanAI,
   generateWorkoutPlanAI,
@@ -581,18 +587,14 @@ ${MARKER_NOTES}
     throw new Error("social_* handled by social_post processor");
   }
 
-  const { text, model } = await callFreeAIFallbackChain(
-    prompt,
-    {
-      tag: `ai-job:${tool}`,
-      systemPrompt: sys,
-      temperature: tool === "proofread" ? 0.3 : 0.7,
-      maxTokens:
-        tool === "summarize_bullets" ? 1400 : tool === "seo_pack" ? 1600 : 4000,
-      jsonMode: needsJson,
-      ...(needsJson ? HEAVY : LIGHT),
-    },
-  );
+  // R4: per-tool policy resolves from the registry (ai-job:{tool} specs):
+  // JSON tools (seo_pack/seo_title/meta_desc/faq) ride HEAVY (120s · depth
+  // 3 · jsonMode) and free-text tools ride LIGHT (70s · depth 2), with the
+  // payload budgets (summarize_bullets 1400 · seo_pack 1600 · else 4000)
+  // and proofread's faithful 0.3 — the golden canaries pin each spec.
+  const { text, model } = await dispatchAI(`ai-job:${tool}`, prompt, {
+    systemPrompt: sys,
+  });
 
   if (needsJson) {
     const parsed = parseJSON<Record<string, unknown>>(text);
@@ -1178,38 +1180,14 @@ async function runArticleGenerate(payload: Record<string, unknown>) {
 }`,
   ].filter(Boolean);
 
-  const { text, model } = await callFreeAIFallbackChain(
-    lines.join("\n\n"),
-    {
-      tag: "ai-job:article-generate",
-      systemPrompt: sys,
-      temperature: 0.7,
-      // GROQ ELIGIBILITY LAW (2026-08-28c): the chain skips Groq when
-      // prompt/4 + maxTokens + 800 > 7200 (Groq free TPM counts prompt +
-      // max_tokens). 7000 reserved tokens LOCKED this job out of Groq →
-      // OpenRouter-only → free-pool 429s + 60s aborts (observed: attempt 1
-      // died, attempt 2 needed 138s). 5000 still covers the 800-1200-word
-      // 6000 (2026-08-28e quality bump): est ≈ prompt(~175t) + 6000 + 800
-      // ≈ 6975 < 7200 → STILL Groq-eligible, with headroom for the
-      // mandatory 1100-1400-word contract incl. reasoning overhead.
-      maxTokens: 6000,
-      jsonMode: true,
-      // PHASE 161.4 (2026-09-09, run 34352443142 forensics): heavy-article
-      // reality check — the chain clamps per-model time to
-      // AI_CHAIN_TOTAL_BUDGET_MS ÷ maxModels, so the old spread
-      // (HEAVY 70s intent · maxModels 5 · 180000 budget) silently granted
-      // 36s per model and EVERY model aborted before finishing a
-      // 1100-1400-word JSON article. New contract with the workflow budget
-      // 480000: timeoutMs 120s × maxModels 4 = exactly 480s — per-model
-      // time in the proven full-article class (blog content runs 150s).
-      // PHASE 177 (2026-09-11 audit): the ladder's gemma steps are purged,
-      // so the 4 walked entries are now all live-verified (nemotron ultra +
-      // super × 2 providers) instead of 2 nemotron + 2 dead gemma buckets.
-      // Small/light jobs keep the (Phase-177 raised) HEAVY/LIGHT knobs.
-      timeoutMs: 120_000 as const,
-      maxModels: 4 as const,
-    },
-  );
+  // R4: policy (0.7 · 6000 — the GROQ-ELIGIBILITY law · json · 120s × 4 —
+  // the PHASE-161.4 budget contract) resolves from the registry
+  // (ai-job:article-generate) — this single-shot generator is the FALLBACK
+  // engine of the Phase-162 pipeline-first twin; the blog:draft-generate
+  // spec documents the pairing and ت4 pins ladder identity.
+  const { text, model } = await dispatchAI("ai-job:article-generate", lines.join("\n\n"), {
+    systemPrompt: sys,
+  });
 
   const parsed = parseJSON<Record<string, unknown>>(text);
   if (!parsed || typeof parsed !== "object") {

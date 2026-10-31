@@ -27,9 +27,12 @@ describe("Phase 344 — P0 uses the REAL grounded search (no simulation, no subs
   // plugin → groq compound; NVIDIA honestly excluded). The REAL-search law
   // itself is UNTOUCHED — every arm must return live-search evidence.
   it("blog-research rides callGroundedSearch (cross-provider real-search failover)", () => {
-    expect(researchSrc).toContain('import { callGroundedSearch, parseJSON } from "./ai-provider"');
-    expect(researchSrc).toContain("await callGroundedSearch(prompt, {");
-    expect(researchSrc).toContain('tag: "blog:research"');
+    // R4 (AI-Router unification): the call site now rides dispatchGrounded —
+    // the SAME single engine through the central router (the no-direct-call
+    // law below keeps it the only path).
+    expect(researchSrc).toContain('import { dispatchGrounded } from "./ai-router"');
+    expect(researchSrc).toContain('await dispatchGrounded(');
+    expect(researchSrc).toContain('"blog:research"');
     expect(researchSrc).toContain("USE YOUR GOOGLE SEARCH TOOL");
   });
 
@@ -120,7 +123,7 @@ describe("Phase 344/5-A — default gemini model 3.5-flash + the CANCELLED gemin
 
 describe("PHASE 5-A/5-B — blog-research passes the language + the appropriate search queries (§10-أ/§10-ب)", () => {
   it("the grounded call carries lang + the language-appropriate searchQuery + the ENGLISH-equivalent query for the Exa arm", () => {
-    expect(researchSrc).toContain("await callGroundedSearch(prompt, {");
+    expect(researchSrc).toContain('await dispatchGrounded(');
     expect(researchSrc).toContain("lang,");
     expect(researchSrc).toContain(
       "searchQuery: lang === \"ar\" ? TAVILY_SEARCH_QUERY_AR : TAVILY_SEARCH_QUERY_EN,",

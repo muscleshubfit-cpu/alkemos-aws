@@ -721,6 +721,51 @@ export const AI_FUNCTION_REGISTRY: Record<string, AIFunctionSpec> = {
     },
   },
 
+  /* ── BLOG DRAFT-GENERATE — the manual≡auto engine twin (§6-و, ت4) ──
+   * The manual article request's PRIMARY path is the SAME paired pipeline
+   * as automatic generation (Phase 162: enqueue dispatches
+   * blog-post-{ar|en}.yml; the row becomes a dispatch receipt). This spec
+   * registers the FALLBACK single-shot draft generator (runArticleGenerate,
+   * dispatched with the historical tag "ai-job:article-generate" — tags are
+   * the ids, so its counters/logs keep accumulating identically) as a blog-
+   * family function: the ladder/policy BELOW is byte-identical to the
+   * ai-job:article-generate spec, and ت4 (ai-registry.test.ts) pins that
+   * identity on every run — the two engines resolve ONE policy from ONE
+   * source, with ONLY the declared draft-vs-pipeline deltas (word contract
+   * 1100-1400 vs 1500-2500 · one call vs six phases · is_published=false
+   * always) living in the docs, never in the routing. */
+  "blog:draft-generate": {
+    id: "blog:draft-generate",
+    family: "blog",
+    role: { json: true, streaming: false, language: "both", payloadClass: "heavy" },
+    ladder: [...ROTATED_LEADS, GEMINI_TAIL],
+    policy: {
+      temperature: 0.7,
+      maxTokens: 6000,
+      jsonMode: true,
+      timeoutMs: 120_000,
+      maxModels: 4,
+      budgetEnv: "AI_CHAIN_TOTAL_BUDGET_MS",
+    },
+    gates: [
+      "SEO-SLUG + IMAGE BUNDLE law (enrichment never fails the article)",
+      "manual publish battery at editor publish (phase5-D)",
+      "single-shot DRAFT spec — NEVER auto-published (is_published=false)",
+    ],
+    metering: { scope: "ai-job:article-generate" }, // the historical tag (tags-are-the-ids law)
+    entry: {
+      surface: "ai_jobs",
+      trigger: "manual draft request → blog-pipeline-dispatch FIRST (Phase 162 twin); this engine runs ONLY when dispatch fails (fail-open)",
+    },
+    knobs: ["AI_CHAIN_TOTAL_BUDGET_MS"],
+    doc: {
+      since: "2026-08-28e · PHASE 161.4 · Phase 162 (pipeline-first twin)",
+      rationale:
+        "ENGINE TWIN (ت4): ladder/policy byte-identical to ai-job:article-generate — one source for both engines. Declared deltas: draft word contract 1100-1400 (coach review) vs the pipeline's 1500-2500; one call vs P0→P5; drafts land is_published=false. Permissions + execution context preserved per owner law (JOB_GATE coach request vs cron).",
+      evidence: "ai-job-processors.ts runArticleGenerate option block (audit §3-ب row 10) + blog-pipeline-dispatch.ts (Phase 162)",
+    },
+  },
+
   /* ═══════════════ FAMILY: tools (ai_jobs article tools) ═══════════════ */
 
   "ai-job:article-generate": {

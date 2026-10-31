@@ -7,7 +7,14 @@
  * the file history/phase chronicle lives in
  * archive/PROMPT-LAW-HISTORY.md (AUDIT §9-2.6 pruning law).
  */
-import { callFreeAIFallbackChain, parseJSON } from "./ai-provider";
+import { parseJSON } from "./ai-provider";
+// R4 (AI-Router unification): the blog family migrated to the central
+// router — every pipeline step's policy (maxTokens/timeoutMs/maxModels/
+// jsonMode/temperature) resolves from ai-registry.ts; the incident-law
+// comments moved verbatim into each spec's doc.rationale. Golden canaries
+// pin registry≡legacy≡the pre-migration blocks; AI_ROUTER_MODE=legacy is
+// the no-deploy rollback.
+import { dispatchAI } from "./ai-router";
 import { type LanguageResearch } from "./blog-research";
 import { getRecentPostsByLanguage, getRecentContentDigests, isDuplicateTopic } from "./blog-topics";
 import { sanitizeModelSlug } from "./slug";
@@ -210,19 +217,9 @@ export async function pickTopicIndex(
   const recentLite = recent.map((p) => p.title);
   try {
     const prompt = `You are an SEO strategist. Recent published titles (avoid overlap):\n${recentLite.slice(0, 30).map((t) => `- ${t}`).join("\n")}\n\nCandidate topics:\n${topics.map((t, i) => `${i + 1}. ${t}`).join("\n")}\n\nPick the candidate with the best search potential AND lowest duplication risk. Return STRICT JSON: {"index": <1-based number>}`;
-    const { text } = await callFreeAIFallbackChain(prompt, {
-      tag: `blog:pick-topic-${lang}`,
-      temperature: 0.4,
-      // PHASE 177 (2026-09-11 audit): 40s killed the strongest model's CoT —
-      // 220 aborts in 14d lived exactly here; the ultra-550b regularly needs
-      // 30-90s of thinking before its tiny 120-token answer. GHA budget
-      // 360s/3 = 120s allows 90s comfortably; the deterministic fallback pick
-      // still guards the worst case.
-      maxTokens: 120,
-      jsonMode: true,
-      timeoutMs: 90_000,
-      maxModels: 3,
-    });
+    // R4: policy (0.4 · 120 · json · 90s · depth 3 — the PHASE-177 window
+    // fix) resolves from the registry (blog:pick-topic template).
+    const { text } = await dispatchAI(`blog:pick-topic-${lang}`, prompt);
     const parsed = parseJSON<{ index?: number }>(text);
     const idx = parsed?.index ? Number(parsed.index) - 1 : -1;
     if (idx >= 0 && idx < topics.length) return idx;
@@ -311,40 +308,11 @@ Create the detailed article blueprint. Return STRICT JSON only:
   "lsiKeywords": ["...", "..."],                   // 8-12 sub-keywords to weave in naturally; at least 5 must be 3+ word long-tail phrases
   "imagePlan": [ {"subject": "exact visual subject", "type": "photo|infographic|diagram"} ] // 3-5 items matching the sections. IMAGE LAW: subjects MUST be ENGLISH physical OBJECTS or SCENES ONLY (equipment, food, interiors) — NEVER any person, body part, people word, or clothing wording. PHASE 173 OWNER LAW (absolute): NEVER any woman, girl, or female subject in any image — if a person is ever needed, adult MEN only; otherwise use non-human subjects (equipment, food, anatomy diagrams, empty gym scenes)
 }`;
-  const { text, model, provider } = await callFreeAIFallbackChain(prompt, {
-    tag: `blog:outline-${lang}`,
-    temperature: 0.6,
-    // 2026-08-27 hardening: Groq's strict json mode HARD-FAILS when a
-    // reasoning model (gpt-oss) burns completion tokens on hidden CoT
-    // before finishing the document ("max completion tokens reached").
-    // We have our own tolerant extractor (161.5-hardened parseJSON) — drop
-    // response_format so partial/fenced JSON can still be salvaged.
-    // PHASE 171 (2026-09-10, blog-audit proposal ب): 2_600 → 4_000.
-    // Live evidence: 3 failed EN runs «P1 en: invalid outline JSON from
-    // openrouter:nvidia/nemotron-3-ultra-550b-a55b:free» (09-06/07/09) —
-    // a verbose reasoning model burning hidden CoT against a 2_600 cap
-    // truncates the outline JSON mid-document. Headroom now matches the
-    // doc's real size (~700 JSON tokens) + reasoning-model CoT, and the
-    // hardened parser salvages any residual truncation that still slips
-    // through.
-    maxTokens: 4_000,
-    jsonMode: false,
-    // PHASE 177 (2026-09-11 audit): 70s → 110s — the ultra-550b outline
-    // attempts aborted at 70s repeatedly (220 timeout/abort class across
-    // the window); 360s GHA budget / 2 models = 180s leaves headroom.
-    timeoutMs: 110_000,
-    // BLOG-PROVIDER-FAILOVER 2026-10-16 (live run 38847288514): 2 → 3 —
-    // the outline died when gemini answered a TRANSIENT 503 ("high demand
-    // … usually temporary" — correctly NOT cooled) and openrouter/ultra
-    // answered the upstream DEGRADED/abort class, while groq/gpt-oss-120b
-    // was HEALTHY and serving pick-topic in the SAME run two minutes
-    // earlier — maxModels=2 stopped the walk before the healthy provider.
-    // Same rationale/precedent as P4 2→4 (Execution-Path Audit: "with
-    // maxModels=2 the review died when BOTH leading models hiccuped")
-    // and P2 2→3 (R3). A skipped/degraded entry consumes no budget, so
-    // the deep walk stays inside the 480s window.
-    maxModels: 3,
-  });
+  // R4: policy (0.6 · 4000 · jsonMode=false by the 161.5 tolerant-extractor
+  // law · 110s window · depth 3) resolves from the registry — the PHASE-171
+  // CoT-truncation + 177 window + 2026-10-16 failover incident laws live in
+  // the blog:outline spec's doc.rationale.
+  const { text, model, provider } = await dispatchAI(`blog:outline-${lang}`, prompt);
   const parsed = parseJSON<{
     title?: string;
     subtitle?: string;
@@ -542,29 +510,10 @@ ${faqBlock}
 Return STRICT JSON only:
 { "articleMd": "the full article in markdown (## headings, no # H1)" }`;
 
-  const { text, model, provider } = await callFreeAIFallbackChain(prompt, {
-    tag: `blog:content-${lang}`,
-    temperature: 0.7,
-    // GROQ FREE FIT (2026-08-27, hard data from dispatch logs): Groq enforces
-    // an 8000 TPM ceiling and COUNTS max_tokens in it — a 16000-cap request
-    // returns 413 'Requested 16664' every time. A 1500-2500 word article is
-    // only ~3000 output tokens, so 6400 keeps us under the ceiling while
-    // leaving headroom. Nightly upstream outages (entire Google gemma pool
-    // 429 for hours) leave nemotron as sole carrier some windows — give it
-    // a REAL long window.
-    // R3 (Execution-Path Audit 2026-09-29): maxModels 2 → 3. The 480s
-    // workflow budget (AI_CHAIN_TOTAL_BUDGET_MS, up from 360s) funds a third
-    // live entry: eff = min(150s, 480s/3=160s) = 150s ×3 models — per-model
-    // timeout UNCHANGED. Entry #2 is Groq/gpt-oss-120b, re-admitted for this
-    // ~8.7k-est call by the R3 per-entry clamp (~4.8–4.9k max_tokens — enough
-    // for a 1300–2500-word article). Breaks the OR+NV dual-provider
-    // isolation that exhausted P2 chains live (run 36582658309: OR-abort +
-    // NV-503 in one window; AR 09-22/23/24 chain exhaustions).
-    maxTokens: 6_400,
-    jsonMode: false, // tolerant extraction instead of strict-mode hard fails
-    timeoutMs: 150_000,
-    maxModels: 3,
-  });
+  // R4: policy (0.7 · 6400 groq-fit · tolerant extraction · 150s · depth 3
+  // by the R3 per-entry-clamp re-admission) resolves from the registry —
+  // the GROQ-FREE-FIT + R3 incident laws live in the blog:content spec.
+  const { text, model, provider } = await dispatchAI(`blog:content-${lang}`, prompt);
   const parsed = parseJSON<{ articleMd?: string; article?: string }>(text);
   const md = (parsed?.articleMd || parsed?.article || "").trim();
   const wc = countWords(md);
@@ -1006,35 +955,12 @@ Return STRICT JSON only:
   // re-call (the P2-force/B1 one-shot precedent) rides the SAME prompt
   // with a stern directive naming the measured shortfall; if the second
   // draw still lands under the floor the honest error fires naming BOTH.
+  // R4: policy (0.4 · 6400 · tolerant extraction · 150s window · depth 4;
+  // groq stays excluded for review payloads BY DESIGN — the R3 audit
+  // reservation) resolves from the registry — the deep-ladder + window
+  // incident laws live in the blog:review spec's doc.rationale.
   const reviewChainCall = (extraDirective: string) =>
-    callFreeAIFallbackChain(extraDirective ? `${extraDirective}\n\n${prompt}` : prompt, {
-    tag: `blog:review-${lang}`,
-    temperature: 0.4,
-    // Review embeds the FULL draft → big payload runs openrouter/nvidia-only
-    // via the chain guard. DEEP LADDER FIX (2026-08-27 AR dispatch forensics):
-    // with maxModels=2 the review died when BOTH leading models hiccuped.
-    // PHASE 177 (2026-09-11 audit): the ladder's gemma/lightning:free steps
-    // are now PURGED (0-0.4% live success) so every walked entry is healthy
-    // — 4 models gives the strongest entries real depth instead of 5 × 72s
-    // with 2 dead steps. Vercel self-clamps to 52s. R3 (2026-09-29): the
-    // 480s budget widens each window 90s→110s (480/4=120s cap; the 110s
-    // caller timeout rules) — and the R3 per-entry clamp does NOT re-admit
-    // Groq here: review payloads (~10.4–11.1k est) clamp below the 3800
-    // floor → openrouter/nvidia-only BY DESIGN (audit reservation).
-    maxTokens: 6_400,
-    jsonMode: false,
-    // BLOG-PROVIDER-FAILOVER 2026-10-16 (live run 38851515578): 110s →
-    // 150s + the workflow budget 480s → 600s — in that live window EVERY
-    // non-gemini review entry (OR-ultra · nvidia-super · nvidia-ultra)
-    // aborted at the 110s cap on the ~11.8k-token review payload while
-    // gemini answered 503/429 (its free-tier request quota drained by the
-    // day's testing) — the review needs its real CoT window, and the
-    // 600s/4=150s budget funds exactly this caller timeout. Vercel still
-    // self-clamps to 52s; groq stays excluded for review payloads BY
-    // DESIGN (the R3 audit reservation — clamp below the 3800 floor).
-    timeoutMs: 150_000,
-    maxModels: 4,
-    });
+    dispatchAI(`blog:review-${lang}`, extraDirective ? `${extraDirective}\n\n${prompt}` : prompt);
 
   let { text, model, provider } = await reviewChainCall("");
   let parsed = parseJSON<{
@@ -1361,14 +1287,10 @@ export async function translateLatinTokens(
 المصطلحات:
 ${tokens.map((t) => `- ${t}`).join("\n")}`;
 
-  const { text, model, provider } = await callFreeAIFallbackChain(prompt, {
-    tag: "blog:latin-tokens-ar",
+  // R4: policy (0.2 · 1200 · json · 60s · depth 3 + the measured CF scout
+  // fixed-lead) resolves from the registry.
+  const { text, model, provider } = await dispatchAI("blog:latin-tokens-ar", prompt, {
     systemPrompt: AR_MSA_EDITOR_LAW,
-    temperature: 0.2,
-    maxTokens: 1_200,
-    jsonMode: true,
-    timeoutMs: 60_000,
-    maxModels: 3,
   });
 
   const parsed = parseJSON<Record<string, unknown>>(text);
@@ -1417,14 +1339,10 @@ ${LATIN_REPAIR_NOTES}
 المقال الأصلي:
 ${markdown}`;
 
-  const { text, model, provider } = await callFreeAIFallbackChain(prompt, {
-    tag: "blog:latin-repair-ar",
+  // R4: the LEGACY rollback path keeps its verbatim policy via the registry
+  // (blog:latin-repair-ar spec — reachable ONLY via LATIN_REPAIR_LEGACY=1).
+  const { text, model, provider } = await dispatchAI("blog:latin-repair-ar", prompt, {
     systemPrompt: AR_MSA_EDITOR_LAW,
-    temperature: 0.2,
-    maxTokens: 6_400,
-    jsonMode: false,
-    timeoutMs: 110_000,
-    maxModels: 3,
   });
 
   // Sentinel parsing (same contract as the legacy cleanup runner).
