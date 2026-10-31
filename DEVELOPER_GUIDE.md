@@ -166,6 +166,9 @@ src/
 │   │                            #   tickets, notifications + helpers + index re-export)
 │   ├── auth-server.ts           # مصادقة الخادم (requireUser, requireCoach)
 │   ├── ai-provider.ts           # موفر AI موحد (OpenRouter + fallbacks)
+│   ├── ai-registry.ts           # سجل وظائف AI الموحد (بيانات صرفة: فصيلات/سلالم/سياسات بأدلتها — مصدر التوجيه الوحيد)
+│   ├── ai-router.ts             # موجّه AI الرقيق (dispatchAI/dispatchGrounded + AI_ROUTER_MODE=legacy)
+│   ├── ai-usage-meter.ts        # عدادات الاستخدام (مزود×نموذج×وظيفة + حصتا Tavily/Exa — fail-open)
 │   ├── exercises.ts             # 868 تمرين
 │   ├── foods.ts                 # 8,830 أكلة
 │   ├── blog-pipeline.ts         # مراحل توليد المقالات (P1/P2/P4 + المحلل المحصّن)
@@ -334,11 +337,24 @@ EvoFloatingWidget / ChatView (UI)
 ### السلسلة المتشابكة
 
 > **قائمة الموديلات الحية بيتها الوحيد:** `src/lib/ai-provider.ts` (سلسلة
-> متشابكة openrouter ↔ groq ↔ nvidia، أقوى نموذج أولاً) — والقانون الكامل
-> بمزوديه الثلاثة ومسارَيه القانونيين: `AGENTS.md` §8. البنية الثابتة فقط
-> موثقة هنا: المحادثة تستخدم maxModels=3؛ باقي المسارات maxModels=2 مع
-> ضمانة أن maxModels × timeoutMs ≤ 52 ثانية داخلياً في `ai-provider.ts`
-> (سقف دوال Vercel serverless).
+> متشابكة بقيادة دوّارة بين المزودين، أقوى نموذج أولاً) — والقانون الكامل
+> بمزوديه ومسارَيه القانونيين: `AGENTS.md` §8. **مصدر سياسات التوجيه
+> (التوحيد المعتمد 2026-10-31):** كل وسم توليد (فصيلات خطط/مدونة/أدوات/
+> تواصل/عروض/EVO) له مواصفة بيانات صرفة بـ`src/lib/ai-registry.ts`
+> (السلم بدليله المقيس · السياسة بمبرر قوانين الحوادث · البوابات ونقطة
+> الدخول كمراجع) ويُرسل حصرًا عبر `dispatchAI`/`dispatchGrounded` من
+> `src/lib/ai-router.ts` — **مواقع النداء لا تحمل أي سياسة توجيه**
+> (العمق/المهلة/الحرارة/jsonMode تُحل من السجل وحده؛ قائمة التجاوزات
+> المغلقة ترفض مس السياسة، والمسار الرجعي `AI_ROUTER_MODE=legacy` يخدم
+> اللقطة المجمدة قبل الهجرة). الكاناري الذهبية
+> `src/lib/__tests__/ai-registry.test.ts` تثبت آليًا لكل وسم أن
+> registry ≡ legacy ≡ مشية المحرك الفعلية، وحارس CI
+> `scripts/check-ai-router-guard.sh` يحرس مع كل دفعة: الباب الوحيد (لا
+> نداء محرك خارج المركز) واكتمال السجل باتجاهين (لا وسم غير مسجل ولا
+> تسجيل ميت). عمق كل وظيفة ومهلتها الحرفيان بالسجل (doc.evidence يشير
+> لموقع النداء التاريخي) مع ضمانة أن العمق × المهلة ≤ جيب الزمن داخليًا
+> في `ai-provider.ts` (سقف دوال Vercel serverless؛ السيرات ترفعه عبر
+> `AI_CHAIN_TOTAL_BUDGET_MS`).
 
 ### Subscriber Gating (المرحلة 183 «البوول الموحد»)
 

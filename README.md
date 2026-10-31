@@ -429,7 +429,24 @@ AI jobs) runs on GitHub Actions runners instead of serverless functions.
 Plan generation and regeneration outputs pass a
 mandatory quality gate (`src/lib/plan-ai-validation.ts`) with food-library
 grounding (`src/lib/plan-food-grounding.ts`) — a provider answering 200 is
-not evidence of quality.
+not evidence of quality. Routing policy itself is UNIFIED: every AI
+generation function on the platform (plans, the blog pipeline, the ten
+editor tools, social posts, visitor demos, EVO chat/eval) is registered in
+the data-only AI Function Registry (`src/lib/ai-registry.ts` — id = the
+log tag, family, role requirements, the ladder with per-entry evidence,
+policy with its incident-law rationale, gates/metering/entry as
+references) and dispatched through the thin AI router
+(`src/lib/ai-router.ts` — `dispatchAI`/`dispatchGrounded`); call sites
+carry NO inline routing policy (maxModels/timeout/temperature/jsonMode
+resolve from the registry alone — a closed override list rejects policy
+edits), the golden canaries prove registry ≡ legacy ≡ the live engine
+walk per function, `AI_ROUTER_MODE=legacy` is the frozen pre-migration
+snapshot (the rollback lever), and a CI guard
+(`scripts/check-ai-router-guard.sh`) keeps the sole-door law and the
+registry's completeness both ways on every push. Usage meters
+(provider × model × function, plus Tavily-credit and Exa-cost counters)
+ride inside the engine — optional, fail-open by law, visible in the
+queue-health panel.
 
 ### Automated content pipeline
 The bilingual blog is generated end-to-end — research → outline → article →
