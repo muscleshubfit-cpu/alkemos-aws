@@ -1,4 +1,26 @@
 ---
+Task ID: SEO-RECOVERY-EXEC-3-E10-T2-BING-CANCEL-2026-11-01
+Agent: Main (Super Z)
+Task: أمر المالك «الغاء بند bing ، اكمل التنفيذ التالى فى الخطة» — الجلسة 392: (أ) إلغاء بند Bing نهائيًا وتوثيقه بكل أسطح الخطة (ب) تنفيذ الخطوة التالية بالخطة: T2 — إعادة كتابة بقية المستوى D كاملة (12 مقالة) عبر قناة العلاج الرسمية.
+
+Work Log:
+- البروتوكول §3.6 منفذ: STATE + آخر 3 مدخلات worklog + آخر 5 كوميتات — التالي بالخطة محدد من STATE مباشرة: T2 (بقية D=11) ثم L2
+- (أ) إلغاء Bing: تحديث الخطة docs/SEO-ADSENSE-RECOVERY-PLAN-2026-10-31.md بأربعة مواضع (ترويسة الحالة + صف D-3 + جدول §7 التصنيفي بصف إلغاء مستقل + إسقاط D-3 من قائمة البنود اليدوية) — قرار موثق حرفيًا بأمر المالك؛ الكود المسلّم (سكربت+سير dispatch-only بلا جدولة) يبقى نائمًا بلا أي عمل مستقبلي ولا استهلاك للسر
+- (ب) T2: قراءة المحتوى الحالي للمقالات من الإنتاج الحي (قراءة فقط) + التحقق الفردي من كل روابط السلطة قبل الكتابة: ODS الأداء الرياضي بالمسار الجديد https://ods.od.nih.gov/factsheets/ExerciseAndAthleticPerformance-HealthProfessional (المساران القديمان Creatine-HealthProfessional وExercise-and-Athletic-Performance-HealthProfessional قيسا 404 فاستُبدلا) · NCCIH probiotics (المسار القديم 404 → /health/probiotics) · CDC sleep/about · PubMed عبر E-utilities + تحقق الصفحات: 26605807 (Schoenfeld راحة 3د>1د) · 2305711 (ميفلين-سانت جور — 2305712 قيس NOT المقال فاستُبدل) · 36527593 (ميتا غمر الماء البارد) · 23743793 (مراجعة الغمر 10-15°م) · 38382312 (Oura ج3) · 37917155 (أحد عشر جهازًا) · 33844006 (مراجعة أحذية الرفع) · 39519498 (ميتا كرياتين 2024)
+- الدفعة scripts/blog-runner/article-treatment-batch-t2.json: 12 مدخلًا rewrite (6 AR: progressive-weight-increase · choose-weightlifting-shoes-men · muscle-building-home-workout-guide · optimal-rest-periods-resistance-training · calculate-daily-calories-muscle-gain-beginners-guide · best-creatine-men-guide · + choose-best-wearable-sleep-tracker-athletes لقانون تكافؤ الأزواج بالكاناري: الطرفان EN+AR معًا في نفس الدفعة — نفس نمط T1 مع زوج deload) · (5 EN: improve-gut-health · creatine-cycling · train-muscle-group-frequency-fixes · contrast-therapy · best-wearable-sleep-tracking-athletes-guide)
+- إصلاحات النوايا الموثقة: 7 تصنيفات مغلوطة صُححت (wellness→workout لprogressive · recipes→nutrition لcalories · fitness→workout لrest · health→workout لfrequency · muscle-gain→nutrition لgut · fitness→supplements لcycling · weight-loss→wellness لcontrast · recipes→wellness لwearable EN · وwellness لwearable AR) · إحصاءتان مختلقتان حُذفتا من مقال الراحة (70% من الممارسين/خسارة 25% بلا مصدر) واستُبدلتا بتجربة محكمة مقيسة · التلوث اللاتيني والمقاطع المكسورة بمقال الراحة أُصلحت (metabolites/compte/moderate/ي.restون) · ادعاءات مايو/ACSM غير الموصولة بمقال الحذاء استُبدلت بمراجعة PubMed محققة · صور من المجموعات المفحوصة الحية لكل مقالة (alt عربي وصفي)
+- سلسلة الجودة المحلية قبل الدفع: مرآة كاملة لبطارية الكاناري بالبايثون (1000+ كلمة · FAQ 4-7 متماثل حرفيًا · سلطة · لاتيني ≤5% · ميتا ≤160/≤60-70 · حرس إضافي CJK بعد رصد تسرب حروف صينية بالإصدار الأول وإصلاحه) + دمج وتسجيل الدفعة بBATCH_FILES بالكاناري + bun install --frozen-lockfile + vitest الكاناري 185/185 + tsc 0
+- التطبيق: كوميت 6d72f04 (دفعة+كاناري+توثيق إلغاء Bing) → كل بوابات CI خضر (quality/gate/parity/guard/probes/migrate/preview/deploy) → تشغيل 41261860827 (DRY: 12/12 أخضر بنطاقات الكلمات القديمة مطابقة للجرد حرفيًا 716/742/759/760/766/781/825/699/705/718/743/764) ثم 41261923361 (APPLY: 12/12 مطبق، صفر فشل)
+- القياس البعدي بسير blog-corpus-audit (تشغيل 41262780210): total 112 (+مقالة يومية 01:21) · **D 11→0** · A7/B34/C71 · الوسيط 1052→1085 · أزواج 11 (تكافؤ سليم 3→4: زوج النوم انضم بعد معالجة طرفيه معًا) · غير المقترن 90 (47EN/43AR — الفارق المقالة اليومية) · معلقة الاعتماد 6
+- ملاحظة صادقة: نشر 6d72f04 بدأ (01:37) قبل اكتمال APPLY (01:38:46) فتولّدت صفحات المدونة الثابتة من بيانات ما قبل التطبيق جزئيًا؛ التصحيح قائم على مسارين موثقين: ISR revalidate=3600 يلتقط المحتوى الجديد خلال ساعة لكل صفحة، وكوميت الختام هذا يطلق نشرًا جديدًا يعيد التوليد من القاعدة المحدثة (تحقق حي بعد إتمامه بالبحث عن أقسام جديدة بHTML الصفحات) — سلوك stale-while-revalidate الموثق بالجلسات السابقة
+- لا مساس بسعرات/فهرسة/إعدادات إنتاج؛ لا حذف/دمج مقالات؛ slugs/عناوين ثابتة (قانون الروابط)؛ review_status لم يُمس (الإعادة الكتابة لا تغير حالة المراجعة)
+
+Stage Summary:
+- القيمة الحقيقية: الطبقة السطحية D اختفت من المكتبة كاملة (19→0 عبر T1+T2) — كل مقالة منشورة الآن ≥800 كلمة وبوابة جودة مقيسة · 7 تصنيفات خاطئة صُححت فتظهر المقالات بالأقسام الصحيحة للقارئ والزاحف · زوج hreflang النوم صار مكافئ الجودة بطرفيه
+- المتبقي بالخطة: T3 (C=71) بدفعات 8-10 بترتيب الجرد · L2 (32 نظيرًا مؤهلًا A/B من سجل الـ90) بأمر مالك · بنود المالك: P0-1 GSC · D-6 اعتماد الـ6 المعلقة · P2-3 قناتا الكيان · قرار D-1 بعد 2-11 (D-3/Bing أُسقط نهائيًا)
+- Push status: منفذ — 6d72f04 (E-10) + كوميت الختام التوثيقي هذا [vercel skip — docs فقط، مع ملاحظة أن النشر الجديد المطلق به يعيد توليد صفحات المدونة من القاعدة المحدثة]
+
+---
 Task ID: SEO-RECOVERY-EXEC-2-E5-E9-2026-11-01
 Agent: Main (Super Z)
 Task: أمر المالك 2026-11-01 «أمر تنفيذ المرحلة التالية — Alkemos SEO Recovery» — الجلسة 391 كاملة: E-5 حصر/تصنيف المكتبة · E-6 معالجة T1 (أضعف 9 مقالات) · E-7 نظائر L1 (4 أزواج hreflang) · E-8 جودة التوليد/المعالجة الدائمة · E-9 الختام.
