@@ -71,6 +71,7 @@ const BATCH_FILES = [
   "article-treatment-batch-t2.json",
   "article-treatment-batch-t3.json",
   "article-treatment-batch-t3-2.json",
+  "article-treatment-batch-t3-3.json",
 ] as const;
 
 const BATCH_DIR = join(process.cwd(), "scripts", "blog-runner");
@@ -247,7 +248,8 @@ describe("article-treatment batches — the permanent editorial battery", () => 
       it("no half-treated existing pairs inside the batch", () => {
         const slugs = new Set(batch.articles.map((e) => `${e.slug}|${e.language}`));
         const PAIRED_IN_CORPUS = new Set([
-          // the 7 measured bidirectional pairs (triage §4.4)
+          // the 11 measured bidirectional pairs
+          // (7 original from triage §4.4 + 4 created by the L1 batch, E-7)
           "deload-week-guide|ar",
           "deload-week-rest-training-guide|en",
           "home-muscle-building-guide-simple-weights|ar",
@@ -262,6 +264,14 @@ describe("article-treatment batches — the permanent editorial battery", () => 
           "protein-per-day-muscle-build-plan|en",
           "choose-best-wearable-sleep-tracker-athletes|ar",
           "best-wearable-sleep-tracking-athletes-guide|en",
+          "build-muscle-without-supplements-guide|en",
+          "increase-muscle-mass-no-protein-supplements|ar",
+          "hiit-home-fat-burning-workout|en",
+          "hiit-home-workout-guide|ar",
+          "track-macros-no-food-scale|en",
+          "track-macros-without-scale-guide|ar",
+          "pre-workout-nutrition-guide|en",
+          "nutrition-before-workout-guide|ar",
         ]);
         const KNOWN_PAIRS: Array<[string, string]> = [
           ["deload-week-guide|ar", "deload-week-rest-training-guide|en"],
@@ -286,6 +296,13 @@ describe("article-treatment batches — the permanent editorial battery", () => 
             "choose-best-wearable-sleep-tracker-athletes|ar",
             "best-wearable-sleep-tracking-athletes-guide|en",
           ],
+          [
+            "build-muscle-without-supplements-guide|en",
+            "increase-muscle-mass-no-protein-supplements|ar",
+          ],
+          ["hiit-home-fat-burning-workout|en", "hiit-home-workout-guide|ar"],
+          ["track-macros-no-food-scale|en", "track-macros-without-scale-guide|ar"],
+          ["pre-workout-nutrition-guide|en", "nutrition-before-workout-guide|ar"],
         ];
         for (const [a, b] of KNOWN_PAIRS) {
           if (!PAIRED_IN_CORPUS.has(a) || !PAIRED_IN_CORPUS.has(b)) continue;
