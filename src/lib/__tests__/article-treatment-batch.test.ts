@@ -74,6 +74,7 @@ const BATCH_FILES = [
   "article-treatment-batch-t3-3.json",
   "article-treatment-batch-t3-4.json",
   "article-treatment-batch-t3-4b.json",
+  "article-treatment-batch-l2-1.json",
 ] as const;
 
 const BATCH_DIR = join(process.cwd(), "scripts", "blog-runner");
@@ -274,6 +275,16 @@ describe("article-treatment batches — the permanent editorial battery", () => 
           "track-macros-without-scale-guide|ar",
           "pre-workout-nutrition-guide|en",
           "nutrition-before-workout-guide|ar",
+          // + the 4 pairs created by the L2-1 batch (E-16) — twins of the
+          // A-tier EN articles, linked bidirectionally by the insert run
+          "progressive-overload-no-weight|en",
+          "progressive-overload-without-weights-guide|ar",
+          "4-day-upper-lower-hypertrophy-split|en",
+          "upper-lower-split-4-days-guide|ar",
+          "protein-myths-busted-muscle-gain|en",
+          "protein-myths-muscle-gain-guide|ar",
+          "calorie-cycling-fat-loss-diet|en",
+          "calorie-cycling-fat-loss-guide|ar",
         ]);
         const KNOWN_PAIRS: Array<[string, string]> = [
           ["deload-week-guide|ar", "deload-week-rest-training-guide|en"],
@@ -305,6 +316,10 @@ describe("article-treatment batches — the permanent editorial battery", () => 
           ["hiit-home-fat-burning-workout|en", "hiit-home-workout-guide|ar"],
           ["track-macros-no-food-scale|en", "track-macros-without-scale-guide|ar"],
           ["pre-workout-nutrition-guide|en", "nutrition-before-workout-guide|ar"],
+          ["progressive-overload-no-weight|en", "progressive-overload-without-weights-guide|ar"],
+          ["4-day-upper-lower-hypertrophy-split|en", "upper-lower-split-4-days-guide|ar"],
+          ["protein-myths-busted-muscle-gain|en", "protein-myths-muscle-gain-guide|ar"],
+          ["calorie-cycling-fat-loss-diet|en", "calorie-cycling-fat-loss-guide|ar"],
         ];
         for (const [a, b] of KNOWN_PAIRS) {
           if (!PAIRED_IN_CORPUS.has(a) || !PAIRED_IN_CORPUS.has(b)) continue;
