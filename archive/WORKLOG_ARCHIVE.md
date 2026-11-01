@@ -14021,3 +14021,24 @@ Stage Summary:
 - R2 منفذ: عدادات (مزود×نموذج×وظيفة) لكل المحاولات داخل المحرك + حصتا البحث الشهريتان مقيستان آليًا + لوحة queue-health — كلها اختيارية وfail-open بقانون وبكاناري يثبت أن التوليد لا يتوقف أبدًا
 - التالي: R3 — هجرة فصيلة الخطط (وسوم plan-generator السبعة + عرضا الزوار) عبر dispatchAI مع إعادة الكاناري الذهبية وإثبات legacy
 - Push status: كوميت R2 واحد على main يليه دفع ثم مسبار التحقق الحي
+
+<!-- rotated 2026-11-01 by scripts/worklog_rotate.py (Phase 288, ARCH-REMEDIATION): 1 entries moved verbatim from worklog.md -->
+---
+Task ID: AI-ROUTER-UNIFICATION-R3-PLANS-MIGRATION-2026-10-31
+Agent: Main (Super Z)
+Task: أمر المالك (البند 1) — فريم R3 من الخطة المعتمدة §7: «هجرة فصيلة الخطط» — وسوم الخطط السبعة + عرضا الزوار تمر عبر dispatchAI (كتل الخيارات تُحذف من مواقعها) — صفر بالبرهان: الكاناري الذهبية + كاناري «لا كتلة سياسة خارج السجل» + تراجع AI_ROUTER_MODE=legacy.
+
+Work Log:
+- (callValidatedChain) توقيعه الجديد (fnId · buildPrompt · overrides · validate): dispatchAI يحل الوسم والسياسة من السجل — حلقة الإصلاح الواحدة والبوابات الحتمية (validateNutritionPlanAIOutput · validateWorkoutPlanAIOutput · validateRegenerated* · normalize*) كما هي حرفيًا
+- (المواقع السبعة) plan:nutrition/plan:workout/plan:nutrition-alt/plan:item-regen/plan:day-regen عبر callValidatedChain الجديد بsystemPrompt وحده · plan:json-normalize وplan:exercise-corrective مباشرة عبر dispatchAI · meal-demo/workout-demo بdemoOverrides (systemPrompt) مع بقاء إعادة المحاولة الواحدة داخل نفس الطلب والبوول والحراس بترتيبهم
+- (صفر السلوك بالبرهان) الكاناري الذهبية تُعاد خضراء (30 اختبارًا بعد إضافة كاناري R3): لكل وسم registry≡legacy≡القيم المدبوسة حرفيًا — الهجرة صفرية السلوك بالبرهان الآلي · كاناري R3 الهيكلية الجديدة (3): صفر callFreeAIFallbackChain/callGroundedSearch بملفات الفصيلة الثلاثة · صفر سياسة توجيه مضمنة بplan-generator (maxModels/timeoutMs/jsonMode/temperature) · المساران التجريبيان يرسلان معرفيهما المسجلين
+- (كاناري المسارين التجريبيين) حُدثت 6 دبابيس من callFreeAIFallbackChain إلى dispatchAI بنفس الترتيب الدلالي (rateLimit قبل dispatch · checkUnifiedPlanQuota قبل · recordUnifiedPlanUsage بعد) + فحص ثنائي جديد: المسار لا يحمل السياسة والسجل يحمل نفس القيم (maxTokens 3000 · timeoutMs 20_000 · jsonMode true)
+- (موك الاختبارات القائمة تعمل بلا تغيير) الموك على وحدة ai-provider يُرى من ai-router أيضًا (نفس الوحدة المستوردة) — كاناري الفصيلة كلها 239/239 خضراء بلا أي تعديل (keto-dairy · swap-durability · swap-rootcause · regen-rootcause2 · nutrition-fallback-titles)
+- (البطارية والبوابات) 3,084/3,084 ‏(+3) · tsc 0 · eslint 0 · البوابات الأربع خضراء
+- (الاختبار الحي — بند 8) مسبار plan-ai-probe يُطلق بعد الدفع: المسار الحقيقي الكامل (توليد كيتو حقيقي بعميل اصطناعي → بوابة الجودة → التدقيق المستقل → إعادة توليد وجبة) بصفر كتابات DB — أول تشغيل حي لفصيلة الخطط عبر السجل المركزي · إثبات التراجع (ت8): وضع legacy مختبر بالكاناري يخدم القيم نفسها + revert الفريم مستقل
+- (ت7 لفريم R2 — مكمل) مسبار grounded-failover بعد دفع R2 (41201778297) ‏GREEN وصفوف [ai-meter] الحية مقروءة بالسجل لكل مزود×نموذج×وظيفة: exa ‏(0.4¢+0.1¢) · exa-synth عبر openrouter بtokens_est · tavily ‏(رصيد=1) وتوليفه عبر groq · groq browser_search · **gemini بموديلاته الثلاثة outcome=quota — الحصة المستنزفة مصنفة صادقة** · المساران E2E بالسلّمين
+
+Stage Summary:
+- R3 منفذ: فصيلة الخطط كاملة (7 وسوم + عرضا الزوار) عبر الموجّه المركزي بلا أي كتلة سياسة بمواقع النداء — صفر سلوك بالبرهان الثلاثي (ذهبية + هيكلية + بوابة القيم القديمة) والبوابات الحتمية كلها بكاناريها
+- التالي: R4 — فصيلة المدونة (9 وسوم توليد + أدوات المحرر العشر + المنشورات) + تسجيل blog:draft-generate وتوحيد المحركين بكاناري ت4
+- Push status: كوميت واحد على main يليه دفع ثم مسبار plan-ai-probe الحي — رقمه ب§12
