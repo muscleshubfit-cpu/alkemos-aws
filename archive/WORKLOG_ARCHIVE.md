@@ -14204,3 +14204,24 @@ Work Log:
 Stage Summary:
 - الجلسة (390) منفذة بالكامل: E-1 قيد الخطة/G4 + E-2 تكامل Bing (مستهلك السر الأول — عائق المتبقي يدوي: تحقق BWT وإعادة توليد المفتاح) + E-3 دفعة إثراء أولى منشورة حية + E-4 الختام — المتبقي للجلسات اللاحقة بأوامر: P1-2 (تعميق التمارين) ودفعات إثراء 2+
 - Push status: منفذ — كوميت ختامي توثيقي واحد على main [vercel skip]
+
+<!-- rotated 2026-11-02 by scripts/worklog_rotate.py (Phase 288, ARCH-REMEDIATION): 1 entries moved verbatim from worklog.md -->
+---
+Task ID: SEO-RECOVERY-EXEC-2-E5-E9-2026-11-01
+Agent: Main (Super Z)
+Task: أمر المالك 2026-11-01 «أمر تنفيذ المرحلة التالية — Alkemos SEO Recovery» — الجلسة 391 كاملة: E-5 حصر/تصنيف المكتبة · E-6 معالجة T1 (أضعف 9 مقالات) · E-7 نظائر L1 (4 أزواج hreflang) · E-8 جودة التوليد/المعالجة الدائمة · E-9 الختام.
+
+Work Log:
+- E-5: scripts/blog-runner/blog-corpus-inventory.mts (قراءة-فقط، PostgREST) قاس 107 مقالات منشورة: مستويات A7/B33/C48/D19 · 61 بلا روابط سلطة · 93 بلا نظير (48EN/45AR) · تدقيق تكافؤ الأزواج الـ7 (3 غير مكافئة بدقة — وثّقت بلا فك اقتران منع dangling hreflang) — docs/BLOG-CORPUS-TRIAGE-2026-11-01.md مولد من البيانات نفسها (52d9aeba)
+- E-6: قناة العلاج الرسمية scripts/blog-runner/article-treatment.mts + article-treatment-batch-t1.json + سير article-treatment.yml (dispatch-only، DRY_RUN افتراضيًا، بطارية جودة قبل أي كتابة: G1 ≥1000ك · FAQ 4-7 · G4 سلطة · MSA ≤5% لاتيني · حرس التزامن بنطاق كلمات المحتوى القديم) — T1: إعادة كتابة 9 مقالات (أضعف 8 AR: water-intake/omega-3/vitamin-d/frequency/stretching/protein/deload/whey-ramadan + توأم deload EN لتكافؤ الزوج): إصلاح focus_keyword خاطئ بثلاث (بقعة المولد القديم «سعرات لخسارة الوزن») + تصنيفات مغلوطة + FAQ 4-7 + روابط سلطة متحقق منها فرديًا قبل الكتابة (WHO drinking-water/healthy-diet/physical-activity · ODS Omega3FattyAcids-HealthProfessional + VitaminD-Consumer — كلاهما WebFetch-تحقق؛ لاحظ: رابط Omega3-Consumer القديم مقيس غير موجود فاستُبدل · PubMed 27102172/30558493/40297071/26019246/27086196/23016079 محققة بالبحث) + صور من مجموعة الم corpus المفحوصة (قانون أمان الصور 173)
+- التطبيق: تشغيل 41249733277 (DRY أخضر 9/9) ثم 41249869553 (APPLY: 9/9 مطبق، صفر فشل) — الجرد البعدي: D 19→11 · أزواج hreflang للdeload سليمة والمحتوى الجديد حي مقيسًا (فحص HTML مباشر)
+- E-7: article-treatment-batch-l1.json — 4 نظائر بمحتوى تحريري أصيل (لا ترجمة): AR track-macros-without-scale-guide ↔ EN track-macros-no-food-scale · AR nutrition-before-workout-guide ↔ EN pre-workout-nutrition-guide · EN build-muscle-without-supplements-guide ↔ AR increase-muscle-mass-no-protein-supplements · EN hiit-home-fat-burning-workout ↔ AR hiit-home-workout-guide — إدراج بحالة pending الصادقة (قانون 0097: اعتماد المالك D-6 من Admin▸Blog) + إقرار linked_post_id ثنائي الاتجاه داخل نفس التشغيل — تشغيل 41250036661 (DRY) ثم 41250177193 (APPLY 4/4 + «paired bidirectionally» ×4) — المقيس الحي: hreflang en/ar/x-default ظاهر بعلامات link alternate بالصفحات الأربع الجديدة · الإجمالي 107→111 · الأزواج 7→11 · غير المقترن 93→89
+- E-8: (أ) كاناري دائم src/lib/__tests__/article-treatment-batch.test.ts (98 اختبارًا): كل دفعة ملتزمة تُفحص ببوابات الجودة نفسها + born-gated (دفعة بلا صف تسجيل بالكاناري تفشل CI) + حرس نصف-معالجة الأزواج (لا يُعاد كتابة طرف وترك توأمه) (ب) سير blog-corpus-audit.yml: قياس تكافؤ الأزواج الدائم (أول قياس: 8/11 أزواج معلمة — أساس T2/L2) + سجل عدم وجود النظير (89، 32 مؤهلة A/B = توثيق البند الإلزامي) (ج) الاختبار العملي للتوليد عبر المزودين الحاليين: تشغيل حي كامل لسير blog-post-en (41250450136) — النتيجة توثق بالسطر التالي
+- البطارية: tsc 0 · eslint 0 · vitest 3,198/3,198 (بينها الكاناري الجديد 98) · docs_parity/docs_audit خضراء · CI على e2e70991 أخضر (quality/deploy/migration/parity/guard)
+- Bing (بند 5 من الأمر): اختبار فعلي بالسر الحالي (تشغيل 41245916287 بعد تحديث المالك للسر): الجلب والترشيح سليمان (2,207 URL عبر 6 خرائط؛ 10 من 165 مرشحًا) لكن Bing أرجع HTTP 404 = قيمة المفتاح لا تزال غير مقبولة — 0 مقبول/10 مرفوض؛ لا يعد نجاحًا — العائق يدوي للمالك: D-3 (تحقق ملكية BWT ثم إعادة توليد المفتاح §9.2 ثم إعادة التشغيل)
+- لا مساس بسعرات/فهرسة/إعدادات إنتاج؛ لا حذف/دمج مقالات؛ العناوين/slugs ثابتة (قانون الروابط)؛ BING_WEB_MASTER استُهلك بلا طباعة أبدًا
+
+Stage Summary:
+- القيمة الحقيقية: 9 مقالات ضعيفة صارت كاملة الأهلية (كل واحدة فوق 1000 كلمة بروابط سلطة وFAQ) · 4 فجوات لغوية سدت بأزواج hreflang حية · المنظومة مقفولة ببوابات دائمة (كاناري + قياس تكافؤ + سجل نظائر) لمنع تكرار المشكلات بالتوليد الجديد
+- المتبقي: T2 (11 D متبقية ثم 48 C) · L2 (النظائر المؤهلة التالية) بدفعات بأمر مالك · توليد حي قيد المراقبة (41250450136) · بنود المالك: P0-1 GSC · D-6 اعتماد الـ5 pending · D-3 تحقق BWT وإعادة توليد المفتاح ثم إعادة تشغيل سير Bing · D-1 قرار AdSense بعد 2-11
+- Push status: منفذ — 52d9aeba (E-5) · e2e70991 (E-6/E7/E8) + كوميت الختام E-9 [vercel skip — docs فقط]
