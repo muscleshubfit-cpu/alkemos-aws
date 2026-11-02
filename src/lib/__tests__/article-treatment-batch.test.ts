@@ -79,6 +79,7 @@ const BATCH_FILES = [
   "article-treatment-batch-l2-3.json",
   "article-treatment-batch-l2-4.json",
   "article-treatment-batch-l2-5.json",
+  "article-treatment-batch-l2-6.json",
 ] as const;
 
 const BATCH_DIR = join(process.cwd(), "scripts", "blog-runner");
@@ -317,6 +318,17 @@ describe("article-treatment batches — the permanent editorial battery", () => 
           "hiit-strength-training-fat-loss-guide|ar",
           "post-workout-recovery-meal-plan-7-recipes|en",
           "post-workout-recovery-meal-plan-guide|ar",
+          // + the 3 pairs created by the L2-6 batch (E-21) + the registered
+          // retro pair (Phase-158 successor — the home-program pair, treated
+          // whole in the same batch per the pair-parity law)
+          "protein-after-workout-grams-guide|en",
+          "protein-grams-after-workout-guide|ar",
+          "best-protein-timing-after-workout|ar",
+          "best-protein-timing-after-workout-guide|en",
+          "12-week-progressive-overload-home-workout|en",
+          "home-muscle-gain-8-weeks|ar",
+          "4-week-beginner-muscle-building-plan|en",
+          "4-week-beginner-muscle-building-plan-guide|ar",
         ]);
         const KNOWN_PAIRS: Array<[string, string]> = [
           ["deload-week-guide|ar", "deload-week-rest-training-guide|en"],
@@ -378,6 +390,13 @@ describe("article-treatment batches — the permanent editorial battery", () => 
           [
             "post-workout-recovery-meal-plan-7-recipes|en",
             "post-workout-recovery-meal-plan-guide|ar",
+          ],
+          ["protein-after-workout-grams-guide|en", "protein-grams-after-workout-guide|ar"],
+          ["best-protein-timing-after-workout|ar", "best-protein-timing-after-workout-guide|en"],
+          ["12-week-progressive-overload-home-workout|en", "home-muscle-gain-8-weeks|ar"],
+          [
+            "4-week-beginner-muscle-building-plan|en",
+            "4-week-beginner-muscle-building-plan-guide|ar",
           ],
         ];
         // Pairs whose side was rewritten in a batch that PREDATES the pair's

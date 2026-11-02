@@ -1,0 +1,438 @@
+{
+ "batch": "L2-6 — counterpart batch #5 (protein family + retro-pair + beginner plan): grams EN rebuilt dose-pure per the Phase-191 dose-vs-timing record (7th inverted citation NBK560688=Insulin StatPearls replaced with Moore dose-response 19056590 + Macnaughton 27511985 + Areta 23459753) + AR dose twin · timing AR rebuilt timing-pure (off-topic farms cut: no-supplements/creatine-comparison/IF; misattributed WHO-PA sleep link replaced with Aragon-Schoenfeld 23360586 + Areta; FAQ 3→6; fertilizer image section gone) + EN timing twin · RETRO-PAIR home program treated whole both sides (Phase-158 successor, pairs.json registered): 12wk-home-PO EN (health→workout, nutrition/supplement farm cut, woman-in-image removed, NBK560688 replaced with Morton 28698222 + volume/frequency metas) + 8wk AR (doubled FAQ collapsed, bare PubMed root replaced, misattributed WHO-PA sleep claim fixed, PO progression woven in) · 4wk-beginner EN (farm sections cut: joint supplements/IF/home-gym-$500, dead 4-week-beginner-hypertrophy-plan link removed, first citations) + AR twin (SEO-RECOVERY-EXEC-5 E21, 2026-11-02)",
+ "articles": [
+  {
+   "slug": "protein-after-workout-grams-guide",
+   "language": "en",
+   "mode": "rewrite",
+   "expect_old_words": [
+    1160,
+    1280
+   ],
+   "fix": {
+    "content": "You rack the bar, grab your shaker, and the label stares back: one scoop, 24 grams. Is that enough? Too much? The honest answer is a calculation, not a guess — and it is shorter than the supplement aisle would like you to believe. This guide computes your personal post-workout dose from your body weight, shows what the dose-response research actually found, and separates the grams question from the timing question (we have a separate guide for that).\n\n## The direct answer: 20-40 grams, calculated from your body weight\n\nFor most adults, a post-workout dose of **20-40 g of high-quality protein lands on the effective part of the dose-response curve** — enough to maximally stimulate muscle protein synthesis in a single feeding without spilling over into oxidation. The anchor trial fed trained young men 0, 5, 10, 20, or 40 g of whole-egg protein after leg training and tracked synthesis for four hours: the response rose with dose and plateaued around the 20 g mark, with the extra grams beyond it largely oxidized rather than built — [the protein dose-response trial after resistance exercise](https://pubmed.ncbi.nlm.nih.gov/19056590/). Two practical extensions: bigger bodies and bigger sessions push the number up — after whole-body training, 40 g outperformed 20 g — [whole-body sessions raise the effective dose](https://pubmed.ncbi.nlm.nih.gov/27511985/) — and repeated moderate doses across the day beat one giant feeding — [pulses of 20 g every three hours built more muscle than fewer larger doses](https://pubmed.ncbi.nlm.nih.gov/23459753/).\n\n## Calculate your dose in three steps\n\n**Step 1 — take your body weight in kilograms.** 60 kg, 75 kg, 90 kg: the dose scales from here.\n\n**Step 2 — multiply by 0.25-0.4 g/kg.** That is the per-meal band that maps onto the research above. A 60 kg lifter lands at 15-24 g (round to 20-25); a 75 kg lifter at 19-30 g (round to 25-30); a 90 kg lifter at 23-36 g (round to 30-35).\n\n**Step 3 — adjust for session size.** Split-body sessions sit at the bottom of your band; whole-body or long high-volume sessions justify the top. This is exactly the pattern measured when 40 g beat 20 g after whole-body work — [the 40 g whole-body trial](https://pubmed.ncbi.nlm.nih.gov/27511985/).\n\n| Body weight | Per-session dose | Notes |\n| --- | --- | --- |\n| 60 kg | 20-25 g | Bottom of band after split sessions |\n| 75 kg | 25-30 g | The default for most lifters |\n| 90 kg | 30-36 g | Top of band after whole-body days |\n| 100+ kg | 35-40 g | The ceiling of useful dosing |\n\n## What \"enough\" means: the ceiling that matters\n\nThe dose-response curve has two cliffs. Below roughly 20 g, the leucine threshold may not be reached and the synthetic machinery never fully switches on. Above roughly 40 g, the extra amino acids are increasingly burned for energy rather than woven into muscle — [the trial that mapped the plateau](https://pubmed.ncbi.nlm.nih.gov/19056590/). Between those cliffs lives the entire useful range, and no supplement label changes that geometry.\n\nOne caveat inherited from the same literature: these numbers were built on high-quality, leucine-rich sources. A lower-quality source at the same gram count delivers less of a stimulus — which is the honest argument for counting quality, not just grams — [the ISSN position stand on protein quality and dose](https://pubmed.ncbi.nlm.nih.gov/28642676/).\n\n## Where the dose fits in your daily total\n\nThe post-workout dose is one payment toward a daily bill of 1.6-2.2 g per kilogram — the meta-analytic band that supports muscle gain with training — [the protein meta-analysis behind the daily band](https://pubmed.ncbi.nlm.nih.gov/28698222/). For a 75 kg lifter at 1.8 g/kg, the day's bill is about 135 g; a 30 g post-session meal covers less than a quarter of it. The remaining meals — breakfast, lunch, dinner, an evening snack — carry the rest, each landing near the same per-meal band because the muscle responds to per-meal doses — [why protein distribution matters across a day](https://pubmed.ncbi.nlm.nih.gov/23459753/).\n\nWorked day for the 75 kg lifter: three eggs and oats at breakfast (22 g), chicken and rice at lunch (35 g), the post-training meal (30 g), fish and potatoes at dinner (34 g), yogurt before bed (14 g) — 135 g, with no single feeding outside the useful range.\n\n## Choosing the source behind the grams\n\nThe dose is a number; the source decides how well the number performs.\n\n- **Whey concentrate or isolate:** the default — fast, leucine-rich, well-studied. Isolate for the lactose-sensitive.\n- **Plant blends (pea + rice, soy):** reach the same leucine threshold when formulated to at least 2.5 g per serving — the blend and the dose do the work.\n- **Whole food (chicken, eggs, fish, dairy, legume-and-grain combos):** every bit as effective when digestion timing is not the priority. Roughly 120-150 g of chicken breast or four large eggs deliver a 30 g dose.\n\n## Portion math: what a 30 g dose looks like on a plate\n\nNumbers become meals only when you can see them: a large chicken breast half (120-150 g cooked) carries a full dose; four large eggs land at 24 g; a 200 g tub of Greek yogurt delivers about 20 g; a cup of cooked lentils brings 18 g — pair it with a cup of rice for the complete profile; one scoop of most blends sits at 20-25 g; and a tall glass of milk with a banana adds 10-12 g on top of whatever carries it. Two of any column below, stacked into one meal, clears the band:\n\n| Source | Amount | Protein |\n| --- | --- | --- |\n| Chicken breast (cooked) | 150 g | ~35 g |\n| Eggs | 4 large | ~24 g |\n| Greek yogurt (strained) | 200 g | ~20 g |\n| Lentils (cooked) | 1 cup | ~18 g |\n| Whey or blend | 1 scoop | 20-25 g |\n| Canned tuna, drained | 1 tin | ~25 g |\n\n## Three mistakes that waste your grams\n\n**Chasing more than 40 g per feeding.** The oxidation cliff does not move because the scoop is bigger.\n\n**Counting incomplete sources equally.** A 30 g dose from a low-leucine source under-stimulates; either pick a complete source or blend two complementary ones.\n\n**Starving the rest of the day.** One perfect post-workout meal cannot rescue a day that misses the total — the daily band is the contract, the post-workout dose is one installment.\n\n## Frequently Asked Questions\n\n### How many grams of protein should I eat after a workout?\n\nA dose of 20-40 g of high-quality protein — calculated as 0.25-0.4 g per kilogram of body weight — covers the effective range for most adults.\n\n### Is 40 g of protein after a workout too much?\n\nFor most split sessions it is above the plateau; after whole-body or very long sessions, measured data shows 40 g outperforming 20 g.\n\n### Does body weight change the post-workout dose?\n\nYes — the per-meal band of 0.25-0.4 g/kg moves a 60 kg lifter toward 20-25 g and a 90 kg lifter toward 30-36 g.\n\n### Can I get the post-workout dose from food instead of a shake?\n\nAbsolutely — roughly 120-150 g of chicken, four large eggs, or a legume-and-grain bowl all deliver a complete 30 g dose.\n\n### Do I need the full dose immediately after training?\n\nThe dose matters more than the minute; within about two hours is the practical window for a mixed meal (our timing guide covers the when in depth).\n\n### Does more protein per meal build more muscle?\n\nBeyond the plateau — roughly 40 g for most — extra protein is increasingly oxidized for energy rather than used for building.\n\n## The number, not the ritual\n\nYour post-workout protein is arithmetic before it is ritual: weight in kilograms, times 0.25-0.4, rounded to a real meal. Hit the band, choose a complete source, and let the rest of the day's meals carry the remaining installments. For the full daily picture — calories and macros behind your gram target — the [macro calculator](/tools/macro-calculator) and [calorie calculator](/tools/calorie-calculator) do the arithmetic in one pass.\n",
+    "faq_json": [
+     {
+      "question": "How many grams of protein should I eat after a workout?",
+      "answer": "A dose of 20-40 g of high-quality protein — calculated as 0.25-0.4 g per kilogram of body weight — covers the effective range for most adults."
+     },
+     {
+      "question": "Is 40 g of protein after a workout too much?",
+      "answer": "For most split sessions it is above the plateau; after whole-body or very long sessions, measured data shows 40 g outperforming 20 g."
+     },
+     {
+      "question": "Does body weight change the post-workout dose?",
+      "answer": "Yes — the per-meal band of 0.25-0.4 g/kg moves a 60 kg lifter toward 20-25 g and a 90 kg lifter toward 30-36 g."
+     },
+     {
+      "question": "Can I get the post-workout dose from food instead of a shake?",
+      "answer": "Absolutely — roughly 120-150 g of chicken, four large eggs, or a legume-and-grain bowl all deliver a complete 30 g dose."
+     },
+     {
+      "question": "Do I need the full dose immediately after training?",
+      "answer": "The dose matters more than the minute; within about two hours is the practical window for a mixed meal (our timing guide covers the when in depth)."
+     },
+     {
+      "question": "Does more protein per meal build more muscle?",
+      "answer": "Beyond the plateau — roughly 40 g for most — extra protein is increasingly oxidized for energy rather than used for building."
+     }
+    ],
+    "focus_keyword": "how many grams of protein after workout",
+    "category": "nutrition",
+    "excerpt": "Your post-workout dose is arithmetic: 0.25-0.4 g per kilogram of body weight, landing on 20-40 g — mapped to the dose-response trials, sources, and the daily total it serves.",
+    "meta_title": "How Many Grams of Protein After a Workout? (Calculated)",
+    "meta_description": "Calculate your post-workout protein dose: 0.25-0.4 g per kg, the 20-40 g evidence band, dose-response trials, and where it fits your daily total.",
+    "keywords": [
+     "protein after workout grams",
+     "post workout protein dose",
+     "how much protein after training",
+     "protein dose response",
+     "20 40 grams protein"
+    ]
+   }
+  },
+  {
+   "slug": "protein-grams-after-workout-guide",
+   "language": "ar",
+   "mode": "insert",
+   "row": {
+    "language": "ar",
+    "title": "كم غرام بروتين بعد التمرين؟ الحساب المقيس بالكيلوغرام",
+    "slug": "protein-grams-after-workout-guide",
+    "excerpt": "جرعتك بعد التمرين حساب: 0.25-0.4 غ لكل كيلوغرام من وزنك، هابطة على 20-40 غ — موصولة بتجارب الاستجابة للجرعة والمصادر والمجموع اليومي الذي تخدمه.",
+    "content": "ترصّ البار في مكانه، وتمسك قارورة الخلاط، والملصق يحدق بك: مغرفة واحدة، 24 غرامًا. هل هذا كافٍ؟ أم أكثر من اللازم؟ الجواب الصادق حسابٌ لا تخمين — وهو أقصر مما يريدك ممر المستلزمات أن تصدق. هذا الدليل يحسب جرعتك الشخصية بعد التمرين من وزن جسمك، ويعرض ما وجده بحث الاستجابة للجرعة فعلًا، ويفصل مسألة «كم الغرام» عن مسألة «متى» (وللتوقيت دليل مستقل).\n\n## الجواب المباشر: 20-40 غرامًا محسوبة من وزن جسمك\n\nلدى أغلب البالغين، جرعة ما بعد التمرين من **20-40 غ بروتين عالي الجودة تهبط على الجزء الفعال من منحنى الاستجابة للجرعة** — كافية لتحفيز تخليق البروتين العضلي تحفيزًا أقصى في وجبة واحدة دون انسكاب نحو الأكسدة. التجربة المرجعية غذّت شبانًا متدربين بـ0 و5 و10 و20 و40 غ من بروتين البيض الكامل بعد تدريب أرجل وتتبعت التخليق أربع ساعات: صعدت الاستجابة مع الجرعة واستقرت قرب علامة 20 غ، والغرامات الزائدة فوقها أُكسدت في الغالب لا بُنيت — [تجربة الاستجابة لجرعة البروتين بعد تدريب المقاومة](https://pubmed.ncbi.nlm.nih.gov/19056590/). وامتدادان عمليان: الأجسام الأكبر والجلسات الأكبر يرفعان الرقم — بعد تدريب الجسم كاملًا تفوق 40 غ على 20 غ — [جلسات الجسم الكامل ترفع الجرعة الفعالة](https://pubmed.ncbi.nlm.nih.gov/27511985/) — والجرعات المعتدلة المتكررة على مدار اليوم تتفوق على وجبة عملاقة واحدة — [نبضات 20 غ كل ثلاث ساعات بنت عضلة أكثر من جرعات أكبر أقل تكرارًا](https://pubmed.ncbi.nlm.nih.gov/23459753/).\n\n## احسب جرعتك في ثلاث خطوات\n\n**الخطوة 1 — خذ وزن جسمك بالكيلوغرام.** 60 أو 75 أو 90 كغ: الجرعة تتحرك من هنا.\n\n**الخطوة 2 — اضرب في 0.25-0.4 غ/كغ.** هذا نطاق الوجبة الواحد الملتصق بالأبحاث أعلاه. متدرب 60 كغ يهبط عند 15-24 غ (قرّبها إلى 20-25)؛ و75 كغ عند 19-30 غ (قرّبها إلى 25-30)؛ و90 كغ عند 23-36 غ (قرّبها إلى 30-35).\n\n**الخطوة 3 — عدّل حسب حجم الجلسة.** جلسات التقسيم الجزئي تجلس أسفل نطاقك؛ والجسم الكامل أو الجلسات الطويلة عالية الحجم تبرر أعلاه. وهذا بالضبط النمط المقيس حين تفوق 40 غ على 20 غ بعد عمل الجسم كاملًا — [تجربة الـ40 غ بعد الجسم الكامل](https://pubmed.ncbi.nlm.nih.gov/27511985/).\n\n| وزن الجسم | جرعة الجلسة | ملاحظات |\n| --- | --- | --- |\n| 60 كغ | 20-25 غ | أسفل النطاق بعد جلسات التقسيم |\n| 75 كغ | 25-30 غ | الافتراضي لأغلب المتدربين |\n| 90 كغ | 30-36 غ | أعلى النطاق بعد أيام الجسم الكامل |\n| 100+ كغ | 35-40 غ | سقف الجرعات المفيدة |\n\n## ماذا يعني «كافٍ»: السقف هو المهم\n\nلمنحنى الاستجابة للجرعة هاويتان. تحت نحو 20 غ قد لا تُبلَغ عتبة اللوسين فلا تشتغل آلة البناء اشتغالها الكامل. وفوق نحو 40 غ تزداد الأحماض الأمينية الزائدة احتراقًا للطاقة بدل نسجها في العضلة — [التجربة التي رسمت الهضبة](https://pubmed.ncbi.nlm.nih.gov/19056590/). بين الهاويتين يسكن النطاق المفيد كله، ولا ملصق مكمل يغير هذه الهندسة.\n\nتحفظ واحد موروث من الأدبيات نفسها: هذه الأرقام بُنيت على مصادر عالية الجودة غنية باللوسين. المصدر الأدنى جودة بالغرامات نفسها يعطي تحفيزًا أقل — وهذه هي الحجة الصادقة لحساب الجودة لا الغرامات وحدها — [بيان موقف ISSN عن جودة البروتين وجرعته](https://pubmed.ncbi.nlm.nih.gov/28642676/).\n\n## أين تقع الجرعة من مجموعك اليومي\n\nجرعة ما بعد التمرين دفعة واحدة من فاتورة يومية بـ1.6-2.2 غ لكل كيلوغرام — النطاق الميتا-تحليلي الداعم للبناء مع التدريب — [ميتا-تحليل البروتين خلف النطاق اليومي](https://pubmed.ncbi.nlm.nih.gov/28698222/). لمتدرب 75 كغ عند 1.8 غ/كغ، فاتورة اليوم نحو 135 غ؛ ووجبة الثلاثين غرامًا بعد الجلسة تغطي أقل من ربعها. الوجبات الباقية — الفطور والغداء والعشاء ووجبة مسائية — تحمل الباقي، كل واحدة قرب نطاق الوجبة نفسه لأن العضلة تستجيب لجرعات الوجبة — [لماذا يهم توزيع البروتين على مدار اليوم](https://pubmed.ncbi.nlm.nih.gov/23459753/).\n\nيوم محلول لمتدرب الـ75 كغ: ثلاث بيضات وشوفان فطورًا (22 غ) + دجاج وأرز غداءً (35 غ) + وجبة ما بعد التدريب (30 غ) + سمك وبطاطس عشاءً (34 غ) + زبادي قبل النوم (14 غ) = 135 غ، ولا وجبة واحدة خارج النطاق المفيد.\n\n## اختيار المصدر خلف الغرامات\n\nالجرعة رقم؛ والمصدر يقرر كم يؤدي الرقم عمله.\n\n- **واي مركز أو معزول:** الافتراضي — سريع، غني باللوسين، مدروس جيدًا. المعزول لمن يتجنب اللاكتوز.\n- **خلطات نباتية (بازلاء + أرز، صويا):** تبلغ عتبة اللوسين نفسها إذا صيغت بواقع 2.5 غ للجرحة على الأقل — الخليط والجرعة هما من يقوم بالعمل.\n- **طعام كامل (دجاج، بيض، سمك، ألبان، بقوليات مع حبوب):** فعال تمامًا حين لا يكون توقيت الهضم أولوية. نحو 120-150 غ صدر دجاج أو أربع بيضات كبيرات تسلّم جرعة 30 غ.\n\n## حساب الحصص: كيف تبدو جرعة 30 غ في الطبق\n\nالأرقام تصير وجبات حين تراها: نصف صدر دجاج كبير (120-150 غ مطبوخًا) يحمل جرعة كاملة؛ وأربع بيضات كبيرات تهبط عند 24 غ؛ وعلبة زبادي يوناني 200 غ تسلّم نحو 20 غ؛ وكوب عدس مطبوخ يجلب 18 غ — اقرنه بكوب أرز للمصفوفة الكاملة؛ ومغرفة من أغلب الخلطات تجلس عند 20-25 غ؛ وكأس حليب كبير مع موزة يضيف 10-12 غ فوق ما يحمله. اثنان من أي عمود أدناه في وجبة واحدة يخترقان النطاق:\n\n| المصدر | الكمية | البروتين |\n| --- | --- | --- |\n| صدر دجاج (مطبوخ) | 150 غ | ~35 غ |\n| بيض | 4 كبيرات | ~24 غ |\n| زبادي يوناني مصفى | 200 غ | ~20 غ |\n| عدس (مطبوخ) | كوب | ~18 غ |\n| واي أو خليط | مغرفة | 20-25 غ |\n| تونة مصفاة | علبة | ~25 غ |\n\n## يوم محلول لمتدرب 90 كغ بعد جلسة جسم كامل\n\nخالد وزنه 90 كغ وتمرينه استهدف الجسم كله، فجرعته من أعلى النطاق: 35 غ. وجبته بعد الجلسة: صدر دجاج 150 غ مع أرز وخضار (35 غ بروتين). بقية يومه: فطور ثلاث بيضات وجبن قريش وشوفان (30 غ) + غداء تونة وخبز أسمر وسلطة (28 غ) + عشاء زبادي يوناني وعدس وأرز (27 غ) + جرعة مسائية قبل النوم (20 غ). المجموع 140 غ = 1.55 غ/كغ — وأحدث ميتا-تحليل يجد بداية الهضبة قرب 1.6 غ/كغ يوميًا فالرقم على الحافة الآمنة، والمهم أن كل وجبة جلست داخل نطاقها. ولو كان هدف خالد بناءً صافيًا لا سلامة الوزن، رفع البروتين اليومي إلى 145-155 غ (1.6-1.7 غ/كغ) يجعل جرعته بعد الجسم الكامل أعلى النطاق مرتين أسبوعيًا وأوسطه في الباقي.\n\n## ثلاثة أخطاء تهدر غراماتك\n\n**مطاردة أكثر من 40 غ للوجبة.** هاوية الأكسدة لا تتحرك لأن المغرفة كبرت.\n\n**عدّ المصادر الناقصة بالميزان نفسه.** جرعة 30 غ من مصدر فقير باللوسين تُحفّز أقل مما يجب؛ اختر مصدرًا كاملًا أو اخلط مصدرين متكاملين.\n\n**تجويع بقية اليوم.** وجبة مثالية واحدة بعد التمرين لا تنقذ يومًا أضاع المجموع — النطاق اليومي هو العقد، وجرعة ما بعد التمرين قسط واحد منه.\n\n## الأسئلة الشائعة\n\n### كم غرام بروتين آكل بعد التمرين؟\n\nجرعة 20-40 غ من بروتين عالي الجودة — محسوبة بواقع 0.25-0.4 غ لكل كيلوغرام من وزنك — تغطي النطاق الفعال لأغلب البالغين.\n\n### هل 40 غ بروتين بعد التمرين كثيرة؟\n\nلأغلب جلسات التقسيم هي فوق الهضبة؛ وبعد الجسم الكامل أو الجلسات الطويلة جدًا، بيانات مقيسة تُظهر 40 غ متفوقة على 20 غ.\n\n### هل يغير وزن الجسم جرعة ما بعد التمرين؟\n\nنعم — نطاق 0.25-0.4 غ/كغ للوجبة يحرك متدرب 60 كغ نحو 20-25 غ ومتدرب 90 كغ نحو 30-36 غ.\n\n### هل أحصل على الجرعة من الطعام بدل المشروب؟\n\nبالتأكيد — نحو 120-150 غ دجاج، أو أربع بيضات كبيرات، أو طبق بقوليات مع حبوب، كلها تسلّم جرعة 30 غ كاملة.\n\n### هل أحتاج الجرعة كاملة فور انتهاء التدريب؟\n\nالجرعة أهم من الدقيقة؛ وخلال ساعتين تقريبًا هي النافذة العملية للوجبة المختلطة (ودليل التوقيت يغطي «متى» بعمق).\n\n### هل البروتين الأكثر للوجبة يبني عضلة أكثر؟\n\nفوق الهضبة — نحو 40 غ لأغلب الناس — يزداد تحويل البروتين الزائد إلى طاقة بدل استخدامه في البناء.\n\n## الرقم لا الطقس\n\nبروتينك بعد التمرين حسابٌ قبل أن يكون طقسًا: الوزن بالكيلوغرام مضروبًا في 0.25-0.4، مقربًا إلى وجبة حقيقية. اصب النطاق، واختر مصدرًا كاملًا، ودع بقية وجبات اليوم تحمل الأقساط المتبقية. وللصورة اليومية الكاملة — السعرات والماكروز خلف هدفك من الغرامات — يقوم [حاسب الماكروز](/tools/macro-calculator) و[حاسب السعرات](/tools/calorie-calculator) بالحساب في جولة واحدة.\n",
+    "faq_json": [
+     {
+      "question": "كم غرام بروتين آكل بعد التمرين؟",
+      "answer": "جرعة 20-40 غ من بروتين عالي الجودة — محسوبة بواقع 0.25-0.4 غ لكل كيلوغرام من وزنك — تغطي النطاق الفعال لأغلب البالغين."
+     },
+     {
+      "question": "هل 40 غ بروتين بعد التمرين كثيرة؟",
+      "answer": "لأغلب جلسات التقسيم هي فوق الهضبة؛ وبعد الجسم الكامل أو الجلسات الطويلة جدًا، بيانات مقيسة تُظهر 40 غ متفوقة على 20 غ."
+     },
+     {
+      "question": "هل يغير وزن الجسم جرعة ما بعد التمرين؟",
+      "answer": "نعم — نطاق 0.25-0.4 غ/كغ للوجبة يحرك متدرب 60 كغ نحو 20-25 غ ومتدرب 90 كغ نحو 30-36 غ."
+     },
+     {
+      "question": "هل أحصل على الجرعة من الطعام بدل المشروب؟",
+      "answer": "بالتأكيد — نحو 120-150 غ دجاج، أو أربع بيضات كبيرات، أو طبق بقوليات مع حبوب، كلها تسلّم جرعة 30 غ كاملة."
+     },
+     {
+      "question": "هل أحتاج الجرعة كاملة فور انتهاء التدريب؟",
+      "answer": "الجرعة أهم من الدقيقة؛ وخلال ساعتين تقريبًا هي النافذة العملية للوجبة المختلطة (ودليل التوقيت يغطي «متى» بعمق)."
+     },
+     {
+      "question": "هل البروتين الأكثر للوجبة يبني عضلة أكثر؟",
+      "answer": "فوق الهضبة — نحو 40 غ لأغلب الناس — يزداد تحويل البروتين الزائد إلى طاقة بدل استخدامه في البناء."
+     }
+    ],
+    "meta_title": "كم غرام بروتين بعد التمرين؟ الحساب المقيس",
+    "meta_description": "احسب جرعة البروتين بعد التمرين: 0.25-0.4 غ لكل كغ، نطاق 20-40 غ الموثق، تجارب الاستجابة للجرعة، وموضعها من مجموعك اليومي.",
+    "focus_keyword": "كم غرام بروتين بعد التمرين",
+    "keywords": [
+     "كم غرام بروتين بعد التمرين",
+     "جرعة البروتين بعد التدريب",
+     "البروتين بعد التمرين بالوزن",
+     "الاستجابة لجرعة البروتين",
+     "20 40 غرام بروتين"
+    ],
+    "category": "nutrition",
+    "tags": [
+     "البروتين",
+     "التغذية",
+     "بناء العضلات"
+    ],
+    "featured_image": "https://images.pexels.com/photos/8353229/pexels-photo-8353229.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
+    "cover_alt": "ملعقة حمراء تسكب مسحوق بروتين في قارورة",
+    "author": "Ahmed Zake"
+   },
+   "pair_with": {
+    "slug": "protein-after-workout-grams-guide",
+    "language": "en"
+   }
+  },
+  {
+   "slug": "best-protein-timing-after-workout",
+   "language": "ar",
+   "mode": "rewrite",
+   "expect_old_words": [
+    1198,
+    1324
+   ],
+   "fix": {
+    "content": "أنهيت جلستك، والسؤال الذي يشغلك ليس «كم» بل «متى»: هل النافذة البنائية بعد التمرين ثلاثون دقيقة فعلًا؟ وهل تفوتك المكاسب إن تأخرت الوجبة ساعتين؟ هذا الدليل يجيب عن سؤال التوقيت تحديدًا: ما تقوله تجارب النافذة الزمنية المقيسة، وكيف توزّع وجباتك حول التمرين، ومتى يصبح التوقيت مهمًا فعلًا ومتى يصبح تفصيلًا ثانويًا. (ولسؤال «كم غرامًا» دليل حسابي مستقل.)\n\n## الجواب المباشر: كل يومك هو النافذة — وكلما كان التمرين على معدة فارغة أو بعد نوم طويل، ضاقت نافذة ما بعد الجلسة\n\nالصورة المقيسة أوضح من أسطورة «ثلاثين دقيقة أو لا شيء». مراجعة الأدلة في بيان الجمعية الدولية للتغذية الرياضية عن توقيت المغذيات وجدت أن الأهمية الحقيقية لتوقيت ما بعد التمرين تتركز في حالة واحدة: **حين تكون وجبتك السابقة بعيدة أو التمرين صائمًا** — هنا تصبح الوجبة التالية للجلسة عاجلة الأهمية — [مراجعة النافذة البنائية ما بعد التمرين](https://pubmed.ncbi.nlm.nih.gov/23360586/). أما المتدرب الذي أكل وجبة غنية بالبروتين قبل التمرين بساعتين أو ثلاث، فالأحماض الأمينية من تلك الوجبة لا تزال في دمه يغذي العضلة أثناء الجلسة وبعدها — النافذة ليست مغلقة بانتظاره.\n\n## ماذا يحدث للعضلة بعد الجلسة توقيتيًا\n\nبعد تدريب المقاومة تصبح العضلة أكثر حساسية للأحماض الأمينية لساعات — التيبّس والانقباضات فتّتا بعض البروتينات العضلية، والخلايا جاهزة لإعادة البناء فور توفر اللبنات. تقديم البروتين في هذه الفترة يحوّل الميزان من الهدم نحو التركيب: نبضات بروتين موزعة على اليوم — كل ثلاث ساعات تقريبًا — حافظت على تخليق أعلى من نمط وجبتين كبيرتين أو جرعة واحدة ضخمة في تجربة على متدربي ساق — [تجربة توزيع النبضات البروتينية على مدار اليوم](https://pubmed.ncbi.nlm.nih.gov/23459753/). وهذا هو المعنى العملي للتوقيت: ليس سباق دقائق، بل هندسة توزيع.\n\n## متى يصبح التوقيت مهمًا فعلًا\n\n| حالتك | أولوية وجبة ما بعد الجلسة | السبب |\n| --- | --- | --- |\n| تمرين صائم أو قبل الإفطار مباشرة | عالية — كل الوجبة خلال ساعتين | لا مخزون أميني حديث في الدم |\n| آخر وجبة قبل 4-5 ساعات | متوسطة-عالية | الأحماض من الوجبة القديمة تلاشت |\n| وجبة بروتينية قبل التمرين بساعتين | منخفضة — اتبع جوعك | الوجبة السابقة تغطي النافذة |\n| تمرين بعد النوم مباشرة بلا عشاء | عالية | ليل كامل بلا تغذية |\n\nالقاعدة المستخلصة من المراجعة: أهمية التوقيت تتناسب عكسيًا مع قرب وجبتك السابقة — [من طوّر هذه القاعدة في مراجعة النافذة](https://pubmed.ncbi.nlm.nih.gov/23360586/).\n\n## جدول توقيت عملي حول ثلاثة أنماط تدريب\n\n**المتمرن الصباحي (7:00 تمرين):** وجبة بروتينية قبل النوم ليلة أمس ← تمرين ← فطور كامل (بروتين + كربوهيدرات) خلال ساعتين ← بقية اليوم موزعة كل 3-4 ساعات. إن كان الفطور يتأخر عن التمرين بساعتين فلا داعي لتعجيله على حساب يومك — وجبة الليل السابقة تغطي بداية النافذة، والفطور يغطي بقيتها.\n\n**متمرن المساء (18:00 تمرين):** غداء متوازن الساعة 13:00 (يغطي بداية الجلسة) ← وجبة خفيفة بروتينية 16:00 إن مرّت 4 ساعات ← تمرين ← عشاء بعد الجلسة مباشرة تقريبًا ← جرعة أو زبادي قبل النوم بساعة.\n\n**المتمرن الصائم (رمضان أو 16/8):** التمرين قرب نهاية الصيام أو بعد الإفطار مباشرة، ثم الوجبة الكبرى الأولى بعد الجلسة بأقرب وقت ممكن — هذا النمط هو الذي تكون فيه النافذة ضيقة فعلًا. وزّع بروتين النافذة على وجبتين (35-40 غ لكل منهما) بدل وجبة عملاقة واحدة — التوزيع المقيس يتفوق على الحشد — [تجربة التوزيع التي تقود هذا التوصيف](https://pubmed.ncbi.nlm.nih.gov/23459753/).\n\n## ماذا عن التوقيت قبل التمرين؟\n\nالوجبة القريبة قبل الجلسة (ساعتان إلى ثلاث) هي أفضل استثمار توقيتي في اليوم: كربوهيدرات سهلة الهضم مع بروتين كامل (شوفان وموز وزبادي، أو أرز وصدر دجاج صغير) يرفعان الأحماض الأمينية في الدم قبل أول مجموعة عاملة، فيشتريان لك مرونة واسعة في توقيت ما بعد الجلسة — هذا جوهر خلاصة المراجعة المقيسة — [مراجعة النافذة](https://pubmed.ncbi.nlm.nih.gov/23360586/). أما القهوة والكافيين قبل التمرين فمسألة أداء لا توقيت بروتين، ولهما مكان آخر.\n\nوللجدول الأسبوعي مثال محلول: متدرب يلعب الحديد ثلاثاءً وخميسًا وسبتًا مساءً. الثلاثاء: غداء متوازن 13:00 ← وجبة خفيفة 16:00 ← تمرين 18:00 ← عشاء 19:45 ← زبادي قبل النوم 22:30. الخميس مثله. السبت: فطور متأخر 11:00 ← تمرين 17:00 (بعد 6 ساعات من الوجبة — هنا يهم توقيت الوجبة التالية) ← عشاء بعد الجلسة مباشرة. لاحظ كيف يغير يوم السبت وحده قواعد الأولوية: الفجوة الطويلة تجعل نافذة ما بعد الجلسة ضيقة فعلًا.\n\n## التوقيت مقابل المجموع: ترتيب الأولويات\n\nثلاثة مستويات بالأهمية، وترتيبها مقيس لا ذوقي. **الأول: مجموع اليوم** — 1.6-2.2 غ/كغ من البروتين مع طاقة كافية؛ هذا ما يبني العضلة — [الميتا-تحليل الذي يثبت أولوية المجموع](https://pubmed.ncbi.nlm.nih.gov/28698222/). **الثاني: التوزيع** — جرعات 20-40 غ موزعة على 3-5 وجبات بحيث لا تمر ساعات طويلة بلا تحفيز — [بيان ISSN عن التوزيع اليومي](https://pubmed.ncbi.nlm.nih.gov/28642676/). **الثالث: التوقيت الدقيق حول الجلسة** — مكانته الحقيقية كجدول «متى يهم» أعلاه، لا كطقس دقائق.\n\nمن يقلب هذا الترتيب — يطارد الدقائق وينسى المجموع — يبني على الرمل.\n\n## ارسم ساعتك الخاصة في أربع خطوات\n\n**الخطوة 1:** ثبّت مواعيد تدريبك الواقعية — لا المثالية — لأسبوعين وأين تقع الوجبات حولها اليوم. **الخطوة 2:** حدد الجلسات «الخطر» التي تسبقها فجوة أطول من أربع ساعات (صباحية على معدة فارغة، أو مسائية بعد غداء مبكر) — هذه وحدها تستحق تنبيهًا. **الخطوة 3:** اربط كل جلسة خطرة بوجبة بروتينية تقع قبلها بساعتين إلى ثلاث (وقاية) أو بعدها بأقرب نصف ساعة (علاج). **الخطوة 4:** اجعل بقية اليوم موزعة كل 3-4 ساعات بجرعات 20-40 غ بلا قلق حول الدقائق. بهذه الخطوات صار «التوقيت» خطة على ورقة لا قلقًا في الرأس.\n\n## ثلاثة أسئلة توقيت شائعة بجواب مقيس\n\n**هل أضيع مكاسبي إن تأخرت وجبتي ساعتين؟** لا — ما لم تكن تمرنت صائمًا أو بعد وجبة بعيدة؛ الوجبة السابقة تمتد مفعولها ساعات بعد الجلسة — [مراجعة النافذة توضح الاتساع](https://pubmed.ncbi.nlm.nih.gov/23360586/).\n\n**هل وجبة قبل التمرين تغني عن وجبة بعده؟** جزئيًا نعم: الوجبة القريبة قبل الجلسة (ساعتان إلى ثلاث) تجعل التوقيت بعد الجلسة مرنًا على نطاق واسع.\n\n**هل الكربوهيدرات مع البروتين بعد الجلسة ضرورية للتوقيت؟** للترطيب وتجديد الجلايكوجين بعد الجلسات الطويلة قيمتها، لكنها شرط أساسي للتضخيم لا؛ البروتين هو مفتاح نافذة البناء. ولمن يمرن مرتين يوميًا — وهم الأقلية — تصبح الكربوهيدرات بين الجلستين ضرورة فعلية لجودة الجلسة الثانية، وهذا سياق مختلف عن متدرب اليوم الواحد.\n\n## الأسئلة الشائعة\n\n### ما أفضل وقت لتناول البروتين بعد التمرين؟\n\nخلال ساعتين من الجلسة إن كنت تمرنت صائمًا أو بعد وجبة بعيدة؛ وإن أكلت وجبة بروتينية قبل التمرين بساعتين إلى ثلاث فالنافذة أوسع بكثير — اتبع جوعك.\n\n### هل نافذة الثلاثين دقيقة حقيقية؟\n\nكقاعدة صارمة لا؛ المراجعة المقيسة تجد الأهمية تتركز في تدريب الصائمين وبعد وجبات بعيدة، لا في سباق دقائق عام.\n\n### هل وجبة قبل التمرين تختصر حاجتي لوجبة بعده؟\n\nتجعلها مرنة: الأحماض الأمينية من الوجبة القريبة قبل الجلسة تبقى متداولة خلال التمرين وبعده.\n\n### كيف أوزع بروتيني على اليوم؟\n\n3-5 وجبات بجرعات 20-40 غ كل ثلاث إلى أربع ساعات، واجعل وجبة ما بعد التمرين إحداها — التوزيع المقيس يتفوق على الجمع في وجبة أو اثنتين.\n\n### ما حكم تمرين الصائم مع بناء العضلات؟\n\nممكن مع ضبط: درّب قرب نهاية الصيام أو بعده، وقدّم الوجبة الكبرى بعد الجلسة مباشرة موزعة على جرعتين.\n\n### هل الكازين قبل النوم بديل عن وجبة ما بعد التمرين؟\n\nليس بديلًا لكنه مكمل ليلي مفيد: مصدر بطيء يغذي البناء أثناء النوم ضمن مجموع يومك.\n\n## التوقيت في خدمة اليوم\n\nلا تسأل «كم بقي من النافذة؟» بل «أين كانت وجبتي السابقة ومتى القادمة؟». المتدرب الذي يوزّع 3-5 وجبات بروتينية على يومه يجد أن نافذة ما بعد التمرين تُغلق وحدها من تلقاء نفسها — الوجبة القادمة قريبة دومًا. ولحساب مجموعك اليومي الذي يقف خلف كل هذا التوزيع، [حاسب السعرات](/tools/calorie-calculator) و[حاسب الماكروز](/tools/macro-calculator) جاهزان.\n\nخلاصة عملية تحفظها من هذا الدليل: النافذة البنائية ليست عدادًا تنازليًا يبدأ بوضع البار في مكانه، بل خزان يمتلئ من وجباتك السابقة ويُفرَغ في الجلسة — فمن يملؤه بانتظام على مدار يومه لا يجد نفسه يومًا أمام نافذة مغلقة. صمم الوجبات حول جدولك الواقعي، وثبّت التوزيع، وسيقع التوقيت الصحيح في مكانه من تلقاء نفسه.\n",
+    "faq_json": [
+     {
+      "question": "ما أفضل وقت لتناول البروتين بعد التمرين؟",
+      "answer": "خلال ساعتين من الجلسة إن كنت تمرنت صائمًا أو بعد وجبة بعيدة؛ وإن أكلت وجبة بروتينية قبل التمرين بساعتين إلى ثلاث فالنافذة أوسع بكثير — اتبع جوعك."
+     },
+     {
+      "question": "هل نافذة الثلاثين دقيقة حقيقية؟",
+      "answer": "كقاعدة صارمة لا؛ المراجعة المقيسة تجد الأهمية تتركز في تدريب الصائمين وبعد وجبات بعيدة، لا في سباق دقائق عام."
+     },
+     {
+      "question": "هل وجبة قبل التمرين تختصر حاجتي لوجبة بعده؟",
+      "answer": "تجعلها مرنة: الأحماض الأمينية من الوجبة القريبة قبل الجلسة تبقى متداولة خلال التمرين وبعده."
+     },
+     {
+      "question": "كيف أوزع بروتيني على اليوم؟",
+      "answer": "3-5 وجبات بجرعات 20-40 غ كل ثلاث إلى أربع ساعات، واجعل وجبة ما بعد التمرين إحداها — التوزيع المقيس يتفوق على الجمع في وجبة أو اثنتين."
+     },
+     {
+      "question": "ما حكم تمرين الصائم مع بناء العضلات؟",
+      "answer": "ممكن مع ضبط: درّب قرب نهاية الصيام أو بعده، وقدّم الوجبة الكبرى بعد الجلسة مباشرة موزعة على جرعتين."
+     },
+     {
+      "question": "هل الكازين قبل النوم بديل عن وجبة ما بعد التمرين؟",
+      "answer": "ليس بديلًا لكنه مكمل ليلي مفيد: مصدر بطيء يغذي البناء أثناء النوم ضمن مجموع يومك."
+     }
+    ],
+    "focus_keyword": "أفضل وقت لتناول البروتين بعد التمرين",
+    "category": "nutrition",
+    "excerpt": "سؤال التوقيت بجواب مقيس: النافذة تتسع أو تضيق بحسب وجبتك السابقة، والتوزيع اليومي للنبضات يتفوق على سباق الدقائق — بجداول لثلاثة أنماط تدريب.",
+    "meta_title": "أفضل وقت لتناول البروتين بعد التمرين: الدليل المقيس",
+    "meta_description": "توقيت البروتين بعد التمرين بالقياس: متى تضيق النافذة فعلًا، وجداول توقيت لثلاثة أنماط تدريب، وترتيب الأولويات بين المجموع والتوزيع والتوقيت.",
+    "keywords": [
+     "أفضل وقت للبروتين بعد التمرين",
+     "النافذة البنائية",
+     "توزيع البروتين على اليوم",
+     "البروتين بعد التمرين صائمًا",
+     "توقيت وجبات البروتين"
+    ]
+   }
+  },
+  {
+   "slug": "best-protein-timing-after-workout-guide",
+   "language": "en",
+   "mode": "insert",
+   "row": {
+    "language": "en",
+    "title": "Best Protein Timing After a Workout: The Measured Answer",
+    "slug": "best-protein-timing-after-workout-guide",
+    "excerpt": "The timing question answered with measurements: the window narrows or widens with your previous meal, and day-long pulse distribution beats a race of minutes — with clocks for three training patterns.",
+    "content": "You leave the gym and the clock starts ticking in your head: thirty minutes to the anabolic window, or the session was wasted? The timing question deserves a better answer than gym folklore. This guide is about when — what the measured trials say about the post-workout window, how to place your meals around training, and when timing genuinely matters versus when it is a detail. (For how many grams, we have a dedicated calculation guide.)\n\n## The direct answer: your whole day is the window — and it narrows only when you train fasted or after a long gap\n\nThe measured picture is more forgiving than the \"thirty minutes or nothing\" legend. A review of the evidence in the International Society of Sports Nutrition's nutrient-timing analysis found that the real importance of post-exercise protein concentrates in one situation: **when your previous meal was remote or the session was fasted** — there, the meal after training becomes genuinely urgent — [the review of the post-exercise anabolic window](https://pubmed.ncbi.nlm.nih.gov/23360586/). But the lifter who ate a protein-rich meal two to three hours before training still has amino acids circulating into and beyond the session — the window is not closed waiting for them.\n\n## What happens to the muscle after the session, in timing terms\n\nAfter resistance training, the muscle stays more sensitive to amino acids for hours — the tension and contractions broke down some muscle proteins, and the cells are ready to rebuild as soon as bricks arrive. Protein delivered in this period tilts the balance from breakdown toward building: pulses of protein distributed through the day — roughly every three hours — kept synthesis higher than two large meals or a single mega-dose in a trial on trained legs — [the day-long protein pulse distribution trial](https://pubmed.ncbi.nlm.nih.gov/23459753/). That is the practical meaning of timing: not a race of minutes, but the engineering of distribution.\n\n## When timing actually matters\n\n| Your situation | Priority of the post-session meal | Why |\n| --- | --- | --- |\n| Fasted or pre-breakfast training | High — eat within two hours | No recent amino acids in circulation |\n| Last meal 4-5 hours ago | Medium-high | The old meal's amino acids have faded |\n| Protein meal 2 hours pre-training | Low — follow your hunger | The previous meal covers the window |\n| Training right after waking, no supper | High | A full night without feeding |\n\nThe rule distilled from the review: the importance of timing scales inversely with the proximity of your previous meal — [the review that formalized this rule](https://pubmed.ncbi.nlm.nih.gov/23360586/).\n\n## A practical clock around three training patterns\n\n**The morning lifter (7:00 session):** a protein-containing supper the night before ← training ← a full breakfast (protein + carbohydrate) within two hours ← the rest of the day distributed every 3-4 hours.\n\n**The evening lifter (18:00 session):** a balanced lunch at 13:00 (covers the session's start) ← a protein snack at 16:00 if four hours have passed ← training ← dinner soon after the session ← a shake or yogurt an hour before bed.\n\n**The fasted lifter (Ramadan or 16/8):** train near the end of the fast or right after breaking it, and make the first big meal land as soon as possible after the session — this is the pattern where the window is genuinely narrow. Split the window's protein across two meals (35-40 g each) instead of one giant feeding — measured distribution beats crowding — [the distribution trial driving this guidance](https://pubmed.ncbi.nlm.nih.gov/23459753/).\n\n## What about pre-workout timing?\n\nThe close pre-training meal (two to three hours out) is the best timing investment of the day: easy-digesting carbohydrate with complete protein (oats, banana, and yogurt; or rice and a small chicken breast) raises circulating amino acids before the first working set, buying broad flexibility for the post-session meal — the core of the measured review's conclusion — [the anabolic-window review](https://pubmed.ncbi.nlm.nih.gov/23360586/). Coffee and caffeine before training are a performance matter, not a protein-timing one, and belong to a different guide.\n\nA worked weekly example: a lifter training Tuesday, Thursday, and Saturday evenings. Tuesday: balanced lunch at 13:00 ← light protein snack 16:00 ← session 18:00 ← dinner 19:45 ← yogurt before bed 22:30. Thursday mirrors it. Saturday: late breakfast 11:00 ← session 17:00 (six hours after the meal — here the next meal's timing genuinely matters) ← dinner immediately after. Notice how Saturday alone changes the priority rules: the long gap makes the post-session window truly narrow.\n\n## Timing versus total: the order of priorities\n\nThree levels of importance, and their order is measured, not preferential. **First: the daily total** — 1.6-2.2 g/kg of protein with adequate energy; this is what builds muscle — [the meta-analysis establishing the total's primacy](https://pubmed.ncbi.nlm.nih.gov/28698222/). **Second: distribution** — 20-40 g doses across 3-5 meals so that long hours never pass without a stimulus — [the ISSN position stand on daily distribution](https://pubmed.ncbi.nlm.nih.gov/28642676/). **Third: precise timing around the session** — its honest place is the \"when it matters\" table above, not a ritual of minutes.\n\nReverse that order — chase the minutes and forget the total — and you are building on sand.\n\n## Three common timing questions with measured answers\n\n**Do I lose gains if my meal is two hours late?** Not unless you trained fasted or after a remote meal; the previous meal extends its influence hours past the session — [the review showing the window's breadth](https://pubmed.ncbi.nlm.nih.gov/23360586/).\n\n**Can a pre-workout meal replace the post-workout one?** Partially, yes: a close pre-training meal (two to three hours) makes post-session timing broadly flexible.\n\n**Are carbohydrates with the post-workout protein necessary for timing?** Valuable for rehydration and glycogen after long sessions, but not a hypertrophy requirement; protein is the key to the building window.\n\n## Frequently Asked Questions\n\n### What is the best time to eat protein after a workout?\n\nWithin about two hours if you trained fasted or after a remote meal; if you ate a protein meal two to three hours before training, the window is far wider — follow your hunger.\n\n### Is the thirty-minute anabolic window real?\n\nAs a strict rule, no; the measured review locates the importance in fasted training and remote meals, not a universal race of minutes.\n\n### Does a pre-workout meal reduce my need for a post-workout one?\n\nIt makes it flexible: amino acids from a close pre-training meal keep circulating during and after the session.\n\n### How should I spread protein across the day?\n\nThree to five meals of 20-40 g every three to four hours, with the post-workout meal as one of them — measured distribution beats piling it into one or two feedings.\n\n### Can I build muscle training fasted?\n\nYes, with management: train near the end of the fast or after breaking it, and land the big meal soon after the session, split across two doses.\n\n### Is casein before bed a replacement for the post-workout meal?\n\nNot a replacement, but a useful nighttime complement: a slow source feeding overnight building within your daily total.\n\n## Timing in service of the day\n\nStop asking \"how much window is left?\" and ask \"where were my last meal and my next one?\". The lifter who distributes 3-5 protein meals across the day finds that the post-workout window closes itself — the next meal is always near. And for the daily total that stands behind all this distribution, the [calorie calculator](/tools/calorie-calculator) and [macro calculator](/tools/macro-calculator) are ready.\n",
+    "faq_json": [
+     {
+      "question": "What is the best time to eat protein after a workout?",
+      "answer": "Within about two hours if you trained fasted or after a remote meal; if you ate a protein meal two to three hours before training, the window is far wider — follow your hunger."
+     },
+     {
+      "question": "Is the thirty-minute anabolic window real?",
+      "answer": "As a strict rule, no; the measured review locates the importance in fasted training and remote meals, not a universal race of minutes."
+     },
+     {
+      "question": "Does a pre-workout meal reduce my need for a post-workout one?",
+      "answer": "It makes it flexible: amino acids from a close pre-training meal keep circulating during and after the session."
+     },
+     {
+      "question": "How should I spread protein across the day?",
+      "answer": "Three to five meals of 20-40 g every three to four hours, with the post-workout meal as one of them — measured distribution beats piling it into one or two feedings."
+     },
+     {
+      "question": "Can I build muscle training fasted?",
+      "answer": "Yes, with management: train near the end of the fast or after breaking it, and land the big meal soon after the session, split across two doses."
+     },
+     {
+      "question": "Is casein before bed a replacement for the post-workout meal?",
+      "answer": "Not a replacement, but a useful nighttime complement: a slow source feeding overnight building within your daily total."
+     }
+    ],
+    "meta_title": "Best Protein Timing After a Workout: Measured Guide",
+    "meta_description": "Post-workout protein timing by the evidence: when the window truly narrows, clocks for three training patterns, and the total-distribution-timing order.",
+    "focus_keyword": "best protein timing after workout",
+    "keywords": [
+     "protein timing after workout",
+     "anabolic window",
+     "protein distribution across the day",
+     "post workout protein fasted",
+     "meal timing around training"
+    ],
+    "category": "nutrition",
+    "tags": [
+     "البروتين",
+     "التغذية",
+     "Nutrition"
+    ],
+    "featured_image": "https://images.pexels.com/photos/4378331/pexels-photo-4378331.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
+    "cover_alt": "أطعمة غنية بالبروتين من البيض واللحوم والبقوليات",
+    "author": "Ahmed Zake"
+   },
+   "pair_with": {
+    "slug": "best-protein-timing-after-workout",
+    "language": "ar"
+   }
+  },
+  {
+   "slug": "12-week-progressive-overload-home-workout",
+   "language": "en",
+   "mode": "rewrite",
+   "expect_old_words": [
+    1366,
+    1510
+   ],
+   "fix": {
+    "content": "No gym, no barbells, no excuses — and no ceiling on results either. Muscle responds to progressive tension, and everything you own (your body, a floor, a doorway, a backpack) can generate it. This is a complete 12-week progressive overload home workout plan: the progression system, the week-by-week structure, the household equipment that replaces a rack, and the nutrition and recovery lines that make the training stick.\n\n## The direct answer: three 4-week blocks, four sessions a week, progression measured in reps, leverage, and tempo — not guesswork\n\nMuscle grows when the challenge rises systematically. The volume meta-analysis behind modern hypertrophy programming found more weekly sets build more muscle — and the frequency meta-analysis found twice-per-week training of a muscle beats once at equal volume — [the volume meta-analysis](https://pubmed.ncbi.nlm.nih.gov/27433992/) and [the frequency meta-analysis](https://pubmed.ncbi.nlm.nih.gov/27102172/). A home plan applies the same laws with bodyweight dials: reps up, rests down, leverage harder (feet elevated, one limb at a time), tempo slower, and — eventually — a loaded backpack. This plan runs four sessions weekly on an upper/lower frame with every major pattern trained twice.\n\n## Block 1 (Weeks 1-4): build the movement base\n\nThree sets of 10-12 reps per exercise, 60-90 seconds rest, two seconds down and two seconds up. The goal is movement quality: full-range push-ups, hip-hinging patterns, single-leg balance. Take a baseline test in week one: maximum strict push-ups, maximum bodyweight squats in one set, longest plank. These three numbers are your progression dashboard for the next twelve weeks.\n\n- **Session A (Upper):** push-ups 3×10-12 · pike push-ups 3×8-10 · door-frame rows 3×10-12 per arm · bench dips 3×10-12\n- **Session B (Lower):** bodyweight squats 3×12-15 · Bulgarian split squats 3×8-10/leg · single-leg glute bridges 3×10-12/leg · calf raises 3×15-20\n- **Session C (Upper):** wide push-ups 3×10-12 · towel curls 3×10-12 · towel face pulls 3×12-15 · plank shoulder taps 3×20\n- **Session D (Lower):** reverse lunges 3×10-12/leg · single-leg Romanian deadlifts 3×8-10/leg · wall sits 3×45-60 s · side planks 3×30 s/side\n\nProgression rule: when you hit the top of the rep range on all sets with clean form, add reps next session; when reps max out, move the exercise up one leverage notch (knee push-up → full push-up → feet-elevated push-up).\n\n## Block 2 (Weeks 5-8): add intensity dials\n\nFour sets of 8-10 reps, rest drops to 45-60 seconds, tempo shifts to three seconds eccentric. Introduce the loaded backpack (books, water bottles) on squats and lunges — start at 5 kg. Single-limb work expands: archer push-ups, assisted one-leg squats to a chair. By week 8, retest the baseline trio — expect your push-up max to have climbed several reps, the expected shape of adaptation at this training age — [why progressive training keeps working](https://pubmed.ncbi.nlm.nih.gov/27433992/).\n\n## Block 3 (Weeks 9-12): peak the tension\n\nFive sets of 6-8 reps on the primary movement of each session, 60-90 seconds rest, backpack heavier (up to 15-20 kg as form allows). Slow eccentrics (four seconds) on the main lifts. Week 12 finishes with the third retest: push-ups, squats, plank — plus photos and tape measurements. Twelve weeks of systematic progression should read as double-digit rep gains on the baselines and visible change in the mirror.\n\n## Household equipment that earns its place\n\n- **A sturdy backpack + books:** the home barbell — loads squats, lunges, push-ups (worn), rows.\n- **A bath towel + door:** rows and face pulls anchor to a door handle.\n- **A chair or sofa edge:** dips, split-squat foot placement, incline push-ups.\n- **Two full water bottles:** light dumbbells for lateral raises and curls.\n- **Floor and wall:** planks, wall sits, hollow holds — the free equipment you already own.\n\nOne purchase earns its cost faster than any other for this plan: a doorway pull-up bar (or a set of sturdy resistance bands with a door anchor). Rows alone carry the pulling patterns, but a real vertical pull closes the loop the way a barbell row never quite does for lats.\n\n## The nutrition line (one section, not a saga)\n\nProtein at 1.6-2.2 g per kilogram of body weight daily — the meta-analytic band for building muscle with training — [the protein meta-analysis behind the band](https://pubmed.ncbi.nlm.nih.gov/28698222/). Calories at maintenance for recomposition, or a small surplus if you are lean and want faster gain. If fat loss is the goal, a modest deficit with protein anchored high. That is the entire nutrition program; everything else is seasoning. The [calorie calculator](/tools/calorie-calculator) and [macro calculator](/tools/macro-calculator) produce your numbers in one pass.\n\n## Recovery: the unmeasured half of the plan\n\nSleep 7-9 hours on a fixed schedule — the overnight shift is when the building happens. Keep one full rest day minimum (two if life is stressful). Soreness is expected in week one, not a permanent feature; if it is, the volume jumped too fast. When strength stalls two sessions in a row on the same movement, hold the load constant and clean the form instead of forcing reps — a stall handled well is a plateau avoided.\n\n## When progress stalls: the troubleshooting table\n\n| Symptom | Likely cause | The fix |\n| --- | --- | --- |\n| Reps stuck two sessions running | Recovery debt or form drift | Hold load, film one set, clean tempo for a week |\n| Soreness beyond 72 hours | Volume jumped too fast | Cut one set per exercise for a week, then rebuild |\n| Wrists ache in pike push-ups | Load ahead of joint readiness | Regress to an easier angle for one block |\n| Motivation fading in block 2 | Monotony | Swap one accessory per session, keep the frame |\n| Everything fine but no retest gains | Effort too comfortable | Two reps in reserve becomes one on the final set |\n\nStalls are information, not verdicts — the plan has dials for every one of them.\n\n## Frequently Asked Questions\n\n### Can you actually build muscle at home without equipment?\n\nYes — bodyweight training with systematic progression (reps, leverage, tempo, added backpack load) drives hypertrophy on the same mechanisms as barbell work.\n\n### How long is this home program?\n\nTwelve weeks in three 4-week blocks: movement base, intensity dials, tension peak — with retests in weeks 1, 8, and 12.\n\n### How many days a week does the plan need?\n\nFour sessions on an upper/lower frame, with every major muscle group trained twice weekly — the frequency pattern supported by the meta-analysis.\n\n### What household items replace gym equipment?\n\nA loaded backpack (barbell), a towel and door (rows), a chair (dips and elevations), water bottles (light dumbbells), and the floor (core work).\n\n### How do I progress without adding weight?\n\nRep additions first, then harder leverage (elevated or single-limb variations), then slower tempo, then backpack load — in that order, one dial at a time.\n\n### What should I eat while running this plan?\n\nProtein at 1.6-2.2 g/kg daily with calories matched to your goal; no special supplements required for the training itself.\n\n## Twelve weeks, one dashboard\n\nPrint the baseline trio on week one — push-ups, squats, plank — and put it where you train. Every session moves one dial; every block retests the dashboard. The living room does not care that it is not a gym: tension is tension, progression is progression, and twelve honest weeks of both will show in the numbers and the mirror.\n",
+    "faq_json": [
+     {
+      "question": "Can you actually build muscle at home without equipment?",
+      "answer": "Yes — bodyweight training with systematic progression (reps, leverage, tempo, added backpack load) drives hypertrophy on the same mechanisms as barbell work."
+     },
+     {
+      "question": "How long is this home program?",
+      "answer": "Twelve weeks in three 4-week blocks: movement base, intensity dials, tension peak — with retests in weeks 1, 8, and 12."
+     },
+     {
+      "question": "How many days a week does the plan need?",
+      "answer": "Four sessions on an upper/lower frame, with every major muscle group trained twice weekly — the frequency pattern supported by the meta-analysis."
+     },
+     {
+      "question": "What household items replace gym equipment?",
+      "answer": "A loaded backpack (barbell), a towel and door (rows), a chair (dips and elevations), water bottles (light dumbbells), and the floor (core work)."
+     },
+     {
+      "question": "How do I progress without adding weight?",
+      "answer": "Rep additions first, then harder leverage (elevated or single-limb variations), then slower tempo, then backpack load — in that order, one dial at a time."
+     },
+     {
+      "question": "What should I eat while running this plan?",
+      "answer": "Protein at 1.6-2.2 g/kg daily with calories matched to your goal; no special supplements required for the training itself."
+     }
+    ],
+    "focus_keyword": "12 week progressive overload home workout plan",
+    "category": "workout",
+    "excerpt": "A complete 12-week no-equipment home plan: three 4-week blocks, progression measured in reps, leverage and tempo, household equipment that replaces a rack, and the nutrition line.",
+    "meta_title": "12-Week Progressive Overload Home Workout (No Equipment)",
+    "meta_description": "A 12-week no-equipment home workout plan: three blocks, rep-leverage-tempo progression, household loading, and the measured volume and frequency laws behind it.",
+    "keywords": [
+     "12 week home workout plan",
+     "progressive overload at home",
+     "no equipment muscle building",
+     "home workout progression",
+     "bodyweight hypertrophy program"
+    ]
+   }
+  },
+  {
+   "slug": "home-muscle-gain-8-weeks",
+   "language": "ar",
+   "mode": "rewrite",
+   "expect_old_words": [
+    1160,
+    1280
+   ],
+   "fix": {
+    "content": "لا صالة ولا بارالات ولا أعذار — ولا سقف على النتائج أيضًا. العضلة تستجيب للشد التدريجي، وكل ما تملكه (جسدك وأرضية وباب وحقيبة ظهر) قادر على توليده. هذا برنامج منزلي كامل لثمانية أسابيع بتحميل تدريجي: نظام التدرج، والبنية أسبوعًا بأسبوع، وأدوات المنزل التي تحل محل الرفوف، وخطا التغذية والاستشفاء اللذان يجعلان التدريب يثمر.\n\n## الجواب المباشر: أربع مراحل من أسبوعين، أربعة أيام أسبوعيًا، والتدرج مقيس بالتكرار والرافعة والإيقاع — لا بالتخمين\n\nالعضلة تنمو حين يرتفع التحدي بشكل منهجي. ميتا-تحليل الحجم خلف برمجة التضخيم الحديثة وجد أن المجموعات الأسبوعية الأكثر تبني عضلة أكثر — وميتا-تحليل التكرار وجد أن تدريب العضلة مرتين أسبوعيًا يتفوق على مرة عند تساوي الحجم — [ميتا-تحليل الحجم](https://pubmed.ncbi.nlm.nih.gov/27433992/) و[ميتا-تحليل التكرار](https://pubmed.ncbi.nlm.nih.gov/27102172/). والخطة المنزلية تطبق القانونين نفسهما بمفاتيح وزن الجسم: تكرارات أعلى، وراحة أقصر، ورافعة أصعب (قدمان مرتفعتان، طرف واحد كل مرة)، وإيقاع أبطأ، وحتى — في النهاية — حقيبة ظهر محمّلة. البرنامج يدير أربعة أيام أسبوعيًا على هيكل علوي/سفلي وكل نمط حركي رئيسي يتدرب مرتين.\n\n## المرحلة 1 (الأسبوعان 1-2): بناء القاعدة الحركية\n\nثلاث مجموعات من 10-12 تكرارًا لكل تمرين، راحة 60-90 ثانية، ثانيتان نزولًا وثانيتان صعودًا. الهدف جودة الحركة: ضغط كامل المدى، وأنماط مفصل الورك، وتوازن طرف واحد. خذ اختبار خط الأساس في الأسبوع الأول: أقصى ضغطات صارمة، وأقصى قرفصاء بوزن الجسم في مجموعة واحدة، وأطول بلانك. هذه الأرقام الثلاثة لوحة تقدمك للأسابيع الثمانية.\n\n- **الجلسة أ (علوي):** ضغط 3×10-12 · ضغط بايك 3×8-10 · سحب بإطار الباب 3×10-12 لكل ذراع · ديب على كرسي 3×10-12\n- **الجلسة ب (سفلي):** قرفصاء وزن الجسم 3×12-15 · قرفصاء بلغارية 3×8-10/رجل · جسور ورك أحادية 3×10-12/رجل · سمانة 3×15-20\n- **الجلسة ج (علوي):** ضغط عريض 3×10-12 · ثني ذراع بالمنشفة 3×10-12 · سحب وجه بالمنشفة 3×12-15 · لمس كتف بالبلانك 3×20\n- **الجلسة د (سفلي):** طعنات خلفية 3×10-12/رجل · رفع روماني أحادي 3×8-10/رجل · جلوس على الحائط 3×45-60 ث · بلانك جانبي 3×30 ث/جانب\n\nقاعدة التدرج: حين تبلغ أعلى نطاق التكرار في كل المجموعات بشكل نظيف، أضف تكرارات في الجلسة التالية؛ وحين تتشبع التكرارات، ارفع التمرين درجة رافعة (ضغط بالركبة ← ضغط كامل ← ضغط بقدمين مرتفعتين).\n\n## المرحلة 2 (الأسبوعان 3-4): إدخال مفاتيح الشدة\n\nأربع مجموعات من 8-10 تكرارات، والراحة تهبط إلى 45-60 ثانية، والإيقاع يتحول إلى ثلاث ثوانٍ نزولًا. أدخل حقيبة الظهر المحمّلة (كتبًا أو قوارير ماء) على القرفصاء والطعنات — ابدأ بـ5 كغ. يتوسع عمل الطرف الواحد: ضغطات الرامي، وقرفصاء أحادية بمساعدة إلى كرسي. بنهاية الأسبوع الرابع أعد اختبار الثلاثي الأساسي — انتظر صعود أقصى ضغطاتك عدة تكرارات، وهو الشكل المتوقع للتكيف في هذا العمر التدريبي — [لماذا يستمر التدريب التدريجي في العمل](https://pubmed.ncbi.nlm.nih.gov/27433992/).\n\n## المرحلة 3 (الأسبوعان 5-6): تعميق التوتر\n\nأربع إلى خمس مجموعات، والإيقاع يبطأ إلى أربع ثوانٍ نزولًا في التمارين الرئيسية، والحقيبة أثقل (حتى 10-15 كغ بحسب سلامة الأداء). تُدمج حركات مركبة أعلى كثافة — بيربي بضغط، وقفزات قرفصاء — بجرعة أسبوعية واحدة فقط تحافظ على الجودة.\n\n## المرحلة 4 (الأسبوعان 7-8): الذروة والقياس\n\nخمس مجموعات من 6-8 تكرارات في الحركة الرئيسية لكل جلسة، راحة 60-90 ثانية، والحقيبة عند أقصى حمولة تسمح بها الصورة الحركية. ينتهي الأسبوع الثامن بإعادة الاختبار الثالثة: الضغطات والقرفصاء والبلانك — مع صور ومقاسات شريط. ثمانية أسابيع من التدرج المنهجي يجب أن تقرأ كصعود تكرارات مضاعف في لوحة القياس وتغير مرئي في المرآة.\n\n## أدوات منزلية تستحق مكانها\n\n- **حقيبة ظهر متينة + كتب:** بار المنزل — تحمّل القرفصاء والطعنات والضغط (تُلبس) والسحب.\n- **منشفة + باب:** السحب وسحب الوجه يرتكزان على مقبض الباب.\n- **حافة كرسي أو أريكة:** الديب وموضع قدم القرفصاء البلغارية والضغط المائل.\n- **قارورتا ماء ممتلئتان:** دمبلان خفيفان للرفرفة وثني الذراع.\n- **الأرضية والحائط:** البلانك والجلوس على الحائط والحفر المجوف — معدات مجنية تملكها أصلًا.\n\n## خط التغذية (قسم واحد لا ملحمة)\n\nبروتين عند 1.6-2.2 غ لكل كيلوغرام يوميًا — النطاق الميتا-تحليلي لبناء العضلة مع التدريب — [ميتا-تحليل البروتين خلف النطاق](https://pubmed.ncbi.nlm.nih.gov/28698222/). والسعرات عند الثبات لإعادة التشكيل، أو فائض صغير إن كنت نحيفًا وتريد بناءً أسرع. وإن كان الهدف حرق الدهون فعجز معتدل مع تثبيت البروتين عاليًا. هذا برنامج التغذية كله؛ وما عداه توابل. [حاسب السعرات](/tools/calorie-calculator) و[حاسب الماكروز](/tools/macro-calculator) ينتجان أرقامك في جولة واحدة.\n\n## الاستشفاء: النصف غير المقيس من الخطة\n\nنم 7-9 ساعات بجدول ثابت — فدورة الليل هي حين يحدث البناء. وثبّت يوم راحة كاملًا على الأقل (يومين إن كانت الحياة متوترة). التعب العضلي متوقع في الأسبوع الأول لا سمة دائمة؛ فإن دام فالقفزة الحجمية كانت أكبر من اللازم. وحين تتعثر القوة جلستين متتاليتين في الحركة نفسها، اثبت على الحمل ونقّ الأداء بدل فرض التكرارات — التعثر المحسوب وقاية من الهضبة.\n\n## لوحة تتبع الأسبوعين\n\n| المؤشر | الأسبوع 1-2 | الأسبوع 3-4 | الأسبوع 5-6 | الأسبوع 7-8 |\n| --- | --- | --- | --- | --- |\n| أقصى ضغطات صارمة | خط الأساس | +2-4 | +2-4 | +2-5 |\n| قرفصاء في مجموعة | خط الأساس | +3-5 | +3-5 | +3-6 |\n| أطول بلانك | خط الأساس | +10-15 ث | +10-15 ث | +10-20 ث |\n| وزن الحقيبة | بلا | 5 كغ | 10 كغ | 10-15 كغ |\n\nهذه معدلات متوقعة لمبتدئ في أول برنامج له، لا وعودًا — الأرقام الأدنى طبيعية تمامًا والاتجاه هو الحكم.\n\n## حلول مشكلات الأسابيع الأولى\n\n| العرض | السبب المرجح | الحل |\n| --- | --- | --- |\n| تكرارات عالقة جلستين متتاليتين | دين استشفاء أو انحراف أداء | اثبت على الحمل وصوّر مجموعة واحدة ونقِّ الإيقاع أسبوعًا |\n| تعب عضلي يتجاوز 72 ساعة | قفزة حجمية أسرع من اللازم | أنقص مجموعة من كل تمرين أسبوعًا ثم أعد البناء |\n| رسغ يؤلم في ضغط البايك | الحمل سبق جاهزية المفصل | ارجع لزاوية أسهل مرحلة كاملة |\n| حماس يذبل في المرحلة الثالثة | رتابة | بدّل تمرينًا إضافيًا واحدًا لكل جلسة وأبقِ الهيكل |\n| كل شيء جيد ولا قياسات تصعد | الجهد مريح أكثر من اللازم | تكراران احتياطيان يصيران واحدًا في المجموعة الأخيرة |\n\nالتعثر معلومة لا حكم — للخطة مفاتيح لكل حالة منها.\n\n## متى تكون جاهزًا للخطوة التالية بعد الأسبوع الثامن؟\n\nثلاث علامات تقول إن البرنامج أدى وظيفته: (1) أقصى ضغطاتك تجاوز خط الأساس بعشرة تكرارات أو أكثر، (2) القرفصاء البلغارية صارت تُدار بحقيبة 10 كغ دون فقدان الصورة الحركية، (3) جدولك الأسبوعي صار عادة لا قرارًا. عندئذ يفتح أمامك مساران: التعميق — برنامج اثني عشر أسبوعًا بأوزان منزلية أثقل وتقسيم علوي/سفلي أوسع — أو الانتقال لصالة إن صارت متاحة. أما إن غاب أحد الثلاثة فأسبوعان إضافيان على المرحلة الرابعة خيار صادق تمامًا.\n\n## الأسئلة الشائعة\n\n### هل يمكن فعلًا بناء العضلات في المنزل بلا معدات؟\n\nنعم — تدريب وزن الجسم بتدرج منهجي (تكرار ورافعة وإيقاع وحقيبة محمّلة) يدفع التضخم بالآليات نفسها التي يعمل بها البار.\n\n### كم مدة هذا البرنامج المنزلي؟\n\nثمانية أسابيع في أربع مراحل من أسبوعين: قاعدة حركية، ومفاتيح شدة، وتعميق توتر، وذروة وقياس — مع اختبارات في الأسبوعين 1 و4 و8.\n\n### كم يومًا أسبوعيًا يحتاج البرنامج؟\n\nأربعة أيام على هيكل علوي/سفلي، وكل مجموعة عضلية رئيسية مرتين أسبوعيًا — نمط التكرار الذي يدعمه الميتا-تحليل.\n\n### ما الأدوات المنزلية التي تحل محل معدات الجيم؟\n\nحقيبة محمّلة (بار)، ومنشفة وباب (سحب)، وكرسي (ديب وارتفاعات)، وقارورتا ماء (دمبلان خفيفان)، والأرضية (جذع).\n\n### كيف أتدرج دون إضافة أوزان؟\n\nإضافات التكرار أولًا، ثم رافعة أصعب (رفعات أو عمل أحادي)، ثم إيقاع أبطأ، ثم حمل الحقيبة — بهذا الترتيب ومفتاح واحد كل مرة.\n\n### ماذا آكل أثناء البرنامج؟\n\nبروتين 1.6-2.2 غ/كغ يوميًا وسعرات موافقة لهدفك؛ ولا مكملات خاصة يتطلبها التدريب ذاته.\n\n## ثمانية أسابيع ولوحة قياس واحدة\n\nاطبع الثلاثي الأساسي في الأسبوع الأول — الضغطات والقرفصاء والبلانك — وعلّقه حيث تتمرن. كل جلسة تحرك مفتاحًا واحدًا؛ وكل مرحلة تعيد قياس اللوحة. غرفة المعيشة لا تعتبر أنها ليست صالة: فالشد شد، والتدرج تدرج، وثمانية أسابيع صادقة منهما ستظهر في الأرقام والمرآة — ولو أردت بعدها قفزة إضافية فدرّب أعمق لا أطول.\n",
+    "faq_json": [
+     {
+      "question": "هل يمكن فعلًا بناء العضلات في المنزل بلا معدات؟",
+      "answer": "نعم — تدريب وزن الجسم بتدرج منهجي (تكرار ورافعة وإيقاع وحقيبة محمّلة) يدفع التضخم بالآليات نفسها التي يعمل بها البار."
+     },
+     {
+      "question": "كم مدة هذا البرنامج المنزلي؟",
+      "answer": "ثمانية أسابيع في أربع مراحل من أسبوعين: قاعدة حركية، ومفاتيح شدة، وتعميق توتر، وذروة وقياس — مع اختبارات في الأسبوعين 1 و4 و8."
+     },
+     {
+      "question": "كم يومًا أسبوعيًا يحتاج البرنامج؟",
+      "answer": "أربعة أيام على هيكل علوي/سفلي، وكل مجموعة عضلية رئيسية مرتين أسبوعيًا — نمط التكرار الذي يدعمه الميتا-تحليل."
+     },
+     {
+      "question": "ما الأدوات المنزلية التي تحل محل معدات الجيم؟",
+      "answer": "حقيبة محمّلة (بار)، ومنشفة وباب (سحب)، وكرسي (ديب وارتفاعات)، وقارورتا ماء (دمبلان خفيفان)، والأرضية (جذع)."
+     },
+     {
+      "question": "كيف أتدرج دون إضافة أوزان؟",
+      "answer": "إضافات التكرار أولًا، ثم رافعة أصعب (رفعات أو عمل أحادي)، ثم إيقاع أبطأ، ثم حمل الحقيبة — بهذا الترتيب ومفتاح واحد كل مرة."
+     },
+     {
+      "question": "ماذا آكل أثناء البرنامج؟",
+      "answer": "بروتين 1.6-2.2 غ/كغ يوميًا وسعرات موافقة لهدفك؛ ولا مكملات خاصة يتطلبها التدريب ذاته."
+     }
+    ],
+    "focus_keyword": "برنامج تمارين منزلية 8 أسابيع",
+    "category": "workout",
+    "excerpt": "برنامج منزلي كامل لثمانية أسابيع بتحميل تدريجي بلا معدات: أربع مراحل من أسبوعين، وتدرج مقيس بالتكرار والرافعة والإيقاع، وأدوات منزلية تحل محل الرفوف.",
+    "meta_title": "برنامج تمارين منزلية 8 أسابيع بتحميل تدريجي بلا معدات",
+    "meta_description": "برنامج منزلي لثمانية أسابيع بلا معدات: أربع مراحل، تدرج بالتكرار والرافعة والإيقاع، حقيبة الظهر كبار منزلي، وقوانين الحجم والتكرار المقيسة.",
+    "keywords": [
+     "برنامج تمارين منزلية",
+     "تمارين منزلية بدون معدات",
+     "التحميل التدريجي في المنزل",
+     "بناء العضلات في البيت",
+     "برنامج 8 أسابيع عضلات"
+    ]
+   }
+  },
+  {
+   "slug": "4-week-beginner-muscle-building-plan",
+   "language": "en",
+   "mode": "rewrite",
+   "expect_old_words": [
+    1194,
+    1319
+   ],
+   "fix": {
+    "content": "Week one of your first real training program should not feel like a rite of passage — it should feel like a schedule. This is a four-week, day-by-day beginner muscle building plan: what to train each day, how the weights progress, what to eat without overthinking it, and the honest signals that tell you it is working. No supplements required, no equipment beyond basics, no guesswork.\n\n## The direct answer: three full-body days in week one, four sessions by week two, and one rep of progress at a time\n\nBeginners grow on less work than they believe and more consistency than they expect. The measured foundations: training a muscle twice weekly beats once at equal volume — [the frequency meta-analysis](https://pubmed.ncbi.nlm.nih.gov/27102172/) — and total weekly volume, built gradually, is the growth dial — [the volume meta-analysis](https://pubmed.ncbi.nlm.nih.gov/27433992/). This plan starts with three full-body sessions (every muscle, three times a week, light loads), adds a fourth session in week two, and finishes week four with a light test week that proves the progress on paper.\n\n## The four weeks at a glance\n\n- **Week 1 — Foundation:** Mon/Wed/Fri full-body, 3 sets × 10-12 reps, 60-90 s rest. Loads chosen so the last two reps feel like work but are clean.\n- **Week 2 — Volume:** four sessions on an upper/lower frame, 4 sets × 8-10 on the first exercise of each pattern, 3 sets on the rest.\n- **Week 3 — Intensity:** same frame, loads up a notch (5-8 reps on main lifts), one new progression rule introduced (add a rep or 2.5 kg, never both).\n- **Week 4 — Deload and test:** volume down to 3 × 10-12 Monday and Wednesday, then Friday records 5-rep maxes on squat, press, and row.\n\n## The day-by-day schedule\n\n**Monday — Lower body A:** goblet squat 3×10 · Romanian deadlift 3×10 · walking lunges 3×12/leg · calf raises 3×15 · plank 3×45 s\n\n**Tuesday — Upper body push:** push-up or bench press 4×8-10 · overhead dumbbell press 3×10 · incline fly 3×12 · bench dips 3×10-12 · lateral raises 3×15\n\n**Wednesday — Rest or a 10-minute walk** plus the short mobility routine at the bottom of this guide.\n\n**Thursday — Lower body B:** Bulgarian split squat 3×10/leg · hip thrust 3×12 · leg curl 3×12 · seated calf raise 3×15 · side plank 3×30 s/side\n\n**Friday — Upper body pull:** bent-over row 4×8-10 · lat pulldown or band pull-down 3×8-10 · face pulls 3×15 · biceps curls 3×12 · rear-delt fly 3×15\n\n**Saturday — Optional core and conditioning:** hanging or lying knee raises 3×12 · bird-dogs 3×12/side · 5 minutes of easy intervals (any machine, brisk walk, or kettlebell swings if available)\n\n**Sunday — Full rest.**\n\nWeeks 1 and 3 follow the same template with the set-and-load differences noted above; week 4 halves Monday/Wednesday volume and turns Friday into test day.\n\n## How progression actually works for a beginner\n\nOne rule: **the rep range first, then the load.** When all sets of an exercise reach the top of its range with two clean reps left in reserve, add a small amount of weight next session (2.5 kg on lower-body lifts, 1-2 kg on upper) and let the reps find their level again. This single dial — turned patiently — is what the volume research translates to in practice — [how volume accumulates into growth](https://pubmed.ncbi.nlm.nih.gov/27433992/). Adding weight while reps collapse, or adding exercises every week, is how beginners plateau in month two.\n\n## Eating for the first month: three lines and a calculator\n\nProtein at 1.6-2.2 g per kilogram of body weight daily — the meta-analytic band for muscle gain — [the protein meta-analysis](https://pubmed.ncbi.nlm.nih.gov/28698222/). Calories at maintenance, or a small surplus if you are lean and weight gain is the goal. Water throughout the day, a vegetable at two meals, and sleep at fixed hours. That is the whole first-month nutrition program. The [calorie calculator](/tools/calorie-calculator) and [macro calculator](/tools/macro-calculator) convert your stats into the two numbers; the rest is repetition.\n\n## The signals that say it is working (and the ones that do not)\n\nWorking: rep records falling weekly in the logbook, small visible changes in the mirror by week four, better sleep, ordinary next-day soreness that fades.\n\nNot signals to chase: the scale alone (it moves slowly and lies weekly), the pump, soreness as a score (its absence is not weakness), and anyone else's weights. The logbook is the judge — [the progression logic that keeps adaptation honest](https://pubmed.ncbi.nlm.nih.gov/27102172/).\n\n## The 8-minute mobility routine (rest days and warm-ups)\n\nLeg swings front-to-back and side-to-side (10 each) · arm circles (10 each way) · cat-cow (8 slow) · hip flexor stretch (30 s/side) · doorway chest stretch (30 s/side) · bodyweight squats to full depth (10 slow). Done before sessions as a warm-up, or on Wednesday as its own 8-minute practice.\n\n## The five first-month mistakes (and their one-line fixes)\n\n1. **Program hopping** — switching plans every fortnight before any of them pays out. Fix: commit to the four weeks, then judge.\n2. **Weight before reps** — loading up while the rep range is unfinished. Fix: top of range on all sets first, then 2.5 kg.\n3. **Skipping the logbook** — training from memory and progressing from hope. Fix: one line per exercise, every session.\n4. **Eating by feeling in month one** — protein that arrives \"eventually\". Fix: two anchored meals (breakfast, post-training) and the calculator once.\n5. **Treating soreness as the score** — chasing ache instead of reps. Fix: the logbook judges; soreness just informs.\n\n## Frequently Asked Questions\n\n### How many days a week should a beginner train to build muscle?\n\nThree full-body sessions in week one rising to four by week two — each muscle two to three times weekly, the pattern supported by the frequency research.\n\n### How long before a beginner sees muscle growth?\n\nStrength moves first (two to three weeks on the logbook); visible change typically arrives between weeks six and twelve of consistent training and eating.\n\n### Do I need protein powder as a beginner?\n\nNo — whole food covering 1.6-2.2 g/kg daily does the whole job; a shake is only a convenience when meals fall short.\n\n### How much weight should a beginner start with?\n\nThe load that lets you finish all sets with two clean reps left in reserve — then progress by one small increment at a time, reps before weight.\n\n### Should beginners train to failure?\n\nNo — stopping one to three reps short keeps quality high and recovery cheap, which is what sustains the four-week arc.\n\n### What if I miss a session?\n\nResume the schedule from where it stands — do not double up the next day; the plan tolerates an honest miss far better than a panicked overload.\n\n## Month one, done right\n\nFour weeks from now you should hold a logbook with rising numbers, a body that recovers on schedule, and a handful of habits that run on their own. That is what a first program is for — not to transform you in a month, but to make the next eleven inevitable. Run the schedule, turn one dial at a time, and let Friday of week four show you the receipts.\n",
+    "faq_json": [
+     {
+      "question": "How many days a week should a beginner train to build muscle?",
+      "answer": "Three full-body sessions in week one rising to four by week two — each muscle two to three times weekly, the pattern supported by the frequency research."
+     },
+     {
+      "question": "How long before a beginner sees muscle growth?",
+      "answer": "Strength moves first (two to three weeks on the logbook); visible change typically arrives between weeks six and twelve of consistent training and eating."
+     },
+     {
+      "question": "Do I need protein powder as a beginner?",
+      "answer": "No — whole food covering 1.6-2.2 g/kg daily does the whole job; a shake is only a convenience when meals fall short."
+     },
+     {
+      "question": "How much weight should a beginner start with?",
+      "answer": "The load that lets you finish all sets with two clean reps left in reserve — then progress by one small increment at a time, reps before weight."
+     },
+     {
+      "question": "Should beginners train to failure?",
+      "answer": "No — stopping one to three reps short keeps quality high and recovery cheap, which is what sustains the four-week arc."
+     },
+     {
+      "question": "What if I miss a session?",
+      "answer": "Resume the schedule from where it stands — do not double up the next day; the plan tolerates an honest miss far better than a panicked overload."
+     }
+    ],
+    "focus_keyword": "beginner muscle building workout plan 4 weeks",
+    "category": "workout",
+    "excerpt": "A four-week day-by-day beginner muscle building plan: what to train each day, the single progression dial, three lines of nutrition, and the honest signals that it is working.",
+    "meta_title": "Beginner Muscle Building Plan: 4-Week Day-by-Day Guide",
+    "meta_description": "A 4-week day-by-day beginner plan: three full-body days rising to four, one progression dial at a time, and the measured frequency and volume laws behind it.",
+    "keywords": [
+     "beginner muscle building plan",
+     "4 week workout plan beginners",
+     "beginner strength training program",
+     "first workout program",
+     "beginner hypertrophy plan"
+    ]
+   }
+  },
+  {
+   "slug": "4-week-beginner-muscle-building-plan-guide",
+   "language": "ar",
+   "mode": "insert",
+   "row": {
+    "language": "ar",
+    "title": "خطة بناء العضلات للمبتدئين: دليل أربعة أسابيع يومًا بيوم",
+    "slug": "4-week-beginner-muscle-building-plan-guide",
+    "excerpt": "خطة أربعة أسابيع يومًا بيوم للمبتدئين: ماذا تتمرن كل يوم، ومفتاح التدرج الواحد، وثلاثة أسطر للتغذية، والإشارات الصادقة إلى أن الخطة تعمل.",
+    "content": "الأسبوع الأول من أول برنامج تدريبي جدي لك لا ينبغي أن يشعر كطقس عبور — بل كجدول. هذه خطة أربعة أسابيع يومًا بيوم لبناء العضلات للمبتدئين: ما تتمرنه كل يوم، وكيف تتدرج الأوزان، وماذا تأكل بلا تعقيد زائد، والإشارات الصادقة التي تخبرك أن الخطة تعمل. بلا مكملات ضرورية، وبلا معدات تتجاوز الأساسيات، وبلا تخمين.\n\n## الجواب المباشر: ثلاثة أيام جسم كامل في الأسبوع الأول، وأربعة جلسات بحلول الثاني، وتكرار واحد من التقدم كل مرة\n\nالمبتدئون ينمون بعمل أقل مما يظنون وبانتظام أكثر مما يتوقعون. الأساسات المقيسة: تدريب العضلة مرتين أسبوعيًا يتفوق على مرة عند تساوي الحجم — [ميتا-تحليل التكرار](https://pubmed.ncbi.nlm.nih.gov/27102172/) — والحجم الأسبوعي الكلي، المبني تدريجيًا، هو مفتاح النمو — [ميتا-تحليل الحجم](https://pubmed.ncbi.nlm.nih.gov/27433992/). هذه الخطة تبدأ بثلاث جلسات جسم كامل (كل عضلة ثلاث مرات أسبوعيًا، أحمال خفيفة)، وتضيف جلسة رابعة في الأسبوع الثاني، وتختم الأسبوع الرابع بأسبوع اختبار خفيف يثبت التقدم على الورق.\n\n## الأسابيع الأربعة في لمحة\n\n- **الأسبوع 1 — التأسيس:** اثنين/أربعاء/جمعة جسم كامل، 3 مجموعات × 10-12 تكرارًا، راحة 60-90 ثانية. أوزان تُختار بحيث يشعر آخر تكرارين بالشغل لكنهما نظيفان.\n- **الأسبوع 2 — الحجم:** أربع جلسات على هيكل علوي/سفلي، 4 مجموعات × 8-10 في أول تمرين من كل نمط، و3 مجموعات للباقي.\n- **الأسبوع 3 — الشدة:** نفس الهيكل، الأوزان ترتفع درجة (5-8 تكرارات في التمارين الرئيسية)، وقاعدة تدرج جديدة واحدة تُدخل (أضف تكرارًا أو 2.5 كغ، لا الاثنين معًا).\n- **الأسبوع 4 — التفريغ والاختبار:** الحجم يهبط إلى 3×10-12 الاثنين والأربعاء، والجمعة يسجّل أقصى خمسة تكرارات في القرفصاء والضغط والسحب.\n\n## الجدول اليوم بيوم\n\n**الاثنين — سفلي أ:** قرفصاء جوبلت 3×10 · رفع روماني 3×10 · طعنات مشي 3×12/رجل · سمانة 3×15 · بلانك 3×45 ث\n\n**الثلاثاء — علوي دفع:** ضغط أو بنش 4×8-10 · ضغط كتف بدمبل 3×10 · تفتيح مائل 3×12 · ديب على كرسي 3×10-12 · رفرفة جانبية 3×15\n\n**الأربعاء — راحة أو مشي 10 دقائق** مع روتين المرونة القصير أسفل الدليل.\n\n**الخميس — سفلي ب:** قرفصاء بلغارية 3×10/رجل · دفع ورك 3×12 · ثني أرجل 3×12 · سمانة جالس 3×15 · بلانك جانبي 3×30 ث/جانب\n\n**الجمعة — علوي سحب:** تجديف منحني 4×8-10 · سحب أمامي أو بمطاط 3×8-10 · سحب وجه 3×15 · ثني ذراع 3×12 · رفرفة خلفية 3×15\n\n**السبت — جذع ولياقة (اختياري):** رفع ركب معلق أو أرضي 3×12 · تمرين الكلب الطائر 3×12/جانب · 5 دقائق فترات سهلة (أي جهاز أو مشي سريع أو تأرجح كيتلبل إن توفر)\n\n**الأحد — راحة كاملة.**\n\nالأسبوعان 1 و3 يتبعان القالب نفسه بفروق المجموعات والأوزان أعلاه؛ والأسبوع 4 ينصّف حجم الاثنين والأربعاء ويحول الجمعة إلى يوم اختبار.\n\n## كيف يعمل التدرج فعلًا للمبتدئ\n\nقاعدة واحدة: **نطاق التكرار أولًا ثم الحمل.** حين تبلغ كل مجموعات التمرين أعلى نطاقه وتكرارين نظيفين احتياطيًا، أضف زيادة صغيرة في الجلسة التالية (2.5 كغ لتمارين السفلي، 1-2 كغ للعلوي) ودع التكرارات تجد مستواها من جديد. هذا المفتاح الواحد — المُدار بصبر — هو الترجمة العملية لبحث الحجم — [كيف يتراكم الحجم نموًا](https://pubmed.ncbi.nlm.nih.gov/27433992/). إضافة وزن مع انهيار التكرارات، أو إضافة تمارين كل أسبوع، هي طريقة هضبة المبتدئين في الشهر الثاني.\n\n## أكل الشهر الأول: ثلاثة أسطر وحاسبة\n\nبروتين عند 1.6-2.2 غ لكل كيلوغرام يوميًا — النطاق الميتا-تحليلي لبناء العضلة — [ميتا-تحليل البروتين](https://pubmed.ncbi.nlm.nih.gov/28698222/). وسعرات عند الثبات، أو فائض صغير إن كنت نحيفًا وهدفك زيادة الوزن. وماء على مدار اليوم، وخضار في وجبتين، ونوم بساعات ثابتة. هذا برنامج تغذية الشهر الأول كله. [حاسب السعرات](/tools/calorie-calculator) و[حاسب الماكروز](/tools/macro-calculator) يحوّلان بياناتك إلى الرقمين؛ والباقي تكرار.\n\n## الإشارات التي تقول إنها تعمل (وما ليس منها)\n\nيعمل: أرقام تكرارات تتساقط أسبوعيًا في السجل، وتغيرات صغيرة مرئية بالمرآة قرب الأسبوع الرابع، ونوم أفضل، وتعب عضلي عادي يتبخر في الغد.\n\nليست إشارات للمطاردة: الميزان وحده (يتحرك ببطء ويكذب أسبوعيًا)، والانتفاضة الدموية، والتعب كنقاط (غيابه ليس ضعفًا)، وأوزان أي شخص آخر. سجل التمرين هو الحكم — [منطق التدرج الذي يبقى التكيف صادقًا](https://pubmed.ncbi.nlm.nih.gov/27102172/).\n\n## روتين المرونة ثماني الدقائق (أيام الراحة والإحماء)\n\nأرجحة أرجل أمامًا وخلفًا وجانبًا (10 لكل اتجاه) · دوائر ذراع (10 لكل جهة) · القطة-البقرة (8 بطيئة) · إطالة مثنية الورك (30 ث/جانب) · إطالة صدر على إطار باب (30 ث/جانب) · قرفصاء وزن الجسم بكامل المدى (10 بطيئة). قبل الجلسات إحماءً، أو الأربعاء تمرينًا مستقلًا لثماني دقائق.\n\n## أخطاء الشهر الأول الخمسة (وحل كل منها في سطر)\n\n1. **تنقل الخطط** — تبديل البرنامج كل أسبوعين قبل أن يؤدي أيًّا منها ثمره. الحل: التزم الأربعة أسابيع ثم احكم؛ فالجسد يتكيف مع البرنامج الذي يقف عنده، لا مع الذي يتغير كل جمعة.\n2. **الوزن قبل التكرار** — تحميل الأثقال ونطاق التكرار لم يكتمل. الحل: أعلى النطاق في كل المجموعات أولًا ثم 2.5 كغ.\n3. **هجر السجل** — تدريب من الذاكرة وتقدم من التمني. الحل: سطر لكل تمرين في كل جلسة — دفتر صغير أو ملاحظات الهاتف، الوسيلة لا تهم؛ المهم أن يكون رقم الأسبوع الماضي أمام عينيك لحظة اختيار وزن اليوم.\n4. **الأكل بالإحساس في الشهر الأول** — بروتين يصل «متى ما وصل». الحل: وجبتان مثبتتان (الفطور وما بعد التدريب) والحاسبة مرة واحدة.\n5. **اتخاذ التعب العضلي نتيجة** — مطاردة الوجع بدل التكرارات. الحل: السجل يحكم؛ والتعب يُخبر فقط.\n\n## يوم مبتدئ محلول: متدرب وزنه 70 كغ في الأسبوع الثاني\n\nوجبات يوم تدريبي (الثلاثاء): فطور ثلاث بيضات مع جبن وشوفان (26 غ بروتين) ← تمرين العلوين 17:00 بعدها مباشرة صدر دجاج وأرز (32 غ) ← عشاء زبادي وعدس (20 غ) ← المجموع 78 غ = 1.1 غ/كغ — أقل من النطاق! هنا تظهر قيمة الحاسبة: الهدف 112-154 غ يوميًا (1.6-2.2 غ/كغ) فيضاف مغرفة بروتين بعد التدريب (25 غ) وكوب زبادي مساء (10 غ) فيصعد اليوم إلى 113 غ عند أول النطاق. أول شهر كامل بهذا الالتزام يكشف الفرق في السجل قبل المرآة.\n\n## ماذا بعد الأسبوع الرابع؟\n\nالشهر الأول صنع العادات والأرقام؛ وشهوره التالية تصنع الجسم. إن صعدت أرقامك في اختبار الجمعة الرابع، المسار الطبيعي التالي: امتداد الهيكل نفسه إلى اثني عشر أسبوعًا — الأوزان ترتفع بمفتاح واحد كل مرة، والاختبار كل أسبوع رابع، والتفريغ أسبوع كامل كل ستة إلى ثمانية. وإن تعثر الشهر لظرف حياتي فإعادة الأربعة أسابيع من أولها ليست رجوعًا — بل بناء على أساس أثبت هذه المرة. ولمن يريد رفعة أسرع بعد الشهر الثالث، تفتح خطط التقسيم الأربعائية والعلوي/السفلي أبوابها في مكتبتنا.\n\n## الأسئلة الشائعة\n\n### كم يومًا أسبوعيًا يتمرن المبتدئ لبناء العضلات؟\n\nثلاث جلسات جسم كامل في الأسبوع الأول تصعد إلى أربع بحلول الثاني — كل عضلة مرتين إلى ثلاث مرات أسبوعيًا، النمط الذي يدعمه بحث التكرار.\n\n### متى يرى المبتدئ نموًا عضليًا؟\n\nالقوة تتحرك أولًا (أسبوعان إلى ثلاثة في السجل)؛ والتغير المرئي يصل عادة بين الأسبوعين السادس والثاني عشر من تدريب وأكل منتظمين.\n\n### هل أحتاج مسحوق بروتين كمبتدئ؟\n\nلا — الطعام الكامل المغطي لـ1.6-2.2 غ/كغ يوميًا يؤدي المهمة كاملة؛ والجرعة ملاءمة فقط حين تقصر الوجبات.\n\n### بأي وزن يبدأ المبتدئ؟\n\nالحمل الذي يتيح لك إنهاء كل المجموعات وتكرارين نظيفين احتياطيًا — ثم تقدم بزيادة صغيرة واحدة كل مرة، التكرار قبل الوزن.\n\n### هل يتمرن المبتدئ حتى الفشل؟\n\nلا — التوقف قبل تكرار إلى ثلاثة يبقي الجودة عالية والاستشفاء رخيصًا، وهو ما يديم قوس الأسابيع الأربعة.\n\n### ماذا لو فاتتني جلسة؟\n\nاستأنف الجدول من حيث هو — لا تضاعف في الغد؛ فالخطة تحتمل فواتًا صادقًا أفضل بكثير من حمل مرتبك.\n\n## الشهر الأول كما يجب\n\nبعد أربعة أسابيع يجب أن تمسك سجلًا بأرقام صاعدة، وجسدًا يستشفي في موعده، وحفنة عادات تدير نفسها. لهذا وُجد البرنامج الأول — لا ليحولك في شهر، بل ليجعل الأحد عشر التالية حتمية. شغّل الجدول، وأدر مفتاحًا واحدًا كل مرة، ودع جمعة الأسبوع الرابع تريك الإيصالات — فهي أول أرقام كثيرة قادمة، وأصدقها ما كتبه قلمك في سجلٍ لا تُصفى فيه الأرقام ولا تتضخم.\n",
+    "faq_json": [
+     {
+      "question": "كم يومًا أسبوعيًا يتمرن المبتدئ لبناء العضلات؟",
+      "answer": "ثلاث جلسات جسم كامل في الأسبوع الأول تصعد إلى أربع بحلول الثاني — كل عضلة مرتين إلى ثلاث مرات أسبوعيًا، النمط الذي يدعمه بحث التكرار."
+     },
+     {
+      "question": "متى يرى المبتدئ نموًا عضليًا؟",
+      "answer": "القوة تتحرك أولًا (أسبوعان إلى ثلاثة في السجل)؛ والتغير المرئي يصل عادة بين الأسبوعين السادس والثاني عشر من تدريب وأكل منتظمين."
+     },
+     {
+      "question": "هل أحتاج مسحوق بروتين كمبتدئ؟",
+      "answer": "لا — الطعام الكامل المغطي لـ1.6-2.2 غ/كغ يوميًا يؤدي المهمة كاملة؛ والجرعة ملاءمة فقط حين تقصر الوجبات."
+     },
+     {
+      "question": "بأي وزن يبدأ المبتدئ؟",
+      "answer": "الحمل الذي يتيح لك إنهاء كل المجموعات وتكرارين نظيفين احتياطيًا — ثم تقدم بزيادة صغيرة واحدة كل مرة، التكرار قبل الوزن."
+     },
+     {
+      "question": "هل يتمرن المبتدئ حتى الفشل؟",
+      "answer": "لا — التوقف قبل تكرار إلى ثلاثة يبقي الجودة عالية والاستشفاء رخيصًا، وهو ما يديم قوس الأسابيع الأربعة."
+     },
+     {
+      "question": "ماذا لو فاتتني جلسة؟",
+      "answer": "استأنف الجدول من حيث هو — لا تضاعف في الغد؛ فالخطة تحتمل فواتًا صادقًا أفضل بكثير من حمل مرتبك."
+     }
+    ],
+    "meta_title": "خطة بناء العضلات للمبتدئين: أربعة أسابيع يوم بيوم",
+    "meta_description": "خطة 4 أسابيع للمبتدئين: ثلاثة أيام جسم كامل تصعد إلى أربعة، ومفتاح تدرج واحد كل مرة، وقوانين التكرار والحجم المقيسة خلفها.",
+    "focus_keyword": "خطة بناء العضلات للمبتدئين",
+    "keywords": [
+     "خطة بناء العضلات للمبتدئين",
+     "برنامج 4 أسابيع للمبتدئين",
+     "تدريب القوة للمبتدئين",
+     "أول برنامج تدريبي",
+     "بناء العضلات خطوة بخطوة"
+    ],
+    "category": "workout",
+    "tags": [
+     "للمبتدئين",
+     "تمارين",
+     "بناء العضلات"
+    ],
+    "featured_image": "https://images.pexels.com/photos/13865666/pexels-photo-13865666.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
+    "cover_alt": "مبتدئ يجهز أوزان تدريبه في صالة رياضية",
+    "author": "Ahmed Zake"
+   },
+   "pair_with": {
+    "slug": "4-week-beginner-muscle-building-plan",
+    "language": "en"
+   }
+  }
+ ]
+}
