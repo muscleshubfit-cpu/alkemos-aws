@@ -77,6 +77,7 @@ const BATCH_FILES = [
   "article-treatment-batch-l2-1.json",
   "article-treatment-batch-l2-2.json",
   "article-treatment-batch-l2-3.json",
+  "article-treatment-batch-l2-4.json",
 ] as const;
 
 const BATCH_DIR = join(process.cwd(), "scripts", "blog-runner");
@@ -297,6 +298,15 @@ describe("article-treatment batches — the permanent editorial battery", () => 
           "intermittent-fasting-muscle-gain-guide|ar",
           "science-backed-belly-fat-loss-8-weeks|en",
           "belly-fat-loss-8-weeks-guide|ar",
+          // + the 4 pairs created by the L2-4 batch (E-19)
+          "choose-whey-protein-muscle-gain|en",
+          "choose-whey-protein-muscle-gain-guide|ar",
+          "best-protein-supplement-ramadan|ar",
+          "best-protein-supplement-ramadan-guide|en",
+          "sauna-muscle-recovery-hormone-optimization|en",
+          "sauna-muscle-recovery-guide|ar",
+          "bfr-training-checklist|en",
+          "bfr-training-guide|ar",
         ]);
         const KNOWN_PAIRS: Array<[string, string]> = [
           ["deload-week-guide|ar", "deload-week-rest-training-guide|en"],
@@ -342,9 +352,24 @@ describe("article-treatment batches — the permanent editorial battery", () => 
             "intermittent-fasting-muscle-gain-guide|ar",
           ],
           ["science-backed-belly-fat-loss-8-weeks|en", "belly-fat-loss-8-weeks-guide|ar"],
+          ["choose-whey-protein-muscle-gain|en", "choose-whey-protein-muscle-gain-guide|ar"],
+          ["best-protein-supplement-ramadan|ar", "best-protein-supplement-ramadan-guide|en"],
+          ["sauna-muscle-recovery-hormone-optimization|en", "sauna-muscle-recovery-guide|ar"],
+          ["bfr-training-checklist|en", "bfr-training-guide|ar"],
         ];
+        // Pairs whose side was rewritten in a batch that PREDATES the pair's
+        // creation are exempt for that batch only — a rewrite cannot dangle
+        // an hreflang whose twin did not exist yet (history is not a
+        // retroactive violation; every FUTURE half-treatment still fails).
+        const GRANDFATHERED: Record<string, string[]> = {
+          // sauna EN was rewritten by T3-1 (2026-11-01) a day before the
+          // L2-4 batch (E-19, 2026-11-02) created its AR twin.
+          "article-treatment-batch-t3.json": ["sauna-muscle-recovery-hormone-optimization|en"],
+        };
         for (const [a, b] of KNOWN_PAIRS) {
           if (!PAIRED_IN_CORPUS.has(a) || !PAIRED_IN_CORPUS.has(b)) continue;
+          const exempt = GRANDFATHERED[name] ?? [];
+          if (exempt.includes(a) || exempt.includes(b)) continue;
           const aTreated = slugs.has(a);
           const bTreated = slugs.has(b);
           // half-treatment of a PAIR is allowed ONLY when the treated side
