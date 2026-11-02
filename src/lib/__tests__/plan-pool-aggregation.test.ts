@@ -50,8 +50,14 @@ const src = (rel: string) => readFileSync(join(process.cwd(), rel), "utf8");
 // ─────────────────────────────────────────────────────────────────────
 
 const DAY = 86400000;
-const iso = (offsetMs: number) => new Date(Date.now() + offsetMs).toISOString();
+// Fixed reference clock — every fixture date below derives from THIS, never
+// from the real wall clock (a latent time-bomb fixed 2026-11-02: iso() used
+// Date.now() while NOW stayed pinned, so the "expired" fixture crossed above
+// NOW once real time passed 2026-11-02T12:00Z and flipped the entitlement-
+// window expectations). Deriving from NOW keeps the test's intent — expired
+// means "before NOW" — stable forever.
 const NOW = new Date("2026-10-28T12:00:00.000Z");
+const iso = (offsetMs: number) => new Date(NOW.getTime() + offsetMs).toISOString();
 
 /** An effectively-ACTIVE subscription row (the auth/DB pre-filter shape). */
 const active = (tier: string, endOffsetMs = 30 * DAY): SubscriptionTierRow => ({
