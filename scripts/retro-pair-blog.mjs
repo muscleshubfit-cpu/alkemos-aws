@@ -84,12 +84,22 @@ async function main() {
     const en = await fetchPost(p.enSlug, "en");
     const ar = await fetchPost(p.arSlug, "ar");
 
+    // per-pair failure flag (E21 fix, 2026-11-02): the old `if (failures.length)
+    // continue` read the GLOBAL accumulator, so one dead-record pair silently
+    // dropped every pair after it from resolution — a latent script defect
+    // measured live when registering the home-program successor pair.
+    let pairFailed = false;
     for (const [label, post] of [["en", en], ["ar", ar]]) {
       const slug = label === "en" ? p.enSlug : p.arSlug;
-      if (!post) failures.push(`pair ${i + 1}: ${label.toUpperCase()} post not found (slug=${slug})`);
-      else if (!post.is_published) failures.push(`pair ${i + 1}: ${label.toUpperCase()} post not published (slug=${slug})`);
+      if (!post) {
+        failures.push(`pair ${i + 1}: ${label.toUpperCase()} post not found (slug=${slug})`);
+        pairFailed = true;
+      } else if (!post.is_published) {
+        failures.push(`pair ${i + 1}: ${label.toUpperCase()} post not published (slug=${slug})`);
+        pairFailed = true;
+      }
     }
-    if (failures.length) continue;
+    if (pairFailed) continue;
 
     if (en.language !== "en" || ar.language !== "ar") {
       failures.push(`pair ${i + 1}: language mismatch (en.slug→${en.language}, ar.slug→${ar.language})`);
