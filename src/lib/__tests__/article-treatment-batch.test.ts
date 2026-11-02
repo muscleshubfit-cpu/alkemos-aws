@@ -76,6 +76,7 @@ const BATCH_FILES = [
   "article-treatment-batch-t3-4b.json",
   "article-treatment-batch-l2-1.json",
   "article-treatment-batch-l2-2.json",
+  "article-treatment-batch-l2-3.json",
 ] as const;
 
 const BATCH_DIR = join(process.cwd(), "scripts", "blog-runner");
@@ -286,6 +287,16 @@ describe("article-treatment batches — the permanent editorial battery", () => 
           "protein-myths-muscle-gain-guide|ar",
           "calorie-cycling-fat-loss-diet|en",
           "calorie-cycling-fat-loss-guide|ar",
+          // + the 4 pairs created by the L2-3 batch (E-18) — counterparts of
+          // B-tier sources, born paired in the same run
+          "4-day-split-hypertrophy-fat-loss|en",
+          "4-day-split-muscle-fat-loss-guide|ar",
+          "home-muscle-building-guide-no-equipment|ar",
+          "home-muscle-building-no-equipment-guide|en",
+          "intermittent-fasting-muscle-gain-workout-plan|en",
+          "intermittent-fasting-muscle-gain-guide|ar",
+          "science-backed-belly-fat-loss-8-weeks|en",
+          "belly-fat-loss-8-weeks-guide|ar",
         ]);
         const KNOWN_PAIRS: Array<[string, string]> = [
           ["deload-week-guide|ar", "deload-week-rest-training-guide|en"],
@@ -321,6 +332,16 @@ describe("article-treatment batches — the permanent editorial battery", () => 
           ["4-day-upper-lower-hypertrophy-split|en", "upper-lower-split-4-days-guide|ar"],
           ["protein-myths-busted-muscle-gain|en", "protein-myths-muscle-gain-guide|ar"],
           ["calorie-cycling-fat-loss-diet|en", "calorie-cycling-fat-loss-guide|ar"],
+          ["4-day-split-hypertrophy-fat-loss|en", "4-day-split-muscle-fat-loss-guide|ar"],
+          [
+            "home-muscle-building-guide-no-equipment|ar",
+            "home-muscle-building-no-equipment-guide|en",
+          ],
+          [
+            "intermittent-fasting-muscle-gain-workout-plan|en",
+            "intermittent-fasting-muscle-gain-guide|ar",
+          ],
+          ["science-backed-belly-fat-loss-8-weeks|en", "belly-fat-loss-8-weeks-guide|ar"],
         ];
         for (const [a, b] of KNOWN_PAIRS) {
           if (!PAIRED_IN_CORPUS.has(a) || !PAIRED_IN_CORPUS.has(b)) continue;
