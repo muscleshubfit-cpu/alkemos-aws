@@ -78,6 +78,7 @@ const BATCH_FILES = [
   "article-treatment-batch-l2-2.json",
   "article-treatment-batch-l2-3.json",
   "article-treatment-batch-l2-4.json",
+  "article-treatment-batch-l2-5.json",
 ] as const;
 
 const BATCH_DIR = join(process.cwd(), "scripts", "blog-runner");
@@ -307,6 +308,15 @@ describe("article-treatment batches — the permanent editorial battery", () => 
           "sauna-muscle-recovery-guide|ar",
           "bfr-training-checklist|en",
           "bfr-training-guide|ar",
+          // + the 4 pairs created by the L2-5 batch (E-20)
+          "best-plant-based-protein-powder-muscle-gain-2026|en",
+          "best-plant-based-protein-powder-guide|ar",
+          "how-to-periodize-nutrition-body-recomposition|en",
+          "nutrition-periodization-body-recomposition-guide|ar",
+          "combine-hiit-strength-fat-loss-guide|en",
+          "hiit-strength-training-fat-loss-guide|ar",
+          "post-workout-recovery-meal-plan-7-recipes|en",
+          "post-workout-recovery-meal-plan-guide|ar",
         ]);
         const KNOWN_PAIRS: Array<[string, string]> = [
           ["deload-week-guide|ar", "deload-week-rest-training-guide|en"],
@@ -356,6 +366,19 @@ describe("article-treatment batches — the permanent editorial battery", () => 
           ["best-protein-supplement-ramadan|ar", "best-protein-supplement-ramadan-guide|en"],
           ["sauna-muscle-recovery-hormone-optimization|en", "sauna-muscle-recovery-guide|ar"],
           ["bfr-training-checklist|en", "bfr-training-guide|ar"],
+          [
+            "best-plant-based-protein-powder-muscle-gain-2026|en",
+            "best-plant-based-protein-powder-guide|ar",
+          ],
+          [
+            "how-to-periodize-nutrition-body-recomposition|en",
+            "nutrition-periodization-body-recomposition-guide|ar",
+          ],
+          ["combine-hiit-strength-fat-loss-guide|en", "hiit-strength-training-fat-loss-guide|ar"],
+          [
+            "post-workout-recovery-meal-plan-7-recipes|en",
+            "post-workout-recovery-meal-plan-guide|ar",
+          ],
         ];
         // Pairs whose side was rewritten in a batch that PREDATES the pair's
         // creation are exempt for that batch only — a rewrite cannot dangle
