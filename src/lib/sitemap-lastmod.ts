@@ -38,11 +38,17 @@
  */
 
 export const SITEMAP_LASTMOD = {
-  pages: "2026-09-16",
-  exercises: "2026-09-16",
+  // Comprehensive audit 2026-11-04 (title-ceiling fixes): the guide
+  // EN title dropped its brand suffix (80→71 chars). Per the UPDATE
+  // PROTOCOL this is a served-HTML change for the pages family.
+  pages: "2026-11-04",
+  // Same audit: 53 EN exercise titles left the over-75 set (worst
+  // 97 → 63 via the three-tier template) — family template change.
+  exercises: "2026-11-04",
   foods: "2026-11-04",
   collections: "2026-09-15",
-  comparisons: "2026-09-08",
+  // Same audit: Freeletics EN+AR titles dropped the suffix (78→64 / 84→74).
+  comparisons: "2026-11-04",
 } as const;
 
 export type SitemapFamily = keyof typeof SITEMAP_LASTMOD;

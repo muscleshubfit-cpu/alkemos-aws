@@ -36,7 +36,21 @@ export async function generateMetadata({
     };
   }
 
-  const title = `${exercise.nameEn} — Proper Form & Instructions | Alkemos`;
+  // SEO title ceiling (comprehensive audit 2026-11-04): the site's
+  // measured healthy range caps <title> at 75 chars. The always-on
+  // "| Alkemos" suffix pushed 53 of 868 long-name exercises past it
+  // (worst case 97). Three tiers keep EVERY page ≤75 without ever
+  // editing the exercise's own name: short names keep the brand suffix
+  // (blog-article titles carry none — dropping it is the site's own
+  // convention), 30-39-char names drop just the suffix, and the 10
+  // ultra-long names (43-50 chars) shorten the descriptor instead.
+  const titleBase = `${exercise.nameEn} — Proper Form & Instructions`;
+  const title =
+    titleBase.length + 10 <= 75
+      ? `${titleBase} | Alkemos`
+      : titleBase.length <= 75
+        ? titleBase
+        : `${exercise.nameEn} — Form Guide`;
   // SEO-P2-10 (2026-10-01, SEO audit item 10): the long-name tail
   // (e.g. "Standing Dumbbell Straight-Arm Front Delt Raise Above Head")
   // pushed 2 of 868 pages to 163–166 chars. Shorter lead verb phrase

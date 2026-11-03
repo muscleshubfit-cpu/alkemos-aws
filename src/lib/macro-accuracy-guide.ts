@@ -36,7 +36,10 @@ export const MACRO_ACCURACY_GUIDE_PATH_AR = `/ar/guides/${MACRO_ACCURACY_GUIDE_S
 export const MACRO_ACCURACY_GUIDE_PUBLISHED = "2026-10-01";
 
 export const MACRO_ACCURACY_GUIDE_META = {
-  titleEn: "Macro Tracking Accuracy — Why Apps Disagree and How to Track Precisely | Alkemos",
+  // SEO title ceiling (comprehensive audit 2026-11-04): 80 → 71 chars —
+  // brand suffix dropped (blog-article convention) to fit the site's
+  // measured ≤75 healthy range. AR twin was already ≤65 (unchanged).
+  titleEn: "Macro Tracking Accuracy — Why Apps Disagree and How to Track Precisely",
   descriptionEn:
     // SEO-P2-10 (2026-10-01, SEO audit item 10): 180 → 145 chars — the
     // ≤160 SERP-truncation law now holds (raw-vs-cooked + weekly audit kept).

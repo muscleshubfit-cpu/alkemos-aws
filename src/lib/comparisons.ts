@@ -278,8 +278,15 @@ export const COMPARISONS: Comparison[] = [
     // First shipped with the comparison surface (git d238e96a).
     publishedAt: "2026-09-07",
 
-    titleEn: "Alkemos vs Freeletics — AI Coaching & Bodyweight Training (2026) | Alkemos",
-    titleAr: "Alkemos مقابل Freeletics — تدريب الذكاء الاصطناعي وتمارين وزن الجسم (2026) | Alkemos",
+    // SEO title ceiling (comprehensive audit 2026-11-04): 78 → 64 chars —
+    // brand suffix dropped (blog-article convention) to fit the site's
+    // measured ≤75 healthy range; every keyword survives.
+    titleEn: "Alkemos vs Freeletics — AI Coaching & Bodyweight Training (2026)",
+    // Same audit: AR <title> renders through the /ar layout template
+    // `%s — Alkemos` (10 chars appended), so the input must stay ≤65
+    // to keep the RENDERED title ≤75. "مدرب ذكاء اصطناعي" is also the
+    // sharper intent match (Freeletics' product IS an AI coach).
+    titleAr: "Alkemos مقابل Freeletics — مدرب ذكاء اصطناعي وتمارين الجسم (2026)",
     h1En: "Alkemos vs Freeletics",
     h1Ar: "Alkemos مقابل Freeletics",
     introEn:

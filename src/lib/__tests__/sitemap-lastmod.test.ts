@@ -38,8 +38,13 @@ describe("sitemap lastmod anchors (#14)", () => {
     expect(SITEMAP_LASTMOD.foods > CONTENT_LAST_REVIEWED).toBe(true);
   });
 
-  it("exercises pinned to the batch-2 ship date (image self-hosting)", () => {
-    expect(SITEMAP_LASTMOD.exercises).toBe("2026-09-16");
+  it("exercises pinned to the 2026-11-04 title-ceiling ship date (comprehensive audit — 53 EN titles), superseding the 2026-09-16 image self-hosting pin)", () => {
+    expect(SITEMAP_LASTMOD.exercises).toBe("2026-11-04");
+  });
+
+  it("pages + comparisons also carry the 2026-11-04 audit ship date (guide title + Freeletics titles)", () => {
+    expect(SITEMAP_LASTMOD.pages).toBe("2026-11-04");
+    expect(SITEMAP_LASTMOD.comparisons).toBe("2026-11-04");
   });
 
   it("every family is a W3C day-precision date", () => {

@@ -38,6 +38,13 @@ Disallow: /dashboard
 Disallow: /questionnaires
 Disallow: /progress
 Disallow: /plans
+# Comprehensive audit 2026-11-04: /profile is the ONE private surface
+# missing here — every sibling in the (app) authed group (dashboard/
+# questionnaires/progress/plans/support/referral) was already blocked,
+# and next.config.ts's SEO-GEO-4 private-path exclusion list already
+# carries profile. Closing the gap so the unified "private surfaces
+# blocked for everyone" policy holds with zero exceptions.
+Disallow: /profile
 Disallow: /chat
 Disallow: /support
 Disallow: /referral
