@@ -79,6 +79,8 @@
 
 import { BATCH_1 } from "@/lib/exercises-enrichment-batch1";
 import { BATCH_2 } from "@/lib/exercises-enrichment-batch2";
+import { BATCH_3 } from "@/lib/exercises-enrichment-batch3";
+import { BATCH_4 } from "@/lib/exercises-enrichment-batch4";
 
 export type EnrichedFaq = { q: string; a: string };
 
@@ -121,6 +123,8 @@ export type ExerciseEnrichment = {
 export const EXERCISES_ENRICHMENT: Record<string, ExerciseEnrichment> = {
   ...BATCH_1,
   ...BATCH_2,
+  ...BATCH_3,
+  ...BATCH_4,
 };
 
 /** Resolve the enrichment layer for an exercise slug (undefined = none). */
