@@ -1,0 +1,441 @@
+{
+ "batch": "E-24 science-citations-numbers (owner order 2026-11-03 «تدقيق مصالحة وتنفيذ إصلاحات الجودة التحريرية»): 8 surgical rewrites verified live before the batch — the inverted soy-whey meta citation (PMID 33971994: whey significantly improved lean mass +0.91 kg while soy showed no significant change — the article claimed 'no significant differences'; verified against PubMed 2026-11-03) fixed in compare-whey-soy-protein-athletes (intro + section + FAQ mirrored) · the wrong-Morton pattern x2 (PMID 26019246 is the Framingham cross-sectional J Nutr 2015 study, NOT a meta-analysis — verified) replaced with the genuine Morton 2018 BJSM meta-analysis PMID 28698222 in calculate-daily-calories-muscle-gain-beginners-guide and improve-gut-health-muscle-gain-4-week-plan (gut-health sentence restructured so the citation attaches only to the claim it supports) · arithmetic reconciliation: fat-burning-macro-diet-plan day-table now sums 150P/265C/65F = 2245 kcal matching the 2250 target (was 1905 vs 2250 claimed; BMR 1725->1700 Mifflin recompute, TDEE 2675->2635) · calculate-maintenance-calories BMR 1,735->1,728 + activity table recomputed + TEF claim 100-150 -> 30-55 kcal (recomputed: +180 kcal protein x 20-30% TEF) · carb-loading day decomposition 2,800-3,000 -> 3,400-3,600 kcal (2,800 carbs + 400 protein + 200-400 fats) · weight-loss-muscle-gain woman example carbs 175 g/700 kcal -> 212 g/850 kcal (macros now sum to the stated 1,805) · 12-week-periodized rigid 30%-protein percentages -> g/kg method matching its own FAQ + FAQ trimmed 10->7 (beginner-plan/home-gym/sleep-hygiene farm questions cut). All numbers recomputed with code; all PMIDs verified against PubMed. (EDITORIAL-REMEDIATION E24, 2026-11-03)",
+ "articles": [
+  {
+   "slug": "compare-whey-soy-protein-athletes",
+   "language": "ar",
+   "mode": "rewrite",
+   "expect_old_words": [
+    961,
+    1081
+   ],
+   "fix": {
+    "focus_keyword": "الفرق بين بروتين مصل الحليب والصويا",
+    "category": "supplements",
+    "excerpt": "مقارنة عملية بين بروتين مصل الحليب وبروتين الصويا للرياضيين: الامتصاص والليوسين وجودة البروتين بمقياس DIAAS، وخلاصة التحليلات الشمولية على تكوين الجسم مع جدول قرار نهائي.",
+    "meta_title": "بروتين مصل الحليب أم الصويا: الفرق الحقيقي للرياضيين",
+    "meta_description": "مقارنة عملية بين بروتين مصل الحليب والصويا: الامتصاص، الليوسين، التكلفة لكل حصة، ولمن يناسب كل نوع مع خلاصة التحليلات الشمولية.",
+    "keywords": [
+     "بروتين مصل الحليب يسرّع الاستشفاء العضلي",
+     "بروتين الصويا يحتوي على جميع الأحماض الأمينية",
+     "تكلفة مكمل بروتين مصل الحليب مقارنة بالصويا",
+     "امتصاص البروتين بعد التمرين مباشرة",
+     "مناسب للرياضيين النباتيين أم غير النباتيين",
+     "نسبة البروتين في مسحوق مصل الحليب",
+     "تأثير الألياف في بروتين الصويا على الهضم",
+     "أفضل توقيت لتناول بروتين مصل الحليب",
+     "هل يسبب بروتين الصويا اضطراب هضمي للرياضيين؟",
+     "تحليل القيمة الغذائية لبروتين الصويا مقارنة بمصل الحليب"
+    ],
+    "content": "الإجابة العملية المباشرة: الفرق بين بروتين مصل الحليب (Whey) وبروتين الصويا (Soy) يكمن في ثلاثة محاور: سرعة الامتصاص، ومحتوى الليوسين الأعلى في مصل اللبن، والملاءمة الغذائية — مصل اللبن أسرع وأغنى بالليوسين، والصويا بديل نباتي كامل الأحماض الأمينية يناسب حساسية اللاكتوز. لكن الخلاصة التي تفاجئ كثيرين: عند تساوي إجمالي البروتين اليومي، الفروق على تكوين الجسم النهائي أصغر مما يشاع، لأن الأدلة تشير إلى أن الإجمالي اليومي والانتظام هما الحاكم الأكبر.\n\nالأساس المقارن الموثق: تحليل شمولي للتجارب المحكومة قارن مباشرة أثر الصويا مقابل مصل اللبن على تكوين الجسم، ووجد أن مصل اللبن حسّن الكتلة الخالية معنويًا (نحو 0.9 كيلوغرام وسطيًا عبر التجارب) بينما لم يُظهر الصويا تغيرًا معنويًا في أي مؤشر ([ميتا 2022 للصويا ومصل اللبن](https://pubmed.ncbi.nlm.nih.gov/33971994/))، وقياس جودة البروتينات بمقياس الهضم (DIAAS) يضع بروتينات الألبان في الصدارة مع بقاء الصويا بين الأفضل نباتيًا ([مقياس DIAAS لبروتينات الألبان والنبات](https://pubmed.ncbi.nlm.nih.gov/28382889/)).\n\n## جدول الفروق الأساسية في لمحة\n\n| المحور | مصل اللبن | بروتين الصويا |\n|---|---|---|\n| المصدر | حيواني من الحليب | نباتي من فول الصويا |\n| سرعة الامتصاص | سريع (عزل أسرع) | متوسط |\n| الليوسين لكل حصة 25-30 جم | أعلى | جيد لكنه أدنى |\n| الأحماض الأمينية | كامل | كامل |\n| قيد الاستخدام | لاكتوز بالتركيز أحيانًا | حساسية صويا عند البعض |\n| السعر النسبي | متوسط إلى مرتفع | غالبًا أرخص |\n\n## ماذا يقول التحليل الشمولي على النتيجة النهائية؟\n\nهذا هو السؤال الذي يهم المتدرب فعلًا: أيهما يبني أكثر؟ الإجابة المقيسة من ميتا 2022: مصل اللبن رفع الكتلة الخالية معنويًا (نحو 0.9 كيلوغرام عبر التجارب المحكومة) والصويا لم يحقق تغيرًا معنويًا في أي مؤشر — لكن الفارق يبقى متواضعًا أمام انتظام الإجمالي اليومي، والوزن وكتلة الشحوم لم يتغيرا معنويًا لدى أي من المصدرين ([ميتا 2022 للصويا ومصل اللبن](https://pubmed.ncbi.nlm.nih.gov/33971994/)). التفسير الفسيولوجي المقبول: نافذة تحفيز بناء العضلة تتكرر على مدار اليوم، فبروتين أبطأ هضمًا بساعتين لا يفقد شيئًا من الجرعة الكلية — التوقيت الأمثل للبروتين بتوزيع اليوم كله موضح بدليل [حساب البروتين اليومي للرياضيين](/ar/blog/how-to-calc-daily-protein-athletes).\n\n## جودة البروتين بمقياس DIAAS: أين يقف كل نوع؟\n\nمقياس درجة الأحماض الأمينية الضرورية المهضومة (DIAAS) هو المعيار الأحدث لجودة البروتين: يقيس ما يُهضم فعلًا من الأحماض التي لا يصنعها الجسم. القياسات المنشورة تضع بروتين مصل اللبن المعزول والكازين أعلى النطاق، وبروتين الصويا في منطقة محترمة تسبق أغلب البدائل النباتية الأخرى ([قياس DIAAS المنشور 2017](https://pubmed.ncbi.nlm.nih.gov/28382889/)). الترجمة العملية: مع مصل اللبن تحصل على كفاءة أعلى قليلًا لكل جرام، ومع الصويا تعوّض الفارق بجرعة أو مغرف أكبر قليلًا — والاثنان يصلان نفس الوجهة.\n\n## لمن يناسب مصل اللبن؟\n\n- المتدرب بلا قيود غذائية يريد أكفأ جرعة لكل مغرف.\n- من يبحث عن خيار مدروس الارتباط ببناء العضلة عبر عقود من الأبحاث.\n- حساسية اللاكتوز؟ العزل (Isolate) منزوع اللاكتوز إلى حد بعيد مقارنة بالمركز — تفاصيل الاختيار بين المسحوقين والحصص بُسطت بدليل [اختيار بروتين الواي في رمضان](/ar/blog/choose-whey-protein-ramadan-women) الذي يفصل الاختلافات نفسها.\n\n## لمن يناسب بروتين الصويا؟\n\n- النباتيات الراغبات في بروتين كامل الأحماض من مصدر واحد.\n- أصحاب حساسية الحليب أو اللاكتوز حتى مع العزل.\n- الميزانية الأضيق: سعر الحصة النباتية غالبًا أوفر.\n\nوإن كان قرارك أوسع من ثنائية الصويا ومصل اللبن — مقارنة البازلاء والأرز والقنب مقابل كل الحيواني — فالخريطة الكاملة وحساب الجرعة النباتية الصحيحة جاهزة بدليل [مقارنة مكمل البروتين النباتي والحيواني](/ar/blog/protein-supplements-veg-animal-comparison).\n\n## التكلفة لكل حصة: الحساب الذي يجب أن تفعله قبل الشراء\n\nقارن دائمًا سعر 25 إلى 30 جرامًا من البروتين الفعلي لا سعر العبوة:\n\n- عبوة 2 كجم بمزيج بروتين 70% تعطي نحو 46 حصة واقعية.\n- عبوة 2 كجم بعزل 90% تعطي نحو 60 حصة.\n- الصويا غالبًا يقدم سعر حصة أقل بفارق محسوس.\n\nاحسب رقم «سعر الحصة» لكل منتج على رف المتجر، واحسمه مع ميزانيتك — الفارق التراكمي على سنة كاملة قد يشتري لك شهرين إضافيين من المكمل.\n\n## قراءة ملصق مصل اللبن: مركز أم عزل؟\n\nقبل المفاضلة بين المصدرين، ثمة تفصيلة داخل عائلة مصل اللبن نفسها تحسم السعر والتحمل:\n\n| الصفة | المركز (Concentrate) | العزل (Isolate) |\n|---|---|---|\n| نسبة البروتين بالوزن | نحو 70-80% | نحو 90% أو أعلى |\n| اللاكتوز | موجود بكمية ملحوظة | مزال إلى حد بعيد |\n| السعر لكل حصة | أوفر | أعلى |\n| الأنسب لمن | بلا حساسية وبميزانية أضيق | حساسية لاكتوز أو تقطيع صارم للسعرات |\n\nالخلاصة العملية: الفارق التقني بين المركز والعزل أصغر من فارق تسويقهما — من يتحمل اللاكتوز ويشتري المركز يصل لنفس الوجهة بسعر أقل، ومن يزعجه فينتقل للعزل دون خسارة أي ميزة بناء.\n\n## حصص عملية بثلاث ميزانيات\n\n| الميزانية | التركيبة العملية | التقدير اليومي |\n|---|---|---|\n| اقتصادية | مركز مصل لبن (أو صويا للحساسيات) | حصة واحدة بعد التمرين والباقي غذاء |\n| متوسطة | مركز مصل + صويا للوجبات البعيدة عن التمرين | حصتان |\n| مفتوحة | عزل بعد التمرين + كازين أو مزيج بطيء مسائيًا | حصتان إلى ثلاث |\n\nالملاحظة الأهم من الجدول نفسه: المكمل في كل الصفوف «حصة أو حصتان» لا أساس وجبات — البروتين الغذائي يظل نصف إلى ثلثي إجمالك اليومي في أغلب الحالات المتوازنة، والقاعدة الكاملة بدليل [حساب البروتين اليومي للرياضيين](/ar/blog/how-to-calc-daily-protein-athletes).\n\n## التوقيت بعد التمرين: هل تسرع الامتصاص تصنع فارقًا؟\n\nالصورة الشائعة: «مصل اللبن بعد التمرين مباشرة لأنه سريع». الصورة الأدق من الأدلة: الأثر الأكبر لتوقيت الوجبة يتراجع أمام إجمالي البروتين اليومي المنتظم. ساعة الاستخدام تبقى خيارًا مريحًا — مشروب سريع بعد الجلسة يغلق نافذة اليوم بسهولة — لكن من يتناول حصته بعد ساعتين لا يخسر بناء عضلاته. المفاضلة الحقيقية بين المصدرين يجب أن تقف على: القيود الغذائية، وسعر الحصة، وتحمل الجهاز الهضمي.\n\n![مشروب بروتين بكوب شيكر بعد التمرين](https://images.pexels.com/photos/28455336/pexels-photo-28455336.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200)\n\n## جدول القرار النهائي\n\n| وضعك | الأفضل لك |\n|---|---|\n| بلا قيود وتريد الكفاءة القصوى | عزل مصل اللبن |\n| ميزانية أضيق | مركز مصل اللبن أو الصويا |\n| نباتي | الصويا (أو مزيج نباتي مع الصويا) |\n| حساسية لاكتوز قوية | عزل نقي أو الصويا |\n| حساسية صويا | أي مصل لبن |\n\nولحساب حصتك اليومية التي يسقط داخلها هذا الاختيار: [حاسبة الماكروز](/ar/tools/macro-calculator) تحسب البروتين المستهدف من وزنك وهدفك.\n\n## الأسئلة الشائعة\n\n**هل مصل اللبن يبني عضلات أكثر من الصويا؟**\n\nعند تساوي إجمالي البروتين اليومي يبقى الإجمالي والانتظام هما الحاكم الأكبر، لكن الفارق المقيس حقيقي: التحليل الشمولي للتجارب المحكومة وجد لمصل اللبن تحسنًا معنويًا في الكتلة الخالية (نحو 0.9 كيلوغرام وسطيًا) ولم يجد للصويا تغيرًا معنويًا — فبلا قيود غذائية أو ميزانية، مصل اللبن هو الخيار الأدق أدلةً.\n\n**لماذا يُقال إن الصويا «أبطأ»؟ وهل هذا سيئ؟**\n\nهضمه أبطأ من العزل بساعة تقريبًا، وهذا ليس عيبًا: الأحماض الأمينية تصل لمدة أطول، وضمن إجمالي يومي منتظم لا يتغير المحصلة النهائية — البطء ميزة قبل النوم أحيانًا وعيب فقط إن أردت ذروة سريعة بعد التمرين.\n\n**هل بروتين الصويا كامل الأحماض الأمينية؟**\n\nنعم، الصويا من النباتات القليلة بملف كامل، ولهذا يتقدم أغلب البدائل النباتية في مقاييس الجودة مثل (DIAAS) رغم بقاء بروتينات الألبان أعلى منه درجة.\n\n**أيهما أوفر للطالب بميزانية محدودة؟**\n\nغالبًا الصويا: سعر الحصة النباتية أقل بفارق محسوس، وإن غابت قيود الحساسية والنظام النباتي فمركز مصل اللبن في العروض منافس قريب.\n\n**هل يجب شربه خلال ثلاثين دقيقة بعد التمرين؟**\n\nلا بنفس الصرامة الشائعة: نافذة الوجبة أوسع بكثير، والإجمالي اليومي المنتظم هو الحاكم. اختر التوقيت الذي يضمن لك الالتزام الفعلي بحصتك.\n\n**أتحمل مصل اللبن بثقل في معدتي — ما البديل؟**\n\nجرّب العزل المعزول من اللاكتوز أولًا بجرعة أصغر، فإن استمر الانزعاج فبروتين الصويا أو مزيج نباتي خيار مكتمل الأحماض بلا لاكتوز أصلًا.",
+    "faq_json": [
+     {
+      "answer": "عند تساوي إجمالي البروتين اليومي يبقى الإجمالي والانتظام هما الحاكم الأكبر، لكن الفارق المقيس حقيقي: التحليل الشمولي للتجارب المحكومة وجد لمصل اللبن تحسنًا معنويًا في الكتلة الخالية (نحو 0.9 كيلوغرام وسطيًا) ولم يجد للصويا تغيرًا معنويًا — فبلا قيود غذائية أو ميزانية، مصل اللبن هو الخيار الأدق أدلةً.",
+      "question": "هل مصل اللبن يبني عضلات أكثر من الصويا؟"
+     },
+     {
+      "answer": "هضمه أبطأ من العزل بساعة تقريبًا، وهذا ليس عيبًا: الأحماض الأمينية تصل لمدة أطول، وضمن إجمالي يومي منتظم لا يتغير المحصلة النهائية — البطء ميزة قبل النوم أحيانًا وعيب فقط إن أردت ذروة سريعة بعد التمرين.",
+      "question": "لماذا يُقال إن الصويا «أبطأ»؟ وهل هذا سيئ؟"
+     },
+     {
+      "answer": "نعم، الصويا من النباتات القليلة بملف كامل، ولهذا يتقدم أغلب البدائل النباتية في مقاييس الجودة مثل (DIAAS) رغم بقاء بروتينات الألبان أعلى منه درجة.",
+      "question": "هل بروتين الصويا كامل الأحماض الأمينية؟"
+     },
+     {
+      "answer": "غالبًا الصويا: سعر الحصة النباتية أقل بفارق محسوس، وإن غابت قيود الحساسية والنظام النباتي فمركز مصل اللبن في العروض منافس قريب.",
+      "question": "أيهما أوفر للطالب بميزانية محدودة؟"
+     },
+     {
+      "answer": "لا بنفس الصرامة الشائعة: نافذة الوجبة أوسع بكثير، والإجمالي اليومي المنتظم هو الحاكم. اختر التوقيت الذي يضمن لك الالتزام الفعلي بحصتك.",
+      "question": "هل يجب شربه خلال ثلاثين دقيقة بعد التمرين؟"
+     },
+     {
+      "answer": "جرّب العزل المعزول من اللاكتوز أولًا بجرعة أصغر، فإن استمر الانزعاج فبروتين الصويا أو مزيج نباتي خيار مكتمل الأحماض بلا لاكتوز أصلًا.",
+      "question": "أتحمل مصل اللبن بثقل في معدتي — ما البديل؟"
+     }
+    ]
+   }
+  },
+  {
+   "slug": "calculate-daily-calories-muscle-gain-beginners-guide",
+   "language": "ar",
+   "mode": "rewrite",
+   "expect_old_words": [
+    959,
+    1079
+   ],
+   "fix": {
+    "focus_keyword": "حساب السعرات لبناء العضلات",
+    "category": "nutrition",
+    "excerpt": "احسب سعراتك لبناء العضلات في خمس خطوات: معادلة ميفلين-سانت جور بمعامل النشاط ثم فائض 250-500 سعرة، مع مثال محلول وجدول تعديل أسبوعي.",
+    "meta_title": "حساب السعرات الحرارية لبناء العضلات: خمس خطوات ومثال محلول",
+    "meta_description": "دليل حساب السعرات اليومية لبناء الكتلة العضلية: معدل الأيض الأساس بمعادلة ميفلين ومعامل النشاط والفائض الآمن وتوزيع الماكروز وقرارات التعديل.",
+    "keywords": [
+     "كم بروتين يحتاجه رجل لبناء العضلات يوميًا",
+     "ما هو أفضل وقت لتناول البروتين بعد التمرين",
+     "كم كمية الماء التي يحتاجها الرياضي يوميًا",
+     "ما هو تأثير الصيام المتقطع على بناء العضلات",
+     "كيف يمكن تحسين جودة النوم لتعزيز بناء العضلات",
+     "ما هي النسبة المثالية من الماكروغذيات لتقليل الدهون مع الحفاظ على العضلات",
+     "حساب السعرات الحرارية لزيادة الوزن بشكل صحي",
+     "أفضل تطبيقات تتبع السعرات الحرارية للمبتدئين",
+     "كيفية قياس محيط الخصر لتتبع تضخيم العضلات",
+     "الفرق بين الوزن الدهني والوزن العضلي على الميزان",
+     "تعديل السعرات الحرارية عند ثبات الوزن",
+     "خطة أكل أسبوعية لبناء العضلات للمبتدئين"
+    ],
+    "content": "الإجابة العملية المباشرة: سعرات بناء العضلات = معدل الأيض الأساسي × معامل النشاط + فائض 250-500 سعرة يوميًا، مع استهداف زيادة وزن مقدارها 0.25-0.5% من وزن جسمك أسبوعيًا (نحو 0.2-0.4 كجم لوزن 80 كجم). المبتدئ يبدأ من أعلى النافذة (450-500) لأن نافذة نموه الأوسع، ومن تجاوز سنة من التدريب المنتظم يكفيه الطرف الأدنى.\n\nالمعادلة الأشهر لاحتساب الأساس هي معادلة ميفلين-سانت جور المنشورة عام 1990، وما زالت الأدق لمجموعات السكان العامة في المقارنات اللاحقة ([Mifflin وآخرون 1990](https://pubmed.ncbi.nlm.nih.gov/2305711/)).\n\n## الخطوة 1: احسب معدل الأيض الأساسي\n\nللرجال: (10 × الوزن بالكيلوجرام) + (6.25 × الطول بالسنتيمتر) − (5 × العمر بالسنوات) + 5\n\nللنساء: (10 × الوزن بالكيلوجرام) + (6.25 × الطول بالسنتيمتر) − (5 × العمر بالسنوات) − 161\n\nمثالنا المحلول طوال الدليل: رجل 25 سنة، 70 كجم، 175 سم.\n\n(10 × 70) + (6.25 × 175) − (5 × 25) + 5 = 700 + 1093.75 − 125 + 5 = 1674 سعرة تقريبًا.\n\nهذا احتياج جسمه ساكنًا تمامًا — تنفسًا وقلبًا ودماغًا وأعضاء. لا تأكل هذا الرقم أبدًا كهدف نهائي؛ إنه حجر الأساس فقط.\n\n## الخطوة 2: اضرب في معامل النشاط الصادق\n\n| مستوى النشاط | الوصف | المعامل |\n|---|---|---|\n| خامل جدًا | عمل مكتبي بلا حركة ولا تمرين | 1.2 |\n| خفيف | حركة يومية قليلة + 1-3 جلسات أسبوعيًا | 1.375 |\n| متوسط | حركة معتادة + 3-4 جلسات أسبوعيًا | 1.55 |\n| نشط | عمل حركي + 4-5 جلسات | 1.725 |\n| نشط جدًا | عمل بدني شاق + تدريب يومي | 1.9 |\n\nكن صادقًا نحو الأسفل: معامل متوسط مع ثلاث جلسات أسبوعيًا ومكتب عمل هو الأقرب للواقع، ومبالغتك هنا تفسد كل الحساب اللاحق.\n\nمثالنا: 1674 × 1.55 ≈ 2595 سعرة صيانة تقريبًا — الرقم الذي يثبت عنده وزنه الحالي.\n\n## الخطوة 3: أضف الفائض المحسوب لا المتخيل\n\nعلى 2595 نضيف 250-500: هدف المبتدأ مثالنا يقع بين 2850 و3100 سعرة يوميًا. لماذا هذه النافذة تحديدًا؟ لأن بناء العضلات عملية بطيئة بحدّ فسيولوجي: المتدرب المبتدئ في أفضل سيناريو يبني بضع مئات من الجرامات عضلًا أسبوعيًا، وفائض أكبر من الطاقة اللازمة لذلك يُخزن دهنًا لا تشريحًا رياضيًا.\n\n![وجبة غنية بالبروتين والكربوهيدرات مع أوزان تدريب](https://images.pexels.com/photos/17947753/pexels-photo-17947753.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200)\n\n## الخطوة 4: وزّع الماكروز على السعرات\n\n- البروتين: 1.6-2.2 جرام لكل كجم (الأدلة التحليلية تدعم هذه النافذة للمتدربين — [Morton وآخرون](https://pubmed.ncbi.nlm.nih.gov/28698222/)). لمثالنا: 112-154 جرامًا = 450-615 سعرة. الحساب التفصيلي بدليل [حساب البروتين اليومي للرياضيين](/ar/blog/how-to-calc-daily-protein-athletes).\n- الدهون: 20-30% من إجمالي السعرات (714-930 سعرة لمثالنا) — حد أدنى وظيفي للهرمونات لا تهبط تحته.\n- الكربوهيدرات: كل ما تبقى، وهي وقود الجلسات وإعادة الجليكوجين — رصيد مثالنا يتراوح بين 1355 و1725 سعرة أي 340-430 جرامًا.\n\nوزّعها على 3-5 وجبات، وثبّت البروتين موزعًا (0.4-0.5 جرام/كجم للوجبة) بينما ذبذب الكربوهيدرات صعودًا في أيام التدريب. الحساب الجاهز عبر [حاسبة الماكروز](/tools/macro-calculator) و[حاسبة السعرات](/tools/calorie-calculator).\n\n## الخطوة 5: قِس أسبوعيًا وعدّل بقواعد ثابتة\n\n\nوزن نفسك 3-4 صباحيات أسبوعيًا بعد الحمام وقبل الإفطار، وخذ متوسط الأسبوع (المتوسط يمتص تذبذب الماء والملح والجليكوجين).\n\n| نتيجة متوسط الأسبوعين | القرار |\n|---|---|\n| زيادة أقل من 0.2 كجم | أضف 150-200 سعرة من الكربوهيدرات |\n| زيادة 0.25-0.5 كجم | استمر بنفس الهدف — هذا المسار الصحيح |\n| زيادة أكثر من 0.7 كجم أو اتساع خصر أسرع من 1 سم شهريًا | انزل 150-200 سعرة |\n\nعامل محيط الخصر (قياس صباحي عند السرة) شريك الميزان: وزن يرتفع مع خصر ثابت = اتجاه صحي، ووزن وخصر يتصاعدان معًا = فائض أكبر من اللازم.\n\n## أخطاء المبتدئين الأربع الكبرى في هذه الخطة\n\n1. حساب السعرات بالعين بعد يومين من التسجيل: «أعرف تقريبًا» عدو الكتلة الأول — سجّل أسبوعين كاملين بميزان مطبخ قبل أي قرار.\n2. القفز على فائض ضخم (ألف سعرة وأكثر) طمعًا في سرعة: النتيجة دهون تحتاج شهرين لخسارتها لاحقًا.\n3. نسيان السعرات السائلة: عصير ومشروب طاقة ولبن محلى كامل يضيف 400-600 سعرة غير محسوبة يوميًا.\n4. تغيير كل شيء مرة واحدة عند أول أسبوع ثابت: التعديل 150-200 سعرة فقط ثم قياس أسبوعين — الصبر جزء من الطريقة لا ضدها.\n\nوالنوم ركيزة ثالثة لا تقل عن التسجيل والحساب: أقل من سبع ساعات يخفض جودة الجلسة والاستشفاء معًا. الماء كذلك: 35-40 مل لكل كجم — التفاصيل بدليل [كمية الماء للرياضي](/ar/blog/water-intake-athlete-guide).\n\n## فحص ذاتي بعد أربعة أسابيع\n\nأجب بنعم أو لا: هل ارتفع متوسط وزنك 1-2 كجم؟ هل زادت أوزانك أو تكراراتك الأساسية؟ هل بقي خصرك ثابتًا أو زاد أقل من سنتيمتر؟ هل أكملت بروتينك المستهدف في 25 يومًا على الأقل؟\n\nثلاث نعم أو أكثر: الخطة تعمل، استمر. نعم أقل من ذلك: راجع التسجيل أولًا (السبب الأول دائمًا)، ثم النوم، ثم عدّل السعرات بقواعد الجدول أعلاه.\n\n## كيف تبدو 300 سعرة إضافية على طاولة بيتك؟\n\n| الإضافة | الكمية | السعرات التقريبية |\n|---|---|---|\n| أرز مطبوخ | نصف كوب (80 جم) | 100 |\n| خبز أسمر | رغيف صغير | 90 |\n| موزة + ملعقة عسل | حبة + 15 جم | 150 |\n| زبادي كامل الدسم | علبة 170 جم | 100 |\n| زيت زيتون | ملعقة كبيرة | 120 |\n| تمر | 3 حبات | 60 |\n\nفائض 300 سعرة يعني عمليًا: وجبة أرز أكبر قليلًا في الغداء + تمرتين وزبادي مسائيًا — لا وليمة كل ليلة، ولا «بناء عضلات» بأكل عشوائي بلا قياس.\n\n## الأسئلة الشائعة\n\n**كيف أحسب السعرات الحرارية اليومية لزيادة الكتلة العضلية؟**\n\nاحسب معدل الأيض الأساسي بمعادلة ميفلين-سانت جور، اضربه في معامل النشاط الصادق، ثم أضف فائض 250-500 سعرة واستهدف زيادة وزن 0.25-0.5 كجم أسبوعيًا — أو مباشرة عبر [حاسبة السعرات](/tools/calorie-calculator).\n\n**كم بروتينًا أحتاج يوميًا مع هذا الفائض؟**\n\n1.6-2.2 جرام لكل كجم من وزن الجسم، موزعة على 3-5 وجبات. لمثالنا 70 كجم: 112-154 جرامًا — والتفصيل العملي بدليل حساب البروتين اليومي.\n\n**هل أزيد السعرات في أيام الراحة؟**\n\nالأنظف: ثبّت البروتين والدهون، وارفع الكربوهيدرات في أيام التدريب وأنزلها قليلًا في أيام الراحة بفارق 200-300 سعرة، مع بقاء متوسط الأسبوع داخل الهدف. وإن بدّلت الجدول كله برقم ثابت فالنتيجة شبه متطابقة — الالتزام أهم من الهندسة.\n\n**ماذا لو زاد وزني أسرع من المطلوب؟**\n\nانزل 150-200 سعرة من الكربوهيدرات وقس أسبوعين آخرين. الزيادة فوق 0.7 كجم أسبوعيًا (بخلاف أسبوع الأول بعد البدء بامتصاص الجليكوجين والماء) غالبها تخزين دهني غير مطلوب.\n\n**هل معادلة ميفلين-سانت جور دقيقة لي شخصيًا؟**\n\nهي الأدق جماعيًا لمن لم يقِس معدله عمليًا، بهامش خطأ فردي 10% تقريبًا. لهذا لا تثق برقمها النهائي بل بمخرج الحلقة: وزن متصل أسبوعين ثم تعديل بقاعدة الجدول — قياسك الحي يساوي أي معادلة.\n\n**هل أحتاج مكمّلات ضمن هذه الخطة؟**\n\nلا. الطعام الكامل يغطي كل شيء، ومصل اللبن (Whey) مجرد أداة ملائمة لسد فجوة البروتين يوميًا — التفاصيل بدليل [اختيار بروتين مصل اللبن](/ar/blog/choose-whey-protein-ramadan-women). الكرياتين خيار مدعوم بالأدلة لتحسين الأداء لا للسعرات — قواعده بدليل [اختيار مكمل الكرياتين](/ar/blog/best-creatine-men-guide).",
+    "faq_json": [
+     {
+      "answer": "احسب معدل الأيض الأساسي بمعادلة ميفلين-سانت جور، اضربه في معامل النشاط الصادق، ثم أضف فائض 250-500 سعرة واستهدف زيادة وزن 0.25-0.5 كجم أسبوعيًا — أو مباشرة عبر [حاسبة السعرات](/tools/calorie-calculator).",
+      "question": "كيف أحسب السعرات الحرارية اليومية لزيادة الكتلة العضلية؟"
+     },
+     {
+      "answer": "1.6-2.2 جرام لكل كجم من وزن الجسم، موزعة على 3-5 وجبات. لمثالنا 70 كجم: 112-154 جرامًا — والتفصيل العملي بدليل حساب البروتين اليومي.",
+      "question": "كم بروتينًا أحتاج يوميًا مع هذا الفائض؟"
+     },
+     {
+      "answer": "الأنظف: ثبّت البروتين والدهون، وارفع الكربوهيدرات في أيام التدريب وأنزلها قليلًا في أيام الراحة بفارق 200-300 سعرة، مع بقاء متوسط الأسبوع داخل الهدف. وإن بدّلت الجدول كله برقم ثابت فالنتيجة شبه متطابقة — الالتزام أهم من الهندسة.",
+      "question": "هل أزيد السعرات في أيام الراحة؟"
+     },
+     {
+      "answer": "انزل 150-200 سعرة من الكربوهيدرات وقس أسبوعين آخرين. الزيادة فوق 0.7 كجم أسبوعيًا (بخلاف أسبوع الأول بعد البدء بامتصاص الجليكوجين والماء) غالبها تخزين دهني غير مطلوب.",
+      "question": "ماذا لو زاد وزني أسرع من المطلوب؟"
+     },
+     {
+      "answer": "هي الأدق جماعيًا لمن لم يقِس معدله عمليًا، بهامش خطأ فردي 10% تقريبًا. لهذا لا تثق برقمها النهائي بل بمخرج الحلقة: وزن متصل أسبوعين ثم تعديل بقاعدة الجدول — قياسك الحي يساوي أي معادلة.",
+      "question": "هل معادلة ميفلين-سانت جور دقيقة لي شخصيًا؟"
+     },
+     {
+      "answer": "لا. الطعام الكامل يغطي كل شيء، ومصل اللبن (Whey) مجرد أداة ملائمة لسد فجوة البروتين يوميًا — التفاصيل بدليل [اختيار بروتين مصل اللبن](/ar/blog/choose-whey-protein-ramadan-women). الكرياتين خيار مدعوم بالأدلة لتحسين الأداء لا للسعرات — قواعده بدليل [اختيار مكمل الكرياتين](/ar/blog/best-creatine-men-guide).",
+      "question": "هل أحتاج مكمّلات ضمن هذه الخطة؟"
+     }
+    ]
+   }
+  },
+  {
+   "slug": "improve-gut-health-muscle-gain-4-week-plan",
+   "language": "en",
+   "mode": "rewrite",
+   "expect_old_words": [
+    1058,
+    1178
+   ],
+   "fix": {
+    "focus_keyword": "improve gut health for muscle gain",
+    "category": "nutrition",
+    "excerpt": "A 4-week plan to improve gut health for muscle gain: fiber ramp to 30g, fermented foods daily, protein spread, and three self-tests to adjust with honest evidence.",
+    "meta_title": "How to Improve Gut Health for Muscle Gain: 4-Week Plan",
+    "meta_description": "A practical 4-week gut health plan for muscle gain: fiber targets, fermented foods, probiotics with honest evidence, meal timing, and self-tests to track.",
+    "keywords": [
+     "how to improve gut health for muscle gain",
+     "best pre‑workout supplement for endurance training",
+     "BCAAs vs EAAs for post‑workout recovery",
+     "how many grams of carbs after leg day",
+     "best recovery foods for night‑time workouts",
+     "intermittent fasting schedule for strength athletes",
+     "protein timing for muscle growth while sleeping",
+     "how to train hypertrophy with resistance bands only",
+     "best wearable for tracking HRV during sleep",
+     "signs of overtraining in strength athletes"
+    ],
+    "content": "The short, practical answer: to improve gut health for muscle gain over four weeks, ramp your fiber intake gradually to 25-35 g daily, eat one to two servings of fermented food every day, spread your protein across 3-5 feedings, and track three simple markers — bloating, digestion comfort, and morning readiness — to adjust. A digestive system that absorbs protein and carbohydrates comfortably is a silent multiplier on every other gain you chase; an irritated one quietly caps your training and recovery.\n\nOne honest note on evidence before the plan: probiotics are among the most-studied gut interventions, and the [US National Center for Complementary and Integrative Health](https://www.nccih.nih.gov/health/probiotics) concludes that while promise exists for several digestive conditions, for most uses we still don't know which strains help, at what dose, or for whom. This plan is therefore built on the foundations with the strongest evidence — fiber variety, fermented foods, consistent protein, sleep — and treats any probiotic as an optional experiment you run on yourself, not a guaranteed lever.\n\n## Why gut health matters specifically for muscle gain\n\nYour muscles are built from what your gut actually absorbs, not what you eat. Four connections matter for lifters:\n\n- Hitting the evidence-based 1.6-2.2 g/kg daily protein target ([Morton et al., 2018 meta-analysis](https://pubmed.ncbi.nlm.nih.gov/28698222/)) stays sustainable only when digestion stays comfortable — absorption speed and gut tolerance decide whether eating that much protein feels easy or becomes a daily struggle.\n- Carbohydrate tolerance around training decides how well you fuel heavy sessions and refill glycogen afterward.\n- Chronic low-grade gut irritation can drag on sleep quality and training consistency — the two variables no program survives without.\n- Appetite regulation matters in a surplus: a comfortable gut makes eating enough easy; a bloated one makes every meal a negotiation.\n\n## Week 1: Build the fiber baseline\n\nAim for 25 g of fiber this week (30-35 g by Week 3), increasing by ~5 g every few days so your microbiome adapts without a bloating backlash:\n\n- Oats at breakfast (5 g per 60 g serving), a lunch with legumes (lentils, chickpeas), two fistfuls of vegetables at dinner, and one whole fruit as a snack gets most people to 25 g without counting anything else.\n- Add one serving of a fermented food daily: yogurt with live cultures, kefir, sauerkraut, kimchi, or aged cheese — rotate them across the week for strain variety.\n- Drink to a consistent target (roughly 35-40 ml/kg body weight); fiber without fluid thickens instead of softening.\n- Keep protein constant all four weeks: 1.6-2.2 g/kg, spread over 3-5 feedings. Track the full picture with the [macro calculator](/tools/macro-calculator).\n\n## Week 2: Add the optional probiotic experiment\n\nIf Week 1 went smoothly, layer in the experiment — and run it like an experiment:\n\n- Add one multi-strain probiotic (Lactobacillus and Bifidobacterium families are the most common) at the label dose for 2-3 weeks, taken with a meal.\n- Keep a one-line daily log: bloating 0-10, digestion comfort, energy. If nothing trends better by the end of Week 3, stop buying it — the honest evidence base says responders vary.\n- If you took an antibiotic course recently or travel frequently, the case for trying is stronger; if your digestion is already smooth, savings are better spent on food quality.\n\n![A bowl of yogurt with fruit and oats on a kitchen counter](https://images.pexels.com/photos/5463882/pexels-photo-5463882.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200)\n\n## Week 3: Time meals around your training\n\nWith the baseline built, align food with sessions:\n\n- A mixed meal 2-3 hours before lifting: ~0.3-0.4 g/kg protein + 0.5-0.7 g/kg carbs, keeping fat moderate so digestion finishes before the first set.\n- After training: 0.3-0.4 g/kg protein with 0.8-1.2 g/kg carbs — rice, potato, fruit or bread sit comfortably for most people and refill glycogen fast.\n- If evening sessions wreck your dinner comfort, split the meal: half before, half after, and keep the pre-bed portion lighter (Greek yogurt, a casein-style shake, or cottage cheese).\n\n## Week 4: Test, score, adjust\n\nRun three self-tests and compare against your Week 1 notes:\n\n1. Bloating score on most days should sit at 2/10 or lower.\n2. Digestion comfort with your full protein target: no forced feeding, no heaviness.\n3. Training consistency: did the planned sessions actually happen, and did strength hold or rise?\n\nIf a marker stalls, change one variable at a time — 5 g more fiber, one more fermented serving, or shifting 10% of daily carbs into the post-workout slot — and re-test the following week. If you see persistent pain, blood in stool, or unexplained weight loss, that is a doctor's territory, not a nutrition plan's.\n\n## The 4-week checklist at a glance\n\n| Week | Fiber | Fermented | Extra layer | Test |\n|---|---|---|---|---|\n| 1 | Ramp to 25 g | 1 serving/day | Fluids + protein spread | Baseline bloating notes |\n| 2 | Hold 25-30 g | 1-2 servings/day | Optional probiotic experiment | Daily 1-line log |\n| 3 | 30-35 g | 1-2 servings/day | Meal timing around training | Session comfort |\n| 4 | Hold | 1-2 servings/day | Adjust from data | Full 3-marker re-test |\n\n## Frequently Asked Questions\n\n**How much fiber do I need for gut health while gaining muscle?**\n\n25-35 g daily, ramped up gradually over 2-3 weeks. Below ~20 g the microbiome lacks substrate; far above 40 g some people struggle to eat enough total calories in a surplus.\n\n**Do I need a probiotic supplement to improve gut health?**\n\nNot necessarily. Fermented foods, fiber variety, and consistency carry most of the value. A multi-strain probiotic is a reasonable 2-3 week self-experiment if digestion is stubborn — the evidence shows real responders and non-responders, so let your own log decide.\n\n**Why does fiber make me more bloated at first?**\n\nYour gut microbes are adjusting to a new substrate supply and produce more gas for the first 1-2 weeks. Ramp in 5 g steps, drink enough water, and back off one step if bloating is painful rather than merely noticeable.\n\n**Which fermented foods count as a serving?**\n\nA bowl of yogurt or kefir (~200 g), a forkful-sized portion of sauerkraut or kimchi (~50-75 g), or a slice of aged cheese. Rotate across the week — variety feeds a wider range of microbial families than any single food repeated daily.\n\n**How do I hit 2 g/kg of protein without wrecking digestion?**\n\nSplit it into 3-5 feedings of 0.4-0.5 g/kg each, anchor each feeding on a food you already digest well, and let a whey shake fill the hardest gap of the day — dosing details are covered in our [whey protein dosage guide](/blog/whey-protein-dosage-muscle-gain).\n\n**How many calories should I eat on rest days during the plan?**\n\nRoughly 150-250 kcal above maintenance on rest days — enough to keep repair and gut comfort high without fat gain — and let training days carry the bigger surplus. Estimate your baseline with the [calorie calculator](/tools/calorie-calculator).",
+    "faq_json": [
+     {
+      "answer": "25-35 g daily, ramped up gradually over 2-3 weeks. Below ~20 g the microbiome lacks substrate; far above 40 g some people struggle to eat enough total calories in a surplus.",
+      "question": "How much fiber do I need for gut health while gaining muscle?"
+     },
+     {
+      "answer": "Not necessarily. Fermented foods, fiber variety, and consistency carry most of the value. A multi-strain probiotic is a reasonable 2-3 week self-experiment if digestion is stubborn — the evidence shows real responders and non-responders, so let your own log decide.",
+      "question": "Do I need a probiotic supplement to improve gut health?"
+     },
+     {
+      "answer": "Your gut microbes are adjusting to a new substrate supply and produce more gas for the first 1-2 weeks. Ramp in 5 g steps, drink enough water, and back off one step if bloating is painful rather than merely noticeable.",
+      "question": "Why does fiber make me more bloated at first?"
+     },
+     {
+      "answer": "A bowl of yogurt or kefir (~200 g), a forkful-sized portion of sauerkraut or kimchi (~50-75 g), or a slice of aged cheese. Rotate across the week — variety feeds a wider range of microbial families than any single food repeated daily.",
+      "question": "Which fermented foods count as a serving?"
+     },
+     {
+      "answer": "Split it into 3-5 feedings of 0.4-0.5 g/kg each, anchor each feeding on a food you already digest well, and let a whey shake fill the hardest gap of the day — dosing details are covered in our [whey protein dosage guide](/blog/whey-protein-dosage-muscle-gain).",
+      "question": "How do I hit 2 g/kg of protein without wrecking digestion?"
+     },
+     {
+      "answer": "Roughly 150-250 kcal above maintenance on rest days — enough to keep repair and gut comfort high without fat gain — and let training days carry the bigger surplus. Estimate your baseline with the [calorie calculator](/tools/calorie-calculator).",
+      "question": "How many calories should I eat on rest days during the plan?"
+     }
+    ]
+   }
+  },
+  {
+   "slug": "fat-burning-macro-diet-plan",
+   "language": "ar",
+   "mode": "rewrite",
+   "expect_old_words": [
+    985,
+    1105
+   ],
+   "fix": {
+    "focus_keyword": "نظام غذائي لحرق الدهون مع حساب الماكرو",
+    "category": "nutrition",
+    "excerpt": "إعداد نظام غذائي لحرق الدهون للرياضيين خطوة بخطوة: حساب السعرات والماكرو بمثال محسوب كامل، توزيع الوجبات، بدائل الأطباق العربية، والصيام المتقطع إن اخترته — بالأدلة.",
+    "meta_title": "خطوة بخطوة: نظام غذائي لحرق الدهون بالماكرو",
+    "meta_description": "كيف تصمم نظام غذائي لحرق الدهون مع حساب الماكرو خطوة بخطوة: مثال محسوب لرياضي 75 كجم، جدول وجبات، بدائل الأطباق العربية، وحكم الصيام المتقطع.",
+    "keywords": [
+     "تمارين HIIT للدهون",
+     "تمارين الكارديو للنساء",
+     "مكمل بروتين مصل اللبن",
+     "حساب الماكرو للعضلات",
+     "وجبة ما قبل التمرين سريعة",
+     "استشفاء العضلات بعد التمرين",
+     "صيام متقطع للرياضيين",
+     "تمارين بناء العضلات في البيت",
+     "زيادة القوة في الصالة",
+     "نظام غذائي للماكرو"
+    ],
+    "content": "تصميم نظام غذائي لحرق الدهون للرياضيين ليس نسخ جدول جاهز، بل خمس خطوات حسابية تنتهي بأرقامك أنت: سعرات بعجز معتدل، بروتين يحمي العضلة، ودهون ونشويات تُوزّع الباقي على مدار اليوم بحيث تُشعل جلساتك ولا تجوع جسمك. في هذا الدليل ننفذ الخطوات الخمس بمثال محسوب كامل لرياضي 75 كجم، ثم نضيف بدائل الأطباق العربية وحكم الصيام المتقطع لمن يفضله.\n\nالقاعدتان الحاكمتان من الأدلة: [إرشادات الغذاء الصحي لمنظمة الصحة العالمية](https://www.who.int/news-room/fact-sheets/detail/healthy-diet) تضع الإطار العام — تنوع الغذاء، خضار وفواكه، بروتينات متنوعة، وتقليل السكريات — والتحليل التجميعي لمقارنات [البروتين مع تدريب المقاومة](https://pubmed.ncbi.nlm.nih.gov/28698222/) يحدد النطاق العملي للرياضي: الفائدة القصوى للحفاظ على العضلة وبنائها تظهر فوق 1.6 جرام/كجم يوميًا، والإجمالي اليومي أهم من توزيع التوقيت.\n\n## الخطوة 1: احسب سعراتك بعجز صحي\n\nمعدل الأيض الأساسي بمعادلة ميفلين-ست جيور (وزن × 10 + طول × 6.25 − عمر × 5 + 5 للرجال، − 161 للنساء) ثم × معامل النشاط (1.55 للتدريب 3–5 أيام). اطرح 300–500 سعرة للعجز — لا أكثر: العجز القاسي يفقدك عضلات ويبطئ الأيض ويكتب نهاية النظام بنفسه. احسب رقمك مباشرة عبر [حاسبة السعرات](/ar/tools/calorie-calculator) وراجع التفاصيل الكاملة في [دليل حساب السعرات وتوزيع الماكروز](/ar/blog/calorie-macro-guide-muscle-fat).\n\nمثالنا المحسوب — رياضي 75 كجم، 30 سنة، 175 سم، تدريب 4 أيام: معدل الأيض ≈ 1700 سعرة، الطاقة اليومية ≈ 2635 سعرة، هدف الحرق ≈ **2250 سعرة يوميًا** (عجز نحو 385 سعرة — داخل النطاق الآمن).\n\n## الخطوة 2: ابدأ بالبروتين ثم املأ الباقي\n\nالبروتين أول بند يُحسب لا آخره: 1.8–2.2 جرام/كجم أثناء مرحلة الحرق (الأعلى كلما كنت أنحف). مثالنا: 75 × 2 = **150 جرام بروتين** (600 سعرة). الدهون ثانيًا: 0.8–1 جرام/كجم = **65 جرامًا** (585 سعرة) — أرضية هرمونية لا تُتجاوز. النشويات تملأ الباقي: 2250 − 600 − 585 ≈ **265 جرامًا** (1065 سعرة)، وتوضع معظمها حول التمرين حيث تُستخدم وقودًا واستعادة. وزّع الأرقام على 3–4 وجبات بضغطة زر واحدة في [حاسبة الماكروز](/ar/tools/macro-calculator)، وإن لم يكن لديك ميزان طعام فقاعدة التقدير اليدوي الكاملة في [دليل تتبع الماكروز بدون ميزان](/ar/blog/track-macros-without-scale-guide).\n\n## الخطوة 3: وزّع الوجبات على يومك\n\n| الوجبة | المكونات | البروتين | النشويات | الدهون |\n|---|---|---|---|---|\n| الفطور | 3 بيضات + رغيف خبز أسمر + جبن قريش 100 جم | ~33 جم | ~45 جم | ~20 جم |\n| قبل التمرين بساعتين | كوب ونصف أرز مطبوخ + صدر دجاج + سلطة | ~45 جم | ~85 جم | ~10 جم |\n| بعد التمرين | زبادي يوناني + موز + عسل | ~20 جم | ~55 جم | ~3 جم |\n| العشاء | سمك مشوي + بطاطا + خضار سوتيه | ~40 جم | ~55 جم | ~25 جم |\n| قبل النوم | كوب لبن رائب + تمرة | ~12 جم | ~25 جم | ~7 جم |\n\nالمجموع ≈ 150 جم بروتين و265 جم نشويات و65 جم دهون — أي ≈ 2250 سعرة مطابقة لخطة الخطوة 2 بالضبط: هدف اليوم تحقق بوجبات عربية عادية بلا مسحوق واحد إن أردت (المسحوق مجرد راحة حسابية لا شرط). التوقيت مريح لا مقدس: [مراجعة البروتين المجمّعة](https://pubmed.ncbi.nlm.nih.gov/28698222/) حاسمة في أن الإجمالي اليومي يتقدم على أي نافذة توقيت — ولمن يريد تفاصيل ما حول التمرين: [ماذا تأكل قبل التمرين؟ دليل وجبة ما قبل التمرين](/ar/blog/nutrition-before-workout-guide).\n\n## الخطوة 4: بدائل الأطباق العربية (النظام الذي يعيش في مطبخك)\n\nالقاعدة: بروتين الوجبة قابل للتبادل ضمن فئته، والنشويات كذلك. صدر الدجاج ↔ سمك ↔ 4 بيضات + جبن قريش (بروتين)؛ الأرز ↔ بطاطا ↔ خبز أسمر ↔ عدس (نشويات، والعدس يضيف بروتينًا). الأطباق المركبة تُقدّر بمكوّنها الأول: الفول كف بروتين نباتي + نصف قبضة نشويات؛ المحشي أساسه نشويات فحصته ربع اليوم. الزيت هو البند الخفي الأول: ملعقة الطبخ الواحدة 14 جرام دهون — قِسها بالملعقة لا بالنظرة. والجدول الأسبوعي الجاهز بسبعة أيام كاملة في [النظام الغذائي الأسبوعي لحرق الدهون](/ar/blog/weekly-fat-burning-diet-plan).\n\n## الخطوة 5: راجع أسبوعيًا وعدّل رقمًا واحدًا\n\nقس متوسط وزن ثلاث صباحات أسبوعيًا: نزول 0.5–1% من وزنك = الخطة تعمل، لا تغير شيئًا. ثبات أسبوعين = أنقص 100 سعرة (من النشويات) أو أضف جلسة مشي 30 دقيقة. نزول أسرع من 1% مع هبوط الأوزان المرفوعة = أضف 150 سعرة فورًا — العضلة أول ما يُدفع ثمنها في التسرع. والتقدم لا يُقرأ بالميزان وحده: محيط الخصر و[نسبة الدهون](/ar/tools/body-fat-calculator) كل 3–4 أسابيع. لتنظيف أخطاء البداية الأشهر: [الأخطاء الشائعة التي تمنع حرق الدهون](/ar/blog/common-fat-burning-mistakes).\n\n## لوحة استكشاف الأعطال: النظام لا يعمل؟\n\n| العَرَض | السبب الأرجح | الإصلاح |\n|---|---|---|\n| الوزن ثابت 3 أسابيع | تقدير الحصص أقل من الواقع (الزيت أول المتهمين) | قِس الزيت بالملعقة 5 أيام وأعد القراءة |\n| الوزن ينزل والأوزان المرفوعة تنزل معه | عجز أسرع من اللازم أو بروتين ناقص | +150 سعرة نشويات وراجع عدّاد البروتين |\n| جوع ليلي متصل | أكل النهار خفيف البروتين/الألياف | انقل ثلث العشاء للفطور وزد الخضار |\n| طاقة منخفضة بالجلسات | نشويات اليوم كلها بعيدة عن التمرين | قرّب حصة نشويات واحدة لقبل الجلسة |\n| انتفاخ وهضم ثقيل | وجبة ما قبل التمرين دسمة أو متأخرة | خفّفها (موز + تمر) وقدّمها 60-90 دقيقة |\n\nمرّر على اللوحة قبل أي قرار «تغيير النظام» — أغلب التوقفات سببها بند واحد من الخمسة لا فشل المنهج كله، وقرار التعديل الصحيح ردٌّ على العَرَض المقيس لا على الشعور العام.\n\n## والصيام المتقطع؟ الحكم بالأدلة\n\nالصيام المتقطع (16/8 مثلًا) ليس محفز حرق سحريًا — النتيجة تُقرر بعجز السعرات والإجمالي اليومي. لكن هل يضار عضلاتك؟ لا، إن اكتمل البروتين والسعرات: تجربة محكمة لثمانية أسابيع على متدربين مقاومة وجدت أن [التغذية المحدودة زمنيًا](https://pubmed.ncbi.nlm.nih.gov/27737674/) حافظت على القوة القصوى والكتلة الصافية تمامًا كالنظام العادي، والمراجعة المنهجية لـ[الصيام المتقطع مع تدريب المقاومة](https://pubmed.ncbi.nlm.nih.gov/33984329/) تطابق النتيجة على تركيب الجسم. القرار إذًا عملي بحت: إن كان نافذة الأكل المضغوطة تساعدك على الالتزام فعالة، وإن فرّقت وجباتك فهي ضدك — وتوزيع البروتين على الوجبات داخل النافذة يبقى إلزاميًا في الحالين.\n\n## الأسئلة الشائعة\n\n### كيف أبدأ نظام غذائي لحرق الدهون بالماكرو من الصفر؟\n\nاحسب معدل أيضك ثم اطرح 300–500 سعرة، اضرب وزنك في 1.8–2.2 للبروتين، اجعل الدهون 0.8–1 جم/كجم، واملأ الباقي نشويات حول التمرين — مثال محسوب كامل داخل المقال لرياضي 75 كجم.\n\n### ما أفضل نسب الماكرو لحرق الدهون؟\n\nلا نسبة واحدة تناسب الجميع — ابدأ بالبروتين (1.8–2.2 جم/كجم) ثم الدهون (0.8–1 جم/كجم) كأرضية، واجعل النشويات الباقي المتغير. النسب المئوية الجاهزة (مثل 40/30/30) أدوات تقدير لا قوانين.\n\n### هل يجب أن آكل خمس مرات يوميًا لأحرق الدهون؟\n\nلا — عدد الوجبات قرار راحة والتزام: 3–4 وجبات توزع البروتين (30–40 جم للوجبة) تكفي. الإجمالي اليومي هو ما يقرر الحرق، لا تكرار الوجبات.\n\n### هل الصيام المتقطع يحرق دهونًا أكثر من النظام العادي؟\n\nلا — العجز السعري هو الحاكم في الحالين. التجارب على متدربي المقاومة تظهر حفاظًا كاملًا على القوة والعضلة مع 16/8 إذا اكتمل البروتين، فالقرار عملي: إن سهّل التزامك فهو أداة صالحة.\n\n### هل المسحوق (الواي) ضروري في نظام الحرق؟\n\nلا — هو راحة حسابية لا شرط غذائي: وجبة عربية عادية بروتينها 30–40 جرامًا تعمل العمل نفسه. استعمله حيث يصعب عليك إكمال الإجمالي اليومي من الطعام فقط.\n\n### كم أسبوعًا قبل أن أرى نتيجة النظام؟\n\nقس أسبوعيًا بمتوسط ثلاث صباحات: النزول الصحي 0.5–1% من الوزن أسبوعيًا، والفرق البصري (الخصر والصور) يظهر عادة بعد 3–4 أسابيع من الالتزام المستمر — لا من الأسبوع الأول.",
+    "faq_json": [
+     {
+      "answer": "احسب معدل أيضك ثم اطرح 300–500 سعرة، اضرب وزنك في 1.8–2.2 للبروتين، اجعل الدهون 0.8–1 جم/كجم، واملأ الباقي نشويات حول التمرين — مثال محسوب كامل داخل المقال لرياضي 75 كجم.",
+      "question": "كيف أبدأ نظام غذائي لحرق الدهون بالماكرو من الصفر؟"
+     },
+     {
+      "answer": "لا نسبة واحدة تناسب الجميع — ابدأ بالبروتين (1.8–2.2 جم/كجم) ثم الدهون (0.8–1 جم/كجم) كأرضية، واجعل النشويات الباقي المتغير. النسب المئوية الجاهزة (مثل 40/30/30) أدوات تقدير لا قوانين.",
+      "question": "ما أفضل نسب الماكرو لحرق الدهون؟"
+     },
+     {
+      "answer": "لا — عدد الوجبات قرار راحة والتزام: 3–4 وجبات توزع البروتين (30–40 جم للوجبة) تكفي. الإجمالي اليومي هو ما يقرر الحرق، لا تكرار الوجبات.",
+      "question": "هل يجب أن آكل خمس مرات يوميًا لأحرق الدهون؟"
+     },
+     {
+      "answer": "لا — العجز السعري هو الحاكم في الحالين. التجارب على متدربي المقاومة تظهر حفاظًا كاملًا على القوة والعضلة مع 16/8 إذا اكتمل البروتين، فالقرار عملي: إن سهّل التزامك فهو أداة صالحة.",
+      "question": "هل الصيام المتقطع يحرق دهونًا أكثر من النظام العادي؟"
+     },
+     {
+      "answer": "لا — هو راحة حسابية لا شرط غذائي: وجبة عربية عادية بروتينها 30–40 جرامًا تعمل العمل نفسه. استعمله حيث يصعب عليك إكمال الإجمالي اليومي من الطعام فقط.",
+      "question": "هل المسحوق (الواي) ضروري في نظام الحرق؟"
+     },
+     {
+      "answer": "قس أسبوعيًا بمتوسط ثلاث صباحات: النزول الصحي 0.5–1% من الوزن أسبوعيًا، والفرق البصري (الخصر والصور) يظهر عادة بعد 3–4 أسابيع من الالتزام المستمر — لا من الأسبوع الأول.",
+      "question": "كم أسبوعًا قبل أن أرى نتيجة النظام؟"
+     }
+    ]
+   }
+  },
+  {
+   "slug": "calculate-maintenance-calories-muscle-gain",
+   "language": "en",
+   "mode": "rewrite",
+   "expect_old_words": [
+    969,
+    1089
+   ],
+   "fix": {
+    "focus_keyword": "calculate maintenance calories muscle gain",
+    "category": "nutrition",
+    "excerpt": "Find your true maintenance calories for muscle gain: the equation comparison that settled Mifflin-St Jeor, the activity-multiplier trap, and the two-week weight-trend protocol that validates any number you calculate.",
+    "meta_title": "How to Calculate Maintenance Calories for Muscle Gain",
+    "meta_description": "Maintenance calories calculated then verified: Mifflin-St Jeor vs the alternatives, activity multipliers fixed, TEF math, and a 2-week validation protocol.",
+    "keywords": [
+     "best creatine monohydrate for women over 40",
+     "intermittent fasting 16/8 meal plan for fat loss",
+     "how to improve sleep quality for muscle recovery",
+     "optimal rest interval for hypertrophy training",
+     "best vegan omega-3 supplement for athletes",
+     "how to periodize training for powerlifting",
+     "how to track micronutrients without apps",
+     "best pre workout supplement for high blood pressure",
+     "how to prevent overtraining symptoms",
+     "calorie calculator spreadsheet template"
+    ],
+    "content": "To calculate maintenance calories for muscle gain, estimate with the Mifflin-St Jeor equation multiplied by a realistic activity factor, then verify the number with a two-week weight-trend protocol before adding your surplus — because the equation gets you within about 10%, and your validation loop closes the remaining gap. Once maintenance is confirmed, a modest surplus of 250–300 kcal (with protein at 1.6–2.2 g/kg) supports lean gain with minimal fat.\n\nThe systematic review that compared predictive equations ([Frankenfield and colleagues](https://pubmed.ncbi.nlm.nih.gov/15883556/)) concluded Mifflin-St Jeor is the most reliable choice for healthy adults — which settles the \"which formula\" question most of this article's mistakes revolve around. Here is the full method, worked with real numbers.\n\n## Step 1: BMR with Mifflin-St Jeor — the settled formula\n\nThe equation itself ([Mifflin and colleagues](https://pubmed.ncbi.nlm.nih.gov/2305711/)):\n\n- **Men:** 10 × weight (kg) + 6.25 × height (cm) − 5 × age + 5\n- **Women:** 10 × weight (kg) + 6.25 × height (cm) − 5 × age − 161\n\nWorked example — a 75 kg, 178 cm, 28-year-old male: 10×75 + 6.25×178 − 5×28 + 5 = **1,728 kcal/day** BMR. Generic calculators still defaulting to the older Harris-Benedict equation tend to misestimate, especially at higher muscle masses — one of the six classic mistakes, and now fixed by the equation-review verdict above.\n\n## Step 2: The activity multiplier trap\n\nThe multiplier is where calculated maintenance goes wrong most often. Applying 1.2 (\"sedentary\") while training five days a week and walking 8,000 steps leaves you 400–600 kcal short; applying 1.725 for one lifting session plus a desk job overshoots the other way.\n\n| Real weekly activity | Multiplier | 75 kg example (BMR 1,728) |\n|---|---|---|\n| Desk job, 2–3 sessions, low steps | 1.4–1.5 | 2,419–2,592 |\n| Desk job, 4–5 sessions, 8k steps | 1.55–1.6 | 2,678–2,765 |\n| Active job + 4–5 sessions | 1.725 | 2,981 |\n| Active job + endurance training | 1.8–1.9 | 3,110–3,283 |\n\nTwo honesty rules: every equation carries roughly ±10% individual error, and deliberate cardio sessions are cleaner added as their measured cost (a 30-minute easy run ≈ 300–400 kcal for our example) than baked into the multiplier. Start at the [calorie calculator](/tools/calorie-calculator) with the conservative row, then let Step 3 correct it.\n\n## Step 3: The two-week validation protocol — where you actually \"calculate\" maintenance\n\nThis step is what separates a maintained number from a guessed one:\n\n1. Eat the calculated figure daily for 14 days, tracked honestly (including weekends — under-logging on one day erases the whole adjustment).\n2. Weigh yourself every morning after the bathroom, before food or drink.\n3. Take week-1 average and week-2 average. Stable weight = you found maintenance. Falling >0.3 kg/week = add 150–200 kcal. Rising >0.3 kg/week = cut 150–200 kcal.\n4. Iterate until two consecutive weeks sit inside ±0.3 kg.\n\nOnly now is the number truly yours — physiology beats arithmetic.\n\n## Step 4: TEF and protein — the thermic advantage\n\nFood digestion itself burns energy, and the hierarchy is well documented ([Westerterp's review of diet-induced thermogenesis](https://pubmed.ncbi.nlm.nih.gov/15507147/)): protein costs roughly 20–30% of its own energy, carbohydrate 5–10%, fat 0–3%. Raising protein from 1.6 to 2.2 g/kg therefore nudges daily expenditure up by only ~30–55 kcal while doing double duty for muscle: the meta-analytic ceiling for hypertrophy support sits around 1.6 g/kg with benefit up to ~2.2 ([Morton and colleagues](https://pubmed.ncbi.nlm.nih.gov/28698222/)).\n\nPractical settings for our 75 kg example: protein 150–165 g/day (600–660 kcal), fat 0.8–1 g/kg (540–675 kcal), carbohydrate fills the remainder — distribute it with the [macro calculator](/tools/macro-calculator), across 3–5 feedings of 30–40 g protein each.\n\n## Step 5: Muscle really does raise maintenance — honestly sized\n\nClassic physiology established skeletal muscle metabolism as a major determinant of resting energy expenditure ([Zurlo and colleagues](https://pubmed.ncbi.nlm.nih.gov/2243122/)). The popular exaggeration (\"each kg of muscle burns 50+ kcal/day\") overstates the per-kg figure, but the direction is real and compounding: as you gain muscle and body weight, your old maintenance number drifts into a deficit.\n\nThe rule that keeps you honest: **recalculate after every 3–4 kg of body-weight change** (or every 8–10 weeks of gaining), rerunning Steps 1–3. Skipping this is the mistake behind the classic \"gained great for two months, then stalled without changing anything.\"\n\n## Step 6: From maintenance to muscle gain\n\nWith maintenance validated, enter your surplus deliberately:\n\n| Goal | Daily intake | Expected trend |\n|---|---|---|\n| Lean gain (most lifters) | Maintenance + 250–300 | +0.25–0.5 kg/month, minimal fat |\n| Faster gain / hardgainer | Maintenance + 400–500 | +0.5–1 kg/month, more fat risk |\n| Revisit after 8–10 weeks | Re-run Steps 1–3 | Number rises with new body weight |\n\nThe companion decisions that protect the gain: progressive training volume, 7–9 hours of sleep ([CDC sleep guidance](https://www.cdc.gov/sleep/about/index.html)), and — when you eventually diet — the volume-adjusted approach in our [training-during-a-cut guide](/blog/adjust-training-volume-cut-muscle-retention). For the mirror-image calculation (deficit plus surplus in one plan), see [how many calories to gain muscle and lose fat](/blog/how-many-calories-to-gain-muscle-and-lose-fat); for the full bulking-and-cutting fueling framework, our [daily calories for fat loss and bulking guide](/blog/calculate-daily-calories-fuel-fat-loss-bulking).\n\n## Frequently Asked Questions\n\n### How do I calculate my maintenance calories?\n\nCalculate BMR with Mifflin-St Jeor, multiply by an honest activity factor (1.4–1.7 for most trainees), then validate with a two-week weight-trend protocol and adjust by 150–200 kcal until your weekly average is stable.\n\n### Which BMR formula is most accurate?\n\nMifflin-St Jeor. The systematic review comparing predictive equations in healthy adults found it more reliable than Harris-Benedict and most alternatives — and it needs only weight, height, age, and sex.\n\n### How do I verify my calculated maintenance number?\n\nEat the calculated intake for two weeks, weigh yourself every morning, and compare weekly averages: stable weight confirms maintenance; drift beyond ±0.3 kg per week means adjusting calories by 150–200 and re-testing.\n\n### How many calories above maintenance should I eat for muscle gain?\n\nA surplus of 250–300 kcal over verified maintenance supports lean gains of 0.25–0.5 kg per month for most lifters; hardgainers can push 400–500 with more fat-gain risk.\n\n### Does building muscle raise my maintenance calories?\n\nYes — skeletal muscle is a major determinant of resting energy expenditure — but the popular per-kg figures are exaggerated. Recalculate after every 3–4 kg of body-weight change and your number will track reality.",
+    "faq_json": [
+     {
+      "answer": "Calculate BMR with Mifflin-St Jeor, multiply by an honest activity factor (1.4–1.7 for most trainees), then validate with a two-week weight-trend protocol and adjust by 150–200 kcal until your weekly average is stable.",
+      "question": "How do I calculate my maintenance calories?"
+     },
+     {
+      "answer": "Mifflin-St Jeor. The systematic review comparing predictive equations in healthy adults found it more reliable than Harris-Benedict and most alternatives — and it needs only weight, height, age, and sex.",
+      "question": "Which BMR formula is most accurate?"
+     },
+     {
+      "answer": "Eat the calculated intake for two weeks, weigh yourself every morning, and compare weekly averages: stable weight confirms maintenance; drift beyond ±0.3 kg per week means adjusting calories by 150–200 and re-testing.",
+      "question": "How do I verify my calculated maintenance number?"
+     },
+     {
+      "answer": "A surplus of 250–300 kcal over verified maintenance supports lean gains of 0.25–0.5 kg per month for most lifters; hardgainers can push 400–500 with more fat-gain risk.",
+      "question": "How many calories above maintenance should I eat for muscle gain?"
+     },
+     {
+      "answer": "Yes — skeletal muscle is a major determinant of resting energy expenditure — but the popular per-kg figures are exaggerated. Recalculate after every 3–4 kg of body-weight change and your number will track reality.",
+      "question": "Does building muscle raise my maintenance calories?"
+     }
+    ]
+   }
+  },
+  {
+   "slug": "carb-loading-plan-competition",
+   "language": "ar",
+   "mode": "rewrite",
+   "expect_old_words": [
+    1041,
+    1161
+   ],
+   "fix": {
+    "focus_keyword": "تحميل الكربوهيدرات قبل المنافسة",
+    "category": "nutrition",
+    "excerpt": "بروتوكول تحميل الكربوهيدرات قبل المنافسة بالأرقام المقيسة: من يستفيد فعلًا، كم جرامًا لكل كيلوجرام، جدول وجبات منخفض الألياف، وأخطاء اليوم الأخير التي تفسد المخزون.",
+    "meta_title": "تحميل الكربوهيدرات قبل المنافسة: الخطة المقيسة خطوة بخطوة",
+    "meta_description": "خطة تحميل الكربوهيدرات بالأرقام: 8-12 جرامًا لكل كجم قبل 48-72 ساعة، وجبات منخفضة الألياف، تدرج التدريب، والأخطاء التي تفسد يوم المنافسة.",
+    "keywords": [
+     "أفضل مصادر الكربوهيدرات المعقدة للرياضيين",
+     "كم جرام كربوهيدرات يوميًا في مرحلة التحميل",
+     "كيفية حساب نسبة الكربوهيدرات إلى البروتين",
+     "أفضل مكملات ما قبل التمرين لزيادة القوة دون كافيين",
+     "توزيع الوجبات لتجنب اضطراب المعدة",
+     "خطط وجبات تحميل الكربوهيدرات للسباقات",
+     "نصائح لتخزين الأرز والبطاطا بشكل صحيح",
+     "كيف أختار مكملات الكربوهيدرات السريعة الامتصاص"
+    ],
+    "content": "لخطة تحميل الكربوهيدرات قبل المنافسة: ابدأ قبل 48 إلى 72 ساعة من الحدث، ارفع استهلاكك إلى 8-12 جرام كربوهيدرات لكل كيلوجرام من وزن جسمك يوميًا، وقلل حجم التدريب في الوقت نفسه حتى يصل خط البداية بمخازن جليكوجين ممتلئة. ركز على مصادر سهلة الهضم ومنخفضة الألياف — أرز أبيض، بطاطا مهروسة، معكرونة بيضاء، موز ناضج، عسل — ووزع الكمية على 5-6 وجبات صغيرة كي تملأ المخازن دون أن تثقل معدة يوم الأداء.\n\nلكن قبل الجدول والتفاصيل، سؤال أهم من كل شيء: هل تحتاج التحميل أصلًا؟ الإجابة المقيسة في الفقرة التالية تحميك من أسبوع تعب وتخزين بلا فائدة.\n\n## من يستفيد من التحميل فعلًا؟ الحكم المقيس\n\nمراجعة العلوم الرياضية للتحميل الكربوهيدراتي حسمت المسألة بدقة: [هالي وزملاؤه](https://pubmed.ncbi.nlm.nih.gov/9291549/) وجدوا أن رفع الجليكوجين فوق مستواه الطبيعي **لا يفيد** في المجهود الشديد الأقصى الأقصر من خمس دقائق (رفع أثقال، سباقات سرعة قصيرة)، ولا في الجري أو الدراجة المعتدلة لمدة 60-90 دقيقة لأن العضلات تحتفظ بجليكوجين كبير في نهايتها. الفائدة الحقيقية تظهر في **الأحداث التي تتجاوز 90 دقيقة** — ماراثون، ترايثلون، مباريات كرة متعددة، يوم بطولة متعدد الجولات — حيث يؤجل التحميل الإنهاك بنحو خمس الوقت الإضافي تقريبًا قبل نفاد الوقود الحرج.\n\n| نوع نشاطك | هل التحميل مفيد؟ |\n|---|---|\n| رفع أثقال وسباقات قوة قصيرة | لا — مخازنك العادية كافية |\n| تمرين معتدل 60-90 دقيقة | لا — وفرة بلا مردود |\n| كارديو/جري/دراجة أكثر من 90 دقيقة | نعم — يؤجل الإنهاك بوضوح |\n| بطولة متعددة الجولات في يوم واحد | نعم — الوقود هو العامل الحاسم |\n\nإن كان نشاطك من الفئة الأخيرة فتابع القراءة؛ إن لم يكن فمقالات مثل [النظام الغذائي الأسبوعي المتوازن](/ar/blog/weekly-fat-burning-diet-plan) أقرب لهدفك.\n\n## البروتوكول بالأرقام: كم تحتاج يوميًا؟\n\nبيان الجمعية الدولية للتغذية الرياضية يحدد أن تعظيم مخازن الجليكوجين يتحقق بنظام عالي الكربوهيدرات بمقدار [8-12 جرامًا لكل كيلوجرام من وزن الجسم يوميًا](https://pubmed.ncbi.nlm.nih.gov/28919842/)، وتظهر أبحاث إعادة بناء الجليكوجين أن الكمية الموزعة على اليوم كله أهم من وجبة واحدة ضخمة. عمليًا احسب وزنك واضرب:\n\n| وزنك | النطاق اليومي (8-12 غ/كجم) | مثال يوم كامل |\n|---|---|---|\n| 60 كجم | 480-720 غ كربوهيدرات | 10-12 كوب أرز مطبوخ موزعة |\n| 70 كجم | 560-840 غ | 12-14 كوب أرز أو ما يعادله |\n| 80 كجم | 640-960 غ | 14-16 كوب أو مزيج بمشروبات كربوهيدرات |\n\nاستخدم [حاسبة الماكروز](/ar/tools/macro-calculator) لتقدير نقطة انطلاقك ثم وزع على الوجبات — الأرقام أعلاه كبيرة عمدًا: هذا هو معنى «التحميل»، ولهاذا يحتاج خفض التدريب المصاحب حتى لا تحرق ما تخزنه.\n\n## مصادر عملية منخفضة الألياف: مطبخك في الأيام الثلاثة\n\nالقاعدة الغذائية للتحميل: كربوهيدرات عالية الامتصاص وألياف قليلة ودهون محدودة — الألياف والدهون تبطئ الهضم وتزيد غازات يوم المنافسة. جدول المطبخ العملي:\n\n| المصدر | الحصة | كربوهيدرات تقريبية |\n|---|---|---|\n| أرز أبيض مطبوخ | كوب (160 غ) | 45 غ |\n| معكرونة بيضاء مطبوخة | كوب | 43 غ |\n| بطاطا مهروسة | حبة متوسطة | 37 غ |\n| خبز توست أبيض | شريحتان | 28 غ |\n| موز ناضج | حبة | 27 غ |\n| تمر منزوع النوى | 3 حبات | 54 غ |\n| عسل | ملعقة كبيرة | 17 غ |\n| مشروب كربوهيدرات رياضي | 500 مل | 30-45 غ |\n\nاجعل البروتين معتدلًا (1.2-1.6 غ/كجم يكفي في هذه الأيام — راجع [دليل حساب السعرات والبروتين](/ar/blog/calculate-daily-calories-weight-loss-muscle-gain))، واحتفظ بالدهون عند ملعقة زيت زيتون أو أفوكادو صغير يوميًا لتسهيل الطبخ فقط.\n\n## توزيع يوم التحميل: 5-6 محطات وجبات\n\nمثال لرياضي 70 كجم يستهدف نحو 700 غ (10 غ/كجم) موزعة:\n\n- **الفطور:** أرز مهروس بالحليب والموز والعسل + بيضتان (≈120 غ كربوهيدرات)\n- **منتصف الصباح:** توست أبيض بالمربى + مشروب كربوهيدرات (≈90 غ)\n- **الغداء:** معكرونة بيضاء بصدور دجاج + بطاطا مهروسة (≈150 غ)\n- **قبل التمرين الخفيف بساعتين:** موز وعسل وتوست (≈70 غ)\n- **أثناء/بعد التمرين الخفيف:** مشروب كربوهيدرات بكهارل (≈45 غ)\n- **العشاء المبكر:** أرز بسمك مشوي وخضار مسلوق مهروس (≈140 غ)\n- **قبل النوم:** شوفان فوري سريع بماء أو حليب + تمر (≈85 غ)\n\nإن ظهر انتفاخ أو ثقل، صغّر الوجبة وزد عددها إلى سبع أو ثمن محطات بدل تكبيرها.\n\n## الأيام الأخيرة: خفض التدريب وحفظ المخزون\n\nفي يوم التحميل الأخير اجعل التدريب جلسة إيقاظ خفيفة فقط (20-30 دقيقة شدة منخفضة) أو راحة كاملة حسب جدول منافستك — فائض الكربوهيدرات الذي لا يُحرق يُخزن. والخبر الجيد الموثقة: [تجربة جوفورث وزملائه](https://pubmed.ncbi.nlm.nih.gov/9029236/) قاست استمرار الجليكوجين فائق التعويض في المتدربين بعد التحميل، فالمخزون لا يتبخر بليلة — لا داعي لأكل إضافي اضطراري ليلة المنافسة.\n\nولتحويل الأرقام إلى صورة كاملة: رياضي 70 كجم يستهدف 10 غ/كجم (700 غ كربوهيدرات) يتناول خلال يوم تحميل نموذجي نحو 3,400-3,600 سعرة (الكربوهيدرات 2,800 سعرة + بروتين ~100 غ 400 سعرة + دهون معتدلة 200-400 سعرة)، ووزن الجليكوجين المائي معه يرفع وزنه 1-2 كجم. جدول التدرج للأيام الثلاثة عمليًا:\n\n| اليوم | التدريب | الكربوهيدرات | ملاحظة |\n|---|---|---|---|\n| -3 (قبل المنافسة بثلاثة) | جلسة عادية أخيرة مكثفة | 6-8 غ/كجم | آخر جلسة حقيقية |\n| -2 | 30 دقيقة خفيفة | 8-10 غ/كجم | ابدأ تقليل الألياف |\n| -1 | إيقاظ 20 دقيقة أو راحة | 10-12 غ/كجم | مصادر بيضاء نقية + ماء وملح معتدل |\n| يوم المنافسة | — | وجبة قبل الحدث بـ3-4 ساعات: 1-2 غ/كجم سهلة الهضم + وجبة أخيرة قبل ساعة: 0.5 غ/كجم | كل مألوف ومجرب فقط |\n\n## إذا ظهر اضطراب معدي أثناء التحميل\n\nالسبب دائمًا واحد من ثلاثة: وجبة أكبر من قدرة المعدة، ألياف أعلى من المعتاد، أو دهون مضافة للنكهة. الحل بالترتيب: صغّر الوجبة الواحدة إلى 60-80 غ كربوهيدرات وزد عدد المحطات إلى 7-8؛ استبدل أي مصدر بقشور أو حبوب كاملة بمصدر أبيض مقشور؛ احذف الزبدة والقشدة والزيت الزائد. فإن استمر الانزعاج أضف مشروب كربوهيدرات سائل ليحل محل وجبة صلبة أو اثنتين — السوائل تمر أسرع وتحمل نفس الوقود.\n\n## أخطاء يوم المنافسة التي تُبطل الأسبوع\n\n1. **تجربة طعام جديد صباح المنافسة:** كل ما تأكله يوم الحدث يجب أن تكون جربته في تدريب سابق — بلا استثناء.\n2. **رفع الألياف بدل الكربوهيدرات:** خبز الحبوب الكاملة والفول في اليوم الأخير = غازات وثقل.\n3. **دهون عالية للنكهة:** زبدة وقشدة وصوصات في الوجبات الكبرى تبطئ إفراغ المعدة.\n4. **إهمال الكهارل مع الماء:** كل جرام جليكوجين يسحب ماءً، فأضف صوديومًا معتدلًا (مرق، ملح طعام عادي) وموزًا أو تمرًا للبوتاسيوم.\n5. **الوزن زاد فتخيفك النفسية:** زيادة 1-2 كجم في الأيام الثلاثة هي ماء الجليكوجين نفسه — علامة نجاح التحميل لا فشل.\n\n## الأسئلة الشائعة\n\n### كم يومًا قبل المنافسة أبدأ تحميل الكربوهيدرات؟\n\nقبل 48 إلى 72 ساعة للمنافسات التي تتجاوز 90 دقيقة، مع تقليل التدريب تدريجيًا في الفترة نفسها حتى يُخزن الفائض بدل حرقه.\n\n### هل تحميل الكربوهيدرات مفيد لكل الرياضيين؟\n\nلا — المقيس أنه لا يفيد مجهود القوة الأقصر من خمس دقائق ولا التمرين المعتدل حتى 90 دقيقة؛ فائدته الحقيقية في الأحداث الأطول من 90 دقيقة.\n\n### كم جرام كربوهيدرات أحتاج يوميًا أثناء التحميل؟\n\nمن 8 إلى 12 جرامًا لكل كيلوجرام من وزن الجسم يوميًا: رياضي 70 كجم يستهدف 560-840 غ موزعة على 5-6 وجبات.\n\n### لماذا تُفضل الأطعمة منخفضة الألياف في فترة التحميل؟\n\nالألياف تبطئ الهضم وتزيد الغازات وثقل المعدة، وبالدمج مع دهون أقل يمر الطعام أسرع فتصل الكمية الكبيرة من الكربوهيدرات دون اضطراب معوي يوم الأداء.\n\n### هل يزيد وزني أثناء التحميل وهل ذلك مقلق؟\n\nيزيد 1-2 كجم غالبًا بسبب الماء المرتبط بالجليكوجين المخزن — وهي علامة أن التحميل يعمل، وينزل الوزن تلقائيًا بعد الحدث بأيام.",
+    "faq_json": [
+     {
+      "answer": "قبل 48 إلى 72 ساعة للمنافسات التي تتجاوز 90 دقيقة، مع تقليل التدريب تدريجيًا في الفترة نفسها حتى يُخزن الفائض بدل حرقه.",
+      "question": "كم يومًا قبل المنافسة أبدأ تحميل الكربوهيدرات؟"
+     },
+     {
+      "answer": "لا — المقيس أنه لا يفيد مجهود القوة الأقصر من خمس دقائق ولا التمرين المعتدل حتى 90 دقيقة؛ فائدته الحقيقية في الأحداث الأطول من 90 دقيقة.",
+      "question": "هل تحميل الكربوهيدرات مفيد لكل الرياضيين؟"
+     },
+     {
+      "answer": "من 8 إلى 12 جرامًا لكل كيلوجرام من وزن الجسم يوميًا: رياضي 70 كجم يستهدف 560-840 غ موزعة على 5-6 وجبات.",
+      "question": "كم جرام كربوهيدرات أحتاج يوميًا أثناء التحميل؟"
+     },
+     {
+      "answer": "الألياف تبطئ الهضم وتزيد الغازات وثقل المعدة، وبالدمج مع دهون أقل يمر الطعام أسرع فتصل الكمية الكبيرة من الكربوهيدرات دون اضطراب معوي يوم الأداء.",
+      "question": "لماذا تُفضل الأطعمة منخفضة الألياف في فترة التحميل؟"
+     },
+     {
+      "answer": "يزيد 1-2 كجم غالبًا بسبب الماء المرتبط بالجليكوجين المخزن — وهي علامة أن التحميل يعمل، وينزل الوزن تلقائيًا بعد الحدث بأيام.",
+      "question": "هل يزيد وزني أثناء التحميل وهل ذلك مقلق؟"
+     }
+    ]
+   }
+  },
+  {
+   "slug": "calculate-daily-calories-weight-loss-muscle-gain",
+   "language": "ar",
+   "mode": "rewrite",
+   "expect_old_words": [
+    1106,
+    1226
+   ],
+   "fix": {
+    "focus_keyword": "حساب السعرات اليومية",
+    "category": "nutrition",
+    "excerpt": "طريقة حساب السعرات اليومية بدقة خطوة بخطوة: معادلة ميفلين-ست جيور، معامل النشاط، عجز القطع وفائض التضخيم، وتوزيع الماكروز بمثال محسوب كامل.",
+    "meta_title": "حساب السعرات اليومية بدقة: دليل خطوة بخطوة محسوب",
+    "meta_description": "احسب سعراتك اليومية بدقة: معادلة ميفلين-ست جيور، معاملات النشاط، عجز 15-20% للخسارة وفائض 10-15% للتضخيم مع مثال كامل وتوزيع ماكروز محسوب.",
+    "keywords": [
+     "كم جرام بروتين يحتاج الجسم يومياً لبناء العضلات",
+     "جدول تغذية لبناء العضلات للمبتدئين",
+     "أفضل تمارين حرق دهون البطن في المنزل",
+     "كيفية حساب العجز السعري لخسارة الوزن",
+     "نصائح لتجنب فقدان العضلات أثناء حرق الدهون",
+     "متى يجب تناول البروتين واي للعضلات",
+     "أفضل وقت للتمرين لبناء العضلات صباحاً أم مساءً",
+     "كم ساعة نوم تحتاجها لتعزيز بناء العضلات",
+     "أكل قبل وبعد التمرين بكمية وكام ساعة",
+     "مكملات زيادة الوزن للنحاف الفعّالة"
+    ],
+    "content": "الإجابة العملية: سعراتك اليومية = معدل أيضك الأساسي × معامل نشاطك، ثم تطرح 15-20% لخسارة الدهون أو تضيف 10-15% لبناء العضلات، مع ضبط الرقم كل أسبوعين بما يقوله الميزان ومحيط الخصر لا بما تقوله التطبيقات. احسب معادلة ميفلين-ست جيور — [المعادلة المرجعية](https://pubmed.ncbi.nlm.nih.gov/2305711/) التي تفوقت على هاريس-بندكت في الدقة — ثم سِر مع المثال المحسوب في هذا الدليل حتى الرقم النهائي.\n\n## الخطوة الأولى: احسب معدل الأيض الأساسي (BMR)\n\nمعدل الأيض الأساسي هو ما يحرقه جسمك في راحة تامة، وهو أساس كل حساب بعده. معادلة ميفلين-ست جيور أثبتت دقة أعلى من هاريس-بندكت لدى عامة الناس:\n\n- للرجال: (10 × الوزن بالكيلوغرام) + (6.25 × الطول بالسنتيمتر) − (5 × العمر بالسنوات) + 5\n- للنساء: (10 × الوزن بالكيلوغرام) + (6.25 × الطول بالسنتيمتر) − (5 × العمر بالسنوات) − 161\n\nمثالنا المرجعي طوال المقال: رجل 30 عامًا، وزنه 85 كيلوغرامًا، طوله 178 سنتيمترًا، وظيفة مكتبية يتدرب فيها 4 أيام أسبوعيًا.\n\n- BMR = (10 × 85) + (6.25 × 178) − (5 × 30) + 5 = 850 + 1112.5 − 150 + 5 = **1818 سعرة**\n\nلنفهم قاعدة الحساب ذاتها بعمق أكبر — أصل المعادلة وطريقة استخدام حاسبة الموقع — راجع [دليل حاسبة معدل الأيض الأساسي للرياضيين](/ar/blog/bmr-calculator-athletes).\n\n## الخطوة الثانية: اضرب في معامل النشاط (TDEE)\n\nمعامل النشاط يحول الأساس إلى إنفاق يومي واقعي، واختياره الصادق أهم من دقة المعادلة نفسها:\n\n| مستوى النشاط | الوصف | المعامل |\n|---|---|---|\n| خامل | عمل مكتبي بلا تمرين | 1.2 |\n| خفيف | تمرين 1-3 أيام أسبوعيًا | 1.375 |\n| متوسط | تمرين 3-5 أيام أسبوعيًا | 1.55 |\n| عالٍ | تمرين 6-7 أيام أو عمل بدني | 1.725 |\n| عالٍ جدًا | تدريب مرتين يوميًا أو رياضة تنافسية | 1.9 |\n\nقاعدة الصدق: احسب خطواتك الفعلية وأنشطة وظيفتك قبل الاختيار. وظيفة مكتبية مع 4 أيام تمرين تعني «متوسط» (1.55) لا «عالٍ» — المبالغة هنا أصل فشل خطط كاملة.\n\nمثالنا: 1818 × 1.55 = **2818 سعرة يوميًا للثبات** (TDEE).\n\n## الخطوة الثالثة: عجز القطع لخسارة الدهون (15-20%)\n\nالعجز المعتدل يأخذ الدهون ويحفظ العضلات، والعجز المتوحش يحرقهما معًا:\n\n- عجز 15%: 2818 × 0.85 ≈ **2395 سعرة** — البداية الموصى بها\n- عجز 20%: 2818 × 0.80 ≈ **2254 سعرة** — الحد الأقصى العملي لمن لديه دهون أقل\n\nعجز يتجاوز 25% يدفع الجسم لتضحية متزايدة بالكتلة العضلية، خصوصًا مع بروتين غير كافٍ. ولأن حفظ العضلات أثناء العجز مسألة بروتين بالدرجة الأولى، حدد [التحليل التجميعي لجرعات البروتين](https://pubmed.ncbi.nlm.nih.gov/28698222/) حده الفعال قرب 1.6 جرام لكل كيلوغرام يوميًا لدى ممارسي المقاومة — والوصول إليه غير المشروط أولًا.\n\n**قواعد الضبط الأسبوعي:**\n\n1. زن نفسك صباحًا نفس اليوم أسبوعيًا بعد الحمام وقبل الأكل.\n2. الوزن ثابت أسبوعين متتاليين → قلل 100-150 سعرة أو أضف جلسة مشي.\n3. الوزن ينزل أكثر من كيلوغرام أسبوعيًا بعد الأسابيع الأولى → أضف 100-150 سعرة (أنت أسرع من اللازم على العضلات).\n4. القوة تتراجع في التمرين → راجع البروتين أولًا قبل لمس السعرات.\n\n## الخطوة الرابعة: فائض التضخيم النظيف (10-15%)\n\nالفائض الضخم يشتري دهونًا بمال عضلات، والفائض المعتدل يبني بهدوء:\n\n- فائض 10%: 2818 × 1.10 ≈ **3100 سعرة** — لمن تجاوز سنتين تدريب أو محيط خصر حساس\n- فائض 15%: 2818 × 1.15 ≈ **3241 سعرة** — للمبتدئ النحيف ذي الشهية الجيدة\n\nراقب محيط الخصر أسبوعيًا مع الوزن: زيادة محيط تتجاوز سنتيمترًا واحدًا شهريًا تعني أن الفائض أسرع من قدرة العضلات على استيعابه — قلل 100-150 سعرة.\n\n## الخطوة الخامسة: وزع الماكروز على هدفك\n\nوزع بروتينك أولًا (الأولوية)، ثم دهونك (الحد الأدنى الهرموني)، والكربوهيدرات تأخذ الباقي. لمثال القطع 2395 سعرة ووزن 85 كيلوغرامًا:\n\n| المغذي | القاعدة | الكمية | السعرات |\n|---|---|---|---|\n| بروتين | 1.8 جم/كجم | 153 جم | 612 |\n| دهون | 0.8 جم/كجم | 68 جم | 612 |\n| كربوهيدرات | الباقي | 293 جم | 1171 |\n\nكل جرام بروتين وكربوهيدرات = 4 سعرات، وكل جرام دهون = 9. احسب توزيعك الشخصي أسرع عبر [حاسبة الماكروز](/ar/tools/macro-calculator)، أو اسحب أرقامك الجاهزة أولًا من [حاسبة السعرات](/ar/tools/calorie-calculator). ولمن يريد الفهم الكامل للقرارات — بروتين أعلى أثناء القطع، دهون أدنى أثناء التضخيم — فالتفصيل المنهجي في [دليل السعرات والماكروز للعضلات والدهون](/ar/blog/calorie-macro-guide-muscle-fat).\n\n## مثال ثانٍ: امرأة في الثامنة والعشرين بهدف الحفاظ على العضلات أثناء التنشيف\n\nالحساب نفسه يجيب عن الحالة الأشهر لدى المتدربات: وزن 64 كيلوغرامًا، طول 165 سنتيمترًا، تمرين مقاومة أربعة أيام مع مشي يومي خفيف (نشاط متوسط 1.55):\n\n- BMR = (10 × 64) + (6.25 × 165) − (5 × 28) − 161 = 640 + 1031.25 − 140 − 161 = **1370 سعرة**\n- احتياج الثبات: 1370 × 1.55 ≈ **2124 سعرة**\n- عجز التنشيف المعتدل 15%: 2124 × 0.85 ≈ **1805 سعرة**\n- البروتين: 64 × 1.8 ≈ 115 جرامًا يوميًا موزعة على أربع وجبات (29 جرامًا لكل وجبة تقريبًا)\n- الباقي للتوزيع: دهون 55 جرامًا (495 سعرة) وكربوهيدرات نحو 212 جرامًا (850 سعرة)\n\nلاحظ أن الرقم النهائي لا يزال أعلى من «١٢٠٠ سعرة» الشائعة في الأنظمة الجاهزة — فهي عتبة تفقد الوزن سريعًا ثم تفقد الالتزام أسرع، والعجز المحسوب يحمي الدورة الشهرية والطاقة والعضلات معًا.\n\n## جدول القرار الأسبوعي: ماذا أفعل بكل قراءة؟\n\n| قراءة الأسبوع (نفس الظروف) | التفسير الأرجح | القرار الصحيح |\n|---|---|---|\n| نزول 0.3-0.8 كجم ومحيط الخصر ثابت أو أقل | على المسار الصحيح تمامًا | لا تغيير — استمر |\n| نزول أكثر من 1.2 كجم (بعد الأسبوعين الأولين) | عجز أكبر من اللازم أو فقد عضل | أضف 150-200 سعرة وراجع البروتين |\n| ثبات كامل مع خصر ثابت | احتياج الثبات انخفض أو التقدير خذل | اطرح 150 سعرة أو أضف جلسة مشي |\n| ثبات الوزن مع نقص الخصر | إعادة تركيب جسدي ناجحة | احتفل وواصل — الميزان لا يرى الدهون |\n| زيادة الوزن مع زيادة الخصر | فائض أو تسريب سعري | راجع السعرات السائلة والمناسبات أولًا |\n\n## الأخطاء الخمسة التي تكسر الحساب\n\n1. **تقدير النشاط بالمشاعر:** «أنا نشيط» بينما الخطوات أقل من 5000 يوميًا.\n2. **إغفال السعرات السائلة:** مشروب واحد يوميًا يمحو عجزًا كاملًا قدره 250 سعرة.\n3. **الثقة في أوزان التقدير البصري:** 50 جرامًا شوفانًا في الميزان غير «كوب شوفان» بالعين — وزن أسبوعًا واحدًا بالكيلو يكفي لتصحيح عينك مدى الحياة.\n4. **تغيير الأرقام كل ثلاثة أيام:** الحساب يحتاج أسبوعين من الالتزام قبل الحكم.\n5. **تتبع الكمال أو الانقطاع:** يوم انفلات لا يبطل الأسبوع — سجله بواقعيته وواصل؛ مجموع الأسبوع هو ما يحكم.\n\n## الأسئلة الشائعة\n\n**كم سعرة أحتاج يوميًا لخسارة الوزن؟**\n\nاحسب احتياج الثبات (BMR × معامل النشاط) ثم اطرح 15-20% — في مثالنا 2395 سعرة تقريبًا — وراقب الميزان أسبوعيًا واضبط حتى ينزل 0.5% من وزنك أسبوعيًا.\n\n**هل معادلة ميفلين-ست جيور دقيقة للجميع؟**\n\nهي الأدق للعامة من المتاح حسابه يدويًا بهامش خطأ نحو 10%، ولهذا نحكم على النتيجة بالميزان بعد أسبوعين لا بالمعادلة نفسها. الرياضيون أصحاب الكتلة العضلية العالية قد يحتاجون قياسًا مخبريًا للدقة القصوى.\n\n**كيف أعرف أن عجزي السعري كبير زيادة؟**\n\nعلامات ثلاث معًا: قوة التمرين تتراجع، الوزن ينزل أسرع من 1% أسبوعيًا بعد الأسبوعين الأولين، والنوم والمزاج يضطربان — أضف 150-200 سعرة وركز البروتين.\n\n**هل أرفع السعرات يوم التمرين وأنزلها يوم الراحة؟**\n\nالخياران يعملان ما دام الأسبوع كله محسوبًا. التوزيع الثابت أبسط ويلتزم به أكثر الناس؛ التوزيع المتغير أدق رياضيًا لمن يستمتع بالتتبع نفسه.\n\n**ما الفرق بين السعرات للخسارة والسعرات للتضخيم؟**\n\nالقاعدة نفسها بقمتين مختلفتين: الخسارة تعني طرح 15-20% من احتياج الثبات، والتضخيم يعني إضافة 10-15% فوقه — والرقمان يتغيران كلما تغير وزنك أو نشاطك فأعد الحساب كل 5 كيلوغرامات.\n\n**هل حساب الماكروز ضروري أم يكفي حساب السعرات؟**\n\nالسعرات تحكم الوزن، والماكروز يحكم نوع ما تخسره أو تكتسبه. ابدأ بالسعرات والبروتين معًا — فهما 80% من النتيجة — ثم وزع الدهون والكربوهيدرات على ما يناسب طاقتك وشهيتك.",
+    "faq_json": [
+     {
+      "answer": "احسب احتياج الثبات (BMR × معامل النشاط) ثم اطرح 15-20% — في مثالنا 2395 سعرة تقريبًا — وراقب الميزان أسبوعيًا واضبط حتى ينزل 0.5% من وزنك أسبوعيًا.",
+      "question": "كم سعرة أحتاج يوميًا لخسارة الوزن؟"
+     },
+     {
+      "answer": "هي الأدق للعامة من المتاح حسابه يدويًا بهامش خطأ نحو 10%، ولهذا نحكم على النتيجة بالميزان بعد أسبوعين لا بالمعادلة نفسها. الرياضيون أصحاب الكتلة العضلية العالية قد يحتاجون قياسًا مخبريًا للدقة القصوى.",
+      "question": "هل معادلة ميفلين-ست جيور دقيقة للجميع؟"
+     },
+     {
+      "answer": "علامات ثلاث معًا: قوة التمرين تتراجع، والوزن ينزل أسرع من 1% أسبوعيًا بعد الأسبوعين الأولين، والنوم والمزاج يضطربان — أضف 150-200 سعرة وركز البروتين.",
+      "question": "كيف أعرف أن عجزي السعري كبير زيادة؟"
+     },
+     {
+      "answer": "الخياران يعملان ما دام الأسبوع كله محسوبًا. التوزيع الثابت أبسط ويلتزم به أكثر الناس؛ التوزيع المتغير أدق رياضيًا لمن يستمتع بالتتبع نفسه.",
+      "question": "هل أرفع السعرات يوم التمرين وأنزلها يوم الراحة؟"
+     },
+     {
+      "answer": "القاعدة نفسها بقمتين مختلفتين: الخسارة تعني طرح 15-20% من احتياج الثبات، والتضخيم يعني إضافة 10-15% فوقه — والرقمان يتغيران كلما تغير وزنك أو نشاطك فأعد الحساب كل 5 كيلوغرامات.",
+      "question": "ما الفرق بين السعرات للخسارة والسعرات للتضخيم؟"
+     },
+     {
+      "answer": "السعرات تحكم الوزن، والماكروز يحكم نوع ما تخسره أو تكتسبه. ابدأ بالسعرات والبروتين معًا — فهما 80% من النتيجة — ثم وزع الدهون والكربوهيدرات على ما يناسب طاقتك وشهيتك.",
+      "question": "هل حساب الماكروز ضروري أم يكفي حساب السعرات؟"
+     }
+    ]
+   }
+  },
+  {
+   "slug": "12-week-periodized-muscle-building-plan",
+   "language": "en",
+   "mode": "rewrite",
+   "expect_old_words": [
+    1186,
+    1306
+   ],
+   "fix": {
+    "focus_keyword": "muscle building workout plan",
+    "category": "workout",
+    "excerpt": "Discover a 12‑week periodized muscle building workout plan for intermediate lifters, complete with nutrition tips, supplement guides, and recovery strategies.",
+    "meta_title": "12‑Week Periodized Muscle Building Plan for Intermediate",
+    "meta_description": "Discover a 12‑week periodized muscle building workout plan for intermediate lifters, complete with nutrition tips, supplement guides, and recovery strategies.",
+    "keywords": [
+     "periodized training program",
+     "intermediate lifter workout routine",
+     "macro calculation for weight loss",
+     "creatine monohydrate dosage",
+     "best whey protein for beginners",
+     "pre‑workout ingredient guide",
+     "intermittent fasting muscle gain protocol",
+     "home gym essential equipment",
+     "recovery techniques after heavy lifting",
+     "sleep optimization for athletes"
+    ],
+    "content": "Building muscle after the novice phase requires more than showing up and lifting heavy. You need a structured, periodized approach that manipulates volume, intensity, and recovery over time. In this guide you will learn how to design a 12‑week periodized muscle‑building plan, align nutrition with training goals, choose supplements that actually work, and implement recovery habits that keep progress moving forward.\n\n## Understanding Periodization for Muscle Growth\nPeriodization is the systematic planning of training variables across defined cycles. By rotating between hypertrophy, strength, and deload phases you avoid plateaus and reduce injury risk. Research suggests that undulating periodization — where volume and intensity shift weekly — produces greater lean‑mass gains than linear models for intermediate lifters. The key is to match each mesocycle to a specific adaptation target while keeping overall fatigue manageable. This approach also allows you to schedule higher‑intensity weeks when life stress is low and pull back when recovery resources are limited.\n\n## Structuring the 12‑Week Training Cycle\nDivide the 12 weeks into three 4‑week mesocycles: \n- **Weeks 1‑4: Hypertrophy focus** – moderate load, 8‑12 reps, 3‑4 sets per exercise. Emphasize metabolic stress and time under tension.\n- **Weeks 5‑8: Strength focus** – heavier load, 4‑6 reps, 4‑5 sets. Prioritize neural adaptations and maximal force production.\n- **Weeks 9‑12: Peaking & deload** – mixed rep ranges (5‑10 reps) with a deliberate volume reduction in week 12 to restore neuromuscular readiness.\nEach mesocycle includes a progressive overload scheme — add 2‑5 % load or one rep per week. A built‑in deload week (week 12) restores neuromuscular readiness and prevents overtraining. Tracking weekly RPE (Rate of Perceived Exertion) helps you gauge whether the prescribed progression is sustainable.\n\n## Weekly Workout Split & Exercise Selection\nAn intermediate lifter benefits from a 4‑day upper/lower split that hits each muscle group twice per week. Example schedule:\n- **Monday: Upper‑body push** – bench press, overhead press, incline dumbbell press, triceps pushdown.\n- **Tuesday: Lower‑body quad dominant** – back squat, front squat, leg press, walking lunges.\n- **Thursday: Upper‑body pull** – deadlift, pull‑ups, barbell row, face pulls, biceps curl.\n- **Friday: Lower‑body hip dominant** – Romanian deadlift, hip thrust, leg curl, calf raise.\nCompound movements form the core; accessory work adds volume for lagging parts. For those training at home, essential equipment includes a power rack, adjustable bench, barbell with plates, dumbbells, and a pull‑up bar — this [4‑Day Upper/Lower Hypertrophy Split](/blog/4-day-upper-lower-hypertrophy-split) covers every listed exercise and provides a ready‑to‑use template.\n\n## Nutrition Strategies: Protein, Macros, and Fat‑Loss Diet for Men\nA fat‑loss diet for men that preserves muscle centers on a moderate calorie deficit (≈ 300‑500 kcal below maintenance) with high protein. Aim for 1.8‑2.2 g protein per kilogram of body weight daily. To calculate macros for weight loss, first estimate total daily energy expenditure (TDEE) using the Mifflin‑St Jeor equation, subtract the deficit, then set fat at 0.8‑1 g/kg and fill the remainder with carbohydrates, keeping protein at the 1.8‑2.2 g/kg already aimed for. Carbohydrate timing around workouts fuels performance and recovery; consume 0.5‑1 g carbs per kg body weight in the pre‑ and post‑workout windows. Intermittent fasting can fit this framework — an 16:8 schedule (fast 16 h, eat within 8 h) works well when the feeding window surrounds training sessions, ensuring nutrient availability for protein synthesis.\n\n## Supplement Guide: Creatine, Protein Powder, and Pre‑Workout\n\n![muscle building workout plan 12‑Week Periodized Muscle Building Plan for Intermediate Lifters — equipment and gear still life, professional product photography, soft studio lighting, high detail, professional product photography, soft studio lighting, high detail](https://images.pexels.com/photos/669578/pexels-photo-669578.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200)\n\n**Creatine monohydrate** – 5 g daily saturates muscle phosphocreatine stores, improving strength, power output, and lean‑mass accrual; proven benefits include enhanced ATP regeneration and reduced fatigue. **Protein powder** – intermediate lifters should look for a whey isolate or concentrate with ≥ 20 g protein per serving, minimal added sugars, third‑party testing, and a complete amino‑acid profile; the best whey protein balances cost, digestibility, and taste. **Pre‑workout** – choose a formula with evidence‑based doses: 3‑6 g citrulline malate, 2‑3 g beta‑alanine, 150‑300 mg caffeine, and optional 1‑2 g betaine; avoid proprietary blends that hide ingredient amounts. A pre‑workout ingredient guide helps you verify each component meets these thresholds.\n\n## Recovery & Lifestyle: Sleep Hygiene, Rest Days, and Intermittent Fasting\nRecovery tips after heavy lifting start with sleep hygiene: 7‑9 hours of uninterrupted sleep, cool dark room, consistent bedtime, and limiting blue light 60 minutes before bed. Research indicates that sleep optimization for athletes boosts growth‑hormone release and glycogen replenishment ([source](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6128384/)). Schedule at least one full rest day per week and use active recovery (light mobility, walking) on other off‑days. Intermittent fasting muscle‑gain protocol works when the eating window provides sufficient protein and calories; fasting does not impair hypertrophy if total daily intake and resistance stimulus are adequate. Hydration, foam rolling, and contrast showers further accelerate tissue repair. For additional sleep‑hygiene guidelines, see the Mayo Clinic’s recommendations ([source](https://www.mayoclinic.org/healthy-lifestyle/adult-health/in-depth/sleep/art-20048379)).\n\n## Tracking Progress & Making Adjustments\nLog every session — weight, reps, RPE, and bodyweight trends. Take weekly progress photos and measure circumferences (chest, waist, thighs). If strength stalls for two consecutive weeks, increase load by 2‑3 % or add a set. If bodyweight drops > 0.5 % per week without strength loss, raise calories by 100‑150 kcal. Adjust macro split only after a minimum of two weeks of consistent data. Use a spreadsheet or app to visualize trends and keep decisions objective. Regularly reviewing this data prevents “program hopping” and ensures each adjustment is evidence‑based.\n\n## Conclusion\nA periodized training program paired with precise nutrition, evidence‑based supplementation, and disciplined recovery creates a reliable pathway to continued muscle growth. By following the 12‑week structure, calculating macros for weight loss, selecting a high‑quality protein powder, and respecting sleep and fasting timing, intermediate lifters can break through plateaus and build a stronger, leaner physique. Stay consistent, track honestly, and adjust intelligently — the results will follow.\n\n---\n**Ready to take the guesswork out of your training?** Join **Alkemos coaching** for personalized periodized programs, macro coaching, and weekly check‑ins — or explore our full library of free resources on the site to keep progressing.\n\n## Frequently Asked Questions\n\n**Which diet works best for fat loss in men?**\n\nA moderate calorie deficit combined with high protein (1.6‑2.2 g/kg) and resistance training preserves muscle while maximizing fat loss.\n\n**What should beginners look for in a protein powder?**\n\nChoose a whey isolate or a high‑quality plant blend with ≥20 g protein per serving, minimal added sugars, and third‑party testing.\n\n**How do I calculate my macros for weight loss?**\n\nDetermine your TDEE, subtract 15‑20 % for a deficit, then set protein at 1.8‑2.2 g/kg, fat at 0.8‑1 g/kg, and fill the rest with carbs.\n\n**What are the best recovery tips after heavy lifting?**\n\nPrioritize 7‑9 hours sleep, consume 20‑30 g protein + carbs within 2 hours post‑workout, and incorporate light mobility work on rest days.\n\n**Can intermittent fasting support muscle gain?**\n\nYes, if the eating window provides enough total calories and protein (especially around training) and resistance training is maintained.\n\n**What are the proven benefits of creatine monohydrate?**\n\nCreatine increases phosphocreatine stores, boosting strength, power output, and lean mass gains when combined with training.\n\n**How do I choose a pre‑workout supplement?**\n\nLook for 3‑5 g citrulline malate, 2‑3 g beta‑alanine, 150‑300 mg caffeine, and transparent labeling without proprietary blends.\n\n",
+    "faq_json": [
+     {
+      "answer": "A moderate calorie deficit combined with high protein (1.6‑2.2 g/kg) and resistance training preserves muscle while maximizing fat loss.",
+      "question": "Which diet works best for fat loss in men?"
+     },
+     {
+      "answer": "Choose a whey isolate or a high‑quality plant blend with ≥20 g protein per serving, minimal added sugars, and third‑party testing.",
+      "question": "What should beginners look for in a protein powder?"
+     },
+     {
+      "answer": "Determine your TDEE, subtract 15‑20 % for a deficit, then set protein at 1.8‑2.2 g/kg, fat at 0.8‑1 g/kg, and fill the rest with carbs.",
+      "question": "How do I calculate my macros for weight loss?"
+     },
+     {
+      "answer": "Prioritize 7‑9 hours sleep, consume 20‑30 g protein + carbs within 2 hours post‑workout, and incorporate light mobility work on rest days.",
+      "question": "What are the best recovery tips after heavy lifting?"
+     },
+     {
+      "answer": "Yes, if the eating window provides enough total calories and protein (especially around training) and resistance training is maintained.",
+      "question": "Can intermittent fasting support muscle gain?"
+     },
+     {
+      "answer": "Creatine increases phosphocreatine stores, boosting strength, power output, and lean mass gains when combined with training.",
+      "question": "What are the proven benefits of creatine monohydrate?"
+     },
+     {
+      "answer": "Look for 3‑5 g citrulline malate, 2‑3 g beta‑alanine, 150‑300 mg caffeine, and transparent labeling without proprietary blends.",
+      "question": "How do I choose a pre‑workout supplement?"
+     }
+    ]
+   }
+  }
+ ]
+}
