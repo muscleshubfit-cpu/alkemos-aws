@@ -32,7 +32,7 @@ import { SITEMAP_LASTMOD } from "@/lib/sitemap-lastmod";
  */
 
 /** Batch protocol coverage — grows to 50 when all five batches land. */
-const EXPECTED_COVERED = 20;
+const EXPECTED_COVERED = 31;
 
 const words = (s: string) =>
   s.replace(/[\u200f\u200e]/g, "").split(/\s+/).filter(Boolean).length;
