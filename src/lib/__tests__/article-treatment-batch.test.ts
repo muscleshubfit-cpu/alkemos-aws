@@ -81,6 +81,7 @@ const BATCH_FILES = [
   "article-treatment-batch-l2-5.json",
   "article-treatment-batch-l2-6.json",
   "article-treatment-batch-l2-7.json",
+  "article-treatment-batch-l2-8.json",
 ] as const;
 
 const BATCH_DIR = join(process.cwd(), "scripts", "blog-runner");
@@ -339,6 +340,10 @@ describe("article-treatment batches — the permanent editorial battery", () => 
           "chest-muscle-bodyweight-home-guide|en",
           "women-bodyweight-muscle-workout|ar",
           "women-home-muscle-building-program-guide|en",
+          // + the retro pair created by the L2-8 batch (E-23) — both sides
+          // treated whole in the same batch per the pair-parity law
+          "does-creatine-make-you-gain-weight-water-retention-vs-muscle|en",
+          "creatine-water-retention-scientific-analysis-beginners-guide|ar",
         ]);
         const KNOWN_PAIRS: Array<[string, string]> = [
           ["deload-week-guide|ar", "deload-week-rest-training-guide|en"],
@@ -415,6 +420,10 @@ describe("article-treatment batches — the permanent editorial battery", () => 
           ["schedule-cardio-muscle-gain-guide|en", "cardio-scheduling-muscle-gain-guide|ar"],
           ["chest-muscle-bodyweight-home|ar", "chest-muscle-bodyweight-home-guide|en"],
           ["women-bodyweight-muscle-workout|ar", "women-home-muscle-building-program-guide|en"],
+          [
+            "does-creatine-make-you-gain-weight-water-retention-vs-muscle|en",
+            "creatine-water-retention-scientific-analysis-beginners-guide|ar",
+          ],
         ];
         // Pairs whose side was rewritten in a batch that PREDATES the pair's
         // creation are exempt for that batch only — a rewrite cannot dangle
@@ -424,6 +433,16 @@ describe("article-treatment batches — the permanent editorial battery", () => 
           // sauna EN was rewritten by T3-1 (2026-11-01) a day before the
           // L2-4 batch (E-19, 2026-11-02) created its AR twin.
           "article-treatment-batch-t3.json": ["sauna-muscle-recovery-hormone-optimization|en"],
+          // creatine-weight EN was rewritten by T3-3 (E-13, 2026-11-01) and its
+          // AR twin-side by T3-4 (E-14, 2026-11-01) — both days before the
+          // L2-8 retro-pair (E-23, 2026-11-03) registered the pair in
+          // pairs.json and treated both sides whole.
+          "article-treatment-batch-t3-3.json": [
+            "does-creatine-make-you-gain-weight-water-retention-vs-muscle|en",
+          ],
+          "article-treatment-batch-t3-4.json": [
+            "creatine-water-retention-scientific-analysis-beginners-guide|ar",
+          ],
         };
         for (const [a, b] of KNOWN_PAIRS) {
           if (!PAIRED_IN_CORPUS.has(a) || !PAIRED_IN_CORPUS.has(b)) continue;
