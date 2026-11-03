@@ -74,9 +74,9 @@ const fullText = (e: FoodEnrichment, lang: "en" | "ar") =>
 const bySlug = new Map(FOODS.map((f) => [f.slug, f]));
 const enrichedSlugs = Object.keys(FOODS_ENRICHMENT);
 
-describe("foods-enrichment batch 1 (P1-1 canaries)", () => {
-  it("batch 1 covers 20 foods — all real, curated (sitemap-advertised set)", () => {
-    expect(enrichedSlugs.length).toBe(20);
+describe("foods-enrichment batches 1+2 (P1-1 canaries)", () => {
+  it("batches 1+2 cover 40 foods — all real, curated (sitemap-advertised set)", () => {
+    expect(enrichedSlugs.length).toBe(40);
     for (const slug of enrichedSlugs) {
       const food = bySlug.get(slug);
       expect(food, `${slug} must exist in FOODS`).toBeDefined();
@@ -161,10 +161,11 @@ describe("foods-enrichment batch 1 (P1-1 canaries)", () => {
     }
   });
 
-  it("foods family lastmod anchor bumped to the P1-1 ship date (truthful recency)", () => {
-    // The batch materially changed the family's served HTML → the
-    // sitemap-lastmod protocol requires the ship date, not the stale
-    // 2026-09-28 anchor. Wired in the same frame as the enrichment.
-    expect(SITEMAP_LASTMOD.foods).toBe("2026-11-01");
+  it("foods family lastmod anchor bumped to the batch-2 ship date (truthful recency)", () => {
+    // Batches 1 (2026-11-01) and 2 materially changed the family's served
+    // HTML → the sitemap-lastmod protocol requires the latest ship date,
+    // not the stale 2026-09-28 anchor. Wired in the same frame as the
+    // enrichment.
+    expect(SITEMAP_LASTMOD.foods).toBe("2026-11-04");
   });
 });

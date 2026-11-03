@@ -681,6 +681,626 @@ export const FOODS_ENRICHMENT: Record<string, FoodEnrichment> = {
       ],
     },
   },
+
+  "lean-beef": {
+    intro: {
+      en: "Lean beef is the flavor anchor of a muscle-building kitchen: 26 g of protein and 12 g of fat for 217 kcal per 100 g, with zero carbohydrates. A 150 g piece delivers 39 g of protein — enough to carry the post-training meal of most lifters — while staying fatty enough to actually taste like a celebration. That balance is why it lives in gaining phases: it pushes calories up without the blandness that makes chicken-only diets collapse. Sear it hot and slice it against the grain.",
+      ar: "اللحم البقري القليل الدهن هو مرساة النكهة في مطبخ بناء العضلات: 26 جم بروتين و12 جم دهون مقابل 217 سعرة لكل 100 جم وبلا كربوهيدرات. قطعة 150 جم تقدم 39 جم بروتين — ما يكفي لحمل وجبة ما بعد التدريب لأغلب الرياضيين — وتبقى دهينة بما يكفي لتشبه وجبة احتفالية فعلًا. هذا التوازن سبب حضورها في مراحل التضخيم: ترفع السعرات دون البهوت الذي يُسقط أنظمة الدجاج فقط. اطبخها على نار عالية وقطّعها عكس اتجاه الليف.",
+    },
+    context: {
+      en: {
+        alternatives: "Chicken breast is the leaner daily driver; lean ground beef is the same muscle-building package in a form that absorbs sauces; salmon adds omega-3 fats when the budget allows.",
+        plan: "In a gaining phase, 150 g beside 200 g of rice and vegetables turns the post-workout window into a full meal. On a cut it still fits — just trade the rice for a large salad and keep the searing fat minimal.",
+        caution: "The 217 kcal reference is for trimmed cooked meat; marbling, butter-based pan sauces, or restaurant cuts can quietly double the fat of the same plate.",
+      },
+      ar: {
+        alternatives: "صدور الدجاج هي الحصان اليومي الأقل دهنًا، واللحم المفروم القليل الدهن الحزمة نفسها بصيغة تشرب الصوصات، والسلمون يضيف دهون أوميغا-3 حين تسمح الميزانية.",
+        plan: "في مرحلة التضخيم اجعل 150 جم بجوار 200 جم أرز وخضار فتتحول نافذة ما بعد التمرين لوجبة كاملة. وفي التنشيف تبقى مناسبة — فقط استبدل الأرز بسلطة كبيرة وأبقِ دهن الطبخ عند حدها الأدنى.",
+        caution: "مرجع 217 سعرة يخص اللحم المطبوخ المُنظّف من الشحوم؛ الرخاوة المرمرية أو صوصات الزبدة أو قطع المطاعم قد تضاعف دهون الطبق نفسه خلسة.",
+      },
+    },
+    faq: {
+      en: [
+        { q: "How much protein is in a 150 g piece of lean beef?", a: "About 39 g — from a single food item, with 326 kcal and 18 g of fat riding along; the per-100 g figure is 26 g of protein." },
+        { q: "Is lean beef good for cutting?", a: "It fits, but it is not the most efficient choice — at 12 g of fat per 100 g it carries more calories per gram of protein than turkey breast or shrimp; keep portions moderate and sides lean." },
+        { q: "Which cut should I buy?", a: "Eye of round, sirloin, and top round are the classic lean picks; whatever the cut, trimming visible fat before cooking keeps the plate close to this page's numbers." },
+      ],
+      ar: [
+        { q: "كم بروتين في قطعة 150 جم من اللحم قليل الدهن؟", a: "نحو 39 جم — من طعام واحد، معها 326 سعرة و18 جم دهون؛ ورقم كل 100 جم هو 26 جم بروتين." },
+        { q: "هل اللحم البقري قليل الدهن مناسب للتنشيف؟", a: "يدخل ضمن الخطة لكنه ليس الخيار الأكفأ — فبـ12 جم دهون لكل 100 جم يحمل سعرات أكثر لكل جرام بروتين من صدور الرومي أو الجمبري؛ فاعتدل بالحصص واجعل المرافقات خفيفة." },
+        { q: "أي قطعة أشتري؟", a: "عين الروند والسرلوين وأعلى الروند هي الاختيارات القليلة الدهن الكلاسيكية؛ وأيًّا كانت القطعة، نزع الدهن الظاهر قبل الطبخ يُبقي الطبق قريبًا من أرقام هذه الصفحة." },
+      ],
+    },
+  },
+
+  "egg-whites": {
+    intro: {
+      en: "Egg whites are protein stripped to its essentials: 11 g of protein riding on just 52 kcal and 0.2 g of fat per 100 g. Four whites (120 g) pour 13 g of protein into a pan for 63 calories — no other whole food in this library lets you eat that much volume for that little energy. They are the rescue ration of contest prep and aggressive cuts, folded into omelets when whole eggs blow the fat budget. What you trade away is flavor and most of the egg's micronutrients, which live in the discarded yolk.",
+      ar: "بياض البيض بروتين مُجرَّد إلى أساسياته: 11 جم بروتين فوق 52 سعرة و0.2 جم دهون فقط لكل 100 جم. أربعة بياضات (120 جم) تصب 13 جم بروتين في المقلاة مقابل 63 سعرة — لا طعام كامل آخر بهذه المكتبة يمنحك هذا الحجم بهذه الطاقة القليلة. هو حصة إنقاذ تجهيزات البطولات والتنشيف القاسي، تُطوى في العجة حين يفجّر الصفار ميزانية الدهون. وما تخسره هو النكهة وأغلب مغذيات البيض الدقيقة الساكنة في الصفار المرمي.",
+    },
+    context: {
+      en: {
+        alternatives: "Whole eggs give you the same protein with the flavor, fat and nutrients intact — each yolk costs about 55 kcal; liquid egg-white cartons are the no-cracking shortcut; shrimp offers similar leanness from the sea.",
+        plan: "On a hard cut, a ten-white omelet with vegetables creates a massive pan of food for under 200 kcal. While gaining, mix one or two whole eggs into the whites — flavor and micronutrients return without flooding the calorie budget.",
+        caution: "Raw whites from uncooked batter block biotin absorption and carry salmonella risk; the 52 kcal figure assumes cooked product, and meringue-style recipes undo the leanness with sugar.",
+      },
+      ar: {
+        alternatives: "البيض الكامل يمنحك البروتين نفسه بنكهته ودهونه ومغذياته سليمة — كل صفار يكلف نحو 55 سعرة؛ وعبوات بياض البيض السائل اختصار بلا تكسير؛ والجمبري يقدم رشاقة مشابهة من البحر.",
+        plan: "في التنشيف القاسي تصنع عجة من عشرة بياضات بالخضار كمية هائلة من الطعام بأقل من 200 سعرة. وفي التضخيم اخلط بيضة أو اثنتين كاملتين مع البياض — تعود النكهة والمغذيات دون إغراق ميزانية السعرات.",
+        caution: "البياض النيء من الخليط غير المطبوخ يعيق امتصاص البيوتين ويحمل خطر السالمونيلا؛ ورقم 52 سعرة يفترض منتجًا مطبوخًا، ووصفات المرينغ تهدم الرشاقة بالسكر.",
+      },
+    },
+    faq: {
+      en: [
+        { q: "How much protein is in four egg whites?", a: "About 13 g across 120 g for just 63 kcal — the highest protein-per-calorie ratio of any animal food tracked in this database." },
+        { q: "Are egg whites healthier than whole eggs?", a: "Not better, just leaner: the yolk holds the vitamins and half the protein, so whites are a tool for fat-budget control on cuts, not an upgrade for everyday eating." },
+        { q: "Can I drink pasteurized liquid egg whites?", a: "Carton whites labeled pasteurized are safe to drink and behave identically in recipes; farm-fresh raw ones are not, and cooking costs you none of the protein." },
+      ],
+      ar: [
+        { q: "كم بروتين في أربعة بياضات؟", a: "نحو 13 جم عبر 120 جم مقابل 63 سعرة فقط — أعلى نسبة بروتين لكل سعرة بين كل الأطعمة الحيوانية المسجلة في هذه القاعدة." },
+        { q: "هل بياض البيض أصح من البيض الكامل؟", a: "ليس أفضل، بل أميل للرشاقة فقط: الصفار يحمل الفيتامينات ونصف البروتين، فالبياض أداة لضبط ميزانية الدهون في التنشيف لا ترقية للأكل اليومي." },
+        { q: "هل أشرب بياض البيض السائل المُبستر؟", a: "العبوات الموسومة بالمُبستر آمنة للشرب وتتصرف بالوصفات تصرفًا مطابقًا؛ البيض الريفي النيء ليس كذلك، والطبخ لا يكلفك شيئًا من البروتين." },
+      ],
+    },
+  },
+
+  "turkey-breast": {
+    intro: {
+      en: "Turkey breast takes the chicken formula and trims it further: 30 g of protein against 135 kcal and a single gram of fat per 100 g. That fat figure — one gram — is the leanest this database records among whole-protein staples, which is why physique athletes rotate it in during the final weeks of a cut. The trade is real though: with almost no fat to baste it, it turns chalky fast, so brining or a quick high-heat sear is not optional. Ground versions make it burger night without breaking the deficit.",
+      ar: "صدور الديك الرومي تأخذ معادلة الدجاج وتشذّبها أكثر: 30 جم بروتين مقابل 135 سعرة وجرام دهون واحد لكل 100 جم. رقم الدهون هذا — جرام واحد — هو الأقل الذي تسجله هذه القاعدة بين مصادر البروتين الكاملة، ولذلك يُدخلها رياضيو القوام في أسابيع التنشيف الأخيرة. لكن المقايضة حقيقية: بلا دهن يبلّلها تتحول طباشيرية سريعًا، فالنقع في محلول ملحي أو شواء سريع على حرارة عالية ليس رفاهية. والنسخ المفرومة تجعل منها ليلة برجر دون كسر العجز.",
+    },
+    context: {
+      en: {
+        alternatives: "Chicken breast is the closest everyday equivalent at 3.6 g fat; pork tenderloin matches its leanness with a different flavor; tofu covers the same slot for plant-based plans.",
+        plan: "Treat it as the deficit-breaker: 200 g at dinner costs 270 kcal yet lands 60 g of protein. In a lean-gaining phase, drizzle olive oil over the sliced meat to re-add the fat flavor it lacks.",
+        caution: "Many whole birds sold «self-basting» or kosher have been injected with salt solution — check labels, because that sodium can dwarf anything you would season with yourself.",
+      },
+      ar: {
+        alternatives: "صدور الدجاج المكافئ اليومي الأقرب بـ3.6 جم دهون؛ ولحم التندرلوين يطابق رشاقته بنكهة مختلفة؛ والتوفو يملأ الخانة نفسها في الخطط النباتية.",
+        plan: "عاملها كقاطعة العجز: 200 جم على العشاء تكلف 270 سعرة وتُهبط 60 جم بروتين. وفي التضخيم النظيف رشّ زيت زيتون فوق الشرائح لتعيد نكهة الدهن الغائبة عنها.",
+        caution: "كثير من الطيور الكاملة المباعة «ذاتية الترطيب» أو المملحة محقونة بمحلول ملحي — اقرأ الملصقات، فذلك الصوديوم قد يبتلع أي تتبيل كنت ستصنعه بنفسك.",
+      },
+    },
+    faq: {
+      en: [
+        { q: "Is turkey breast leaner than chicken?", a: "Yes — 1 g of fat per 100 g versus 3.6 g in chicken breast, at essentially the same 30 g protein level; the gap is small but real on deep cuts." },
+        { q: "Why does my turkey always come out dry?", a: "It carries almost no fat to keep it moist, so it overcooks in minutes — pull it at the first sign of done, rest it covered, and slice against the grain." },
+        { q: "Is deli turkey the same food?", a: "No — this page's 135 kcal belongs to plain cooked breast; processed slices add sodium, sugars and sometimes oils that change the numbers." },
+      ],
+      ar: [
+        { q: "هل صدور الديك الرومي أقل دهنًا من الدجاج؟", a: "نعم — جرام دهن واحد لكل 100 جم مقابل 3.6 جم في صدور الدجاج، وعلى مستوى بروتين 30 جم نفسه تقريبًا؛ الفجوة صغيرة لكنها حقيقية في التنشيف العميق." },
+        { q: "لماذا يخرج الرومي جافًا دائمًا؟", a: "لا يحمل دهنًا يكفي لإبقائه رطبًا فيتجاوز الطبخ في دقائق — ارفعه عند أول علامة نضج، واتركه مغطى يرتاح، وقطّع عكس الليف." },
+        { q: "هل شرائح الرومي المعلبة الطعام نفسه؟", a: "لا — 135 سعرة بهذه الصفحة تخص الصدر المطبوخ السادة؛ الشرائح المصنعة تضيف صوديومًا وسكريات وأحيانًا زيوتًا تغير الأرقام." },
+      ],
+    },
+  },
+
+  "shrimp": {
+    intro: {
+      en: "Shrimp is nearly a pure protein delivery vehicle: 24 g of protein, 0.3 g of fat and 99 kcal per 100 g — a macro sheet that reads like a supplement label. The 150 g serving arrives at 148 kcal and 36 g of protein while taking under five minutes in a hot pan, which makes it the fastest real-food dinner in a cutting week. It plays neutral in almost every cuisine — garlic, chili, coconut milk, lemon — so flavor fatigue has no excuse. Its cholesterol content, feared for decades, no longer carries a limit in current guidance.",
+      ar: "الجمبري شبه مركب توصيل بروتين صرف: 24 جم بروتين و0.3 جم دهون و99 سعرة لكل 100 جم — ورقة ماكروز تُقرأ كملصق مكمل غذائي. حصة 150 جم تصل بـ148 سعرة و36 جم بروتين وتحتاج أقل من خمس دقائق في مقلاة ساخنة، ما يجعلها أسرع عشاء طعام حقيقي في أسبوع تنشيف. وهو محايد في كل مطبخ تقريبًا — ثوم أو فلفل حار أو حليب جوز الهند أو ليمون — فلا عذر لإرهاق الحواس. رقم الكوليسترول أخاف الناس عقودًا؛ والإرشادات الغذائية الحالية لم تعد تعامله كسقف لأغلب البالغين.",
+    },
+    context: {
+      en: {
+        alternatives: "Tilapia is the budget fish swap with a similar lean profile; chicken breast covers the same macro slot on land; canned tuna wins when you need zero cooking.",
+        plan: "Stir-fry 150 g with a bag of frozen vegetables and a splash of soy sauce for a plate that lands a third of your daily protein under 300 kcal. On gaining days, cook it in butter and serve over pasta.",
+        caution: "Breaded fried shrimp and creamy restaurant sauces bury this leanness — the 99 kcal reference is for peeled, plain-cooked meat; frozen peeled raw is the cheapest honest format.",
+      },
+      ar: {
+        alternatives: "البلطي بديل السمك الاقتصادي بملف رشيق مشابه؛ وصدور الدجاج تملأ خانة الماكرو نفسها على اليابسة؛ والتونة المعلبة تفوز حين تحتاج صفر طبخ.",
+        plan: "قِلِ 150 جم مع كيس خضار مجمد ورشة صوص صويا لطبق يهبط بثلث بروتين يومك تحت 300 سعرة. وفي أيام التضخيم اطبخه بالزبدة وقدمه فوق الباستا.",
+        caution: "الجمبري المغلف بالبقسماط المقلي وصوصات المطاعم الكريمية تدفن هذه الرشاقة — مرجع 99 سعرة يخص اللحم المقشر المطبوخ سادة؛ والمجمد المقشر الخام أرخص صيغة صادقة.",
+      },
+    },
+    faq: {
+      en: [
+        { q: "How much protein in a 150 g shrimp serving?", a: "36 g, arriving with just 148 kcal and under half a gram of fat — one of the strongest protein-per-calorie trades in the entire library." },
+        { q: "Is shrimp okay on keto?", a: "Yes — practically zero carbs, so it fits without adjustment; just watch what you cook it in, since butter and cream decide the meal's final macros." },
+        { q: "Fresh or frozen shrimp?", a: "Unless you live beside the dock, frozen is genuinely fresher — it was locked at the harbor; thaw under cold water ten minutes before cooking." },
+      ],
+      ar: [
+        { q: "كم بروتين في حصة جمبري 150 جم؟", a: "36 جم تصل مع 148 سعرة فقط وأقل من نصف جرام دهون — من أقوى صفقات البروتين لكل سعرة في المكتبة كلها." },
+        { q: "هل الجمبري مسموح في الكيتو؟", a: "نعم — كربوهيدرات شبه معدومة فيدخل بلا تعديل؛ راقب فقط ما تطبخه به، فالزبدة والكريمة تحدد ماكرو الوجبة النهائي." },
+        { q: "جمبري طازج أم مجمد؟", a: "إن لم تكن تسكن بجوار الميناء فالمجمد أكثر حداثة فعلًا — حُبس عند المرفأ؛ وذوّبه تحت ماء بارد عشر دقائق قبل الطبخ." },
+      ],
+    },
+  },
+
+  "tilapia": {
+    intro: {
+      en: "Tilapia is the workhorse white fish for anyone eating on a budget: 26 g of protein for 128 kcal and 3 g of fat per 100 g, at a price per kilo that usually undercuts every other animal protein on the counter. A 150 g fillet lands 39 g of protein for 192 kcal and cooks from raw to plate in about ten minutes. Its mild — critics say blank — flavor is actually the feature: it carries whatever marinade, spice rub or sauce you give it, so it never gets boring if your seasoning shelf is alive.",
+      ar: "البلطي هو سمك أبيض الحصان العام لكل من يأكل بميزانية محدودة: 26 جم بروتين مقابل 128 سعرة و3 جم دهون لكل 100 جم، بسعر للكيلو يقلل عادة كل بروتين حيواني آخر على الطاولة. فيليه 150 جم يهبط بـ39 جم بروتين مقابل 192 سعرة ويُطهى من خام إلى طبق في نحو عشر دقائق. ونكهته المعتدلة — يقول النقاد الفارغة — هي الميزة فعلًا: يحمل أي تتبيلة أو بهارات جافة أو صوص تمنحه، فلا يمل أبدًا ما دام رفّ توابلك حيًا.",
+    },
+    context: {
+      en: {
+        alternatives: "Shrimp covers the same lean-fish slot at triple the price; canned tuna is the no-cook backup; chicken breast fills in for people who simply dislike fish.",
+        plan: "Bake two fillets on Sunday with lemon and cumin and keep them for two days of lunches. During a bulk, a butter-and-garlic sauce over the same fillet adds two hundred easy calories without touching protein.",
+        caution: "Fish-shop fried portions are a different food — batter soaks oil and multiplies calories; and because tilapia is farmed, sourcing matters more than with wild species.",
+      },
+      ar: {
+        alternatives: "الجمبري يملأ خانة السمك الرشيق نفسها بثلاثة أضعاف السعر؛ والتونة المعلبة الاحتياطي بلا طبخ؛ وصدور الدجاج تسد لمن لا يحب السمك أصلًا.",
+        plan: "اخبز فيليهين يوم الأحد بالليمون والكمون واحفظهما لغداء يومين. وفي التضخيم يضيف صوص الزبدة والثوم على الفيليه نفسه مئتي سعرة سهلة دون مساس البروتين.",
+        caution: "حصص محلات السمك المقلية طعام آخر — البقسماط يشرب الزيت ويضاعف السعرات؛ ولأن البلطي مستزرَع فمصدره أهم مما هو عليه مع الأنواع البرية.",
+      },
+    },
+    faq: {
+      en: [
+        { q: "Is tilapia a healthy protein?", a: "Per this database it delivers 26 g of protein at 128 kcal per 100 g with almost no saturated-fat load; its omega-3 content is modest next to salmon, which is a reason to rotate both." },
+        { q: "How do I cook tilapia without it falling apart?", a: "Pat it dry, use a hot pan with a little oil, and flip once — the flesh is delicate, so breading or a gentle oven-bake protects it better than rough stirring." },
+        { q: "How much tilapia per meal?", a: "One 150 g fillet is the designed serving — 192 kcal and 39 g of protein, a natural anchor for lunch on any plan." },
+      ],
+      ar: [
+        { q: "هل البلطي بروتين صحي؟", a: "بحسب هذه القاعدة يقدم 26 جم بروتين عند 128 سعرة لكل 100 جم وبلا حمل دهون مشبعة يذكر؛ ومحتواه من أوميغا-3 متواضع أمام السلمون، وهذه سبب لتناوب الاثنين." },
+        { q: "كيف أطبخ البلطي دون أن يتفتت؟", a: "جففه جيدًا، واستخدم مقلاة ساخنة بقليل من الزيت، واقلبه مرة واحدة — لحمه رقيق، فالتغليف أو الخبز الهادئ بالفرن يحميه أفضل من التقليب العنيف." },
+        { q: "كم بلطي في الوجبة؟", a: "فيليه واحد 150 جم هو الحصة المصممة — 192 سعرة و39 جم بروتين، مرساة طبيعية لغداء أي خطة." },
+      ],
+    },
+  },
+
+  "ground-beef-lean": {
+    intro: {
+      en: "Lean ground beef is the shape-shifter of the protein shelf: 27 g of protein and 9 g of fat per 100 g at 193 kcal, in a form that becomes kebabs, pasta sauce, chili, stuffed peppers or burger patties within minutes. That versatility is worth real money on a repetitive diet — the number one reason people quit high-protein eating is boredom, and mince is the cheapest cure for it. The 150 g serving delivers 40 g of protein. Choose the 90-percent-lean packs; cheaper blends quietly add ten grams of fat you never taste but always pay for.",
+      ar: "اللحم المفروم قليل الدهن متحوّل رف البروتين: 27 جم بروتين و9 جم دهون لكل 100 جم عند 193 سعرة، بصيغة تصبح كفتة أو صوص باستا أو تشيلي أو فلفلًا محشيًا أو أقراص برجر خلال دقائق. هذه المرونة تساوي مالًا حقيقيًا في نظام متكرر — السبب الأول لهجر الأكل عالي البروتين هو الملل، والمفروم أرخص علاج له. حصة 150 جم تقدم 40 جم بروتين. اختر عبوات اللحم الأقل دهنًا بنسبة تسعين بالمئة؛ فالخلطات الأرخص تضيف خلسة عشرة جرامات دهن لن تتذوقها أبدًا وستدفع ثمنها دائمًا.",
+    },
+    context: {
+      en: {
+        alternatives: "Beef sirloin slices for grilling nights; ground turkey runs leaner still; lentils give the same sauce-friendly texture for plant-based dinners.",
+        plan: "Cook a 500 g pack at once and split it across three meals — taco night, pasta night and stuffed-vegetable night all flow from one pan. On a cut, drain the rendered fat before saucing.",
+        caution: "The 9 g of fat per 100 g assumes a drained lean pack; regular mince and restaurant grinds can double that, and sauces built on cream erase the leanness entirely.",
+      },
+      ar: {
+        alternatives: "شرائح سرلوين البقر لليالي الشواء؛ والرومي المفروم أميل للرشاقة بعيدًا؛ والعدس يمنح القوام الصوصي نفسه لعشائات نباتية.",
+        plan: "اطبخ عبوة 500 جم دفعة واحدة وقسمها على ثلاث وجبات — ليلة التاكو وليلة الباستا وليلة الخضار المحشي كلها تتدفق من مقلاة واحدة. وفي التنشيف صفِّ الدهن المُنصهر قبل الصوص.",
+        caution: "9 جم دهون لكل 100 جم تفترض عبوة قليلة الدهن مصفاة؛ المفروم العادي وخلطات المطاعم قد تضاعفها، والصوصات القائمة على الكريمة تمحو الرشاقة تمامًا.",
+      },
+    },
+    faq: {
+      en: [
+        { q: "How much protein in 150 g of lean ground beef?", a: "About 40 g for 290 kcal — one of the best protein-per-money trades at the butcher counter." },
+        { q: "Should I rinse cooked ground beef?", a: "Draining on paper towels removes a useful share of the rendered fat on deep cuts; rinsing with water washes flavor away too — most cooks should simply buy a leaner blend." },
+        { q: "Is it okay to eat red meat twice a day?", a: "It fits the macros, but variety is the safer habit — rotate with fish, poultry and legumes across the week rather than leaning on any single protein." },
+      ],
+      ar: [
+        { q: "كم بروتين في 150 جم لحمًا مفرومًا قليل الدهن؟", a: "نحو 40 جم مقابل 290 سعرة — من أفضل صفقات البروتين مقابل المال على طاولة الجزار." },
+        { q: "هل أغسل اللحم المفروم بعد الطبخ؟", a: "التصفية على مناديل الورق تزيل حصة مفيدة من الدهن المنصهر في التنشيف العميق؛ والغسل بالماء يجرف النكهة معه — على أغلب الطباخين ببساطة شراء خلطة أقل دهنًا." },
+        { q: "هل يصح أكل اللحم الأحمر مرتين يوميًا؟", a: "يدخل ضمن الماكروز، لكن التنويع عادة أأمن — بدّل مع السمك والدواجن والبقوليات عبر الأسبوع بدل الاتكاء على بروتين واحد." },
+      ],
+    },
+  },
+
+  "pork-tenderloin": {
+    intro: {
+      en: "Pork tenderloin is the cut nobody expects to be lean: 26 g of protein and only 3.5 g of fat for 143 kcal per 100 g — numbers that stand next to chicken breast while wearing a completely different flavor. A 150 g roast serving brings 39 g of protein home for 215 kcal. It roasts whole in twenty-five minutes, slices neatly for meal-prep containers, and takes sweet, smoky and herby marinades equally well. For anyone tired of the chicken-and-turkey rotation, this is the cheapest escape route that doesn't cost a single macro.",
+      ar: "لحم التندرلوين هو القطعة التي لا أحد يتوقع أن تكون قليلة الدهن: 26 جم بروتين و3.5 جم دهون فقط مقابل 143 سعرة لكل 100 جم — أرقام تقف بجوار صدور الدجاج بنكهة مختلفة تمامًا. حصة مشوية 150 جم تحضر 39 جم بروتين إلى البيت مقابل 215 سعرة. تُشوى كاملة في خمس وعشرين دقيقة، وتُقطع بشكل أنيق لحاويات تحضير الوجبات، وتستقبل التتبيلات الحلوة والمدخنة والعشبية بالتساوي. ولكل من سئم دورة الدجاج والرومي، هذا أرخص طريق هروب لا يكلف ماكرو واحدًا.",
+    },
+    context: {
+      en: {
+        alternatives: "Chicken and turkey breast remain the reference leans; beef sirloin adds a bolder flavor at higher calories; tofu takes the slot on meatless days.",
+        plan: "Roast one tenderloin on Sunday, slice it thin, and you have sandwich protein plus two salads for the first half of the week. During gaining phases, pair it with rice and a walnut-olive oil dressing.",
+        caution: "Do not confuse tenderloin with pork loin — the loin is a bigger, fattier roast with different numbers; and packaged «flavored» loins often carry sugary injections.",
+      },
+      ar: {
+        alternatives: "الدجاج والرومي يبقيان المرجعين الرشيقين؛ وسرلوين البقر يضيف نكهة أجرأ بسعرات أعلى؛ والتوفو يأخذ الخانة في أيام اللحوم.",
+        plan: "اشوِ تندرلوين واحدًا يوم الأحد وقطّعه رقيقًا، فتحصل على بروتين ساندويتش وسلطتين للنصف الأول من الأسبوع. وفي مراحل التضخيم رافقه بالأرز وصلصة الجوز وزيت الزيتون.",
+        caution: "لا تخلط بين التندرلوين ولحم الخاصرة — الخاصرة مشوية أكبر وأدهن بأرقام مختلفة؛ وعبوات «المنكّهة» تحمل غالبًا حقنًا سكرية.",
+      },
+    },
+    faq: {
+      en: [
+        { q: "Is pork tenderloin actually lean?", a: "Yes — 3.5 g of fat and 143 kcal per 100 g put it shoulder to shoulder with chicken breast; it is among the leanest cuts of any animal in this library." },
+        { q: "What's the best way to cook it without drying?", a: "Sear the outside hard, finish in a hot oven to the first sign of done, then rest under foil ten minutes — its small fat margin forgives nothing." },
+        { q: "How much protein in a tenderloin serving?", a: "A 150 g serving carries about 39 g of protein for 215 kcal — a full anchor for any meal of the day." },
+      ],
+      ar: [
+        { q: "هل التندرلوين قليل الدهن فعلًا؟", a: "نعم — 3.5 جم دهون و143 سعرة لكل 100 جم تضعه كتفًا بكتف مع صدور الدجاج؛ وهو من أرشق قطع أي حيوان بهذه المكتبة." },
+        { q: "ما أفضل طريقة لطبخه دون جفاف؟", a: "حمّر السطح بعنف، وأكمله في فرن ساخن حتى أول علامة نضج، ثم اتركه مغطى بورق قصدير عشر دقائق — هامش دهونه الصغير لا يغفر شيئًا." },
+        { q: "كم بروتين في حصة تندرلوين؟", a: "حصة 150 جم تحمل نحو 39 جم بروتين مقابل 215 سعرة — مرساة كاملة لأي وجبة في اليوم." },
+      ],
+    },
+  },
+
+  "tofu": {
+    intro: {
+      en: "Tofu is the plant protein that behaves like food rather than a supplement: 17 g of protein, 9 g of fat and 3 g of carbs for 144 kcal per 100 g — a complete amino-acid profile from soy, the only common plant source that can claim that. Its magic is textural: press it firm and it sears into something meaty; crumble it and it becomes scramble; blend silken styles into sauces and desserts. Flavor-wise it arrives as a blank canvas that drinks up marinades within minutes. For mixed diets it is the cheapest way to skip the meat.",
+      ar: "التوفو هو البروتين النباتي الذي يتصرف كطعام لا كمكمل: 17 جم بروتين و9 جم دهون و3 جم كربوهيدرات مقابل 144 سعرة لكل 100 جم — بروفايل أحماض أمينية كامل من الصويا، المصدر النباتي الشائع الوحيد القادر على ذلك. سحره في القوام: اضغطه فيتشوى شيئًا يشبه اللحم، وفّته فيصبح بيضًا مقليًا نباتيًا، واخفق الأنواع الحريرية في الصوصات والحلويات. وفي النكهة يصل لوحة فارغة تشرب التتبيلات خلال دقائق. وللأنظمة المختلطة هو أرخص طريقة لتعليم ليلة اللحم تخطي اللحم.",
+    },
+    context: {
+      en: {
+        alternatives: "Lentils and chickpeas carry protein with fiber but no complete profile; tempeh is the fermented, nuttier sibling; a scoop of soy or pea protein fills the gap in shakes.",
+        plan: "Press firm tofu twenty minutes, cube it, and stir-fry with vegetables for a 200 g plate at 288 kcal and 34 g of protein. On gaining days, toss those cubes in cornstarch before frying for extra crunch and calories.",
+        caution: "The 144 kcal belongs to plain firm tofu; pre-marinated and fried varieties from the store can run double, and silken styles behave like a different food entirely.",
+      },
+      ar: {
+        alternatives: "العدس والحمص يحملان البروتين مع الألياف بلا اكتمال؛ والتيمبه الشقيق المخمر أميز جوزًا؛ ومغرفة بروتين الصويا أو البازلاء تسد الفجوة في المشروبات.",
+        plan: "اضغط التوفو الصلب عشرين دقيقة وقطّعه مكعبات وقِلِه بالخضار لطبق 200 جم عند 288 سعرة و34 جم بروتين. وفي أيام التضخيم غلف تلك المكعبات بالنشا قبل القلي لمقرمشية وسعرات إضافية.",
+        caution: "144 سعرة تخص التوفو الصلب السادة؛ الأنواع المتبلة مسبقًا والمقلية من المتجر قد تصل للضعف، والأنواع الحريرية تتصرف كطعام مختلف كليًا.",
+      },
+    },
+    faq: {
+      en: [
+        { q: "Is tofu a complete protein?", a: "Yes — soy provides all essential amino acids, which is rare for plants; its 17 g per 100 g sits between meat and legumes." },
+        { q: "How do I make tofu taste like something?", a: "Press out the water, then marinate in something strong — soy, garlic, smoked paprika — for at least fifteen minutes before searing in a genuinely hot pan." },
+        { q: "How much tofu equals a chicken breast?", a: "Roughly 270 g of firm tofu matches the 46 g of protein in a 150 g cooked chicken breast — at about 389 kcal versus the breast's 248." },
+      ],
+      ar: [
+        { q: "هل التوفو بروتين كامل؟", a: "نعم — الصويا توفر كل الأحماض الأمينية الأساسية، وهي حالة نادرة بين النباتات؛ و17 جم لكل 100 جم تجلس بين اللحوم والبقوليات." },
+        { q: "كيف أجعل للتوفو طعمًا؟", a: "اعصر الماء منه ثم تبّله بشيء قوي — صويا أو ثومًا أو بابريكا مدخنة — خمس عشرة دقيقة على الأقل قبل تحميره في مقلاة ساخنة حقًا." },
+        { q: "كم توفو يعادل صدر دجاج؟", a: "نحو 270 جم من التوفو الصلب تعادل 46 جم بروتين في صدر دجاج مطبوخ 150 جم — بنحو 389 سعرة مقابل 248 للصدر." },
+      ],
+    },
+  },
+
+  "brown-rice": {
+    intro: {
+      en: "Brown rice is white rice with its jacket still on: 123 kcal and 26 g of carbs per 100 g cooked, plus 1.8 g of fiber and a measurable magnesium dose that the polished grain loses in milling. The bran layer makes it chew nuttier, cook twenty minutes longer, and release its energy steadier through a long afternoon. A 150 g cup makes the quiet base under any stir-fry or stew. It is not magic — the calorie gap versus white rice is small — it is simply the whole version of the world's most eaten grain.",
+      ar: "الأرز البني هو الأرز الأبيض وما زالت سترته عليه: 123 سعرة و26 جم كربوهيدرات لكل 100 جم مطبوخ، مع 1.8 جم ألياف وجرعة مغنيسيوم ملموسة يفقدها الحب المصقول أثناء الطحن. طبقة النخاع سبب مضغه الجوزي، وسبب احتياجه عشرين دقيقة إضافية في الحلة، وسبب تثبيته طاقتك عبر ظهيرة طويلة بدل دفعها فجأة للأعلى. كوب 150 جم يشكل القاعدة الهادئة تحت أي طبخ مقلي أو يخنة. وهو ليس سحرًا — فجوة سعراته مقابل الأبيض صغيرة — إنه ببساطة النسخة الكاملة لأكثر حبوب الأرض أكلًا.",
+    },
+    context: {
+      en: {
+        alternatives: "White rice digests faster around hard training days; quinoa brings more protein per cup; riced cauliflower simulates the fork-feel at a fraction of the carbs.",
+        plan: "Batch-cook one pot on Sunday — it holds four days refrigerated. Around training, 150 g under chicken and olive oil is the standard builder plate; on rest days keep the portion at half a cup.",
+        caution: "The chewier the better is not the rule — undercooked bran is genuinely hard to digest; and rice left warm for hours carries Bacillus risk, so cool leftovers fast.",
+      },
+      ar: {
+        alternatives: "الأرز الأبيض يُهضم أسرع حول أيام التدريب الشاق؛ والكينوا تجلب بروتينًا أكثر لكل كوب؛ وقرنبيط المبروش يحاكي إحساس الشوكة بجزء يسير من الكربوهيدرات.",
+        plan: "اطبخ حلة واحدة يوم الأحد — تصمد أربعة أيام بالثلاجة. حول التدريب، 150 جم تحت الدجاج وزيت الزيتون هي طبق البناء القياسي؛ وفي أيام الراحة اجعل الحصة نصف كوب.",
+        caution: "ليست القاعدة «كلما ازداد قسوة كان أفضل» — النخاع غير المطبوخ جيدًا عسر الهضم حقًا؛ والأرز المتروك دافئًا ساعات يحمل خطر الباسيلوس، فبرّد البقايا سريعًا.",
+      },
+    },
+    faq: {
+      en: [
+        { q: "Is brown rice much better than white for fat loss?", a: "The difference is modest — 123 versus 130 kcal per 100 g cooked — the real gains are 1.8 g of fiber and steadier hunger, not a calorie miracle." },
+        { q: "Why does brown rice take so long to cook?", a: "The bran and germ slow water entry — about 40 minutes on the stove, or 20 with pre-soaking; a pressure cooker cuts it further." },
+        { q: "How many calories in a cup of brown rice?", a: "About 185 for a 150 g cooked cup, carrying 40 g of carbs, 4 g of protein and almost no fat." },
+      ],
+      ar: [
+        { q: "هل الأرز البني أفضل بكثير من الأبيض لخسارة الدهون؟", a: "الفرق متواضع — 123 مقابل 130 سعرة لكل 100 جم مطبوخ — المكاسب الحقيقية 1.8 جم ألياف وجوع أثبت، لا معجزة سعرات." },
+        { q: "لماذا يحتاج الأرز البني وقتًا طويلًا للطبخ؟", a: "النخاع والجنين يبطئان دخول الماء — نحو 40 دقيقة على الموقد، أو 20 مع نقع مسبق؛ وإناء الضغط يقصها أكثر." },
+        { q: "كم سعرة في كوب أرز بني؟", a: "نحو 185 لكوب مطبوخ 150 جم، يحمل 40 جم كربوهيدرات و4 جم بروتين وبلا دهون تقريبًا." },
+      ],
+    },
+  },
+
+  "potato": {
+    intro: {
+      en: "The ordinary potato is the most underrated food in bodybuilding kitchens: 77 kcal, 17 g of carbs and 2.2 g of fiber per 100 g — an energy density so low that large, filling portions cost almost nothing. It also tops classic satiety research, beating rice, pasta and bread by a wide margin in how full people report feeling per calorie. A medium 150 g baked potato is 115 kcal; the same weight of cooked pasta is 237. What ruins its reputation is the company it keeps — oil, cheese and deep fryers — not the tuber itself.",
+      ar: "البطاطس العادية هي الطعام الأكثر بخسًا في مطابخ كمال الأجسام: 77 سعرة و17 جم كربوهيدرات و2.2 جم ألياف لكل 100 جم — كثافة طاقة منخفضة حد أن الحصص الكبيرة المُشبعة لا تكلف شيئًا تقريبًا. وهي أيضًا تتقدم أبحاث الشبع الكلاسيكية، متفوقة على الأرز والباستا والخبز بهامش واسع في إحساس الناس بالامتلاء لكل سعرة. حبة متوسطة 150 جم مشوية هي 115 سعرة؛ والوزن نفسه من الباستا المطبوخة 237. ما يدمّر سمعتها هو رفقاؤها — الزيت والجبن والمقالي — لا الدرنة نفسها.",
+    },
+    context: {
+      en: {
+        alternatives: "Sweet potato is the orange sibling with a different micronutrient story; rice and pasta carry similar carbs at higher density; cauliflower florets roast into a low-carb side.",
+        plan: "Bake four on Sunday for the week's lunches — they reheat well. On a cut, a 300 g potato plate with cottage cheese feels like a feast for 330 kcal; while gaining, mash them with milk and butter.",
+        caution: "Frying multiplies calories nearly threefold and restaurant mash hides cream and butter; also, green-tinged skin signals solanine — cut it away deeply.",
+      },
+      ar: {
+        alternatives: "البطاطا الحلوة الشقيقة البرتقالية بقصة مغذيات مختلفة؛ والأرز والباستا يحملان الكربوهيدرات المشابهة بكثافة أعلى؛ وزهرات القرنبيط تُشوى كطبق جانبي قليل الكربوهيدرات.",
+        plan: "اخبز أربعًا يوم الأحد لغداءات الأسبوع — تُعاد تسخينها جيدًا. في التنشيف، طبق بطاطس 300 جم مع الجبن القريش يشبه وليمة بـ330 سعرة؛ وفي التضخيم اهرسها بالحليب والزبدة.",
+        caution: "القلي يضاعف السعرات قرابة ثلاث مرات ومهروس المطاعم يخفي كريمة وزبدة؛ وأيضًا الجلد المخضرّ يشير إلى السولانين — قصّه بعمق.",
+      },
+    },
+    faq: {
+      en: [
+        { q: "Are potatoes good for weight loss?", a: "Yes, with plain preparation — at 77 kcal per 100 g with top-tier satiety they let you eat volume; the moment they meet the fryer the story inverts." },
+        { q: "Potato or rice for bulking?", a: "Rice wins on calories-per-bite and digestion speed around training; potatoes win on fullness — most gaining plans use rice near workouts and potatoes at dinner." },
+        { q: "How many calories in a medium potato?", a: "A 150 g medium bake runs about 115 kcal with 26 g of carbs — before any topping arrives." },
+      ],
+      ar: [
+        { q: "هل البطاطس جيدة لخسارة الوزن؟", a: "نعم مع تحضير سادة — عند 77 سعرة لكل 100 جم وبشبع من الطراز الأول تتيح لك أكل الحجم؛ وما أن تلتقِ المقلي حتى تنعكس الحكاية." },
+        { q: "بطاطس أم أرز للتضخيم؟", a: "الأرز يفوز بالسعرات لكل لقمة وسرعة الهضم حول التدريب؛ والبطاطس تفوز بالامتلاء — أغلب خطط التضخيم تستخدم الأرز قرب التمرين والبطاطس على العشاء." },
+        { q: "كم سعرة في حبة بطاطس متوسطة؟", a: "حبة مشوية متوسطة 150 جم تجري نحو 115 سعرة مع 26 جم كربوهيدرات — قبل وصول أي إضافة." },
+      ],
+    },
+  },
+
+  "whole-wheat-bread": {
+    intro: {
+      en: "Whole wheat bread is the carb that keeps a normal life running: 247 kcal per 100 g sounds high until you remember a slice is 30 g — 74 kcal, 12 g of carbs and a genuine 2.1 g of fiber, with 3.9 g of protein from the wheat itself. That fiber-plus-protein pairing separates it from white loaves: steadier on hunger, gentler on blood sugar. Two slices with peanut butter is the training-day breakfast that needs no stove, no pan and no plan. Read labels anyway — «wheat bread» without the word whole is white flour in a tan coat.",
+      ar: "الخبز الأسمر هو الكربوهيدرات الذي يُبقي الحياة الطبيعية دائرة: 247 سعرة لكل 100 جم تبدو مرتفعة حتى تتذكر أن الشريحة 30 جم — 74 سعرة و12 جم كربوهيدرات و2.1 جم ألياف حقيقية، مع 3.9 جم بروتين من القمح نفسه. اقتران الألياف بالبروتين هذا هو ما يفصله عن أرغفة الساندويتش الأبيض: أثبت على الجوع وألطف على سكر الدم. شريحتان بزبدة الفول السوداني هما فطور يوم التدريب الذي لا يحتاج موقدًا ولا مقلاة ولا خطة. واقرأ الملصقات رغم ذلك — «خبز القمح» بلا كلمة الأسمر الكامل هو دقيق أبيض بمعطف أسمر.",
+    },
+    context: {
+      en: {
+        alternatives: "Rice cakes are the lower-calorie carrier; oatmeal serves the same morning slot warm; whole-grain pita opens the door for Mediterranean fillings.",
+        plan: "Pre-training, bread's fast carbs are a feature: two slices with honey sixty minutes before lifting. On cuts, one slice as the burger bun halves the carb cost of the meal.",
+        caution: "Portion drift is the real risk — toast points disappear two at a time, and jam or chocolate spread turns 74 kcal into 200 before the egg arrives.",
+      },
+      ar: {
+        alternatives: "كيك الأرز الحامل الأقل سعرات؛ والشوفان يخدم خانة الصباح نفسها ساخنًا؛ وخبز البيتا الكامل يفتح الباب لحشوات المتوسط.",
+        plan: "قبل التدريب، سرعة كربوهيدرات الخبز ميزة: شريحتان بالعسل قبل الرفع بستين دقيقة. وفي التنشيف، شريحة واحدة كغطاء البرجر تنصف كلفة الكربوهيدرات.",
+        caution: "انجراف الحصص هو الخطر الحقيقي — شرائح التوست تختفي اثنتين اثنتين، والمربى أو الشوكولاتة القابلة للدهن تحول 74 سعرة إلى 200 قبل وصول البيضة.",
+      },
+    },
+    faq: {
+      en: [
+        { q: "How many calories in a slice of whole wheat bread?", a: "About 74 for a 30 g slice, with 12 g of carbs, 2 g of fiber and 4 g of protein — numbers worth checking per brand, since slice weights wander." },
+        { q: "Is whole wheat bread okay on a cut?", a: "Yes in counted slices — the fiber keeps hunger civil; the failure mode is uncounted grazing, never the bread chemistry itself." },
+        { q: "What does «whole» mean on the label?", a: "The flour retains bran and germ; if the ingredient list says enriched or just wheat flour, the fiber was milled away and added back only partly." },
+      ],
+      ar: [
+        { q: "كم سعرة في شريحة خبز أسمر؟", a: "نحو 74 لشريحة 30 جم، مع 12 جم كربوهيدرات و2 جم ألياف و4 جم بروتين — أرقام تستحق التحقق لكل علامة، فأوزان الشرائح تترحل." },
+        { q: "هل الخبز الأسمر مسموح في التنشيف؟", a: "نعم بشرائح معدودة — الألياف تُبقي الجوع مهذبًا؛ وطريقة الفشل هي الرعي غير المحسوب، لا كيمياء الخبز نفسها أبدًا." },
+        { q: "ماذا تعني كلمة «أسمر كامل» على الملصق؟", a: "أن الدقيق أبقى على النخاع والجنين؛ فإن قائمة المكونات تقول مُدعّم أو دقيق قمح فحسب، فالألياف طُحنت وأُعيد جزء منها فقط." },
+      ],
+    },
+  },
+
+  "pasta": {
+    intro: {
+      en: "Pasta is the reason Italian kitchens never feared carbs, and neither should you: 158 kcal and 31 g of carbohydrates per 100 g cooked — a figure that surprises everyone who assumed the plate was heavier. A one-cup 140 g serving is 221 kcal before sauce, and its dense chew makes it feel like far more. Cooked al dente it digests slowly enough to keep energy even through evening training. The calorie trouble never lived in the noodles; it lives in the cream, the parmesan snowfall and the garlic bread beside them.",
+      ar: "الباستا سبب ألا تخاف المطابخ الإيطالية الكربوهيدرات، وألا تخاف أنت: 158 سعرة و31 جم كربوهيدرات لكل 100 جم مطبوخ — رقم يفاجئ كل من ظن الطبق أثقل. حصة الكوب الواحد 140 جم هي 221 سعرة قبل الصوص، ومضغها الكثيف يجعلها تبدو أكثر بكثير. ومطبوخة سنجد تهضم ببطء يكفي لإبقاء الطاقة متساوية عبر تدريب المساء. مشكلة السعرات لم تسكن النودلز أبدًا؛ بل تسكن الكريمة وتساقط البارميزان الثلجي وخبز الثوم بجوارها.",
+    },
+    context: {
+      en: {
+        alternatives: "Couscous cooks in five minutes for the same job; rice fits Asian-leaning plates; lentil or chickpea pasta doubles the protein at a texture cost.",
+        plan: "Post-workout, 140 g with tomato sauce and lean beef hits the recovery window at moderate calories. On gaining days, add olive oil and grated cheese freely — the base is cheap fuel.",
+        caution: "Restaurant portions run 250-300 g dry — triple a home serving — and creamy sauces can carry more calories than the noodles themselves; order tomato-based when eating out.",
+      },
+      ar: {
+        alternatives: "الكسكس يُطهى في خمس دقائق للوظيفة نفسها؛ والأرز يناسب الأطباق الآسيوية؛ وباستا العدس أو الحمص تضاعف البروتين بكلفة قوام.",
+        plan: "بعد التمرين، 140 جم بصوص الطماطم واللحم قليل الدهن تصيب نافذة الاستشفاء بسعرات معتدلة. وفي أيام التضخيم أضف زيت الزيتون والجبن المبشور بحرية — القاعدة وقود رخيص.",
+        caution: "حصص المطاعم تجري 250-300 جم جافًا — ثلاثة أضعاف حصة المنزل — والصوصات الكريمية قد تحمل سعرات أكثر من النودلز نفسها؛ اطلب الطماطمية عند الأكل بالخارج.",
+      },
+    },
+    faq: {
+      en: [
+        { q: "What does one cup of cooked pasta cost calorically?", a: "About 221 kcal for 140 g, with 43 g of carbs and 8 g of protein; the dry weight on the box is roughly half the cooked weight." },
+        { q: "Does pasta have protein?", a: "A modest 5.8 g per 100 g cooked — meaningful but never the main event; pairing it with meat sauce or shrimp is what makes the plate anabolic." },
+        { q: "Is pasta bad for cutting?", a: "Not in weighed portions — a 140 g cup fits most plans; it is the unmeasured family pot and the oil-heavy sauces that break deficits." },
+      ],
+      ar: [
+        { q: "كم تكلف سعريًا حصة كوب واحد من الباستا المطبوخة؟", a: "نحو 221 سعرة لـ140 جم، مع 43 جم كربوهيدرات و8 جم بروتين؛ والوزن الجاف على العلبة قرابة نصف الوزن المطبوخ." },
+        { q: "هل في الباستا بروتين؟", a: "5.8 جم متواضعة لكل 100 جم مطبوخ — مؤثرة لكنها ليست الحدث الرئيسي أبدًا؛ فاقترانها بصوص اللحم أو الجمبري هو ما يجعل الطبق بنّاءً." },
+        { q: "هل الباستا سيئة للتنشيف؟", a: "ليست كذلك بحصص موزونة — كوب 140 جم يدخل أغلب الخطط؛ الفشل من حلة العائلة غير المقاسة والصوصات الغارقة بالزيت." },
+      ],
+    },
+  },
+
+  "quinoa": {
+    intro: {
+      en: "Quinoa is the seed that grocery shelves file with grains, and the only one of them carrying a complete protein: 4.4 g of it per 100 g cooked, alongside 21 g of carbs, 2.8 g of fiber and 120 kcal. That completeness — every essential amino acid from a plant — plus a quick fifteen-minute cook made it the base layer of vegetarian meal prep everywhere. Its texture pops, its flavor is faintly grassy, and a 185 g cup fluffs up enough to anchor grain bowls, stuffed peppers or a curry bed without stealing the show.",
+      ar: "الكينوا بذرة تصنفها أرفف البقالة مع الحبوب، وهي الوحيدة بينها الحاملة لبروتين كامل: 4.4 جم منه لكل 100 جم مطبوخ، إلى جانب 21 جم كربوهيدرات و2.8 جم ألياف و120 سعرة. هذا الاكتمال — كل حمض أميني أساسي من نبتة — مع طبخ خمس عشرة دقيقة سريع جعلها طبقة الأساس لتحضير الوجبات النباتية في كل مكان. قوامها يفرقع، ونكهتها عشبية خفيفة، وكوب 185 جم ينتفخ بما يكفي لحمل أطباق الحبوب أو الفلفل المحشي أو فراش الكاري دون سرقة المشهد.",
+    },
+    context: {
+      en: {
+        alternatives: "Brown rice plays the same base role cheaper; couscous is the faster cousin; lentils double the protein but behave like a stew rather than a bed.",
+        plan: "Cook a big pot in broth instead of water — flavor for free. One cup under beans and vegetables is a complete vegan dinner; athletes in gaining phases stir in olive oil and seeds.",
+        caution: "Unrinsed quinoa tastes soapy — the saponin coating must wash off before cooking; and its 120 kcal sits close to rice, so it is a quality upgrade, not a calorie cut.",
+      },
+      ar: {
+        alternatives: "الأرز البني يلعب دور الأساس نفسه بأرخص؛ والكسكس ابن العم الأسرع؛ والعدس يضاعف البروتين لكنه يتصرف كيخنة لا كفراش.",
+        plan: "اطبخ حلة كبيرة بمرق بدل الماء — نكهة بلا ثمن. كوب واحد تحت البقول والخضار عشاء نباتي كامل؛ ولاعبو مراحل التضخيم يخفقون فيه زيت زيتون وبذورًا.",
+        caution: "الكينوا غير المغسولة طعمها صابوني — غلاف السابونين يجب أن يُغسل قبل الطبخ؛ و120 سعرة تجلس قرب الأرز، فهي ترقية جودة لا خفض سعرات.",
+      },
+    },
+    faq: {
+      en: [
+        { q: "Is quinoa a complete protein?", a: "Yes — it carries all nine essential amino acids, which no common grain does; with 4.4 g per cooked 100 g it supports, but never replaces, a protein scoop." },
+        { q: "Quinoa or rice for meal prep?", a: "Quinoa if the pot feeds vegetarians or you want the amino profile; rice when calories-per-bite matter most — the two cost almost the same per cup." },
+        { q: "How much cooked quinoa does one dry cup make?", a: "About three cups — 185 g each at 120 kcal, so one dry cup feeds a family dinner or four meal-prep boxes." },
+      ],
+      ar: [
+        { q: "هل الكينوا بروتين كامل؟", a: "نعم — تحمل الأحماض الأمينية الأساسية التسعة، ولا حبة شائعة تفعلها؛ وبـ4.4 جم لكل 100 جم مطبوخ تسند مغرفة البروتين ولا تحل محلها أبدًا." },
+        { q: "كينوا أم أرز لتحضير الوجبات؟", a: "الكينوا إن كانت الحلة تطعم نباتيين أو أردت البروفايل الأميني؛ والأرز حين تهم السعرات لكل لقمة — الاثنان يكلفان الشيء نفسه تقريبًا لكل كوب." },
+        { q: "كم كوب كينوا مطبوخة يصنع كوب جاف واحد؟", a: "نحو ثلاثة أكواب — 185 جم لكل منها عند 120 سعرة، فكوب جاف واحد يطعم عشاء أسرة أو أربعة صناديق وجبات." },
+      ],
+    },
+  },
+
+  "couscous": {
+    intro: {
+      en: "Couscous is the fastest starch in the pantry: pour boiling water over it, cover, five minutes, done — 112 kcal and 23 g of carbs per 100 g cooked, with 3.8 g of protein riding along. Technically a pasta — tiny durum semolina beads — it eats like a grain and takes seasoning beautifully: lemon, herbs and olive oil disappear into it instantly. A 157 g cup makes the bed under chickpea stews and grilled fish across an entire region of North Africa, for good reason. For meal prep in a hurry, nothing else fills the carb slot this fast.",
+      ar: "الكسكس أسرع نشويات في الخزانة: صب عليه ماءً مغليًا وغطِّه خمس دقائق وانتهى — 112 سعرة و23 جم كربوهيدرات لكل 100 جم مطبوخ، مع 3.8 جم بروتين مرافق. هو تقنيًا باستا — خرزات سيمولينا قمح قاسي دقيقة — لكنه يُؤكل كحبة ويستقبل التتبيل بالطريقة التي تتمناها الأرز: الليمون والأعشاب وزيت الزيتون تختفي فيه فورًا. كوب 157 جم يفرش الأساس تحت يخنات الحمص والسمك المشوي عبر إقليم كامل من شمال أفريقيا، لسبب وجيه. لتحضير الوجبات على عجل، لا شيء آخر يملأ خانة الكربوهيدرات بهذه السرعة.",
+    },
+    context: {
+      en: {
+        alternatives: "Quinoa offers the complete-protein upgrade at the same speed; rice is the universal fallback; bulgur keeps more fiber if you can find it.",
+        plan: "Weeknight template: couscous, canned chickpeas, cucumber, tomato, lemon — a 500 kcal dinner in ten minutes. Post-training, stir honey and milk into the leftovers for a gaining bowl.",
+        caution: "It is easy to overshoot — the dry cup triples in volume, so weigh before hydration; and instant cups with seasoning sachets often carry a full day of salt.",
+      },
+      ar: {
+        alternatives: "الكينوا ترقية البروتين الكامل بالسرعة نفسها؛ والأرز الملاذ الشامل؛ والبرغل يحفظ أليافًا أكثر إن وجدته.",
+        plan: "قالب ليلة الأسبوع: كسكس وحمص معلب وخيار وطماطم وليمون — عشاء 500 سعرة في عشر دقائق. وبعد التمرين اخفق العسل والحليب في البقايا لوعاء تضخيم.",
+        caution: "من السهل تجاوز الحصة — الكوب الجاف يتضاعف حجمه ثلاثًا، فزن قبل الترطيب؛ وأكواب التحضير السريع بأكياس التوابل تحمل غالبًا ملح يوم كامل.",
+      },
+    },
+    faq: {
+      en: [
+        { q: "Is couscous healthier than rice?", a: "They sit within a few calories of each other; couscous cooks faster and takes flavor better, while brown rice brings more fiber — pick by plate, not by health halo." },
+        { q: "How many calories in a cup of couscous?", a: "The 157 g cooked cup runs about 176 kcal with 36 g of carbs and 6 g of protein — slightly lighter than the same cup of rice." },
+        { q: "Is couscous whole grain?", a: "Traditional whole-wheat versions exist, but the common instant kind is refined semolina — treat it as a quick, neutral carb, not a fiber source." },
+      ],
+      ar: [
+        { q: "هل الكسكس أصح من الأرز؟", a: "يفترقان بسعرات قليلة؛ الكسكس يُطهى أسرع ويستقبل النكهة أفضل، والأرز البني يجلب أليافًا أكثر — اختر بحسب الطبق لا بهالة الصحة." },
+        { q: "كم سعرة في كوب كسكس؟", a: "كوب 157 جم المطبوخ يجري نحو 176 سعرة مع 36 جم كربوهيدرات و6 جم بروتين — أخف قليلًا من الكوب نفسه من الأرز." },
+        { q: "هل الكسكس حبة كاملة؟", a: "توجد نسخ القمح الكامل التقليدية، لكن الشائع الفوري سيمولينا مصقولة — عاملوه ككربوهيدر سريع محايد لا مصدر ألياف." },
+      ],
+    },
+  },
+
+  "lentils": {
+    intro: {
+      en: "Lentils are the double agent of the pantry: 9 g of protein and 7.9 g of fiber per 100 g cooked, for only 116 kcal — the rare common food carrying that much of both at that price. The fiber is the headline: a single 198 g cup delivers over half of many adults' daily target, which is why lentil lunches keep afternoons quiet and evenings controlled. They need no soaking, simmer in twenty-five minutes, and become dal, soup, salads or burger patties without complaint. Of everything on the plant shelf, this is the food meat eaters should steal.",
+      ar: "العدس صاحب الوجهين في الخزانة: 9 جم بروتين و7.9 جم ألياف لكل 100 جم مطبوخ، مقابل 116 سعرة فقط — الطعام الشائع النادر الحامل هذا القدر من الاثنين بهذا السعر. الألياف هي العنوان: كوب 198 جم واحد يقدم أكثر من نصف هدف يومي لكثير من البالغين، ولهذا تُبقي غداءات العدس الظهيرة هادئة والمساء منضبطًا. لا يحتاج نقعًا، ويغلي في خمس وعشرين دقيقة، ويتحول إلى دال أو شوربة أو سلطات أو أقراص برجر بلا اعتراض. ومن كل ما على الرف النباتي، هذا الطعام الذي ينبغي أن يسرقه آكلو اللحم.",
+    },
+    context: {
+      en: {
+        alternatives: "Chickpeas are the firmer, nuttier swap; black beans anchor Latin pots; tofu covers the protein side when fiber is already handled.",
+        plan: "Cook a 500 g bag into a pot of soup — five lunches, each with 15 g protein and 15 g fiber. On gaining days, finish the pot with olive oil and serve beside rice for the classic pairing.",
+        caution: "Lentil pasta and flours concentrate calories — the 116 kcal belongs to plain cooked seeds; and undercooked lentils fight digestion harder than any bean.",
+      },
+      ar: {
+        alternatives: "الحمص البديل الأصلب والأكثر جوزية؛ والفول الأسود يرسي قدور المطبخ اللاتيني؛ والتوفو يغطي جانب البروتين حين تكون الألياف مدبَّرة.",
+        plan: "اطبخ كيس 500 جم في حلة شوربة — خمسة غداءات، كل منها بـ15 جم بروتين و15 جم ألياف. وفي أيام التضخيم أنهِ الحلة بزيت الزيتون وقدمها بجوار الأرز للثنائية الكلاسيكية.",
+        caution: "باستا العدس ودقيقه يركزان السعرات — 116 سعرة تخص البذور المطبوخة السادة؛ والعدس ناقص الطبخ يحارب الهضم أشد من أي فول.",
+      },
+    },
+    faq: {
+      en: [
+        { q: "How much protein is in a cup of lentils?", a: "About 18 g per 198 g cooked cup, alongside 16 g of fiber and 230 kcal — the best protein-fiber bundle per calorie in this database." },
+        { q: "Do lentils count as protein or carbs?", a: "Both honestly — 20 g of carbs ride with the 9 g of protein per 100 g; treat them as a base layer that happens to carry protein, not a gram-for-gram meat replacement." },
+        { q: "Do I need to soak lentils?", a: "No — unlike most dried beans they cook straight from the bag in about 25 minutes; soaking only shaves a few minutes off." },
+      ],
+      ar: [
+        { q: "كم بروتين في كوب عدس؟", a: "نحو 18 جم لكل كوب مطبوخ 198 جم، مع 16 جم ألياف و230 سعرة — أفضل حزمة بروتين وألياف لكل سعرة في هذه القاعدة." },
+        { q: "هل يُحسب العدس بروتينًا أم كربوهيدرات؟", a: "الاثنين بصدق — 20 جم كربوهيدرات تركب مع 9 جم بروتين لكل 100 جم؛ عاملوه كطبقة أساس تحمل بروتينًا بالصدفة، لا بديلًا للحم جرامًا بجرام." },
+        { q: "هل أحتاج نقع العدس؟", a: "لا — بخلاف أغلب البقول المجففة يُطهى من الكيس مباشرة في نحو 25 دقيقة؛ والنقص يحلق دقائق قليلة فقط." },
+      ],
+    },
+  },
+
+  "chickpeas": {
+    intro: {
+      en: "Chickpeas run every Middle Eastern kitchen for good reason: 9 g of protein, 7.6 g of fiber and 27 g of carbs in 164 kcal per 100 g cooked — a nutritional triangle that keeps a whole region's plates standing. The 164 g cup is the backstage unit of hummus, the anchor of falafel, the easiest salad topping in the canned aisle, and a roasting candidate that turns into crunchy croutons in half an hour. Their starch drinks sauces like a sponge, which is why every stew with chickpeas in it tastes thicker than its ingredient list says.",
+      ar: "الحمص يدير كل مطبخ شرق أوسطي لسبب وجيه: 9 جم بروتين و7.6 جم ألياف و27 جم كربوهيدرات في 164 سعرة لكل 100 جم مطبوخ — مثلث غذائي يُبقي أطباق إقليم كامل واقفة. كوب 164 جم هو وحدة الكواليس خلف الحمص المتبل، ومرساة الفلافل، وأسهل إضافة سلطة في رف المعلبات، ومرشح تحميص يتحول إلى كريوتونات مقرمشة في نصف ساعة. ونشاؤه يشرب الصوصات كالإسفنجة، ولهذا كل يخنة بها حمص تتذوق أثقل مما تقوله قائمة مكوناتها.",
+    },
+    context: {
+      en: {
+        alternatives: "Lentils cook faster with the same fiber story; black beans for the Latin direction; edamame if you want the protein doubled.",
+        plan: "Blend a can with tahini, lemon and garlic for a protein-rich dip that carries carrot sticks through a cut. Over rice, the combo quietly forms a complete amino profile.",
+        caution: "Falafel is deep-fried chickpeas — delicious and caloric, a different entry entirely; and canned versions carry sodium worth rinsing off.",
+      },
+      ar: {
+        alternatives: "العدس يُطهى أسرع بقصة الألياف نفسها؛ والفول الأسود للتوجه اللاتيني؛ والإيدامامي إن أردت مضاعفة البروتين.",
+        plan: "اخلط علبة مع الطحينة والليمون والثوم لغموس غني بالبروتين يحمل أعواد الجزر عبر التنشيف. وفوق الأرز، يشكل الثنائي بهدوء بروفايلًا أمينيًا كاملًا.",
+        caution: "الفلافل حمص مقلي بالزيت الغزير — لذيذة وسعراتها عالية، ومدخل مختلف كليًا؛ والنسخ المعلبة تحمل صوديومًا يستحق الشطف.",
+      },
+    },
+    faq: {
+      en: [
+        { q: "How much protein in a cup of chickpeas?", a: "Around 15 g per 164 g cup with 12 g of fiber at 270 kcal — solid plant numbers that still sit well below a chicken portion gram-for-gram." },
+        { q: "Are chickpeas good for weight loss?", a: "Their fiber-and-protein pair keeps portions satisfying; the catch is preparation — boiled into salads they cut well, whipped with tahini oil they creep upward." },
+        { q: "Canned or dried chickpeas?", a: "Canned wins on convenience at a small sodium cost you rinse away; dried wins on price if you will simmer them yourself on a weekend." },
+      ],
+      ar: [
+        { q: "كم بروتين في كوب حمص؟", a: "حوالي 15 جم لكل كوب 164 جم مع 12 جم ألياف عند 270 سعرة — أرقام نباتية متينة تجلس مع ذلك دون حصة الدجاج جرامًا بجرام." },
+        { q: "هل الحمص جيد لخسارة الوزن؟", a: "ثنائية أليافه وبروتينه تُبقي الحصص مُشبعة؛ والفخ في التحضير — مسلوقًا في السلطات ينفع للتنشيف، ومخفوقًا بزيت الطحينة يتسلل لأعلى." },
+        { q: "حمص معلب أم مجفف؟", a: "المعلب يفوز بالسهولة بكلفة صوديوم صغيرة تشطفها؛ والمجفف يفوز بالسعر إن كنت ستسلقه بنفسك في عطلة أسبوع." },
+      ],
+    },
+  },
+
+  "black-beans": {
+    intro: {
+      en: "Black beans are the fiber champion of this entire library: 8.7 g per 100 g cooked — a 172 g cup carrying 15 g of it, alongside 15 g of protein and 41 g of carbs at 227 kcal. That fiber load is why beans-and-rice plates keep blood sugar steadier than the same carbs alone. It cooks down creamy, holds its shape in soups, mashes into burger patties and refried-style dips, and turns a burrito bowl from a rice pile into a meal. The dark skin means anthocyanins — the same pigment family as berries — as a free bonus.",
+      ar: "الفول الأسود بطل الألياف في هذه المكتبة كلها: 8.7 جم لكل 100 جم مطبوخ — كوب 172 جم يحمل 15 جم منها، مع 15 جم بروتين و41 جم كربوهيدرات عند 227 سعرة. هذا الحمل من الألياف سبب بقاء أطباق أمريكا اللاتينية المبنية على الفول والأرز أثبت في سكر الدم من الكربوهيدرات نفسها وحدها. والحبة تُطبخ قشدية، وتحمل شكلها في الشوربات، وتُهرس في أقراص برجر وغموسات، وتحول وعاء البوريتو من كومة أرز إلى وجبة. والقشرة الداكنة تعني أنثوسيانين — عائلة الصبغة نفسها في التوت — كمكافأة مجانية.",
+    },
+    context: {
+      en: {
+        alternatives: "Lentils skip the soak; chickpeas swing Middle Eastern; refried pintos are the traditional mash swap.",
+        plan: "A drained can over rice with lime and hot sauce is a 15-minute vegan dinner with a complete amino profile. During gaining phases, blend them into brownies — the internet recipe genuinely works.",
+        caution: "The canned sodium rinses off in a colander; the real trap is sugary baked-bean styles, which are a dessert wearing a bean costume.",
+      },
+      ar: {
+        alternatives: "العدس يتخطى النقع؛ والحمص يميل شرق أوسطيًا؛ والبينتو المهروس البديل التقليدي للهرس.",
+        plan: "علبة مصفاة فوق الأرز مع الليمون الحامض والصوص الحار عشاء نباتي في 15 دقيقة ببروفايل أميني كامل. وفي مراحل التضخيم اخفقهم في كيك البراوني — وصفة الإنترنت تعمل حقًا.",
+        caution: "صوديوم المعلب يُشطف في المصفاة؛ والفخ الحقيقي أنماط الفول المخبوز السكري، وهي حلوى بزيّ فول.",
+      },
+    },
+    faq: {
+      en: [
+        { q: "How much fiber in a cup of black beans?", a: "15 g in a 172 g cup — half or more of a typical day's target from one food, with 15 g of protein arriving on the same spoon." },
+        { q: "Are black beans a complete protein?", a: "Not alone — they run low in methionine, which rice happens to supply; the beans-and-rice pairing is the classic fix and the reason the combo exists everywhere." },
+        { q: "Why do beans upset my stomach?", a: "Their oligosaccharides feed gut bacteria noisily; rinsing canned beans thoroughly, starting with small portions, and cooking with cumin all soften the effect." },
+      ],
+      ar: [
+        { q: "كم ألياف في كوب فول أسود؟", a: "15 جم في كوب 172 جم — نصف هدف يوم نموذجي أو أكثر من طعام واحد، مع 15 جم بروتين تصل بالملعقة نفسها." },
+        { q: "هل الفول الأسود بروتين كامل؟", a: "ليس وحده — ينخفض فيه الميثيونين، والأرز يوفره بالمصادفة؛ وثنائية الفول والأرز هي الإصلاح الكلاسيكي وسبب وجود التوليفة في كل مكان." },
+        { q: "لماذا يزعج الفول معدتي؟", a: "سكرياته القليلة التعدد تطعم بكتيريا الأمعاء بضجيج؛ وشطف المعلب جيدًا، والبدء بحصص صغيرة، والطبخ بالكمون، كلها تلطف الأثر." },
+      ],
+    },
+  },
+
+  "corn": {
+    intro: {
+      en: "Corn is the vegetable that acts like a grain: 19 g of carbs and 86 kcal per 100 g, sweet enough to feel like a treat while still carrying 2.7 g of fiber. A single medium ear at 100 g is a summer side that needs nothing but heat and salt. Kernels off the cob jump into salsas, salads, chowder and stir-fries, and frozen bags keep the sweetness locked for months. Its sugar converts to starch fast after picking — which is exactly why the frozen version often beats the «fresh» ear that traveled for days.",
+      ar: "الذرة خضار يتصرف كحبة: 19 جم كربوهيدرات و86 سعرة لكل 100 جم، حلوة بما يكفي لتشبه الحلوى وما زالت تحمل 2.7 جم ألياف. كوز متوسط واحد عند 100 جم طبق صيفي لا يحتاج سوى النار والملح. والحبوب خارج الكوز تقفز إلى الصلصات والسلطات وشوربة الذرة والتقليب السريع، وأكياس المجمد تحبس الحلاوة شهورًا. وسكرها يتحول نشا بسرعة بعد القطف — وهذا بالضبط سبب تفوق النسخة المجمدة غالبًا على الكوز «الطازج» الذي سافر أيامًا.",
+    },
+    context: {
+      en: {
+        alternatives: "Peas fill the sweet-green slot; potato plays the starchy side at similar calories; cauliflower bites cover the low-carb evenings.",
+        plan: "Cut the kernels off two ears into a pan with bell pepper and cumin — a five-minute side with color and fiber. In gaining shakes, corn blends fine with banana and oats.",
+        caution: "Butter and mayo-based street-corn dressings can double the calories; and popcorn is a different food entirely — this page's numbers belong to the fresh or frozen kernel.",
+      },
+      ar: {
+        alternatives: "ال بازلاء يملأ خانة الحلاوة الخضراء؛ والبطاطس تلعب الجانب النشوي بسعرات مشابهة؛ وقرّيبات القرنبيط تغطي أمسيات قلة الكربوهيدرات.",
+        plan: "انزع حبوب كوزين في مقلاة مع الفلفل الملون والكمون — طبق جانبي بخمس دقائق فيه لون وألياف. وفي مشروبات التضخيم تُخفق الذرة جيدًا مع الموز والشوفان.",
+        caution: "الزبدة وصلصات ذرة الباعة القائمة على المايونيز قد تضاعف السعرات؛ والفشار طعام آخر كليًا — أرقام هذه الصفحة تخص الحبة الطازجة أو المجمدة.",
+      },
+    },
+    faq: {
+      en: [
+        { q: "Is corn a vegetable or a grain?", a: "Botanically a grain, culinarily both — at 86 kcal per 100 g with 2.7 g of fiber it behaves like a moderate starch either way." },
+        { q: "How many calories in an ear of corn?", a: "A medium 100 g ear runs about 86 kcal and 19 g of carbs — and count the butter separately." },
+        { q: "Is corn too sugary for a diet?", a: "Its 3.2 g of sugars per 100 g is modest — less than carrots portion for portion; the reputation comes from syrup, not from the cob." },
+      ],
+      ar: [
+        { q: "هل الذرة خضار أم حبة؟", a: "نباتيًا حبة، وطبيخيًا كلاهما — عند 86 سعرة لكل 100 جم مع 2.7 جم ألياف تتصرف كنشويات معتدلة في الحالتين." },
+        { q: "كم سعرة في كوز ذرة؟", a: "كوز متوسط 100 جم يجري نحو 86 سعرة و19 جم كربوهيدرات — واحسب الزبدة على حدة." },
+        { q: "هل الذرة سكرية أكثر من اللازم للدايت؟", a: "3.2 جم سكريات لكل 100 جم رقم متواضع — أقل من الجزر حصة بحصة؛ السمعة تأتي من الشراب السكري لا من الكوز." },
+      ],
+    },
+  },
+
+  "cereal": {
+    intro: {
+      en: "Corn flakes are the honest end of the cereal aisle: 357 kcal per 100 g dry sounds alarming, but the designed serving is a 28 g cup — 100 kcal and 24 g of carbs, before milk. As a quick pre-training carb or a six-a.m. child-compatible breakfast, nothing beats its zero-effort timeline. The nutrition story depends entirely on the box you grab: this plain version carries 10 g of sugar per 100 g, while the cartoon-character shelf next to it can triple that. Read the line that says sugars — it is the whole review.",
+      ar: "كورن فليكس هو الطرف الصادق من رف السيريال: 357 سعرة لكل 100 جم جاف تبدو مخيفة، لكن الحصة المصممة كوب 28 جم — 100 سعرة و24 جم كربوهيدرات، قبل الحليب. ككربوهيدر سريع قبل التدريب أو فطور السادسة صباحًا المتوافق مع الأطفال، لا شيء يضاهي جدوله الزمني صفر الجهد. والقصة الغذائية تعتمد كليًا على العلبة التي تمسكها: هذه النسخة السادة تحمل 10 جم سكر لكل 100 جم، بينما رف شخصيات الكرتون المجاور قد يضاعفها ثلاث مرات. اقرأ سطر السكريات — فهو المراجعة كلها.",
+    },
+    context: {
+      en: {
+        alternatives: "Oatmeal is the slower-digesting swap with more fiber; rice cakes play the same crunch dry; eggs are the breakfast that holds you to lunch.",
+        plan: "Use it as the fast pre-gym carb: one cup with milk sits light and clears the stomach before heavy sessions. On cuts, replace the milk with skim or pour a protein shake over it instead.",
+        caution: "The serving-to-bowl gap is where cereal diets die — a family bowl of flakes passes 400 kcal dry before any milk lands.",
+      },
+      ar: {
+        alternatives: "الشوفان البديل أبطأ هضمًا بألياف أكثر؛ وكيك الأرز يلعب المقرمشية نفسها جافًا؛ والبيض هو الفطور الذي يمسكك حتى الغداء.",
+        plan: "استخدمه ككربوهيدر ما قبل التمرين السريع: كوب واحد بالحليب يجلس خفيفًا ويفرغ المعدة قبل الجلسات الثقيلة. وفي التنشيف استبدل الحليب بالخالي الدسم أو اسكب فوقه مشروب بروتين.",
+        caution: "فجوة الحصة-إلى-الوعاء هي حيث تموت حميات السيريال — وعاء عائلي من الرقائق يتجاوز 400 سعرة جافًا قبل نزول أي حليب.",
+      },
+    },
+    faq: {
+      en: [
+        { q: "How many calories in a cup of corn flakes?", a: "About 100 for the 28 g cup, with 24 g of carbs — plus 2 g of protein if you pour skim milk over it." },
+        { q: "Is cereal good after a workout?", a: "As a fast carb it works fine alongside a real protein source; alone it is half a recovery meal waiting for the missing half." },
+        { q: "What should I check on the cereal box?", a: "The sugars line and the serving size — brands quietly shrink the printed serving to make numbers look tamer than your actual bowl." },
+      ],
+      ar: [
+        { q: "كم سعرة في كوب كورن فليكس؟", a: "نحو 100 لكوب 28 جم، مع 24 جم كربوهيدرات — وزيادة 2 جم بروتين إن سكبت فوقه حليبًا خالي الدسم." },
+        { q: "هل السيريال جيد بعد التمرين؟", a: "ككربوهيدر سريع يعمل جيدًا بجانب مصدر بروتين حقيقي؛ وحده نصف وجبة استشفاء تنتظر نصفها الغائب." },
+        { q: "ماذا أفحص على علبة السيريال؟", a: "سطر السكريات وحجم الحصة — العلامات تقلص الحصة المطبوعة خلسة لتُظهر أرقامًا أهدأ من وعائك الفعلي." },
+      ],
+    },
+  },
+
+  "granola": {
+    intro: {
+      en: "Granola is the most efficient calorie-delivery system disguised as health food in this library: 471 kcal, 64 g of carbs and 20 g of fat per 100 g — numbers a candy bar would not blush at. That density is precisely its value for hard gainers and endurance mornings: a 60 g half-cup pours 283 kcal of oats, nuts and oil into a bowl that feels like a responsible choice. The trap is equally efficient — pour it freely over yogurt and the «healthy breakfast» quietly clears 500 kcal. Weigh it once and the relationship stays honest.",
+      ar: "الجرانولا أكفأ منظومة توصيل سعرات متنكرة في زي الطعام الصحي داخل هذه المكتبة: 471 سعرة و64 جم كربوهيدرات و20 جم دهون لكل 100 جم — أرقام لا يخجل منها لوح الحلوى. وهذه الكثافة هي قيمتها بالضبط لمن يجدون صعوبة في زيادة الوزن وصباحات التحمّل: نصف كوب 60 جم يصب 283 سعرة من الشوفان والمكسرات والزيت في وعاء يشبه خيارًا مسؤولًا. والفخ بالكفاءة نفسها — اسكبه بحرية على الزبادي فيعبر «الفطور الصحي» 500 سعرة بهدوء. زنه مرة واحدة وتبقى العلاقة صادقة.",
+    },
+    context: {
+      en: {
+        alternatives: "Plain oats give the same base at one-third the density; muesli skips the added oil; nuts alone deliver the crunch with the protein intact.",
+        plan: "For gainers it is a shortcut: 60 g over whole milk adds more than 400 kcal to breakfast without volume struggles. On a cut, use it as a topping measured in tablespoons, never as the bowl.",
+        caution: "Clusters are bound with oil and syrup — the 20 g of fat and 20 g of sugars per 100 g are structural, not accidental; «low-fat» versions usually pay in sugar.",
+      },
+      ar: {
+        alternatives: "الشوفان السادي يمنح الأساس نفسه بثلث الكثافة؛ والميوسلي يتخطى الزيت المضاف؛ والمكسرات وحدها توصل المقرمشية والبروتين سليمًا.",
+        plan: "لطلاب التضخيم هو اختصار: 60 جم فوق الحليب الكامل يضيف أكثر من 400 سعرة للفطور بلا صراع مع الحجم. وفي التنشيف استخدمه كإضافة تُقاس بملعقات المائدة، لا كوعاء أبدًا.",
+        caution: "التكتلات مربوطة بالزيت والشراب — 20 جم دهون و20 جم سكريات لكل 100 جم بنيوية لا عرضية؛ ونسخ «قليلة الدهن» تدفع عادة من السكر.",
+      },
+    },
+    faq: {
+      en: [
+        { q: "How many calories in half a cup of granola?", a: "About 283 for 60 g — with 38 g of carbs and 12 g of fat; the handful you grab walking past the jar adds another hundred." },
+        { q: "Is granola healthy?", a: "The oats and nuts inside are; the binding oil and syrup decide the verdict — compare grams of sugar per 100 g across brands and the shelf sorts itself." },
+        { q: "Granola or oats for cutting?", a: "Oats, clearly — the same grain at one-third the calorie density lets you eat triple the volume; granola on a deficit is a measured condiment." },
+      ],
+      ar: [
+        { q: "كم سعرة في نصف كوب جرانولا؟", a: "نحو 283 لـ60 جم — مع 38 جم كربوهيدرات و12 جم دهون؛ والقبضة التي تلتقطها مارًّا بالبرطمان تضيف مئة أخرى." },
+        { q: "هل الجرانولا صحية؟", a: "الشوفان والمكسرات بداخلها كذلك؛ والزيت والشراب الرابطان يقرران الحكم — قارن جرامات السكر لكل 100 جم بين العلامات فيرتّب الرف نفسه." },
+        { q: "جرانولا أم شوفان للتنشيف؟", a: "الشوفان بوضوح — الحبة نفسها بثلث كثافة السعرات تتيح لك أكل ثلاثة أضعاف الحجم؛ والجرانولا في العجز بمقياس مقتصد." },
+      ],
+    },
+  },
 };
 
 /**
