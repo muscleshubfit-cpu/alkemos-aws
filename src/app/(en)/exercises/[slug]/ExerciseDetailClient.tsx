@@ -11,7 +11,8 @@ import {
   MUSCLE_LABELS,
   type Exercise,
 } from "@/lib/exercises-shared";
-import { ArrowLeft, Dumbbell, Target, AlertCircle, CheckCircle2 } from "lucide-react";
+import type { ExerciseEnrichment } from "@/lib/exercises-enrichment";
+import { ArrowLeft, Dumbbell, Target, AlertCircle, CheckCircle2, XCircle } from "lucide-react";
 import Image from "next/image";
 import { ImageWithFallback } from "@/components/ui/image-with-fallback";
 import type { HubLinkMini } from "@/lib/hub-collections";
@@ -35,6 +36,7 @@ export default function ExerciseDetailClient({
   slug,
   related: relatedProp,
   hubLinks: hubLinksProp,
+  enrichment,
   lang: langProp,
 }: {
   exercise: Exercise | null;
@@ -47,6 +49,10 @@ export default function ExerciseDetailClient({
     muscle: HubLinkMini | null;
     equipment: HubLinkMini | null;
   } | null;
+  /** P1-2 (2026-11-04): per-exercise unique editorial layer for the
+   *  top-50 demand pages — undefined for the rest of the library, so
+   *  nothing changes on the 818 unaudited pages. */
+  enrichment?: ExerciseEnrichment | null;
   lang?: Lang;
 }) {
   const { lang: ctxLang } = useI18n();
@@ -201,6 +207,31 @@ export default function ExerciseDetailClient({
           </div>
         </div>
 
+        {/* P1-2 ENRICHMENT (2026-11-04) — unique intro prose. The header
+            grid above is shared chrome across all 868 exercise pages; this
+            paragraph is the per-exercise unique layer that lifts the top-50
+            demand pages past the plan's 600-word G2 gate. Nothing renders
+            for non-enriched exercises. */}
+        {enrichment && (
+          <section className="mt-10">
+            <p className="text-base leading-relaxed text-[#1d1d1f]">
+              {isAr ? enrichment.intro.ar : enrichment.intro.en}
+            </p>
+          </section>
+        )}
+
+        {/* P1-2 ENRICHMENT — how the muscles act in THIS movement. */}
+        {enrichment && (
+          <section className="mt-8">
+            <h2 className="text-xl font-semibold tracking-tight">
+              {isAr ? `كيف تعمل العضلات في ${exercise.nameAr}` : `How the muscles work in the ${exercise.nameEn}`}
+            </h2>
+            <p className="mt-3 text-base leading-relaxed text-[#1d1d1f]">
+              {isAr ? enrichment.sections.ar.muscles : enrichment.sections.en.muscles}
+            </p>
+          </section>
+        )}
+
         {/* Instructions */}
         <section className="mt-10 rounded-3xl bg-[#f5f5f7] p-6 md:p-8">
           <h2 className="flex items-center gap-2 text-xl font-semibold tracking-tight">
@@ -234,6 +265,110 @@ export default function ExerciseDetailClient({
             ))}
           </ul>
         </section>
+
+        {/* P1-2 ENRICHMENT — common mistakes with fixes. */}
+        {enrichment && (
+          <section className="mt-8">
+            <h2 className="text-xl font-semibold tracking-tight">
+              {isAr ? "أخطاء شائعة وكيف تصححها" : "Common mistakes and how to fix them"}
+            </h2>
+            <div className="mt-4 space-y-4">
+              {(isAr ? enrichment.sections.ar.mistakes : enrichment.sections.en.mistakes).map((m, i) => (
+                <div key={i} className="rounded-2xl border border-[#d2d2d7] p-5">
+                  <p className="flex items-start gap-2 text-sm font-medium text-[#1d1d1f]">
+                    <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-[#ff3b30]" aria-hidden="true" />
+                    {m.error}
+                  </p>
+                  <p className="mt-2 flex items-start gap-2 text-sm leading-relaxed text-[#6e6e73]">
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[#34c759]" aria-hidden="true" />
+                    {m.fix}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* P1-2 ENRICHMENT — alternatives / progression / programming / safety. */}
+        {enrichment && (
+          <section className="mt-8 grid gap-4 md:grid-cols-2">
+            <div className="rounded-2xl bg-[#f5f5f7] p-5">
+              <h3 className="text-sm font-semibold text-[#1d1d1f]">
+                {isAr ? "بدائل حسب المعدات" : "Equipment alternatives"}
+              </h3>
+              <p className="mt-2 text-sm leading-relaxed text-[#6e6e73]">
+                {isAr ? enrichment.sections.ar.alternatives : enrichment.sections.en.alternatives}
+              </p>
+            </div>
+            <div className="rounded-2xl bg-[#f5f5f7] p-5">
+              <h3 className="text-sm font-semibold text-[#1d1d1f]">
+                {isAr ? "الصعوبة والتدرج" : "Difficulty and progression"}
+              </h3>
+              <p className="mt-2 text-sm leading-relaxed text-[#6e6e73]">
+                {isAr ? enrichment.sections.ar.progression : enrichment.sections.en.progression}
+              </p>
+            </div>
+            <div className="rounded-2xl bg-[#f5f5f7] p-5">
+              <h3 className="text-sm font-semibold text-[#1d1d1f]">
+                {isAr ? "المجموعات والتكرارات والراحة" : "Sets, reps and rest"}
+              </h3>
+              <p className="mt-2 text-sm leading-relaxed text-[#6e6e73]">
+                {isAr ? enrichment.sections.ar.programming : enrichment.sections.en.programming}
+              </p>
+            </div>
+            {(isAr ? enrichment.sections.ar.safety : enrichment.sections.en.safety) && (
+              <div className="rounded-2xl border border-[#ff9500]/25 bg-[#ff9500]/5 p-5">
+                <h3 className="text-sm font-semibold text-[#1d1d1f]">
+                  {isAr ? "إرشادات السلامة" : "Safety notes"}
+                </h3>
+                <p className="mt-2 text-sm leading-relaxed text-[#6e6e73]">
+                  {isAr ? enrichment.sections.ar.safety : enrichment.sections.en.safety}
+                </p>
+              </div>
+            )}
+          </section>
+        )}
+
+        {/* P1-2 ENRICHMENT — per-exercise FAQ (visible HTML only;
+            FAQPage JSON-LD is retired — seo.ts law 2026-05). */}
+        {enrichment && (
+          <section className="mt-10">
+            <h2 className="text-xl font-semibold tracking-tight">
+              {isAr ? `أسئلة شائعة عن ${exercise.nameAr}` : `${exercise.nameEn} — frequently asked questions`}
+            </h2>
+            <div className="mt-4 divide-y divide-[#d2d2d7]">
+              {(isAr ? enrichment.faq.ar : enrichment.faq.en).map((item) => (
+                <div key={item.q} className="py-4">
+                  <h3 className="text-base font-medium text-[#1d1d1f]">{item.q}</h3>
+                  <p className="mt-1.5 text-sm leading-relaxed text-[#6e6e73]">{item.a}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* P1-2 ENRICHMENT — verified internal links (articles, tools,
+            programs, sibling exercises). hrefs are language-space-explicit
+            (blog slugs differ per language) so no prefixing happens here. */}
+        {enrichment && enrichment.links.length > 0 && (
+          <section className="mt-10">
+            <h2 className="text-xl font-semibold tracking-tight">
+              {isAr ? "اقرأ أيضًا" : "Read next"}
+            </h2>
+            <div className="mt-4 flex flex-wrap gap-3">
+              {enrichment.links.map((l) => (
+                <a
+                  key={l.hrefEn + l.hrefAr}
+                  href={isAr ? l.hrefAr : l.hrefEn}
+                  className="rounded-full bg-[#f5f5f7] px-4 py-2 text-sm font-medium text-[#1d1d1f] transition-opacity hover:opacity-90"
+                >
+                  {isAr ? l.labelAr : l.labelEn}
+                  <span aria-hidden="true" className="ms-1 text-[#6e6e73]">›</span>
+                </a>
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* Share buttons */}
         <div className="mt-6 flex items-center justify-between gap-4 rounded-2xl bg-[#f5f5f7] p-4">

@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getExerciseBySlug, getRelatedExercises } from "@/lib/exercises";
 import { getExerciseImages } from "@/lib/exercise-images";
+import { getExerciseEnrichment } from "@/lib/exercises-enrichment";
 import {
   getMuscleHubByCategory,
   getEquipmentHubByEquipment,
@@ -218,6 +219,7 @@ export default async function Page({
         slug={slug}
         related={exercise ? getRelatedExercises(exercise) : []}
         hubLinks={hubLinks}
+        enrichment={exercise ? getExerciseEnrichment(exercise.slug) ?? null : null}
       />
     </>
   );

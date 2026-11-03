@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getExerciseBySlug, getRelatedExercises, EXERCISES, EQUIPMENT_LABELS, LEVEL_LABELS } from "@/lib/exercises";
 import { MUSCLE_LABELS } from "@/lib/exercises-shared";
 import { getExerciseImages } from "@/lib/exercise-images";
+import { getExerciseEnrichment } from "@/lib/exercises-enrichment";
 import {
   getMuscleHubByCategory,
   getEquipmentHubByEquipment,
@@ -201,6 +202,7 @@ export default async function Page({
         slug={slug}
         related={exercise ? getRelatedExercises(exercise) : []}
         hubLinks={hubLinks}
+        enrichment={exercise ? getExerciseEnrichment(exercise.slug) ?? null : null}
         lang="ar"
       />
     </>
