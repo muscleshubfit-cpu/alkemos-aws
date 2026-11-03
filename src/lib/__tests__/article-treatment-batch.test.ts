@@ -88,6 +88,7 @@ const BATCH_FILES = [
   "article-treatment-batch-e27.json",
   "article-treatment-batch-e28.json",
   "article-treatment-batch-e29.json",
+  "article-treatment-batch-e30.json",
 ] as const;
 
 const BATCH_DIR = join(process.cwd(), "scripts", "blog-runner");
