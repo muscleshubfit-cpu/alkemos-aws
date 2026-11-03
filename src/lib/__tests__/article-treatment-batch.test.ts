@@ -80,6 +80,7 @@ const BATCH_FILES = [
   "article-treatment-batch-l2-4.json",
   "article-treatment-batch-l2-5.json",
   "article-treatment-batch-l2-6.json",
+  "article-treatment-batch-l2-7.json",
 ] as const;
 
 const BATCH_DIR = join(process.cwd(), "scripts", "blog-runner");
@@ -329,6 +330,15 @@ describe("article-treatment batches — the permanent editorial battery", () => 
           "home-muscle-gain-8-weeks|ar",
           "4-week-beginner-muscle-building-plan|en",
           "4-week-beginner-muscle-building-plan-guide|ar",
+          // + the 4 pairs created by the L2-7 batch (E-22)
+          "12-week-progressive-overload-intermediate|en",
+          "12-week-progressive-overload-intermediate-guide|ar",
+          "schedule-cardio-muscle-gain-guide|en",
+          "cardio-scheduling-muscle-gain-guide|ar",
+          "chest-muscle-bodyweight-home|ar",
+          "chest-muscle-bodyweight-home-guide|en",
+          "women-bodyweight-muscle-workout|ar",
+          "women-home-muscle-building-program-guide|en",
         ]);
         const KNOWN_PAIRS: Array<[string, string]> = [
           ["deload-week-guide|ar", "deload-week-rest-training-guide|en"],
@@ -398,6 +408,13 @@ describe("article-treatment batches — the permanent editorial battery", () => 
             "4-week-beginner-muscle-building-plan|en",
             "4-week-beginner-muscle-building-plan-guide|ar",
           ],
+          [
+            "12-week-progressive-overload-intermediate|en",
+            "12-week-progressive-overload-intermediate-guide|ar",
+          ],
+          ["schedule-cardio-muscle-gain-guide|en", "cardio-scheduling-muscle-gain-guide|ar"],
+          ["chest-muscle-bodyweight-home|ar", "chest-muscle-bodyweight-home-guide|en"],
+          ["women-bodyweight-muscle-workout|ar", "women-home-muscle-building-program-guide|en"],
         ];
         // Pairs whose side was rewritten in a batch that PREDATES the pair's
         // creation are exempt for that batch only — a rewrite cannot dangle
