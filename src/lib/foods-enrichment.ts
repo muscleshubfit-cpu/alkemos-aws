@@ -1301,6 +1301,626 @@ export const FOODS_ENRICHMENT: Record<string, FoodEnrichment> = {
       ],
     },
   },
+
+  "coconut-oil": {
+    intro: {
+      en: "Coconut oil is pure fat in a jar — 862 kcal per 100 g, every gram of it fat, with a tablespoon (14 g) costing 121 kcal. What earns it shelf space is behavior, not macros: solid at room temperature, it binds no-bake protein bars and pastry-style crusts without refrigeration, and its sweet nuttiness suits curries and baking in a way olive oil never could. A notable share of its saturated fat comes as medium-chain triglycerides, a form the body handles somewhat differently — a real but modest effect, nowhere near the marketing claims that once surrounded it.",
+      ar: "زيت جوز الهند دهن صرف في مرطبان — 862 سعرة لكل 100 جم، كل جرام منها دهن، وملعقة كبيرة (14 جم) تكلف 121 سعرة. ما يستحق به مكانه على الرف هو السلوك لا الماكروز: صلب في حرارة الغرفة، فيربط ألواح البروتين الخالية من الخبز وقشور المعجنات بلا ثلاجة، وحلاوته الجوزية تناسب الكاري والخبز بطريقة لا يقدر عليها زيت الزيتون أبدًا. ونصيب ملموس من دهونه المشبعة يأتي ثلاثي الغليسريد متوسط السلسلة، صورة يتعامل معها الجسم باختلاف ما — أثر حقيقي لكنه متواضع، لا يقترب من ادعاءات التسويق التي أحاطت به زمانًا.",
+    },
+    context: {
+      en: {
+        alternatives: "Olive oil is the daily driver for savory cooking; butter matches it in baking with a dairy note; avocado oil handles high-heat searing neutrally.",
+        plan: "On a bulk, a spoon stirred into rice or a blender of oats adds 121 easy kcal that change nothing about fullness. Keto cooks use it as their default fat where its sweetness fits the plate.",
+        caution: "At 862 kcal per 100 g it is the most calorie-dense entry in this library with olive oil — measure it by the teaspoon, never free-pour, and count it even in «healthy» bars.",
+      },
+      ar: {
+        alternatives: "زيت الزيتون هو الحصان اليومي للطبخ المالح؛ والزبدة تطابقه في الخبز بنوتة لبنية؛ وزيت الأفوكادو يتعامل مع القلي العالي الحرارة بحياد.",
+        plan: "في التضخيم، ملعقة مخفوقة في الأرز أو خلاط الشوفان تضيف 121 سعرة سهلة لا تغير شيئًا في الإشباع. وطباخو الكيتو يتخذونه دهنهم الافتراضي حيث تناسب حلاوته الطبق.",
+        caution: "عند 862 سعرة لكل 100 جم هو أثقل مدخلات هذه المكتبة مع زيت الزيتون — قِسه بالملعقة الصغيرة ولا تسكبه حرًّا أبدًا، واحسبه حتى داخل الألواح «الصحية».",
+      },
+    },
+    faq: {
+      en: [
+        { q: "How many calories in a tablespoon of coconut oil?", a: "121 for the 14 g tablespoon — identical to olive oil spoon for spoon, since both are 100 percent fat; only the flavor and the melting behavior differ." },
+        { q: "Does coconut oil burn fat?", a: "No — its medium-chain triglycerides are metabolized a little differently than long-chain fats, but the effect is small and easily drowned by the 121 kcal each spoon brings along." },
+        { q: "Can I fry with coconut oil?", a: "Yes — it handles moderate frying heat and lends a sweetness that works for Asian-leaning dishes; for neutral searing, avocado oil is the cleaner tool." },
+      ],
+      ar: [
+        { q: "كم سعرة في ملعقة كبيرة من زيت جوز الهند؟", a: "121 لملعقة 14 جم — مطابقة لزيت الزيتون ملعقة بملعقة، فكلاهما دهن مئة بالمئة؛ والفارق فقط في النكهة وسلوك الانصهار." },
+        { q: "هل زيت جوز الهند يحرق الدهون؟", a: "لا — ثلاثياته متوسطة السلسلة تستقلب باختلاف طفيف عن الدهون طويلة السلسلة، لكن الأثر صغير يغرقه بسهولة كل أكراه 121 سعرة المرافقة." },
+        { q: "هل أقلي بزيت جوز الهند؟", a: "نعم — يتحمل حرارة قلي معتدلة ويمنح حلاوة تناسب الأطباق الآسيوية؛ وللقلي المحايد يبقى زيت الأفوكادو الأداة الأنظف." },
+      ],
+    },
+  },
+
+  "butter": {
+    intro: {
+      en: "Butter is fat with a flavor no substitute fully copies: 717 kcal and 81 g of fat per 100 g, with a 14 g tablespoon landing 100 kcal. In a fitness kitchen it is a precision tool, not a base — the finish on vegetables, the reason restaurant eggs taste like restaurant eggs, the difference between a dry and an edible protein pancake. It was demonized for decades while its industrial trans-fat rival got a pass; current guidance treats it as simply a calorie-dense fat to count rather than fear.",
+      ar: "الزبدة دهن بنكهة لا ينسخها بديل كامل: 717 سعرة و81 جم دهون لكل 100 جم، وملعقة كبيرة 14 جم تهبط بمئة سعرة. في مطبخ اللياقة هي أداة دقيقة لا أساس — اللمسة الأخيرة على الخضار، وسبب أن بيض المطاعم يشبه بيض المطاعم، والفرق بين بان كيك بروتين جاف وآخر يؤكل. شيطنت لعقود بينما نال منافسها الصناعي المحمّل بالدهون المتحولة براءة؛ والإرشادات الحالية تعاملها ببساطة كدهن كثيف السعرات يُحسب لا يُخاف.",
+    },
+    context: {
+      en: {
+        alternatives: "Olive oil covers daily cooking at the same spoon-cost with a friendlier fat profile; ghee is butter with the milk solids removed for higher heat; coconut oil brings sweetness to baking.",
+        plan: "On a gaining phase, finishing rice or vegetables with a tablespoon adds 100 invisible kcal. On a cut, butter earns its slot by making vegetables finishable — count the spoon and keep it.",
+        caution: "The numbers belong to plain butter — whipped tubs spread air (fewer kcal per spoon, but people double the spoon), and restaurant «butter sauces» are mostly more butter.",
+      },
+      ar: {
+        alternatives: "زيت الزيتون يغطي الطبخ اليومي بكلفة الملعقة نفسها ببروفايل دهون ألطف؛ والسمن زبدة منزوعة المواد الصلبة لحرارة أعلى؛ وزيت جوز الهند يجلب الحلاوة للخبز.",
+        plan: "في مرحلة التضخيم، إنهاء الأرز أو الخضار بملعقة كبيرة يضيف 100 سعرة غير مرئية. وفي التنشيف تستحق الزبدة مكانها بجعلها الخضار تُؤكل حتى الآخر — احسب الملعقة وأبقها.",
+        caution: "الأرقام تخص الزبدة السادة — العلب المخفوقة تنشر هواء (سعرات أقل للملعقة لكن الناس يضاعفونها)، و«صلصات الزبدة» بالمطاعم زبدة فوق زبدة في الأغلب.",
+      },
+    },
+    faq: {
+      en: [
+        { q: "How many calories in a tablespoon of butter?", a: "100 for 14 g — the same spoonful of fat as any oil; what changes is the flavor it brings, which is precisely why it is worth spending carefully." },
+        { q: "Butter or olive oil for daily cooking?", a: "Olive oil for the everyday pan — its fat profile is the reason it anchors the Mediterranean pattern; keep butter for the finishes where its flavor is the whole point." },
+        { q: "Is butter allowed on keto?", a: "Yes — nearly zero carbs at 81 g of fat per 100 g, which is why it is a staple there; keto still counts calories when the goal is fat loss." },
+      ],
+      ar: [
+        { q: "كم سعرة في ملعقة كبيرة زبدة؟", a: "100 لكل 14 جم — الملعقة نفسها من الدهن كأي زيت؛ والمتغير هو النكهة التي تجلبها، وهذا بالضبط سبب استحقاقها إنفاقًا حذرًا." },
+        { q: "زبدة أم زيت زيتون للطبخ اليومي؟", a: "زيت الزيتون للمقلاة اليومية — بروفايل دهونه سبب ترسيخه النمط المتوسطي؛ وأبقِ الزبدة للَّمسات الأخيرة حيث نكهتها هي القصة كلها." },
+        { q: "هل الزبدة مسموحة في الكيتو؟", a: "نعم — كربوهيدرات شبه معدومة عند 81 جم دهون لكل 100 جم، ولهذا هي ركن هناك؛ والكيتو نفسه يظل يحسب السعرات حين يكون الهدف حرق الدهون." },
+      ],
+    },
+  },
+
+  "cheese-cheddar": {
+    intro: {
+      en: "Cheddar is the cheese that makes high-protein eating livable: 25 g of protein and 33 g of fat for 403 kcal per 100 g — numbers that read like fatty meat until you remember a slice is 30 g. That slice (120 kcal, 7.5 g protein) melts over eggs, folds into a burger, or eats straight from the block when the protein target still has a gap. At 1.3 g of carbs per 100 g it is fully keto, and its calcium arrives in the most willing package on the dairy shelf. The challenge: stopping at one or two slices.",
+      ar: "الشيدر هو الجبن الذي يجعل الأكل عالي البروتين قابلًا للحياة: 25 جم بروتين و33 جم دهون مقابل 403 سعرة لكل 100 جم — أرقام تُقرأ كلحم دهني حتى تتذكر أن الشريحة 30 جم. تلك الشريحة (120 سعرة و7.5 جم بروتين) تذوب فوق البيض، أو تنطوي داخل البرجر، أو تُؤكل مباشرة من الكتلة حين لا يزال في هدف بروتين اليوم فجوة. وعند 1.3 جم كربوهيدرات لكل 100 جم هو كيتو بالكامل، وكالسيومه يصل في أكثر عبوة رغبة على رف الألبان. والتحدي الوحيد الحقيقي هو التوقف عند شريحة أو اثنتين.",
+    },
+    context: {
+      en: {
+        alternatives: "Mozzarella is the melt-friendly sibling with less fat; feta covers the salty-crumbly direction; parmesan is the protein-dense finisher for grating.",
+        plan: "Two slices over a four-egg omelet turn a boring protein meal into the one you look forward to — 240 kcal for the pair, with 15 g of protein arriving with them. On a cut, one slice as the finish usually survives the budget.",
+        caution: "Aged versions concentrate flavor AND sodium — check the label if salt matters to you; and «cheese product» slices are a different industrial food with different numbers entirely.",
+      },
+      ar: {
+        alternatives: "الموزاريلا الشقيق الصديق للذوبان بدهون أقل؛ والفيتا يغطي الاتجاه المالح المتفتت؛ والبارميزان الخاتم الكثيف بروتينًا للبشر.",
+        plan: "شريحتان فوق عجة أربع بيضات تحولان وجبة بروتين مملة إلى التي تنتظرها — 240 سعرة للاثنتين، ومعهما 15 جم بروتين. وفي التنشيف تنجو شريحة واحدة كخاتمة غالبًا من الميزانية.",
+        caution: "النسخ المعقة تركز النكهة والصوديوم معًا — افحص الملصق إن كان الملح يهمك؛ وشرائح «منتج الجبن» صنف صناعي مختلف بأرقام مختلفة تمامًا.",
+      },
+    },
+    faq: {
+      en: [
+        { q: "How much protein is in a slice of cheddar?", a: "About 7.5 g for a 30 g slice, at 120 kcal — one of the few protein foods that needs zero preparation and survives any lunch bag." },
+        { q: "Is cheddar keto-friendly?", a: "Yes — 1.3 g of carbs per 100 g rounds to nearly nothing per slice; it is the fat and the calorie density that need counting, never the carbs." },
+        { q: "How much cheddar is a serving?", a: "The designed serving here is one 30 g slice; two slices (240 kcal) still fit most plans as the flavor layer of a high-protein meal." },
+      ],
+      ar: [
+        { q: "كم بروتين في شريحة شيدر؟", a: "نحو 7.5 جم لشريحة 30 جم، عند 120 سعرة — من أطعمة البروتين القليلة التي تحتاج صفر تحضير وتصمد في أي حقيبة غداء." },
+        { q: "هل الشيدر صديق للكيتو؟", a: "نعم — 1.3 جم كربوهيدرات لكل 100 جم تتقرب من الصفر لكل شريحة؛ الذي يحتاج الحساب هو الدهون وكثافة السعرات، لا الكربوهيدرات أبدًا." },
+        { q: "كم شيدر في الحصة؟", a: "الحصة المصممة هنا شريحة واحدة 30 جم؛ وشريحتان (240 سعرة) تدخلان أغلب الخطط كطبقة النكهة في وجبة عالية البروتين." },
+      ],
+    },
+  },
+
+  "parmesan": {
+    intro: {
+      en: "Parmesan is the most protein-dense food in the cheese aisle: 38 g of protein per 100 g — more than most meats carry — for 431 kcal and 29 g of fat. The designed serving is smaller than you fear: a quarter-cup of grated (25 g) seasons an entire plate with 9.5 g of protein and 108 kcal — its umami is so concentrated that a little travels far. Aged for a year or more, it carries almost no lactose and turns plain vegetables into plates people actually finish. It is the only «seasoning» that brings protein.",
+      ar: "البارميزان أكثف طعام بالبروتين في ممر الجبن: 38 جم بروتين لكل 100 جم — أكثر مما تحمله أغلب اللحوم — مقابل 431 سعرة و29 جم دهون. والحصة المصممة أصغر مما تخشى: ربع كوب مبشور (25 جم) يتبّل طبقًا كاملًا بـ9.5 جم بروتين و108 سعرات، لأن نكهته الخامسة مركزة حد أن القليل يسافر بعيدًا. ومُعتق لعام أو أكثر، يحمل لاكتوزًا شبه معدوم، ويصمد شهورًا في الدرج، ويحول الخضار السادة إلى أطباق ينهيها الناس فعلًا. هو «التتبيلة» الوحيدة في مطبخ اللياقة التي تجلب بروتينًا.",
+    },
+    context: {
+      en: {
+        alternatives: "Pecorino romano is the sharper, saltier cousin; cheddar shreds melt smoother over burgers; a spoon of nutritional yeast covers the vegan direction with a similar savory note.",
+        plan: "Grate it over the vegetable plates that bore you — the 108 kcal quarter-cup makes two cups of broccoli disappear on cutting days. On gaining pasta nights it is basically free flavor protein.",
+        caution: "Its concentration cuts both ways: the sodium per gram is among the highest on the shelf, so blood-pressure-aware eaters should treat it as the salt source it is.",
+      },
+      ar: {
+        alternatives: "البكورينو رومانو ابن العم الأحدّ والأكثر ملوحة؛ وشيدر المبشور يذوب أنعم فوق البرجر؛ وملعقة خميرة غذائية تغطي الاتجاه النباتي بنوتة خامسة مشابهة.",
+        plan: "ابشره فوق أطباق الخضار التي تملّها — ربع الكوب بـ108 سعرات يجعل كوبين من البروكلي يختفيان في أيام التنشيف. وفي ليالي باستا التضخيم هو بروتين نكهة شبه مجاني.",
+        caution: "تركيزه سلاح ذو حدين: صوديومه لكل جرام من الأعلى بالرف، فمن يراقب ضغط الدم يعامله كمصدر الملح الذي هو عليه.",
+      },
+    },
+    faq: {
+      en: [
+        { q: "How much protein in a serving of parmesan?", a: "9.5 g in the 25 g grated quarter-cup, for 108 kcal — a protein-per-calorie trade few seasonings can match." },
+        { q: "Why is parmesan so high in protein?", a: "Aging removes water and concentrates everything else — a year in the wheel turns milk into something closer to a meat than a spread." },
+        { q: "Is parmesan worth the price?", a: "By serving it is cheaper than it looks: one wedge grates across a dozen plates at 9.5 g protein each, which no other seasoning delivers." },
+      ],
+      ar: [
+        { q: "كم بروتين في حصة بارميزان؟", a: "9.5 جم في ربع الكوب المبشور 25 جم، مقابل 108 سعرات — صفقة بروتين لكل سعرة تعجز تتبيلات قليلة عن مجاراتها." },
+        { q: "لماذا بروتين البارميزان مرتفع هكذا؟", a: "التعتيق يزيل الماء ويركز كل ما عداه — عام في العجلة يحول الحليب إلى شيء أقرب للحم منه للدهان." },
+        { q: "هل يستحق البارميزان سعره؟", a: "بالحصة أرخص مما يبدو: قطعة واحدة تُبشر عبر عشرة أطباق بـ9.5 جم بروتين لكل منها، ولا تتبيلة أخرى تفعل ذلك." },
+      ],
+    },
+  },
+
+  "bacon": {
+    intro: {
+      en: "Bacon is the flavor multiplier of the protein world: 37 g of protein riding on 541 kcal and 42 g of fat per 100 g — a ratio that disqualifies it as a protein source and rehires it as a seasoning. Two slices (30 g) cost 162 kcal and bring 11 g of protein alongside the smoky fat that makes eggs, salads and sprouts disappear from plates. On a cut it is a measured luxury; on a bulk it is breakfast's best argument. Its saturated fat and sodium deserve the caution they get — honesty, not panic.",
+      ar: "البيكون مضاعف النكهة في عالم البروتين: 37 جم بروتين تركب 541 سعرة و42 جم دهون لكل 100 جم — نسبة تخرجه من مصادر البروتين وتعيد توظيفه تتبيلة. شريحتان (30 جم) تكلفان 162 سعرة وتجلبان 11 جم بروتين مع الدهن المدخن الذي يجعل البيض والسلطات والبروكلي يختفي من الأطباق. في التنشيف رفاهية مضبوطة؛ وفي التضخيم أقوى حجج الفطور. ودهونه المشبعة وصوديومه يستحقان الحذر الذي ينالانه — بصدق لا بذعر.",
+    },
+    context: {
+      en: {
+        alternatives: "Turkey bacon runs leaner at a flavor cost; smoked salmon delivers the salty-smoky hit with better fats; a teaspoon of smoked paprika in oil fakes the aroma for zero-meat plates.",
+        plan: "On a bulk, two slices beside four eggs and two slices of toast is the classic 700-kcal morning. On a cut, crumble ONE slice over a salad — the flavor distributes further than the calories.",
+        caution: "Restaurants cook bacon in its own rendered fat, stacking beyond the 541 kcal reference; and «maple» or «honey» cured styles add a sugar layer the plain number never carried.",
+      },
+      ar: {
+        alternatives: "بيكون الرومي أميل للرشاقة بكلفة نكهة؛ والسلمون المدخن يوصل ضربة المالح المدخن بدهون أفضل؛ وملعقة صغيرة بابريكا مدخنة في الزيت تزيّن الرائحة للأطباق الخالية من اللحم.",
+        plan: "في التضخيم، شريحتان بجوار أربع بيضات وشريحتي توست هي صباح 700 سعرة الكلاسيكي. وفي التنشيف، فتّت شريحة واحدة فوق سلطة — النكهة تتوزع أبعد من السعرات.",
+        caution: "المطاعم تطبخ البيكون في دهنه المنصهر، فتتجاوز مرجع 541 سعرة؛ وأنماط «القيقب» أو «العسل» المعالجة تضيف طبقة سكر لم تحملها الأرقام السادية قط.",
+      },
+    },
+    faq: {
+      en: [
+        { q: "How much protein in two slices of bacon?", a: "About 11 g for 30 g of bacon, arriving on 162 kcal — protein is a passenger here, not the vehicle." },
+        { q: "Can I eat bacon while cutting?", a: "Yes, as a seasoning — one crumbled slice flavors a whole salad for 81 kcal; treating it as the protein anchor of a meal is where cuts go to die." },
+        { q: "Is bacon that unhealthy?", a: "Its processed-meat classification means «limit», not «never»: sodium and saturated fat are the load-bearing concerns, and portion control handles both." },
+      ],
+      ar: [
+        { q: "كم بروتين في شريحتي بيكون؟", a: "نحو 11 جم لكل 30 جم بيكون، تصل على 162 سعرة — البروتين هنا راكب لا مركبة." },
+        { q: "هل آكل البيكون أثناء التنشيف؟", a: "نعم، كتتبيلة — شريحة واحدة مفتتة تنكّه سلطة كاملة بـ81 سعرة؛ أما اتخاذه مرساة بروتين الوجبة فهنا حيث تموت خطط التنشيف." },
+        { q: "هل البيكون غير صحي إلى هذا الحد؟", a: "تصنيفه ضمن اللحوم المصنعة يعني «اعتدل» لا «أبدًا»: الصوديوم والدهون المشبعة هما الخطران الحاملان، وضبط الحصة يكفيهما." },
+      ],
+    },
+  },
+
+  "cucumber": {
+    intro: {
+      en: "Cucumber is water with structure: 15 kcal per 100 g — tied for the lowest-energy solid food in this library — with 3.6 g of carbs and 0.5 g of fiber. A whole medium cucumber (150 g) costs 23 kcal, which is why it appears wherever dieting humans need volume: sliced into snack jars with salt and chili, shredded into yogurt bowls, or doubling the apparent size of a chicken salad without moving the calorie needle. Its mild freshwater taste is the point — it is a carrier for salt, lemon, dill and dip, never the feature.",
+      ar: "الخيار ماء له بنية: 15 سعرة لكل 100 جم — بتعادل أدنى طاقة لطعام صلب بهذه المكتبة — مع 3.6 جم كربوهيدرات و0.5 جم ألياف. خيار متوسط كامل (150 جم) يكلف 23 سعرة، ولهذا يظهر حيثما احتاج البشر المتننفون حجمًا: مقطعًا في برطمانات السناك بالملح والفلفل، أو مبروشًا في أطباق الزبادي، أو مضاعفًا الحجم الظاهري لسلطة الدجاج دون تحريك إبرة السعرات. وطعمه العذب الخفيف هو المقصود — ناقل للملح والليمون والشبت والغموس، لا الحدث أبدًا.",
+    },
+    context: {
+      en: {
+        alternatives: "Celery plays the same crunch-and-water role; zucchini takes the slot in cooked dishes; lettuce covers the bulk-foundation job under hot fillings.",
+        plan: "On a cut, pre-cut a jar of cucumber spears with salt, lemon and chili — it is the hand-to-mouth fix that costs 23 kcal a cucumber. In bulking salads it adds eating time without calories.",
+        caution: "The peel carries the fiber and a share of the nutrients — peeling for softness trades away most of what little the vegetable offers; waxed skins deserve a scrub.",
+      },
+      ar: {
+        alternatives: "الكرفس يلعب دور المقرمش والماء نفسه؛ والكوسة تأخذ الخانة في الأطباق المطبوخة؛ والخس يغطي وظيفة أساس الحجم تحت الحشوات الساخنة.",
+        plan: "في التنشيف، قطّع مسبقًا برطمان أصابع خيار بالملح والليمون والفلفل — إنه إصلاح اليد والفم الذي يكلف 23 سعرة للخيارة. وفي سلطات التضخيم يضيف وقت أكل بلا سعرات.",
+        caution: "القشرة تحمل الألياف ونصيبًا من المغذيات — تقشيرها لطلب الليونة يبدد أغلب القليل الذي يقدمه الخضار؛ وقشور الشمع تستحق فركًا.",
+      },
+    },
+    faq: {
+      en: [
+        { q: "How many calories in a whole cucumber?", a: "About 23 for a medium 150 g one — you could eat four of them and still sit under a single banana at 89 kcal per 100 g." },
+        { q: "Does cucumber have any protein?", a: "Around 1 g per medium cucumber — real but nutritionally decorative; cucumber solves volume and crunch, never protein." },
+        { q: "Should I peel cucumbers?", a: "No — the skin is where the fiber and much of the value lives; a quick scrub handles the wax, and the peel is what keeps spears rigid for dipping." },
+      ],
+      ar: [
+        { q: "كم سعرة في خيارة كاملة؟", a: "نحو 23 لمتوسطة 150 جم — يمكنك أكل أربعة منها وتبقى دون موزة واحدة عند 89 سعرة لكل 100 جم." },
+        { q: "هل في الخيار بروتين؟", a: "حوالي 1 جم للخيارة المتوسطة — حقيقي لكنه زخرفي تغذويًا؛ الخيار يحل مشكلة الحجم والمقرمشية، لا البروتين أبدًا." },
+        { q: "هل أقشر الخيار؟", a: "لا — القشرة حيث تسكن الألياف وأغلب القيمة؛ فرك سريع يكفي للشمع، والقشرة ما يُبقي الأصابع صلبة للغموس." },
+      ],
+    },
+  },
+
+  "tomato": {
+    intro: {
+      en: "The tomato is the vegetable that seasons the world: 18 kcal and 3.9 g of carbs per 100 g, with a medium specimen (123 g) at just 22 kcal. Raw it is the salad base and the burger's only rebuttal; cooked down it becomes the sauce that carries pasta, eggs and beans across a dozen cuisines — and gentle cooking concentrates its lycopene, the red pigment nutrition research keeps returning to. Fresh on the counter or canned in the pantry, it earns its ubiquity at a calorie price nobody notices paying.",
+      ar: "الطماطم الخضار الذي يتبّل العالم: 18 سعرة و3.9 جم كربوهيدرات لكل 100 جم، والنسخة المتوسطة (123 جم) عند 22 سعرة فقط. نيئة هي أساس السلطة والرد الوحيد للبرجر؛ ومطبوخة تُصبح الصوص الذي يحمل الباستا والبيض والفول عبر عشرات المطابخ — والطبخ الهادئ يركز الليكوبين، الصبغة الحمراء التي يعود إليها بحث التغذية دومًا. طازجة على الطاولة أو معلبة في الخزانة، تستحق حضورها الكوني بسعر سعري لا ينتبه أحد لدفعه.",
+    },
+    context: {
+      en: {
+        alternatives: "Canned crushed tomatoes are the sauce-making workhorse at the same numbers; cherry tomatoes turn snacking portable; roasted red peppers cover the sweet-savory slot raw.",
+        plan: "A quick shakshuka base — canned tomatoes, onion, cumin, eggs — is the highest-protein-per-calorie hot breakfast this page can build. On a cut, tomatoes flavor everything for free.",
+        caution: "Fresh winter tomatoes are a pale imitation of summer ones — the can is the honest choice off-season; and storing ripe tomatoes in the fridge dulls the flavor (room temperature wins).",
+      },
+      ar: {
+        alternatives: "الطماطم المعلبة المهروسة هي حصان صناعة الصوصات بالأرقام نفسها؛ وطماطم الكرز تجعل السناك محمولًا؛ والفلفل الأحمر المشوي يغطي خانة الحلو المالح نيئًا.",
+        plan: "أساس شكشوكة سريع — طماطم معلبة وبصل وكمون وبيض — هو أعلى فطور ساخن بروتينًا لكل سعرة تبنيه هذه الصفحة. وفي التنشيف تنكّه الطماطم كل شيء مجانًا.",
+        caution: "طماطم الشتاء الطازجة نسخة باهتة من الصيفية — العلبة الخيار الصادق خارج الموسم؛ وتخزين الناضجة بالثلاجة يبهّت النكهة (حرارة الغرفة تفوز).",
+      },
+    },
+    faq: {
+      en: [
+        { q: "How many calories in a medium tomato?", a: "About 22 for a 123 g specimen — the reason tomatoes appear in every cutting recipe ever written: flavor infrastructure at no cost." },
+        { q: "Is a tomato a fruit or a vegetable?", a: "Botanically a fruit, culinarily a vegetable, and for your macros neither — at 3.9 g of carbs per 100 g it simply never matters which label wins." },
+        { q: "Are canned tomatoes as good as fresh?", a: "For cooking, arguably better — they are picked at peak ripeness, and the canning heat boosts lycopene availability; keep fresh for eating raw." },
+      ],
+      ar: [
+        { q: "كم سعرة في حبة طماطم متوسطة؟", a: "نحو 22 لحبة 123 جم — سبب ظهور الطماطم في كل وصفة تنشيف كُتبت: بنية تحتية للنكهة بلا كلفة." },
+        { q: "هل الطماطم فاكهة أم خضار؟", a: "نباتيًا فاكهة، وطبيخيًا خضار، ولماكروزك لا هذا ولا ذاك — عند 3.9 جم كربوهيدرات لكل 100 جم لا يهم أبدًا أي لقب يفوز." },
+        { q: "هل الطماطم المعلبة جيدة كالطازجة؟", a: "للطبخ، أفضل حجةً — تُقطف في ذروة النضج، وحرارة التعليب ترفع توفر الليكوبين؛ أبقِ الطازجة للأكل نيئًا." },
+      ],
+    },
+  },
+
+  "carrot": {
+    intro: {
+      en: "A carrot is the sweetest vegetable most diets allow freely: 41 kcal and 10 g of carbs per 100 g, of which 4.7 g is natural sugar — still fewer calories per bite than an apple carries. The medium root (61 g) is 25 kcal, two of them make a snack bag that survives a gym bag, and their crunch does real psychological work replacing chip habits during a cut. The orange beta-carotene is a free bonus; the honest job is volume, fiber and sweetness at a price of nearly nothing.",
+      ar: "الجزر أحلى خضار تسمح به أغلب الحميات بحرية: 41 سعرة و10 جم كربوهيدرات لكل 100 جم، منها 4.7 جم سكر طبيعي — وما زال أقل سعرات للقمة مما تحمله تفاحة. والجذرة المتوسطة (61 جم) 25 سعرة، واثنتان منها تصنعان كيس سناك يصمد في حقيبة الجيم، ومقرشيتهما يقوم بعمل نفسي حقيقي باستبدال عادة الشيبسي في التنشيف. والبيتا كاروتين البرتقالي مكافأة مجانية؛ والوظيفة الصادقة هي الحجم والألياف والحلاوة بثمن شبه معدوم.",
+    },
+    context: {
+      en: {
+        alternatives: "Bell pepper covers the crunch slot with no sweetness attached; cucumber handles pure volume; roasted carrots play the sweet-savory side when the oven is already hot.",
+        plan: "Pre-portion sticks with a hummus or labneh pot — the fat slows the sugar and the pairing holds you to dinner. On gaining days, carrots disappear into stews and rice pilafs unnoticed.",
+        caution: "Juicing concentrates the sugar and deletes the fiber that slows it — five juiced carrots hit harder than five chewed ones ever could; and «baby» carrots are just carved big ones at a convenience markup.",
+      },
+      ar: {
+        alternatives: "الفلفل الملون يغطي خانة المقرمشية بلا حلاوة مرفقة؛ والخيار يتولى الحجم الخالص؛ والجزر المشوي يلعب الجانب الحلو المالح حين يكون الفرن مشتعلًا أصلًا.",
+        plan: "جهّز أصابعًا بجرعة حمص أو لبنة — الدهن يبطئ السكر والثنائي يمسكك حتى العشاء. وفي أيام التضخيم يختفي الجزر في اليخنات وأرز البيلوف دون ملاحظة.",
+        caution: "العصر يركز السكر ويحذف الألياف التي تبطئه — خمس جزرات معصورات تضرب أقوى من خمس مضغات أبدًا؛ و«جزر الأطفال» مجرد جزرات كبيرة منحوتة بعلاوة سعر للراحة.",
+      },
+    },
+    faq: {
+      en: [
+        { q: "How many calories in one carrot?", a: "About 25 for a medium 61 g root — the classic dieter's default for the crunch-craving hours, at a price that never registers." },
+        { q: "Are carrots too sweet for keto?", a: "At 10 g of carbs per 100 g they are the borderline vegetable — half a carrot fits most keto budgets; a juiced glass of them never will." },
+        { q: "Do baby carrots differ from regular ones?", a: "Same plant, peeled and shaped — you pay for convenience and lose the peel's fiber edge; a bag of whole carrots is the identical food for less." },
+      ],
+      ar: [
+        { q: "كم سعرة في جزرة واحدة؟", a: "نحو 25 لجذرة متوسطة 61 جم — الخيار الافتراضي الكلاسيكي للدايتر في ساعات اشتياق المقرمشية، بثمن لا يُحس أبدًا." },
+        { q: "هل الجزر حلو أكثر من اللازم للكيتو؟", a: "عند 10 جم كربوهيدرات لكل 100 جم هو الخضار الحدودي — نصف جزرة يدخل أغلب ميزانيات الكيتو؛ وكوب معصور منها لن يدخل أبدًا." },
+        { q: "هل جزر الأطفال يختلف عن العادي؟", a: "النبتة نفسها، مقشر ومنحوت — تدفع ثمن الراحة وتخسر أفضلية ألياف القشرة؛ وكيس الجزر الكامل الطعام ذاته بأقل." },
+      ],
+    },
+  },
+
+  "bell-pepper": {
+    intro: {
+      en: "Bell pepper is the vegetable that makes a plate look intentional: 31 kcal and 6 g of carbs per 100 g, with a full medium pepper (120 g) costing 37 kcal while carrying more vitamin C, gram for gram, than the orange people reach for instead. Red peppers are the ripened, sweetest stage of the same fruit; green ones are its bitter, cheaper youth. Stuffed with minced meat and rice, roasted until the skin blisters, raw beside a dip, or sliced into a stir-fry, it holds its structure under heat better than almost anything else in the crisper drawer.",
+      ar: "الفلفل الملون هو الخضار الذي يجعل الطبق يبدو مقصودًا: 31 سعرة و6 جم كربوهيدرات لكل 100 جم، وحبة متوسطة كاملة (120 جم) تكلف 37 سعرة وهي تحمل فيتامين سي أكثر، جرامًا بجرام، من البرتقالة التي يمد الناس أيديهم إليها بدلًا منه. الأحمر هو طور النضج الأحلى للثمرة نفسها؛ والأخضر شبابها المر الأرخص. محشيًا باللحم المفروم والأرز، أو مشويًا حتى تتفجر قشرته، أو نيئًا بجوار غموس، أو مقطعًا في قلي سريع — يحمل بنيته تحت الحرارة أفضل من أي شيء آخر تقريبًا في درج الخضار.",
+    },
+    context: {
+      en: {
+        alternatives: "Roasted red peppers from a jar cover the sweet-depth direction; cucumber takes the raw-crunch duty on leaner days; zucchini absorbs stuffings the same way for fewer carbs.",
+        plan: "The stuffed-pepper template — ground beef, rice, tomato, one pepper per person — is a complete 500-kcal meal that meal-preps three days deep. On cuts, strips replace crackers at the hummus jar.",
+        caution: "Green peppers are unripe — cheaper and sharper, but half the sweetness; and the bulk-bagged mini peppers often run sweeter than the label implies, which matters only on strict carb budgets.",
+      },
+      ar: {
+        alternatives: "الفلفل الأحمر المشوي من المرطبان يغطي اتجاه العمق الحلو؛ والخيار يتولى واجب المقرمشية النيئة في الأيام الأقل؛ والكوسة تمتص الحشوات بالطريقة نفسها بكربوهيدرات أقل.",
+        plan: "قالب الفلفل المحشي — لحم مفروم وأرز وطماطم وفلفلة للفرد — وجبة 500 سعرة كاملة تتحضر لثلاثة أيام. وفي التنشيف تحل الشرائح محل البسكويت عند برطمان الحمص.",
+        caution: "الفلفل الأخضر غير ناضج — أرخص وأحدّ، لكنه نصف الحلاوة؛ والفلفلات الصغيرة المعبأة أكياسًا أغلبًا أحلى مما يوحي الملصق، وهذا يهم فقط في ميزانيات الكربوهيدرات الصارمة.",
+      },
+    },
+    faq: {
+      en: [
+        { q: "How many calories in a whole bell pepper?", a: "About 37 for a medium 120 g one — one of the cheapest volumes of color, crunch and vitamin C a cutting week can buy." },
+        { q: "Red, yellow or green pepper?", a: "Same plant at three ripeness stages — green is bitter and cheap, yellow sits between, red is sweetest and carries the most pigments; price usually decides honestly." },
+        { q: "Do bell peppers fit keto?", a: "Half a pepper at 6 g of carbs per 100 g fits comfortably; the full stuffed-pepper recipe is where keto budgets start asking questions." },
+      ],
+      ar: [
+        { q: "كم سعرة في فلفلة كاملة؟", a: "نحو 37 لمتوسطة 120 جم — من أرخص كميات اللون والمقرمشية وفيتامين سي تشتريها أسابيع التنشيف." },
+        { q: "فلفل أحمر أم أصفر أم أخضر؟", a: "النبتة نفسها بثلاثة أطوار نضج — الأخضر مر ورخيص، والأصفر بين بين، والأحمر الأحلى والأغنى بالصبغات؛ والسعر يقرر بصدق غالبًا." },
+        { q: "هل الفلفل الملون يدخل الكيتو؟", a: "نصف فلفلة عند 6 جم كربوهيدرات لكل 100 جم تدخل بارتياح؛ ووصفة الفلفل المحشي الكاملة هي حيث تبدأ ميزانيات الكيتو بطرح الأسئلة." },
+      ],
+    },
+  },
+
+  "onion": {
+    intro: {
+      en: "The onion is the aromatics backbone of nearly every savory dish on earth: 40 kcal and 9 g of carbs per 100 g, of which a recipe rarely spends more than a quarter — a medium bulb (110 g) is 44 kcal, split across four plates in most pots. Its job is chemistry, not nutrition: caramelized slowly it delivers sweet depth, sweated in oil it builds the base of soups and sauces, raw it cuts through rich meat. The tear factor is water-soluble — chill the bulb before cutting and it mostly behaves.",
+      ar: "البصل العمود الفقري للعطرية في كل طبق مالح على الأرض تقريبًا: 40 سعرة و9 جم كربوهيدرات لكل 100 جم، لا ينفق منها الوصف أكثر من ربع عادة — والبصلة المتوسطة (110 جم) 44 سعرة تتوزع على أربعة أطباق في أغلب القُدر. وظيفته كيميائية لا تغذوية: مكرملًا ببطء يمنح عمقًا حلوًا، ومعرّقًا في الزيت يبني قاعدة الشوربات والصوصات، ونيئًا يشق طريقه عبر اللحم الدسم. وعامل الدموع ذائب في الماء — برّد البصلة قبل التقطيع فتلتزم إلى حد كبير.",
+    },
+    context: {
+      en: {
+        alternatives: "Shallots are the milder, finer sibling for dressings; leeks carry the same family flavor gently in soups; scallions finish plates raw where cooking is not on the table.",
+        plan: "Start nearly any savory dish the same way — diced onion in an oiled pan until translucent — and the rest of the recipe inherits depth almost for free at under 20 kcal per serving.",
+        caution: "The 9 g of carbs per 100 g surprises keto cooks who treat onion as a garnish — a whole caramelized onion in one bowl is real carbs; measure it like the ingredient it is.",
+      },
+      ar: {
+        alternatives: "الشالوت الشقيق الألطف والأدق للتتبيلات؛ والكراث يحمل نكهة العائلة نفسها برفق في الشوربات؛ والبصل الأخضر ينهي الأطباق نيئًا حيث لا طبخ على الطاولة.",
+        plan: "ابدأ أي طبق مالح تقريبًا بالطريقة نفسها — بصل مفروم في مقلاة مدهونة حتى يشفّ — فيرث باقي الوصفة العمق شبه مجانًا بأقل من 20 سعرة للحصة.",
+        caution: "9 جم كربوهيدرات لكل 100 جم تفاجئ طباخي الكيتو الذين يعاملون البصل زينة — بصلة كاملة مكرملة في وعاء واحد كربوهيدرات حقيقية؛ قِسه كمكوّن لا كتجميل.",
+      },
+    },
+    faq: {
+      en: [
+        { q: "How many calories in a medium onion?", a: "About 44 for 110 g — and most recipes spread one onion across four servings, which is why onion barely registers in any food log." },
+        { q: "Why do onions make you cry?", a: "Cutting ruptures cells that release a sulfur compound into the air; chilling the onion first slows the chemistry, and a sharp knife ruptures fewer cells to begin with." },
+        { q: "Do onions have carbs?", a: "9 g per 100 g — modest per slice, but a keto cook caramelizing three onions into one sauce has quietly added 27 g and should count them." },
+      ],
+      ar: [
+        { q: "كم سعرة في بصلة متوسطة؟", a: "نحو 44 لكل 110 جم — وأغلب الوصفات توزع بصلة على أربع حصص، لهذا بالكاد يسجل البصل في أي سجل طعام." },
+        { q: "لماذا يبكي البصل؟", a: "التقطيع يفجر خلايا تطلق مركب كبريتيًا في الهواء؛ وتبريد البصلة أولًا يبطئ الكيمياء، والسكين الحاد يفجر خلايا أقل من البداية." },
+        { q: "هل في البصل كربوهيدرات؟", a: "9 جم لكل 100 جم — متواضعة للشريحة، لكن طباخ كيتو يكرمل ثلاث بصلات في صوص واحد أضاف خلسة 27 جم وعليه حسابها." },
+      ],
+    },
+  },
+
+  "zucchini": {
+    intro: {
+      en: "Zucchini is the squash diets would have invented: 17 kcal and 3.1 g of carbs per 100 g — so light that a whole medium one (120 g) costs 20 kcal. Its real role in fitness kitchens is impersonation: spiralized it becomes the noodle bed under pasta sauce, halved and hollowed it is a boat for minced meat, sliced lengthwise it stands in for lasagna sheets for everyone dodging bread's numbers. Unlike cucumber it survives cooking, taking on grill marks and soaking up tomato sauce like it was born for the job.",
+      ar: "الكوسة قرعٌ كانت الحميات ستخترعه: 17 سعرة و3.1 جم كربوهيدرات لكل 100 جم — خفة تجعل حبة متوسطة كاملة (120 جم) تكلف 20 سعرة. ودورها الحقيقي في مطابخ اللياقة الانتحال: مبرومة تصبح فراش النودلز تحت صوص الباستا، ومشطوفة نصفين تصبح قاربًا للحم المفروم، ومقطوعة طوليًا تحل محل شرائح اللازانيا لكل من يتفادى أرقام الخبز. وبخلاف الخيار تنجو من الطبخ، تحمل علامات الشواء وتشرب صوص الطماطم كأنها وُلدت للوظيفة.",
+    },
+    context: {
+      en: {
+        alternatives: "Cucumber covers the raw-water slot; cauliflower rices into grains where zucchini noodles; eggplant takes the roasted-boat role with more body and more calories.",
+        plan: "On a cut, swap 140 g of cooked pasta for 400 g of zoodles under the same sauce — you trade 221 kcal for 68 and the fork experience barely notices. On gains, zucchini boats hide extra olive oil gracefully.",
+        caution: "Zoodles release water — salt them lightly and drain before saucing, or the plate floods; and giant «bargain» zucchinis are woodier and seedier than the small ones.",
+      },
+      ar: {
+        alternatives: "الخيار يغطي خانة الماء النيء؛ والقرنبيط يُبرش حبوبًا حيث تتوحى الكوسة نودلز؛ والباذنجان يأخذ دور القارب المشوي بجسامة وسعرات أكثر.",
+        plan: "في التنشيف، استبدل 140 جم باستا مطبوخة بـ400 جم كوسة مبرومة تحت الصوص نفسه — تقايض 221 سعرة بـ68 وتجربة الشوكة بالكاد تلاحظ. وفي التضخيم تخفي قوارب الكوسة زيت الزيتون الإضافي بأناقة.",
+        caution: "الكوسة المبرومة تُطلق ماءً — ملّحها خفيفًا وصفّها قبل الصوص وإلا فاض الطبق؛ وكوسات «الصفقة» العملاقة أكثر خشونة وبذورًا من الصغيرة.",
+      },
+    },
+    faq: {
+      en: [
+        { q: "Zucchini noodles vs pasta — what do I save?", a: "About 153 kcal per plate: 400 g of zoodles run 68 kcal where 140 g of cooked pasta runs 221, with the same sauce riding on top." },
+        { q: "Is zucchini keto?", a: "Comfortably — 3.1 g of carbs per 100 g means even a 400 g zoodle bowl stays under 13 g before the sauce; it is the pasta-shaped answer keto was waiting for." },
+        { q: "Why is my zucchini bitter?", a: "Stress-grown fruit concentrates cucurbitacins — rare in store-bought, common in garden gluts; a bitter one should be discarded, not cooked through." },
+      ],
+      ar: [
+        { q: "نودلز الكوسة مقابل الباستا — ماذا أوفّر؟", a: "نحو 153 سعرة للطبق: 400 جم كوسة مبرومة تجري 68 سعرة حيث تجري 140 جم باستا مطبوخة 221، والصوص نفسه يركب فوقها." },
+        { q: "هل الكوسة كيتو؟", a: "بارتياح — 3.1 جم كربوهيدرات لكل 100 جم تعني أن وعاء 400 جم يبقى تحت 13 جم قبل الصوص؛ إنها إجابة الباستا التي انتظرها الكيتو." },
+        { q: "لماذا كوستي مُرّة؟", a: "الثمار المنهكة نموًا تركز الكوكوربيتاسين — نادر بالمشتريات وشائع في وفنات الحدائق؛ والمرة تُرمى ولا تُطهى للنهاية." },
+      ],
+    },
+  },
+
+  "cauliflower": {
+    intro: {
+      en: "Cauliflower is the master of disguise in the vegetable drawer: 25 kcal and 5 g of carbs per 100 g, keto-approved, and morphing into rice, pizza base, mash and even buffalo «wings» in the right hands. A 100 g cup of florets is one-fifth the carbs of the same weight of cooked rice while still reading as dinner. Eaten plain it is polite and faintly cabbage-like; roasted hard with olive oil and cumin until the edges brown, it converts skeptics. The florets' surface area is the whole trick — it grabs fat, spice and char better than almost anything.",
+      ar: "القرنبيط سيد التنكر في درج الخضار: 25 سعرة و5 جم كربوهيدرات لكل 100 جم، معتمد بالكيتو، ويتحول إلى أرز وقاعدة بيتزا وبيوريه وحتى «أجنحة» بافلو بالأيدي المناسبة. كوب 100 جم من الزهرات هو خُمس كربوهيدرات الوزن نفسه من الأرز المطبوخ مع بقائه يُقرأ كعشاء. مأكولًا سادة مهذب وبطعم كرنب خفيف؛ ومشويًا بقوة بزيت الزيتون والكمون حتى تحمر الحواف، يصير الخضار الذي يحوّل المشككين. ومساحة سطح الزهرات هي الحيلة كلها — تمسك بالدهن والبهارة والفحم أفضل من أي شيء تقريبًا.",
+    },
+    context: {
+      en: {
+        alternatives: "Broccoli is the tree-shaped sibling with more protein per cup; zucchini noodles where pasta mimicry is the goal; cabbage shreds into the same slaw role cheaper.",
+        plan: "Rice a head on Sunday: the florets blitz in seconds and the crumb reheats all week under curries and stir-fries at 25 kcal per 100 g. On gaining days, roast it in a full tablespoon of olive oil.",
+        caution: "Boiling leaches its virtues into water nobody drinks — roast, steam or air-fry instead; and pre-riced bags spoil far faster than a whole head holds.",
+      },
+      ar: {
+        alternatives: "البروكلي الشقيق الشجري الشكل ببروتين أكثر للكوب؛ والكوسة المبرومة حيث التقليد هدف؛ والكرنب يُبرش في دور الكول سلو نفسه بأرخص.",
+        plan: "ابرش رأسًا يوم الأحد: الزهرات تُخفق في ثوانٍ والفتات يُعاد تسخينه الأسبوع كله تحت الكاري والقلي السريع عند 25 سعرة لكل 100 جم. وفي أيام التضخيم اشوهِه بملعقة كبيرة كاملة من زيت الزيتون.",
+        caution: "السلق يذيب فضائله في ماء لا يشربه أحد — اشوِ أو ابخّر أو اقلِ بالهواء بدلًا منه؛ وأكياس المبروش الجاهز تفسد أسرع بكثير مما يصمد رأس كامل.",
+      },
+    },
+    faq: {
+      en: [
+        { q: "Cauliflower rice vs white rice?", a: "25 versus 130 kcal per 100 g — swap the base under any curry and the same plate drops over a hundred calories without touching what makes it taste like dinner." },
+        { q: "Does cauliflower have protein?", a: "A modest 1.9 g per 100 g — useful, never decisive; its job is replacing carbs and volume, and the protein should come from what rides on top." },
+        { q: "Why do keto plans love cauliflower?", a: "Five grams of carbs per 100 g plus a chameleon texture — it is the closest thing to rice, mash and dough the carb budget can actually afford." },
+      ],
+      ar: [
+        { q: "أرز القرنبيط أم الأرز الأبيض؟", a: "25 مقابل 130 سعرة لكل 100 جم — بدّل القاعدة تحت أي كاري فيهبط الطبق نفسه بأكثر من مئة سعرة دون مساس ما يجعله يتذوق كعشاء." },
+        { q: "هل في القرنبيط بروتين؟", a: "1.9 جم متواضعة لكل 100 جم — مفيدة لا حاسمة أبدًا؛ وظيفته استبدال الكربوهيدرات والحجم، والبروتين يأتي مما يركب فوقه." },
+        { q: "لماذا تحب خطط الكيتو القرنبيط؟", a: "خمسة جرامات كربوهيدرات لكل 100 جم مع قوام الحرباء — أقرب شيء للأرز والبيوريه والعجين تستطيع ميزانية الكربوهيدرات تحمله فعلًا." },
+      ],
+    },
+  },
+
+  "lettuce": {
+    intro: {
+      en: "Lettuce is the volume engine of every cutting phase: 15 kcal per 100 g — a two-cup serving (80 g) costs 12 kcal, meaning the entire head costs less than a single rice cake. Its 1.4 g of protein per 100 g is real but never the point; the point is the crunch, the water, and the fork activity that turns a bowl of chicken into a whole event. Romaine brings the structure wraps need; butter lettuce is the burger bun that saves a bread slice's 12 g of carbs. The dressing is where the calories actually live.",
+      ar: "الخس محرك الحجم في كل مرحلة تنشيف: 15 سعرة لكل 100 جم — حصة الكوبين (80 جم) تكلف 12 سعرة، أي أن الرأس كاملًا أرخص من كيكة أرز واحدة. و1.4 جم بروتين لكل 100 جم فيه حقيقية لكنها ليست القصد أبدًا؛ القصد هو المقرمشية والماء ونشاط الشوكة الذي يحول وعاء دجاج إلى حدث كامل. والرومين يجلب البنية التي تحتاجها اللفائف؛ وخس الزبدة هو غلاف البرجر الذي يوفر 12 جم كربوهيدرات شريحة الخبز. والصوص هو حيث تسكن السعرات فعلًا.",
+    },
+    context: {
+      en: {
+        alternatives: "Cucumber delivers the water without the leaf structure; cabbage shreds hold up under hot fillings; spinach covers the same bowl with more micronutrients per leaf.",
+        plan: "Butter-lettuce cups turn any minced-meat stir-fry into hand food with zero bread — two cups of the lettuce itself cost 12 kcal. On gaining days, lettuce is the burger's honest vehicle.",
+        caution: "The dressing is the budget: two tablespoons of creamy ranch can carry more calories than the entire salad beneath it; lemon, vinegar and a measured spoon of oil are the honest ceiling.",
+      },
+      ar: {
+        alternatives: "الخيار يوصل الماء دون بنية الورقة؛ والكرنب المبروش يصمد تحت الحشوات الساخنة؛ والسبانخ يغطي الوعاء نفسه بمغذيات أكثر للورقة.",
+        plan: "أكواب خس الزبدة تحول أي قلي سريع باللحم المفروم إلى طعام يد بلا خبز — كوبان من الخس نفسه يكلفان 12 سعرة. وفي أيام التضخيم الخس هو مركبة البرجر الصادقة.",
+        caution: "الصوص هو الميزانية: ملعقتان كبيرتان من الرانش الكريمي قد تحملان سعرات أكثر من السلطة كلها تحتهما؛ والليمون والخل وملعقة زيت مقيسة هي السقف الصادق.",
+      },
+    },
+    faq: {
+      en: [
+        { q: "How many calories in two cups of shredded lettuce?", a: "Twelve — for 80 g of crunch and fork-work; it is the cheapest volume in this entire library and the reason salads start here." },
+        { q: "Is lettuce nutritious?", a: "Mildly — mostly water with small amounts of fiber, folate and vitamin K depending on the darkness of the leaf; it is a vehicle and a volume, never a multivitamin." },
+        { q: "Which lettuce works for wraps?", a: "Butter lettuce and romaine hearts — their cupped, flexible leaves hold hot fillings without tearing; iceberg shatters where those two bend." },
+      ],
+      ar: [
+        { q: "كم سعرة في كوبين من الخس المفروم؟", a: "اثنتا عشرة — مقابل 80 جم من المقرمشية وعمل الشوكة؛ إنه أرخص حجم بهذه المكتبة كلها وسبب بدء السلطات هنا." },
+        { q: "هل الخس مغذٍ؟", a: "باعتدال — ماء بالأساس مع مقادير صغيرة من الألياف والفولات وفيتامين ك بحسب غمق الورقة؛ هو مركبة وحجم، لا فيتامين متعدد أبدًا." },
+        { q: "أي خس يصلح للف؟", a: "خس الزبدة وقلوب الرومين — أوراقهما الكأسية المرنة تحمل الحشوات الساخنة دون تمزق؛ والآيسبرغ يتشظى حيث ينحني هذان." },
+      ],
+    },
+  },
+
+  "orange": {
+    intro: {
+      en: "An orange is the original vitamin-C delivery: 47 kcal and 12 g of carbs per 100 g, with the medium whole fruit (130 g) at 61 kcal and 2.4 g of fiber that juice strips away. That fiber is the difference between a snack and a blood-sugar blip — the fruit forces your jaw and gut to slow what a glass delivers in ten seconds. As the portable post-workout companion it has no rival: it survives a gym bag, needs no washing, and splits into segments that seem designed for shaking hands.",
+      ar: "البرتقالة توصيل فيتامين سي الأصلي: 47 سعرة و12 جم كربوهيدرات لكل 100 جم، والثمرة الكاملة المتوسطة (130 جم) عند 61 سعرة و2.4 جم ألياف تجردها العصارة. تلك الألياف هي الفرق بين سناك وقفزة سكر دم — الثمرة تجبر فكك وأمعاءك على إبطاء ما يوصله كوب في عشر ثوان. وكنديب ما بعد التمرين المحمول لا منافس له: يصمد في حقيبة الجيم، ولا يحتاج غسلًا، وينشق فصوصًا تبدو مصممة للأيدي المرتجفة.",
+    },
+    context: {
+      en: {
+        alternatives: "A fresh-juice glass costs 112 kcal for the same weight with the fiber deleted; kiwi covers the vitamin-C slot smaller; mandarins are the travel-format sibling.",
+        plan: "Pair one orange with a protein shake post-training — the fast carbs restock glycogen while the shake handles repair, and the whole duo stays under 250 kcal on a cut.",
+        caution: "The 61 kcal belongs to the whole fruit — juicing three of them into one glass stacks 183 kcal of sugar-water without the chewing that slows it down.",
+      },
+      ar: {
+        alternatives: "كوب العصير الطازج يكلف 112 سعرة للوزن نفسه والألياف محذوفة؛ والكيوي يغطي خانة فيتامين سي أصغر؛ واليوسفي الشقيق بصيغة السفر.",
+        plan: "رافق برتقالة بمشروب بروتين بعد التدريب — الكربوهيدرات السريعة تعيد ملء الجلايكوجين والمشروب يتولى الإصلاح، والثنائي كاملًا يبقى تحت 250 سعرة في التنشيف.",
+        caution: "61 سعرة تخص الثمرة كاملة — عصر ثلاث منها في كوب يكدس 183 سعرة من ماء السكر بلا مضغ يبطئها.",
+      },
+    },
+    faq: {
+      en: [
+        { q: "How many calories in a medium orange?", a: "About 61 for 130 g of whole fruit — with 2.4 g of fiber riding along, which is exactly what the juiced version leaves behind." },
+        { q: "Orange or juice — which one?", a: "The fruit, on every count that matters: same vitamin, retained fiber, and a jaw that stops you at one; a juice glass makes three oranges disappear unnoticed." },
+        { q: "Can I eat an orange on a cut?", a: "Yes — it is one of the best sweet finishes a deficit allows: 61 kcal, real satiety from the chewing, and water volume that helps the evening feel finished." },
+      ],
+      ar: [
+        { q: "كم سعرة في برتقالة متوسطة؟", a: "نحو 61 لكل 130 جم من الثمرة الكاملة — ومعها 2.4 جم ألياف، وهي بالضبط ما تتركه النسخة المعصورة خلفها." },
+        { q: "برتقال أم عصير — أيهما؟", a: "الثمرة، في كل عدّ مهم: الفيتامين نفسه، والألياف محفوظة، وفك يوقفك عند واحدة؛ وكوب العصير يجعل ثلاث برتقالات تختفي بلا انتباه." },
+        { q: "هل آكل برتقالة أثناء التنشيف؟", a: "نعم — من أفضل الخواتم الحلوة التي يسمح بها العجز: 61 سعرة، وإشباع حقيقي من المضغ، وحجم مائي يساعد المساء على الشعور بالاكتمال." },
+      ],
+    },
+  },
+
+  "mixed-berries": {
+    intro: {
+      en: "Mixed berries are dessert at produce pricing: 57 kcal and 14 g of carbs per 100 g with 3.6 g of fiber, deep color, and a sugar load (10 g) gentler than grapes' by a wide margin. A 150 g cup lands 86 kcal — the same mouthful of pleasure as a scoop of ice cream at a quarter of the energy. Frozen they are arguably better: cheaper, never moldy, and they turn a blender of yogurt and protein powder into something that eats like soft-serve. The mix is the strategy — each berry brings its own pigment family.",
+      ar: "التوت المشكل حلوى بأسعار الخضار: 57 سعرة و14 جم كربوهيدرات لكل 100 جم مع 3.6 جم ألياف، ولون غامق، وحمل سكر (10 جم) ألطف بكثير من العنب. كوب 150 جم يهبط بـ86 سعرة — اللقمة نفسها من المتعة ككرة آيس كريم بربع الطاقة. ومجمدة أفضل حجةً: أرخص، لا تعفن أبدًا، وتحول خلاط الزبادي ومسحوق البروتين إلى شيء يُؤكل كالآيس كريم الطري. والخلطة نفسها هي الاستراتيجية — كل حبة تجلب عائلة صبغتها الخاصة إلى الوعاء.",
+    },
+    context: {
+      en: {
+        alternatives: "Strawberries run even lower per calorie; banana adds creaminess and potassium to blends; frozen mango covers the tropical direction at double the sugar.",
+        plan: "The cutting dessert: a 150 g cup over Greek yogurt with a drizzle — under 150 kcal total and it closes the evening honestly. On gains, blend the same cup into the mass-shaker with oats.",
+        caution: "«Dried berries» and berry-flavored products are different foods — drying concentrates the sugar toward dates territory, and the flavored aisle mostly never met the fruit.",
+      },
+      ar: {
+        alternatives: "الفراولة تجري أخفض حتى لكل سعرة؛ والموز يضيف قوامًا كريميًا وبوتاسيومًا للخلطات؛ والمانجو المجمد يغطي الاتجاه الاستوائي بضعف السكر.",
+        plan: "حلوى التنشيف: كوب 150 جم فوق زبادي يوناني برشة — تحت 150 سعرة إجمالًا وتغلق المساء بصدق. وفي التضخيم اخفق الكوب نفسه في الخلاط الكبير مع الشوفان.",
+        caution: "«التوت المجفف» والمنتجات بنكهة التوت أطعمة أخرى — التجفيف يركز السكر نحو أراضي التمر، ورف النكهات لم يقابل الفاكهة أصلًا في الأغلب.",
+      },
+    },
+    faq: {
+      en: [
+        { q: "How many calories in a cup of mixed berries?", a: "About 86 for 150 g — with 5.4 g of fiber and only 15 g of sugars, which is why the dessert recipes on this site start with them." },
+        { q: "Frozen or fresh berries?", a: "Frozen wins on economics and calendar — picked ripe, locked at peak, immune to the fridge's three-day mold deadline; fresh wins only for eating out of hand." },
+        { q: "Are berries good for fat loss?", a: "As good as sweet gets on a deficit: high water, real fiber, moderate sugar — the failure mode is what gets poured on top of them, never the berries." },
+      ],
+      ar: [
+        { q: "كم سعرة في كوب توت مشكل؟", a: "نحو 86 لكل 150 جم — مع 5.4 جم ألياف و15 جم سكريات فقط، ولهذا تبدأ وصفات الحلوى بهذا الموقع منها." },
+        { q: "توت مجمد أم طازج؟", a: "المجمد يفوز اقتصاديًا وتقويميًا — يُقطف ناضجًا ويُقفل في الذروة ويعصي مهلة العفن الثلاثية بالثلاجة؛ والطازج يفوز للأكل باليد فقط." },
+        { q: "هل التوت جيد لخسارة الدهون؟", a: "بأفضل ما تصل إليه الحلاوة في عجز سعري: ماء كثير وألياف حقيقية وسكر معتدل — وطريقة الفشل هي ما يُسكب فوقها، لا التوت أبدًا." },
+      ],
+    },
+  },
+
+  "strawberry": {
+    intro: {
+      en: "Strawberries are the lowest-sugar sweet fruit in this library: 32 kcal, 7.7 g of carbs and only 4.9 g of sugars per 100 g. A full 152 g cup costs 49 kcal, which is why they anchor the dessert course of every fat-loss plan worth the name: over Greek yogurt with a drizzle, they end an evening without breaking the deficit. Their fragility is the only tax — buy them ripe, wash them just before eating, and freeze whatever the week will not finish for the smoothie jar.",
+      ar: "الفراولة أقل الفواكه الحلوة سكرًا بهذه المكتبة: 32 سعرة و7.7 جم كربوهيدرات و4.9 جم سكريات فقط لكل 100 جم. كوب 152 جم كامل يكلف 49 سعرة، ولهذا ترسي على طبق الحلوى في كل خطة تنشيف تستحق الاسم: فوق زبادي يوناني برشة، تُنهي مساء دون كسر العجز. وهشاشتها هي الضريبة الوحيدة — اشترها ناضجة، واغسلها قبل الأكل مباشرة، وجمّد ما لن يُنهيه الأسبوع لبرطمان السموذي.",
+    },
+    context: {
+      en: {
+        alternatives: "Mixed berries cover the same bowl with more color variety; banana brings creaminess and sugar for training days; apple slices give the crunch direction raw.",
+        plan: "The standard cutting dessert: 152 g of strawberries over 170 g of Greek yogurt — around 150 kcal together, with the protein doing the real closing shift.",
+        caution: "Their shelf life is measured in days — refrigerate dry and unwashed, and slice off the soft spots early; chocolate-dipped strawberries are a dessert with a dessert's numbers.",
+      },
+      ar: {
+        alternatives: "التوت المشكل يغطي الوعاء نفسه بتنوع لوني أكبر؛ والموز يجلب القوام الكريمي والسكر لأيام التدريب؛ وشرائح التفاح تعطي اتجاه المقرمشية نيئة.",
+        plan: "حلوى التنشيف القياسية: 152 جم فراولة فوق 170 جم زبادي يوناني — نحو 150 سعرة معًا، والبروتين يقوم بنوبة الإغلاق الحقيقية.",
+        caution: "عمرها الرفي يُقاس بأيام — برّدها جافة غير مغسولة، وقصّ البقع اللينة مبكرًا؛ والفراولة المغمسة بالشوكولاتة حلوى بأرقام الحلوى.",
+      },
+    },
+    faq: {
+      en: [
+        { q: "How many calories in a cup of strawberries?", a: "About 49 for a generous 152 g cup — the widest dessert margin in the fruit drawer, at 4.9 g of sugars per 100 g." },
+        { q: "Strawberries or banana for cutting?", a: "Strawberries, by a factor of three: 32 versus 89 kcal per 100 g — you eat nearly triple the weight for the same calories, and the sweetness survives." },
+        { q: "How do I store strawberries?", a: "Refrigerated, dry and unwashed until the moment of eating — moisture launches the mold clock; hull and freeze the surplus for smoothies at almost no quality loss." },
+      ],
+      ar: [
+        { q: "كم سعرة في كوب فراولة؟", a: "نحو 49 لكوب سخي 152 جم — أوسع هامش حلوى في درج الفواكه، عند 4.9 جم سكريات لكل 100 جم." },
+        { q: "فراولة أم موز للتنشيف؟", a: "الفراولة بثلاثة أضعاف: 32 مقابل 89 سعرة لكل 100 جم — تأكل قرابة ثلاثة أضعاف الوزن بالسعرات نفسها، والحلاوة تبقى." },
+        { q: "كيف أخزن الفراولة؟", a: "مبردة جافة غير مغسولة حتى لحظة الأكل — الرطوبة تشغل ساعة العفن؛ وأزل الأعناق وجمّد الفائض للسموذي بلا خسارة تُذكر." },
+      ],
+    },
+  },
+
+  "grapes": {
+    intro: {
+      en: "Grapes are nature's candy with the receipt attached: 69 kcal and 18 g of carbs per 100 g, of which 16 g is sugar — the highest sugar density in the fruit drawer alongside mango. A 150 g cup is 104 kcal that disappears in about ninety seconds, which is exactly why portion discipline matters more here than anywhere else in the bowl. Frozen, they transform: the sugar concentrates into little sorbet pellets that stretch a snack to twenty minutes. The dark skins carry the antioxidant family that made red wine famous for a decade.",
+      ar: "العنب حلوى الطبيعة بإيصالها المرفق: 69 سعرة و18 جم كربوهيدرات لكل 100 جم، منها 16 جم سكر — أعلى كثافة سكر في درج الفواكه مع المانجو. كوب 150 جم هو 104 سعرة تختفي في نحو تسعين ثانية، وهذا بالضبط سبب أهمية انضباط الحصة هنا أكثر من أي مكان آخر في الوعاء. ومجمدة تتحول: السكر يتركز في حبيبات سوربيه صغيرة تمدد السناك إلى عشرين دقيقة. والقشور الداكنة تحمل عائلة مضادات الأكسدة التي أشهرت النبيذ الأحمر لعقد كامل.",
+    },
+    context: {
+      en: {
+        alternatives: "Berries deliver the pop-and-sweet experience at half the sugar; watermelon covers cold sweetness with water volume; apple segments give the slow-eating format grapes refuse.",
+        plan: "On a cut, pre-portion 150 g into a bowl and freeze it — the thawing pace becomes the portion control. On gaining days, grapes blend into the mass-shaker unnoticed beside banana and oats.",
+        caution: "The 0.9 g of fiber per 100 g is nearly nothing — nothing slows 16 g of sugar, so the bowl empties at snacking speed; weigh the portion before it becomes two.",
+      },
+      ar: {
+        alternatives: "التوت يقدم تجربة الانفجار والحلاوة بنصف السكر؛ والبطيخ يغطي البرودة والحلاوة بحجم مائي؛ وقطاعات التفاح تعطي صيغة الأكل البطيء التي يرفضها العنب.",
+        plan: "في التنشيف، وزّع 150 جم مسبقًا في وعاء وجمّدها — وتيرة الذوبان تصبح ضبط الحصة. وفي أيام التضخيم يُخفق العنب في الخلاط الكبير بلا انتباه بجوار الموز والشوفان.",
+        caution: "0.9 جم ألياف لكل 100 جم لا شيء تقريبًا — لا شيء يبطئ 16 جم سكر، فالوعاء يفرغ بسرعة السناك؛ زِن الحصة قبل أن تصبح اثنين.",
+      },
+    },
+    faq: {
+      en: [
+        { q: "How many calories in a cup of grapes?", a: "About 104 for 150 g — delicious and gone in seconds, which is the entire risk: the cup is a unit, not a suggestion." },
+        { q: "Why don't grapes fill me up?", a: "Nearly zero fiber at 0.9 g per 100 g and a high sugar pace — they bypass every fullness signal on the way down; eat them as a planned portion, not an open bowl." },
+        { q: "Are frozen grapes a real trick?", a: "Yes — freezing turns the same 104 kcal cup into a twenty-minute, sorbet-paced snack; the temperature does the portion control you forgot to." },
+      ],
+      ar: [
+        { q: "كم سعرة في كوب عنب؟", a: "نحو 104 لكل 150 جم — لذيذ ومختفٍ في ثوان، وهذا هو الخطر كله: الكوب وحدة لا اقتراح." },
+        { q: "لماذا لا يُشبعني العنب؟", a: "ألياف شبه معدومة عند 0.9 جم لكل 100 جم وسرعة سكر عالية — يتجاوز كل إشارات الشبع في طريقه للأسفل؛ كله كحصة مخططة لا وعاء مفتوح." },
+        { q: "هل العنب المجمد حيلة حقيقية؟", a: "نعم — التجميد يحول كوب 104 سعرة نفسه إلى سناك بوتيرة سوربيه لعشرين دقيقة؛ الحرارة تقوم بضبط الحصة الذي نسيته." },
+      ],
+    },
+  },
+
+  "watermelon": {
+    intro: {
+      en: "Watermelon is the hydration fruit: 30 kcal and 8 g of carbs per 100 g, over ninety percent water by weight — a 280 g slice is 84 kcal of the most refreshing food a hot training day can offer. Its glycemic index is high and famously beside the point: the glycemic load of that whole slice stays modest because there is simply little sugar in each watery bite. Post-workout on a summer cut, cold watermelon competes with any engineered recovery snack for satisfaction — and wins on honesty.",
+      ar: "البطيخ فاكهة الترطيب: 30 سعرة و8 جم كربوهيدرات لكل 100 جم، وأكثر من تسعين بالمئة ماء بالوزن — شريحة 280 جم هي 84 سعرة من أكثر طعام منعش يمكن ليوم تدريب حار أن يقدمه. ودليله الجلايسيمي مرتفع ومشهور بوقوفه خارج الجدل: الحمل الجلايسيمي للشريحة كاملة يبقى متواضعًا لأن السكر قليل ببساطة في كل لقمة مائية. وبعد التمرين في تنشيف صيفي، البطيخ البارد ينافس أي سناك استشفاء هندسيًا في الرضا — ويفوز بالصدق.",
+    },
+    context: {
+      en: {
+        alternatives: "Cucumber delivers the same cold-water crunch for savory plates; coconut water bottles the electrolytes without the eating; berries give the sweetness with fiber attached.",
+        plan: "On a hot cut, a 280 g slice is the post-training reward at 84 kcal — water, sugar and volume arriving where a deficit usually collects its complaints.",
+        caution: "The numbers belong to the red flesh — the rind-adjacent white part is blander but nearly identical nutritionally, and the seed-spitting contests are free cardio.",
+      },
+      ar: {
+        alternatives: "الخيار يقدم المقرمشية المائية الباردة نفسها للأطباق المالحة؛ وماء جوز الهند يعبئ الإلكتروليتات بلا أكل؛ والتوت يعطي الحلاوة بألياف مرفقة.",
+        plan: "في تنشيف حار، شريحة 280 جم هي مكافأة ما بعد التدريب عند 84 سعرة — ماء وسكر وحجم يصل حيث يجمع العجز شكواه عادة.",
+        caution: "الأرقام تخص اللحم الأحمر — الجزء الأبيض المجاور للقشرة أميل للطفوح لكنه متطابق تغذويًا تقريبًا، ومسابقات بصق البذور كارديو مجاني.",
+      },
+    },
+    faq: {
+      en: [
+        { q: "How many calories in a slice of watermelon?", a: "About 84 for a generous 280 g wedge — mostly water, 6 g of sugars per 100 g, and the closest thing to eating a cold drink." },
+        { q: "Is watermelon too sugary?", a: "No — 6 g per 100 g is under half of grapes' 16; the high glycemic index gets quoted a lot, but a watery fruit simply cannot deliver much sugar per bite." },
+        { q: "Is watermelon good after a workout?", a: "As a summer recovery it works — water for rehydration and fast sugar for glycogen, at 84 kcal a slice; it replaces the urge, not the protein shake." },
+      ],
+      ar: [
+        { q: "كم سعرة في شريحة بطيخ؟", a: "نحو 84 لوتد سخي 280 جم — ماء بالأغلب، و6 جم سكريات لكل 100 جم، وأقرب شيء لأكل مشروب بارد." },
+        { q: "هل البطيخ سكري أكثر من اللازم؟", a: "لا — 6 جم لكل 100 جم أقل من نصف الـ16 للعنب؛ ويُقتبس دليله الجلايسيمي المرتفع كثيرًا، لكن فاكهة مائية عاجزة ببساطة عن توصيل سكر كثير للقمة." },
+        { q: "هل البطيخ جيد بعد التمرين؟", a: "كاستشفاء صيفي يعمل — ماء لإعادة الترطيب وسكر سريع للجلايكوجين، عند 84 سعرة للشريحة؛ إنه يستبدل الرغبة لا مشروب البروتين." },
+      ],
+    },
+  },
+
+  "pineapple": {
+    intro: {
+      en: "Pineapple is the tropical fruit with a working résumé: 50 kcal and 13 g of carbs per 100 g, carrying bromelain — a genuine protein-digesting enzyme family that survives fresh eating but not cooking, which is why it both tenderizes meat in marinades and stars in old recovery-bowl lore. A 165 g slice is 83 kcal with 1.4 g of fiber and more sweetness than almost anything at that price. Its 10 g of sugars per 100 g are real sugars, so a deficit still counts them — but as dessert, it dominates anything from a wrapper.",
+      ar: "الأناناس الفاكهة الاستوائية بسيرة عمل حقيقية: 50 سعرة و13 جم كربوهيدرات لكل 100 جم، حاملة البروميلين — عائلة إنزيمات هاضمة للبروتين فعلية تنجو من الأكل الطازج لا من الطبخ، ولهذا ترقّق اللحم في التتبيلات وتتصدر حكايا أطباق الاستشفاء القديمة. شريحة 165 جم هي 83 سعرة مع 1.4 جم ألياف وحلاوة أكثر من أي شيء تقريبًا بهذا الثمن. و10 جم سكريات لكل 100 جم فيه سكريات حقيقية، فالعجز يظل يحسبها — لكن كحلوى، يهيمن على أي شيء يأتي من غلاف.",
+    },
+    context: {
+      en: {
+        alternatives: "Mango carries the tropical flag sweeter and softer; frozen pineapple chunks blend tangy for shakes; kiwi covers the enzyme-and-tang direction smaller and greener.",
+        plan: "Post-training, a slice beside the shake covers fluids, fast carbs and the enzyme folklore at 83 kcal. On a cut it is the dessert that makes the plan survivable in summer.",
+        caution: "Fresh over canned-in-syrup every time — the can's syrup adds a sugar layer the fresh numbers never carried; and eating it before it is ripe costs your mouth real irritation.",
+      },
+      ar: {
+        alternatives: "المانجو يحمل العلم الاستوائي أحلى وأنعم؛ وقطعات الأناناس المجمد تُخفق بحموضة للمشروبات؛ والكيوي يغطي اتجاه الإنزيم والحموضة أصغر وأخضر.",
+        plan: "بعد التدريب، شريحة بجوار المشروب تغطي السوائل والكربوهيدرات السريعة وحكايا الإنزيم عند 83 سعرة. وفي التنشيف هي الحلوى التي تجعل الخطة قابلة للعيش في الصيف.",
+        caution: "الطازج على المعلب بالشراب كل مرة — شراب العلبة يضيف طبقة سكر لم تحملها أرقام الطازج أبدًا؛ وأكله قبل نضوجه يكلف فمك استثارة حقيقية.",
+      },
+    },
+    faq: {
+      en: [
+        { q: "How many calories in a slice of pineapple?", a: "About 83 for a 165 g ring — tangy, sweet and watery enough that the eating itself slows you down more than grapes ever do." },
+        { q: "Does bromelain really digest protein?", a: "It is a real enzyme family that breaks proteins down — the reason fresh pineapple tenderizes a marinade; cooking destroys it, and the recovery-bowl stories carry a kernel of chemistry." },
+        { q: "Why does pineapple sting my mouth?", a: "That is the bromelain working on the lining of your mouth while you chew — fully ripe fruit carries less punch, and the sting is harmless for most people." },
+      ],
+      ar: [
+        { q: "كم سعرة في شريحة أناناس؟", a: "نحو 83 لحلقة 165 جم — حامضة حلوة ومائية بما يكفي لأن الأكل نفسه يبطئك أكثر مما يفعله العنب أبدًا." },
+        { q: "هل يهضم البروميلين البروتين فعلًا؟", a: "هي عائلة إنزيمات حقيقية تفكك البروتينات — سبب ترقيق الأناناس الطازج للتتبيلة؛ والطبخ يدمّرها، وحكايا أطباق الاستشفاء فيها نواة كيمياء." },
+        { q: "لماذا يلسع الأناناس فمي؟", a: "هذا البروميلين يعمل على بطانة فمك وأنت تمضغ — الفاكهة الناضجة تمامًا أخف ضربة، واللسعة غير مؤذية لأغلب الناس." },
+      ],
+    },
+  },
+
+  "mango": {
+    intro: {
+      en: "Mango is the sweetest thing in this library's fruit drawer: 60 kcal and 15 g of carbs per 100 g, of which 14 g is sugar — dessert that arrives in its own peel. The medium whole fruit (200 g) is 120 kcal, two-thirds of a candy bar's load wearing fiber and vitamin A instead of guilt. In season, sliced over Greek yogurt, it is unbeatable; out of season, frozen chunks keep most of the argument. Portion awareness, not avoidance, is the play — half a mango finishes a meal beautifully.",
+      ar: "المانجو أحلى ما في درج الفواكه بهذه المكتبة: 60 سعرة و15 جم كربوهيدرات لكل 100 جم، منها 14 جم سكر — حلوى تصل في قشرتها الخاصة. والثمرة الكاملة المتوسطة (200 جم) 120 سعرة، ثلثا حمل لوح الشوكولاتة بزيّ الألياف وفيتامين أ بدل الذنب. في الموسم، مقطعة فوق زبادي يوناني، لا تُقهر؛ وخارج الموسم تحتفظ القطعات المجمدة بأغلب الحجة. والوعي بالحصة لا التجنب هو اللعب — نصف مانجو يختم وجبة بجمال.",
+    },
+    context: {
+      en: {
+        alternatives: "Pineapple delivers tropical tang with less sugar; strawberries run half the calories; frozen mango chunks keep the smoothie direction honest year-round.",
+        plan: "On a cut, half a fruit (100 g, 60 kcal) over yogurt is the dessert; on a bulk, the whole 200 g mango blends into the mass-shaker with oats and milk for a tropical 500 kcal glass.",
+        caution: "The 14 g of sugars per 100 g is the fruit-drawer ceiling — delicious, but a whole large mango can clear 200 kcal the same way a candy bar does, only with fiber as a partial alibi.",
+      },
+      ar: {
+        alternatives: "الأناناس يقدم الحموضة الاستوائية بسكر أقل؛ والفراولة تجري بنصف السعرات؛ وقطعات المانجو المجمدة تُبقي اتجاه السموذي صادقًا طوال العام.",
+        plan: "في التنشيف، نصف ثمرة (100 جم و60 سعرة) فوق الزبادي هو الحلوى؛ وفي التضخيم، المانجو كاملة 200 جم تُخفق في الخلاط الكبير مع الشوفان والحليب لكوب استوائي 500 سعرة.",
+        caution: "14 جم سكريات لكل 100 جم سقف درج الفواكه — لذيذة، لكن مانجو كبيرة كاملة قد تصفّي 200 سعرة كما يفعل لوح الشوكولاتة، فقط والألياف عذر جزئي.",
+      },
+    },
+    faq: {
+      en: [
+        { q: "How many calories in a whole mango?", a: "About 120 for a medium 200 g fruit — a candy bar's neighborhood, which is why the half-fruit portion is the cutting standard." },
+        { q: "Can I eat mango on a cut?", a: "Yes, in halves — 100 g costs 60 kcal and finishes a meal like nothing else at that price; the whole-fruit habit is where deficits quietly leak." },
+        { q: "Is mango high in sugar?", a: "At 14 g per 100 g it tops this library's fruit drawer alongside grapes — real fruit sugar with fiber attached, but still the first place a strict budget looks." },
+      ],
+      ar: [
+        { q: "كم سعرة في مانجو كاملة؟", a: "نحو 120 لثمرة متوسطة 200 جم — حي لوح الشوكولاتة، ولهذا حصة نصف الثمرة معيار التنشيف." },
+        { q: "هل آكل مانجو أثناء التنشيف؟", a: "نعم، بأنصاف — 100 جم تكلف 60 سعرة وتختم وجبة كما لا يفعل شيء آخر بهذا الثمن؛ وعادة الثمرة الكاملة هي حيث تتسرب العجوز خلسة." },
+        { q: "هل المانجو عالية السكر؟", a: "عند 14 جم لكل 100 جم تتصدر درج فواكه هذه المكتبة مع العنب — سكر فاكهة حقيقي بألياف مرفقة، لكنها مع ذلك أول مكان تنظر إليه الميزانية الصارمة." },
+      ],
+    },
+  },
 };
 
 /**
