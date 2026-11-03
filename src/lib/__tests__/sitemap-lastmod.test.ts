@@ -26,7 +26,7 @@ import { buildUrlSet, type SitemapUrl } from "@/lib/sitemap-xml";
 const W3C_DAY = /^\d{4}-\d{2}-\d{2}$/;
 
 describe("sitemap lastmod anchors (#14)", () => {
-  it("foods pinned to the P1-1 batch-2 ship date (served-HTML change — exercises precedent)", () => {
+  it("foods pinned to the P1-1 batch-4 ship date (served-HTML change — exercises precedent)", () => {
     expect(SITEMAP_LASTMOD.foods).toBe("2026-11-04");
   });
 

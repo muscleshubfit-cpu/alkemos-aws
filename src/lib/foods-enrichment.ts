@@ -38,10 +38,9 @@
  *   getFoodEnrichment(slug) → render inside FoodDetailClient (both the
  *   EN route and the /ar mirror pass it as a prop).
  *
- * BATCH PROTOCOL: batch 1 = 20 foods (families: protein 4 · carb 4 ·
- * fat 3 · vegetable 2 · fruit 2 · dairy 2 · nuts 2 · drink 1 — snack
- * lands in batch 2). Follow-up batches append entries here in their
- * own frames; the canary test automatically covers every entry.
+ * BATCH PROTOCOL: batches 1 (2026-11-01, 20 foods) and 2-4 (2026-11-04,
+ * 60 foods) together cover ALL 80 curated foods — the P1-1 scope is
+ * COMPLETE. The canary test automatically covers every entry.
  */
 
 export type EnrichedFaq = { q: string; a: string };
@@ -1918,6 +1917,626 @@ export const FOODS_ENRICHMENT: Record<string, FoodEnrichment> = {
         { q: "كم سعرة في مانجو كاملة؟", a: "نحو 120 لثمرة متوسطة 200 جم — حي لوح الشوكولاتة، ولهذا حصة نصف الثمرة معيار التنشيف." },
         { q: "هل آكل مانجو أثناء التنشيف؟", a: "نعم، بأنصاف — 100 جم تكلف 60 سعرة وتختم وجبة كما لا يفعل شيء آخر بهذا الثمن؛ وعادة الثمرة الكاملة هي حيث تتسرب العجوز خلسة." },
         { q: "هل المانجو عالية السكر؟", a: "عند 14 جم لكل 100 جم تتصدر درج فواكه هذه المكتبة مع العنب — سكر فاكهة حقيقي بألياف مرفقة، لكنها مع ذلك أول مكان تنظر إليه الميزانية الصارمة." },
+      ],
+    },
+  },
+
+  "milk": {
+    intro: {
+      en: "Whole milk is the original bulking shake: 61 kcal, 3.2 g of protein, 4.8 g of carbs and 3.3 g of fat per 100 g — a cup (240 g) pours 146 kcal with 7.7 g of protein and a calcium dose no other drink matches. Before supplements existed, half a liter a day was how skinny teenagers grew, and the logic still holds: it adds calories, protein and micronutrients to a meal without adding a single bite of chewing. The fat is what makes it «whole» — and what makes cutting plans switch to the skim bottle.",
+      ar: "الحليب الكامل هو مشروب التضخيم الأصلي: 61 سعرة و3.2 جم بروتين و4.8 جم كربوهيدرات و3.3 جم دهون لكل 100 جم — الكوب (240 جم) يصب 146 سعرة مع 7.7 جم بروتين وجرعة كالسيوم لا يضاهيها مشروب آخر. قبل وجود المكملات كان نصف لتر يوميًا هو طريقة المراهقين النحاف للنمو، والمنطق قائم: يضيف سعرات وبروتينًا ومغذيات دقيقة إلى الوجبة دون لقمة مضغ واحدة. والدهن هو ما يجعله «كاملًا» — وما يجعل خطط التنشيف تبدل إلى القنينة الخالية.",
+    },
+    context: {
+      en: {
+        alternatives: "Skim milk keeps the protein and calcium at roughly half the calories; soy milk is the plant closest to its profile; Greek yogurt eats the same nutrients with a spoon.",
+        plan: "On a bulk, two cups across the day quietly add 292 kcal and 15 g of protein. On a cut, whole milk survives as the morning cup only — measured, never refilled blindly.",
+        caution: "The 5 g of sugars per 100 g is lactose, not added sugar — but a «glass with every meal» habit can pour 400+ kcal into a day nobody counted; measure the cup.",
+      },
+      ar: {
+        alternatives: "الحليب الخالي يبقي البروتين والكالسيوم بنحو نصف السعرات؛ وحليب الصويا الأقرب نباتيًا لبروفايله؛ والزبادي اليوناني يأكل المغذيات نفسها بالملعقة.",
+        plan: "في التضخيم، كوبان عبر اليوم يضيفان بهدوء 292 سعرة و15 جم بروتين. وفي التنشيف ينجو الحليب الكامل ككوب الصباح فقط — مقيسًا لا يُعاد ملؤه عمياء.",
+        caution: "5 جم سكريات لكل 100 جم هي لاكتوز لا سكر مضاف — لكن عادة «كوب مع كل وجبة» قد تصب أكثر من 400 سعرة في يوم لم يحسبه أحد؛ زِن الكوب.",
+      },
+    },
+    faq: {
+      en: [
+        { q: "How many calories in a cup of whole milk?", a: "About 146 for 240 g, riding in with 7.7 g of protein and 8 g of fat — the reason bulking plans love it and cutting plans measure it." },
+        { q: "Whole or skim milk for muscle gain?", a: "On a bulk, whole — the extra 64 kcal per cup are the point. On a cut, skim delivers 8.2 g of protein for 82 kcal, which is the better trade." },
+        { q: "Is milk a good protein source?", a: "A decent one, not a primary one — 7.7 g per cup means four cups match a single chicken breast; treat it as a calorie-and-calcium vehicle that happens to carry protein." },
+      ],
+      ar: [
+        { q: "كم سعرة في كوب حليب كامل؟", a: "نحو 146 لكل 240 جم، تدخل مع 7.7 جم بروتين و8 جم دهون — سبب حب خطط التضخيم له وقياس خطط التنشيف له." },
+        { q: "حليب كامل أم خالٍ لبناء العضل؟", a: "في التضخيم الكامل — الـ64 سعرة الإضافية للكوب هي المقصود. وفي التنشيف يقدم الخالي 8.2 جم بروتين بـ82 سعرة، وهي الصفقة أفضل." },
+        { q: "هل الحليب مصدر بروتين جيد؟", a: "لا بأس به لا أساسي — 7.7 جم للكوب تعني أن أربعة أكواب تعادل صدر دجاج واحدًا؛ عامله كمركبة سعرات وكالسيوم تحمل بروتينًا بالصدفة." },
+      ],
+    },
+  },
+
+  "milk-skim": {
+    intro: {
+      en: "Skim milk is whole milk on a diet: 34 kcal and 3.4 g of protein per 100 g with the fat stripped to a rounding error — the cup (240 g) lands 82 kcal while keeping every gram of the calcium and a touch more protein than the whole version. That protein-per-calorie arithmetic is why it lived in bodybuilding kitchens for decades: two cups a day cost 164 kcal and deliver 16 g of slow-digesting casein and whey. The flavor is thinner, the trade is honest.",
+      ar: "الحليب الخالي هو الحليب الكامل على حمية: 34 سعرة و3.4 جم بروتين لكل 100 جم والدهن مُجرَّد حتى خطأ التقريب — الكوب (240 جم) يهبط بـ82 سعرة محتفظًا بكل جرام كالسيوم وبروتين أعلى قليلًا من النسخة الكاملة. حساب البروتين لكل سعرة هذا سبب بقائه عقودًا في مطابخ كمال الأجسام: كوبان يوميًا يكلفان 164 سعرة ويقدمان 16 جم كازيين وواي بطيء الهضم. النكهة أرق، والصفقة صادقة.",
+    },
+    context: {
+      en: {
+        alternatives: "Whole milk when calories are welcome; soy milk is the plant-based parallel; a scoop of casein in water covers the before-bed job at double the protein.",
+        plan: "The classic cutting use: a cup with breakfast and a cup before bed — 164 kcal total for 16 g of protein that digests slowly through the night.",
+        caution: "Check the label on «fortified» or flavored skims — some rebuild the calories with added sugar, which undoes the entire point of removing the fat.",
+      },
+      ar: {
+        alternatives: "الحليب الكامل حين تكون السعرات مرحبًا بها؛ وحليب الصويا النظير النباتي؛ ومغرفة كازيين في الماء تغطي وظيفة ما قبل النوم بضعف البروتين.",
+        plan: "الاستخدام الكلاسيكي للتنشيف: كوب مع الفطور وكوب قبل النوم — 164 سعرة إجمالًا مقابل 16 جم بروتين يهضم ببطء عبر الليل.",
+        caution: "افحص ملصق النسخ «المدعمة» أو المنكهة — بعضها يعيد بناء السعرات بسكر مضاف، فيدمر الغاية كلها من نزع الدهن.",
+      },
+    },
+    faq: {
+      en: [
+        { q: "How much protein in a cup of skim milk?", a: "About 8.2 g for 82 kcal — a protein-per-calorie ratio whole milk cannot touch, which is the entire reason skims exist." },
+        { q: "Is skim milk good for cutting?", a: "It is practically designed for it: the same calcium and slightly more protein than whole, at 64 kcal less per cup — the missing fat is the only thing missing." },
+        { q: "Why does skim milk taste watery?", a: "Because the fat that carried the mouthfeel is gone — that is the trade; warm it slightly or shake it into protein powder if the thinness bothers you." },
+      ],
+      ar: [
+        { q: "كم بروتين في كوب حليب خالٍ؟", a: "نحو 8.2 جم مقابل 82 سعرة — نسبة بروتين لكل سعرة لا يقدر الحليب الكامل على لمسها، وهي سبب وجود الخالي كله." },
+        { q: "هل الحليب الخالي جيد للتنشيف؟", a: "مصمم له عمليًا: الكالسيوم نفسه وبروتين أعلى قليلًا من الكامل، بأقل 64 سعرة للكوب — الدهن الغائب هو الشيء الوحيد الغائب." },
+        { q: "لماذا طعم الحليب الخالي مائي؟", a: "لأن الدهن الحامل لإحساس الفم ذهب — تلك هي المقايضة؛ سخّنه قليلًا أو اخفقه في مسحوق بروتين إن أزعجك الرقة." },
+      ],
+    },
+  },
+
+  "mozzarella": {
+    intro: {
+      en: "Mozzarella is the melt: 280 kcal, 28 g of protein and 17 g of fat per 100 g — a protein number that beats chicken per bite, in a cheese that stretches. The half-cup serving (112 g) brings 31 g of protein for 314 kcal, which is why it lives on every high-protein pizza and lasagna built at home. Fresh styles carry more water and milder flavor; the low-moisture blocks brown and stretch better under an oven. Either way, it is the cheese that makes Italian-leaning bulking recipes work.",
+      ar: "الموزاريلا هي الذوبان: 280 سعرة و28 جم بروتين و17 جم دهون لكل 100 جم — رقم بروتين يتفوق على الدجاج لكل لقمة، في جبن يتمدد. حصة نصف الكوب (112 جم) تجلب 31 جم بروتين مقابل 314 سعرة، ولهذا تسكن كل بيتزا ولازانيا عالية البروتين تُبنى بالمنزل. الأنواع الطازجة تحمل ماءً أكثر ونكهة ألطف؛ ومكعبات الرطوبة المنخفضة تحمر وتتمدد أفضل تحت الفرن. وبأي حال، هي الجبن الذي يجعل وصفات التضخيم الإيطالية تعمل.",
+    },
+    context: {
+      en: {
+        alternatives: "Ricotta covers the creamy-layer direction with less fat; feta brings the salty crumble; cheddar shreds substitute wherever the stretch is not the point.",
+        plan: "A homemade pizza with 112 g of mozzarella over a chicken-topped base turns a cheat meal into a 700-kcal, 60 g-protein dinner. On a cut, a half portion still melts convincingly.",
+        caution: "Fresh mozzarella balls swim in brine — drain well or the pizza floods; and restaurant portions run double this page's serving without asking.",
+      },
+      ar: {
+        alternatives: "الريكوتا تغطي اتجاه الطبقة الكريمية بدهون أقل؛ والفيتا يجلب التفتت المالح؛ ومبشور الشيدر يحل أينما لم يكن التمدد هو المقصود.",
+        plan: "بيتزا منزلية بـ112 جم موزاريلا فوق قاعدة محملة بالدجاج تحول وجبة غش إلى عشاء 700 سعرة و60 جم بروتين. وفي التنشيف نصف الحصة يذوب مقنعًا أيضًا.",
+        caution: "كرات الموزاريلا الطازجة تسبح في محلول — صفّها جيدًا وإلا فاضت البيتزا؛ وحصص المطاعم تجري بضعف حصة هذه الصفحة دون استئذان.",
+      },
+    },
+    faq: {
+      en: [
+        { q: "How much protein in half a cup of mozzarella?", a: "About 31 g for 112 g of cheese at 314 kcal — one of the highest protein-per-serving figures in the entire dairy drawer." },
+        { q: "Fresh or low-moisture mozzarella?", a: "Low-moisture for anything baked — it browns and stretches instead of flooding; fresh for salads and eating cold, where its creaminess is the feature." },
+        { q: "Is mozzarella good for bulking?", a: "Excellent — 28 g of protein per 100 g with a fat load that makes the calories easy, in the one cheese that makes pizza night a protein meal." },
+      ],
+      ar: [
+        { q: "كم بروتين في نصف كوب موزاريلا؟", a: "نحو 31 جم لكل 112 جم جبنًا عند 314 سعرة — من أعلى أرقام البروتين للحصة في درج الألبان كله." },
+        { q: "موزاريلا طازجة أم قليلة الرطوبة؟", a: "قليلة الرطوبة لأي مخبوز — تحمر وتتمدد بدل الإغراق؛ والطازجة للسلطات والأكل البارد حيث قشدها هي الميزة." },
+        { q: "هل الموزاريلا جيدة للتضخيم؟", a: "ممتازة — 28 جم بروتين لكل 100 جم مع حمل دهون يسهل السعرات، في الجبن الوحيد الذي يجعل ليلة البيتزا وجبة بروتين." },
+      ],
+    },
+  },
+
+  "feta-cheese": {
+    intro: {
+      en: "Feta is salt you can crumble: 264 kcal, 14 g of protein and 21 g of fat per 100 g, with a briny punch that seasons an entire salad from a 30 g serving — 79 kcal and 4.2 g of protein. That intensity-per-gram is its whole value: where mozzarella melts, feta distributes, turning a bowl of greens and tomatoes into a Greek salad with six crumbles. Real feta is sheep's milk (or mostly); the cow-milk versions are milder and wetter, which matters less here than the sodium does.",
+      ar: "الفيتا ملح قابل للتفتيت: 264 سعرة و14 جم بروتين و21 جم دهون لكل 100 جم، بضربة مالحة تتبّل سلطة كاملة من حصة 30 جم — 79 سعرة و4.2 جم بروتين. تلك الشدة لكل جرام هي قيمته كلها: حيث تذوب الموزاريلا، يتوزع الفيتا، محولًا وعاء خضار وطماطم إلى سلطة يونانية بست فتاتات. الفيتا الحقيقي من حليب الغنم (أو غالبه)؛ ونسخ حليب البقر ألطف وأكثر بللًا، وهو أقل أهمية هنا من الصوديوم.",
+    },
+    context: {
+      en: {
+        alternatives: "Labneh covers the tangy-creamy direction spreadable; mozzarella carries the melty jobs; a mix of ricotta and salt approximates it in cooked dishes.",
+        plan: "Crumble 30 g over cucumber, tomato and olive oil for the classic cutting salad — the salt satisfies at 79 kcal. In bulking omelets it replaces table salt entirely.",
+        caution: "It is the saltiest entry on the dairy shelf by a distance — rinse under water to tame it, and skip adding any further salt to a dish that carries feta.",
+      },
+      ar: {
+        alternatives: "اللبنة تغطي اتجاه الحموضة الكريمية قابلة للدهن؛ والموزاريلا تحمل وظائف الذوبان؛ وخليط ريكوتا وملح يتقارب معه بالأطباق المطبوخة.",
+        plan: "فتّت 30 جم فوق خيار وطماطم وزيت زيتون للسلطة اليونانية الكلاسيكية للتنشيف — الملح يُشبع عند 79 سعرة. وفي عج التضخيم يستبدل ملح المائدة كليًا.",
+        caution: "إنه أكثر مدخلات رف الألبان ملوحة بمسافة — اشطفه بالماء لترويضه، وتجنب أي ملح إضافي لطبق يحمل فيتا.",
+      },
+    },
+    faq: {
+      en: [
+        { q: "How much protein in a serving of feta?", a: "About 4.2 g for the 30 g crumble, at 79 kcal — modest protein; you are buying the salt-and-tang delivery, not a protein source." },
+        { q: "Why is feta so salty?", a: "It cures in brine, which is what preserves it and defines it — a quick rinse under cold water removes a useful share of the surface sodium." },
+        { q: "Can I eat feta on a cut?", a: "Easily — the 30 g serving costs 79 kcal and does the seasoning work of dressings that would cost triple; just account for the sodium in the day's tally." },
+      ],
+      ar: [
+        { q: "كم بروتين في حصة فيتا؟", a: "نحو 4.2 جم لفتات الـ30 جم، عند 79 سعرة — بروتين متواضع؛ أنت تشتري توصيل الملح والحموضة لا مصدر بروتين." },
+        { q: "لماذا الفيتا مالح هكذا؟", a: "ينقع في محلول ملحي، وهو ما يحفظه ويُعرّفه — شطفة سريعة بماء بارد تزيل حصة مفيدة من صوديوم السطح." },
+        { q: "هل آكل فيتا أثناء التنشيف؟", a: "بسهولة — حصة 30 جم تكلف 79 سعرة وتقوم بعمل تتبيل تكلّف الصوصات ثلثه؛ فقط احسب الصوديوم في ميزانية اليوم." },
+      ],
+    },
+  },
+
+  "labneh": {
+    intro: {
+      en: "Labneh is yogurt strained until it became a spread: 119 kcal, 7 g of protein and 8 g of fat per 100 g, tangy enough to stand in for cream cheese at less than half its calories. The two-tablespoon serving (60 g) runs 71 kcal with 4.2 g of protein — breakfast on whole-wheat bread with olive oil and za'atar, the Middle Eastern standard that needs no marketing. Strained means concentrated: the probiotic story of yogurt survives in reduced numbers, while the texture becomes something you can actually spread.",
+      ar: "اللبنة زبادي مُصفّى حتى صار دهنًا: 119 سعرة و7 جم بروتين و8 جم دهون لكل 100 جم، وحموضة تكفي ليحل محل جبن الكريمة بأقل من نصف سعراته. حصة الملعقتين الكبيرتين (60 جم) تجري بـ71 سعرة مع 4.2 جم بروتين — فطور على خبز أسمر بزيت زيتون وزعتر، المعيار الشرق أوسطي الذي لا يحتاج تسويقًا. والتصفية تعني التركيز: قصة البروبيوتيك في الزبادي تنجو بأعداد منقوصة، بينما يصبح القوام شيئًا يمكنك دهنه فعلًا.",
+    },
+    context: {
+      en: {
+        alternatives: "Greek yogurt is the same idea one straining step behind; cream cheese matches the spreadability at triple the fat; hummus covers the savory-spread job from the plant side.",
+        plan: "Breakfast anchor on a cut: two tablespoons on a slice of whole wheat with cucumber and mint — under 150 kcal for the plate and it holds until lunch.",
+        caution: "The 119 kcal belongs to plain labneh — the garlic-herbed and olive-oil-packed deli cups carry oils and sugars the plain number never met.",
+      },
+      ar: {
+        alternatives: "الزبادي اليوناني الفكرة نفسها بخطوة تصفية متأخرة؛ وجبن الكريمة يطابق القابلية للدهن بثلاثة أضعاف الدهن؛ والحمص يغطي وظيفة الدهن المالح من الجهة النباتية.",
+        plan: "مرساة الفطور في التنشيف: ملعقتان على شريحة خبز أسمر بخيار وننعناع — تحت 150 سعرة للطبق ويمسكك حتى الغداء.",
+        caution: "119 سعرة تخص اللبنة السادة — أكواب الدلي بالثوم والأعشاب والمعبأة بزيت الزيتون تحمل زيوتًا وسكرياتًا لم تقابلها الأرقام السادية.",
+      },
+    },
+    faq: {
+      en: [
+        { q: "How much protein in two tablespoons of labneh?", a: "About 4.2 g for 60 g at 71 kcal — a respectable spread figure; it seasons the bread while contributing, unlike butter's pure 100 kcal spoon." },
+        { q: "Is labneh healthier than cream cheese?", a: "For the same spreadability — roughly half the calories, live cultures instead of none, and a tang that carries the plate without sweetness." },
+        { q: "Can I make labneh at home?", a: "Yes — salt plain yogurt and strain it through cloth overnight; the process is the product, and store versions rarely beat the homemade economics." },
+      ],
+      ar: [
+        { q: "كم بروتين في ملعقتين كبيرتين لبنة؟", a: "نحو 4.2 جم لكل 60 جم عند 71 سعرة — رقم دهن محترم؛ تتبّل الخبز وتساهم معًا، بخلاف ملعقة الزبدة الصافية بمئة سعرة." },
+        { q: "هل اللبنة أصح من جبن الكريمة؟", a: "للدهن نفسه — قرابة نصف السعرات، وثقافات حية بدل لا شيء، وحموضة تحمل الطبق بلا حلاوة." },
+        { q: "هل أصنع اللبنة بالمنزل؟", a: "نعم — ملّح زباديًا ساديًا وصفّه بقماش طوال الليل؛ العملية هي المنتج، ونسخ المتجر قلما تتغلب على اقتصاد المنزل." },
+      ],
+    },
+  },
+
+  "ricotta": {
+    intro: {
+      en: "Ricotta is the whey cheese — literally built from the liquid other cheeses discard: 174 kcal, 11 g of protein and 13 g of fat per 100 g, with a sweet, grainy creaminess nothing else imitates. The half-cup serving (124 g) delivers 13.6 g of protein for 216 kcal, and because its profile leans whey, it earned a nighttime-meal reputation alongside cottage cheese. In the kitchen it is the friendly layer: lasagna's soft middle, cannoli's filling, pancakes' secret moisture. It sweetens and salts with equal grace.",
+      ar: "الريكوتا جبن المصل — مبنية حرفيًا من السائل الذي ترميه الأجبان الأخرى: 174 سعرة و11 جم بروتين و13 جم دهون لكل 100 جم، بقشدية حلوة محببة لا يقلدها شيء. حصة نصف الكوب (124 جم) تقدم 13.6 جم بروتين مقابل 216 سعرة، ولأن بروفايلها يميل للواي كسبت سمعة وجبة الليل بجوار الجبن القريش. وفي المطبخ هي الطبقة الودودة: وسط اللازانيا الناعم وحشوة الكانولي ورطوبة البان كيك السرية. تحلّي وتملّح بأناقة متساوية.",
+    },
+    context: {
+      en: {
+        alternatives: "Cottage cheese carries more protein per calorie for the same night-job; mozzarella handles the melted layers; labneh covers the spreadable-tang direction.",
+        plan: "Mix a half-cup with cocoa and a sweetener for a 216-kcal, 13.6 g-protein dessert bowl that cuts like a recipe and eats like a cheat. Layer it into protein lasagna on bulk days.",
+        caution: "Part-skim and whole versions differ meaningfully — read the label; and ricotta spoils fast once opened, so plan the week around the tub.",
+      },
+      ar: {
+        alternatives: "الجبن القريش يحمل بروتينًا أكثر لكل سعرة لوظيفة الليل نفسها؛ والموزاريلا تتولى الطبقات المذابة؛ واللبنة تغطي اتجاه الدهن الحامض.",
+        plan: "اخلط نصف كوب بكاكاو ومُحلٍ لوعاء حلوى 216 سعرة و13.6 جم بروتين يُقص كالوصفة ويُؤكل كالغش. وطبّقه في لازانيا بروتين بأيام التضخيم.",
+        caution: "النسخ قليلة الدسم والكاملة تختلفان جوهريًا — اقرأ الملصق؛ والريكوتا تفسد سريعًا بعد الفتح، فخطط أسبوعك حول العبوة.",
+      },
+    },
+    faq: {
+      en: [
+        { q: "How much protein in half a cup of ricotta?", a: "About 13.6 g for 124 g at 216 kcal — the reason it shares the before-bed slot with cottage cheese: a whey-leaning, slow-eating protein bowl." },
+        { q: "Is ricotta good for weight loss?", a: "As a dessert engine, yes — it turns cocoa-and-sweetener into something that eats like cheesecake for a fraction of the calories; as a topping poured freely, no." },
+        { q: "What is ricotta made from?", a: "Whey — the liquid left after making other cheeses, re-cooked with a bit of milk; «ricotta» literally means re-cooked, and the whey lean is why its protein profile suits training." },
+      ],
+      ar: [
+        { q: "كم بروتين في نصف كوب ريكوتا؟", a: "نحو 13.6 جم لكل 124 جم عند 216 سعرة — سبب اشتراكه مع القريش في خانة ما قبل النوم: وعاء بروتين يميل للواي وأكل بطيء." },
+        { q: "هل الريكوتا جيدة لخسارة الوزن؟", a: "كمحرك حلوى نعم — تحول الكاكاو والمُحلي إلى ما يؤكل كتشيز كيك بجزء يسير من السعرات؛ كإضافة تُسكب بحرية لا." },
+        { q: "مم تصنع الريكوتا؟", a: "من المصل — السائل الباقي بعد صناعة أجبان أخرى، يُعاد طبخه مع قليل من الحليب؛ و«ريكوتا» تعني حرفيًا معاد الطبخ، وميل المصل سبب ملاءمة بروفايله للتدريب." },
+      ],
+    },
+  },
+
+  "peanuts": {
+    intro: {
+      en: "Peanuts are the people's nut — a legume, technically, priced like a snack and performing like a protein food: 26 g of protein per 100 g against 567 kcal and 49 g of fat, with 8.5 g of fiber riding along. The quarter-cup (35 g) costs 198 kcal and lands 9.1 g of protein, which makes a handful the most honest vending-machine option in any building. Salted, roasted, or ground into butter, they are the caloric backbone of a thousand bulking plans and the first thing a cut measures.",
+      ar: "الفول السوداني مكسرات الناس — بقولي تقنيًا، بسعر سناك وأداء طعام بروتيني: 26 جم بروتين لكل 100 جم مقابل 567 سعرة و49 جم دهون، مع 8.5 جم ألياف مرافقة. ربع الكوب (35 جم) يكلف 198 سعرة ويهبط بـ9.1 جم بروتين، ما يجعل القبضة أصدق خيار بآلة البيع بأي مبنى. مملحًا أو محمصًا أو مطحونًا زبدة، هو العمود الفقري السعري لألف خطة تضخيم وأول ما يقيسه التنشيف.",
+    },
+    context: {
+      en: {
+        alternatives: "Almonds bring the same crunch with more vitamin E per bite; pistachios stretch the eating time; peanut butter spreads the same macros onto bread.",
+        plan: "On a bulk, a daily handful adds 198 kcal of protein-rich energy without a plate or fork. On a cut, the same handful survives as the measured fat source — pre-portioned, never free-poured from the jar.",
+        caution: "The 198 kcal quarter-cup fits a closed fist twice over before the mind notices — peanuts are the classic «handful creep» food; portion into a cup first.",
+      },
+      ar: {
+        alternatives: "اللوز يجلب المقرمشية نفسها بفيتامين هـ أكثر للقمة؛ والفستق يمدد وقت الأكل؛ وزبدة الفول السوداني تنشر الماكروز نفسها على الخبز.",
+        plan: "في التضخيم، قبضة يومية تضيف 198 سعرة من طاقة غنية بالبروتين بلا طبق أو شوكة. وفي التنشيف تنجو القبضة نفسها كمصدر الدهن المقيس — موزعة مسبقًا، لا مسكوبة حرّة من البرطمان.",
+        caution: "ربع كوب 198 سعرة يتسع لقبضة مغلقة مرتين قبل أن ينتبه العقل — الفول السوداني طعام «زحف القبضات» الكلاسيكي؛ وزّعه في كوب أولًا.",
+      },
+    },
+    faq: {
+      en: [
+        { q: "How much protein in a handful of peanuts?", a: "About 9.1 g for the 35 g quarter-cup, at 198 kcal — the strongest protein figure in the snack aisle, which is why it anchors bulking pockets." },
+        { q: "Are peanuts good for weight loss?", a: "They are good for weight-loss maintenance — the protein and fiber genuinely blunt hunger, but the 567 kcal per 100 g means the portion, not the jar, is the unit." },
+        { q: "Are peanuts actually nuts?", a: "Botanically legumes that grow underground — nutritionally they sit closer to nuts than to beans, and for meal planning the nut shelf is the honest address." },
+      ],
+      ar: [
+        { q: "كم بروتين في قبضة فول سوداني؟", a: "نحو 9.1 جم لربع الكوب 35 جم، عند 198 سعرة — أقوى رقم بروتين في ممر السناكات، ولهذا يرسي جيوب التضخيم." },
+        { q: "هل الفول السوداني جيد لخسارة الوزن؟", a: "جيد لصيانة الخسارة — البروتين والألياف يكتمان الجوع فعلًا، لكن 567 سعرة لكل 100 جم تعني أن الحصة لا البرطمان هي الوحدة." },
+        { q: "هل الفول السوداني مكسرات فعلًا؟", a: "بقوليًا نباتيًا ينمو تحت الأرض — تغذويًا يجلس أقرب للمكسرات منه للفول، ولتخطيط الوجبات رف المكسرات عنوانه الصادق." },
+      ],
+    },
+  },
+
+  "cashews": {
+    intro: {
+      en: "Cashews are the sweetest-acting nut on the shelf: 553 kcal, 18 g of protein and 44 g of fat per 100 g — with 30 g of carbs, the highest carbohydrate count of any true nut here, which is exactly why they taste like dessert and sauce at the same time. Soaked and blended they become the cream base of vegan curries; roasted and salted they vanish by the fistful. The quarter-cup (35 g) is 194 kcal and 6.3 g of protein — a topping, not a meal.",
+      ar: "الكاجو أكثر المكسرات تصرفًا حلوًا على الرف: 553 سعرة و18 جم بروتين و44 جم دهون لكل 100 جم — ومعها 30 جم كربوهيدرات، أعلى عدد كربوهيدرات لأي مكسرة حقيقية هنا، وهذا بالضبط سبب تذوقها كحلوى وصوص في آن. منقوعة ومخفوقة تصبح قاعدة الكريمة لكاري النباتيين؛ ومحمصة ومملحة تختفي بالقبضات. وربع الكوب (35 جم) هو 194 سعرة و6.3 جم بروتين — إضافة لا وجبة.",
+    },
+    context: {
+      en: {
+        alternatives: "Peanuts run the same job with more protein per gram; almonds crunch harder for the same cost; soaked sunflower seeds mimic the creamy blend at a fraction of the price.",
+        plan: "Stir-fries and vegan creams: a 35 g soak-and-blend replaces canned coconut milk in a curry for comparable calories with three times the protein. On cuts, count them like chocolate, not like vegetables.",
+        caution: "The 194 kcal quarter-cup disappears in under a minute — of all the nuts, cashews are the ones most eaten while standing in front of the pantry.",
+      },
+      ar: {
+        alternatives: "الفول السوداني يؤدي الوظيفة نفسها ببروتين أكثر للجرام؛ واللوز يقرمش أقوى بالكلفة نفسها؛ وبذور عبّاد الشمس المنقوعة تحاكي الخفق الكريمي بكسر من السعر.",
+        plan: "القلي السريع والكريمات النباتية: نقع وخلط 35 جم يستبدل حليب جوز الهند المعلب في الكاري بسعرات مقاربة وثلاثة أضعاف البروتين. وفي التنشيف عدّها كالشوكولاتة لا كالخضار.",
+        caution: "ربع كوب 194 سعرة يختفي في أقل من دقيقة — من بين المكسرات كلها، الكاجو الأكثر أكلًا واقفًا أمام الخزانة.",
+      },
+    },
+    faq: {
+      en: [
+        { q: "How many calories in a quarter cup of cashews?", a: "About 194 for 35 g, with 6.3 g of protein — the same handful-shape as peanuts but with more carbs and less protein per bite." },
+        { q: "Why do cashews feel sweet?", a: "They carry 30 g of carbohydrates per 100 g — nut-shelf highs — which lands them halfway between a nut and a chestnut on the sweetness scale." },
+        { q: "Can cashews replace cream in cooking?", a: "Yes — soaked and blended they build a genuine cream base that carries curry sauce at a fraction of the fat of the coconut-milk standard." },
+      ],
+      ar: [
+        { q: "كم سعرة في ربع كوب كاجو؟", a: "نحو 194 لكل 35 جم، مع 6.3 جم بروتين — شكل القبضة نفسه كالفول السوداني لكن بكربوهيدرات أكثر وبروتين أقل للقمة." },
+        { q: "لماذا يشعر الكاجو حلوًا؟", a: "يحمل 30 جم كربوهيدرات لكل 100 جم — قمم رف المكسرات — فتضعه الحلاوة في منتصف الطريق بين مكسرة وكستناء." },
+        { q: "هل يعوض الكاجو الكريمة في الطبخ؟", a: "نعم — منقوعًا ومخفوقًا يبني قاعدة كريمة حقيقية تحمل صوص الكاري بجزء يسير من دهن معيار حليب جوز الهند." },
+      ],
+    },
+  },
+
+  "pistachios": {
+    intro: {
+      en: "Pistachios are the nut with built-in portion control: 562 kcal and 20 g of protein per 100 g, but the shells turn a 30 g serving into a fifteen-minute project that leaves visible evidence of its own size. That single behavioral trick — the pile of empties — is why studies keep liking them for weight management. The quarter-cup (30 g) costs 169 kcal and carries 6 g of protein, 3 g of fiber, and more potassium per bite than most nuts bother with. Roasted and lightly salted, they are the thinking person's snack.",
+      ar: "الفستق المكسرة بضبط الحصة المدمج: 562 سعرة و20 جم بروتين لكل 100 جم، لكن القشور تحول حصة 30 جم إلى مشروع ربع ساعة يترك دليلًا مرئيًا على حجمه. تلك الحيلة السلوكية الوحيدة — كومة القشور الفارغة — سبب استمرار الدراسات في تفضيله لإدارة الوزن. وربع الكوب (30 جم) يكلف 169 سعرة ويحمل 6 جم بروتين و3 جم ألياف وبوتاسيومًا للقمة أكثر مما تتعب به أغلب المكسرات. محمصًا وملوحًا خفيفًا، هو سناك الشخص المفكر.",
+    },
+    context: {
+      en: {
+        alternatives: "Peanuts do the protein job cheaper; almonds crunch as hard; shelled pistachio kernels are the same food with the brake removed — measure them.",
+        plan: "On a cut, in-shell is the point: 169 kcal bought fifteen minutes of snacking pace. On gains, stir shelled kernels through rice and salads for color, crunch and quiet calories.",
+        caution: "The 169 kcal figure assumes the standard roast — honey-glazed and chili-lime flavored versions add a sugar coat the plain number never carried.",
+      },
+      ar: {
+        alternatives: "الفول السوداني يقوم بعمل البروتين أرخص؛ واللوز يقرمش بصلابته؛ ولُب الفستق المقشر الطعام نفسه بفرملة مزالة — زِنه.",
+        plan: "في التنشيف، القشور هي المقصود: 169 سعرة تشتري ربع ساعة من وتيرة سناك. وفي التضخيم قلب اللُب المقشر عبر الأرز والسلطات للون والمقرمشية وسعرات هادئة.",
+        caution: "رقم 169 سعرة يفترض التحميص القياسي — نسخ التغليف بالعسل والفلفل الحامض تضيف معطف سكر لم تحمله الأرقام السادية.",
+      },
+    },
+    faq: {
+      en: [
+        { q: "How many calories in a quarter cup of pistachios?", a: "About 169 for the 30 g in-shell serving, with 6 g of protein — the cheapest snacking minutes the nut shelf sells." },
+        { q: "Are pistachios good for weight loss?", a: "Uniquely positioned for it: the shells slow the hand and count the portion for you — the rare snack whose packaging is a portion-control feature." },
+        { q: "Shelled or in-shell pistachios?", a: "In-shell for eating — the pace is the point; shelled for cooking, where the kernels land in salads and rice like any other nut, brake removed." },
+      ],
+      ar: [
+        { q: "كم سعرة في ربع كوب فستق؟", a: "نحو 169 لحصة 30 جم بقشورها، مع 6 جم بروتين — أرخص دقائق سناك يبيعها رف المكسرات." },
+        { q: "هل الفستق جيد لخسارة الوزن؟", a: "متموضع بشكل فريد لها: القشور تبطئ اليد وتحسب الحصة عنك — السناك النادر الذي غلافه ميزة ضبط حصة." },
+        { q: "فستق مقشر أم بقشره؟", a: "بقشره للأكل — الوتيرة هي المقصود؛ ومقشرًا للطبخ حيث يهبط اللُب في السلطات والأرز كأي مكسرة، بفرملة مزالة." },
+      ],
+    },
+  },
+
+  "chia-seeds": {
+    intro: {
+      en: "Chia seeds are the quiet overachiever of the pantry: 486 kcal per 100 g dry sounds heavy until the serving appears — two tablespoons (28 g) at 136 kcal, carrying 4.8 g of protein and a staggering 9.5 g of fiber, nearly a third of many adults' day. Soaked, they bloom into a tapioca-like pudding that turns milk or yogurt into a dessert with structure; dry, they vanish into smoothies and oatmeal. Their omega-3 is the plant kind — real, if less potent than fish's. As a fiber delivery disguised as dessert, nothing on this shelf competes.",
+      ar: "بذور الشيا الطموح الهادئ في الخزانة: 486 سعرة لكل 100 جم جاف تبدو ثقيلة حتى تظهر الحصة — ملعقتان كبيرتان (28 جم) عند 136 سعرة، تحملان 4.8 جم بروتين و9.5 جم ألياف مذهلة، قرابة ثلث يوم كثير من البالغين. منقوعة تزهر بودنغ شبيه التابيوكا يحول الحليب أو الزبادي إلى حلوى ذات بنية؛ وجافة تختفي في السموذي والشوفان. وأوميغا-3 فيها من النوع النباتي — حقيقي وإن كان أخف وقعًا من السمك. كتوصيل ألياف متنكر في حلوى، لا شيء على هذا الرف ينافس.",
+    },
+    context: {
+      en: {
+        alternatives: "Ground flaxseed runs similar with a nuttier flavor; psyllium does pure fiber with no pudding; a scoop of oats adds the same soak-and-thicken for cheaper.",
+        plan: "The overnight standard: two tablespoons in a cup of milk with cocoa, refrigerated — a 136 kcal-plus-milk breakfast pudding with 9.5 g of fiber doing the fullness work until lunch.",
+        caution: "Dry spoonfuls are a genuine choking hazard — chia swells in liquid, so always soak first; and ramp fiber up gradually or the gut files complaints.",
+      },
+      ar: {
+        alternatives: "بذور الكتان المطحون تجري بالمثل بنكهة أميز جوزية؛ وقشور السيليوم ألياف صرفة بلا بودنغ؛ ومغرفة شوفان تضيف النقع والتثخين ذاته أرخص.",
+        plan: "المعيار الليلي: ملعقتان في كوب حليب بالكاكاو، مبرّد — بودنغ فطور 136 سعرة زائد الحليب و9.5 جم ألياف تقوم بعمل الإشباع حتى الغداء.",
+        caution: "الملاعق الجافة خطر شرق حقيقي — الشيا تنتفخ في السائل فانقع أولًا دائمًا؛ وارفع الألياف تدريجيًا وإلا رفعت الأمعاء شكاوى.",
+      },
+    },
+    faq: {
+      en: [
+        { q: "How much fiber in two tablespoons of chia?", a: "About 9.5 g for the 28 g serving — a third of a typical day in two spoonfuls, arriving with 4.8 g of protein at 136 kcal." },
+        { q: "Do I need to soak chia seeds?", a: "For pudding, yes — soaking is the transformation; for smoothies and oatmeal, the blender and the pot do the softening for you. Never eat dry spoonfuls." },
+        { q: "Is chia's omega-3 as good as fish?", a: "It is the plant form — real but converted to the active compounds less efficiently; treat it as a bonus, not a replacement for fatty fish." },
+      ],
+      ar: [
+        { q: "كم ألياف في ملعقتين كبيرتين شيا؟", a: "نحو 9.5 جم لحصة 28 جم — ثلث يوم نموذجي في ملعقتين، تصل مع 4.8 جم بروتين عند 136 سعرة." },
+        { q: "هل أحتاج نقع بذور الشيا؟", a: "للبودنغ نعم — النقع هو التحول؛ وللسموذي والشوفان، الخلاط والحلة يلينانها عنك. ولا تأكل ملاعق جافة أبدًا." },
+        { q: "هل أوميغا-3 الشيا جيد كالسمك؟", a: "هو الصيغة النباتية — حقيقي لكنه يتحول للمركبات الفعالة بكفاءة أقل؛ عاملته كمكافأة لا بديلًا عن السمك الدهني." },
+      ],
+    },
+  },
+
+  "protein-shake": {
+    intro: {
+      en: "The protein shake is the one supplement this library treats as a food, because it behaves like one: a 30 g scoop of standard whey concentrate carries about 120 kcal and 24 g of protein — the arithmetic of a chicken breast compressed into a powder that dissolves in thirty seconds. Its honest jobs are gap-filling and logistics: hitting the daily target on low-appetite days, feeding recovery when a kitchen is an hour away, and turning fruit and milk into a meal. The reference numbers describe a typical whey blend — your tub's label is the law that overrides it.",
+      ar: "مشروب البروتين هو المكمل الوحيد الذي تعامله هذه المكتبة كطعام، لأنه يتصرف كذلك: مغرفة 30 جم من مركز الواي القياسي تحمل نحو 120 سعرة و24 جم بروتين — حساب صدر دجاج مضغوط في مسحوق يذوب في ثلاثين ثانية. وظائفه الصادقة سد الفجوات واللوجستيات: إدراك هدف اليوم في أيام الشهية المنخفضة، وإطعام الاستشفاء حين تبعد المطبخ ساعة، وتحويل الفاكهة والحليب إلى وجبة. والأرقام المرجعية هنا تصف خليط واي نموذجيًا — ملصق عبوتك هو القانون الذي يعلو عليها.",
+    },
+    context: {
+      en: {
+        alternatives: "Greek yogurt carries a similar protein-to-calorie figure chewable; skim milk does the liquid job at one-fifth the concentration; ricotta covers the slow-digesting night slot.",
+        plan: "The standard anchors: one shake post-training when the next real meal is more than two hours out, and one blended with banana and oats on mass-gain mornings. On a cut, water-based keeps it at 120 kcal.",
+        caution: "The 400 kcal per 100 g figure is powder, not drink — a double scoop in whole milk with peanut butter crosses 500 kcal while still «feeling» like a diet drink.",
+      },
+      ar: {
+        alternatives: "الزبادي اليوناني يحمل رقمًا مشابهًا للبروتين لكل سعرة قابلًا للمضغ؛ والحليب الخالي يقوم بالوظيفة السائلة بخُمس التركيز؛ والريكوتا يغطي خانة الليل بطيء الهضم.",
+        plan: "المراسي القياسية: مشروب بعد التدريب حين تبعد الوجبة الحقيقية التالية أكثر من ساعتين، وواحد مخفوق بالموز والشوفان في صباحات زيادة الكتلة. وفي التنشيف، القاعدة المائية تُبقيه عند 120 سعرة.",
+        caution: "رقم 400 سعرة لكل 100 جم يخص المسحوق لا المشروب — مغرفة مزدوجة في حليب كامل بزبدة فول سوداني تعبر 500 سعرة وهي ما زالت «تشعر» كمشروب دايت.",
+      },
+    },
+    faq: {
+      en: [
+        { q: "How much protein in one scoop?", a: "About 24 g for a 30 g scoop of standard whey at 120 kcal — read your own label, since blends wander between roughly 18 and 27 g per scoop." },
+        { q: "Do I need a protein shake to build muscle?", a: "No — it is convenience, not chemistry: the same 24 g lives in a can of tuna or 100 g of chicken. What builds muscle is the daily total, wherever it came from." },
+        { q: "When should I drink it?", a: "The honest window is whenever your day has a protein gap — after training when the next meal is far, or blended into breakfast when appetite is the bottleneck." },
+      ],
+      ar: [
+        { q: "كم بروتين في مغرفة واحدة؟", a: "نحو 24 جم لمغرفة 30 جم من واي قياسي عند 120 سعرة — اقرأ ملصقك أنت، فالخلطات تترحل بين 18 و27 جم تقريبًا للمغرفة." },
+        { q: "هل أحتاج مشروب بروتين لبناء العضل؟", a: "لا — هو راحة لا كيمياء: الـ24 جم نفسها تسكن علبة تونة أو 100 جم دجاج. ما يبني العضل هو الإجمالي اليومي من أينما جاء." },
+        { q: "متى أشربه؟", a: "النافذة الصادقة حين يكون في يومك فجوة بروتين — بعد التدريب إذا بعدت الوجبة التالية، أو مخفوقًا في الفطور حين تكون الشهية عنق الزجاجة." },
+      ],
+    },
+  },
+
+  "dark-chocolate": {
+    intro: {
+      en: "Dark chocolate at 70 percent is the dessert that survives serious diets: 598 kcal per 100 g is a number you never meet, because the designed serving is a single 10 g square — 60 kcal of actual flavor. What that square delivers is cocoa's bitterness plus enough fat to slow it, which is why one piece ends a meal where three cookies merely open one. The 11 g of fiber and 7.8 g of protein per 100 g are real but irrelevant at this serving size; the point is satisfaction density.",
+      ar: "الشوكولاتة الداكنة بسبعين بالمئة هي الحلوى التي تنجو من الحميات الجادة: 598 سعرة لكل 100 جم رقم لا تقابله أبدًا، لأن الحصة المصممة مربع واحد 10 جم — 60 سعرة من نكهة فعلية. ما يقدمه المربع مرارة الكاكاو ودهن يبطئها، ولهذا تنهي قطعة واحدة وجبة حيث تفتح ثلاث حلويات وجبة فقط. و11 جم ألياف و7.8 جم بروتين لكل 100 جم حقيقية لكنها غير ذات صلة بحجم الحصة؛ المقصود كثافة الرضا.",
+    },
+    context: {
+      en: {
+        alternatives: "Cocoa-dusted dates when sweetness must be bigger; a ricotta-and-cocoa bowl when volume is the goal; the 85-percent bars trade even more sugar away for more bitterness.",
+        plan: "The cutting protocol: one square with coffee after dinner — 60 kcal that close the eating day the way a whole dessert only pretends to. On gains, two squares over oatmeal.",
+        caution: "Milk chocolate is a different food with triple the sugar; and the 598 kcal per 100 g means a «sharing bar» eaten alone on the sofa is 500-plus calories nobody logged.",
+      },
+      ar: {
+        alternatives: "تمر مغبر بالكاكاو حين يجب أن تكبر الحلاوة؛ ووعاء ريكوتا وكاكاو حين يكون الحجم الهدف؛ وألواح الخمسة والثمانين تقايض سكرًا أكثر بمرارة أكثر.",
+        plan: "بروتوكول التنشيف: مربع واحد بالقهوة بعد العشاء — 60 سعرة تغلق يوم الأكل كما تدّعي حلوى كاملة أنها تفعل. وفي التضخيم مربعان فوق الشوفان.",
+        caution: "الشوكولاتة بالحليب طعام آخر بثلاثة أضعاف السكر؛ و598 سعرة لكل 100 جم تعني أن لوح «المشاركة» المأكول وحيدًا على الأريكة أكثر من 500 سعرة لم يسجلها أحد.",
+      },
+    },
+    faq: {
+      en: [
+        { q: "How many calories in a piece of dark chocolate?", a: "About 60 for a 10 g square of 70-percent — the entire case for dark over milk: one square satisfies where one cookie merely recruits the next." },
+        { q: "Is dark chocolate healthy?", a: "At one square, it is a defensible dessert — cocoa compounds and fiber ride along with modest sugar; the health halo collapses at bar-a-day scale." },
+        { q: "Which percentage should I buy?", a: "70 percent is the balance most people can enjoy plain; 85-plus trades the sweetness away entirely and suits coffee more than dessert duty." },
+      ],
+      ar: [
+        { q: "كم سعرة في قطعة شوكولاتة داكنة؟", a: "نحو 60 لمربع 10 جم من نسبة السبعين — الحالة الكاملة للداكن على الحليب: مربع واحد يُشبع حيث يجند البسكويتة التالية فقط." },
+        { q: "هل الشوكولاتة الداكنة صحية؟", a: "بمربع واحد، حلوى قابلة للدفاع — مركبات الكاكاو والألياف تركب مع سكر متواضع؛ والهالة الصحية تنهار بمقياس لوح يوميًا." },
+        { q: "أي نسبة أشتري؟", a: "السبعون هي التوازن الذي يستمتع به أغلب الناس سادة؛ وما فوق الخمسة والثمانين تقايض الحلاوة كليًا وتناسب القهوة أكثر من واجب الحلوى." },
+      ],
+    },
+  },
+
+  "rice-cakes": {
+    intro: {
+      en: "Rice cakes are puffed rice pressed into a disc: 386 kcal per 100 g of dry crunch, but the serving is a single 9 g cake — 35 kcal that carries anything you spread on it and contributes almost nothing itself. That neutrality is the product: a gluten-free, shelf-stable, portion-fixed base for peanut butter, cottage cheese, tuna salad or a square of dark chocolate. On their own they taste like packing material, and that is not a flaw — they are the vehicle, never the cargo.",
+      ar: "كيك الأرز أرز منفوخ مكبوس في قرص: 386 سعرة لكل 100 جم من المقرمشية الجافة، لكن الحصة كيكة واحدة 9 جم — 35 سعرة تحمل أي ما تدهنه عليها وتساهم هي بلا شيء تقريبًا. تلك الحيادية هي المنتج: قاعدة خالية من الغلوتين تصمد على الرف وحصتها ثابتة لزبدة الفول السوداني أو الجبن القريش أو سلطة التونة أو مربع شوكولاتة داكنة. وحدها تتذوق كمادة التغليف، وليس ذلك عيبًا — هي المركبة لا الشحنة أبدًا.",
+    },
+    context: {
+      en: {
+        alternatives: "Whole-wheat bread carries the same toppings with actual fiber; cucumber slices do the crunch at a fifth of the calories; corn thins run sweeter for the same job.",
+        plan: "Pre-training fuel that sits light: two cakes with honey an hour before lifting — 90 kcal including the honey's contribution. On a cut, one cake under cottage cheese is the fixed-volume snack.",
+        caution: "The topping decides everything — a naked cake is 35 kcal, the same cake under thick peanut butter is 135, and «a few with dip» is how plates of crackers happen.",
+      },
+      ar: {
+        alternatives: "الخبز الأسمر يحمل الإضافات نفسها بألياف فعلية؛ وقطاعات الخيار تقوم بالمقرمشية بخمس السعرات؛ وأقراص الذرة أميل للحلاوة للوظيفة نفسها.",
+        plan: "وقود ما قبل التدريب الذي يجلس خفيفًا: كيكتان بالعسل قبل الرفع بساعة — 90 سعرة شاملة مساهمة العسل. وفي التنشيف كيكة واحدة تحت الجبن القريش هي سناك الحجم الثابت.",
+        caution: "الإضافة تقرر كل شيء — كيكة عارية 35 سعرة، والكيكة نفسها تحت زبدة فول سوداني غزيرة 135، و«بضع كيكات مع الغموس» هي كيف تحدث أطباق البسكويت.",
+      },
+    },
+    faq: {
+      en: [
+        { q: "How many calories in one rice cake?", a: "About 35 for a plain 9 g cake — among the cheapest crunch platforms sold; the jar you open next to it decides the snack's real number." },
+        { q: "Are rice cakes good for weight loss?", a: "As a topping vehicle with a fixed 35 kcal floor, yes — the failure mode is treating them as food rather than as the plate they are." },
+        { q: "Why do rice cakes taste like nothing?", a: "Because they are almost literally puffed air and rice — the same neutrality that makes them diet-friendly makes them flavor-free; the spread is the flavor." },
+      ],
+      ar: [
+        { q: "كم سعرة في كيكة أرز واحدة؟", a: "نحو 35 لكيكة سادة 9 جم — من أرخص منصات المقرمشية مبيعًا؛ والبرطمان الذي تفتحه بجانبها يقرر الرقم الحقيقي للسناك." },
+        { q: "هل كيك الأرز جيد لخسارة الوزن؟", a: "كمركبة إضافات بأرضية 35 سعرة ثابتة نعم — وطريقة الفشل معاملته كطعام لا كالطبق الذي هو عليه." },
+        { q: "لماذا طعم كيك الأرز لا شيء؟", a: "لأنها حرفيًا هواء وأرز منفوخ — الحيادية نفسها التي تجعلها صديقة للدايت تجعلها بلا نكهة؛ الدهن هو النكهة." },
+      ],
+    },
+  },
+
+  "popcorn": {
+    intro: {
+      en: "Popcorn is the snack that beats physics: 387 kcal per 100 g sounds normal until the serving appears — two cups of plain popped corn weigh 16 g and cost 62 kcal, because popping is mostly turning water into volume. That volume-to-calorie ratio is the best in the snack aisle, and the 15 g of fiber per 100 g translates to 2.4 g per serving with barely any sugar. Air-popped with a mist of oil and salt, it is the movie-night answer a cutting plan can actually keep.",
+      ar: "الفشار السناك الذي يغلب الفيزياء: 387 سعرة لكل 100 جم تبدو طبيعية حتى تظهر الحصة — كوبان من الفشار السادة يزنان 16 جم ويكلفان 62 سعرة، لأن الفقع يحول الماء إلى حجم بالأساس. تلك النسبة بين الحجم والسعرات أفضل ما في ممر السناكات، و15 جم ألياف لكل 100 جم تعني 2.4 جم للحصة بسعرات شبه معدومة. مفقع بالهواء برشاش زيت وملح، هو جواب ليلة الفيلم الذي تستطيع خطة تنشيف فعلًا الوفاء به.",
+    },
+    context: {
+      en: {
+        alternatives: "Rice cakes carry toppings better; nuts carry protein; roasted chickpeas split the difference with crunch and fiber both.",
+        plan: "Movie night on a cut: a big bowl of air-popped with nutritional yeast or smoked paprika — four cups for 124 kcal, which no chip bag can touch. On gains, melt real butter and count it honestly.",
+        caution: "The 62 kcal two-cup figure is plain popped corn — microwave «butter» packs and cinema buckets run 400-1,000 kcal, a different food wearing the same name.",
+      },
+      ar: {
+        alternatives: "كيك الأرز يحمل الإضافات أفضل؛ والمكسرات تحمل البروتين؛ والحمص المشوي يقسم الفرق بمقرمشية وألياف معًا.",
+        plan: "ليلة فيلم في التنشيف: وعاء كبير من المفقع بالهواء بخميرة غذائية أو بابريكا مدخنة — أربعة أكواب بـ124 سعرة، لا تقترب منها كيس شيبسي. وفي التضخيم أذب زبدة حقيقية واحسبها بصدق.",
+        caution: "رقم 62 سعرة للكوبين يخص الفشار السادة المفقع — عبوات «الزبدة» للمايكروويف ودلاء السينما تجري بين 400 و1000 سعرة، طعام آخر بذات الاسم.",
+      },
+    },
+    faq: {
+      en: [
+        { q: "How many calories in two cups of popcorn?", a: "About 62 for 16 g of plain popped corn — the volume-per-calorie champion of the entire snack shelf, four cups for 124 kcal." },
+        { q: "Is popcorn good for weight loss?", a: "Plain and air-popped, genuinely — it is mostly volume with 2.4 g of fiber per serving; the cinema bucket and the butter packs are separate conversations." },
+        { q: "Why is popped corn so light?", a: "The kernel's water flashes to steam and inflates the starch — you are eating mostly air held in a starch foam, which is precisely the trick." },
+      ],
+      ar: [
+        { q: "كم سعرة في كوبين من الفشار؟", a: "نحو 62 لكل 16 جم من الفشار السادة المفقع — بطل الحجم لكل سعرة في رف السناكات كله، أربعة أكواب بـ124 سعرة." },
+        { q: "هل الفشار جيد لخسارة الوزن؟", a: "سادة ومفقع بالهواء، حقًا — حجم بالأساس مع 2.4 جم ألياف للحصة؛ ودلو السينما وعبوات الزبدة حديثان آخران." },
+        { q: "لماذا الفشار المفقع خفيف هكذا؟", a: "ماء الحبة يتحول بخارًا فينفخ النشا — أنت تأكل هواء محبوسًا في رغوة نشا بالأساس، وهي الحيلة بعينها." },
+      ],
+    },
+  },
+
+  "protein-bar": {
+    intro: {
+      en: "The protein bar is the shelf-stable meal of last resort done honestly: a typical 60 g bar runs 228 kcal with 18 g of protein, 24 g of carbs and 7.2 g of fat — a genuine snack-meal hybrid rather than a candy bar in gym packaging (though plenty of those exist; the label is the law). Its true niche is the gap: the airport, the car, the meeting that ate lunch. Fortified with fiber and vitamins on most labels, it beats every vending-machine alternative at the same price point.",
+      ar: "بار البروتين وجبة الخزانة الأخيرة الصامدة المصنوعة بصدق: بار 60 جم نموذجي يجري بـ228 سعرة مع 18 جم بروتين و24 جم كربوهيدرات و7.2 جم دهون — هجين سناك-وجبة حقيقي لا لوح حلوى بغلاف جيمي (وإن وُجد الكثير منها؛ الملصق هو القانون). مكانه الحقيقي الفجوة: المطار والسيارة والاجتماع الذي أكل الغداء. ومعزز بالألياف والفيتامينات في أغلب الملصقات، يهزم كل بديل بآلة البيع بنقطة السعر نفسها.",
+    },
+    context: {
+      en: {
+        alternatives: "A scoop and a shaker do the same protein for fewer calories when water is available; peanuts and a banana do the whole job from real food; beef jerky covers the savory direction.",
+        plan: "Keep one in the bag as the anti-vending-machine insurance policy — on a cut it replaces a 400 kcal pastry mistake with a 228 kcal protein-positive choice.",
+        caution: "Read the sugars line — bars range from 1 g to 15 g per bar, and the candy-adjacent end of the shelf wears the same protein claims as the honest end.",
+      },
+      ar: {
+        alternatives: "مغرفة وقارورة تفعلان البروتين نفسه بسعرات أقل حين يتوفر ماء؛ والفول السوداني وموزة يقومان بالوظيفة كاملة من طعام حقيقي؛ ولحم البقر المجفف يغطي الاتجاه المالح.",
+        plan: "أبقِ واحدًا في الحقيبة كوثيقة التأمين ضد آلة البيع — في التنشيف يستبدل خطأ معجنات 400 سعرة بخيار 228 سعرة إيجابي البروتين.",
+        caution: "اقرأ سطر السكريات — البارات تمتد من 1 جم إلى 15 جم للبار، وطرف الرف الملتحف بالحلوى يرتدي ادعاءات البروتين نفسها كطرفه الصادق.",
+      },
+    },
+    faq: {
+      en: [
+        { q: "How much protein in a protein bar?", a: "A typical 60 g bar carries 18 g at 228 kcal — check your specific label, because the shelf runs anywhere from 10 to 25 g per bar." },
+        { q: "Are protein bars good for weight loss?", a: "As planned snacks, workable — 18 g of protein at 228 kcal beats every pastry in the same vending machine; as recreational snacks, they are just nicer-tasting calories." },
+        { q: "Protein bar or protein shake?", a: "The shake wins on calories-per-protein and versatility; the bar wins on shelf-life and no-liquid logistics — the honest answer is whichever one is actually in your bag." },
+      ],
+      ar: [
+        { q: "كم بروتين في بار بروتين؟", a: "بار 60 جم نموذجي يحمل 18 جم عند 228 سعرة — افحص ملصقك تحديدًا، فالرف يمتد من 10 إلى 25 جم للبار." },
+        { q: "هل بارات البروتين جيدة لخسارة الوزن؟", a: "كسناكات مخططة، ممكن — 18 جم بروتين عند 228 سعرة تهزم كل معجنات في آلة البيع نفسها؛ وكسناكات ترفيهية فهي سعرات أطعم فحسب." },
+        { q: "بار بروتين أم مشروب بروتين؟", a: "المشروب يفوز بالسعرات لكل بروتين والمرونة؛ والبار يفوز بعمر الرف ولوجستيات بلا سائل — الجواب الصادق أيهما في حقيبتك فعلًا." },
+      ],
+    },
+  },
+
+  "hummus": {
+    intro: {
+      en: "Hummus is chickpeas re-engineered into a spoonable protein-and-fiber vehicle: 166 kcal, 8 g of protein, 6 g of fiber and 10 g of mostly-olive fat per 100 g. The quarter-cup (60 g) is 100 kcal with 4.8 g of protein — and it is the rare dip that improves what it touches: carrots, cucumber, bell pepper strips and whole-wheat pita all ascend when it arrives. As the plant-shelf's most likeable ambassador, it converts vegetable sticks from punishment into the actual preferred snack.",
+      ar: "الحمص المتبل حمص مُعاد هندسته إلى مركبة بروتين وألياف قابلة للملعقة: 166 سعرة و8 جم بروتين و6 جم ألياف و10 جم دهن زيتوني بالأغلب لكل 100 جم. ربع الكوب (60 جم) هو 100 سعرة مع 4.8 جم بروتين — وهو الغموس النادر الذي يحسّن ما يلمسه: الجزر والخيار وقطاعات الفلفل وخبز البيتا الكامل كلها تصعد حين يصل. وسفير الرف النباتي الأكثر حبًا، يحول أعواد الخضار من عقاب إلى السناك المفضل فعليًا.",
+    },
+    context: {
+      en: {
+        alternatives: "Labneh covers the creamy-dip job with more protein; guacamole brings the avocado fats; a white-bean blend approximates it with a softer flavor.",
+        plan: "Cutting cornerstone: a 100 kcal quarter-cup with a plate of cucumber and carrot spears — 150 kcal total for the kind of snack that makes the evening survivable. On gains, pair it with pita and olive oil.",
+        caution: "The 100 kcal serving is a level quarter-cup — the shop-bought tubs run oilier, and the olive-oil pool on top is calories you can pour off or count.",
+      },
+      ar: {
+        alternatives: "اللبنة تغطي وظيفة الغموس الكريمي ببروتين أكثر؛ والواكامولي يجلب دهون الأفوكادو؛ وخليط الفول الأبيض يتقارب معه بنكهة ألطف.",
+        plan: "حجر أساس التنشيف: ربع كوب 100 سعرة مع طبق أصابع خيار وجزر — 150 سعرة إجمالًا لنوع السناك الذي يجعل المساء قابلًا للعيش. وفي التضخيم رافقه بالبيتا وزيت الزيتون.",
+        caution: "حصة 100 سعرة هي ربع كوب مستوٍ — عبوات المتجر أميل للدسم، وبركة الزيت فوقها سعرات يمكنك سكبها أو حسابها.",
+      },
+    },
+    faq: {
+      en: [
+        { q: "How much protein in a quarter cup of hummus?", a: "About 4.8 g for 60 g at 100 kcal — decent for a dip, which is the frame that matters; it seasons vegetables while quietly contributing." },
+        { q: "Is hummus good for weight loss?", a: "As the vehicle that makes raw vegetables disappear, yes — the failure mode is the pita bread arithmetic, not the quarter-cup itself." },
+        { q: "Hummus or labneh for the dip job?", a: "Labneh carries more protein per calorie; hummus brings the fiber and the iron from the chickpeas — the honest move is owning both tubs for different moods." },
+      ],
+      ar: [
+        { q: "كم بروتين في ربع كوب حمص متبل؟", a: "نحو 4.8 جم لكل 60 جم عند 100 سعرة — محترم لغموس، وهو الإطار المهم؛ ينكّه الخضار ويساهم بهدوء." },
+        { q: "هل الحمص المتبل جيد لخسارة الوزن؟", a: "كمركبة تجعل الخضار النيء تختفي نعم — وطريقة الفشل حسابات خبز البيتا لا ربع الكوب نفسه." },
+        { q: "حمص متبل أم لبنة لوظيفة الغموس؟", a: "اللبنة تحمل بروتينًا أكثر لكل سعرة؛ والحمص يجلب الألياف والحديد من الحمص — الحركة الصادقة امتلاك البرطمانين لمزاجين مختلفين." },
+      ],
+    },
+  },
+
+  "coffee": {
+    intro: {
+      en: "Black coffee is the performance drink that predates every gel and pre-workout on earth: 1 kcal per cup (240 g), a caffeine hit of roughly 80-100 mg in that same cup, and a ritual that carries entire mornings. On this page the numbers are almost comic — protein 0.1 g, everything else zero — because coffee's value was never nutritional: it is alertness, appetite structure and the pause between tasks. What turns it caloric is everything added to it; kept black, it is the most forgiving item in any food log.",
+      ar: "القهوة السادة مشروب الأداء الذي سبق كل جل ومعتمر تدريب على الأرض: سعرة واحدة للكوب (240 جم)، وضربة كافيين بنحو 80-100 ملجم في الكوب نفسه، وطقس يحمل صباحات كاملة. في هذه الصفحة الأرقام شبه هزلية — بروتين 0.1 جم وكل ما عدا ذلك صفر — لأن قيمة القهوة لم تكن تغذوية قط: إنها اليقظة وبنية الشهية والوقفة بين المهام. وما يجعلها سعرية هو كل ما يُضاف إليها؛ سادةً، هي أكثر بند تسامحًا في أي سجل طعام.",
+    },
+    context: {
+      en: {
+        alternatives: "Green tea serves the same ritual with gentler caffeine; espresso concentrates the same cup into a shot; diet soda is the cold, sweet-zero fallback.",
+        plan: "Pre-training standard: a cup 30-45 minutes before lifting lands the caffeine peak in the session. On a cut, black coffee is also an appetite instrument — it structures the fasting hours for free.",
+        caution: "The 1 kcal belongs to the black cup — specialty drinks turn the same caffeine into 300-plus kcal of syrup and cream; and afternoon cups tax the sleep that recovery depends on.",
+      },
+      ar: {
+        alternatives: "الشاي الأخضر يخدم الطقس نفسه بكافيين ألطف؛ والإسبريسو يركز الكوب نفسه في جرعة؛ والصودا الدايت الملاذ البارد صفر الحلاوة.",
+        plan: "المعيار قبل التدريب: كوب قبل الرفع بـ30-45 دقيقة يهبط بذروة الكافيين داخل الجلسة. وفي التنشيف، القهوة السادة أداة شهية أيضًا — تنظم ساعات الصيام مجانًا.",
+        caution: "السعرة الواحدة تخص الكوب الأسود — مشروبات التخصص تحول الكافيين نفسه إلى أكثر من 300 سعرة شراب وقشطة؛ وأكواب العصر تفرض ضريبة على النوم الذي يعتمد عليه الاستشفاء.",
+      },
+    },
+    faq: {
+      en: [
+        { q: "Does black coffee have calories?", a: "Roughly one per 240 g cup — the food-log equivalent of zero; every calorie your coffee actually carries was added to it by a pump, a syrup or a creamer." },
+        { q: "Is coffee good before a workout?", a: "Yes — the caffeine it delivers is the most-studied legal performance aid there is; a cup timed 30-45 minutes ahead lands the peak inside the session." },
+        { q: "How much coffee is too much?", a: "The caffeine is the ceiling, not the calories — most guidance keeps healthy adults under about 400 mg a day, and afternoon cups steal from the night's recovery." },
+      ],
+      ar: [
+        { q: "هل في القهوة السادة سعرات؟", a: "سعرة واحدة تقريبًا لكل كوب 240 جم — مكافئ الصفر بسجل الطعام؛ وكل سعرة تحملها قهوتك فعلًا أُضيفت إليها بمضخة أو شراب أو قشطة." },
+        { q: "هل القهوة جيدة قبل التمرين؟", a: "نعم — الكافيين الذي توصله أكثر مساعد أداء قانوني مدروس؛ وكوب مضبوط قبل 30-45 دقيقة يهبط بالذروة داخل الجلسة." },
+        { q: "كم قهوة كثيرة أكثر من اللازم؟", a: "الكافيين هو السقف لا السعرات — أغلب الإرشادات تُبقي البالغين الأصحاء تحت نحو 400 ملجم يوميًا، وأكواب العصر تسرق من استشفاء الليل." },
+      ],
+    },
+  },
+
+  "orange-juice": {
+    intro: {
+      en: "Fresh orange juice is the fruit with the brake lines cut: 45 kcal and 10 g of carbs per 100 g — the cup (248 g) pours 112 kcal and 21 g of sugars with almost none of the whole fruit's 2.4 g-per-100 g fiber left in the glass. Three oranges disappear into one cup at drinking speed. None of this makes it soda — the vitamin C is real and the source is a fruit — but on a fat-loss plan it is a portion to measure, not a hydration default.",
+      ar: "عصير البرتقال الطازج الفاكهة بفراملها المقطوعة: 45 سعرة و10 جم كربوهيدرات لكل 100 جم — الكوب (248 جم) يصب 112 سعرة و21 جم سكريات وبلا تقريبًا شيء من ألياف الثمرة الكاملة. ثلاث برتقالات تختفي في كوب واحد بسرعة الشرب. ولا شيء من هذا يجعله صودا — فيتامين سي حقيقي والمصدر فاكهة — لكن في خطة حرق دهون هو حصة تُقاس لا افتراض ترطيب.",
+    },
+    context: {
+      en: {
+        alternatives: "The whole orange is the obvious upgrade — same vitamin, kept fiber, natural portion control; water with a squeeze covers flavor duty at zero; coconut water trades the sugars for electrolytes.",
+        plan: "Where it earns the cup: pre-training fast carbs when solids feel heavy, or the mass-gain blender beside oats and protein. On a cut, the whole fruit replaces it entirely.",
+        caution: "«Not from concentrate» changes nothing here — the sugars are the sugars; and a daily breakfast glass is 112 kcal × 365 that never registered as food.",
+      },
+      ar: {
+        alternatives: "البرتقالة الكاملة الترقية البدهية — الفيتامين نفسه والألياف محفوظة وضبط حصة طبيعي؛ والماء بعصرة يغطي واجب النكهة بصفر؛ وماء جوز الهند يقايض السكريات بالإلكتروليتات.",
+        plan: "حيث يستحق الكوب: كربوهيدرات سريعة قبل التدريب حين تثقل المواد الصلبة، أو خلاط زيادة الكتلة بجوار الشوفان والبروتين. وفي التنشيف تحل الثمرة الكاملة محله كليًا.",
+        caution: "«غير مركز» لا تغير شيئًا هنا — السكريات سكريات؛ وكوب الفطور اليومي 112 سعرة × 365 لم يسجل كطعام قط.",
+      },
+    },
+    faq: {
+      en: [
+        { q: "How many calories in a cup of fresh orange juice?", a: "About 112 for 248 g, with 21 g of sugars and essentially no fiber — the whole fruit costs 61 kcal for a medium one and keeps the chew." },
+        { q: "Is orange juice healthy?", a: "It is a real food with a real vitamin; the honest framing is dessert-speed sugar with citrus credentials — measured as a portion, not drunk as water." },
+        { q: "Juice or whole orange before a workout?", a: "The juice, if you want fast carbs that clear the stomach; the fruit, if you want the same sweetness to hold you to the next meal." },
+      ],
+      ar: [
+        { q: "كم سعرة في كوب عصير برتقال طازج؟", a: "نحو 112 لكل 248 جم، مع 21 جم سكريات وبلا ألياف عمليًا — الثمرة الكاملة تكلف 61 سعرة للمتوسطة وتُبقي المضغ." },
+        { q: "هل عصير البرتقال صحي؟", a: "طعام حقيقي بفيتامين حقيقي؛ والتأطير الصادق سكر بسرعة الحلوى بأوراق اعتماد حمضية — يُقاس كحصة لا يُشرب كماء." },
+        { q: "عصير أم برتقالة كاملة قبل التمرين؟", a: "العصير إن أردت كربوهيدرات سريعة تفرغ المعدة؛ والفاكهة إن أردت الحلاوة نفسها تمسكك حتى الوجبة التالية." },
+      ],
+    },
+  },
+
+  "coconut-water": {
+    intro: {
+      en: "Coconut water is the tropical sports drink that grew on a tree: 19 kcal and 3.7 g of carbs per 100 g — a cup (240 g) is 46 kcal with a natural potassium load that genuinely rivals the electrolyte drinks it sits beside. During long sweaty sessions or hot-country cuts, it is the one sweet drink that pulls its weight. For everyday sipping, though, it is still a 46 kcal decision repeated — water remains the default, and this is the upgrade with a purpose.",
+      ar: "ماء جوز الهند مشروب الرياضة الاستوائي الذي نبت على شجرة: 19 سعرة و3.7 جم كربوهيدرات لكل 100 جم — الكوب (240 جم) 46 سعرة مع حمل بوتاسيوم طبيعي ينافس فعلًا مشروبات الإلكتروليت التي يجاورها. في الجلسات الطويلة العرق أو تنشيف البلدان الحارة، هو المشروب الحلو الوحيد الذي يسحب وزنه. أما للرتش اليومي فهو ما يزال قرار 46 سعرة متكررًا — الماء يبقى الافتراضي، وهذا ترقية لها غرض.",
+    },
+    context: {
+      en: {
+        alternatives: "Water plus a pinch of salt covers most training needs for free; diet soda covers the flavored-zero job; orange juice is the faster-carb sibling with triple the sugars.",
+        plan: "The honest slot: a cup after long cardio in heat, where the 46 kcal buys potassium and fluid together. On gaining days it blends into the tropical shaker beside mango and banana.",
+        caution: "Flavored and «with pulp» versions add sugars the plain number never carried; and the potassium that justifies it also means kidney-condition patients should ask their doctor first.",
+      },
+      ar: {
+        alternatives: "الماء برشة ملح يغطي أغلب احتياجات التدريب مجانًا؛ والصودا الدايت تغطي وظيفة المنكه صفر؛ وعصير البرتقال الشقيق الأسرع كربوهيدرات بثلاثة أضعاف السكريات.",
+        plan: "الخانة الصادقة: كوب بعد كارديو طويل في حرارة، حيث تشتري الـ46 سعرة بوتاسيومًا وسوائل معًا. وفي أيام التضخيم يُخفق في الخلاط الاستوائي بجوار المانجو والموز.",
+        caution: "النسخ المنكهة «باللب» تضيف سكريات لم تحملها الأرقام السادية؛ والبوتاسيوم الذي يبررها يعني أيضًا أن مرضى الكلى يسألون طبيبهم أولًا.",
+      },
+    },
+    faq: {
+      en: [
+        { q: "How many calories in a cup of coconut water?", a: "About 46 for 240 g, with 3.7 g of carbs per 100 g — a sweet drink that mostly justifies itself during real sweat sessions." },
+        { q: "Is coconut water a good sports drink?", a: "For long hot sessions, a defensible one — fluid plus natural potassium at 46 kcal a cup; for a 45-minute gym session, water plus food afterward does the same job for free." },
+        { q: "Coconut water or coconut milk?", a: "Different plants-in-a-name: the water is the liquid inside young coconuts at 19 kcal per 100 g; coconut milk is pressed flesh at around 230 — the substitution would be a mistake." },
+      ],
+      ar: [
+        { q: "كم سعرة في كوب ماء جوز الهند؟", a: "نحو 46 لكل 240 جم، مع 3.7 جم كربوهيدرات لكل 100 جم — مشروب حلو يبرر نفسه في الغالب خلال جلسات عرق حقيقية." },
+        { q: "هل ماء جوز الهند مشروب رياضي جيد؟", a: "للجلسات الحارة الطويلة، قابل للدفاع — سوائل وبوتاسيوم طبيعي عند 46 سعرة للكوب؛ ولجلسة جيم 45 دقيقة، الماء وطعام بعدها يقومان بالوظيفة مجانًا." },
+        { q: "ماء جوز الهند أم حليب جوز الهند؟", a: "نباتان بالاسم نفسه: الماء سائل جوز الهند الفتي عند 19 سعرة لكل 100 جم؛ وحليب جوز الهند لحم معصور عند نحو 230 — الاستبدال سيكون خطأً." },
+      ],
+    },
+  },
+
+  "diet-soda": {
+    intro: {
+      en: "Diet soda is the negotiated settlement of the soda wars: the can (355 g) carries a flat zero — no calories, no sugar, no protein — just carbonation, caffeine on most formulas, and sweeteners that decades of research keep re-clearing at normal doses. In a fat-loss plan it is the closest thing to a free pleasure the drink aisle sells: the sweet ritual without the 140-kcal toll of the sugary version. Whether it belongs in a «clean» diet is a philosophy question; whether it breaks a deficit is an arithmetic one with a settled answer.",
+      ar: "الصودا الدايت التسوية التفاوضية لحروب الصودا: العلبة (355 جم) تحمل صفرًا مسطحًا — لا سعرات ولا سكر ولا بروتين — فقط فقاعات وكافيين في أغلب التركيبات ومُحليات يعيد البحث عقودًا تبرئها بالجرعات الطبيعية. في خطة حرق الدهون هي أقرب شيء إلى متعة مجانية يبيعها ممر المشروبات: الطقس الحلو بلا ضريبة 140 سعرة للنسخة السكرية. أما انتماؤها إلى نظام «نظيف» فسؤال فلسفي؛ وكسرها للعجز حسابي وجوابه محسوم.",
+    },
+    context: {
+      en: {
+        alternatives: "Sparkling water is the unsweetened version of the same ritual; black coffee covers the caffeine job hot; green tea is the gentler daily driver.",
+        plan: "The honest use: the sweet-fix that keeps a deficit livable — one can with dinner replaces the dessert craving at zero. Craving sweeteners all day, though, keeps the habit itself alive.",
+        caution: "Zero calories is not zero effect on appetite for everyone — some people's sweet response confuses hunger cues; watch your own, and keep the can as an occasional tool, not a pipeline.",
+      },
+      ar: {
+        alternatives: "الماء الفوار النسخة غير المحلاة للطقس نفسه؛ والقهوة السادة تغطي وظيفة الكافيين ساخنة؛ والشاي الأخضر الحصان اليومي الألطف.",
+        plan: "الاستخدام الصادق: إصلاح الحلاوة الذي يُبقي العجز قابلًا للعيش — علبة مع العشاء تستبدل اشتياق الحلوى بصفر. أما اشتياق المُحليات طول اليوم فيُبقي العادة نفسها حية.",
+        caution: "السعرات الصفرية ليست صفر أثر على الشهية للجميع — استجابة الحلاوة عند البعض تربك إشارات الجوع؛ راقب حالتك، وأبقِ العلبة أداة عرضية لا أنبوبًا دائمًا.",
+      },
+    },
+    faq: {
+      en: [
+        { q: "Does diet soda really have zero calories?", a: "The standard can prints zero and means it — the sweeteners it uses carry effectively no caloric load at the doses in a can." },
+        { q: "Will diet soda break my fast or my cut?", a: "Calorically, no — a zero is a zero; behaviorally, watch yourself: if the sweet taste wakes hunger rather than settling it, it is working against you." },
+        { q: "Are the sweeteners in diet soda safe?", a: "At normal consumption, the weight of regulatory review keeps clearing them — the honest debate is about habits and appetite, not about acute toxicity." },
+      ],
+      ar: [
+        { q: "هل الصودا الدايت صفر سعرات فعلًا؟", a: "العلبة القياسية تطبع صفرًا وتقصده — المُحليات التي تستخدمها لا تحمل حمولة سعرية تذكر بجرعات العلبة." },
+        { q: "هل تكسر الصودا الدايت صيامي أو تنشيفي؟", a: "سعريًا لا — الصفر صفر؛ وسلوكيًا راقب نفسك: إن أيقظ الطعم الحلو الجوع بدل تهدئته فهو يعمل ضدك." },
+        { q: "هل مُحليات الصودا الدايت آمنة؟", a: "بالاستهلاك الطبيعي، وزن المراجعة التنظيمية يواصل تبرئتها — النقاش الصادق عن العادات والشهية لا عن السمية الحادة." },
       ],
     },
   },

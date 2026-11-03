@@ -19,13 +19,14 @@
  *                  of §12.53 — image self-hosting changed every page's
  *                  served HTML; decoupled from CONTENT_LAST_REVIEWED,
  *                  which stays the E-E-A-T content-review anchor)
- *   foods        — food detail pages: 2026-11-04 (P1-1 batch 2 —
+ *   foods        — food detail pages: 2026-11-04 (P1-1 batch 4 —
  *                  SEO-ADSENSE-RECOVERY-PLAN-2026-10-31, owner order
  *                  2026-11-01: the unique editorial layer (intro +
- *                  usage context + FAQ) now covers 40 of the 80 curated
+ *                  usage context + FAQ) now covers ALL 80 curated
  *                  foods across BOTH language mirrors — batch 1 (20)
- *                  shipped 2026-11-01, batch 2 (20) shipped 2026-11-04;
- *                  the anchor carries the latest material family change)
+ *                  shipped 2026-11-01; batches 2-4 (60) shipped
+ *                  2026-11-04; the anchor carries the latest material
+ *                  family change)
  *   collections  — /muscles/* + /equipment/* + /collections/* hubs
  *                  (§12.53 batch 1: og:image + large twitter card on
  *                  the EN /equipment/* hubs)

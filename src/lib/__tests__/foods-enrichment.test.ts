@@ -74,9 +74,9 @@ const fullText = (e: FoodEnrichment, lang: "en" | "ar") =>
 const bySlug = new Map(FOODS.map((f) => [f.slug, f]));
 const enrichedSlugs = Object.keys(FOODS_ENRICHMENT);
 
-describe("foods-enrichment batches 1-3 (P1-1 canaries)", () => {
-  it("batches 1-3 cover 60 foods — all real, curated (sitemap-advertised set)", () => {
-    expect(enrichedSlugs.length).toBe(60);
+describe("foods-enrichment batches 1-4 (P1-1 canaries)", () => {
+  it("batches 1-4 cover all 80 curated foods — all real, curated (sitemap-advertised set)", () => {
+    expect(enrichedSlugs.length).toBe(80);
     for (const slug of enrichedSlugs) {
       const food = bySlug.get(slug);
       expect(food, `${slug} must exist in FOODS`).toBeDefined();
@@ -161,7 +161,7 @@ describe("foods-enrichment batches 1-3 (P1-1 canaries)", () => {
     }
   });
 
-  it("foods family lastmod anchor bumped to the batch-2 ship date (truthful recency)", () => {
+  it("foods family lastmod anchor bumped to the batch-4 ship date (truthful recency)", () => {
     // Batches 1 (2026-11-01) and 2 materially changed the family's served
     // HTML → the sitemap-lastmod protocol requires the latest ship date,
     // not the stale 2026-09-28 anchor. Wired in the same frame as the
