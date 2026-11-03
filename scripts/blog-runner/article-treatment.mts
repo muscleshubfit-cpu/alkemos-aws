@@ -173,7 +173,7 @@ async function getPost(slug: string, language: "en" | "ar") {
   const { data, error } = await supabase
     .from("blog_posts")
     .select(
-      "id,slug,language,title,is_published,linked_post_id,content,reading_time,updated_at,review_status",
+      "id,slug,language,title,is_published,linked_post_id,content,faq_json,reading_time,updated_at,review_status",
     )
     .eq("slug", slug)
     .eq("language", language)
@@ -195,8 +195,12 @@ async function treatRewrite(e: Entry) {
     failures++;
     return;
   }
-  // idempotent: already applied?
-  if (row.content === fix.content) {
+  // idempotent: already applied? (content AND faq_json must BOTH match —
+  // a FAQ-only fix is a real change the channel must apply, not skip;
+  // E-34 found the content-only comparison silently dropping FAQ fixes)
+  const fixFaq = JSON.stringify(fix.faq_json ?? []);
+  const rowFaq = JSON.stringify(row.faq_json ?? []);
+  if (row.content === fix.content && fixFaq === rowFaq) {
     console.log(`↷ ${e.slug}: already treated — skip (idempotent)`);
     skipped++;
     return;
