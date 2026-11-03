@@ -286,4 +286,197 @@
 - توزيع الملاحظات الموثقة 452: لغة 189 · علمي 131 · مصادر 53 · بنية 47 · قيمة 32 — الشدات: منخفضة 299 · متوسطة 125 · عالية 28 · حرجة 0.
 
 ---
-*التقرير أُنجز بأمر المالك (جلسة المراجعة التحريرية الشاملة) بتاريخ 2026-11-03 — تقييم فقط، بلا أي تعديل محتوى.*
+
+---
+
+## 9. سجل التنفيذ (EDITORIAL-REMEDIATION E-24→E-33 — جلسة 2026-11-03)
+
+> **هذا القسم أُضيف بعد التدقيق:** تنفيذ التوصيات بأمر المالك (استكمال 2026-11-03) عبر القناة العلاجية الرسمية (article-treatment) — 10 دفعات (E-24→E-33) كلها مطبقة ومتحقق منها حيًا. **قانون الأدلة ظل حاكمًا:** كل خلل مشتبه أُعيد التثبت منه على مستوى البايت ضد المحتوى الحي قبل أي تعديل، وكل PMID تحقق حيًا ضد PubMed، ولم يُقبل أي تصحيح بلا دليل.
+
+### 9.1 مصالحة التصنيفات قبل التنفيذ (النتيجة المثبتة)
+
+- **قراءة التدقيق تداخلت زمنيًا مع دفعات L2-6/L2-7** (طُبقتا 2026-11-02 15:26 و2026-11-03 00:05 أثناء نافذة قراءة التدقيق): أحكام «إعادة كتابة» للأزواج الأربعة المعالجة بتلك الدفعات كانت عن نصوص سابقة لتطبيقها — إعادة القراءة الحرفية الحية وجدتها صالحة مع بقايا موضعية محددة، فعولجت جراحيًا لا بإعادة كتابة كاملة (استثناء واحد كامل: track-macros-no-food-scale لم يُعالج قط).
+- **عرض الروابط في جلسة العمل كان يبتلع تسلسل «[m» و«[h»** فبدت روابط «acro calculator]» و«ow many...» مكسورة وهي سليمة بايتًا — أُثبت ذلك بالفحص البايتي ولم تُمس الروابط السليمة.
+- **PMID 27102172** (ميتا التكرار) تحقق حيًا: خلاصة الورقة نفسها تدعم «مرتين أسبوعيًا تتفوق عند تساوي الحجم» (ES 0.49 مقابل 0.30، P=0.002) — ادعاءات المقالات بقيت دون تغيير (لا دليل على عكسها).
+- **23360586** هو مراجعة منشورة بمجلة JISSN وليس بيان موقف ISSN — صياغتا «بيان»/«analysis» صُححتا باللغتين.
+
+### 9.2 جدول التوصيات السبع → حالة التنفيذ
+
+| # | التوصية | الحالة |
+|---|---|---|
+| 1 | إحالات إعادة الكتابة الإحدى عشرة | **منجزة 11/11** — E-25 (2 انكسارات بنيوية) · E-26 (4 غير مقترنة) · E-28 (5 أزواج بطرفيها: إعادة كتابة كاملة لـtrack-macros EN + 9 معالجات جراحية مثبتة) |
+| 2 | الاستشهادات المعكوسة/المعطلة (3 حالات §4.2) | **منجزة 3/3** — E-24 (ميتا الصويا 33971994 + مورتون الخاطئ 26019246 ×2) + E-32 (عزو WHO لصفحة النشاط البدني — أثبت الفحص الحي أن الصفحة بلا أي ذكر للسوائل؛ استُبدل ببيان ACSM 17277604) |
+| 3 | إزالة التكرار الاستشهادي (~15 مقالة) | **منجزة** — E-30: 36 مقالة (وجد حيًا أكثر من تقدير التدقيق) + 6 أعمدة تكافؤ = 42 مدخلًا؛ ~63 موضعًا وحّد فيها نص الرابط لكل ورقة (الرابط الأقصر القائم — بلا اختراع)؛ صفر تكرار متبقٍ داخل نطاق التدقيق |
+| 4 | الجولة اللغوية العربية (21 مقالة + متناثرة) | **منجزة** — E-27 (15 غير مقترنة) · E-28 (الأزواج الخمسة + 22 إصلاحًا كلمة-بكلمة) · E-29 (الثلاث عالية الأولوية + آخر بقايا §4.3 الموثقة: فحصته) · E-31 (الشاكر المؤجلة) · E-33 (آخر 3 غير سليمة: التغطية 63/63 لغير السليم) |
+| 5 | مصالحة الأرقام الحسابية (5 جداول §4.4) | **منجزة** — E-24 (الجداول الخمسة أُعيد حسابها) + E-28/E-29 (تناقضا جدول اليوم في IF وقالب أسابيع 4-week — حُلا باللغتين) |
+| 6 | الروابط المتقاطعة للأزواج (0/36) | **منجزة 36/36 بالاتجاهين** — E-31: 72 مدخلًا (كل طرف بنظيره) + تحقق حي: 36/36 ثنائية الاتجاه بـlinked_post_id (خلل hreflang الموثق 30/36 أغلقته إقرانات L2 — حُفظ بتحقق حي) |
+| 7 | الـ39 ملاحظة needs_verification | **جزئيًا بمسار منهجي** — قائمة الملاحظات التفصيلية فُقدت مع بيئة جلسة التدقيق (غير مرفوعة للمستودع)؛ المسار المنهجي المكتمل: (أ) حالتا §4.2/3 الموثقتان حُلّتا (E-26 + E-32) (ب) فحص حي لكل الروابط الخارجية في نطاق التدقيق: **182/182 حية** (172 مباشرة + 10 محجوبة عن الروبوتات أثبتت حياتها بالجلب: ODS×4 · CDC×5 · Mayo×1) (ج) 25+ PMID تحققت حية مقابل ادعاءاتها في E-28/E-29 بصفر تعارض |
+
+### 9.3 دفعات التنفيذ (كلها عبر القناة الرسمية: DRY ثم APPLY ثم تحقق حي)
+
+| الدفعة | المقالات | الجوهر |
+|---|---|---|
+| E-24 (science) | 8 | الاستشهادات المعكوسة الثلاثة + مصالحة الجداول الحسابية الخمسة + النسب الجامدة → غ/كغ |
+| E-25 (rewrites 1) | 2 | deload-structure (تناقض الشدة حُل على Bosquet 17762369) + smart-water-bottle |
+| E-26 (rewrites 2) | 4 | الأربع غير المقترنة: stretching AR · ramadan-women AR · calories-fat-loss AR (WHO→Garthe) · macro-tracking-meal-prep EN |
+| E-27 (لغة 1) | 15 | غير المقترنة: 30 إصلاحًا كلمة-بكلمة مدفوعة بمسح المدونة |
+| E-28 (أزواج 1) | 10 | الأزواج الخمسة الباقية بطرفيها: إعادة كتابة track-macros EN كاملة (المزارع + FAQ 10→6 + PMC6156185 + التصنيف) + 9 جراحية + حل تناقض قالب أسابيع 4-week |
+| E-29 (لغة 2) | 7 | عالية الأولوية: IF (تناقض نافذة يوم محلول باللغتين) · hiit · bfr + فحصته |
+| E-30 (استشهادات) | 42 | توحيد الاستشهادات المكررة (36 + 6 أعمدة تكافؤ) |
+| E-31 (روابط متقاطعة) | 72 | كل الأزواج الـ36 بالاتجاهين + الشاكر المؤجلة |
+| E-32 (تحقق حي) | 1 | عزو WHO→ACSM + مسح حي 182/182 رابطًا |
+| E-33 (تغطية ختامية) | 3 | آخر غير السليم: whey-ramadan-women · veg-animal · home-food-plan (صورة تيكيلا دخيلة + FAQ 2→5) |
+
+**البطارية النهائية:** tsc صفر · eslint صفر (تحذير واحد موروث) · vitest **5,206/5,206** · كاناري الدفعات 2,130/2,130 · كل دفعة: planned=applied failures=0.
+
+### 9.4 جدول حالة كل مقالة من الـ135 (أي دفعة علاجية E-24→E-33 مسّتها)
+
+| # | المقالة | ل | حكم التدقيق | الدفعات |
+|---|---|---|---|---|
+| 1 | how-to-periodize-nutrition-body-recomposition | إ | علمي/توثيق | E31 |
+| 2 | nutrition-periodization-body-recomposition-guide | ع | علمي/توثيق | E31 |
+| 3 | quick-healthy-meal-ideas-busy-people | إ | سليم | E31 |
+| 4 | healthy-high-protein-meals-office | ع | لغة | E31 |
+| 5 | science-backed-belly-fat-loss-8-weeks | إ | علمي/توثيق | E31 |
+| 6 | belly-fat-loss-8-weeks-guide | ع | علمي/توثيق | E31 |
+| 7 | best-wearable-sleep-tracking-athletes-guide | إ | سليم | E31 |
+| 8 | choose-best-wearable-sleep-tracker-athletes | ع | سليم | E31 |
+| 9 | schedule-cardio-muscle-gain-guide | إ | علمي/توثيق | E31 |
+| 10 | cardio-scheduling-muscle-gain-guide | ع | سليم | E31 |
+| 11 | sleep-better-faster-gym-results | إ | سليم | E31 |
+| 12 | how-many-hours-sleep-for-muscle-growth | ع | لغة | E31 |
+| 13 | choose-whey-protein-muscle-gain | إ | لغة | E31 |
+| 14 | choose-whey-protein-muscle-gain-guide | ع | سليم | E31 |
+| 15 | 4-day-split-hypertrophy-fat-loss | إ | سليم | E31 |
+| 16 | 4-day-split-muscle-fat-loss-guide | ع | علمي/توثيق | E31 |
+| 17 | 12-week-dumbbell-band-muscle-plan | إ | سليم | E31 |
+| 18 | home-muscle-building-guide-simple-weights | ع | لغة | E31 |
+| 19 | calculate-daily-calories-fuel-fat-loss-bulking | إ | سليم | E31 |
+| 20 | calculate-daily-calories-weight-loss | ع | لغة | E31 |
+| 21 | intermittent-fasting-muscle-gain-workout-plan | إ | سليم | E29، E31 |
+| 22 | intermittent-fasting-muscle-gain-guide | ع | لغة | E29، E31 |
+| 23 | 12-week-progressive-overload-intermediate | إ | إعادة كتابة | E28، E31 |
+| 24 | 12-week-progressive-overload-intermediate-guide | ع | لغة | E28، E31 |
+| 25 | deload-week-rest-training-guide | إ | سليم | E31 |
+| 26 | deload-week-guide | ع | لغة | E31 |
+| 27 | protein-myths-busted-muscle-gain | إ | علمي/توثيق | E30، E31 |
+| 28 | protein-myths-muscle-gain-guide | ع | علمي/توثيق | E30، E31 |
+| 29 | 4-day-upper-lower-hypertrophy-split | إ | سليم | E31 |
+| 30 | upper-lower-split-4-days-guide | ع | لغة | E31 |
+| 31 | combine-hiit-strength-fat-loss-guide | إ | علمي/توثيق | E29، E30، E31 |
+| 32 | hiit-strength-training-fat-loss-guide | ع | لغة | E29، E30، E31 |
+| 33 | chest-muscle-bodyweight-home-guide | إ | علمي/توثيق | E31 |
+| 34 | chest-muscle-bodyweight-home | ع | علمي/توثيق | E31 |
+| 35 | women-home-muscle-building-program-guide | إ | سليم | E31 |
+| 36 | women-bodyweight-muscle-workout | ع | لغة | E31 |
+| 37 | does-creatine-make-you-gain-weight-water-retention-vs-muscle | إ | علمي/توثيق | E30، E31 |
+| 38 | creatine-water-retention-scientific-analysis-beginners-guide | ع | علمي/توثيق | E30، E31 |
+| 39 | post-workout-recovery-meal-plan-7-recipes | إ | علمي/توثيق | E31 |
+| 40 | post-workout-recovery-meal-plan-guide | ع | علمي/توثيق | E31 |
+| 41 | track-macros-no-food-scale | إ | إعادة كتابة | E28، E31 |
+| 42 | track-macros-without-scale-guide | ع | لغة | E28، E31 |
+| 43 | best-protein-supplement-ramadan-guide | إ | سليم | E31 |
+| 44 | best-protein-supplement-ramadan | ع | سليم | E31 |
+| 45 | protein-after-workout-grams-guide | إ | إعادة كتابة | E28، E30، E31 |
+| 46 | protein-grams-after-workout-guide | ع | سليم | E28، E30، E31 |
+| 47 | protein-per-day-muscle-build-plan | إ | سليم | E30، E31 |
+| 48 | protein-intake-calculator-muscle-build | ع | سليم | E30، E31 |
+| 49 | pre-workout-nutrition-guide | إ | سليم | E30، E31 |
+| 50 | nutrition-before-workout-guide | ع | لغة | E30، E31 |
+| 51 | best-protein-timing-after-workout-guide | إ | علمي/توثيق | E28، E30، E31 |
+| 52 | best-protein-timing-after-workout | ع | إعادة كتابة | E28، E30، E31 |
+| 53 | 4-week-beginner-muscle-building-plan | إ | إعادة كتابة | E28، E30، E31 |
+| 54 | 4-week-beginner-muscle-building-plan-guide | ع | سليم | E28، E30، E31 |
+| 55 | calorie-cycling-fat-loss-diet | إ | سليم | E31 |
+| 56 | calorie-cycling-fat-loss-guide | ع | سليم | E31 |
+| 57 | sauna-muscle-recovery-hormone-optimization | إ | سليم | E30، E31 |
+| 58 | sauna-muscle-recovery-guide | ع | علمي/توثيق | E30، E31 |
+| 59 | home-muscle-building-no-equipment-guide | إ | سليم | E30، E31 |
+| 60 | home-muscle-building-guide-no-equipment | ع | لغة | E30، E31 |
+| 61 | bfr-training-checklist | إ | علمي/توثيق | E29، E31 |
+| 62 | bfr-training-guide | ع | لغة | E29، E31 |
+| 63 | build-muscle-without-supplements-guide | إ | علمي/توثيق | E30، E31 |
+| 64 | increase-muscle-mass-no-protein-supplements | ع | لغة | E30، E31 |
+| 65 | hiit-home-fat-burning-workout | إ | سليم | E31 |
+| 66 | hiit-home-workout-guide | ع | علمي/توثيق | E31 |
+| 67 | 12-week-progressive-overload-home-workout | إ | سليم | E30، E31 |
+| 68 | home-muscle-gain-8-weeks | ع | علمي/توثيق | E30، E31 |
+| 69 | best-plant-based-protein-powder-muscle-gain-2026 | إ | سليم | E31 |
+| 70 | best-plant-based-protein-powder-guide | ع | لغة | E31 |
+| 71 | progressive-overload-no-weight | إ | علمي/توثيق | E31 |
+| 72 | progressive-overload-without-weights-guide | ع | علمي/توثيق | E31 |
+| 73 | best-creatine-men-guide | ع | سليم | E27 |
+| 74 | best-creatine-supplement-for-women-guide | ع | سليم | E30 |
+| 75 | best-dynamic-stretching-before-gym | ع | إعادة كتابة | E26، E30 |
+| 76 | best-dynamic-stretching-exercises-athletes-injury-prevention | ع | سليم | — |
+| 77 | best-omega-3-supplement-athletes | ع | سليم | — |
+| 78 | best-protein-supplement-women-ramadan | ع | إعادة كتابة | E26 |
+| 79 | beta-alanine-guide-selection | ع | سليم | — |
+| 80 | bmr-calculator-athletes | ع | سليم | E27 |
+| 81 | calculate-calories-fat-loss | ع | إعادة كتابة | E26 |
+| 82 | calculate-daily-calories-muscle-gain-beginners-guide | ع | علمي/توثيق | E24 |
+| 83 | calculate-daily-calories-weight-loss-muscle-gain | ع | سليم | E24، E27 |
+| 84 | calorie-macro-guide-muscle-fat | ع | سليم | — |
+| 85 | carb-loading-plan-competition | ع | سليم | E24 |
+| 86 | chest-muscle-home-workout-guide | ع | سليم | — |
+| 87 | choose-creatine-women-guide | ع | لغة | E27، E30 |
+| 88 | choose-vitamin-d-supplement-athletes | ع | سليم | — |
+| 89 | choose-weightlifting-shoes-men | ع | لغة | E27 |
+| 90 | choose-whey-protein-ramadan-women | ع | لغة | — |
+| 91 | cold-bath-home-wellness | ع | سليم | E27 |
+| 92 | common-fat-burning-mistakes | ع | سليم | — |
+| 93 | compare-whey-soy-protein-athletes | ع | علمي/توثيق | E24، E30 |
+| 94 | creatine-beginners-guide | ع | سليم | — |
+| 95 | design-diet-fat-loss-egyptian-lifestyle | ع | لغة | E27 |
+| 96 | fat-burning-macro-diet-plan | ع | علمي/توثيق | E24، E27، E29، E30 |
+| 97 | how-to-calc-daily-protein-athletes | ع | سليم | E27 |
+| 98 | how-to-start-muscle-building-beginners | ع | سليم | — |
+| 99 | muscle-building-home-workout-guide | ع | سليم | E27 |
+| 100 | muscle-group-frequency-optimal | ع | سليم | — |
+| 101 | optimal-rest-periods-resistance-training | ع | سليم | E27 |
+| 102 | progressive-weight-increase | ع | سليم | — |
+| 103 | protein-supplements-veg-animal-comparison | ع | علمي/توثيق | — |
+| 104 | reduce-water-retention-muscle-building | ع | سليم | E27 |
+| 105 | sleep-muscle-growth-science | ع | سليم | E27 |
+| 106 | sleep-recovery-gym-results | ع | سليم | E27 |
+| 107 | water-intake-athlete-guide | ع | سليم | E27، E32 |
+| 108 | weekly-fat-burning-diet-plan | ع | سليم | — |
+| 109 | 12-week-periodized-muscle-building-plan | إ | علمي/توثيق | E24 |
+| 110 | adjust-training-volume-cut-muscle-retention | إ | سليم | E30 |
+| 111 | beef-protein-vs-whey-isolate-muscle-comparison | إ | سليم | — |
+| 112 | best-time-to-take-creatine-guide | إ | سليم | E30 |
+| 113 | budget-home-gym-equipment-comparison | إ | سليم | E30 |
+| 114 | calculate-maintenance-calories-muscle-gain | إ | علمي/توثيق | E24 |
+| 115 | choose-smart-scale-body-composition | إ | سليم | — |
+| 116 | choose-smartwatch-fitness-tracking | إ | سليم | — |
+| 117 | contrast-therapy-7day-recovery-plan | إ | سليم | — |
+| 118 | creatine-cycling-long-term-gains | إ | سليم | — |
+| 119 | creatine-loading-strength-hypertrophy-guide | إ | سليم | — |
+| 120 | deload-week-structure-strength-gains | إ | إعادة كتابة | E25، E30 |
+| 121 | foam-roller-recovery-4-week-guide | إ | سليم | E30 |
+| 122 | heart-rate-monitor-fat-loss-guide | إ | سليم | E30 |
+| 123 | how-many-calories-to-gain-muscle-and-lose-fat | إ | سليم | E30 |
+| 124 | hrv-overtraining-7day-plan-athletes | إ | سليم | E30 |
+| 125 | improve-gut-health-muscle-gain-4-week-plan | إ | علمي/توثيق | E24 |
+| 126 | lose-belly-fat-without-losing-muscle-cardio-plan | إ | سليم | E30 |
+| 127 | macro-tracking-meal-prep-1800-fat-loss | إ | إعادة كتابة | E26 |
+| 128 | magnesium-forms-sleep-recovery | إ | سليم | — |
+| 129 | optimize-preworkout-nutrition-evening-training | إ | سليم | — |
+| 130 | progressive-overload-home-food-plan | إ | علمي/توثيق | — |
+| 131 | red-light-therapy-muscle-recovery-mistakes | إ | سليم | E30 |
+| 132 | smart-water-bottle-hydration-tracking-during-workouts | إ | إعادة كتابة | E25، E30 |
+| 133 | train-muscle-group-frequency-fixes | إ | سليم | — |
+| 134 | warm-up-before-lifting-5min-routine | إ | سليم | E30 |
+| 135 | whey-protein-dosage-muscle-gain | إ | سليم | E30 |
+
+> عمود الدفعات = دفعات E-24→E-33 فقط (دفعات L2/T3 السابقة للتدقيق خارج هذا الجدول). «—» = لم تمسها دفعات العلاج هذه (24 مقالة: 21 سليمة لم تستدعِ علاجًا + انظر §9.5).
+
+### 9.5 ما لم يُنفّذ ولماذا (حدود صادقة)
+
+1. **ملاحظات needs_verification الـ37 غير الموثقة تفصيليًا:** قصاصاتها الحرفية كانت بملفات دفعات التدقيق داخل بيئة جلسته (خارج المستودع) ولم تصل لهذه الجلسة — استُبدلت بمسار منهجي مكافئ (فحص حي شامل للروابط والاستشهادات كما في §9.2/7) بدل ادعاء تنفيذ قائمة لا يمكن التثبت منها.
+2. **بقايا جمالية محتملة في المقالات «السليمة»:** أحكام «سليم» (72) تحمل ملاحظات منخفضة الشدة أغلبيتها جمالية — لم تُعالج فرديًا (لا قصاصات متاحة، والقيمة التحريرية هامشية مقابل مخاطرة اللمس العشوائي). مسح المدونة لبقايا §4.3 الموثقة = **صفر متبقٍ**.
+3. **مطابقة ملاحظة-بملاحظة ضد قصاصات الـ452 الأصلية:** سجلات E-24→E-33 توثق كل إصلاح في حقل note لكل مقالة داخل ملفات الدفعات JSON بالمستودع — لكن المطابقة الحرفية ضد قصاصات التدقيق مستحيلة بعد فقدان ملفات الجلسة الأصلية.
+
+---
+
+*التقرير أُنجز بأمر المالك (جلسة المراجعة التحريرية الشاملة) بتاريخ 2026-11-03 — تقييم فقط، بلا أي تعديل محتوى. §9 أُضيف بجلسة التنفيذ (استكمال 2026-11-03): E-24→E-33 منفذة ومتحقق منها حيًا.*
