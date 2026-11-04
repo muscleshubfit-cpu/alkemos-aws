@@ -13,10 +13,14 @@ export const maxDuration = 60;
  * off the existing cron grid (03:47 indexnow · 05:30 db-backup · 05:45
  * storage-inventory · 06:00 storage-backup · 06:10 migration-audit ·
  * 06:30 offsite). ExchangeRate-API publishes its daily rate at
- * 00:00:01 UTC, so 06:47 UTC always reads the fresh value. Fired by
- * /etc/cron.d/alkemos on the AWS origin (deploy/crontab-alkemos — the
- * same curl-Bearer-CRON_SECRET shape as progress-reminder and
- * dispatch-pipelines). A missed fire costs at most one day; the next
+ * 00:00:01 UTC, so 06:47 UTC always reads the fresh value. FIRED BY
+ * .github/workflows/exchange-rate-daily.yml — the 0105 amendment's
+ * repo-native GitHub Actions schedule (same 06:47 UTC slot, same
+ * CRON_SECRET repo secret deploy-aws.yml stages, fired against the
+ * public origin; zero owner server steps). The /etc/cron.d/alkemos line
+ * (deploy/crontab-alkemos) remains an OPTIONAL redundant server-side
+ * fire — the DB lock below makes a double fire the same day a no-op
+ * ("already-ran-today"). A missed fire costs at most one day; the next
  * run catches up (benign-by-design, the schedule-health law).
  *
  * THE ONE-REQUEST-PER-DAY LAW (owner order): ExchangeRate-API is called

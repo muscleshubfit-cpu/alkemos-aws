@@ -466,6 +466,13 @@ export function CoachWalletView() {
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
               {COACH_TOPUP_METHODS.filter((m) => m.id !== "paypal").map((m) => {
                 const contact = SITE_PAYMENT_CONTACTS[m.id];
+                // LOCAL-PAYMENT-EGP 0105 amendment (owner order 2026-11-05
+                // «تصحيح نهائي»): the manual rails carry NO textual
+                // transfer destination — the REAL QR image is the single
+                // payment truth (the placeholder-looking strings were
+                // removed from every surface). `contactValue` stays for
+                // the PayPal paypal.me display-fallback path only.
+                const contactValue = contact.value;
                 const active = method === m.id;
                 return (
                   <button
@@ -490,32 +497,40 @@ export function CoachWalletView() {
                         loading="lazy"
                       />
                     )}
-                    <span
-                      className="break-all font-mono text-xs text-[#6e6e73]"
-                      dir="ltr"
-                    >
-                      {contact.value}
-                    </span>
-                    <span
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (contact.link) window.open(contact.link, "_blank", "noopener");
-                        else copy(contact.value);
-                      }}
-                      className="inline-flex cursor-pointer items-center gap-1 text-xs font-medium text-[#0071e3] hover:underline"
-                    >
-                      {contact.link ? (
-                        <>
-                          <ExternalLink className="h-3 w-3" />
-                          {isAr ? "افتح لينك الدفع" : "Open payment link"}
-                        </>
-                      ) : (
-                        <>
-                          <Copy className="h-3 w-3" />
-                          {isAr ? "نسخ" : "Copy"}
-                        </>
-                      )}
-                    </span>
+                    {contactValue ? (
+                      <>
+                        <span
+                          className="break-all font-mono text-xs text-[#6e6e73]"
+                          dir="ltr"
+                        >
+                          {contactValue}
+                        </span>
+                        <span
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (contact.link) window.open(contact.link, "_blank", "noopener");
+                            else copy(contactValue);
+                          }}
+                          className="inline-flex cursor-pointer items-center gap-1 text-xs font-medium text-[#0071e3] hover:underline"
+                        >
+                          {contact.link ? (
+                            <>
+                              <ExternalLink className="h-3 w-3" />
+                              {isAr ? "افتح لينك الدفع" : "Open payment link"}
+                            </>
+                          ) : (
+                            <>
+                              <Copy className="h-3 w-3" />
+                              {isAr ? "نسخ" : "Copy"}
+                            </>
+                          )}
+                        </span>
+                      </>
+                    ) : (
+                      <span className="text-xs text-[#6e6e73]">
+                        {isAr ? "امسح الكود للدفع" : "Scan QR to pay"}
+                      </span>
+                    )}
                   </button>
                 );
               })}

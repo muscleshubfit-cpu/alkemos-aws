@@ -1,0 +1,85 @@
+# Daily USD→EGP exchange-rate fire (LOCAL-PAYMENT-EGP 0105 amendment —
+# owner order 2026-11-05 «تصحيح نهائي لواجهة الدفع المحلية»:
+# «بخصوص تحديث سعر الصرف اليومي: لا تتركني أمام خطوة يدوية تتطلب الدخول
+# إلى الخادم وتنفيذ أوامر … نفّذ تفعيل الجدولة تلقائيًا من خلال آلية
+# النشر أو البنية المتاحة بالمشروع»).
+#
+# WHAT THIS IS: the repo-native scheduler for GET /api/cron/exchange-rate —
+# the daily 06:47 UTC job that fetches the fresh USD→EGP rate from
+# ExchangeRate-API (server-side, EXCHANGERATE_API_KEY on the AWS host) and
+# recomputes the local_prices rows in auto mode. The ENDPOINT is unchanged
+# (0104); this workflow is the FIRE CHANNEL. The 0104 delivery left a
+# one-time server crontab install as the owner's step — RETIRED by this
+# amendment: the schedule now lives in the repo, deployed by push, fired by
+# GitHub's scheduler. Zero server access, zero owner commands.
+#
+# PATTERN: the repo's established scheduled-workflow shape (db-backup
+# 05:30 · storage-backup 06:00 · migration-state-audit 06:10 · indexnow
+# 03:47 …): schedule + workflow_dispatch, a tight concurrency group, honest
+# exit codes. No checkout, no install, no GITHUB_TOKEN rights (the
+# gdrive-workflow discipline) — the job is a single authenticated curl.
+#
+# IDEMPOTENCE / DOUBLE-FIRE SAFETY: the endpoint enforces ONE request per
+# UTC day at the DB level (exchange_rate_updates.rate_date UNIQUE — the
+# 0104 lock). If the owner ever installs the OPTIONAL redundant server
+# crontab line (deploy/crontab-alkemos), the second fire the same day is
+# a documented no-op ("already-ran-today"). A delayed GitHub fire still
+# lands inside the UTC day; a dropped fire costs one day and the next run
+# catches up (the SCHEDULE HEALTH LAW — benign by design, documented in
+# the governing report §7).
+#
+# FAILURE VISIBILITY (double): a RED run here (Actions tab + email) AND
+# the endpoint's own failure row + admin bell with the last-success date
+# (the 0104 failure posture — unchanged).
+#
+# SECRETS: CRON_SECRET only — the SAME repo secret deploy-aws.yml stages
+# to /srv/alkemos/shared/.env (verifyCronAuth accepts it on the public
+# origin). Sent as the Bearer header; never echoed (no set -x, no curl -v;
+# the endpoint's response body carries no secret material by design —
+# redactError strips tokens before anything is stored or returned).
+#
+# GITHUB-SCHEDULER CAVEATS (documented, not hidden): scheduled workflows
+# can fire a few minutes late at high load (harmless — the day-lock
+# absorbs it) and are auto-disabled after 60 days of repo inactivity (not
+# applicable: every code push deploys; the repo is active).
+
+name: Exchange-rate daily fire (USD→EGP)
+
+on:
+  schedule:
+    - cron: "47 6 * * *" # daily 06:47 UTC — the documented 0104 slot (off the 03:47/05:30/05:45/06:00/06:10/06:30 grid; ExchangeRate-API publishes 00:00:01 UTC)
+  workflow_dispatch:
+
+concurrency:
+  group: exchange-rate-daily
+  cancel-in-progress: false
+
+permissions: {}
+
+jobs:
+  fire:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Fire the daily job on the live origin (Bearer CRON_SECRET)
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          ENDPOINT: https://alkemos.com/api/cron/exchange-rate
+        run: |
+          if [ -z "$CRON_SECRET" ]; then
+            echo "::error::CRON_SECRET repo secret is not configured — the fire was NOT sent (the day's slot stays open; the endpoint would 401)."
+            exit 1
+          fi
+          echo "→ GET $ENDPOINT (Bearer via env; the value is never logged)"
+          # -f: any 4xx/5xx fails the run loudly. The endpoint's honest
+          # codes: 200 ok (fresh fetch or already-ran-today skip) · 502
+          # exchange-rate fetch failed · 503 missing key (dormant) · 401
+          # bad/missing secret.
+          response=$(curl -fsS -m 90 -H "Authorization: Bearer ${CRON_SECRET}" "$ENDPOINT")
+          echo "← endpoint response (no secret material by design):"
+          echo "$response"
+          # Read-back proof (informational, public data): what the site
+          # serves RIGHT NOW after the fire — mode, rate, EGP rows.
+          echo "→ read-back: GET https://alkemos.com/api/local-prices"
+          curl -fsS -m 30 https://alkemos.com/api/local-prices || true
+          echo

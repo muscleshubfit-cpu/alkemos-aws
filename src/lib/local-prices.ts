@@ -29,6 +29,10 @@
  *     (EXCHANGERATE_API_KEY, server-side only, never in code/DB/browser/
  *     logs). One API request per UTC day, enforced by the rate_date
  *     unique row — a second server or a re-fire the same day is a no-op.
+ *     FIRE CHANNEL (0105 amendment): .github/workflows/
+ *     exchange-rate-daily.yml — the repo-native GitHub Actions schedule
+ *     (no owner server step); the deploy/crontab-alkemos line stays as
+ *     an optional redundant server-side fire.
  *
  * MODES (local_price_settings, single row id=1):
  *   - auto (default): the daily job recomputes EVERY local_prices row

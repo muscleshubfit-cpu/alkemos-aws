@@ -335,7 +335,10 @@ the AR copy on all three pages is native re-authored MSA with the
   the refund console, blog CMS, coach-system center, wallets, leads,
   referrals, saved results, and EVO analytics
 - **Payments** — PayPal (create / capture / webhook) plus manual review
-  (InstaPay / Vodafone Cash / bank transfer)
+  (InstaPay / Vodafone Cash / bank transfer); the Egyptian manual rails
+  display the paired EGP twin (auto-converted daily from ExchangeRate-API,
+  fired by the repo's scheduled workflow — no server steps), while PayPal
+  stays USD-only
 
 ---
 

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import path from "node:path";
 import {
   computeAutoLocalPrices,
@@ -47,6 +47,15 @@ import { resolvePlanPrice } from "@/lib/paypal";
  * 11. MIGRATION + DOCS GATES — 0104 naming law, INDEX.md row, types.ts
  *     mirror, migration probes, .env.example, deploy env-sync, the
  *     crontab line.
+ * 12. 0105 AMENDMENT («تصحيح نهائي») — NO placeholder textual transfer
+ *     data under the REAL QRs on any shipped surface (the phone /
+ *     instapay-handle strings are gone; QR + scan hint + amount box +
+ *     receipt upload stay; the PayPal paypal.me fallback is untouched).
+ * 13. 0105 AMENDMENT — the daily fire is scheduled FROM THE REPO:
+ *     .github/workflows/exchange-rate-daily.yml (same 06:47 UTC slot,
+ *     the existing CRON_SECRET repo secret, the live public endpoint,
+ *     read-only workflow discipline) — zero owner server steps; the
+ *     server crontab line stays as optional DB-locked redundancy.
  */
 
 const repo = (...parts: string[]) => path.join(process.cwd(), ...parts);
@@ -287,5 +296,82 @@ describe("LOCAL-PAYMENT-EGP (0104) — the eleven canaries", () => {
     expect(sql).toMatch(/table_name = 'profiles'/);
     expect(sql).toContain("add column if not exists price_egp numeric;");
     expect(sql).not.toContain("$$");
+  });
+
+  // ── 12. 0105 amendment (owner «تصحيح نهائي»): NO placeholder textual
+  //        transfer data under the REAL QRs — on any shipped surface ──
+  it("12. the manual rails show the REAL QR only — the placeholder phone/handle strings are gone from every shipped src file", () => {
+    const checkout = read("src/components/views/CheckoutView.tsx");
+    const wallet = read("src/components/views/CoachWalletView.tsx");
+    const contacts = read("src/lib/coach-limits.ts");
+    for (const src of [checkout, wallet, contacts]) {
+      expect(src).not.toContain("alkemos@instapay");
+      expect(src).not.toContain("01000000000");
+    }
+    // THE SWEEP LAW (owner: «تأكد من عدم بقاء النصوص الوهمية في أي واجهة
+    // أو مكوّن»): the placeholder strings are absent from EVERY shipped
+    // src file. __tests__ are exempt — fixtures may legitimately carry
+    // example-shaped strings, and THIS canary necessarily names its two
+    // subjects.
+    const shipped = (readdirSync(repo("src"), {
+      recursive: true,
+      encoding: "utf8",
+    }) as string[]).filter(
+      (f) => /\.(ts|tsx)$/.test(f) && !f.includes("__tests__") && !f.startsWith("."),
+    );
+    expect(shipped.length).toBeGreaterThan(100); // sanity: the walk really walked
+    for (const f of shipped) {
+      const src = read(`src/${f}`);
+      expect(
+        src,
+        `src/${f} must not carry the placeholder payment strings`,
+      ).not.toContain("alkemos@instapay");
+      expect(src, `src/${f} must not carry the placeholder payment strings`).not.toContain(
+        "01000000000",
+      );
+    }
+    // The REAL QR assets stay referenced on both rails, on both surfaces
+    // (owner: «احتفظ بصور QR Code الحالية كما هي تمامًا»).
+    expect(checkout).toContain('"/qr-instapay.png"');
+    expect(checkout).toContain('"/qr-vodafone.png"');
+    expect(contacts).toContain('instapay: { qr: "/qr-instapay.png" }');
+    expect(contacts).toContain('vodafone_cash: { qr: "/qr-vodafone.png" }');
+    // The manual-payment MECHANISM is intact (owner: «لا تغيّر آلية الدفع
+    // اليدوي… ولا تعطّل وسائل الدفع»): method selection, scan hint,
+    // paired amount box, receipt upload all stay.
+    expect(checkout).toContain('setMethod("instapay")');
+    expect(checkout).toContain('setMethod("vodafone_cash")');
+    expect(checkout).toContain("Scan QR to pay");
+    expect(checkout).toContain("Amount to transfer");
+    expect(wallet).toContain("Scan QR to pay");
+    // The PayPal display fallback (paypal.me) is untouched (owner:
+    // «لا تغيّر… PayPal»).
+    expect(contacts).toContain('paypal: { value: "https://paypal.me/alkemos"');
+  });
+
+  // ── 13. 0105 amendment: the daily fire is scheduled FROM THE REPO ──
+  it("13. repo-native scheduling — the GitHub Actions workflow fires the live endpoint with the existing repo secret (zero owner server steps)", () => {
+    const wf = read(".github/workflows/exchange-rate-daily.yml");
+    // The documented 0104 slot, unchanged — the CHANNEL moved, not the
+    // time (the fixed-time law holds).
+    expect(wf).toContain('cron: "47 6 * * *"');
+    expect(wf).toContain("workflow_dispatch:");
+    // Fires the LIVE endpoint with the same repo secret deploy-aws.yml
+    // stages to the shared .env (verifyCronAuth accepts it on the public
+    // origin).
+    expect(wf).toContain("secrets.CRON_SECRET");
+    expect(wf).toContain("https://alkemos.com/api/cron/exchange-rate");
+    // Read-only workflow discipline: no checkout, no GITHUB_TOKEN rights.
+    expect(wf).toContain("permissions: {}");
+    expect(wf).not.toContain("actions/checkout");
+    // The OPTIONAL redundant server line stays verbatim (canary 6 pins
+    // the full curl shape) — a double fire the same day is a DB-locked
+    // no-op, so the redundancy is safe by construction.
+    const crontab = read("deploy/crontab-alkemos");
+    expect(crontab).toContain("47 6 * * * deploy sh -c");
+    // The route doc tells the truth about the primary channel.
+    const route = read("src/app/api/cron/exchange-rate/route.ts");
+    expect(route).toContain("exchange-rate-daily.yml");
+    expect(route).toContain("OPTIONAL redundant server-side");
   });
 });

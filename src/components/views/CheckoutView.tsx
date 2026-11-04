@@ -660,7 +660,14 @@ export function CheckoutView({ tier, months }: { tier: TierId | MembershipTier; 
                   </div>
                 )}
 
-                {/* ─── MANUAL PAYMENT SECTION (InstaPay / Vodafone Cash — unchanged) ─── */}
+                {/* ─── MANUAL PAYMENT SECTION (InstaPay / Vodafone Cash) ───
+                    LOCAL-PAYMENT-EGP 0105 amendment (owner order
+                    2026-11-05 «تصحيح نهائي»): the textual transfer
+                    destination under the real QR was REMOVED (the
+                    placeholder-looking phone / instapay handle — the QR
+                    image is the single payment truth). The scan hint, the
+                    paired amount box, the contact fields and the receipt
+                    upload are untouched (the mechanism is intact). */}
                 {isManualMethod && (
                   <>
                     <div className="mt-5 flex flex-col items-center rounded-2xl border border-dashed border-border bg-muted/40 p-5">
@@ -673,9 +680,6 @@ export function CheckoutView({ tier, months }: { tier: TierId | MembershipTier; 
                       />
                       <p className="mt-3 text-center text-xs text-muted-foreground">
                         {isAr ? "امسح الكود للدفع" : "Scan QR to pay"}
-                      </p>
-                      <p className="mt-2 font-mono text-sm font-semibold" dir="ltr">
-                        {method === "instapay" ? "alkemos@instapay" : "01000000000"}
                       </p>
 
                       {/* LOCAL-PAYMENT-EGP (0104): the transfer amount in the

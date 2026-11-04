@@ -15,6 +15,14 @@
 # DB level (exchange_rate_updates.rate_date unique) — a double fire or a
 # second server is a no-op. See /api/cron/exchange-rate route doc +
 # docs/LOCAL-PAYMENT-EGP-PRICES-2026-11-05.md.
+# 0105 amendment (owner order 2026-11-05 «تصحيح نهائي»): the PRIMARY fire
+# channel is now .github/workflows/exchange-rate-daily.yml — the
+# repo-native GitHub Actions schedule (same 06:47 UTC slot, same
+# CRON_SECRET repo secret, fired against the public origin). NO owner
+# server step remains. The line below stays as an OPTIONAL redundant
+# server-side fire: if it is ever installed, the second fire the same
+# day is a DB-locked no-op ("already-ran-today"). The one-time install
+# is NO LONGER a required owner action.
 # The endpoints hit the app DIRECTLY on localhost (no TLS hop) and are
 # protected by verifyCronAuth (timing-safe Bearer, fail-closed) — the
 # same CRON_SECRET the routes already use on Vercel.

@@ -178,7 +178,13 @@ export function coachTopupMethodLabel(
 
 /**
  * The SITE's own payment contacts, shown on the coach wallet page.
- * InstaPay/Vodafone values mirror the client checkout (CheckoutView).
+ *
+ * LOCAL-PAYMENT-EGP 0105 amendment (owner order 2026-11-05 «تصحيح نهائي»):
+ * the manual rails (InstaPay / Vodafone Cash) carry NO textual transfer
+ * destination — the REAL QR image is the single payment truth. The
+ * placeholder-looking phone / instapay-handle strings were removed from
+ * every surface (CheckoutView + this map); `value` stays OPTIONAL for the
+ * PayPal display fallback below only.
  *
  * PAYPAL (0035 phase 2): top-ups via PayPal are now AUTOMATED through
  * the existing PayPal API integration (create-order → capture-order →
@@ -188,10 +194,10 @@ export function coachTopupMethodLabel(
  */
 export const SITE_PAYMENT_CONTACTS: Record<
   CoachTopupMethod,
-  { value: string; qr?: string; link?: string }
+  { value?: string; qr?: string; link?: string }
 > = {
-  instapay: { value: "alkemos@instapay", qr: "/qr-instapay.png" },
-  vodafone_cash: { value: "01000000000", qr: "/qr-vodafone.png" },
+  instapay: { qr: "/qr-instapay.png" },
+  vodafone_cash: { qr: "/qr-vodafone.png" },
   paypal: { value: "https://paypal.me/alkemos", link: "https://paypal.me/alkemos" },
 };
 

@@ -584,7 +584,7 @@ export function ReferralView() {
                   <input
                     value={walletNumber}
                     onChange={(e) => setWalletNumber(e.target.value)}
-                    placeholder="01000000000"
+                    placeholder="+20 100 000 0000"
                     dir="ltr"
                     className="w-full rounded-full border border-[#d2d2d7] bg-[#f5f5f7] px-5 py-3 text-base font-normal outline-none focus:border-[#0071e3]"
                   />
