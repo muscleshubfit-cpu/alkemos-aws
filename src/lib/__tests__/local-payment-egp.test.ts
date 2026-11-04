@@ -274,5 +274,18 @@ describe("LOCAL-PAYMENT-EGP (0104) — the eleven canaries", () => {
     expect(workflow).toContain('stage EXCHANGERATE_API_KEY');
     // The public read endpoint exists (checkout display source of truth).
     expect(read("src/app/api/local-prices/route.ts")).toContain("export async function GET()");
+    // ANY-STACK APPLICABILITY (the same-day amendment after the first red
+    // db-migrate validate): the guarded statements — the subscription_requests
+    // ALTER+COMMENT and the updated_by FKs — must stay guarded by
+    // information_schema existence checks inside TAGGED dollar blocks, and
+    // the file must NEVER contain the bare doubled-dollar sigil (it flips
+    // migration_audit.py's dollar detector even from inside a comment and
+    // swallows the rest of the file → phantom columns).
+    const sql = read("supabase/migrations/20261105064700_0104_local_payment_egp_prices.sql");
+    expect(sql).toContain("do $do$");
+    expect(sql).toMatch(/table_name = 'subscription_requests'/);
+    expect(sql).toMatch(/table_name = 'profiles'/);
+    expect(sql).toContain("add column if not exists price_egp numeric;");
+    expect(sql).not.toContain("$$");
   });
 });
