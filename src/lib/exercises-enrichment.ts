@@ -70,11 +70,13 @@
  *
  * BATCH PROTOCOL: batches 1-5 (2026-11-04) together cover the full 50 —
  * the P1-2 scope. The canary test automatically covers every entry.
- *   batch 1 — the 7 GSC-measured winners + 3 core anchors (10)
- *   batch 2 — chest family + 2 presses (9)
- *   batch 3 — back family + 2 shoulder isolation moves (10)
- *   batch 4 — legs/glutes family (10)
- *   batch 5 — arms + remaining core (11)
+ *   batches 1-2  — the 7 GSC-measured winners + 3 core anchors (10)
+ *   batches 3-4  — chest family + shoulder presses + pullups (10)
+ *   batches 5-6  — back family + shoulder isolation + squats (11)
+ *   batch  7     — legs/glutes middle five (5)
+ *   batch  8     — conditioning legs + hinge + biceps flags (5)
+ *   batch  9     — biceps close + triceps loaded half (5)
+ *   batch  10    — triceps home version + core tail (4)
  */
 
 import { BATCH_1 } from "@/lib/exercises-enrichment-batch1";
@@ -83,6 +85,10 @@ import { BATCH_3 } from "@/lib/exercises-enrichment-batch3";
 import { BATCH_4 } from "@/lib/exercises-enrichment-batch4";
 import { BATCH_5 } from "@/lib/exercises-enrichment-batch5";
 import { BATCH_6 } from "@/lib/exercises-enrichment-batch6";
+import { BATCH_7 } from "@/lib/exercises-enrichment-batch7";
+import { BATCH_8 } from "@/lib/exercises-enrichment-batch8";
+import { BATCH_9 } from "@/lib/exercises-enrichment-batch9";
+import { BATCH_10 } from "@/lib/exercises-enrichment-batch10";
 
 export type EnrichedFaq = { q: string; a: string };
 
@@ -129,6 +135,10 @@ export const EXERCISES_ENRICHMENT: Record<string, ExerciseEnrichment> = {
   ...BATCH_4,
   ...BATCH_5,
   ...BATCH_6,
+  ...BATCH_7,
+  ...BATCH_8,
+  ...BATCH_9,
+  ...BATCH_10,
 };
 
 /** Resolve the enrichment layer for an exercise slug (undefined = none). */

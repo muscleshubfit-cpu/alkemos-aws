@@ -44,6 +44,11 @@ export const SITEMAP_LASTMOD = {
   pages: "2026-11-04",
   // Same audit: 53 EN exercise titles left the over-75 set (worst
   // 97 → 63 via the three-tier template) — family template change.
+  // P1-2 (2026-11-04, SEO-ADSENSE-RECOVERY-PLAN · owner order «ابدأ
+  // تنفيذ المرحلة P1-2»): the top-50 demand exercises (100 URLs across
+  // both language mirrors) now carry the unique editorial layer — a
+  // second material family change on the same ship date, so the anchor
+  // stays truthful at 2026-11-04.
   exercises: "2026-11-04",
   foods: "2026-11-04",
   collections: "2026-09-15",
