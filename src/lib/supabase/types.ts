@@ -1866,6 +1866,10 @@ export type Database = {
           // index uq_subscription_requests_paypal_order makes the payment
           // record insert the ATOMIC replay lock (23505 = already processed)
           paypal_order_id: string | null;
+          // 0104 (LOCAL-PAYMENT-EGP) amount lock — the EGP figure the member
+          // saw at request creation (manual InstaPay/Vodafone rails only;
+          // null for PayPal requests and pre-0104 rows; never rewritten)
+          price_egp: number | null;
         };
         Insert: {
           id?: string;
@@ -1882,6 +1886,7 @@ export type Database = {
           created_at?: string;
           consumed_at?: string | null;
           paypal_order_id?: string | null;
+          price_egp?: number | null;
         };
         Update: {
           full_name?: string | null;
@@ -1895,8 +1900,100 @@ export type Database = {
           reviewed_at?: string | null;
           consumed_at?: string | null;
           paypal_order_id?: string | null;
+          price_egp?: number | null;
         };
         Relationships: [];
+      };
+      // 0104 (LOCAL-PAYMENT-EGP) — the EGP display twin per plan×duration
+      // for the manual Egyptian rails. Public read (RLS select policy);
+      // writes are service-role only (cron job + requireAdmin route).
+      local_prices: {
+        Row: {
+          id: string;
+          plan_tier: string;
+          duration_months: number;
+          price_egp: number;
+          source: "auto" | "manual";
+          updated_at: string;
+          updated_by: string | null;
+        };
+        Insert: {
+          id?: string;
+          plan_tier: string;
+          duration_months: number;
+          price_egp: number;
+          source?: "auto" | "manual";
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Update: {
+          plan_tier?: string;
+          duration_months?: number;
+          price_egp?: number;
+          source?: "auto" | "manual";
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Relationships: [
+          { foreignKeyName: "local_prices_updated_by_fkey"; columns: ["updated_by"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
+        ];
+      };
+      // 0104 (LOCAL-PAYMENT-EGP) — ONE row per UTC day: the daily exchange
+      // rate fetch record. rate_date UNIQUE = the idempotency lock (at most
+      // one ExchangeRate-API request per day, multi-server safe). Public
+      // read; service-role-only writes.
+      exchange_rate_updates: {
+        Row: {
+          id: string;
+          rate_date: string;
+          usd_to_egp: number | null;
+          status: "success" | "failure";
+          error: string | null;
+          source: string;
+          fetched_at: string;
+        };
+        Insert: {
+          id?: string;
+          rate_date: string;
+          usd_to_egp?: number | null;
+          status: "success" | "failure";
+          error?: string | null;
+          source?: string;
+          fetched_at?: string;
+        };
+        Update: {
+          rate_date?: string;
+          usd_to_egp?: number | null;
+          status?: "success" | "failure";
+          error?: string | null;
+          source?: string;
+          fetched_at?: string;
+        };
+        Relationships: [];
+      };
+      // 0104 (LOCAL-PAYMENT-EGP) — single row (id=1): the auto|manual mode
+      // switch. Public read; service-role-only writes (admin route).
+      local_price_settings: {
+        Row: {
+          id: number;
+          mode: "auto" | "manual";
+          updated_at: string;
+          updated_by: string | null;
+        };
+        Insert: {
+          id?: number;
+          mode?: "auto" | "manual";
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Update: {
+          mode?: "auto" | "manual";
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Relationships: [
+          { foreignKeyName: "local_price_settings_updated_by_fkey"; columns: ["updated_by"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
+        ];
       };
       // mirror RUN_ON_SUPABASE_0022 — tamper-proof EVO usage ledger
       // (server-writes only; added Phase 93, was from("evo_chat_usage" as any))
@@ -2263,6 +2360,10 @@ export type AdminNotification = Database["public"]["Tables"]["admin_notification
 export type SavedResult = Database["public"]["Tables"]["saved_results"]["Row"];
 export type MealPlan = Database["public"]["Tables"]["meal_plans"]["Row"];
 export type SubscriptionRequest = Database["public"]["Tables"]["subscription_requests"]["Row"];
+// 0104 (LOCAL-PAYMENT-EGP) row types
+export type LocalPrice = Database["public"]["Tables"]["local_prices"]["Row"];
+export type ExchangeRateUpdate = Database["public"]["Tables"]["exchange_rate_updates"]["Row"];
+export type LocalPriceSettings = Database["public"]["Tables"]["local_price_settings"]["Row"];
 export type Referral = Database["public"]["Tables"]["referrals"]["Row"];
 export type ReferralEarning = Database["public"]["Tables"]["referral_earnings"]["Row"];
 export type ReferralPayout = Database["public"]["Tables"]["referral_payouts"]["Row"];

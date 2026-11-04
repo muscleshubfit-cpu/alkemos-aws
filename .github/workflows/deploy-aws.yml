@@ -327,6 +327,10 @@ jobs:
           R_PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
           R_UPSTASH_REDIS_REST_URL: ${{ secrets.UPSTASH_REDIS_REST_URL }}
           R_UPSTASH_REDIS_REST_TOKEN: ${{ secrets.UPSTASH_REDIS_REST_TOKEN }}
+          # 0104 LOCAL-PAYMENT-EGP: the ExchangeRate-API key for the daily
+          # USD→EGP job (/api/cron/exchange-rate). Server-side only — never
+          # NEXT_PUBLIC, never in the browser bundle, never logged.
+          R_EXCHANGERATE_API_KEY: ${{ secrets.EXCHANGERATE_API_KEY }}
         run: |
           : > env-runtime.env
           stage() {
@@ -358,6 +362,7 @@ jobs:
           stage PEXELS_API_KEY                "$R_PEXELS_API_KEY"
           stage UPSTASH_REDIS_REST_URL        "$R_UPSTASH_REDIS_REST_URL"
           stage UPSTASH_REDIS_REST_TOKEN      "$R_UPSTASH_REDIS_REST_TOKEN"
+          stage EXCHANGERATE_API_KEY           "$R_EXCHANGERATE_API_KEY"
           echo "runtime env staged: $(wc -l < env-runtime.env) key(s) [$(cut -d= -f1 env-runtime.env | paste -sd, -)] — values never printed"
 
       - name: Install (frozen)

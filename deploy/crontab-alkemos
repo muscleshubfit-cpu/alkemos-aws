@@ -7,6 +7,14 @@
 # Schedules are VERBATIM the vercel.json cron expressions (UTC):
 #   progress-reminder   Sun 07:00 UTC   (was "0 7 * * 0")
 #   dispatch-pipelines  daily 23:40 UTC (was "40 23 * * *")
+# 0104 LOCAL-PAYMENT-EGP (owner order 2026-11-05): the daily USD→EGP
+# exchange-rate job — 06:47 UTC daily, deliberately off-the-hour and clear
+# of the existing grid (03:47/05:30/05:45/06:00/06:10/06:30). ExchangeRate
+# -API publishes its daily rate at 00:00:01 UTC so this slot always reads
+# the fresh value; the endpoint enforces ONE request per UTC day at the
+# DB level (exchange_rate_updates.rate_date unique) — a double fire or a
+# second server is a no-op. See /api/cron/exchange-rate route doc +
+# docs/LOCAL-PAYMENT-EGP-PRICES-2026-11-05.md.
 # The endpoints hit the app DIRECTLY on localhost (no TLS hop) and are
 # protected by verifyCronAuth (timing-safe Bearer, fail-closed) — the
 # same CRON_SECRET the routes already use on Vercel.
@@ -18,3 +26,4 @@
 # double-quoted header interpolation below.
 0 7 * * 0 deploy sh -c 'curl -fsS -m 150 -H "Authorization: Bearer $(grep -m1 "^CRON_SECRET=" /srv/alkemos/shared/.env | cut -d= -f2-)" http://127.0.0.1:3000/api/cron/progress-reminder' >> /var/log/alkemos/cron.log 2>&1
 40 23 * * * deploy sh -c 'curl -fsS -m 90 -H "Authorization: Bearer $(grep -m1 "^CRON_SECRET=" /srv/alkemos/shared/.env | cut -d= -f2-)" http://127.0.0.1:3000/api/cron/dispatch-pipelines' >> /var/log/alkemos/cron.log 2>&1
+47 6 * * * deploy sh -c 'curl -fsS -m 90 -H "Authorization: Bearer $(grep -m1 "^CRON_SECRET=" /srv/alkemos/shared/.env | cut -d= -f2-)" http://127.0.0.1:3000/api/cron/exchange-rate' >> /var/log/alkemos/cron.log 2>&1

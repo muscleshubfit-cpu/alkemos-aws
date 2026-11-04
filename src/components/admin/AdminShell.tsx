@@ -103,6 +103,9 @@ const SECTIONS: AdminNavSection[] = [
     en: "Finances",
     items: [
       { href: "/admin/finances", emoji: "💰", ar: "المالية", en: "Finances" },
+      // 0104 LOCAL-PAYMENT-EGP: the EGP twins for the manual Egyptian
+      // rails — auto/manual mode, per-plan prices, the rate update log.
+      { href: "/admin/local-prices", emoji: "🇪🇬", ar: "أسعار الجنيه", en: "EGP prices" },
     ],
   },
   {

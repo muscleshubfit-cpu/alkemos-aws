@@ -12,6 +12,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { type TierId, type Duration, type PaymentMethod, getTier } from "@/lib/plans";
 import { MEMBERSHIPS, type MembershipTier } from "@/lib/memberships";
 import { submitSubscriptionRequest, uploadReceipt } from "@/lib/data";
+import { dualPriceString } from "@/lib/local-prices";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -270,6 +271,32 @@ export function CheckoutView({ tier, months }: { tier: TierId | MembershipTier; 
   const [done, setDone] = useState(false);
   const [paypalDone, setPaypalDone] = useState(false);
 
+  // LOCAL-PAYMENT-EGP (0104): the EGP twin for the manual rails
+  // (InstaPay / Vodafone Cash), fetched once from the public read
+  // endpoint. null — unset price, fetch failure, or a non-positive value —
+  // means USD-ONLY rendering: never zero, never a guessed conversion, the
+  // fail-safe display law. PayPal surfaces NEVER read this value.
+  const [localPriceEgp, setLocalPriceEgp] = useState<number | null>(null);
+  useEffect(() => {
+    let alive = true;
+    fetch("/api/local-prices", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data: { prices?: { plan_tier: string; duration_months: number; price_egp: number }[] } | null) => {
+        if (!alive || !data?.prices) return;
+        const row = data.prices.find(
+          (p) => p.plan_tier === (tier as string) && p.duration_months === (months as number),
+        );
+        setLocalPriceEgp(row && Number(row.price_egp) > 0 ? Number(row.price_egp) : null);
+      })
+      .catch(() => {
+        // Fetch failure → USD-only (the last successful local price keeps
+        // serving from the DB on the next load; nothing is invented here).
+      });
+    return () => {
+      alive = false;
+    };
+  }, [tier, months]);
+
   // Load PayPal SDK only when PayPal is selected
   const { loaded: paypalLoaded, error: paypalLoadError } = usePayPalScript(method === "paypal");
 
@@ -321,6 +348,10 @@ export function CheckoutView({ tier, months }: { tier: TierId | MembershipTier; 
         plan_tier: tier as string,
         duration_months: months as number,
         price_usd: plan.price,
+        // 0104 AMOUNT LOCK: the EGP figure the member SAW at request
+        // creation is snapshotted into the row — later rate updates or
+        // mode flips never rewrite it (null when no EGP twin was shown).
+        price_egp: localPriceEgp,
         payment_method: method,
         receipt_path: receiptPath || null,
       });
@@ -436,7 +467,12 @@ export function CheckoutView({ tier, months }: { tier: TierId | MembershipTier; 
                 )}
                 <div className="flex items-center justify-between gap-3 border-t border-[var(--edge)] pt-2">
                   <span className="text-[var(--muted-foreground)]">{isAr ? "الإجمالي" : "Total"}</span>
-                  <span className="text-lg font-semibold">${plan.price}</span>
+                  {/* LOCAL-PAYMENT-EGP (0104): the LOCKED twin on the
+                      post-payment summary — exactly what was displayed (and
+                      snapshotted into price_egp) when the request was sent. */}
+                  <span className="text-lg font-semibold">
+                    {dualPriceString(plan.price, localPriceEgp, isAr)}
+                  </span>
                 </div>
               </div>
             </div>
@@ -507,8 +543,14 @@ export function CheckoutView({ tier, months }: { tier: TierId | MembershipTier; 
                     <span className="font-normal text-[var(--muted-foreground)]">
                       {isAr ? "الإجمالي" : "Total"}
                     </span>
+                    {/* LOCAL-PAYMENT-EGP (0104): the paired twin shows on the
+                        summary ONLY while a manual Egyptian rail is selected —
+                        the PayPal selection keeps this row pure USD (PayPal
+                        integration is untouched and USD-only by law). USD is
+                        always first, then «أو»/or, then the EGP twin; an unset
+                        price renders USD-only (never zero, never a guess). */}
                     <span className="text-xl font-semibold">
-                      ${plan.price}
+                      {dualPriceString(plan.price, isManualMethod ? localPriceEgp : null, isAr)}
                     </span>
                   </div>
                 </div>
@@ -635,6 +677,23 @@ export function CheckoutView({ tier, months }: { tier: TierId | MembershipTier; 
                       <p className="mt-2 font-mono text-sm font-semibold" dir="ltr">
                         {method === "instapay" ? "alkemos@instapay" : "01000000000"}
                       </p>
+
+                      {/* LOCAL-PAYMENT-EGP (0104): the transfer amount in the
+                          owner-ordered paired format — USD first, «أو»/or,
+                          then the EGP twin the member actually transfers on
+                          this rail. Rendered ONLY when a price is set (unset →
+                          no box, the QR instructions stand alone). This is the
+                          figure snapshotted into price_egp at submit. */}
+                      {localPriceEgp !== null && (
+                        <div className="mt-3 w-full rounded-xl border border-[var(--edge)] bg-[var(--card)] px-4 py-3 text-center">
+                          <p className="text-xs font-normal text-[var(--muted-foreground)]">
+                            {isAr ? "المبلغ المطلوب تحويله" : "Amount to transfer"}
+                          </p>
+                          <p className="mt-1 text-lg font-semibold">
+                            {dualPriceString(plan.price, localPriceEgp, isAr)}
+                          </p>
+                        </div>
+                      )}
                     </div>
 
                     {/* Contact info + receipt upload (unchanged) */}

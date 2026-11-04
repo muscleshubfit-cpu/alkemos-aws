@@ -1131,3 +1131,28 @@ export type AffiliateCommissionBody = z.infer<typeof affiliateCommissionBodySche
  *  verbatim: null/unparseable → {} pre-gate, any object passes with
  *  unknown keys stripped, hostile non-object JSON (legacy silent
  *  ignore → 200 flow) now 400s before the flow. */
+
+// ── POST /api/admin/local-prices (0104 LOCAL-PAYMENT-EGP — action
+//    envelope) ──
+
+/** The admin editor's action envelope. Two actions exist:
+ *    set_price — upsert ONE manual row (flips the mode to manual so the
+ *                next daily run cannot clobber the hand-set value)
+ *    set_auto  — back to auto: recompute every row from the STORED rate
+ *  Unknown keys are stripped (zod object default) so a hostile client
+ *  cannot smuggle extra columns (source/updated_by are server-set —
+ *  the client NEVER chooses provenance). The requireAdmin gate runs
+ *  BEFORE the body parse (401 first, the cron-auth law's sibling). */
+export const adminLocalPriceBodySchema = z.discriminatedUnion("action", [
+  z.object({
+    action: z.literal("set_price"),
+    planTier: z.string().trim().min(1).max(40),
+    durationMonths: z.union([z.literal(1), z.literal(12)]),
+    priceEgp: z.number().positive().max(1_000_000),
+  }),
+  z.object({
+    action: z.literal("set_auto"),
+  }),
+]);
+
+export type AdminLocalPriceBody = z.infer<typeof adminLocalPriceBodySchema>;

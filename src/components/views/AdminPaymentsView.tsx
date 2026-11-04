@@ -243,7 +243,21 @@ export function AdminPaymentsView() {
                     <p className="mt-1 text-xs font-normal text-[#6e6e73]">{new Date(r.created_at).toLocaleString()}</p>
                   </div>
                   <div className="text-end">
-                    <div className="text-xl font-semibold">${r.price_usd}</div>
+                    {/* LOCAL-PAYMENT-EGP (0104): the LOCKED twin the member saw
+                        at request creation (price_egp snapshot) — shown only
+                        when present, so the reviewer can match the receipt
+                        amount against exactly what was displayed. PayPal /
+                        pre-0104 rows keep the USD-only rendering. */}
+                    <div className="text-xl font-semibold">
+                      ${r.price_usd}
+                      {r.price_egp != null && Number(r.price_egp) > 0 && (
+                        <span className="block text-sm font-medium text-[#6e6e73]">
+                          {isAr
+                            ? `أو ${Number(r.price_egp).toLocaleString("en-US")} جنيه مصري`
+                            : `or ${Number(r.price_egp).toLocaleString("en-US")} EGP`}
+                        </span>
+                      )}
+                    </div>
                     <p className="mt-0.5 text-xs font-normal text-[#6e6e73]">
                       {r.duration_months} {t("admin.duration")}
                     </p>

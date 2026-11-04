@@ -20,7 +20,7 @@ import type { Subscription, SubscriptionRequest } from "@/lib/supabase/types";
 /** Input accepted by submitSubscriptionRequest — mirrors the subscription_requests Insert shape (payment_method union == lib/plans PaymentMethod). */
 export type SubscriptionRequestInput = Pick<
  SubscriptionRequest,
- "user_id" | "full_name" | "whatsapp" | "plan_tier" | "duration_months" | "price_usd" | "payment_method" | "receipt_path"
+ "user_id" | "full_name" | "whatsapp" | "plan_tier" | "duration_months" | "price_usd" | "price_egp" | "payment_method" | "receipt_path"
 >;
 
 export async function listAllClients() {
@@ -317,10 +317,10 @@ export async function submitSubscriptionRequest(req: SubscriptionRequestInput): 
  await createAdminNotification(
  "payment_request",
  "طلب دفع جديد ",
- `${req.full_name} طلب اشتراك ${req.plan_tier} لمدة ${req.duration_months} شهر — $${req.price_usd}`,
+ `${req.full_name} طلب اشتراك ${req.plan_tier} لمدة ${req.duration_months} شهر — $${req.price_usd}${req.price_egp != null ? ` أو ${req.price_egp} جنيه مصري` : ""}`,
  "/admin/payments",
  req.user_id,
- { name: req.full_name, tier: req.plan_tier, months: req.duration_months, price_usd: req.price_usd },
+ { name: req.full_name, tier: req.plan_tier, months: req.duration_months, price_usd: req.price_usd, price_egp: req.price_egp ?? null },
  ).catch(() => {});
  return data;
  }

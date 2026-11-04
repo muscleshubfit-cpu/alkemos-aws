@@ -42,6 +42,35 @@ def norm(table):
         t = t.split(".", 1)[1]
     return t.strip('"').lower()
 
+# 0104 (LOCAL-PAYMENT-EGP) — the REINTRODUCED-NAME class: the parser walks
+# files in SORT order, but the RUN_ON_* manual families sort AFTER every
+# 2026* timestamped file while being chronologically ANCIENT. Legacy
+# 0012 (RUN_ON_SUPABASE_ORIGINAL_0012, seq 0012) renames price_egp →
+# price_usd; when 0104 (seq 0104) legitimately re-introduced a NEW
+# subscription_requests.price_egp, the sort order let the ancient rename
+# eat it in the single pass (phantom false-positive). Fix: track each
+# column's ORIGIN sequence number; a rename/drop may retire a column
+# only when the column's origin is CHRONOLOGICALLY OLDER (smaller seq)
+# than the retiring file — the repo's own numbering law (INDEX.md).
+def mig_seq(fname):
+    m = re.search(r"_(\d{4})_", fname) or re.match(r"^(\d{4})_", fname)
+    return int(m.group(1)) if m else -1
+
+col_origin = {}      # (table, column) -> origin sequence number
+
+def note_col_origin(table, col, fname):
+    key = (table, col)
+    seq = mig_seq(fname)
+    prev = col_origin.get(key)
+    if prev is None or seq > prev:
+        col_origin[key] = seq
+
+def may_retire(table, col, fname):
+    """True when the retire (rename-away / drop) is chronologically AFTER
+    the column's origin — i.e. the retirement can legitimately apply."""
+    origin = col_origin.get((table, col))
+    return origin is None or origin <= mig_seq(fname)
+
 for f in files:
     sql = f.read_text(errors="replace")
     lines = sql.splitlines()
@@ -114,6 +143,7 @@ for f in files:
                 col = m2.group(1).strip('"').lower()
                 if col.lower() not in CONSTRAINT_STARTERS:
                     mig_tables[cur_table].add(col)
+                    note_col_origin(cur_table, col, f.name)
         # alter add column (Phase 191: `active` — 0086 wraps the ADD onto
         # its own line; the join makes the regex see the full statement)
         m = re.match(
@@ -124,6 +154,7 @@ for f in files:
             t, col = norm(m.group(1)), m.group(2).strip('"').lower()
             if col.lower() not in CONSTRAINT_STARTERS:
                 mig_tables.setdefault(t, set()).add(col)
+                note_col_origin(t, col, f.name)
                 mig_order.setdefault(t, f.name)
         # alter drop column (Phase 105): a later migration may legitimately
         # remove a column an earlier one created (e.g. 0069 dropping the
@@ -135,7 +166,7 @@ for f in files:
             active)
         if m:
             t, col = norm(m.group(1)), m.group(2).strip('"').lower()
-            if t in mig_tables:
+            if t in mig_tables and may_retire(t, col, f.name):
                 mig_tables[t].discard(col)
         # drop table (Phase 170): a later migration may legitimately DROP
         # a whole table an earlier one created (e.g. 0083 dropping the
@@ -160,8 +191,15 @@ for f in files:
             old = m.group(2).strip('"').lower()
             new = m.group(3).strip('"').lower()
             if t in mig_tables:
-                mig_tables[t].discard(old)
+                # 0104 reintroduced-name guard: the rename may retire the
+                # OLD name only when that name's current origin is
+                # chronologically OLDER than this rename; the NEW name
+                # always enters scope here (it exists on production and in
+                # types.ts from this very rename).
+                if may_retire(t, old, f.name):
+                    mig_tables[t].discard(old)
                 mig_tables[t].add(new)
+                note_col_origin(t, new, f.name)
         # Phase 191: a BARE `ALTER TABLE <name>` line (nothing after the
         # table name — the clause continues on the next line) opens the
         # join window consumed at the top of the next iteration.

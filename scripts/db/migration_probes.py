@@ -133,6 +133,23 @@ PROBES: list[dict] = [
              "column": "plan_type"},
         ],
     },
+    # 0104 — LOCAL-PAYMENT-EGP (owner order 2026-11-05): the three new
+    # tables + the subscription_requests.amount-lock column. The tables
+    # are created only by this migration (nothing else could produce
+    # them) → strong probes on all three; price_egp column is the
+    # amount-lock observable.
+    {
+        "file": "20261105064700_0104_local_payment_egp_prices.sql",
+        "label": "0104 LOCAL-PAYMENT-EGP-PRICES",
+        "strength": "strong",
+        "checks": [
+            {"type": "swagger_table", "table": "local_prices"},
+            {"type": "swagger_table", "table": "exchange_rate_updates"},
+            {"type": "swagger_table", "table": "local_price_settings"},
+            {"type": "swagger_column", "table": "subscription_requests",
+             "column": "price_egp"},
+        ],
+    },
 ]
 # fmt: on
 
