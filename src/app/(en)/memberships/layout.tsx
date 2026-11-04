@@ -1,6 +1,13 @@
-import { jsonLd } from "@/lib/seo";
+import { jsonLd, getFAQSchema } from "@/lib/seo";
 import type { Metadata } from "next";
 import { Resources } from "@/components/hub-head-resources";
+// BILINGUAL-CONTENT Phase 2 (owner order 2026-11-04, audit §3 item 3):
+// the memberships FAQ becomes machine-readable — the same single-source
+// array that renders the page (src/lib/memberships-faq.ts) is emitted
+// here as FAQPage JSON-LD, the coaching-faq.ts precedent (CONTENT-AUDIT
+// P1-2). GEO-only value: Google retired FAQ rich results (May 2026) but
+// AI answer engines parse JSON-LD from the server HTML.
+import { MEMBERSHIPS_FAQ } from "@/lib/memberships-faq";
 
 export const metadata: Metadata = {
   title: "Memberships — Premium & Pro Plans | Alkemos",
@@ -29,6 +36,11 @@ export const metadata: Metadata = {
     description:
       "Every price and usage limit in plain view: plan generations, swaps, saves, and what each tier adds.",
     type: "website",
+    // BILINGUAL-CONTENT Phase 2 (audit gap #6 — live-verified missing):
+    // a child openGraph block REPLACES the root one (Next.js merging),
+    // so og:site_name was silently dropped on this surface. Pinned here
+    // like the AR mirror already does (siteName: "Alkemos").
+    siteName: "Alkemos",
     // §12.53 item 4 (2026-09-15): og:image + og:url + og:locale were all
     // absent — a child openGraph block REPLACES the root one (Next.js
     // merging), so the surface showed no card and no canonical og:url.
@@ -67,6 +79,11 @@ export default function MembershipsLayout({
 }: {
   children: React.ReactNode;
 }) {
+  // BILINGUAL-CONTENT Phase 2 (audit gap #2): FAQPage JSON-LD from the
+  // same single source the page renders — the seven questions/answers
+  // become machine-readable for AI answer engines in the server HTML.
+  const membershipsFaqSchema = getFAQSchema(MEMBERSHIPS_FAQ.en);
+
   // GEO (2026-08-30): OfferCatalog with the storefront prices (source of
   // truth: src/lib/memberships.ts MEMBERSHIPS — matches what the page
   // displays). Machine-readable pricing for Google rich results and AI
@@ -121,6 +138,10 @@ export default function MembershipsLayout({
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: jsonLd(offerCatalogSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: jsonLd(membershipsFaqSchema) }}
       />
       {children}
     </>

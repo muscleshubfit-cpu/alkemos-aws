@@ -239,8 +239,17 @@ export const HOME_COPY_GROUPS: HomeCopyGroup[] = [
         multiline: true,
         labelEn: "Free-allowance bar text",
         labelAr: "نص شريط الرصيد المجاني",
-        defaultEn: "Every visitor has a monthly free allowance for AI-generated plans.",
-        defaultAr: "لكل زائر رصيد شهري مجاني لتوليد خطط الذكاء الاصطناعي.",
+        // BILINGUAL-CONTENT Phase 2 (owner-approved optional item 8,
+        // 2026-11-04): the NUMBER is now shown — the FAQ directly below
+        // and memberships.ts (free tier aiPlanMonthlyLimit: 2) already
+        // state it; the band was the only free-value surface hiding it.
+        // Fact chain: 2 successful generations/month for every visitor
+        // (unified pool, nutrition OR workout). The homepage-adoption
+        // canary pin was updated in the same commit (the 287 precedent).
+        defaultEn:
+          "Every visitor has a monthly free allowance: 2 successful AI plan generations — nutrition or workout.",
+        defaultAr:
+          "لكل زائر رصيد شهري مجاني: توليدان ناجحان من خطط الذكاء الاصطناعي — تغذية أو تمرين.",
       },
       {
         prop: "planAllowanceChip",

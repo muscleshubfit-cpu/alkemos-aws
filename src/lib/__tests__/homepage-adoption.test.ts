@@ -315,9 +315,14 @@ describe("HOME-PLATFORM-284 — the platform homepage canaries", () => {
     // AR-COPY-REWRITE-287 (2026-11-04): the Arabic pin follows the
     // re-authored native-MSA wording (same verified fact — a free
     // monthly AI-plan allowance for every visitor).
+    // BILINGUAL-CONTENT Phase 2 (owner-approved optional item 8,
+    // 2026-11-04): the NUMBER is now stated in the band itself — 2
+    // successful generations/month (memberships.ts free-tier
+    // aiPlanMonthlyLimit), matching the FAQ below it. The pin follows
+    // the wording (the 287 same-commit precedent).
     // The text lives in the registry; the band renders before #plan.
-    expect(readBoth()).toContain("لكل زائر رصيد شهري مجاني لتوليد خطط الذكاء الاصطناعي");
-    expect(readBoth()).toContain("monthly free allowance for AI-generated plans");
+    expect(readBoth()).toContain("لكل زائر رصيد شهري مجاني: توليدان ناجحان من خطط الذكاء الاصطناعي");
+    expect(readBoth()).toContain("2 successful AI plan generations");
     expect(readBoth()).toContain("توليد بالذكاء الاصطناعي");
     expect(readBoth()).toContain("AI GENERATION");
     const allowanceAt = src.indexOf('aria-label={isAr ? "رصيد الخطط المجاني" : "The free plan allowance"}');

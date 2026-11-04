@@ -29,6 +29,11 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     url: "https://alkemos.com/coaching",
+    // BILINGUAL-CONTENT Phase 2 (audit gap #6 — live-verified missing): a
+    // child openGraph block REPLACES the root one (Next.js merging), so
+    // og:site_name was silently dropped on this surface. Pinned here like
+    // the AR mirrors already do.
+    siteName: "Alkemos",
     // §12.53 item 4 (2026-09-15): og:image was absent — a child openGraph
     // block replaces the root one (Next.js merging), so the EN surface
     // showed no social card. Same-family home card, matching the AR

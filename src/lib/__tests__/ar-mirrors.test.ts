@@ -67,7 +67,7 @@ describe("AR mirrors for /evo + /coaching (SEO-GEO-6.4 §12.23)", () => {
     expect((arEvoMetadata.openGraph?.locale as string) || "").toBe("ar_EG");
   });
 
-  it("AR /coaching layout: canonical + full hreflang + brandless title within budget", () => {
+  it("AR /coaching layout: canonical + full hreflang + owner-approved absolute title within budget", () => {
     expect(arCoachingMetadata.alternates?.canonical).toBe(
       "https://alkemos.com/ar/coaching",
     );
@@ -76,11 +76,22 @@ describe("AR mirrors for /evo + /coaching (SEO-GEO-6.4 §12.23)", () => {
       ar: "https://alkemos.com/ar/coaching",
       "x-default": "https://alkemos.com/coaching",
     });
-    // ANTI-DOUBLE-BRAND CANARY (see the /evo test above).
-    const title = arCoachingMetadata.title as string;
+    // ANTI-DOUBLE-BRAND CANARY — BILINGUAL-CONTENT Phase 2 (2026-11-04):
+    // the owner approved the branded title «التدريب الأونلاين مع مدرب
+    // متخصص | Alkemos» (the old 66-char brandless title wasted the
+    // budget). It is pinned with `title.absolute`, which BYPASSES the
+    // /ar layout's «%s — Alkemos» template — the served title is exactly
+    // this string, so the brand appears exactly ONCE (never doubled).
+    // The evo law above (brandless + template) is unchanged for
+    // template-rendered titles.
+    const titleObj = arCoachingMetadata.title as { absolute?: string };
+    expect(titleObj.absolute).toBeDefined();
+    const title = titleObj.absolute!;
     expect(title).toMatch(/[\u0600-\u06FF]/);
-    expect(title).not.toContain("Alkemos");
-    expect(`${title} — Alkemos`.length).toBeLessThanOrEqual(70);
+    expect(title).toContain("| Alkemos");
+    // The brand appears exactly once — the anti-double-brand invariant.
+    expect(title.split("Alkemos").length - 1).toBe(1);
+    expect([...title].length).toBeLessThanOrEqual(60);
     expect((arCoachingMetadata.openGraph?.locale as string) || "").toBe("ar_EG");
   });
 

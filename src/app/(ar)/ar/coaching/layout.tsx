@@ -13,10 +13,16 @@ import { COACHING_FAQ } from "@/lib/coaching-faq";
  * Arabic-first (src/lib/seo.ts), with aggregateRating removed (P0-5).
  */
 export const metadata: Metadata = {
-  // BRANDLESS by law: the /ar/layout template appends exactly one
-  // " — Alkemos" to depth-1 titles — including a brand here would render
-  // a double-brand title (the same class of bug P0-3 fixed on blog).
-  title: "التدريب الأونلاين — مدرب بشري يبني خططك ويتابعك أسبوعيًا",
+  // BILINGUAL-CONTENT Phase 2 (owner-approved title, audit gap #3):
+  // «التدريب الأونلاين مع مدرب متخصص | Alkemos» — ≈41 chars, inside the
+  // ~60 budget (the old title measured 66). The owner wording carries
+  // the brand, so it is pinned with `absolute` — the /ar layout template
+  // would otherwise append a SECOND « — Alkemos» (the anti-double-brand
+  // law, P0-3's class). The "|" separator mirrors the EN twin's pattern
+  // ("Online Coaching with Real Coaches | Alkemos").
+  title: {
+    absolute: "التدريب الأونلاين مع مدرب متخصص | Alkemos",
+  },
   description:
     "تدريب أونلاين مع مدربين وأخصائيي تغذية محترفين: خطط مخصصة، برامج متكيفة، متابعة أسبوعية، ومدربك الذكي EVO على مدار الساعة.",
   keywords: [
@@ -35,6 +41,11 @@ export const metadata: Metadata = {
     type: "website",
     locale: "ar_EG",
     url: "https://alkemos.com/ar/coaching",
+    // BILINGUAL-CONTENT Phase 2 (audit gap #6 — live-verified missing):
+    // a child openGraph block REPLACES the root one (Next.js merging), so
+    // og:site_name was silently dropped on this surface. Pinned here like
+    // the AR memberships mirror already does.
+    siteName: "Alkemos",
     // Batch 1-b (2026-09-16, §12.53 item 4 follow-up): same AR-side gap
     // the batch-1 live verification caught — openGraph without images
     // replaces the root block in Next.js merging, so og-home-ar was NOT

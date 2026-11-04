@@ -527,7 +527,15 @@ export default function CoachingPage() {
                     onClick={() => goToCheckout("coaching")}
                     className="btn-chrome mt-8 w-full px-6 py-3 text-base"
                   >
-                    {isAr ? "ابدأ الآن" : "Get Started"}
+                    {/* BILINGUAL-CONTENT Phase 2 (owner order: «وحّد أزرار
+                        الاشتراك بإزالة «الآن»»): the checkout button drops
+                        the pressure word and now carries the page's own
+                        established CTA label («ابدأ التدريب الأونلاين» —
+                        the hero + final-CTA wording), so every subscribe
+                        button on the site follows ONE pressure-free law.
+                        EN twin "Get Started" unchanged — its rewording
+                        (optional item 9) was NOT in the approved batch. */}
+                    {isAr ? "ابدأ التدريب الأونلاين" : "Get Started"}
                   </button>
                   {/* CONVERSION-2026 (competitor study §4): the REAL risk
                       terms surfaced beside the money moment — no

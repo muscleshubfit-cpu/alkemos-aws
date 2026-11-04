@@ -13,6 +13,12 @@ import {
   translateCell,
   type MembershipTier,
 } from "@/lib/memberships";
+// BILINGUAL-CONTENT Phase 2 (2026-11-04, audit §3 item 2-أ): the FAQ now
+// renders from the single source src/lib/memberships-faq.ts (the
+// coaching-faq.ts precedent) so both language layouts can emit the SAME
+// Q&A as FAQPage JSON-LD in the server HTML. Texts moved verbatim (one
+// verified fix: AR q3 «Pro» → «برو» — the audit's Latin-mixing law أ-2).
+import { MEMBERSHIPS_FAQ } from "@/lib/memberships-faq";
 import { Check } from "lucide-react";
 
 export default function MembershipsPage({ lang: langProp }: { lang?: Lang } = {}) {
@@ -40,7 +46,11 @@ export default function MembershipsPage({ lang: langProp }: { lang?: Lang } = {}
       if (profile) return isAr ? "اذهب إلى صفحتك" : "Go to your profile";
       return isAr ? "ابدأ مجانًا" : "Start free";
     }
-    return isAr ? "اشترك الآن" : "Subscribe now";
+    // BILINGUAL-CONTENT Phase 2 (owner order: «وحّد أزرار الاشتراك بإزالة
+    // «الآن» دون إضعاف الدعوة للاشتراك»): the pressure word «الآن»/"now"
+    // is retired from the subscription CTAs — one editorial law for every
+    // surface, matching the /coaching precedent (AR-COPY-REWRITE-287).
+    return isAr ? "اشترك" : "Subscribe";
   };
 
   return (
@@ -193,7 +203,11 @@ export default function MembershipsPage({ lang: langProp }: { lang?: Lang } = {}
                         href={ctaHref(tier.id, 1)}
                         className="btn-chrome block w-full px-6 py-3.5 text-center text-sm"
                       >
-                        {isAr ? `اشترك الآن — $${tier.priceMonthly!.toFixed(2)}/شهر` : `Subscribe now — $${tier.priceMonthly!.toFixed(2)}/mo`}
+                      {/* BILINGUAL-CONTENT Phase 2: pressure-free CTA —
+                          «الآن»/"now" removed (owner order), the plan NAME
+                          added instead, so the primary money button is MORE
+                          specific, not weaker. Price/destination untouched. */}
+                        {isAr ? `اشترك في ${tier.nameAr} — $${tier.priceMonthly!.toFixed(2)}/شهر` : `Subscribe to ${tier.nameEn} — $${tier.priceMonthly!.toFixed(2)}/mo`}
                       </a>
                       {/* Yearly CTA — secondary */}
                       {hasYearly && (
@@ -419,7 +433,10 @@ export default function MembershipsPage({ lang: langProp }: { lang?: Lang } = {}
                   href={isAr ? "/ar/coaching" : "/coaching"}
                   className="btn-chrome inline-flex items-center gap-2 px-8 py-4 text-sm"
                 >
-                  {isAr ? "ابدأ الآن ›" : "Get Started ›"}
+                  {/* BILINGUAL-CONTENT Phase 2: pressure-free + specific —
+                      mirrors the /coaching page's own hero CTA exactly
+                      («ابدأ التدريب الأونلاين» / "Start coaching"). */}
+                  {isAr ? "ابدأ التدريب الأونلاين ›" : "Start coaching ›"}
                 </a>
               </div>
             </div>
@@ -438,10 +455,24 @@ export default function MembershipsPage({ lang: langProp }: { lang?: Lang } = {}
                   <th className="p-4 text-start text-xs font-medium text-[var(--muted-foreground)]">
                     {isAr ? "الميزة" : "Feature"}
                   </th>
-                  <th className="p-4 text-center text-xs font-medium text-[var(--muted-foreground)]">Free</th>
-                  <th className="p-4 text-center text-xs font-semibold text-[var(--text)]">Premium</th>
-                  <th className="p-4 text-center text-xs font-semibold text-[var(--text)]">Pro</th>
-                  <th className="p-4 text-center text-xs font-medium text-[var(--muted-foreground)]">Coaching</th>
+                  {/* BILINGUAL-CONTENT Phase 2 (owner order: «عرّب ترويسة جدول
+                      المقارنة بالكامل», audit أ-2): the column headers now
+                      derive from memberships.ts nameAr/nameEn — the Arabic
+                      surface reads «مجاني/بريميوم/برو/التدريب الأونلاين»
+                      like the cards above it, and can never drift from the
+                      single source. */}
+                  {((["free", "premium", "pro", "coaching"] as const).map((id) => {
+                    const m = MEMBERSHIPS.find((t) => t.id === id)!;
+                    const isHighlight = id === "premium";
+                    return (
+                      <th
+                        key={id}
+                        className={`p-4 text-center text-xs ${isHighlight ? "font-semibold text-[var(--text)]" : "font-medium text-[var(--muted-foreground)]"}`}
+                      >
+                        {isAr ? m.nameAr : m.nameEn}
+                      </th>
+                    );
+                  }))}
                 </tr>
               </thead>
               <tbody>
@@ -519,67 +550,59 @@ export default function MembershipsPage({ lang: langProp }: { lang?: Lang } = {}
           </div>
         </section>
 
-        {/* FAQ */}
+        {/* FAQ — BILINGUAL-CONTENT Phase 2: rendered from the single
+            source src/lib/memberships-faq.ts (verbatim move — see the
+            file header); the language surfaces emit the same array as
+            FAQPage JSON-LD so AI answer engines read the answers in the
+            server HTML (the coaching-faq.ts precedent). */}
         <section className="mt-16">
           <h2 className="text-center text-2xl font-semibold tracking-tight md:text-3xl">
             {isAr ? "أسئلة شائعة" : "Common questions"}
           </h2>
           <div className="mx-auto mt-8 max-w-2xl space-y-4">
-            {[
-              {
-                q: isAr ? "هل يمكنني الإلغاء في أي وقت؟" : "Can I cancel anytime?",
-                a: isAr
-                  ? "نعم — من صفحة حسابك اضغط «إلغاء الاشتراك» وانتهى الأمر. لا خصم تلقائي: تبقى باقتك فعّالة حتى نهاية المدة التي دفعتها، ثم تتوقف إن لم تُجدّدها بنفسك."
-                  : "Yes — on your account page press “Cancel subscription”. Nothing auto-renews: your plan stays active until the period you paid for ends, then simply stops unless you pay again.",
-              },
-              {
-                q: isAr ? "هل توجد سياسة استرداد؟" : "Is there a refund policy?",
-                a: isAr
-                  ? "نعم — استرداد كامل خلال 7 أيام من التفعيل، ما لم تكن قد استخدمت المزايا المدفوعة (توليد خطط، تبديلات، حفظ نتائج)."
-                  : "Yes, full refund within 7 days of activation, provided no paid features (plan generation, swaps, saved results) have been used.",
-              },
-              {
-                q: isAr ? "هل التدريب الأونلاين مشمول في Pro؟" : "Is coaching included in Pro?",
-                a: isAr
-                  ? "لا — التدريب الأونلاين خدمة منفصلة تمامًا عن العضويات: برو يمنحك مزايا المنصة كاملة، والتدريب الأونلاين يضيف إليها مدربًا بشريًا يتابعك شخصيًا (ويشمل كل مزايا برو)."
-                  : "No, coaching is completely separate from memberships. Pro gives you platform features, coaching gives you a human coach.",
-              },
-              {
-                q: isAr ? "هل توجد تجربة مجانية؟" : "Is there a free trial?",
-                a: isAr
-                  ? "التجربة مجانية ودائمة في آن: افتح مخطط التمارين أو مخطط الوجبات بالذكاء الاصطناعي وولّد خطتك الأولى فورًا — لكل زائر توليدان ناجحان شهريًا، وما تولّده يُحفظ للأبد بحساب مجاني. لا يوجد اشتراك تجريبي مؤقت؛ المستوى المجاني مجاني للأبد."
-                  : "The trial IS the product: open the AI Workout or AI Meal Planner and generate your first plan instantly (2 successful generations per month for every visitor; a free account saves them permanently). There is no temporary trial subscription — the Free tier is free forever.",
-              },
-              {
-                q: isAr ? "ما هي طرق الدفع؟" : "Payment methods?",
-                a: isAr ? "PayPal (الطريقة الرئيسية — فورية وآمنة)، إضافة إلى InstaPay وVodafone Cash. تُعالج مدفوعات PayPal تلقائيًا، أما الطرق اليدوية فتتطلب رفع إيصال يراجعه فريقنا خلال 24 ساعة." : "PayPal (primary — instant and secure), InstaPay, and Vodafone Cash. PayPal processes automatically; manual methods require uploading a receipt reviewed within 24 hours.",
-              },
-              // PRIORITY-PAGES Implementation 3 (2026-10-19, audit §C-1):
-              // the two lifecycle questions the page never answered —
-              // what happens to my plans, and can I change tiers. Facts:
-              // plans are data, not quota (plan-persistence law — they
-              // stay visible/accessible); no auto-renew (existing cancel
-              // answer); limits derive from the ACTIVE tier
-              // (membership-tier.ts) so a mid-cycle upgrade applies its
-              // higher limits immediately.
-              {
-                q: isAr ? "ماذا يحدث لخططي إذا انتهى اشتراكي؟" : "What happens to my plans when my subscription ends?",
-                a: isAr
-                  ? "تبقى كل خطة ولّدتها أو حفظتها مرئية ومتاحة كما هي — الخطط بياناتك، لا رصيدًا يُستهلك. ما يعود إلى حدود المجاني هو التوليد الجديد وعدد التبديلات، حتى تجدد إن أردت. ولا خصم تلقائي: تبقى باقتك فعّالة حتى نهاية المدة المدفوعة، ثم تتوقف."
-                  : "Every plan you generated or saved stays visible and accessible as-is — plans are data, not quota. What returns to the free-tier limits is new generation and swap counts, until you renew. And there's no auto-charge: your plan stays active until the paid period ends, then simply stops.",
-              },
-              {
-                q: isAr ? "هل أستطيع تغيير الباقة لاحقًا؟" : "Can I change my plan later?",
-                a: isAr
-                  ? "نعم، وبلا أي التزام — لا تجديد تلقائي ولا عقود: في الدورة التالية اختر ما تشاء أو ابقَ على المجاني. وحين ترتقي في أي لحظة تسري حدود الباقة الأعلى فورًا، لأن الحدود تُشتق من باقتك الفعّالة."
-                  : "Yes, with no commitment: nothing auto-renews and there are no contracts — next cycle, pick any tier or stay on Free. And upgrading at any moment applies the higher tier's limits immediately, because limits derive from your active tier.",
-              },
-            ].map((faq, i) => (
+            {MEMBERSHIPS_FAQ[isAr ? "ar" : "en"].map((faq, i) => (
               <div key={i} className="marble-card p-5">
                 <h3 className="text-sm font-semibold">{faq.q}</h3>
                 <p className="mt-1.5 text-sm font-normal text-[var(--muted-foreground)]">{faq.a}</p>
               </div>
             ))}
+          </div>
+        </section>
+
+        {/* BILINGUAL-CONTENT Phase 2 (§ب — the hesitant-payer conversion
+            review): the page previously dead-ended at the FAQ. A hesitant
+            buyer's objections are resolved exactly HERE (the cancel/refund
+            answers above), so the zero-risk next step — starting free —
+            belongs at this decision point, with coaching one tap away.
+            Pressure-free by law (no «الآن»); every fact already published
+            on this page (free-forever · upgrade-when-usage-grows · no
+            auto-renewal · no contracts); reuses the existing ctaHref/
+            ctaLabel logic — zero new routes or behavior. */}
+        <section className="mt-16">
+          <div className="marble-card mx-auto max-w-2xl p-8 text-center">
+            <h2 className="text-2xl font-semibold tracking-tight md:text-3xl">
+              {isAr ? "ابدأ حيث يناسبك." : "Start where it fits you."}
+            </h2>
+            <p className="mx-auto mt-3 max-w-xl text-sm font-normal leading-relaxed text-[var(--muted-foreground)]">
+              {isAr
+                ? "المجاني كامل وبلا حد زمني — ابدأ به وارتقِ حين يكبر استخدامك. لا تجديد تلقائي ولا عقود."
+                : "Free is complete with no time limit — start there and upgrade as your usage grows. No auto-renewal, no contracts."}
+            </p>
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+              <a
+                href={ctaHref("free", 1)}
+                className="btn-chrome px-6 py-3 text-sm"
+              >
+                {ctaLabel("free", isAr)}
+              </a>
+              <a
+                href={isAr ? "/ar/coaching" : "/coaching"}
+                className="btn-outline px-6 py-3 text-sm"
+              >
+                {isAr ? "التدريب مع مدرب بشري" : "Coaching with a human coach"}
+                <span className="rtl:rotate-180">›</span>
+              </a>
+            </div>
           </div>
         </section>
 

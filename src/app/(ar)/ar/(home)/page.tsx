@@ -44,9 +44,14 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "/ar",
     languages: {
-      en: `${SITE_URL}/`,
+      // BILINGUAL-CONTENT Phase 2 (audit §2.8 detail): "/" declares
+      // en/x-default as "https://alkemos.com" (no trailing slash) — the
+      // pair is now LITERALLY identical on both sides (this page
+      // previously wrote "...com/" with the slash; Google unifies them,
+      // but the ideal hreflang cluster matches byte-for-byte).
+      en: `${SITE_URL}`,
       ar: `${SITE_URL}/ar`,
-      "x-default": `${SITE_URL}/`,
+      "x-default": `${SITE_URL}`,
     },
   },
   // Phase 231 (owner order «نفّذ الآن جميع إصلاحات Social Sharing

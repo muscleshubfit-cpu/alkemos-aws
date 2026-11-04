@@ -27,12 +27,16 @@ export const metadata: Metadata = {
   // this file stay identical (this file's established pattern).
   // SEO-P2-10 (2026-10-01, SEO audit item 10): 195 → 157 chars — the ≤160
   // SERP-truncation law now holds; all three proof numbers kept (868+/8,830+/8).
+  // BILINGUAL-CONTENT Phase 2 (audit gap #5): tanween orthography unified
+  // to «تمرينًا/صنفًا» (the correct modern rendering) — the three copies
+  // below previously wrote «تمريناً/صنفاً» (old style), inconsistent with
+  // the /ar homepage's OWN OG card which already writes «تمرينًا/صنفًا».
   description:
-    "تدرّب بذكاء، وتغذَّ بدقة، وتقدّم والأرقام في صفك — منصتك المتكاملة للتمارين والتغذية: 868+ تمريناً، و8,830+ صنفاً غذائياً، و8 أدوات مجانية، ومدربك الذكي EVO.",
+    "تدرّب بذكاء، وتغذَّ بدقة، وتقدّم والأرقام في صفك — منصتك المتكاملة للتمارين والتغذية: 868+ تمرينًا، و8,830+ صنفًا غذائيًا، و8 أدوات مجانية، ومدربك الذكي EVO.",
   openGraph: {
     title: "Alkemos | منصة اللياقة والتغذية الذكية المتكاملة",
     description:
-      "تدرّب بذكاء، وتغذَّ بدقة، وتقدّم والأرقام في صفك — منصتك المتكاملة للتمارين والتغذية: 868+ تمريناً، و8,830+ صنفاً غذائياً، و8 أدوات مجانية، ومدربك الذكي EVO.",
+      "تدرّب بذكاء، وتغذَّ بدقة، وتقدّم والأرقام في صفك — منصتك المتكاملة للتمارين والتغذية: 868+ تمرينًا، و8,830+ صنفًا غذائيًا، و8 أدوات مجانية، ومدربك الذكي EVO.",
     siteName: "Alkemos",
     locale: "ar_EG",
     type: "website",
@@ -54,7 +58,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Alkemos | منصة اللياقة والتغذية الذكية المتكاملة",
     description:
-      "تدرّب بذكاء، وتغذَّ بدقة، وتقدّم والأرقام في صفك — منصتك المتكاملة للتمارين والتغذية: 868+ تمريناً، و8,830+ صنفاً غذائياً، و8 أدوات مجانية، ومدربك الذكي EVO.",
+      "تدرّب بذكاء، وتغذَّ بدقة، وتقدّم والأرقام في صفك — منصتك المتكاملة للتمارين والتغذية: 868+ تمرينًا، و8,830+ صنفًا غذائيًا، و8 أدوات مجانية، ومدربك الذكي EVO.",
     images: ["/images/og/og-home-ar.png?v=3"],
   },
   // NOTE: NO `alternates` here (homepage AR mirror follow-up, 2026-08-30).
