@@ -67,7 +67,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Alkemos — The Smart Fitness & Nutrition Platform",
     description:
-      "868+ exercises, 8,830+ foods, 8 free tools, ready programs and diets, an AI coach, and optional human coaching — in Arabic and English.",
+      "868+ exercises, 8,830+ foods, 8 free tools, ready programs and diets, an AI coach, and optional personal coaching — in Arabic and English.",
     type: "website",
     siteName: "Alkemos",
     locale: "en_US",

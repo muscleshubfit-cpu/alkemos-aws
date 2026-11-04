@@ -20,13 +20,13 @@ Alkemos is a bilingual (Arabic-first + English) fitness and nutrition platform t
 | Workout programs | 7 ready-made programs, home + gym, 6–12 weeks (`workout-programs.ts`) |
 | EVO | AI coach on every page: free 10 msgs/day; answers from platform blog with links; guides to platform pages; builds plans from the unified monthly pool |
 | Memberships | Free $0 · Premium $14.99/mo \| $119/yr · Pro $29.99/mo \| $239/yr · Coaching $39.99/mo \| $359/yr (`memberships.ts`) |
-| Coaching tier | Human coach: plans, weekly check-in reminders, manual swaps, direct contact, priority support + all Pro limits |
+| Coaching tier | Personal coach: plans, weekly check-in reminders, manual swaps, direct contact, priority support + all Pro limits |
 | For coaches | Free registration, instant activation; coach sets client prices and collects directly (0% commission); platform charges a fixed per-active-client activation fee from the coach wallet |
 | Payments | PayPal (automatic), InstaPay + Vodafone Cash (manual receipt, reviewed within 24 h) |
 
 **One-line positioning:**
-- **EN:** Alkemos is the bilingual fitness platform that turns your numbers into plans: 868 exercises, 8,830 foods, 8 free tools, ready programs and diets — with EVO, an AI coach that knows your data, and optional human coaching.
-- **AR:** Alkemos منصة لياقة وتغذية ثنائية اللغة تحوّل أرقامك إلى خطط: 868+ تمرينًا، و8,830+ صنفًا غذائيًا، و8 أدوات مجانية، وبرامج وخطط جاهزة — مع EVO مدرب ذكي يعرف بياناتك، وكوتشينج بشري اختياري.
+- **EN:** Alkemos is the bilingual fitness platform that turns your numbers into plans: 868 exercises, 8,830 foods, 8 free tools, ready programs and diets — with EVO, an AI coach that knows your data, and optional personal coaching.
+- **AR:** Alkemos منصة لياقة وتغذية ثنائية اللغة تحوّل أرقامك إلى خطط: 868+ تمرينًا، و8,830+ صنفًا غذائيًا، و8 أدوات مجانية، وبرامج وخطط جاهزة — مع EVO مدرب ذكي يعرف بياناتك، وكوتشينج خاص اختياري.
 
 **Positioning ladder (who it's for):** Arabic speaker underserved by Western fitness apps (primary),
 and any lifter/learner worldwide who wants free, no-signup tools + reference content (secondary).
@@ -147,7 +147,7 @@ Tool names (fixed, used by hub, nav, footer, cross-links, schema):
 
 ### English canonical terms
 
-"Coach" (human), "AI coach" (EVO), "membership" (tier), "plan" (generated/coaching),
+"Coach" (personal), "AI coach" (EVO), "membership" (tier), "plan" (generated/coaching),
 "program" (ready-made), "meal planner" (manual), "AI meal/workout planner" (generators),
 "diet plan library" (24 ready plans), "exercise library", "food database" (EN may keep
 "database" — it is the global search term), "swaps" (meal/exercise swaps).
@@ -218,7 +218,7 @@ account; weekly knowledge distillation from anonymized platform plans.
 - "Most popular" (no subscriber data) → use "Recommended" (editorial).
 - "Certified coaches / مدربون معتمدون" without a named certifier → "professional coaches /
   مدربون محترفون" (bio: drop "certified" unless a certificate body is named).
-- "Vetted coaches / مدربين موثّقين" in comparisons → "human coaches at $39.99/mo".
+- "Vetted coaches / مدربين موثّقين" in comparisons → "personal coaches at $39.99/mo".
 - "المنصة الأولى" / "the leading platform" → aspirational vision phrased as ambition, not fact.
 - "Best platform / أفضل منصة", "#1", invented user counts, invented review scores.
 - Time-to-result promises ("see abs in 30 days").
@@ -246,7 +246,7 @@ Each page: **[Job] → structure notes → CTA → internal links.**
    features, how it works, Free-vs-Subscriber table (mirrors real enforcement), platform-fit
    link grid. CTA: open the chat widget (no signup), see plans.
 3. **Memberships** — [Choose a tier] Positioning ladder Free=experience → Premium=manage →
-   Pro=adapt → Coaching=human. Cards from `memberships.ts`, comparison table, pool + swaps
+   Pro=adapt → Coaching=personal. Cards from `memberships.ts`, comparison table, pool + swaps
    explainer, refund policy, 5 FAQs. Links: /coaching, /compare, /checkout.
 4. **About** — [Trust] Who we are (human + AI vision), what the platform actually contains
    (linked), founder, EVO summary (linked), memberships summary (linked, 4 products not 3),

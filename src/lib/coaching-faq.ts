@@ -31,11 +31,11 @@ export const COACHING_FAQ: Record<"en" | "ar", CoachingFaqItem[]> = {
     },
     {
       q: "Are plans personalized?",
-      a: "Yes, every plan is built from your questionnaires by a human coach, and you can request swaps anytime.",
+      a: "Yes, every plan is built from your questionnaires by a personal coach, and you can request swaps anytime.",
     },
     {
       q: "Is the coach a real human?",
-      a: "Yes — the Coaching plan includes a human coach who builds your plans, follows your progress weekly, makes the swaps personally, and is reachable directly through the platform.",
+      a: "Yes — the Coaching plan includes a personal coach who builds your plans, follows your progress weekly, makes the swaps personally, and is reachable directly through the platform.",
     },
     {
       q: "Payment methods?",
@@ -70,11 +70,11 @@ export const COACHING_FAQ: Record<"en" | "ar", CoachingFaqItem[]> = {
     },
     {
       q: "هل الخطط مخصصة؟",
-      a: "نعم — تُبنى كل خطة من استبياناتك على يد مدرب بشري، ويمكنك طلب تبديلات متى شئت.",
+      a: "نعم — تُبنى كل خطة من استبياناتك على يد مدرب خاص، ويمكنك طلب تبديلات متى شئت.",
     },
     {
-      q: "هل المدرب بشري فعلًا؟",
-      a: "نعم — باقة التدريب الأونلاين تشمل مدربًا بشريًا يبني خططك، ويتابع تقدمك أسبوعيًا، ويجري التعديلات بنفسه — وتتواصل معه مباشرة عبر المنصة.",
+      q: "هل المدرب إنسان حقيقي فعلًا؟",
+      a: "نعم — باقة التدريب الأونلاين تشمل مدربًا خاصًا يبني خططك، ويتابع تقدمك أسبوعيًا، ويجري التعديلات بنفسه — وتتواصل معه مباشرة عبر المنصة.",
     },
     {
       q: "ما هي طرق الدفع؟",

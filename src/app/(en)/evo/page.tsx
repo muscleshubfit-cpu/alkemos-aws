@@ -244,8 +244,8 @@ export default function EvoPage() {
           </p>
           <p className="mt-3 text-base font-normal leading-relaxed text-[var(--muted-foreground)] md:text-lg">
             {isAr
-              ? "يدمج معرفة المدربين البشريين مع سرعة ودقة الذكاء الاصطناعي في نظام واحد متكامل."
-              : "It combines human coach expertise with AI speed and precision in one integrated system."}
+              ? "يدمج معرفة المدربين الخاصين مع سرعة ودقة الذكاء الاصطناعي في نظام واحد متكامل."
+              : "It combines personal coach expertise with AI speed and precision in one integrated system."}
           </p>
         </section>
 
@@ -611,7 +611,7 @@ export default function EvoPage() {
         {/* EVO internal-linking hub (intent-map audit 2026-09-14, item 8):
             EVO is the single primary page for the AI-coach intent — this
             grid ties the surrounding AI surfaces (the two planners), the
-            human-coaching path, the free tools, and the program library
+            personal-coaching path, the free tools, and the program library
             into it, so the intent cluster is one crawlable hop away in
             BOTH directions. Language-aware hrefs: the AR mirror links its
             own /ar/* versions. */}
@@ -637,10 +637,10 @@ export default function EvoPage() {
               },
               {
                 href: isAr ? "/ar/coaching" : "/coaching",
-                titleAr: "التدريب الأونلاين مع مدربين بشريين",
-                titleEn: "Human Online Coaching",
-                descAr: "مدرب بشري يبني خططك ويتابعك أسبوعيًا.",
-                descEn: "A human coach builds your plans and checks in weekly.",
+                titleAr: "التدريب الأونلاين مع مدربين خاصين",
+                titleEn: "Personal Online Coaching",
+                descAr: "مدرب خاص يبني خططك ويتابعك أسبوعيًا.",
+                descEn: "A personal coach builds your plans and checks in weekly.",
               },
               {
                 href: isAr ? "/ar/tools" : "/tools",
@@ -710,8 +710,8 @@ export default function EvoPage() {
           </h2>
           <p className="mx-auto mt-3 max-w-md text-base font-medium text-[#9BA0A6]">
             {isAr
-              ? "ابدأ المحادثة الآن — مجانًا. وعندما يكبر استخدامك: بريميوم لإدارة خططك وحفظها، وبرو لتكييفها وتحسينها، ولكي يرافقك مدرب بشري — التدريب الأونلاين."
-              : "Start chatting now — free to try. When your usage grows: Premium to manage your plans, Pro to adapt & optimize them, and Coaching for a human coach in your corner."}
+              ? "ابدأ المحادثة الآن — مجانًا. وعندما يكبر استخدامك: بريميوم لإدارة خططك وحفظها، وبرو لتكييفها وتحسينها، ولكي يرافقك مدرب خاص — التدريب الأونلاين."
+              : "Start chatting now — free to try. When your usage grows: Premium to manage your plans, Pro to adapt & optimize them, and Coaching for a personal coach in your corner."}
           </p>
           <div className="mt-6 flex flex-wrap items-center justify-center gap-4">
             <button

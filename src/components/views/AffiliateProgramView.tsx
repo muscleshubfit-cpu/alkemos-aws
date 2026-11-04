@@ -808,7 +808,7 @@ function getCopy(isAr: boolean): Copy {
         examples: [
           { label: "Premium membership", price: "$14.99/mo", earn: "$3.00" },
           { label: "Pro membership", price: "$29.99/mo", earn: "$6.00" },
-          { label: "Human coaching", price: "$39.99/mo", earn: "$8.00" },
+          { label: "Personal coaching", price: "$39.99/mo", earn: "$8.00" },
         ],
       },
       prods: {
@@ -852,7 +852,7 @@ function getCopy(isAr: boolean): Copy {
         {
           title: "You earn 20% instantly",
           body:
-            "That's $3.00 from a $14.99 Premium membership, $6.00 from a $29.99 Pro membership, and $8.00 from a $39.99 Human Coaching subscription — every commission appears in your dashboard in real time.",
+            "That's $3.00 from a $14.99 Premium membership, $6.00 from a $29.99 Pro membership, and $8.00 from a $39.99 Personal Coaching subscription — every commission appears in your dashboard in real time.",
         },
         {
           title: "Request your payout",

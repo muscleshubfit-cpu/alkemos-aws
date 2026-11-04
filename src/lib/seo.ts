@@ -84,8 +84,8 @@ export function jsonLd(obj: unknown): string {
  * against a silent Arabic default leaking back onto EN surfaces).
  */
 const ORG_DESCRIPTIONS: Record<"en" | "ar", string> = {
-  en: "The complete digital training platform: 868+ exercises with photos, 8,830+ foods with nutrition data, ready-made programs, free tools, and human coaching alongside the EVO AI engine.",
-  ar: "منصة التدريب الرقمي المتكاملة: 868+ تمرينًا، 8,830+ صنفًا غذائيًا بالقيم الغذائية، برامج جاهزة، أدوات مجانية، وتدريب أونلاين مع مدرب بشري وذكاء اصطناعي EVO.",
+  en: "The complete digital training platform: 868+ exercises with photos, 8,830+ foods with nutrition data, ready-made programs, free tools, and personal coaching alongside the EVO AI engine.",
+  ar: "منصة التدريب الرقمي المتكاملة: 868+ تمرينًا، 8,830+ صنفًا غذائيًا بالقيم الغذائية، برامج جاهزة، أدوات مجانية، وتدريب أونلاين مع مدرب خاص وذكاء اصطناعي EVO.",
 };
 
 export function getOrganizationSchema(lang: "en" | "ar") {

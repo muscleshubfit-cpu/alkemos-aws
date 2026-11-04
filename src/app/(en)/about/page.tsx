@@ -26,7 +26,7 @@ export const metadata: Metadata = {
   description:
     // SEO-P2-10 (2026-10-01, SEO audit item 10): 168 → 142 chars — the
     // ≤160 SERP-truncation law now holds (all six pillars kept).
-    "A bilingual fitness and nutrition platform: exercise library, food database, free tools, ready programs, the EVO AI coach, and human coaching.",
+    "A bilingual fitness and nutrition platform: exercise library, food database, free tools, ready programs, the EVO AI coach, and personal coaching.",
   alternates: {
     canonical: "/about",
     languages: {
@@ -44,7 +44,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "About Alkemos — The Platform, the Founder, and the Model",
     description:
-      "A bilingual fitness and nutrition platform: exercise library, food database, free tools, ready programs, the EVO AI coach, and human coaching.",
+      "A bilingual fitness and nutrition platform: exercise library, food database, free tools, ready programs, the EVO AI coach, and personal coaching.",
     url: "https://alkemos.com/about",
     type: "website",
     siteName: "Alkemos",

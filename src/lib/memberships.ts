@@ -6,7 +6,7 @@
  *   - Free:     basic access, limited EVO, 1 meal plan save
  *   - Premium:  $14.99/mo or $119/yr — full EVO chat, limited plan gen
  *   - Pro:      $29.99/mo or $239/yr — full features, no ads
- *   - Coaching: $39.99/mo or $359/yr — human coach + ALL Pro benefits
+ *   - Coaching: $39.99/mo or $359/yr — personal coach + ALL Pro benefits
  *
  * PLAN GENERATION LAW (owner decree 2026-09-13 «البوول الموحد» —
  * spec "Alkemos — Membership & Plan Changes"; zero live subscribers at
@@ -87,7 +87,7 @@ export type MembershipInfo = {
   priceYearly: number | null;
   /** One-line positioning ladder (owner repositioning 2026-09-13):
    *  Free = Experience → Premium = Manage → Pro = Adapt & Optimize →
-   *  Coaching = Human Coach + AI. Presentation-only — limits stay
+   *  Coaching = Personal Coach + AI. Presentation-only — limits stay
    *  authoritative in `limits`. */
   taglineAr: string;
   taglineEn: string;
@@ -256,14 +256,14 @@ export const MEMBERSHIPS: MembershipInfo[] = [
     nameEn: "Coaching",
     priceMonthly: 39.99,
     priceYearly: 359.0,
-    taglineAr: "مدرب بشري يتابعك خطوة بخطوة + كل قوة الذكاء الاصطناعي",
-    taglineEn: "A human coach in your corner + the full power of AI",
+    taglineAr: "مدرب خاص يتابعك خطوة بخطوة + كل قوة الذكاء الاصطناعي",
+    taglineEn: "A personal coach in your corner + the full power of AI",
     limits: {
-      // Spec 2026-09-13: coaching = human coach + AI AND "كل مزايا Pro" —
+      // Spec 2026-09-13: coaching = personal coach + AI AND "كل مزايا Pro" —
       // every Pro limit is inherited (unified 8-pool, 6 meal/exercise
       // swaps per week,
       // 200 saved results, pattern analysis, premium content, 8-meal
-      // planner with 50 saves, NO ads) plus the human-coach surfaces.
+      // planner with 50 saves, NO ads) plus the personal-coach surfaces.
       evoChatDailyLimit: null,
       aiPlanMonthlyLimit: 8,
       evoSwapLimit: 6,
@@ -281,7 +281,7 @@ export const MEMBERSHIPS: MembershipInfo[] = [
     features: [
       "كل مميزات Pro",
       "توليد 8 خطط AI شهريًا (تغذية أو تمرين)",
-      "خطط تغذية وتمرين من مدرب بشري",
+      "خطط تغذية وتمرين من مدرب خاص",
       "EVO: محادثة غير محدودة وذاكرة دائمة",
       "متابعة أسبوعية بتذكير تلقائي",
       "تبديلات يدوية من المدرب",
@@ -291,7 +291,7 @@ export const MEMBERSHIPS: MembershipInfo[] = [
     featuresEn: [
       "All Pro features",
       "AI plans: 8 generations/month (nutrition or workout)",
-      "Nutrition & workout plans from a human coach",
+      "Nutrition & workout plans from a personal coach",
       "EVO: unlimited chat + persistent memory",
       "Weekly check-in reminders",
       "Manual swaps by the coach",
@@ -473,8 +473,8 @@ export const COMPARISON_ROWS: Array<{
     coaching: "✓",
   },
   {
-    feature: "مدرب بشري",
-    featureEn: "Human Coach",
+    feature: "مدرب خاص",
+    featureEn: "Personal Coach",
     free: "—",
     premium: "—",
     pro: "—",

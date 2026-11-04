@@ -134,6 +134,25 @@ describe("insertToolLinks — EVO / AI-planner / coaching legs (intent-map audit
     expect(inserted.map((i) => i.tool)).toContain("online-coaching");
   });
 
+  // PERSONAL-COACH-RENAME (2026-11-05): the site term is now
+  // "personal coach" / «مدرب خاص» — the patterns match BOTH (the legacy
+  // human-coach matchers stay so existing DB posts keep linking).
+  it("links personal-coach mentions to /coaching (the renamed term)", () => {
+    const md =
+      "A personal coach adapts what the app cannot see yet. Extra sentence so the paragraph is long enough to qualify for deterministic linking.";
+    const { md: out, inserted } = insertToolLinks(md, "en");
+    expect(out).toContain("](/coaching)");
+    expect(inserted.map((i) => i.tool)).toContain("online-coaching");
+  });
+
+  it("links Arabic «مدرب خاص» mentions to /ar/coaching (the renamed term)", () => {
+    const md =
+      "مدرب خاص يبني خطة تناسب أسبوعك وأهدافك بالكامل. جملة إضافية تطول النص للوصول إلى الحد الأدنى المطلوب للربط الآلي.";
+    const { md: out, inserted } = insertToolLinks(md, "ar");
+    expect(out).toContain("](/ar/coaching)");
+    expect(inserted.map((i) => i.tool)).toContain("online-coaching");
+  });
+
   it("most-specific-first: the AR AI-meal-planner phrase links /ar/ai-meal-planner, not /ar/meal-planner", () => {
     const md =
       "جرّب مخطط الوجبات بالذكاء الاصطناعي للحصول على خطة تناسب سعراتك. جملة إضافية تطول النص للوصول إلى الحد الأدنى المطلوب للربط الآلي.";

@@ -20,7 +20,7 @@ export const metadata: Metadata = {
     // (mirrors the AR twin; still inside the 158-char EN budget).
     // SEO-P2-10 (2026-10-01, SEO audit item 10): 169 → 128 chars — all
     // four tiers + prices kept, inside the ≤160 SERP-truncation law.
-    "Compare Alkemos plans: Free forever, Premium $14.99/mo, Pro $29.99/mo, Coaching $39.99/mo (human coach) — full limits published.",
+    "Compare Alkemos plans: Free forever, Premium $14.99/mo, Pro $29.99/mo, Coaching $39.99/mo (personal coach) — full limits published.",
   keywords: [
     "membership",
     "premium",
@@ -124,7 +124,7 @@ export default function MembershipsLayout({
         "@type": "Offer",
         name: "Coaching",
         description:
-          "Human coaching: plans from a real coach, weekly check-ins, manual swaps, priority support + all Pro benefits. $39.99/month or $359/year.",
+          "Personal coaching: plans from a real coach, weekly check-ins, manual swaps, priority support + all Pro benefits. $39.99/month or $359/year.",
         price: "39.99",
         priceCurrency: "USD",
         url: "https://alkemos.com/coaching",

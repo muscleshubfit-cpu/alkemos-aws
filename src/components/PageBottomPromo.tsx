@@ -107,8 +107,8 @@ export function MembershipPromo({ isAr }: { isAr: boolean }) {
       </h2>
       <p className="mx-auto mt-3 max-w-xl text-base font-normal text-[#9BA0A6] md:text-lg">
         {isAr
-          ? "اشترك في عضوية Alkemos: خطط تدريب وتغذية مخصصة، ومتابعة مع مدرب بشري، وكل الأدوات المتقدمة بدون إعلانات."
-          : "Get an Alkemos membership: personalized training and nutrition plans, a human coach's follow-up, and all premium tools ad-free."}
+          ? "اشترك في عضوية Alkemos: خطط تدريب وتغذية مخصصة، ومتابعة مع مدرب خاص، وكل الأدوات المتقدمة بدون إعلانات."
+          : "Get an Alkemos membership: personalized training and nutrition plans, a personal coach's follow-up, and all premium tools ad-free."}
       </p>
       <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
         <a
@@ -121,7 +121,7 @@ export function MembershipPromo({ isAr }: { isAr: boolean }) {
           href={isAr ? "/ar/coaching" : "/coaching"}
           className="rounded-full border border-white/30 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-white/10"
         >
-          {isAr ? "التدريب الأونلاين مع مدرب بشري ›" : "Coaching with a human coach ›"}
+          {isAr ? "التدريب الأونلاين مع مدرب خاص ›" : "Coaching with a personal coach ›"}
         </a>
       </div>
     </section>

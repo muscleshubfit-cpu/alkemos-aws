@@ -63,7 +63,7 @@ export default function MembershipsPage({ lang: langProp }: { lang?: Lang } = {}
 
         {/* Hero — the Free → Paid positioning ladder (owner directive
             2026-09-13): Free = Experience → Premium = Manage → Pro =
-            Adapt & Optimize → Coaching = Human Coach + AI. Copy-only.
+            Adapt & Optimize → Coaching = Personal Coach + AI. Copy-only.
             CONVERSION-2026 (competitor study §2): opens with the buyer's
             felt problem (a generic template that doesn't know their body
             or week) before the ladder — the Trainwell/Freeletics arc
@@ -78,8 +78,8 @@ export default function MembershipsPage({ lang: langProp }: { lang?: Lang } = {}
                 problem-first ladder (CONVERSION-2026 D1+D2 kept) — EN twin
                 untouched. */}
             {isAr
-              ? "الخطة الجاهزة لا تعرف جسمك ولا جدول أسبوعك — Alkemos يبني خطتك على مقاسك: هدفك، وزنك، معداتك، ومطبخك. ابدأ بالمجاني الدائم، وارتقِ حين يكبر استخدامك: بريميوم لإدارة خططك، وبرو لتكييفها أسبوعيًا، والتدريب الأونلاين حين تريد مدربًا بشريًا يرافقك إلى جانب قوة الذكاء الاصطناعي."
-              : "Generic templates don't know your body or your week — that's why Alkemos builds YOUR plan. Start free with a full set of essential tools, then upgrade as your usage grows: Premium to manage your plans, Pro to adapt & optimize them, Coaching when you want a human coach working with you alongside the full power of AI."}
+              ? "الخطة الجاهزة لا تعرف جسمك ولا جدول أسبوعك — Alkemos يبني خطتك على مقاسك: هدفك، وزنك، معداتك، ومطبخك. ابدأ بالمجاني الدائم، وارتقِ حين يكبر استخدامك: بريميوم لإدارة خططك، وبرو لتكييفها أسبوعيًا، والتدريب الأونلاين حين تريد مدربًا خاصًا يرافقك إلى جانب قوة الذكاء الاصطناعي."
+              : "Generic templates don't know your body or your week — that's why Alkemos builds YOUR plan. Start free with a full set of essential tools, then upgrade as your usage grows: Premium to manage your plans, Pro to adapt & optimize them, Coaching when you want a personal coach working with you alongside the full power of AI."}
           </p>
         </div>
 
@@ -358,10 +358,10 @@ export default function MembershipsPage({ lang: langProp }: { lang?: Lang } = {}
               {
                 tierAr: "التدريب الأونلاين",
                 tierEn: "Coaching",
-                fitAr: "تريد مدربًا بشريًا يبني خططك ويتابعك أسبوعيًا",
-                fitEn: "You want a human coach building your plan and following up",
+                fitAr: "تريد مدربًا خاصًا يبني خططك ويتابعك أسبوعيًا",
+                fitEn: "You want a personal coach building your plan and following up",
                 bodyAr: "مدرب معتمد يبني خطط تغذيتك وتمارينك ويجري التبديلات بنفسه، مع متابعة أسبوعية بتذكير تلقائي وتواصل مباشر — وتشمل باقتك كل مزايا برو.",
-                bodyEn: "A human coach builds your nutrition and workout plans and makes the swaps personally, with weekly check-ins and automatic reminders — and it includes every Pro feature.",
+                bodyEn: "A personal coach builds your nutrition and workout plans and makes the swaps personally, with weekly check-ins and automatic reminders — and it includes every Pro feature.",
               },
             ].map((card) => (
               <div key={card.tierEn} className="marble-card p-6">
@@ -408,7 +408,7 @@ export default function MembershipsPage({ lang: langProp }: { lang?: Lang } = {}
               <div className="flex-1">
                 <div className="flex items-center gap-2">
                   <span className="seal-chip" style={{ color: "#F5F5F7", borderColor: "#3A3F45" }}>
-                    {isAr ? "مدرب بشري" : "Human Coach"}
+                    {isAr ? "مدرب خاص" : "Personal Coach"}
                   </span>
                   <h3 className="text-2xl font-bold tracking-tight">
                     {isAr ? coaching.nameAr : coaching.nameEn}
@@ -417,7 +417,7 @@ export default function MembershipsPage({ lang: langProp }: { lang?: Lang } = {}
                 <p className="mt-3 text-sm font-normal text-[#9BA0A6]">
                   {isAr
                     ? "التدريب الأونلاين مع مدربين محترفين وأخصائيي تغذية: خطط تُبنى لك وحدك، متابعة أسبوعية، وتبديلات يجريها المدرب بيده."
-                    : "Human coaching with professional coaches and nutrition specialists: personalized plans, weekly check-ins, and swaps made by your coach."}
+                    : "Personal coaching with professional coaches and nutrition specialists: personalized plans, weekly check-ins, and swaps made by your coach."}
                 </p>
                 <ul className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
                   {(isAr ? coaching.features : coaching.featuresEn).map((f, j) => (
@@ -599,7 +599,7 @@ export default function MembershipsPage({ lang: langProp }: { lang?: Lang } = {}
                 href={isAr ? "/ar/coaching" : "/coaching"}
                 className="btn-outline px-6 py-3 text-sm"
               >
-                {isAr ? "التدريب مع مدرب بشري" : "Coaching with a human coach"}
+                {isAr ? "التدريب مع مدرب خاص" : "Coaching with a personal coach"}
                 <span className="rtl:rotate-180">›</span>
               </a>
             </div>

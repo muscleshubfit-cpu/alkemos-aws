@@ -694,7 +694,7 @@ export default function AiWorkoutPlannerPage() {
                 {isAr ? "تتبّع تقدّمك" : "Track your progress"}
               </Link>
               <Link href={isAr ? "/ar/coaching" : "/coaching"} className="rounded-full border border-[var(--edge)] px-4 py-2 text-sm font-normal text-[var(--text)] transition-colors hover:border-[var(--chrome-edge)]">
-                {isAr ? "التدريب الأونلاين" : "Human coaching"}
+                {isAr ? "التدريب الأونلاين" : "Personal coaching"}
               </Link>
             </div>
           </div>

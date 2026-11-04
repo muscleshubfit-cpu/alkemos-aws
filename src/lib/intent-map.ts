@@ -37,7 +37,7 @@ export type IntentKind =
   | "tool" // calculators + planners (indexable WebApplication pages)
   | "program" // ready program surfaces
   | "evo" // the AI coach page
-  | "coaching" // human coaching
+  | "coaching" // personal coaching
   | "membership" // pricing / tiers
   | "compare" // comparison pages
   | "guide" // pillar guide pages (Phase 318 — P1-8 accuracy chain)
@@ -374,9 +374,9 @@ export const SEARCH_INTENT_MAP: SearchIntentEntry[] = [
   },
   {
     cluster: "online-coaching",
-    labelEn: "Human online coaching",
-    labelAr: "التدريب الأونلاين مع مدرب بشري",
-    primaryIntent: "Get coached by a real human fitness/nutrition coach.",
+    labelEn: "Personal online coaching",
+    labelAr: "التدريب الأونلاين مع مدرب خاص",
+    primaryIntent: "Get coached by a personal fitness/nutrition coach.",
     canonical: "/coaching",
     supporting: ["/evo", "/memberships", "/for-coaches", "/coaches"],
     kind: "coaching",

@@ -8,7 +8,7 @@
 
 Alkemos is a bilingual (English + full Arabic RTL mirror) fitness and nutrition
 platform that unifies training, nutrition, and AI planning in one product:
-real content libraries, free planning tools, an AI coach (**EVO**), human
+real content libraries, free planning tools, an AI coach (**EVO**), personal
 coaching, and an automated bilingual blog — backed by membership tiers, an
 affiliate program, a complete B2B coach system, and a full admin platform.
 
@@ -121,7 +121,7 @@ no entrance beats, no arrows on its CTAs).
 | Free (& guests, no signup) | $0 | 2 | 10 msgs/day | — | 3 |
 | Premium | $14.99/mo · $119/yr | 4 | Unlimited | 3/week | 50 + export |
 | Pro | $29.99/mo · $239/yr | 8 | Unlimited | 6/week | 200 + export, ad-free |
-| Coaching | $39.99/mo · $359/yr | 8 + human coach | Unlimited | 6/week | 200 + export |
+| Coaching | $39.99/mo · $359/yr | 8 + personal coach | Unlimited | 6/week | 200 + export |
 
 \* One unified monthly pool for nutrition + workout generations combined —
 only successful generations count; failed attempts and edits never burn quota.

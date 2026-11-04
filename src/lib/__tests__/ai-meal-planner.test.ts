@@ -276,7 +276,7 @@ describe("ai meal planner trial (§12.28)", () => {
     // HOME-REFINE-270 (owner directive 2026-09-24): the planning
     // section is now the INTERACTIVE #plan builder pair (workout +
     // nutrition) — the retired mixed headline (planners + EVO + an
-    // implied human coach) is pinned DEAD; the meal-planner CTA pair
+    // implied personal coach) is pinned DEAD; the meal-planner CTA pair
     // «أنشئ خطتي / Create My Plan» stays pinned, now on the nutrition
     // builder card.
     expect(landing).toContain('id="plan"');

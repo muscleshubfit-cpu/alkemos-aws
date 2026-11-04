@@ -85,7 +85,7 @@ export const STATIC_PAGE_DEFAULTS: Record<
         {
           heading: "العضويات والأسعار",
           paragraphs: [
-            "تعمل المنصة بنموذج بسيط: الفئة المجانية مجانية للأبد وتشمل المنتج كاملًا بحدود استخدام (محادثة EVO 10 رسائل يوميًا، وتوليدان شهريًا للخطط). أما الاشتراك فيوسّع الحدود: بريميوم $14.99 شهريًا أو $119 سنويًا، وبرو $29.99 شهريًا أو $239 سنويًا، والتدريب الأونلاين $39.99 شهريًا أو $359 سنويًا يضيف مدربًا بشريًا يتابعك أسبوعيًا. كل الأسعار وحدود الاستخدام منشورة بالكامل على صفحة العضويات.",
+            "تعمل المنصة بنموذج بسيط: الفئة المجانية مجانية للأبد وتشمل المنتج كاملًا بحدود استخدام (محادثة EVO 10 رسائل يوميًا، وتوليدان شهريًا للخطط). أما الاشتراك فيوسّع الحدود: بريميوم $14.99 شهريًا أو $119 سنويًا، وبرو $29.99 شهريًا أو $239 سنويًا، والتدريب الأونلاين $39.99 شهريًا أو $359 سنويًا يضيف مدربًا خاصًا يتابعك أسبوعيًا. كل الأسعار وحدود الاستخدام منشورة بالكامل على صفحة العضويات.",
           ],
           links: [
             { label: "العضويات والأسعار", href: "/ar/memberships" },
@@ -140,11 +140,11 @@ export const STATIC_PAGE_DEFAULTS: Record<
         {
           heading: "Memberships & Pricing",
           paragraphs: [
-            "The model is simple: the Free tier is free forever and includes the full product with usage limits (EVO chat 10 messages/day, 2 plan generations per month). Subscriptions widen the limits: Premium at $14.99/mo or $119/yr, Pro at $29.99/mo or $239/yr, and Coaching at $39.99/mo or $359/yr, which adds a human coach with weekly check-ins. Every price and limit is published in full on the memberships page.",
+            "The model is simple: the Free tier is free forever and includes the full product with usage limits (EVO chat 10 messages/day, 2 plan generations per month). Subscriptions widen the limits: Premium at $14.99/mo or $119/yr, Pro at $29.99/mo or $239/yr, and Coaching at $39.99/mo or $359/yr, which adds a personal coach with weekly check-ins. Every price and limit is published in full on the memberships page.",
           ],
           links: [
             { label: "Memberships & pricing", href: "/memberships" },
-            { label: "Human coaching", href: "/coaching" },
+            { label: "Personal coaching", href: "/coaching" },
           ],
         },
       ],

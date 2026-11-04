@@ -179,11 +179,11 @@ export default function CoachingPage() {
               {/* CONVERSION-2026 (competitor study §2 — Trainwell's problem-
                   first hero): the buyer's felt problem (generic plans that
                   fit everyone and follow no one) opens the pitch; the
-                  solution (certified human coach + EVO) answers it.
+                  solution (certified personal coach + EVO) answers it.
                   Copy-only, claims unchanged. */}
               {isAr
-                ? "الخطط الجاهزة تناسب الجميع ولا تتابع أحدًا. هنا مدرب بشري معتمد يبني خطتك بنفسه، ويقرأ أرقامك كل أسبوع — ومعه EVO للإجابة والتكييف على مدار الساعة."
-                : "Generic plans fit everyone and follow no one. Here, a certified human coach builds your plan and checks your numbers weekly — with EVO answering and adapting around the clock."}
+                ? "الخطط الجاهزة تناسب الجميع ولا تتابع أحدًا. هنا مدرب خاص معتمد يبني خطتك بنفسه، ويقرأ أرقامك كل أسبوع — ومعه EVO للإجابة والتكييف على مدار الساعة."
+                : "Generic plans fit everyone and follow no one. Here, a certified personal coach builds your plan and checks your numbers weekly — with EVO answering and adapting around the clock."}
             </p>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
               <button
@@ -471,19 +471,19 @@ export default function CoachingPage() {
           <div className="mx-auto max-w-5xl">
             <Reveal>
               <h2 className="text-center text-3xl font-semibold tracking-tight md:text-5xl">
-                {isAr ? "مدرب بشري. باقة واحدة." : "A human coach. One simple plan."}
+                {isAr ? "مدرب خاص. باقة واحدة." : "A personal coach. One simple plan."}
               </h2>
             </Reveal>
             <Reveal delay={150}>
               <p className="mx-auto mt-4 max-w-xl text-center text-lg font-normal text-[var(--muted-foreground)] md:text-xl">
                 {/* CONVERSION-2026 (competitor study §5 — the MyFitnessPal
                     cost-anchor pattern, honestly): coaching = every Pro
-                    feature + the human coach. $39.99 − $29.99 = $10/month
+                    feature + the personal coach. $39.99 − $29.99 = $10/month
                     is direct arithmetic from memberships.ts (no multiplier
                     phrasing, the 2026-09-13 owner directive). */}
                 {isAr
-                  ? "$39.99 شهريًا، شاملة كل مزايا برو مع متابعة المدرب — والفرق عن باقة برو: 10 دولارات شهريًا مقابل مدرب بشري يقرأ أرقامك ويعدّل خطتك بيده."
-                  : "$39.99/month, including every Pro feature plus your coach's follow-up — the difference from Pro: $10 a month for a human coach who reads your numbers and adjusts your plan."}
+                  ? "$39.99 شهريًا، شاملة كل مزايا برو مع متابعة المدرب — والفرق عن باقة برو: 10 دولارات شهريًا مقابل مدرب خاص يقرأ أرقامك ويعدّل خطتك بيده."
+                  : "$39.99/month, including every Pro feature plus your coach's follow-up — the difference from Pro: $10 a month for a personal coach who reads your numbers and adjusts your plan."}
               </p>
             </Reveal>
             {/* PHASE 68 (owner-approved): the legacy Starter $20 / Elite $40
@@ -511,7 +511,7 @@ export default function CoachingPage() {
                         coaching inherits every Pro limit; this card now says
                         so explicitly, same numbers, copy-only): */}
                     {[isAr ? "كل مميزات برو (8 خطط ذكاء اصطناعي شهريًا، 6 تبديلات أسبوعية، بلا إعلانات)" : "All Pro features (8 AI plans/month, 6 swaps/week, ad-free)",
-                      isAr ? "خطط تغذية وتمارين من مدرب بشري" : "Nutrition + workout plans from a human coach",
+                      isAr ? "خطط تغذية وتمارين من مدرب خاص" : "Nutrition + workout plans from a personal coach",
                       isAr ? "EVO: محادثة غير محدودة وذاكرة دائمة" : "EVO: unlimited chat + cross-session memory",
                       isAr ? "متابعة أسبوعية بتذكير تلقائي" : "Weekly check-in reminders",
                       isAr ? "تبديلات يدوية من المدرب" : "Manual swaps by the coach",
@@ -626,7 +626,7 @@ export default function CoachingPage() {
             <ShareButtons
               path="/coaching"
               title={isAr ? "التدريب الأونلاين | Alkemos" : "Online Coaching | Alkemos"}
-              text={isAr ? "مدرب بشري يبني خططك ويتابعك أسبوعيًا — ومعه EVO بلا حدود. $39.99/شهر." : "A human coach builds your plans and checks in weekly — with unlimited EVO. $39.99/mo."}
+              text={isAr ? "مدرب خاص يبني خططك ويتابعك أسبوعيًا — ومعه EVO بلا حدود. $39.99/شهر." : "A personal coach builds your plans and checks in weekly — with unlimited EVO. $39.99/mo."}
             />
           </div>
         </div>

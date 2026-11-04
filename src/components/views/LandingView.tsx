@@ -1172,7 +1172,7 @@ export function LandingView({ samples, content, isAr }: { samples: HomeSamples; 
             </Reveal>
           </div>
 
-          {/* The online-coaching card — the human service, separate from
+          {/* The online-coaching card — the personal-coaching service, separate from
               the memberships (the terminology law), carrying the
               section's ONE filled CTA. VRD-V6 (hierarchy fix, VLM
               audit #7): the card drops the dark-marble fill for a

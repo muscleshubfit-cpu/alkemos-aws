@@ -77,8 +77,8 @@ const TOOL_RULES: ToolLinkRule[] = [
     id: "online-coaching",
     url: "/coaching",
     urlAr: "/ar/coaching",
-    patternsEn: [/\bonline (?:fitness|nutrition) coaching\b/i, /\bhuman coach(?:es)?\b/i],
-    patternsAr: [/كوتشينج اونلاين/, /مدرب بشري/, /مدربين معتمدين/],
+    patternsEn: [/\bonline (?:fitness|nutrition) coaching\b/i, /\b(?:human|personal) coach(?:es)?\b/i],
+    patternsAr: [/كوتشينج اونلاين/, /مدرب بشري/, /مدرب خاص/, /مدربين معتمدين/],
   },
   {
     id: "meal-planner",

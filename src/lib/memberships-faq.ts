@@ -38,7 +38,7 @@ export const MEMBERSHIPS_FAQ: Record<"en" | "ar", MembershipsFaqItem[]> = {
     },
     {
       q: "Is coaching included in Pro?",
-      a: "No, coaching is completely separate from memberships. Pro gives you platform features, coaching gives you a human coach.",
+      a: "No, coaching is completely separate from memberships. Pro gives you platform features, coaching gives you a personal coach.",
     },
     {
       q: "Is there a free trial?",
@@ -78,7 +78,7 @@ export const MEMBERSHIPS_FAQ: Record<"en" | "ar", MembershipsFaqItem[]> = {
       // matching the answer below and every other Arabic surface (the
       // audit's Latin-mixing law أ-2). EN twin untouched.
       q: "هل التدريب الأونلاين مشمول في برو؟",
-      a: "لا — التدريب الأونلاين خدمة منفصلة تمامًا عن العضويات: برو يمنحك مزايا المنصة كاملة، والتدريب الأونلاين يضيف إليها مدربًا بشريًا يتابعك شخصيًا (ويشمل كل مزايا برو).",
+      a: "لا — التدريب الأونلاين خدمة منفصلة تمامًا عن العضويات: برو يمنحك مزايا المنصة كاملة، والتدريب الأونلاين يضيف إليها مدربًا خاصًا يتابعك شخصيًا (ويشمل كل مزايا برو).",
     },
     {
       q: "هل توجد تجربة مجانية؟",

@@ -47,7 +47,7 @@ import {
  *   4) AI PLANNING IS DISTINCT — #plan carries the three AI surfaces
  *      (AI Workout Planner · AI Meal Planner · EVO), every card
  *      explicitly AI-powered, the meal card promising quantities in
- *      grams (not mere suggestions), and NO human-coaching service
+ *      grams (not mere suggestions), and NO personal-coaching service
  *      reference inside the region.
  *   5) THE NUTRITION TRIO IS DIFFERENTIATED — the manual Meal Planner
  *      («ابنِها بنفسك»), the AI Meal Planner (AI section), and the
@@ -266,11 +266,11 @@ describe("HOME-PLATFORM-284 — the platform homepage canaries", () => {
   //     visually heavier, explicitly AI-powered, with FILLED chrome CTA
   //     buttons — the meal card promises a STRUCTURED full-day plan with
   //     portions in grams, not mere suggestions) + EVO as the full-width
-  //     AI-coach band with the chat-surface law, and NO human-coaching
+  //     AI-coach band with the chat-surface law, and NO personal-coaching
   //     service inside. The honest free-allowance band moved to JUST
   //     BEFORE the section (the 285 owner order — it introduces the AI
   //     planners).
-  it("the #plan section carries the strong AI cards + EVO, clean of human-coaching services; the allowance band introduces the section", () => {
+  it("the #plan section carries the strong AI cards + EVO, clean of personal-coaching services; the allowance band introduces the section", () => {
     const src = readFileSync(LANDING, "utf8");
     const islands = readFileSync(ISLANDS, "utf8");
     const copy = readFileSync(COPY_HOME, "utf8");
@@ -338,7 +338,7 @@ describe("HOME-PLATFORM-284 — the platform homepage canaries", () => {
     expect(readAll()).not.toContain('href="/chat"');
     expect(readAll()).not.toContain('"/chat"');
     // REGION LAW (284): the #plan region carries the AI family and NO
-    // human-coaching service (coaching is a separate paid membership —
+    // personal-coaching service (coaching is a separate paid membership —
     // EVO's «مدربك الذكي» is the AI coach, allowed by design).
     // SEO-P1-6 re-pin: the region now ends at the meander divider (the
     // #learn wrapper moved into the BlogSection island), and EvoCard's

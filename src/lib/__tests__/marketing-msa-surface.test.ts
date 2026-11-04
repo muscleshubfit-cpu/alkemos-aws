@@ -557,14 +557,14 @@ describe("marketing-surface MSA (Phase 178 — §12.42)", () => {
       "alkemos-vs-exrx": "2026-09-15",
       "alkemos-vs-cronometer": "2026-09-30",
     };
-    // Every comparison covers the human-coaching + affiliate services of
+    // Every comparison covers the personal-coaching + affiliate services of
     // Alkemos (2026-09-15 owner directive — service coverage), and every
     // table row carries bilingual cells (the AR pages render the Ar fields).
     const { COMPARISONS } = await import("@/lib/comparisons");
     for (const c of COMPARISONS) {
       expect(
-        c.rows.some((r) => r.labelEn === "Human coaching" && r.alkemosValue.length > 0),
-        `${c.slug}: missing the Human coaching row`,
+        c.rows.some((r) => r.labelEn === "Personal coaching" && r.alkemosValue.length > 0),
+        `${c.slug}: missing the Personal coaching row`,
       ).toBe(true);
       expect(
         c.rows.some((r) => r.labelEn === "Affiliate program"),
@@ -675,13 +675,13 @@ describe("marketing-surface MSA (Phase 178 — §12.42)", () => {
     const workoutPrograms = readFileSync("src/lib/workout-programs.ts", "utf8");
     expect(workoutPrograms).toContain('gym: { ar: "النادي الرياضي"');
     const faqJsonld = readFileSync("src/lib/faq-content.ts", "utf8");
-    expect(faqJsonld).toContain("اشتراك تدريب أونلاين مع مدرب بشري منفصل يمكنك الانضمام إليه");
+    expect(faqJsonld).toContain("اشتراك تدريب أونلاين مع مدرب خاص منفصل يمكنك الانضمام إليه");
     expect(faqJsonld).toContain("coaching subscription you can join");
     // Content-strategy v1 (2026-09-20): the FAQ visible copy is DERIVED
     // from faq-content.ts (single source with the JSON-LD) — the visible
     // pins therefore target the same module, plus the derivation itself.
     const faqVisible = readFileSync("src/lib/faq-content.ts", "utf8");
-    expect(faqVisible).toContain('q: "هل يوجد مدرب بشري؟"');
+    expect(faqVisible).toContain('q: "هل يوجد مدرب خاص؟"');
     expect(faqVisible).toContain('q: "ما هو EVO؟"');
     const staticView = readFileSync(
       "src/components/views/StaticPageView.tsx",
