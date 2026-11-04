@@ -123,9 +123,9 @@ export const HOME_COPY_GROUPS: HomeCopyGroup[] = [
         labelEn: "Subtitle paragraph",
         labelAr: "الفقرة التمهيدية",
         defaultEn:
-          "The all-in-one platform for your workouts, nutrition, and exact macro targets — powered by EVO, your 24/7 AI coach who helps you and keeps adjusting your plan — in Arabic and English.",
+          "You know your goal — the missing part is a plan that actually fits it. Alkemos builds your weekly workouts and your full day of meals around your body, your gear, and your kitchen, with exact macros in grams — and EVO, your AI coach, keeps adjusting the plan whenever life does — in Arabic and English.",
         defaultAr:
-          "منصة متكاملة تجمع تمارينك، وتغذيتك، وأهدافك الدقيقة من الماكروز — ومعها EVO، مدربك الذكي على مدار الساعة لمساعدتك وتعديل خطتك باستمرار — بالعربية والإنجليزية.",
+          "تعرف هدفك، والناقص خطة تناسبه فعلًا: Alkemos يبني تمارينك الأسبوعية ووجبات يومك الكامل حول جسمك ومعداتك ومطبخك، بماكروز دقيقة بالغرامات — ويظل EVO، مدربك الذكي، يعدّل خطتك كلما تغيرت ظروفك — بالعربية والإنجليزية.",
       },
       {
         prop: "heroPillTraining",
@@ -425,9 +425,9 @@ export const HOME_COPY_GROUPS: HomeCopyGroup[] = [
         labelEn: "Section paragraph",
         labelAr: "فقرة القسم",
         defaultEn:
-          "The free tier is permanent for all core tools — upgrade only when you need higher allowances and advanced features.",
+          "Start free — the Free tier is permanent, not a trial. When your training becomes consistent and you need more plans, weekly adaptation, and full exports, the tiers grow with you: Premium to manage your plans, Pro to adapt & optimize them — no ads.",
         defaultAr:
-          "المستوى المجاني دائم لكافة الأدوات — والترقية اختيارية حين ترغب في سعات أوسع ومزايا متقدمة.",
+          "ابدأ مجانًا — المجاني دائم وليس تجربة مؤقتة. وحين ينتظم تدريبك وتحتاج خططًا أكثر وتكييفًا أسبوعيًا وتصديرًا كاملًا، تتسع الباقات معك: بريميوم لإدارة خططك، وبرو لتكييفها وتحسينها — بلا إعلانات.",
       },
     ],
   },
@@ -451,9 +451,9 @@ export const HOME_COPY_GROUPS: HomeCopyGroup[] = [
         labelEn: "Band paragraph",
         labelAr: "فقرة الشريط",
         defaultEn:
-          "A dedicated certified coach builds your training and nutrition plans, tracks your weekly progress, and stays in direct contact — with all Pro features included.",
+          "A dedicated certified coach builds your training and nutrition plans, reads your numbers every week, and adjusts your course around your real life — travel, kitchen, and schedule — with all Pro features included.",
         defaultAr:
-          "مدرب شخصي معتمد يصمم خطتك التدريبية والغذائية، ويتابع تقدمك أسبوعياً، مع تواصل مباشر ومستمر — شاملاً جميع مزايا باقة برو.",
+          "مدرب معتمد مخصص لك يبني خطط تدريبك وتغذيتك، ويقرأ أرقامك كل أسبوع، ويعدّل مسارك حول حياتك الفعلية — سفرك ومطبخك وجدولك — شاملًا كل مزايا برو.",
       },
       {
         prop: "coachingCta",

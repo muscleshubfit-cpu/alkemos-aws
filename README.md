@@ -57,7 +57,15 @@ the section's single dark highlighted card — each tier carries a
 clear visible CTA (`.btn-outline` on the light cards,
 `.btn-outline-dark` on the dark Pro card), plus one online-coaching
 card. The FAQ closes the page as a directly-visible grid of Q&A
-cards (no accordion). Motion is once-only, transform/opacity-only,
+cards (no accordion). **CONVERSION-2026 (owner order 2026-11-04 —
+the competitor-study copy pass, `docs/CONVERSION-COMPETITOR-STUDY-2026-11-04.md`):**
+the hero SUBTITLE, the memberships-section body, and the coaching
+band body open with the buyer's felt problem and close with the
+progression ladder (registry: `src/lib/site-content/home.ts`), the
+Premium/Pro tier rows state the paid delta more concretely (synced
+chat history · 6 weekly swaps), and the refund line under the
+memberships cards adds the no-auto-renewal fact — copy-only, prices
+and limits untouched. Motion is once-only, transform/opacity-only,
 and fully `prefers-reduced-motion`-safe (DESIGN.md §7.1.2/§7.4.2) —
 and the HERO is fully static (HOME-REFINE-286: no animated diagram,
 no entrance beats, no arrows on its CTAs).
@@ -122,7 +130,16 @@ Prices, quotas, and tier features are defined in a single source:
 `src/lib/memberships.ts` + the quota engine `src/lib/tier-limits.ts`
 (the aggregate resolver: `src/lib/membership-tier.ts`).
 Every paid tier carries a 7-day conditional refund (no-features-used,
-ledger-based — `src/lib/refund.ts`).
+ledger-based — `src/lib/refund.ts`). **CONVERSION-2026 (owner order
+2026-11-04):** the memberships page sells the paid tiers with a
+problem-first hero, a trust strip directly under the pricing grid
+(no auto-renewal · cancel anytime · 7-day refund — real policies),
+and a "What a subscription actually adds" bridge section (4 cards:
+plan pool 2/4/8 · weekly swaps 3/6 · saves 3→50→200 & 1→10→50 ·
+ad-free from Pro) before the persona cards — every number derives
+from `memberships.ts`; the coaching page pairs its problem-first
+hero with the honest Pro-difference price anchor and risk terms
+under the checkout CTA (study: `docs/CONVERSION-COMPETITOR-STUDY-2026-11-04.md`).
 
 ### Notifications (member bell + staff bell)
 - **Member bell** (`src/components/NotificationBell.tsx`) — per-user rows in

@@ -176,9 +176,14 @@ export default function CoachingPage() {
               />
             </div>
             <p className="mx-auto mt-8 max-w-xl text-lg font-normal leading-snug text-[var(--muted-foreground)] md:text-xl">
+              {/* CONVERSION-2026 (competitor study §2 — Trainwell's problem-
+                  first hero): the buyer's felt problem (generic plans that
+                  fit everyone and follow no one) opens the pitch; the
+                  solution (certified human coach + EVO) answers it.
+                  Copy-only, claims unchanged. */}
               {isAr
-                ? "خطط تغذية مخصصة، برامج تمارين متكيفة، متابعة شخصية، ومحرك ذكاء اصطناعي (EVO) متاح على مدار الساعة."
-                : "Personalized nutrition plans, adaptive workout programs, personal follow-up, and an AI engine (EVO) available 24/7."}
+                ? "الخطط الجاهزة تناسب الجميع ولا تتابع أحدًا. هنا مدرب بشري معتمد يبني خطتك ويتابع أرقامك أسبوعيًا — ومعه EVO للإجابة والتكييف على مدار الساعة."
+                : "Generic plans fit everyone and follow no one. Here, a certified human coach builds your plan and checks your numbers weekly — with EVO answering and adapting around the clock."}
             </p>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
               <button
@@ -471,7 +476,14 @@ export default function CoachingPage() {
             </Reveal>
             <Reveal delay={150}>
               <p className="mx-auto mt-4 max-w-xl text-center text-lg font-normal text-[var(--muted-foreground)] md:text-xl">
-                {isAr ? "$39.99 شهريًا، وتشمل كل مميزات Pro مع متابعة المدرب." : "$39.99/month, including every Pro feature plus your coach's follow-up."}
+                {/* CONVERSION-2026 (competitor study §5 — the MyFitnessPal
+                    cost-anchor pattern, honestly): coaching = every Pro
+                    feature + the human coach. $39.99 − $29.99 = $10/month
+                    is direct arithmetic from memberships.ts (no multiplier
+                    phrasing, the 2026-09-13 owner directive). */}
+                {isAr
+                  ? "$39.99 شهريًا، وتشمل كل مميزات Pro مع متابعة المدرب — الفرق عن باقة برو: 10 دولارات شهريًا مقابل مدرب بشري يقرأ أرقامك ويعدّل خطتك."
+                  : "$39.99/month, including every Pro feature plus your coach's follow-up — the difference from Pro: $10 a month for a human coach who reads your numbers and adjusts your plan."}
               </p>
             </Reveal>
             {/* PHASE 68 (owner-approved): the legacy Starter $20 / Elite $40
@@ -517,6 +529,15 @@ export default function CoachingPage() {
                   >
                     {isAr ? "ابدأ الآن" : "Get Started"}
                   </button>
+                  {/* CONVERSION-2026 (competitor study §4): the REAL risk
+                      terms surfaced beside the money moment — no
+                      auto-renewal + the honest 7-day conditional refund
+                      (refund.ts). Same facts the memberships FAQ states. */}
+                  <p className="mt-3 text-center text-xs font-normal leading-relaxed opacity-60">
+                    {isAr
+                      ? "بدون تجديد تلقائي · استرداد كامل خلال 7 أيام ما لم تُستخدم المزايا المدفوعة"
+                      : "No auto-renewal · Full refund within 7 days if no paid features were used"}
+                  </p>
                   <a
                     href={isAr ? "/ar/memberships" : "/memberships"}
                     className="mt-4 block text-center text-sm font-normal opacity-60 transition-opacity hover:opacity-90"

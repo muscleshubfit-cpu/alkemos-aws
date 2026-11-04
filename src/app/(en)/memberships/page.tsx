@@ -53,15 +53,19 @@ export default function MembershipsPage({ lang: langProp }: { lang?: Lang } = {}
 
         {/* Hero — the Free → Paid positioning ladder (owner directive
             2026-09-13): Free = Experience → Premium = Manage → Pro =
-            Adapt & Optimize → Coaching = Human Coach + AI. Copy-only. */}
+            Adapt & Optimize → Coaching = Human Coach + AI. Copy-only.
+            CONVERSION-2026 (competitor study §2): opens with the buyer's
+            felt problem (a generic template that doesn't know their body
+            or week) before the ladder — the Trainwell/Freeletics arc
+            (problem → solution → progression), copy-only. */}
         <div className="text-center">
           <h1 className="text-3xl font-semibold tracking-tight md:text-5xl">
             {isAr ? "عضويات Alkemos" : "Alkemos Memberships"}
           </h1>
-          <p className="mx-auto mt-3 max-w-md text-base font-normal text-[var(--muted-foreground)] md:text-lg">
+          <p className="mx-auto mt-3 max-w-2xl text-base font-normal text-[var(--muted-foreground)] md:text-lg">
             {isAr
-              ? "استخدم المنصة مجانًا مع مجموعة كاملة من الأدوات الأساسية. ثم ارتقِ عندما يكبر استخدامك: بريميوم لإدارة خططك وحفظها، وبرو لتكييفها وتحسينها، والتدريب الأونلاين عندما تريد مدربًا بشريًا يعمل معك، إلى جانب قوة الذكاء الاصطناعي."
-              : "Use the platform free with a full set of essential tools. Upgrade when your usage grows: Premium to manage your plans, Pro to adapt & optimize them, Coaching when you want a human coach working with you, alongside the full power of AI."}
+              ? "الخطط الجاهزة لا تعرف جسمك ولا جدولك — لهذا يبني Alkemos خطتك أنت. ابدأ مجانًا بمجموعة كاملة من الأدوات الأساسية، وارتقِ عندما يكبر استخدامك: بريميوم لإدارة خططك وحفظها، وبرو لتكييفها وتحسينها، والتدريب الأونلاين عندما تريد مدربًا بشريًا يعمل معك إلى جانب قوة الذكاء الاصطناعي."
+              : "Generic templates don't know your body or your week — that's why Alkemos builds YOUR plan. Start free with a full set of essential tools, then upgrade as your usage grows: Premium to manage your plans, Pro to adapt & optimize them, Coaching when you want a human coach working with you alongside the full power of AI."}
           </p>
         </div>
 
@@ -207,6 +211,18 @@ export default function MembershipsPage({ lang: langProp }: { lang?: Lang } = {}
           })}
         </div>
 
+        {/* CONVERSION-2026 (competitor study §4 — MFP/Trainwell/Ladder all
+            surface trial/refund/cancel terms directly under the pricing
+            grid): Alkemos states its REAL policies here — no invented
+            trial. No auto-renewal (checkout writes one-period rows; the
+            memberships FAQ below documents it), cancel from the account
+            page, and the honest 7-day conditional refund (refund.ts). */}
+        <p className="mx-auto mt-6 max-w-2xl text-center text-sm font-medium leading-relaxed text-[var(--muted-foreground)]">
+          {isAr
+            ? "بدون تجديد تلقائي — تدفع مرة واحدة وتجدد فقط إن أردت · الإلغاء في أي وقت من صفحة حسابك · استرداد كامل خلال 7 أيام ما لم تُستخدم المزايا المدفوعة"
+            : "No auto-renewal — you pay once and renew only if you choose · Cancel anytime from your account page · Full refund within 7 days if no paid features were used"}
+        </p>
+
         {/* No-signup trial + UNIFIED SAVE LADDER (owner directive
             2026-09-13): the AI pool is visible as a core free experience,
             the save story is the same three-step ladder everywhere (no
@@ -219,6 +235,69 @@ export default function MembershipsPage({ lang: langProp }: { lang?: Lang } = {}
             ? "يمكنك تجربة توليد خطط الذكاء الاصطناعي فورًا: بدون حساب تبقى خطتك على جهازك، وبحساب مجاني تُحفظ دائمًا في حسابك وتتزامن عبر أجهزتك، ومع الباقات المدفوعة تحصل على إدارة أوسع ومزايا إضافية حسب باقتك."
             : "You can try AI plan generation instantly: no account keeps your plan on this device, a free account saves it permanently in your account & syncs it across your devices, and paid tiers add broader management and extra benefits per plan."}
         </p>
+
+        {/* CONVERSION-2026 (competitor study §3 — the Freeletics/MyFitnessPal
+            free-vs-paid tables): the "why paid at all?" bridge the buyer
+            needs between the pricing grid and the persona cards. Four REAL
+            paid deltas, every number against memberships.ts (unified pool
+            2/4/8 · swaps 3/6 weekly paid · saved results 3/50/200 ·
+            meal-planner saves 1/10/50 · ads Free+Premium only — Pro and
+            Coaching ad-free). Direct numbers only (the 2026-09-13 owner
+            directive — no multiplier phrasing). Copy-only. */}
+        <section className="mt-12">
+          <h2 className="text-center text-2xl font-semibold tracking-tight md:text-3xl">
+            {isAr ? "ما الذي يضيفه الاشتراك فعلًا؟" : "What a subscription actually adds"}
+          </h2>
+          <p className="mx-auto mt-3 max-w-2xl text-center text-sm font-normal leading-relaxed text-[var(--muted-foreground)]">
+            {isAr
+              ? "المجاني كامل ويبقى مجانيًا — والاشتراك يوسّع أربع قدرات محددة، بأرقامها كما هي:"
+              : "Free is complete and stays free — a subscription widens four specific capacities, with their exact numbers:"}
+          </p>
+          <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {[
+              {
+                icon: "macros",
+                titleAr: "خطط أكثر كل شهر",
+                titleEn: "More plans every month",
+                bodyAr: "رصيد الخطط الذكية (تغذية وتمارين معًا) ينتقل من 2 في المجاني إلى 4 مع بريميوم و8 مع برو.",
+                bodyEn: "Your unified AI-plan pool (nutrition + workout combined) grows from 2 on Free to 4 with Premium and 8 with Pro.",
+              },
+              {
+                icon: "runner",
+                titleAr: "تكييف أسبوعي لخطتك",
+                titleEn: "Weekly plan adaptation",
+                bodyAr: "تبديلات EVO للوجبات والتمارين داخل خطتك: 3 أسبوعيًا مع بريميوم و6 مع برو — تتطور مع تقدمك بدل البدء من الصفر.",
+                bodyEn: "EVO meal & exercise swaps inside your plan: 3 per week with Premium, 6 with Pro — it evolves with your progress instead of starting over.",
+              },
+              {
+                icon: "scroll",
+                titleAr: "ملكية كاملة لعملك",
+                titleEn: "Full ownership of your work",
+                bodyAr: "تصدير كامل لنتائجك وخططك، وسعة حفظ تتوسع: نتائج الأدوات من 3 إلى 50 ثم 200، وجداول الوجبات من 1 إلى 10 ثم 50.",
+                bodyEn: "Full export of your results and plans, with capacity that grows: tool results from 3 to 50 then 200, meal-planner saves from 1 to 10 then 50.",
+              },
+              {
+                icon: "laurel",
+                titleAr: "تركيز بلا إعلانات",
+                titleEn: "Focus, ad-free",
+                bodyAr: "من برو فما فوق تختفي الإعلانات نهائيًا — تجربة صافية وأنت تولّد خططك وتتابع تقدمك.",
+                bodyEn: "From Pro upward, ads disappear entirely — a clean experience while you generate plans and track progress.",
+              },
+            ].map((card) => (
+              <div key={card.titleEn} className="marble-card flex h-full flex-col p-5 text-start">
+                <span className="grid h-11 w-11 place-items-center rounded-full border border-[var(--edge)] bg-[var(--tint)]">
+                  <EngravedIcon name={card.icon} alt="" size={22} className="h-[22px] w-[22px]" />
+                </span>
+                <h3 className="mt-4 text-base font-semibold tracking-tight">
+                  {isAr ? card.titleAr : card.titleEn}
+                </h3>
+                <p className="mt-2 text-sm font-normal leading-relaxed text-[var(--muted-foreground)]">
+                  {isAr ? card.bodyAr : card.bodyEn}
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
 
         {/* PRIORITY-PAGES Implementation 3 (2026-10-19, audit §C-1 +
             Improvement 3 — owner-approved frame): "Which plan fits you?" —

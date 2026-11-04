@@ -1117,8 +1117,8 @@ export function LandingView({ samples, content, isAr }: { samples: HomeSamples; 
                 <TierFeatureRows
                   rows={
                     isAr
-                      ? ["كل مزايا المستوى المجاني", "EVO بلا حدود ومحادثة متزامنة", "4 خطط شهريًا وتصدير كامل"]
-                      : ["Everything in the Free tier", "Unlimited EVO, synced chat", "4 plans a month, full export"]
+                      ? ["كل مزايا المستوى المجاني", "EVO بلا حدود وسجل محادثتك متزامن عبر أجهزتك", "4 خطط شهريًا، تصدير كامل، وسعة حفظ أكبر"]
+                      : ["Everything in the Free tier", "Unlimited EVO, chat history synced across devices", "4 plans a month, full export, bigger saves"]
                   }
                 />
                 <a href={isAr ? "/ar/memberships" : "/memberships"} className="btn-outline mt-4 w-full px-6 py-2.5 text-sm font-medium">
@@ -1156,8 +1156,8 @@ export function LandingView({ samples, content, isAr }: { samples: HomeSamples; 
                     pinDark
                     rows={
                       isAr
-                        ? ["كل مزايا البريميوم", "8 خطط شهريًا", "تجربة بلا إعلانات"]
-                        : ["Everything in Premium", "8 plans a month", "Ad-free experience"]
+                        ? ["كل مزايا البريميوم", "8 خطط شهريًا و6 تبديلات أسبوعية", "تجربة بلا إعلانات"]
+                        : ["Everything in Premium", "8 plans a month + 6 weekly swaps", "Ad-free experience"]
                     }
                   />
                   <a
@@ -1212,8 +1212,8 @@ export function LandingView({ samples, content, isAr }: { samples: HomeSamples; 
               conditional, no-features-used). */}
           <p className="mx-auto mt-6 max-w-2xl text-center text-xs font-normal leading-relaxed" style={{ color: PALETTE.textMuted }}>
             {isAr
-              ? "كل باقة مدفوعة تشمل حق الاسترداد خلال 7 أيام — إن لم تستخدم المزايا المدفوعة، يُعاد إليك المبلغ."
-              : "Every paid plan carries a 7-day refund — if you haven't used the paid features, you get your money back."}
+              ? "كل باقة مدفوعة تشمل حق الاسترداد خلال 7 أيام — إن لم تستخدم المزايا المدفوعة، يُعاد إليك المبلغ. ولا خصم تلقائي: تدفع مرة واحدة، وتجدد فقط إن أردت."
+              : "Every paid plan carries a 7-day refund — if you haven't used the paid features, you get your money back. And there's no auto-renewal: you pay once, and renew only if you choose to."}
           </p>
         </div>
       </section>
