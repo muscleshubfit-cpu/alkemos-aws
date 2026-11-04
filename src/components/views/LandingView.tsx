@@ -995,7 +995,7 @@ export function LandingView({ samples, content, isAr }: { samples: HomeSamples; 
                 title={isAr ? "مخطط التمارين بالذكاء الاصطناعي" : "AI Workout Planner"}
                 body={
                   isAr
-                    ? "نظام تدريبي أسبوعي كامل يُبنى لك: تمارين محددة من المكتبة بمجموعاتها وتكراراتها، وفق هدفك ومستواك وأيامك ومعداتك — يتولد في ثوانٍ."
+                    ? "نظام تدريبي أسبوعي كامل يُبنى لك أنت: تمارين مسماة من المكتبة بمجموعاتها وتكراراتها، وفق هدفك ومستواك وأيامك ومعداتك المتاحة — يصلك في ثوانٍ."
                     : "A complete weekly split built for you: named exercises from the library with sets and reps, matched to your goal, level, days, and equipment — generated in seconds."
                 }
                 cta={isAr ? "أنشئ خطة التمارين" : "Create my workout plan"}
@@ -1012,7 +1012,7 @@ export function LandingView({ samples, content, isAr }: { samples: HomeSamples; 
                 title={isAr ? "مخطط الوجبات بالذكاء الاصطناعي" : "AI Meal Planner"}
                 body={
                   isAr
-                    ? "خطة يوم كاملة منظمة، وليست مجرد اقتراحات وجبات: كل وجبة بأصنافها المحددة وكمياتها بالغرامات وسعراتها المحسوبة — تتولد في ثوانٍ وفق هدفك ونظامك الغذائي."
+                    ? "خطة يوم كاملة منظمة، وليست مجرد اقتراحات وجبات: كل وجبة بأصنافها المحددة وكمياتها بالغرامات وسعراتها المحسوبة — وفق هدفك ونظامك الغذائي، في ثوانٍ."
                     : "A structured full-day plan, not just meal suggestions: every meal with its specific foods, portions in grams, and calculated calories — generated in seconds around your goal and diet system."
                 }
                 cta={isAr ? "أنشئ خطتي" : "Create My Plan"}
@@ -1117,7 +1117,7 @@ export function LandingView({ samples, content, isAr }: { samples: HomeSamples; 
                 <TierFeatureRows
                   rows={
                     isAr
-                      ? ["كل مزايا المستوى المجاني", "EVO بلا حدود وسجل محادثتك متزامن عبر أجهزتك", "4 خطط شهريًا، تصدير كامل، وسعة حفظ أكبر"]
+                      ? ["كل مزايا المستوى المجاني", "EVO بلا حدود، وسجل محادثتك متزامن عبر أجهزتك", "4 خطط شهريًا، تصدير كامل، وسعة حفظ أكبر"]
                       : ["Everything in the Free tier", "Unlimited EVO, chat history synced across devices", "4 plans a month, full export, bigger saves"]
                   }
                 />
@@ -1209,10 +1209,12 @@ export function LandingView({ samples, content, isAr }: { samples: HomeSamples; 
           </Reveal>
 
           {/* The REAL refund policy, stated as fact (refund.ts: 7-day
-              conditional, no-features-used). */}
+              conditional, no-features-used). AR-COPY-REWRITE-287: the
+              Arabic rides the same facts in native phrasing — the
+              «الاسترداد خلال 7 أيام» substring stays pinned. */}
           <p className="mx-auto mt-6 max-w-2xl text-center text-xs font-normal leading-relaxed" style={{ color: PALETTE.textMuted }}>
             {isAr
-              ? "كل باقة مدفوعة تشمل حق الاسترداد خلال 7 أيام — إن لم تستخدم المزايا المدفوعة، يُعاد إليك المبلغ. ولا خصم تلقائي: تدفع مرة واحدة، وتجدد فقط إن أردت."
+              ? "كل باقة مدفوعة تشمل الاسترداد خلال 7 أيام — إن لم تستخدم المزايا المدفوعة، يُعاد إليك مبلغك كاملًا. ولا خصم تلقائي: تدفع مرة واحدة، ولا يتجدد اشتراكك إلا برغبتك."
               : "Every paid plan carries a 7-day refund — if you haven't used the paid features, you get your money back. And there's no auto-renewal: you pay once, and renew only if you choose to."}
           </p>
         </div>

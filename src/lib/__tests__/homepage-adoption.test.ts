@@ -312,8 +312,11 @@ describe("HOME-PLATFORM-284 — the platform homepage canaries", () => {
     // to IMMEDIATELY BEFORE the section — it introduces the AI planners).
     // HOME-REFINE-286: the owner dictated the EXACT new wording — the
     // free monthly quota is now explicitly AI-plan generation.
+    // AR-COPY-REWRITE-287 (2026-11-04): the Arabic pin follows the
+    // re-authored native-MSA wording (same verified fact — a free
+    // monthly AI-plan allowance for every visitor).
     // The text lives in the registry; the band renders before #plan.
-    expect(readBoth()).toContain("كل زائر يملك رصيدًا شهريًا مجانيًا لتوليد الخطط بالذكاء الاصطناعي");
+    expect(readBoth()).toContain("لكل زائر رصيد شهري مجاني لتوليد خطط الذكاء الاصطناعي");
     expect(readBoth()).toContain("monthly free allowance for AI-generated plans");
     expect(readBoth()).toContain("توليد بالذكاء الاصطناعي");
     expect(readBoth()).toContain("AI GENERATION");

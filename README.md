@@ -65,7 +65,12 @@ progression ladder (registry: `src/lib/site-content/home.ts`), the
 Premium/Pro tier rows state the paid delta more concretely (synced
 chat history · 6 weekly swaps), and the refund line under the
 memberships cards adds the no-auto-renewal fact — copy-only, prices
-and limits untouched. Motion is once-only, transform/opacity-only,
+and limits untouched. **AR-COPY-REWRITE-287 (owner order 2026-11-04 —
+the native-Arabic re-editing pass, `docs/AR-COPY-REWRITE-2026-11-04.md`):**
+every AR default in the registry was re-authored as original Pan-Arab
+MSA (never a literal translation of the EN twin), and the AR hero
+subtitle is a wholesome PLATFORM INTRODUCTION by the owner's correction
+(zero tier names in the hero region) — EN twins untouched byte-for-byte. Motion is once-only, transform/opacity-only,
 and fully `prefers-reduced-motion`-safe (DESIGN.md §7.1.2/§7.4.2) —
 and the HERO is fully static (HOME-REFINE-286: no animated diagram,
 no entrance beats, no arrows on its CTAs).
@@ -139,7 +144,10 @@ plan pool 2/4/8 · weekly swaps 3/6 · saves 3→50→200 & 1→10→50 ·
 ad-free from Pro) before the persona cards — every number derives
 from `memberships.ts`; the coaching page pairs its problem-first
 hero with the honest Pro-difference price anchor and risk terms
-under the checkout CTA (study: `docs/CONVERSION-COMPETITOR-STUDY-2026-11-04.md`).
+under the checkout CTA (study: `docs/CONVERSION-COMPETITOR-STUDY-2026-11-04.md`);
+the AR copy on all three pages is native re-authored MSA with the
+«توليدات» pseudo-plural gone from the membership feature labels
+(AR copy report: `docs/AR-COPY-REWRITE-2026-11-04.md`).
 
 ### Notifications (member bell + staff bell)
 - **Member bell** (`src/components/NotificationBell.tsx`) — per-user rows in

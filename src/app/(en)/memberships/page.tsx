@@ -37,8 +37,8 @@ export default function MembershipsPage({ lang: langProp }: { lang?: Lang } = {}
 
   const ctaLabel = (tierId: MembershipTier, isAr: boolean) => {
     if (tierId === "free") {
-      if (profile) return isAr ? "اذهب لصفحتك" : "Go to your profile";
-      return isAr ? "ابدأ التجربة مجانًا" : "Start free";
+      if (profile) return isAr ? "اذهب إلى صفحتك" : "Go to your profile";
+      return isAr ? "ابدأ مجانًا" : "Start free";
     }
     return isAr ? "اشترك الآن" : "Subscribe now";
   };
@@ -63,8 +63,12 @@ export default function MembershipsPage({ lang: langProp }: { lang?: Lang } = {}
             {isAr ? "عضويات Alkemos" : "Alkemos Memberships"}
           </h1>
           <p className="mx-auto mt-3 max-w-2xl text-base font-normal text-[var(--muted-foreground)] md:text-lg">
+            {/* AR-COPY-REWRITE-287 (owner order 2026-11-04 «إعادة تحرير
+                المحتوى العربي»): native MSA re-authoring of the same
+                problem-first ladder (CONVERSION-2026 D1+D2 kept) — EN twin
+                untouched. */}
             {isAr
-              ? "الخطط الجاهزة لا تعرف جسمك ولا جدولك — لهذا يبني Alkemos خطتك أنت. ابدأ مجانًا بمجموعة كاملة من الأدوات الأساسية، وارتقِ عندما يكبر استخدامك: بريميوم لإدارة خططك وحفظها، وبرو لتكييفها وتحسينها، والتدريب الأونلاين عندما تريد مدربًا بشريًا يعمل معك إلى جانب قوة الذكاء الاصطناعي."
+              ? "الخطة الجاهزة لا تعرف جسمك ولا جدول أسبوعك — Alkemos يبني خطتك على مقاسك: هدفك، وزنك، معداتك، ومطبخك. ابدأ بالمجاني الدائم، وارتقِ حين يكبر استخدامك: بريميوم لإدارة خططك، وبرو لتكييفها أسبوعيًا، والتدريب الأونلاين حين تريد مدربًا بشريًا يرافقك إلى جانب قوة الذكاء الاصطناعي."
               : "Generic templates don't know your body or your week — that's why Alkemos builds YOUR plan. Start free with a full set of essential tools, then upgrade as your usage grows: Premium to manage your plans, Pro to adapt & optimize them, Coaching when you want a human coach working with you alongside the full power of AI."}
           </p>
         </div>
@@ -219,7 +223,7 @@ export default function MembershipsPage({ lang: langProp }: { lang?: Lang } = {}
             page, and the honest 7-day conditional refund (refund.ts). */}
         <p className="mx-auto mt-6 max-w-2xl text-center text-sm font-medium leading-relaxed text-[var(--muted-foreground)]">
           {isAr
-            ? "بدون تجديد تلقائي — تدفع مرة واحدة وتجدد فقط إن أردت · الإلغاء في أي وقت من صفحة حسابك · استرداد كامل خلال 7 أيام ما لم تُستخدم المزايا المدفوعة"
+            ? "لا تجديد تلقائي — تدفع مرة واحدة، ولا يتجدد اشتراكك إلا برغبتك · إلغاء في أي وقت من صفحة حسابك · استرداد كامل خلال 7 أيام ما لم تُستخدم المزايا المدفوعة"
             : "No auto-renewal — you pay once and renew only if you choose · Cancel anytime from your account page · Full refund within 7 days if no paid features were used"}
         </p>
 
@@ -232,7 +236,7 @@ export default function MembershipsPage({ lang: langProp }: { lang?: Lang } = {}
             save limits. Copy-only. */}
         <p className="mx-auto mt-8 max-w-2xl text-center text-sm font-normal text-[var(--muted-foreground)]">
           {isAr
-            ? "يمكنك تجربة توليد خطط الذكاء الاصطناعي فورًا: بدون حساب تبقى خطتك على جهازك، وبحساب مجاني تُحفظ دائمًا في حسابك وتتزامن عبر أجهزتك، ومع الباقات المدفوعة تحصل على إدارة أوسع ومزايا إضافية حسب باقتك."
+            ? "جرّب توليد الخطط بالذكاء الاصطناعي فورًا ومن دون حساب — خطتك تبقى على جهازك. وأنشئ حسابًا مجانيًا لتحفظ خططك للأبد وتتزامن عبر أجهزتك. ومع الباقات المدفوعة تتوسع الإدارة والسعات والتصدير بحسب باقتك."
             : "You can try AI plan generation instantly: no account keeps your plan on this device, a free account saves it permanently in your account & syncs it across your devices, and paid tiers add broader management and extra benefits per plan."}
         </p>
 
@@ -259,28 +263,28 @@ export default function MembershipsPage({ lang: langProp }: { lang?: Lang } = {}
                 icon: "macros",
                 titleAr: "خطط أكثر كل شهر",
                 titleEn: "More plans every month",
-                bodyAr: "رصيد الخطط الذكية (تغذية وتمارين معًا) ينتقل من 2 في المجاني إلى 4 مع بريميوم و8 مع برو.",
+                bodyAr: "رصيدك الشهري من الخطط الذكية — تغذية وتمارين من رصيد واحد — يتوسع من 2 في المجاني إلى 4 مع بريميوم و8 مع برو.",
                 bodyEn: "Your unified AI-plan pool (nutrition + workout combined) grows from 2 on Free to 4 with Premium and 8 with Pro.",
               },
               {
                 icon: "runner",
                 titleAr: "تكييف أسبوعي لخطتك",
                 titleEn: "Weekly plan adaptation",
-                bodyAr: "تبديلات EVO للوجبات والتمارين داخل خطتك: 3 أسبوعيًا مع بريميوم و6 مع برو — تتطور مع تقدمك بدل البدء من الصفر.",
+                bodyAr: "تبديلات EVO للوجبات والتمارين داخل خطتك القائمة: 3 أسبوعيًا مع بريميوم و6 مع برو — فتتطور خطتك مع تقدمك بدل أن تبدأ من الصفر كل مرة.",
                 bodyEn: "EVO meal & exercise swaps inside your plan: 3 per week with Premium, 6 with Pro — it evolves with your progress instead of starting over.",
               },
               {
                 icon: "scroll",
-                titleAr: "ملكية كاملة لعملك",
+                titleAr: "ملكية كاملة لنتائجك وخططك",
                 titleEn: "Full ownership of your work",
-                bodyAr: "تصدير كامل لنتائجك وخططك، وسعة حفظ تتوسع: نتائج الأدوات من 3 إلى 50 ثم 200، وجداول الوجبات من 1 إلى 10 ثم 50.",
+                bodyAr: "تصدير كامل لنتائجك وخططك، وسعة حفظ تتوسع معك: نتائج الأدوات من 3 إلى 50 ثم 200، وجداول الوجبات من 1 إلى 10 ثم 50.",
                 bodyEn: "Full export of your results and plans, with capacity that grows: tool results from 3 to 50 then 200, meal-planner saves from 1 to 10 then 50.",
               },
               {
                 icon: "laurel",
                 titleAr: "تركيز بلا إعلانات",
                 titleEn: "Focus, ad-free",
-                bodyAr: "من برو فما فوق تختفي الإعلانات نهائيًا — تجربة صافية وأنت تولّد خططك وتتابع تقدمك.",
+                bodyAr: "من مستوى برو فما فوق تختفي الإعلانات نهائيًا — تجربة صافية تولّد فيها خططك وتتابع تقدمك دون تشتيت.",
                 bodyEn: "From Pro upward, ads disappear entirely — a clean experience while you generate plans and track progress.",
               },
             ].map((card) => (
@@ -316,33 +320,33 @@ export default function MembershipsPage({ lang: langProp }: { lang?: Lang } = {}
               {
                 tierAr: "مجاني",
                 tierEn: "Free",
-                fitAr: "تبدأ وتريد أرقامك وخطتك الأولى",
+                fitAr: "في بداية الطريق: تريد أرقامك وخطة أولى تجربها",
                 fitEn: "You're starting and want your numbers and first plan",
-                bodyAr: "التوليدان الشهريان يكفيان لخطة تغذية وخطة تمرين كل شهر، ومع EVO 10 رسائل يوميًا. والحساب المجاني يحفظ خططك للأبد ويزامنها عبر أجهزتك.",
+                bodyAr: "التوليدان الشهريان يكفيان لخطة تغذية وخطة تمرين في الشهر، ومعهما 10 رسائل يوميًا مع EVO — والحساب المجاني يحفظ خططك للأبد ويزامنها عبر أجهزتك.",
                 bodyEn: "The 2 monthly generations cover one nutrition plan and one workout plan a month, plus 10 EVO messages a day. A free account keeps your plans forever and syncs them across devices.",
               },
               {
                 tierAr: "بريميوم",
                 tierEn: "Premium",
-                fitAr: "صرت تعدّل وتجرب",
+                fitAr: "صرت تعدّل وتجرب وتولّد أكثر",
                 fitEn: "You're iterating and experimenting",
-                bodyAr: "4 توليدات شهريًا ومحادثة غير محدودة و3 تبديلات أسبوعيًا، وسعة أكبر: 10 خطط محفوظة في مخطط الوجبات و50 نتيجة أدوات مع التصدير.",
+                bodyAr: "رصيد شهري من 4 خطط، ومحادثة بلا حدود مع EVO، و3 تبديلات أسبوعية — مع سعة أكبر: 10 جداول وجبات محفوظة، و50 نتيجة أدوات قابلة للتصدير.",
                 bodyEn: "4 generations a month, unlimited chat, and 3 weekly swaps — plus more capacity: 10 saved meal-planner plans and 50 saved tool results with export.",
               },
               {
                 tierAr: "برو",
                 tierEn: "Pro",
-                fitAr: "تتدرب بجدية وتريد تكييفًا أسبوعيًا بلا إعلانات",
+                fitAr: "تتدرب بجدية وتريد خطة تتكيف معك أسبوعيًا — بلا إعلانات",
                 fitEn: "You train seriously and want weekly adaptation, ad-free",
-                bodyAr: "8 توليدات و6 تبديلات أسبوعيًا وتحليل أنماط تقدمك، و50 خطة محفوظة و200 نتيجة أدوات، وإعلانات مخفية.",
+                bodyAr: "8 خطط شهريًا و6 تبديلات أسبوعية، وتحليل لأنماط تقدمك — مع 50 جدول وجبات محفوظًا، و200 نتيجة أدوات، وتجربة خالية من الإعلانات.",
                 bodyEn: "8 generations, 6 weekly swaps, and progress pattern analysis — 50 saved plans, 200 saved tool results, and no ads.",
               },
               {
                 tierAr: "التدريب الأونلاين",
                 tierEn: "Coaching",
-                fitAr: "تريد مدربًا بشريًا يبني خطتك ويتابعك",
+                fitAr: "تريد مدربًا بشريًا يبني خططك ويتابعك أسبوعيًا",
                 fitEn: "You want a human coach building your plan and following up",
-                bodyAr: "مدرب بشري يبني خطط تغذيتك وتمارينك ويجري التبديلات بيده، بمتابعة أسبوعية وتذكير تلقائي — ويشمل كل مزايا برو.",
+                bodyAr: "مدرب معتمد يبني خطط تغذيتك وتمارينك ويجري التبديلات بنفسه، مع متابعة أسبوعية بتذكير تلقائي وتواصل مباشر — وتشمل باقتك كل مزايا برو.",
                 bodyEn: "A human coach builds your nutrition and workout plans and makes the swaps personally, with weekly check-ins and automatic reminders — and it includes every Pro feature.",
               },
             ].map((card) => (
@@ -361,7 +365,7 @@ export default function MembershipsPage({ lang: langProp }: { lang?: Lang } = {}
           </div>
           <p className="mx-auto mt-6 max-w-2xl text-center text-xs font-normal leading-relaxed text-[var(--muted-foreground)]">
             {isAr
-              ? "قاعدة عامة: ابدأ مجانًا، وارتقِ حين يضيق رصيدك أو سعتك — التفاصيل الكاملة في جدول المقارنة والأسعار أعلاه."
+              ? "القاعدة بسيطة: ابدأ بالمجاني، وارتقِ حين يصبح رصيدك أو سعتك أضيق من استخدامك — والتفاصيل الكاملة في جدول المقارنة والأسعار أعلاه."
               : "Rule of thumb: start free, and move up when your pool or capacity feels tight — the full details are in the comparison table and the prices above."}
           </p>
         </section>
@@ -376,7 +380,7 @@ export default function MembershipsPage({ lang: langProp }: { lang?: Lang } = {}
               </h3>
               <p className="mt-2 text-sm font-normal text-[var(--muted-foreground)]">
                 {isAr
-                  ? "نقدم استرداد كامل خلال 7 أيام من تفعيل الاشتراك، بشرط عدم استخدام أي ميزة مدفوعة في الخطة (توليد خطط تغذية/تمارين، تبديلات EVO، حفظ نتائج أدوات، تحميل PDF). بمجرد استخدام أي ميزة مدفوعة، يصبح الاشتراك غير قابل للاسترداد. الاشتراك المجاني لا يتطلب استرداد."
+                  ? "استرداد كامل خلال 7 أيام من تفعيل الاشتراك، بشرط ألا تكون قد استخدمت أي ميزة مدفوعة (توليد خطط التغذية أو التمارين، تبديلات EVO، حفظ نتائج الأدوات، تحميل PDF). وبمجرد استخدام أي ميزة مدفوعة يصبح الاشتراك غير قابل للاسترداد. أما المجاني فلا يحتاج إلى استرداد أصلًا."
                   : "We offer a full refund within 7 days of subscription activation, provided that no paid plan features have been used (nutrition/workout plan generation, EVO swaps, saved tool results, PDF exports). Once any paid feature is used, the subscription becomes non-refundable. The Free tier requires no refund since it's free forever."}
               </p>
             </div>
@@ -398,7 +402,7 @@ export default function MembershipsPage({ lang: langProp }: { lang?: Lang } = {}
                 </div>
                 <p className="mt-3 text-sm font-normal text-[#9BA0A6]">
                   {isAr
-                    ? "التدريب الأونلاين مع مدربين محترفين وأخصائيي تغذية: خطط مخصّصة، متابعة أسبوعية، وتبديلات يجريها المدرب بنفسه."
+                    ? "التدريب الأونلاين مع مدربين محترفين وأخصائيي تغذية: خطط تُبنى لك وحدك، متابعة أسبوعية، وتبديلات يجريها المدرب بيده."
                     : "Human coaching with professional coaches and nutrition specialists: personalized plans, weekly check-ins, and swaps made by your coach."}
                 </p>
                 <ul className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
@@ -490,7 +494,7 @@ export default function MembershipsPage({ lang: langProp }: { lang?: Lang } = {}
               confused are actually two different budgets. */}
           <p className="mx-auto mt-4 max-w-2xl text-center text-xs font-normal leading-relaxed text-[var(--muted-foreground)]">
             {isAr
-              ? "توليد خطط الذكاء الاصطناعي يسحب من رصيد شهري موحد واحد (التغذية والتمارين معًا، ويُحتسب التوليد الناجح فقط، ويتجدد في أول كل شهر) — وهذا الرصيد منفصل تمامًا عن حدود حفظ مخطط الوجبات وحفظ نتائج الأدوات."
+              ? "توليد خطط الذكاء الاصطناعي يسحب من رصيد شهري واحد موحد (التغذية والتمارين معًا، ويُحتسب التوليد الناجح فقط، ويتجدد مع أول كل شهر) — وهذا الرصيد منفصل كليًا عن حدود الحفظ في مخطط الوجبات ونتائج الأدوات."
               : "AI plan generation draws from ONE unified monthly pool (nutrition + workout combined, success-only counting, resets on the 1st) — and it is completely separate from the Meal-Planner save limits and the tool-results save limits."}
           </p>
           {/* Phase 195 (owner directive): «Swaps» alone could read as a full
@@ -500,8 +504,7 @@ export default function MembershipsPage({ lang: langProp }: { lang?: Lang } = {}
             {isAr
               ? "«التبديلات» تعني استبدال وجبات أو تمارين فردية داخل خطتك دون إعادة إنشاء الخطة كاملة — وهي أسبوعية وتتجدد كل يوم اثنين."
               : "“Swaps” means replacing individual meals or exercises within your plan — never a full plan regeneration. They are weekly and reset every Monday."}
-          </p>
-          {/* Access-point fix (2026-09-14): the /compare vertical had ZERO
+          </p>{/* Access-point fix (2026-09-14): the /compare vertical had ZERO
               UI access points — a natural contextual bridge from the
               plan-comparison table to the platform-comparisons library
               (Alkemos vs MyFitnessPal / Freeletics / ExRx.net). */}
@@ -526,30 +529,30 @@ export default function MembershipsPage({ lang: langProp }: { lang?: Lang } = {}
               {
                 q: isAr ? "هل يمكنني الإلغاء في أي وقت؟" : "Can I cancel anytime?",
                 a: isAr
-                  ? "نعم — من صفحة حسابك اضغط «إلغاء الاشتراك». لا يوجد خصم تلقائي؛ تبقى باقتك فعّالة حتى نهاية المدة التي دفعتها ثم تنتهي إن لم تُجدّدها."
+                  ? "نعم — من صفحة حسابك اضغط «إلغاء الاشتراك» وانتهى الأمر. لا خصم تلقائي: تبقى باقتك فعّالة حتى نهاية المدة التي دفعتها، ثم تتوقف إن لم تُجدّدها بنفسك."
                   : "Yes — on your account page press “Cancel subscription”. Nothing auto-renews: your plan stays active until the period you paid for ends, then simply stops unless you pay again.",
               },
               {
                 q: isAr ? "هل توجد سياسة استرداد؟" : "Is there a refund policy?",
                 a: isAr
-                  ? "نعم، استرداد كامل خلال 7 أيام من التفعيل بشرط عدم استخدام المميزات المدفوعة (توليد خطط، تبديلات، حفظ نتائج)."
+                  ? "نعم — استرداد كامل خلال 7 أيام من التفعيل، ما لم تكن قد استخدمت المزايا المدفوعة (توليد خطط، تبديلات، حفظ نتائج)."
                   : "Yes, full refund within 7 days of activation, provided no paid features (plan generation, swaps, saved results) have been used.",
               },
               {
                 q: isAr ? "هل التدريب الأونلاين مشمول في Pro؟" : "Is coaching included in Pro?",
                 a: isAr
-                  ? "لا، التدريب الأونلاين منفصل تماماً عن العضويات: Pro يمنحك مزايا المنصة، والتدريب الأونلاين يمنحك مدربًا بشريًا يتابعك شخصيًا."
+                  ? "لا — التدريب الأونلاين خدمة منفصلة تمامًا عن العضويات: برو يمنحك مزايا المنصة كاملة، والتدريب الأونلاين يضيف إليها مدربًا بشريًا يتابعك شخصيًا (ويشمل كل مزايا برو)."
                   : "No, coaching is completely separate from memberships. Pro gives you platform features, coaching gives you a human coach.",
               },
               {
                 q: isAr ? "هل توجد تجربة مجانية؟" : "Is there a free trial?",
                 a: isAr
-                  ? "التجربة نفسها مجانية ودائمة: افتح مخطط التمارين أو مخطط الوجبات بالذكاء الاصطناعي وولّد خطتك الأولى فورًا (توليدان ناجحان شهريًا لكل زائر، ويُحفظ ما تولّده بحساب مجاني). لا يوجد اشتراك تجريبي مؤقت — الفئة المجانية مجانية للأبد."
+                  ? "التجربة مجانية ودائمة في آن: افتح مخطط التمارين أو مخطط الوجبات بالذكاء الاصطناعي وولّد خطتك الأولى فورًا — لكل زائر توليدان ناجحان شهريًا، وما تولّده يُحفظ للأبد بحساب مجاني. لا يوجد اشتراك تجريبي مؤقت؛ المستوى المجاني مجاني للأبد."
                   : "The trial IS the product: open the AI Workout or AI Meal Planner and generate your first plan instantly (2 successful generations per month for every visitor; a free account saves them permanently). There is no temporary trial subscription — the Free tier is free forever.",
               },
               {
                 q: isAr ? "ما هي طرق الدفع؟" : "Payment methods?",
-                a: isAr ? "PayPal (الطريقة الرئيسية — فورية وآمنة)، InstaPay، و Vodafone Cash. PayPal يعالج الدفع تلقائياً؛ الطرق اليدوية تتطلب رفع إيصال يراجعه الفريق خلال 24 ساعة." : "PayPal (primary — instant and secure), InstaPay, and Vodafone Cash. PayPal processes automatically; manual methods require uploading a receipt reviewed within 24 hours.",
+                a: isAr ? "PayPal (الطريقة الرئيسية — فورية وآمنة)، إضافة إلى InstaPay وVodafone Cash. تُعالج مدفوعات PayPal تلقائيًا، أما الطرق اليدوية فتتطلب رفع إيصال يراجعه فريقنا خلال 24 ساعة." : "PayPal (primary — instant and secure), InstaPay, and Vodafone Cash. PayPal processes automatically; manual methods require uploading a receipt reviewed within 24 hours.",
               },
               // PRIORITY-PAGES Implementation 3 (2026-10-19, audit §C-1):
               // the two lifecycle questions the page never answered —
@@ -562,13 +565,13 @@ export default function MembershipsPage({ lang: langProp }: { lang?: Lang } = {}
               {
                 q: isAr ? "ماذا يحدث لخططي إذا انتهى اشتراكي؟" : "What happens to my plans when my subscription ends?",
                 a: isAr
-                  ? "تبقى كل خطة ولّدتها أو حفظتها مرئية ومتاحة كما هي — الخطط بيانات لا رصيدًا. ما يعود إلى حدود الفئة المجانية هو التوليد الجديد وعدد التبديلات حتى تجدد. ولا خصم تلقائي: تبقى باقتك فعّالة حتى نهاية المدة المدفوعة ثم تنتهي."
+                  ? "تبقى كل خطة ولّدتها أو حفظتها مرئية ومتاحة كما هي — الخطط بياناتك، لا رصيدًا يُستهلك. ما يعود إلى حدود المجاني هو التوليد الجديد وعدد التبديلات، حتى تجدد إن أردت. ولا خصم تلقائي: تبقى باقتك فعّالة حتى نهاية المدة المدفوعة، ثم تتوقف."
                   : "Every plan you generated or saved stays visible and accessible as-is — plans are data, not quota. What returns to the free-tier limits is new generation and swap counts, until you renew. And there's no auto-charge: your plan stays active until the paid period ends, then simply stops.",
               },
               {
                 q: isAr ? "هل أستطيع تغيير الباقة لاحقًا؟" : "Can I change my plan later?",
                 a: isAr
-                  ? "نعم، بلا أي التزام: لا تجديدًا تلقائيًا ولا عقودًا — ففي الدورة التالية اختر أي باقة أو ابقَ على المجاني. والترقية في أي لحظة تجعل حدود الباقة الأعلى سارية فورًا لأن الحدود تُشتق من باقتك الفعّالة."
+                  ? "نعم، وبلا أي التزام — لا تجديد تلقائي ولا عقود: في الدورة التالية اختر ما تشاء أو ابقَ على المجاني. وحين ترتقي في أي لحظة تسري حدود الباقة الأعلى فورًا، لأن الحدود تُشتق من باقتك الفعّالة."
                   : "Yes, with no commitment: nothing auto-renews and there are no contracts — next cycle, pick any tier or stay on Free. And upgrading at any moment applies the higher tier's limits immediately, because limits derive from your active tier.",
               },
             ].map((faq, i) => (

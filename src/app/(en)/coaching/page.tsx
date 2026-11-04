@@ -105,7 +105,7 @@ export default function CoachingPage() {
       icon: Apple,
       titleAr: "خطط تغذية مخصصة",
       titleEn: "Personalized Nutrition Plans",
-      descAr: "خطة تغذية بالجرام والسعرات والماكروز بناءً على هدفك، وزنك، وعاداتك الغذائية. مع تبديل الوجبات بذكاء.",
+      descAr: "خطة تغذية بالجرام والسعرات والماكروز، مبنية على هدفك ووزنك وعاداتك — مع تبديل ذكي للوجبات.",
       descEn: "Nutrition plan with precise macros, calories, and gram-level detail based on your goal, weight, and dietary habits. Smart meal swaps included.",
       color: "#34c759",
     },
@@ -113,7 +113,7 @@ export default function CoachingPage() {
       icon: Dumbbell,
       titleAr: "برامج تمارين متكيفة",
       titleEn: "Adaptive Workout Programs",
-      descAr: "برنامج تمارين يتكيف مع مستواك، معداتك المتاحة، وتقدمك. مع تبديل التمارين بذكاء والشرح الكامل لكل تمرين.",
+      descAr: "برنامج تمارين يتكيف مع مستواك ومعداتك المتاحة وتقدمك — مع شرح كامل لكل تمرين، وتبديل ذكي عند الحاجة.",
       descEn: "Workout program that adapts to your level, available equipment, and progress. Smart exercise swaps with full instructions.",
       color: "#0071e3",
     },
@@ -121,7 +121,7 @@ export default function CoachingPage() {
       icon: BarChart3,
       titleAr: "تتبع التقدم الذكي",
       titleEn: "Smart Progress Tracking",
-      descAr: "تتبع وزنك، قياساتك، وصورك. يُحلّل EVO أنماط تقدمك ويخبرك بما ينجح وما يحتاج تعديلًا.",
+      descAr: "تتبع وزنك وقياساتك وصورك — ويحلل EVO أنماط تقدمك ليخبرك بما ينجح وما يحتاج إلى تعديل.",
       descEn: "Track your weight, measurements, and photos. EVO analyzes your progress patterns and tells you what's working and what needs adjustment.",
       color: "#ff9500",
     },
@@ -129,7 +129,7 @@ export default function CoachingPage() {
       icon: Bot,
       titleAr: "EVO — مدربك الذكي على مدار الساعة",
       titleEn: "EVO — Your AI Assistant 24/7",
-      descAr: "اسأل EVO أي سؤال عن التغذية أو التمارين أو التحفيز في أي وقت — محرك ذكي يقرأ بياناتك ويتذكّرها، ويتعلّم أسبوعيًا من خطط المنصة الحقيقية (مجهولة الهوية).",
+      descAr: "اسأل EVO عن التغذية أو التمارين أو التحفيز متى شئت — محرك ذكي يقرأ بياناتك ويتذكرها، ويتعلم أسبوعيًا من خطط المنصة الحقيقية (مجهولة الهوية).",
       descEn: "Ask EVO anything about nutrition, training, or motivation, anytime — a smart engine that reads and remembers your data, and learns weekly from real (anonymized) platform plans.",
       color: "#8b5cf6",
     },
@@ -161,9 +161,9 @@ export default function CoachingPage() {
                   specialists." — without it, crawlers/screen readers read
                   the <br/>-split heading as "coaches& nutrition". Visual
                   output (two lines) is unchanged. */}
-              {isAr ? "مدربون وأخصائيو " : "Professional coaches "}
+              {isAr ? "مدربون محترفون " : "Professional coaches "}
               <br />
-              {isAr ? "تغذية محترفون." : "& nutrition specialists."}
+              {isAr ? "وأخصائيو تغذية." : "& nutrition specialists."}
             </h1>
             {/* Image 1 — directly under the hero title */}
             <div className="relative mt-8 aspect-[3/2] w-full overflow-hidden rounded-3xl shadow-2xl">
@@ -182,7 +182,7 @@ export default function CoachingPage() {
                   solution (certified human coach + EVO) answers it.
                   Copy-only, claims unchanged. */}
               {isAr
-                ? "الخطط الجاهزة تناسب الجميع ولا تتابع أحدًا. هنا مدرب بشري معتمد يبني خطتك ويتابع أرقامك أسبوعيًا — ومعه EVO للإجابة والتكييف على مدار الساعة."
+                ? "الخطط الجاهزة تناسب الجميع ولا تتابع أحدًا. هنا مدرب بشري معتمد يبني خطتك بنفسه، ويقرأ أرقامك كل أسبوع — ومعه EVO للإجابة والتكييف على مدار الساعة."
                 : "Generic plans fit everyone and follow no one. Here, a certified human coach builds your plan and checks your numbers weekly — with EVO answering and adapting around the clock."}
             </p>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
@@ -190,7 +190,7 @@ export default function CoachingPage() {
                 onClick={scrollToPricing}
                 className="btn-chrome px-7 py-3 text-base font-medium"
               >
-                {isAr ? "ابدأ التدريب الأونلاين الآن" : "Start coaching now"}
+                {isAr ? "ابدأ التدريب الأونلاين" : "Start coaching now"}
               </button>
               <a
                 href="#how-it-works"
@@ -212,10 +212,10 @@ export default function CoachingPage() {
             </Reveal>
             <div className="mt-12 space-y-8 md:space-y-12">
               {[
-                { n: "01", title: isAr ? "أنشئ حسابك" : "Create your account", desc: isAr ? "في ثوانٍ. بالإيميل أو Google." : "In seconds. Email or Google." },
-                { n: "02", title: isAr ? "أكمل الاستبيانات" : "Complete questionnaires", desc: isAr ? "أخبرنا عن هدفك، وزنك، عاداتك." : "Tell us your goal, weight, habits." },
-                { n: "03", title: isAr ? "EVO يحلل ويخطط" : "EVO analyzes & plans", desc: isAr ? "مدربون بشريون إلى جانب EVO يولّدون خططك المخصصة." : "Coaches + EVO generate your plans." },
-                { n: "04", title: isAr ? "ابدأ التحوّل" : "Start transforming", desc: isAr ? "تتبع، استبدل، واسأل EVO." : "Track, swap, and ask EVO." },
+                { n: "01", title: isAr ? "أنشئ حسابك" : "Create your account", desc: isAr ? "في ثوانٍ — بالبريد الإلكتروني أو عبر Google." : "In seconds. Email or Google." },
+                { n: "02", title: isAr ? "أكمل الاستبيانات" : "Complete questionnaires", desc: isAr ? "حدّد هدفك ووزنك وعاداتك اليومية." : "Tell us your goal, weight, habits." },
+                { n: "03", title: isAr ? "EVO يحلل والمدرب يبني" : "EVO analyzes & plans", desc: isAr ? "خطتك تُبنى بأيدٍ بشرية مدعومة بتحليل EVO." : "Coaches + EVO generate your plans." },
+                { n: "04", title: isAr ? "ابدأ التحوّل" : "Start transforming", desc: isAr ? "تتبع تقدمك، اطلب التبديلات، واسأل EVO متى شئت." : "Track, swap, and ask EVO." },
               ].map((s, i) => (
                 <Reveal key={s.n} delay={i * 80}>
                   <div className="grid grid-cols-[auto_1fr] gap-6 border-t border-[var(--edge)] pt-6 md:grid-cols-[120px_1fr] md:gap-12 md:pt-8">
@@ -249,23 +249,23 @@ export default function CoachingPage() {
               {[
                 {
                   n: "01",
-                  titleAr: "يوم المتابعة: يصلك التذكير تلقائيًا",
+                  titleAr: "في يوم المتابعة يصلك التذكير تلقائيًا",
                   titleEn: "Check-in day: the reminder arrives automatically",
-                  descAr: "ترسل وزنك وقياساتك وأي ملاحظات في دقائق — لا تقارير ولا جلسات.",
+                  descAr: "ترسل وزنك وقياساتك وما تودّ ملاحظته في دقائق — بلا تقارير طويلة ولا جلسات.",
                   descEn: "You send your weight, measurements, and any notes in minutes — no reports, no sessions.",
                 },
                 {
                   n: "02",
-                  titleAr: "خلال يوم: مدربك يرد بتعديلات الأسبوع القادم",
+                  titleAr: "خلال يوم واحد يرد مدربك بتعديلات الأسبوع القادم",
                   titleEn: "Within a day: your coach replies with next week's adjustments",
-                  descAr: "تبديل وجبة أو تمرين بيده حسب أرقامك — ويسألك عن أي عائق يواجهك.",
+                  descAr: "يبدّل بنفسه وجبة أو تمرينًا بما يناسب أرقامك — ويسألك عن أي عائق في طريقك.",
                   descEn: "A meal or exercise swapped by hand to match your numbers — and a question about anything standing in your way.",
                 },
                 {
                   n: "03",
-                  titleAr: "بين المتابعات: EVO معك على مدار الساعة",
+                  titleAr: "بين المتابعات، EVO معك على مدار الساعة",
                   titleEn: "Between check-ins: EVO is with you around the clock",
-                  descAr: "أسئلتك اليومية تجيب فورًا، والمدرب على مسافة رسالة مباشرة إن احتجته.",
+                  descAr: "أسئلتك اليومية تجد جوابها فورًا، والمدرب على بُعد رسالة مباشرة إن احتجته.",
                   descEn: "Your daily questions get instant answers, and the coach is one direct message away if you need them.",
                 },
               ].map((s) => (
@@ -331,7 +331,7 @@ export default function CoachingPage() {
           <div className="relative mx-auto aspect-[3/2] w-full max-w-4xl overflow-hidden rounded-3xl shadow-2xl">
             <Image
               src="/images/hero/coaching-2.jpg"
-              alt={isAr ? "تدريب احترافي بالذكاء الاصطناعي" : "Professional AI-assisted training"}
+              alt={isAr ? "تدريب احترافي مدعوم بالذكاء الاصطناعي" : "Professional AI-assisted training"}
               fill
               className="object-cover"
               loading="lazy"
@@ -354,7 +354,7 @@ export default function CoachingPage() {
                   reassurance (included in full) without the exclusivity
                   implication — zero entitlement change. */}
               {isAr
-                ? "محرك أداء ذكي يقرأ بياناتك وهدفك، ويبني لك خططًا مخصّصة، ويقترح تبديلات ذكية للوجبات والتمارين — EVO جزء من كل عضويات Alkemos، وباقة التدريب الأونلاين تشمله بكل ميزاته بلا أي اشتراك إضافي."
+                ? "محرك أداء ذكي يقرأ بياناتك وهدفك، ويبني خططًا مخصصة، ويقترح تبديلات ذكية للوجبات والتمارين — EVO جزء من كل عضويات Alkemos، وباقة التدريب الأونلاين تشمله بكل ميزاته دون أي اشتراك إضافي."
                 : "A smart engine that reads your data and goal, builds personalized plans, and suggests smart meal and exercise swaps — EVO is part of every Alkemos membership, and your coaching plan includes it in full with no extra subscription."}
             </p>
             {/* Owner directive 2026-08-30: EVO is a service inside the
@@ -366,7 +366,7 @@ export default function CoachingPage() {
                 href="/evo"
                 className="btn-outline inline-flex items-center gap-2 px-5 py-2.5 text-sm"
               >
-                {isAr ? "اعرف أكثر عن EVO" : "Learn more about EVO"}
+                {isAr ? "اعرف المزيد عن EVO" : "Learn more about EVO"}
                 <ArrowRight className="h-4 w-4 rtl:rotate-180" />
               </a>
             </div>
@@ -387,7 +387,7 @@ export default function CoachingPage() {
             <Reveal delay={150}>
               <p className="mx-auto mt-4 max-w-xl text-center text-lg font-normal text-[var(--muted-foreground)] md:text-xl">
                 {isAr
-                  ? "التدريب الأونلاين في Alkemos مبني على إشراف بشري حقيقي وقواعد واضحة تنشر كما هي — بلا وعود مبالغ فيها."
+                  ? "التدريب الأونلاين في Alkemos يقوم على إشراف بشري حقيقي وقواعد واضحة تُنشر كما هي — بلا وعود مبالغ فيها."
                   : "Coaching at Alkemos is built on real human oversight and clear rules published as they are — no inflated promises."}
               </p>
             </Reveal>
@@ -427,7 +427,7 @@ export default function CoachingPage() {
                   // the certificates are shown as issued (strongest E-E-A-T
                   // surface, authors/ahmed-zake renders the certificate scans).
                   body: isAr
-                    ? "المؤسس أحمد زكي — مدرب لياقة وتغذية معتمد (شهادات من ACSM و ACE و ISSA و NASM) بخبرة تدريبية تناهز عشرين عامًا، نحو عشر منها تدريب أونلاين — يشرف على المحتوى والخطط، ويُراجع كل مقال للدقة العلمية قبل النشر."
+                    ? "المؤسس أحمد زكي — مدرب لياقة وتغذية معتمد (شهادات من ACSM وACE وISSA وNASM) بخبرة تدريبية تناهز عشرين عامًا، نحو عشر منها في التدريب الأونلاين — يشرف على المحتوى والخطط، ويراجع كل مقال للدقة العلمية قبل نشره."
                     : "Founder Ahmed Zake — a certified fitness and nutrition coach (ACSM, ACE, ISSA, and NASM certifications) with about twenty years of training experience, around ten of them coaching online — oversees the platform's content and reviews every article for accuracy before publication.",
                   href: isAr ? "/ar/authors/ahmed-zake" : "/authors/ahmed-zake",
                   cta: isAr ? "شهادات المؤسس كما صدرت ›" : "The founder's certificates, as issued ›",
@@ -435,7 +435,7 @@ export default function CoachingPage() {
                 {
                   title: isAr ? "حدود شفافة بلا شروط خفية" : "Transparent limits, no fine print",
                   body: isAr
-                    ? "كل الأسعار وحدود الاستخدام (توليد الخطط، التبديلات، الحفظ) منشورة بالكامل على صفحة العضويات — ما تراه هو ما تحصل عليه."
+                    ? "كل الأسعار وحدود الاستخدام — توليد الخطط، التبديلات، الحفظ — منشورة بالكامل على صفحة العضويات، كما هي دون تجميل."
                     : "Every price and usage limit (plan generations, swaps, saves) is published in full on the memberships page — what you see is what you get.",
                   href: isAr ? "/ar/memberships" : "/memberships",
                   cta: isAr ? "قارن العضويات ›" : "Compare memberships ›",
@@ -443,7 +443,7 @@ export default function CoachingPage() {
                 {
                   title: isAr ? "استرداد كامل خلال 7 أيام" : "Full 7-day refund",
                   body: isAr
-                    ? "إن لم تُستخدم أي ميزة مدفوعة، نعيد لك كامل قيمة الاشتراك خلال 7 أيام من التفعيل — شروط واضحة، بلا التزام محفوف بالمخاطرة."
+                    ? "إن لم تُستخدم أي ميزة مدفوعة، نعيد لك كامل قيمة الاشتراك خلال 7 أيام من التفعيل — والشروط واضحة ومعروفة مقدمًا."
                     : "If no paid feature has been used, we refund your full subscription within 7 days of activation — the conditions are simple and stated up front.",
                   href: isAr ? "/ar/memberships" : "/memberships",
                   cta: isAr ? "سياسة الاسترداد ›" : "Refund policy ›",
@@ -482,7 +482,7 @@ export default function CoachingPage() {
                     is direct arithmetic from memberships.ts (no multiplier
                     phrasing, the 2026-09-13 owner directive). */}
                 {isAr
-                  ? "$39.99 شهريًا، وتشمل كل مميزات Pro مع متابعة المدرب — الفرق عن باقة برو: 10 دولارات شهريًا مقابل مدرب بشري يقرأ أرقامك ويعدّل خطتك."
+                  ? "$39.99 شهريًا، شاملة كل مزايا برو مع متابعة المدرب — والفرق عن باقة برو: 10 دولارات شهريًا مقابل مدرب بشري يقرأ أرقامك ويعدّل خطتك بيده."
                   : "$39.99/month, including every Pro feature plus your coach's follow-up — the difference from Pro: $10 a month for a human coach who reads your numbers and adjusts your plan."}
               </p>
             </Reveal>
@@ -510,7 +510,7 @@ export default function CoachingPage() {
                     {/* 2026-09-15 (consistency fix — memberships.ts says
                         coaching inherits every Pro limit; this card now says
                         so explicitly, same numbers, copy-only): */}
-                    {[isAr ? "كل مميزات Pro (8 خطط AI شهريًا، 6 تبديلات أسبوعيًا، بلا إعلانات)" : "All Pro features (8 AI plans/month, 6 swaps/week, ad-free)",
+                    {[isAr ? "كل مميزات برو (8 خطط ذكاء اصطناعي شهريًا، 6 تبديلات أسبوعية، بلا إعلانات)" : "All Pro features (8 AI plans/month, 6 swaps/week, ad-free)",
                       isAr ? "خطط تغذية وتمارين من مدرب بشري" : "Nutrition + workout plans from a human coach",
                       isAr ? "EVO: محادثة غير محدودة وذاكرة دائمة" : "EVO: unlimited chat + cross-session memory",
                       isAr ? "متابعة أسبوعية بتذكير تلقائي" : "Weekly check-in reminders",
@@ -535,7 +535,7 @@ export default function CoachingPage() {
                       (refund.ts). Same facts the memberships FAQ states. */}
                   <p className="mt-3 text-center text-xs font-normal leading-relaxed opacity-60">
                     {isAr
-                      ? "بدون تجديد تلقائي · استرداد كامل خلال 7 أيام ما لم تُستخدم المزايا المدفوعة"
+                      ? "لا تجديد تلقائي · استرداد كامل خلال 7 أيام ما لم تُستخدم المزايا المدفوعة"
                       : "No auto-renewal · Full refund within 7 days if no paid features were used"}
                   </p>
                   <a
@@ -601,7 +601,7 @@ export default function CoachingPage() {
                 onClick={scrollToPricing}
                 className="btn-chrome px-7 py-3 text-base font-medium"
               >
-                {isAr ? "ابدأ التدريب الأونلاين الآن" : "Start coaching now"}
+                {isAr ? "ابدأ التدريب الأونلاين" : "Start coaching now"}
               </button>
               {/* Owner 2026-08-30: removed the old "اعرف عن EVO ›" link —
                   EVO is part of the subscription, not a destination CTA. */}
@@ -618,7 +618,7 @@ export default function CoachingPage() {
             <ShareButtons
               path="/coaching"
               title={isAr ? "التدريب الأونلاين | Alkemos" : "Online Coaching | Alkemos"}
-              text={isAr ? "مدرب بشري يبني خططك ويتابعك أسبوعيًا — مع EVO بلا حدود. $39.99/شهر." : "A human coach builds your plans and checks in weekly — with unlimited EVO. $39.99/mo."}
+              text={isAr ? "مدرب بشري يبني خططك ويتابعك أسبوعيًا — ومعه EVO بلا حدود. $39.99/شهر." : "A human coach builds your plans and checks in weekly — with unlimited EVO. $39.99/mo."}
             />
           </div>
         </div>

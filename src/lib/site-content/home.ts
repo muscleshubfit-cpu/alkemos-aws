@@ -9,14 +9,15 @@
  * homepage FAQ set here (5 hesitation-removers) stays SEPARATE from
  * the /faq page's 10-question set (static-pages.ts) exactly as before.
  *
- * HOME-POLISH-285 (owner order 2026-09-27 «تحسين أقسام الرئيسية»): the
- * nutrition framing (home.eat) became the FOOD LIBRARY preview title/body
- * (mirroring the exercise-library pattern), the tools group (home.tools)
- * now frames the TILE preview (the manual Meal Planner joined the tools
- * tiles), and the free-allowance bar moved to just BEFORE the AI section
- * (it introduces the AI planners). Retired Supabase override rows under
- * the old keys are simply ignored (the fallback law: the code defaults
- * always render).
+ * HOME-PLATFORM-284 → HOME-POLISH-285 → HOME-REFINE-286 → CONVERSION-2026 →
+ * AR-COPY-REWRITE-287 (owner order 2026-11-04 «إعادة تحرير المحتوى العربي
+ * لصفحات Alkemos»): the AR defaults were re-authored as NATIVE Arabic
+ * marketing copy — original MSA prose in direct address, never a literal
+ * translation of the EN twin (the native-pair law). The hero subtitle is
+ * a PLATFORM INTRODUCTION by the owner's correction (what Alkemos IS:
+ * training + nutrition + smart tools + plan building + progress), not a
+ * subscription pitch — tier names stay OUT of the hero. Every number and
+ * policy restates its single source; the EN defaults are untouched.
  *
  * SCOPE GUARD (what is deliberately NOT here):
  *   - Interactive tool labels (planner buttons, quota chips) — tool
@@ -124,8 +125,13 @@ export const HOME_COPY_GROUPS: HomeCopyGroup[] = [
         labelAr: "الفقرة التمهيدية",
         defaultEn:
           "You know your goal — the missing part is a plan that actually fits it. Alkemos builds your weekly workouts and your full day of meals around your body, your gear, and your kitchen, with exact macros in grams — and EVO, your AI coach, keeps adjusting the plan whenever life does — in Arabic and English.",
+        // AR-COPY-REWRITE-287 (owner correction): the AR hero subtitle is a
+        // WHOLESOME PLATFORM INTRODUCTION — the four pillars the owner named
+        // (training + nutrition + smart tools + plan building/progress) —
+        // NOT a sales pitch; no tier names, no problem-first framing. The
+        // closing bilingual fact is pinned by the homepage canaries.
         defaultAr:
-          "تعرف هدفك، والناقص خطة تناسبه فعلًا: Alkemos يبني تمارينك الأسبوعية ووجبات يومك الكامل حول جسمك ومعداتك ومطبخك، بماكروز دقيقة بالغرامات — ويظل EVO، مدربك الذكي، يعدّل خطتك كلما تغيرت ظروفك — بالعربية والإنجليزية.",
+          "كل ما تحتاجه في رحلتك الرياضية والغذائية في منصة واحدة: تمارين موثقة بالصور والإرشادات، وأطعمة بسعراتها وماكروزها، وأدوات ذكية تحسب أرقامك وتتبع تقدمك نحو هدفك — ومعها EVO، مدرّبك الذكي الذي يبني خطتك على مقاسك ويعدّلها كلما تغيرت ظروفك — بالعربية والإنجليزية.",
       },
       {
         prop: "heroPillTraining",
@@ -164,7 +170,7 @@ export const HOME_COPY_GROUPS: HomeCopyGroup[] = [
         labelEn: "Section eyebrow chip",
         labelAr: "شريحة العنوان الصغير",
         defaultEn: "FREE TOOLS — FREE TO TRY",
-        defaultAr: "أدوات مجانية — جرّبها فورًا",
+        defaultAr: "أدوات مجانية — بلا تسجيل",
       },
       {
         prop: "toolsTitle",
@@ -183,7 +189,7 @@ export const HOME_COPY_GROUPS: HomeCopyGroup[] = [
         defaultEn:
           "Accurate calculators that give you your numbers in seconds, the manual meal planner, and a daily water tracker — each tool opens on its own page, free to try, no credit card required.",
         defaultAr:
-          "حاسبات دقيقة تعطيك أرقامك في ثوانٍ، ومخطط وجبات يدوي تبني فيه وجباتك بنفسك، ومتتبع يومي لشرب الماء — كل أداة تعمل في صفحتها مباشرة، جرّبها مجانًا ولا تحتاج إلى بطاقة ائتمانية.",
+          "حاسبات دقيقة تمنحك أرقامك في ثوانٍ، ومخطط وجبات تبنيه بنفسك، ومتتبع يومي لشرب الماء — كل أداة تعمل مباشرة في صفحتها، مجانًا ودون أي بطاقة ائتمانية.",
       },
       {
         prop: "toolsCta",
@@ -225,7 +231,7 @@ export const HOME_COPY_GROUPS: HomeCopyGroup[] = [
         defaultEn:
           "You don't just count numbers — AI builds your complete plan: a weekly workout split with its exercises and sets, or a full day of meals with quantities in grams — and EVO stays with you to answer and adjust anytime.",
         defaultAr:
-          "هنا لا تحسب الأرقام فقط — الذكاء الاصطناعي يبني لك الخطة كاملة: نظامًا تدريبيًا أسبوعيًا بتمارينه ومجموعاته، أو خطة وجبات ليوم كامل بكمياتها بالغرامات — ويظل EVO معك للإجابة والتعديل في أي وقت.",
+          "الأرقام وحدها لا تكفي — الذكاء الاصطناعي يبني لك الخطة كاملة: نظامًا تدريبيًا أسبوعيًا بتمارينه ومجموعاته، أو خطة وجبات ليوم كامل بكمياتها بالغرامات — ويبقى EVO معك للإجابة والتعديل في أي وقت.",
       },
       {
         prop: "planAllowance",
@@ -234,7 +240,7 @@ export const HOME_COPY_GROUPS: HomeCopyGroup[] = [
         labelEn: "Free-allowance bar text",
         labelAr: "نص شريط الرصيد المجاني",
         defaultEn: "Every visitor has a monthly free allowance for AI-generated plans.",
-        defaultAr: "كل زائر يملك رصيدًا شهريًا مجانيًا لتوليد الخطط بالذكاء الاصطناعي",
+        defaultAr: "لكل زائر رصيد شهري مجاني لتوليد خطط الذكاء الاصطناعي.",
       },
       {
         prop: "planAllowanceChip",
@@ -268,7 +274,7 @@ export const HOME_COPY_GROUPS: HomeCopyGroup[] = [
         defaultEn:
           "Pick a muscle group and browse real exercises from the {exercises} library — every card is a documented exercise with form photos and technique cues, one tap from its full page.",
         defaultAr:
-          "اختر مجموعة عضلية واستعرض تمارين حقيقية من مكتبة تضم {exercises} تمرينًا — كل بطاقة تمرين موثق بصور الأداء الصحيح وشرح واضح، وينقلك مباشرة إلى صفحته.",
+          "اختر مجموعة عضلية واستعرض تمارين حقيقية من مكتبة تضم {exercises} تمرينًا — كل بطاقة تمرين موثّق بصور الأداء وشرح واضح، وضغطة واحدة تنقلك إلى صفحته الكاملة.",
       },
     ],
   },
@@ -294,7 +300,7 @@ export const HOME_COPY_GROUPS: HomeCopyGroup[] = [
         defaultEn:
           "Browse the categories and real foods from the {foods} food database — every card carries the food's per-100g calories and macros, one tap from its full page.",
         defaultAr:
-          "تصفح الفئات وأصنافًا حقيقية من قاعدة تضم {foods} صنف غذائي — كل بطاقة تحمل سعرات الصنف وماكروزه لكل 100 جرام، وصفحته الكاملة على بُعد ضغطة.",
+          "تصفح الفئات وأصنافًا حقيقية من قاعدة تضم {foods} صنف غذائي — كل بطاقة تعرض سعرات الصنف وماكروزه لكل 100 جرام، وصفحته الكاملة على بُعد ضغطة.",
       },
     ],
   },
@@ -328,7 +334,7 @@ export const HOME_COPY_GROUPS: HomeCopyGroup[] = [
         defaultEn:
           "Structured workout routines with schedules, exercises, sets, and reps — follow one as-is, or make it your starting point and adapt it to your gear.",
         defaultAr:
-          "برامج تدريبية متكاملة بالجداول والتمارين والمجموعات والتكرارات — اتبعها كما هي، أو اجعلها نقطة انطلاق وعدّلها بحسب وقتك ومعداتك.",
+          "برامج تدريبية متكاملة بجداولها وتمارينها ومجموعاتها وتكراراتها — اتبعها كما هي، أو اجعلها نقطة انطلاق وعدّلها بحسب وقتك ومعداتك.",
       },
       {
         prop: "trainCta",
@@ -362,7 +368,7 @@ export const HOME_COPY_GROUPS: HomeCopyGroup[] = [
         defaultEn:
           "Balanced diet plans with exact grams and calories per food, from real-world kitchens — from 1,200 to 3,000 kcal.",
         defaultAr:
-          "أنظمة غذائية متوازنة بالغرامات والسعرات لكل صنف، من مطبخ عربي مألوف بمكونات يومية — من 1200 إلى 3000 سعرة.",
+          "أنظمة غذائية متوازنة بكميات محددة بالغرامات والسعرات لكل صنف، من مطبخ عربي مألوف ومكونات يومية — من 1200 إلى 3000 سعرة.",
       },
       {
         prop: "dietCta",
@@ -426,8 +432,11 @@ export const HOME_COPY_GROUPS: HomeCopyGroup[] = [
         labelAr: "فقرة القسم",
         defaultEn:
           "Start free — the Free tier is permanent, not a trial. When your training becomes consistent and you need more plans, weekly adaptation, and full exports, the tiers grow with you: Premium to manage your plans, Pro to adapt & optimize them — no ads.",
+        // AR-COPY-REWRITE-287: the progression ladder survives (the
+        // CONVERSION-2026 decision D2) in native phrasing — upgrade is
+        // framed as the USER's call («قرارك وحدك»), echoing no-auto-renewal.
         defaultAr:
-          "ابدأ مجانًا — المجاني دائم وليس تجربة مؤقتة. وحين ينتظم تدريبك وتحتاج خططًا أكثر وتكييفًا أسبوعيًا وتصديرًا كاملًا، تتسع الباقات معك: بريميوم لإدارة خططك، وبرو لتكييفها وتحسينها — بلا إعلانات.",
+          "ابدأ بالمجاني — مستوى دائم لا تجربة مؤقتة. وحين ينتظم تدريبك وتكبر احتياجاتك، تنمو الباقات معك: بريميوم لإدارة خططك وحفظها، وبرو لتكييفها أسبوعيًا بلا إعلانات — والترقية، متى ما حان وقتها، قرارك وحدك.",
       },
     ],
   },
@@ -442,7 +451,7 @@ export const HOME_COPY_GROUPS: HomeCopyGroup[] = [
         labelEn: "Band heading",
         labelAr: "عنوان الشريط",
         defaultEn: "1-on-1 Online Coaching",
-        defaultAr: "التدريب الأونلاين الشخصي",
+        defaultAr: "التدريب الأونلاين مع مدربك الشخصي",
       },
       {
         prop: "coachingBody",
@@ -453,7 +462,7 @@ export const HOME_COPY_GROUPS: HomeCopyGroup[] = [
         defaultEn:
           "A dedicated certified coach builds your training and nutrition plans, reads your numbers every week, and adjusts your course around your real life — travel, kitchen, and schedule — with all Pro features included.",
         defaultAr:
-          "مدرب معتمد مخصص لك يبني خطط تدريبك وتغذيتك، ويقرأ أرقامك كل أسبوع، ويعدّل مسارك حول حياتك الفعلية — سفرك ومطبخك وجدولك — شاملًا كل مزايا برو.",
+          "مدرب معتمد مخصص لك وحدك: يبني خطط تدريبك وتغذيتك، ويقرأ أرقامك أسبوعيًا، ويعدّل مسارك حول حياتك الحقيقية — سفرك ومطبخك وجدولك — وتشمل باقتك كل مزايا برو.",
       },
       {
         prop: "coachingCta",
@@ -487,7 +496,7 @@ export const HOME_COPY_GROUPS: HomeCopyGroup[] = [
         defaultEn:
           "Certified professional coaches ready to guide you step by step — tap any coach to visit their profile.",
         defaultAr:
-          "نخبة من المدربين المحترفين المعتمدين لمتابعتك خطوة بخطوة — اضغط على أي مدرب للاطلاع على ملفه وخبراته.",
+          "مدربون محترفون معتمدون جاهزون لمرافقتك خطوة بخطوة — اضغط على أي مدرب لتتعرف على ملفه وخبراته.",
       },
     ],
   },
@@ -545,23 +554,23 @@ export const HOME_FAQ_DEFAULT: { en: SiteFaqItem[]; ar: SiteFaqItem[] } = {
   ar: [
     {
       q: "هل يمكنني استخدام Alkemos مجانًا؟",
-      a: "نعم. المنصة مجانية بالكامل: التمارين والأطعمة والبرامج والأدوات تعمل مباشرة ودون الحاجة لتسجيل، مع رصيد شهري لتوليد خطط التغذية والتمارين بالذكاء الاصطناعي، و10 رسائل يوميًا مع EVO. وعند إنشاء حساب مجاني، تُحفظ خططك وتتزامن عبر جميع أجهزتك.",
+      a: "نعم. التصفح مجاني بالكامل: التمارين والأطعمة والبرامج والأدوات تعمل مباشرة دون أي تسجيل، ولكل زائر رصيد شهري لتوليد خطط التغذية والتمارين، مع 10 رسائل يوميًا مع EVO. وأنشئ حسابًا مجانيًا لتحفظ خططك للأبد وتتزامن عبر أجهزتك.",
     },
     {
       q: "كيف يعمل EVO؟",
-      a: "EVO هو مدربك الذكي للياقة والتغذية، تجده في أسفل كل صفحة. يمكنك استشارته في التمارين والأنظمة، أو طلب خطة مصممة خصيصاً لأهدافك وظروفك، مع تبديل ذكي وفوري لأي تمرين أو وجبة.",
+      a: "EVO هو مدربك الذكي في اللياقة والتغذية، تجده في أسفل كل صفحة. استشره في التمارين والأنظمة الغذائية، أو اطلب منه خطة مصممة خصيصًا لهدفك وظروفك، مع تبديل ذكي وفوري لأي تمرين أو وجبة.",
     },
     {
       q: "هل أحتاج إلى اشتراك؟",
-      a: "لا يلزمك أي اشتراك لاستخدام المنصة والاستفادة من ميزاتها الأساسية. العضويات اختيارية تماماً، وتمنحك سعة توليد أكبر للخطط الذكية، ومحادثات غير محدودة مع EVO، وتجربة خالية من الإعلانات.",
+      a: "لا يلزمك أي اشتراك لاستخدام المنصة والاستفادة من ميزاتها الأساسية. العضويات اختيارية تمامًا، وتوسّع ما تفعله داخل المنصة: رصيدًا أكبر لتوليد الخطط الذكية، ومحادثة بلا حدود مع EVO، وتصديرًا كاملًا — ومن مستوى برو فما فوق، تجربة بلا إعلانات.",
     },
     {
       q: "هل يناسبني Alkemos إذا كنت مبتدئًا؟",
-      a: "نعم بالتأكيد. كل تمرين مزود بصور توضيحية وتعليمات الأداء الصحيح لتقلل خطر الإصابات وتتدرّب بأمان، وتوفر المنصة برامج تدريبية وتغذوية تبدأ من مستوى الصفر والتمارين المنزلية وتتطور معك تدريجياً.",
+      a: "نعم بالتأكيد. كل تمرين مصحوب بصور توضيحية وتعليمات للأداء الصحيح، لتتدرب بأمان وتقلل خطر الإصابة. والبرامج التدريبية تبدأ من مستوى المبتدئين وتمارين المنزل، ثم تتدرج معك خطوة بخطوة.",
     },
     {
       q: "ما الفرق بين العضوية والتدريب الأونلاين؟",
-      a: "العضوية توسّع ما تفعله داخل المنصة رقمياً: توليد خطط أكثر، ومحادثة غير محدودة مع EVO، وتصدير كامل، وتجربة بلا إعلانات. أما التدريب الأونلاين فيضيف مدربًا شخصيًا معتمدًا يصمم خططك بنفسه، ويتابع تطورك أسبوعيًا مع تواصل مباشر ومستمر — ويشمل كل مزايا برو.",
+      a: "العضوية توسّع المنصة نفسها بين يديك: توليد خطط أكثر، ومحادثة غير محدودة مع EVO، وتصدير كامل، وتجربة بلا إعلانات من مستوى برو. أما التدريب الأونلاين فيضيف إلى كل ذلك مدربًا معتمدًا يصمم خططك بنفسه ويتابع تقدمك أسبوعيًا بتواصل مباشر — وتشمل باقته كل مزايا برو.",
     },
   ],
 };
