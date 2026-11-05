@@ -311,6 +311,10 @@ const REGISTERED_SURFACES: Array<{
   { file: "src/app/(ar)/ar/compare/page.tsx", component: "ShareButtons", pathExpr: 'path="/compare"' },
   { file: "src/app/(en)/compare/[slug]/page.tsx", component: "ShareButtons", pathExpr: "path={`/compare/${comparison.slug}`}" },
   { file: "src/app/(ar)/ar/compare/[slug]/page.tsx", component: "ShareButtons", pathExpr: "path={`/compare/${comparison.slug}`}" },
+  // SEO-GROWTH-P4 (2026-11-05): the food-comparison pilot surfaces —
+  // canonical paths mirror the family's [slug] pattern.
+  { file: "src/app/(en)/foods/compare/[slug]/page.tsx", component: "ShareButtons", pathExpr: "path={`/foods/compare/${comparison.slug}`}" },
+  { file: "src/app/(ar)/ar/foods/compare/[slug]/page.tsx", component: "ShareButtons", pathExpr: "path={`/ar/foods/compare/${comparison.slug}`}" },
   { file: "src/app/(en)/diet-plan/page.tsx", component: "ShareButtons", pathExpr: 'path="/diet-plan"' },
   { file: "src/app/(ar)/ar/diet-plan/page.tsx", component: "ShareButtons", pathExpr: 'path="/diet-plan"' },
   { file: "src/app/(en)/ai-meal-planner/page.tsx", component: "ShareButtons", pathExpr: 'path="/ai-meal-planner"' },

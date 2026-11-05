@@ -42,9 +42,12 @@ describe("sitemap lastmod anchors (#14)", () => {
     expect(SITEMAP_LASTMOD.exercises).toBe("2026-11-04");
   });
 
-  it("pages + comparisons also carry the 2026-11-04 audit ship date (guide title + Freeletics titles)", () => {
+  it("pages + comparisons carry their latest material ship dates (guide/Freeletics titles 11-04 · food-comparison pilot 11-05)", () => {
     expect(SITEMAP_LASTMOD.pages).toBe("2026-11-04");
-    expect(SITEMAP_LASTMOD.comparisons).toBe("2026-11-04");
+    // SEO-GROWTH-P4 (2026-11-05): the food-vs-food comparison pilot (8
+    // new URLs — audit 03 §4.2) is a material family change, so the
+    // comparisons anchor moved to the ship date (the UPDATE PROTOCOL).
+    expect(SITEMAP_LASTMOD.comparisons).toBe("2026-11-05");
   });
 
   it("every family is a W3C day-precision date", () => {

@@ -53,7 +53,11 @@ export const SITEMAP_LASTMOD = {
   foods: "2026-11-04",
   collections: "2026-09-15",
   // Same audit: Freeletics EN+AR titles dropped the suffix (78→64 / 84→74).
-  comparisons: "2026-11-04",
+  // SEO-GROWTH-P4 (2026-11-05, owner order «اختبار محدود قابل للقياس»):
+  // the food-vs-food comparison pilot (4 pairs × both mirrors, 8 new
+  // URLs — audit 03 §4.2) joined this family — a material family change
+  // (new URLs first shipped today), so the anchor moves to the ship date.
+  comparisons: "2026-11-05",
 } as const;
 
 export type SitemapFamily = keyof typeof SITEMAP_LASTMOD;
