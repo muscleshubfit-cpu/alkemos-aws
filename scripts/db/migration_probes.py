@@ -177,6 +177,28 @@ PROBES: list[dict] = [
             {"type": "self_role_patch_rejected"},
         ],
     },
+    # 0107 — ROLE-AUDIT-LOG TEXT COLUMNS (urgent fix, same owner order):
+    # production had applied the FIRST 0105 (enum columns) and then 0106
+    # (the ::text-cast trigger from the portable 0105 file) — every role
+    # write failed 42804. The gate caught it within minutes (probe-session
+    # create performs a live audited role write — its failure turned the
+    # state gate red and blocked the deploy: the canary worked). 0107
+    # converts the columns to text = the portable definition. The
+    # BEHAVIORAL proof of this migration is the revival of every
+    # rpc_behavior probe + the probe session itself (each performs a live
+    # role write through the trigger); these registry rows assert the
+    # columns remain live — honestly weak on type, strong in effect.
+    {
+        "file": "20261105150000_0107_role_audit_log_text_columns.sql",
+        "label": "0107 ROLE-AUDIT-TEXT-COLUMNS",
+        "strength": "weak",
+        "checks": [
+            {"type": "swagger_column", "table": "role_audit_log",
+             "column": "old_role"},
+            {"type": "swagger_column", "table": "role_audit_log",
+             "column": "new_role"},
+        ],
+    },
     # 0106 — ROLE-GUARD WHITELIST (same owner order, the audit log
     # surfaced the theoretical empty-string reset bypass on pooled
     # connections): the user-context rejection is now a WHITELIST (only
