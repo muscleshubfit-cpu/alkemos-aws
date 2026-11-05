@@ -6,6 +6,7 @@ import {
   getFoodCollectionBySlug,
   getFoodsForCollection,
 } from "@/lib/hub-collections";
+import { listsForCollection } from "@/lib/food-nutrient-lists";
 import { CATEGORY_LABELS, TAG_LABELS, calculateNutrition } from "@/lib/foods-shared";
 import { getHubDepth } from "@/lib/hub-depth";
 import { SiteFooter } from "@/components/SiteFooter";
@@ -225,6 +226,29 @@ export default async function ArabicFoodCollectionPage({
           ))}
         </div>
       </section>
+
+      {/* SEO-GROWTH المرحلة 2 (2026-11-06): تعميق المجموعات — §4.3 —
+          كل مركز يربط إلى قوائمه المرتبة بالمغذيات (روابط متبادلة مع
+          عائلة /foods/lists/*؛ لا يظهر القسم إلا إن كان للمركز قوائم). */}
+      {listsForCollection(collection.slug).length > 0 && (
+        <section aria-label="قوائم مرتبة من قاعدة البيانات" className="mb-10">
+          <h2 className="text-xl md:text-2xl font-semibold mb-4">قوائم مرتبة من قاعدة بياناتنا</h2>
+          <p className="text-sm text-muted-foreground mb-4">
+            نفس الأطعمة مرتبة بالأرقام — ترتيب حقيقي محسوب من القاعدة كاملة، لا قوائم مختارة يدويًا.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {listsForCollection(collection.slug).map((l) => (
+              <Link
+                key={l.slug}
+                href={`/ar/foods/lists/${l.slug}`}
+                className="px-3 py-1.5 rounded-md border border-border text-sm hover:border-primary transition-colors"
+              >
+                {l.h1Ar}
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       {depth && <HubFaqSection depth={depth} lang="ar" title="أسئلة شائعة" />}
 

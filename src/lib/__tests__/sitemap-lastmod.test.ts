@@ -50,6 +50,14 @@ describe("sitemap lastmod anchors (#14)", () => {
     expect(SITEMAP_LASTMOD.comparisons).toBe("2026-11-05");
   });
 
+  it("collections pinned to the 2026-11-06 nutrient-lists ship date (SEO-GROWTH Phase 2 — 20 new list URLs joined the child + the hub deepening section)", () => {
+    // The nutrient-ranked «الأطعمة الغنية بـ…» family (audit 03 §4.3)
+    // joining sitemap-collections.xml is a material family change, so
+    // the anchor moves to the ship date (the UPDATE PROTOCOL — same
+    // precedent as comparisons 2026-11-05).
+    expect(SITEMAP_LASTMOD.collections).toBe("2026-11-06");
+  });
+
   it("every family is a W3C day-precision date", () => {
     for (const [family, value] of Object.entries(SITEMAP_LASTMOD)) {
       expect(value, family).toMatch(W3C_DAY);

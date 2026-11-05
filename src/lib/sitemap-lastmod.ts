@@ -51,7 +51,15 @@ export const SITEMAP_LASTMOD = {
   // stays truthful at 2026-11-04.
   exercises: "2026-11-04",
   foods: "2026-11-04",
-  collections: "2026-09-15",
+  // SEO-GROWTH Phase 2 (2026-11-06, owner order «استكمل المرحلة التالية
+  // من خطة استعادة النمو… استكمل جميع الأعمال الممكنة حاليًا»): the
+  // nutrient-ranked «الأطعمة الغنية بـ…» list family (10 lists × both
+  // mirrors, 20 NEW URLs — audit 03 §4.3) joined this sitemap child and
+  // the ten food-collection hubs gained the ranked-lists deepening
+  // section — a material family change, so the anchor moves to the ship
+  // date (the UPDATE PROTOCOL; the comparisons-family precedent from
+  // 2026-11-05, when the food-vs-food pairs joined sitemap-comparisons).
+  collections: "2026-11-06",
   // Same audit: Freeletics EN+AR titles dropped the suffix (78→64 / 84→74).
   // SEO-GROWTH-P4 (2026-11-05, owner orders batch 2 «اختبار محدود قابل
   // للقياس» + batch 3 «استكمل الأعمال المؤجلة ذات الأولوية… لا تنتظر

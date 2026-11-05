@@ -6,6 +6,7 @@ import {
   getFoodCollectionBySlug,
   getFoodsForCollection,
 } from "@/lib/hub-collections";
+import { listsForCollection } from "@/lib/food-nutrient-lists";
 import { CATEGORY_LABELS, TAG_LABELS } from "@/lib/foods-shared";
 import { calculateNutrition } from "@/lib/foods-shared";
 import { getHubDepth } from "@/lib/hub-depth";
@@ -232,6 +233,31 @@ export default async function FoodCollectionPage({
           ))}
         </div>
       </section>
+
+      {/* SEO-GROWTH Phase 2 (2026-11-06): the ranked-lists deepening —
+          audit 03 §4.3 «تعميق المجموعات العشر القائمة» — each hub links
+          to its nutrient-ranked list pages (mutual links with the
+          /foods/lists/* family; renders only when the hub has any). */}
+      {listsForCollection(collection.slug).length > 0 && (
+        <section aria-label="Ranked lists from the database" className="mb-10">
+          <h2 className="text-xl md:text-2xl font-semibold mb-4">Ranked Lists From Our Database</h2>
+          <p className="text-sm text-muted-foreground mb-4">
+            The same foods, ranked by the numbers — real orderings computed from the full database,
+            not hand-picked lists.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {listsForCollection(collection.slug).map((l) => (
+              <Link
+                key={l.slug}
+                href={`/foods/lists/${l.slug}`}
+                className="px-3 py-1.5 rounded-md border border-border text-sm hover:border-primary transition-colors"
+              >
+                {l.h1En}
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       {depth && <HubFaqSection depth={depth} lang="en" title="Frequently Asked Questions" />}
 

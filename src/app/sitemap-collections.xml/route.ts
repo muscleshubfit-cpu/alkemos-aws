@@ -7,6 +7,7 @@ import {
   isAdvertisedMuscleHub,
   isAdvertisedEquipmentHub,
 } from "@/lib/hub-collections";
+import { NUTRIENT_LISTS } from "@/lib/food-nutrient-lists";
 
 /**
  * GET /sitemap-collections.xml — Hub/Collection pages (Phase SEO-GEO-1, 2026-09-08).
@@ -103,6 +104,38 @@ export async function GET() {
       alternates: {
         en: `${base}/collections/${coll.slug}`,
         ar: `${base}/ar/collections/${coll.slug}`,
+      },
+    });
+  }
+
+  // 4. Nutrient-ranked food lists — SEO-GROWTH Phase 2 (owner order
+  // 2026-11-06 «استكمل المرحلة التالية من خطة استعادة النمو… استكمل
+  // جميع الأعمال الممكنة حاليًا»), audit 03 §4.3 / file 07's Phase-2
+  // task line «10-15 قائمة «غني بـ{مغذٍّ}» مبنية من قاعدة البيانات»:
+  // ten database-ranked lists that DEEPEN the ten food collections
+  // above (mutual links, the §7 network). 10 lists × 2 mirrors = 20
+  // URLs. NOTE: this does NOT touch sitemap-foods.xml or its selection
+  // policy in any way — the D-2 decision space (USDA tail / band
+  // advertisement) stays byte-identical; these are NEW URLs of a NEW
+  // family joining the nearest collection-sitemap child (the exact
+  // precedent the food-comparisons family set on sitemap-comparisons).
+  for (const list of NUTRIENT_LISTS) {
+    urls.push({
+      loc: `${base}/foods/lists/${list.slug}`,
+      changefreq: "monthly",
+      priority: 0.7,
+      alternates: {
+        en: `${base}/foods/lists/${list.slug}`,
+        ar: `${base}/ar/foods/lists/${list.slug}`,
+      },
+    });
+    urls.push({
+      loc: `${base}/ar/foods/lists/${list.slug}`,
+      changefreq: "monthly",
+      priority: 0.7,
+      alternates: {
+        en: `${base}/foods/lists/${list.slug}`,
+        ar: `${base}/ar/foods/lists/${list.slug}`,
       },
     });
   }

@@ -315,6 +315,10 @@ const REGISTERED_SURFACES: Array<{
   // canonical paths mirror the family's [slug] pattern.
   { file: "src/app/(en)/foods/compare/[slug]/page.tsx", component: "ShareButtons", pathExpr: "path={`/foods/compare/${comparison.slug}`}" },
   { file: "src/app/(ar)/ar/foods/compare/[slug]/page.tsx", component: "ShareButtons", pathExpr: "path={`/ar/foods/compare/${comparison.slug}`}" },
+  // SEO-GROWTH Phase 2 (2026-11-06): the nutrient-list family surfaces —
+  // same [slug] canonical-path pattern as the comparisons family.
+  { file: "src/app/(en)/foods/lists/[slug]/page.tsx", component: "ShareButtons", pathExpr: "path={`/foods/lists/${list.slug}`}" },
+  { file: "src/app/(ar)/ar/foods/lists/[slug]/page.tsx", component: "ShareButtons", pathExpr: "path={`/ar/foods/lists/${list.slug}`}" },
   { file: "src/app/(en)/diet-plan/page.tsx", component: "ShareButtons", pathExpr: 'path="/diet-plan"' },
   { file: "src/app/(ar)/ar/diet-plan/page.tsx", component: "ShareButtons", pathExpr: 'path="/diet-plan"' },
   { file: "src/app/(en)/ai-meal-planner/page.tsx", component: "ShareButtons", pathExpr: 'path="/ai-meal-planner"' },
