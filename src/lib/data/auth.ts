@@ -351,10 +351,21 @@ export async function fetchProfile(userId: string): Promise<Profile | null> {
  const { data: userData } = await supabase.auth.getUser();
  if (userData?.user) {
  const u = userData.user;
- // Check if this is a known coach email BEFORE creating the profile
- // See the comment above (in the role-update branch) for the rationale
- // behind the `speerr@gmail.com` default fallback. `muscleshubfit@gmail.com`
- // is public-contact only — never granted coach role by default.
+ // 0105 ROLE-INTEGRITY (ADMIN-ROLE-LOSS-FORENSICS-AND-FIX
+ // 2026-11-05): the client NEVER decides a role anymore. The
+ // recreated row is born 'client' (DB default + the
+ // profiles_role_guard trigger force-clamps any user-context
+ // staff-role INSERT to 'client'), and the designed client→coach
+ // bootstrap happens ONLY through the server-side
+ // auto_promote_coach_if_allowed RPC below. The old
+ // `role: isCoachEmail ? "coach" : "client"` upsert could never
+ // grant admin, but it made the BROWSER a role authority — the DB
+ // is now the single authority. The `speerr@gmail.com` default
+ // fallback stays for the RPC bootstrap only (same rationale as
+ // the role-update branch above — the Owner must always be able
+ // to log in as staff on a fresh deployment;
+ // `muscleshubfit@gmail.com` is public-contact only and never
+ // auto-promoted).
  const coachEmails = (process.env.COACH_EMAILS || "speerr@gmail.com").split(",").map((e: string) => e.trim().toLowerCase());
  const isCoachEmail = coachEmails.includes(u.email?.toLowerCase() || "");
  const newProfile = {
@@ -366,7 +377,6 @@ export async function fetchProfile(userId: string): Promise<Profile | null> {
  u.email ||
  null,
  phone: (u.user_metadata?.phone as string) || null,
- role: (isCoachEmail ? "coach" : "client") as "coach" | "client",
  avatar_url: (u.user_metadata?.avatar_url as string) || null,
  };
  const { data: inserted, error: insErr } = await supabase
@@ -374,7 +384,22 @@ export async function fetchProfile(userId: string): Promise<Profile | null> {
  .upsert(newProfile, { onConflict: "id" })
  .select()
  .single();
- if (!insErr && inserted) return inserted as Profile;
+ if (!insErr && inserted) {
+ // The sanctioned client→coach bootstrap (allowlisted emails
+ // only, server-side, audited in role_audit_log). An admin
+ // email is NEVER touched here — the RPC promotes
+ // client→coach only and never downgrades an admin.
+ if (isCoachEmail && (inserted as Profile).role === "client") {
+ await supabase.rpc("auto_promote_coach_if_allowed");
+ const { data: promoted } = await supabase
+ .from("profiles")
+ .select()
+ .eq("id", u.id)
+ .single();
+ return (promoted ?? inserted) as Profile;
+ }
+ return inserted as Profile;
+ }
  }
  } catch {
  // swallow — fall through to null

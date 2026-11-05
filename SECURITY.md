@@ -1,6 +1,6 @@
 # SECURITY.md — Alkemos Security Policy
 
-> **Last updated:** 2026-09-24 (DOC-REMEDIATION-274 — repo visibility: PRIVATE by owner decision (§1/§8 updated) · §10 cache table re-derived from `vercel.json` (image-family split) · §11 `is_coach()` corrected to the migration-0029 role model v2 + demo email aligned with `src/lib/data/auth.ts` · previously 2026-09-22 improvements batch 245)
+> **Last updated:** 2026-11-05 (0105 ADMIN-ROLE-INTEGRITY — the role-integrity law added below; previously 2026-09-24 (DOC-REMEDIATION-274 — repo visibility: PRIVATE by owner decision (§1/§8 updated) · §10 cache table re-derived from `vercel.json` (image-family split) · §11 `is_coach()` corrected to the migration-0029 role model v2 + demo email aligned with `src/lib/data/auth.ts` · previously 2026-09-22 improvements batch 245)
 > **Owner:** muscleshubfit@gmail.com
 > **Reporting security issues:** see §8 below.
 
@@ -869,6 +869,18 @@ fetches.
   product catalog — see `archive/PROGRESS.md` for the discrepancy).
 - **RLS:** every table in the database has RLS policies enforced.
   See `DEVELOPER_GUIDE.md` §4 for the per-table policy summary.
+- **Role integrity (0105 ADMIN-ROLE-INTEGRITY, 2026-11-05):**
+  `profiles.role` is structurally server-side only. A BEFORE
+  INSERT/UPDATE trigger (`profiles_role_guard`) force-clamps any
+  user-context INSERT to `client` and refuses every user-context role
+  UPDATE unless a sanctioned SECURITY DEFINER function raised the
+  transaction-local `alkemos.role_write` flag
+  (`auto_promote_coach_if_allowed` / `admin_set_user_role`). A triple
+  last-admin guard (row + statement-with-transition-tables + delete)
+  makes "zero admins" impossible in any context. Every role change is
+  attributed in `role_audit_log` (actor, channel, timestamp). The
+  daily migration-state gate re-tests the guard live
+  (`self_role_patch_rejected` + `at_least_one_admin` probes).
 - **`is_coach()` SQL function:** SECURITY DEFINER function used by
   RLS policies to check staff status: `profiles.role IN ('coach',
   'admin')` (ROLE MODEL v2 — migration 0029 redefined it from the v1

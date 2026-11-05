@@ -181,6 +181,45 @@ def run_probe(check: dict, env: dict, swagger: dict) -> tuple[bool, str]:
                + [r["field"] for r in check.get("field_rules", [])]}
         return True, f"client {check['find_client'][:8]}… picked {got}"
 
+    if t == "self_role_patch_rejected":
+        # 0105 DRIFT GUARD (ADMIN-ROLE-LOSS-FORENSICS-AND-FIX 2026-11-05):
+        # the ephemeral QA-admin session must NOT be able to change its own
+        # profiles.role through PostgREST. Pre-fix this exact PATCH returned
+        # HTTP 204 live (profiles_update_self had lost its WITH CHECK — the
+        # Phase-61 drift class) — which is the hole that let the owner's
+        # admin role be rewritten. With 0105 live, BOTH the restored WITH
+        # CHECK and the profiles_role_guard trigger refuse it. ALLOWED =
+        # drift = RED (the daily 06:10 UTC run catches it within a day).
+        if not env.get("probe_jwt"):
+            return False, (
+                "probe session missing — the self-role-write drift guard "
+                "needs the ephemeral QA-admin session "
+                "(scripts/db/probe_session.py); see the provisioning error "
+                "above")
+        if not env.get("anon"):
+            return False, (
+                "NEXT_PUBLIC_SUPABASE_ANON_KEY missing — the drift guard "
+                "needs it (see docs/DB-MIGRATION-PIPELINE-2026-10-27.md §5)")
+        # resolve the probe account's own profile row (service key, no PII
+        # printed — the probe email is a throwaway @alkemos-test.com)
+        st, rows = http("GET", env["sb"] + "/rest/v1/profiles?select=id"
+                        f"&email=eq.{env['probe_email']}", env["service"])
+        uid = ""
+        if st == 200 and isinstance(rows, list) and rows:
+            uid = rows[0].get("id", "")
+        if not uid:
+            return False, "probe profile row not found — cannot run the " \
+                          "self-role-write drift guard"
+        # the test itself: self-PATCH a role change with the probe's own JWT
+        st, body = http("PATCH",
+                        env["sb"] + f"/rest/v1/profiles?id=eq.{uid}",
+                        env["anon"], token=env["probe_jwt"],
+                        body={"role": "client"})
+        ok = 400 <= st < 500
+        detail = ("REJECTED (WITH CHECK + role guard live)"
+                  if ok else "*** ALLOWED — ROLE-WRITE DRIFT (Phase-61 class) ***")
+        return ok, f"self-PATCH own role as user -> HTTP {st}: {detail}"
+
     return False, f"unknown probe type {t!r}"
 
 
@@ -221,7 +260,7 @@ def main() -> int:
     # persistent test admin or QA_PROBE_* secrets. The session is created,
     # used, and hard-deleted inside THIS run — cleanup happens even when a
     # probe fails, and crashed-run leftovers are swept by the next run.)
-    needs_session = any(c["type"] == "rpc_behavior"
+    needs_session = any(c["type"] in ("rpc_behavior", "self_role_patch_rejected")
                         for p in PROBES for c in p["checks"])
     probe_email = ""
     if needs_session:
@@ -229,6 +268,7 @@ def main() -> int:
             print(f"- probe-session stale sweep: {note}")
         try:
             probe_email, probe_password = probe_session.create(sb, service)
+            env["probe_email"] = probe_email
             env["probe_jwt"] = probe_session.signin(sb, anon,
                                                     probe_email, probe_password)
             print(f"- probe session: {probe_email} (ephemeral QA admin, "

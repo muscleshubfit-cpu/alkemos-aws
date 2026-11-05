@@ -150,6 +150,33 @@ PROBES: list[dict] = [
              "column": "price_egp"},
         ],
     },
+    # 0105 — ADMIN-ROLE-INTEGRITY (owner order 2026-11-05 «تحقيق أمني عاجل
+    # وإصلاح فقدان صلاحية Admin»): four probes —
+    #   1. role_audit_log table (every role change is now attributed)
+    #   2. admin_set_user_role RPC (the sanctioned channel)
+    #   3. at_least_one_admin (the restore + the last-admin invariant:
+    #      production must NEVER carry zero admins again — the exact state
+    #      this incident measured)
+    #   4. self_role_patch_rejected — THE DRIFT GUARD: the ephemeral QA
+    #      admin session must NOT be able to change its own role through
+    #      PostgREST (profiles_update_self WITH CHECK + profiles_role_guard
+    #      trigger). This is the exact hole that let the owner's role be
+    #      rewritten (live-proven HTTP 204 pre-fix). If this probe ever
+    #      goes red, the Phase-61 drift class returned — loudly, same day.
+    {
+        "file": "20261105140000_0105_admin_role_integrity.sql",
+        "label": "0105 ADMIN-ROLE-INTEGRITY",
+        "strength": "strong",
+        "checks": [
+            {"type": "swagger_table", "table": "role_audit_log"},
+            {"type": "swagger_rpc", "rpc": "admin_set_user_role"},
+            {"type": "rest_rows",
+             "path": "/rest/v1/profiles?select=role&role=eq.admin&limit=1000",
+             "transform": "at_least_one_admin",
+             "expect": 1},
+            {"type": "self_role_patch_rejected"},
+        ],
+    },
 ]
 # fmt: on
 
@@ -166,6 +193,14 @@ def duplicate_draft_groups(rows: list[dict]) -> int:
     return sum(1 for c in seen.values() if c > 1)
 
 
+def at_least_one_admin(rows: list[dict]) -> int:
+    """0105's invariant: production carries at least one admin profile.
+    Returns 1 when the fetched admin-role rows contain any row, else 0.
+    (The exact incident state this migration fixed was ZERO admins.)"""
+    return 1 if any(r.get("role") == "admin" for r in rows) else 0
+
+
 TRANSFORMS = {
     "duplicate_draft_groups": duplicate_draft_groups,
+    "at_least_one_admin": at_least_one_admin,
 }

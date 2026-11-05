@@ -1995,6 +1995,47 @@ export type Database = {
           { foreignKeyName: "local_price_settings_updated_by_fkey"; columns: ["updated_by"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
         ];
       };
+      // 0105 ADMIN-ROLE-INTEGRITY: every profiles.role change (and every
+      // admin-profile delete) is recorded here by the profiles_role_guard
+      // triggers. No FK by design (the audit outlives the profile row).
+      // Writes: trigger-only (SECURITY DEFINER). Reads: admins only (RLS
+      // policy role_audit_log_select_admin) + service-role.
+      role_audit_log: {
+        Row: {
+          id: string;
+          profile_id: string;
+          email: string | null;
+          old_role: "client" | "coach" | "admin" | null;
+          new_role: "client" | "coach" | "admin" | null;
+          actor_uid: string | null;
+          actor_email: string | null;
+          context: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          profile_id: string;
+          email?: string | null;
+          old_role?: "client" | "coach" | "admin" | null;
+          new_role?: "client" | "coach" | "admin" | null;
+          actor_uid?: string | null;
+          actor_email?: string | null;
+          context?: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          profile_id?: string;
+          email?: string | null;
+          old_role?: "client" | "coach" | "admin" | null;
+          new_role?: "client" | "coach" | "admin" | null;
+          actor_uid?: string | null;
+          actor_email?: string | null;
+          context?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
       // mirror RUN_ON_SUPABASE_0022 — tamper-proof EVO usage ledger
       // (server-writes only; added Phase 93, was from("evo_chat_usage" as any))
       evo_chat_usage: {
@@ -2152,6 +2193,17 @@ export type Database = {
       auto_promote_coach_if_allowed: {
         Args: Record<string, never>;
         Returns: boolean;
+      };
+      // 0105 ADMIN-ROLE-INTEGRITY: the ONE sanctioned server-side channel
+      // for role changes. Requires an admin session (or service context),
+      // refuses to demote the LAST admin, and every change lands in
+      // role_audit_log (context 'admin-rpc').
+      admin_set_user_role: {
+        Args: {
+          p_user_id: string;
+          p_role: "client" | "coach" | "admin";
+        };
+        Returns: Record<string, unknown>;
       };
       get_profile_role: {
         Args: { p_user_id: string };
