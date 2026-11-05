@@ -26,9 +26,15 @@ is **proprietary and confidential** (see [License](#-license)).
   (self-hosted WebP), bilingual names / instructions / tips in Modern Standard
   Arabic + English, filterable by muscle group, equipment, and level
   (`src/lib/exercises.ts`)
-- **Food database** — 8,830 foods with per-100g macros, bilingual labels and
-  search (`src/lib/foods.ts`); curated foods carry an editorial enrichment
-  layer (unique intro, usage context, FAQ per food, bilingual, server-rendered
+- **Food database** — 8,830 foods with per-100g macros and search that
+  matches both the Arabic and English name fields (`src/lib/foods.ts`).
+  Arabic (MSA) + English names cover the hand-curated core plus the
+  arabization batches shipped so far; the long USDA-imported tail still
+  carries English-only names and surfaces as-is on the Arabic pages until
+  its batch is translated (governing plan:
+  [`docs/FOOD-DATA-ARABIZATION-PLAN-2026-09-19.md`](./docs/FOOD-DATA-ARABIZATION-PLAN-2026-09-19.md)).
+  Curated foods also carry an editorial enrichment layer (unique intro,
+  usage context, FAQ per food, bilingual, server-rendered
   — `src/lib/foods-enrichment.ts`)
 - **Workout programs** — structured, ready-to-follow programs for home,
   home-equipment, and gym, from beginner to advanced
