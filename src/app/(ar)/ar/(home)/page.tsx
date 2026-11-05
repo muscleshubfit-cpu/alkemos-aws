@@ -73,7 +73,7 @@ export const metadata: Metadata = {
     url: `${SITE_URL}/ar`,
     images: [
       {
-        url: "/images/og/og-home-ar.png?v=3",
+        url: "/images/og/og-home-ar.png?v=4",
         width: 1200,
         height: 630,
         alt: "Alkemos — منصة اللياقة والتغذية الذكية المتكاملة",

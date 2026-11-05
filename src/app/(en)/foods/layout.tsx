@@ -38,7 +38,7 @@ export const metadata: Metadata = {
     // same family card the food DETAIL pages already use (Phase 187).
     images: [
       {
-        url: "/images/og/og-foods-en.png?v=3",
+        url: "/images/og/og-home-en.png?v=4",
         width: 1200,
         height: 630,
         alt: "Alkemos Food & Nutrition Database",
@@ -47,7 +47,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    images: ["/images/og/og-foods-en.png?v=3"],
+    images: ["/images/og/og-home-en.png?v=4"],
   },
 };
 

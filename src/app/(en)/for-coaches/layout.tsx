@@ -58,7 +58,7 @@ export const metadata: Metadata = {
     // The portrait remains the page's on-page hero image (unchanged).
     images: [
       {
-        url: "/images/og/og-for-coaches-en.png?v=3",
+        url: "/images/og/og-home-en.png?v=4",
         width: 1200,
         height: 630,
         alt: "Coach on Alkemos",
@@ -70,7 +70,7 @@ export const metadata: Metadata = {
     title: "Coach on Alkemos — your clients, your prices, your money",
     description:
       "Client management, AI plans, your pricing with zero commission. Register free.",
-    images: ["/images/og/og-for-coaches-en.png?v=3"],
+    images: ["/images/og/og-home-en.png?v=4"],
   },
 };
 

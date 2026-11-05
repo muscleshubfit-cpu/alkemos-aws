@@ -58,7 +58,7 @@ export const metadata: Metadata = {
     // by scripts/generate-og-cards.py, guarded by og-image-coverage.test.ts.
     images: [
       {
-        url: "/images/og/og-workout-tracker-en.png?v=3",
+        url: "/images/og/og-home-en.png?v=4",
         width: 1200,
         height: 630,
         alt: "Workout Tracker — Alkemos",
@@ -70,7 +70,7 @@ export const metadata: Metadata = {
     title: "Workout Tracker — Plan Workouts & Track Progress Free | Alkemos",
     description:
       "AI workout plans, ready programs, exercise guides — plus weight, measurements and progress photos in one free dashboard.",
-    images: ["/images/og/og-workout-tracker-en.png?v=3"],
+    images: ["/images/og/og-home-en.png?v=4"],
   },
 };
 

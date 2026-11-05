@@ -53,7 +53,7 @@ export const metadata: Metadata = {
     // Dedicated AR family card (SOCIAL-OG-3 dedicated-card law).
     images: [
       {
-        url: "/images/og/og-workout-tracker-ar.png?v=3",
+        url: "/images/og/og-home-ar.png?v=4",
         width: 1200,
         height: 630,
         alt: "متتبّع التمارين — Alkemos",
@@ -65,7 +65,7 @@ export const metadata: Metadata = {
     title: "متتبّع التمارين — خطّط تدريبك وتابع تقدّمك مجانًا",
     description:
       "خطط تمارين بالذكاء الاصطناعي، برامج جاهزة، ومكتبة تمارين مشروحة — مع تتبّع الوزن والقياسات وصور التقدّم في لوحة واحدة.",
-    images: ["/images/og/og-workout-tracker-ar.png?v=3"],
+    images: ["/images/og/og-home-ar.png?v=4"],
   },
 };
 

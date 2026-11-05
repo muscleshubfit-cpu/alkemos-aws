@@ -99,11 +99,11 @@ describe("P2-14 / §12.40 — og:image ↔ JSON-LD image consistency (audit find
     [BLOG_AR, "image: og.shareImage,"],
     [
       COMPARE_EN,
-      "image: `https://alkemos.com/images/og/og-compare-${comparison.slug}-en.png?v=3`",
+      "image: `https://alkemos.com/images/og/og-home-en.png?v=4`",
     ],
     [
       COMPARE_AR,
-      "image: `https://alkemos.com/images/og/og-compare-${comparison.slug}-ar.png?v=3`",
+      "image: `https://alkemos.com/images/og/og-home-ar.png?v=4`",
     ],
   ];
 
@@ -125,12 +125,12 @@ describe("P2-14 / §12.40 — og:image ↔ JSON-LD image consistency (audit find
       expect(src).toContain("images: [og.shareImage]");
       expect(src).toContain("image: og.shareImage,");
     }
-    // Compare mirrors (SOCIAL-OG-3): the STATIC per-comparison card URL
+    // Compare mirrors (SOCIAL-OG-4): the homepage fallback card URL
     // is declared once and must be identical for og:image and twitter:image.
     for (const file of [COMPARE_EN, COMPARE_AR]) {
       const src = readFileSync(file, "utf8");
-      const og = src.match(/url: `(https:\/\/alkemos\.com\/images\/og\/og-compare-[^`]+)`/);
-      const twitter = src.match(/images: \[`(https:\/\/alkemos\.com\/images\/og\/og-compare-[^`]+)`\]/);
+      const og = src.match(/url: `(https:\/\/alkemos\.com\/images\/og\/og-home-[^`]+)`/);
+      const twitter = src.match(/images: \[`(https:\/\/alkemos\.com\/images\/og\/og-home-[^`]+)`\]/);
       expect(og, `${file} og:image url`).toBeTruthy();
       expect(twitter, `${file} twitter:image`).toBeTruthy();
       expect(og?.[1]).toBe(twitter?.[1]);

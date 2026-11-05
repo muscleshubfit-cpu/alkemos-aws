@@ -34,7 +34,7 @@ import {
  * Arabic mirror at /ar/guides/macro-tracking-accuracy.
  */
 
-const OG_IMAGE = "/images/og/og-macro-tracker-en.png?v=3";
+const OG_IMAGE = "/images/og/og-home-en.png?v=4";
 const URL = `https://alkemos.com${PATH}`;
 
 export const metadata: Metadata = {
@@ -56,13 +56,13 @@ export const metadata: Metadata = {
     siteName: "Alkemos",
     locale: "en_US",
     // og-coverage law (Phase 187 + 318): exact-string family-card wiring.
-    images: [{ url: "/images/og/og-macro-tracker-en.png?v=3", width: 1200, height: 630, type: "image/png" }],
+    images: [{ url: "/images/og/og-home-en.png?v=4", width: 1200, height: 630, type: "image/png" }],
   },
   twitter: {
     card: "summary_large_image",
     title: META.titleEn,
     description: META.descriptionEn,
-    images: ["/images/og/og-macro-tracker-en.png?v=3"],
+    images: ["/images/og/og-home-en.png?v=4"],
   },
 };
 

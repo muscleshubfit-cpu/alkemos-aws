@@ -54,13 +54,13 @@ export async function generateMetadata({
       // SOCIAL-OG-3 (2026-09-30): STATIC per-comparison card — same fix as
       // the EN mirror (the generator's type=compare branch stays as the
       // legacy-URL fallback only).
-      images: [{ url: `https://alkemos.com/images/og/og-compare-${comparison.slug}-ar.png?v=3`, width: 1200, height: 630, type: "image/png" }],
+      images: [{ url: `https://alkemos.com/images/og/og-home-ar.png?v=4`, width: 1200, height: 630, type: "image/png" }],
     },
     twitter: {
       card: "summary_large_image",
       title: comparison.titleAr,
       description: comparison.descriptionAr,
-      images: [`https://alkemos.com/images/og/og-compare-${comparison.slug}-ar.png?v=3`],
+      images: [`https://alkemos.com/images/og/og-home-ar.png?v=4`],
     },
   };
 }
@@ -86,7 +86,7 @@ export default async function ArabicComparisonPage({
     // (?lang=ar variant; previously fell back to /logo.png).
     // §12.40 consistency — same static AR card the metadata declares
     // above (SOCIAL-OG-3).
-    image: `https://alkemos.com/images/og/og-compare-${comparison.slug}-ar.png?v=3`,
+    image: `https://alkemos.com/images/og/og-home-ar.png?v=4`,
     // W1-1 (E-03, audit 2026-10-02): REAL dates from the data module —
     // the old new Date().toISOString() fabricated all three on every
     // render ("modified + reviewed today" with each request). Now:

@@ -95,6 +95,7 @@ const BATCH_FILES = [
   "article-treatment-batch-e34.json",
   "article-treatment-batch-e35.json",
   "article-treatment-batch-e36.json",
+  "article-treatment-batch-p22-1.json",
 ] as const;
 
 const BATCH_DIR = join(process.cwd(), "scripts", "blog-runner");
@@ -251,8 +252,19 @@ describe("article-treatment batches — the permanent editorial battery", () => 
               ]) {
                 expect(r[k], `row.${k}`).toBeTruthy();
               }
-              expect(e.pair_with).toBeDefined();
-              expect(e.pair_with!.language).not.toBe(e.language);
+              // P2-2 (2026-11-06, E-28): ARABIC-EXPANSION inserts are
+              // AR-only BY DESIGN — no pair_with. An EN twin requires an
+              // independent demand justification (growth strategy §4.2
+              // «لا نشر EN بالجملة»); unpaired AR is the documented norm
+              // (~63 unpaired AR articles by owner decision). Pairing is
+              // therefore enforced WHEN declared, not always.
+              if (e.pair_with) {
+                expect(e.pair_with.language).not.toBe(e.language);
+                expect(e.pair_with.slug).toBeTruthy();
+              } else {
+                expect(e.language).toBe("ar");
+                expect(batch.batch).toContain("ARABIC-EXPANSION");
+              }
               expect(r.language).toBe(e.language);
               expect(r.slug).toBe(e.slug);
               // author law: real human name (SEO-GEO-4.1)

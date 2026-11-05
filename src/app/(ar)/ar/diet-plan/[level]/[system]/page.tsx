@@ -70,8 +70,8 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
       // cells' og-home-en pattern).
       images: [
         {
-          // SOCIAL-OG-3 (2026-09-30): dedicated family card (was og-home — audit round 2: ~90 URLs across ~15 surface types shared the generic home card) + share-cache-bust v=3.
-          url: "/images/og/og-diet-plan-ar.png?v=3",
+          // SOCIAL-OG-3 (2026-09-30): dedicated family card (was og-home — audit round 2: ~90 URLs across ~15 surface types shared the generic home card) + share-cache-bust v=4 (SOCIAL-OG-4).
+          url: "/images/og/og-home-ar.png?v=4",
           width: 1200,
           height: 630,
           alt: "منصة Alkemos الرياضية الشاملة",
@@ -80,7 +80,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
     },
     twitter: {
       card: "summary_large_image",
-      images: ["/images/og/og-diet-plan-ar.png?v=3"],
+      images: ["/images/og/og-home-ar.png?v=4"],
     },
   };
 }

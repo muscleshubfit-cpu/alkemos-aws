@@ -110,8 +110,10 @@ function decodePng(buf: Buffer): { width: number; height: number; px: (x: number
 }
 
 describe("SOCIAL-OG-3 — OG card visual law (warm-light brand palette, never blue)", () => {
+  // SOCIAL-OG-4 (2026-11-06): the og-home pair is the ONLY static card on
+  // disk — the 54 family/comparison cards are retired (fallback law).
   const cards = readdirSync(OG_DIR).filter((f) => f.endsWith(".png"));
-  expect(cards.length).toBeGreaterThanOrEqual(50);
+  expect(cards.length).toBe(2);
 
   it.each(cards)("og-image-visual: %s is 1200×630, warm-light, zero blue, not blank", (file) => {
     const img = decodePng(readFileSync(resolve(OG_DIR, file)));

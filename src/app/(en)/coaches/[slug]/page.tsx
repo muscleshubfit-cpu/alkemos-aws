@@ -105,7 +105,7 @@ export async function generateMetadata({
       // in og-image-coverage.test.ts.
       images: [
         {
-          url: "/images/og/og-home-en.png?v=3",
+          url: "/images/og/og-home-en.png?v=4",
           width: 1200,
           height: 630,
           alt: "Alkemos — The Smart Fitness & Nutrition Platform",
@@ -114,7 +114,7 @@ export async function generateMetadata({
     },
     twitter: {
       card: "summary_large_image",
-      images: ["/images/og/og-home-en.png?v=3"],
+      images: ["/images/og/og-home-en.png?v=4"],
     },
   };
 }

@@ -61,7 +61,7 @@ export const metadata: Metadata = {
     // by scripts/generate-og-cards.py, guarded by og-image-coverage.test.ts.
     images: [
       {
-        url: "/images/og/og-macro-tracker-en.png?v=3",
+        url: "/images/og/og-home-en.png?v=4",
         width: 1200,
         height: 630,
         alt: "Macro Tracker — Alkemos",
@@ -73,7 +73,7 @@ export const metadata: Metadata = {
     title: "Macro Tracker — Set Targets, Build Meals, Track Totals | Alkemos",
     description:
       "Macro targets, live meal totals from 8,830+ foods, AI meal plans, and weight tracking — free to start.",
-    images: ["/images/og/og-macro-tracker-en.png?v=3"],
+    images: ["/images/og/og-home-en.png?v=4"],
   },
 };
 

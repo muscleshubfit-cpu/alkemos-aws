@@ -47,7 +47,7 @@ export const metadata: Metadata = {
     siteName: "Alkemos",
     images: [
       {
-        url: "/images/og/og-exercises-ar.png?v=3",
+        url: "/images/og/og-home-ar.png?v=4",
         width: 1200,
         height: 630,
         alt: "مكتبة تمارين Alkemos",
@@ -56,7 +56,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    images: ["/images/og/og-exercises-ar.png?v=3"],
+    images: ["/images/og/og-home-ar.png?v=4"],
   },
 };
 

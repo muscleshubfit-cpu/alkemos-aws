@@ -68,8 +68,8 @@ export async function generateMetadata({
       // summary_large_image, mirroring the EN equipment hubs.
       images: [
         {
-          // SOCIAL-OG-3 (2026-09-30): dedicated family card (was og-home — audit round 2: ~90 URLs across ~15 surface types shared the generic home card) + share-cache-bust v=3.
-          url: "/images/og/og-equipment-ar.png?v=3",
+          // SOCIAL-OG-3 (2026-09-30): dedicated family card (was og-home — audit round 2: ~90 URLs across ~15 surface types shared the generic home card) + share-cache-bust v=4 (SOCIAL-OG-4).
+          url: "/images/og/og-home-ar.png?v=4",
           width: 1200,
           height: 630,
           alt: "منصة Alkemos الرياضية الشاملة",
@@ -78,7 +78,7 @@ export async function generateMetadata({
     },
     twitter: {
       card: "summary_large_image",
-      images: ["/images/og/og-equipment-ar.png?v=3"],
+      images: ["/images/og/og-home-ar.png?v=4"],
     },
   };
 }

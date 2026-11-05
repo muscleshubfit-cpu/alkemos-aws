@@ -36,7 +36,7 @@ import {
  * og-foods-ar (قانون تغطية البطاقات).
  */
 
-const OG_IMAGE = "/images/og/og-foods-ar.png?v=3";
+const OG_IMAGE = "/images/og/og-home-ar.png?v=4";
 const URL = `https://alkemos.com${PATH}`;
 
 export const revalidate = 604800; // 7 أيام — نفس نافذة /ar/foods/[slug]
@@ -61,13 +61,13 @@ export const metadata: Metadata = {
     siteName: "Alkemos",
     locale: "ar_EG",
     // قانون تغطية البطاقات (فريم 187 + 318): تضمين حرفي لبطاقة العائلة.
-    images: [{ url: "/images/og/og-foods-ar.png?v=3", width: 1200, height: 630, type: "image/png" }],
+    images: [{ url: "/images/og/og-home-ar.png?v=4", width: 1200, height: 630, type: "image/png" }],
   },
   twitter: {
     card: "summary_large_image",
     title: META.titleAr,
     description: META.descriptionAr,
-    images: ["/images/og/og-foods-ar.png?v=3"],
+    images: ["/images/og/og-home-ar.png?v=4"],
   },
 };
 

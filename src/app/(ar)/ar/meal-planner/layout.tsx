@@ -39,7 +39,7 @@ export const metadata: Metadata = {
     // card is pinned explicitly.
     images: [
       {
-        url: "/images/og/og-tools-ar.png?v=3",
+        url: "/images/og/og-home-ar.png?v=4",
         width: 1200,
         height: 630,
         alt: "حاسبات اللياقة المجانية من Alkemos",
@@ -48,7 +48,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    images: ["/images/og/og-tools-ar.png?v=3"],
+    images: ["/images/og/og-home-ar.png?v=4"],
   },
 };
 

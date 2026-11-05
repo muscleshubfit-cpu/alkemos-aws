@@ -173,142 +173,16 @@ def make_card(name: str, lang: str, title: str, desc: str) -> None:
 
 # (file name, lang, title, description) — TIMELESS copy only (no counts).
 SPECS = [
+    # SOCIAL-OG-4 (2026-11-06, owner order «استخدام الصورة الأولى الخاصة بكل صفحة
+    # تلقائيًا كصورة معاينة، وإن لم تكن للصفحة صورة خاصة فصورة الصفحة الرئيسية»):
+    # the ONLY static card left is the homepage pair — every page without an
+    # own content image (no cover photo / exercise photo / program image /
+    # author avatar) shares it as the default fallback. The 27 former family
+    # and per-comparison cards are retired (git history preserves them).
     ("og-home-en", "en", "Alkemos — Fitness & Nutrition, Bilingual",
      "Exercises, foods, calculators, AI plan generators & coaching — in English & Arabic."),
     ("og-home-ar", "ar", "منصة Alkemos الرياضية الشاملة",
      "تمارين وأطعمة وحاسبات ومولدات خطط بالذكاء الاصطناعي ومدربون معتمدون — بالعربية والإنجليزية."),
-    ("og-exercises-en", "en", "Exercise Library",
-     "Complete guides: form, target muscles & equipment — in English & Arabic."),
-    ("og-exercises-ar", "ar", "مكتبة التمارين",
-     "طريقة الأداء والعضلات المستهدفة والمعدات — بالعربية والإنجليزية."),
-    ("og-foods-en", "en", "Food & Nutrition Database",
-     "Calories, protein, carbs & fat for every food — with smart serving sizes."),
-    ("og-foods-ar", "ar", "الأطعمة والقيم الغذائية",
-     "السعرات والبروتين والكارب والدهون لكل أكلة — ومقاسات تقديم ذكية."),
-    ("og-hubs-en", "en", "Muscle Group Guides",
-     "The best exercises for every muscle — sets, reps & alternatives."),
-    ("og-hubs-ar", "ar", "أدلة مجموعات العضلات",
-     "أفضل التمارين لكل عضلة — المجموعات والتكرارات والتمارين البديلة."),
-    ("og-collections-en", "en", "Curated Food Collections",
-     "Hand-picked foods by goal, macro profile & diet — high-protein, vegan & more."),
-    ("og-collections-ar", "ar", "مجموعات الأطعمة المختارة",
-     "أطعمة منتقاة حسب الهدف والماكروز والنظام — عالي البروتين ونباتي والمزيد."),
-    ("og-tools-en", "en", "Free Fitness Calculators",
-     "BMI, calories, macros, body fat & water tracking — free, fast & bilingual."),
-    ("og-tools-ar", "ar", "حاسبات اللياقة المجانية",
-     "كتلة الجسم والسعرات والماكروز ودهون الجسم وتتبع الماء — مجانية وثنائية اللغة."),
-    ("og-blog-category-en", "en", "Fitness & Nutrition Articles",
-     "Evidence-based training, nutrition & supplement guides — in English & Arabic."),
-    ("og-blog-category-ar", "ar", "مقالات اللياقة والتغذية",
-     "أدلة التدريب والتغذية والمكملات مبنية على الدليل — بالعربية والإنجليزية."),
-    # Phase 231 (owner order «نفّذ الآن جميع إصلاحات Social Sharing
-    # المتبقية…» — C): dedicated cards for the three surfaces that still
-    # shared a family card — EVO (was og-home), the for-coaches landing
-    # pair (was the vertical 1122x1402 coach-portrait.jpg) and the blog
-    # index pair (was the homepage card via inheritance).
-    ("og-evo-en", "en", "EVO — AI Fitness Coach",
-     "Personalized nutrition & workout plans built from your data — smart swaps and 24/7 consulting, free for everyone."),
-    ("og-evo-ar", "ar", "مدرب اللياقة الذكي EVO",
-     "خطط تغذية وتمارين مخصصة مبنية من بياناتك — وبدائل ذكية واستشارات على مدار الساعة، مجاني للجميع."),
-    ("og-for-coaches-en", "en", "Coach on Alkemos",
-     "Your clients, your prices, your money — zero commission, a fixed monthly activation fee only."),
-    ("og-for-coaches-ar", "ar", "انضم كمدرب في Alkemos",
-     "عملاؤك بأسعارك وأموالك بين يديك — بدون أي نسبة، برسم تفعيل شهري ثابت فقط."),
-    ("og-blog-en", "en", "The Alkemos Blog",
-     "Science-based workout, nutrition & supplement articles from the Alkemos team — in English & Arabic."),
-    ("og-blog-ar", "ar", "مدونة Alkemos",
-     "مقالات رياضية وتغذية علمية من فريق Alkemos — بالعربية والإنجليزية."),
-    # ─────────────────────────────────────────────────────────────────
-    # SOCIAL-OG-3 (2026-09-30): dedicated cards for EVERY surface that
-    # previously fell back to the generic og-home card (audit round 2 —
-    # ~90 URLs across ~15 page types x 2 languages shared one card).
-    # Copy stays TIMELESS (no counts, no years).
-    ("og-programs-en", "en", "Workout Programs",
-     "Structured training blocks for every goal & level — with full guidance inside the app."),
-    ("og-programs-ar", "ar", "برامج التدريب",
-     "برامج منظمة لكل هدف ومستوى — مع إرشاد كامل داخل التطبيق."),
-    ("og-memberships-en", "en", "Memberships & Pricing",
-     "One plan, every tool — transparent pricing, no hidden fees, cancel anytime."),
-    ("og-memberships-ar", "ar", "العضويات والأسعار",
-     "عضوية واحدة وكل الأدوات — أسعار شفافة بلا رسوم خفية، وإلغاء في أي وقت."),
-    ("og-coaching-en", "en", "1-on-1 Coaching",
-     "Certified coaches build your plan, track your progress & adjust it weekly."),
-    ("og-coaching-ar", "ar", "التدريب الشخصي 1-on-1",
-     "مدربون معتمدون يبنون خطتك ويتابعون تقدمك ويعدّلونها أسبوعياً."),
-    ("og-diet-plan-en", "en", "Free Diet Plans",
-     "Ready-made meal plans by level & diet system — balanced, practical, bilingual."),
-    ("og-diet-plan-ar", "ar", "خطط غذائية مجانية",
-     "خطط وجبات جاهزة حسب المستوى والنظام الغذائي — متوازنة وعملية وثنائية اللغة."),
-    ("og-equipment-en", "en", "Train by Equipment",
-     "Every exercise for the gear you have — dumbbells, bars, machines & more."),
-    ("og-equipment-ar", "ar", "تدرب حسب المعدات",
-     "كل التمارين للمعدات المتاحة لك — دمبل وبار وأجهزة والمزيد."),
-    ("og-authors-en", "en", "Meet the Authors",
-     "The coaches & specialists behind every Alkemos article and program."),
-    ("og-authors-ar", "ar", "تعرف على الكُتّاب",
-     "المدربون والمتخصصون خلف كل مقال وبرنامج في Alkemos."),
-    ("og-compare-en", "en", "Alkemos vs The Rest",
-     "Honest feature-by-feature comparisons — content, AI coaching, pricing & languages."),
-    ("og-compare-ar", "ar", "Alkemos مقابل المنافسين",
-     "مقارنات صادقة ميزةً بميزة — المحتوى والتدريب الذكي والأسعار واللغات."),
-    ("og-about-en", "en", "About Alkemos",
-     "Our mission: world-class fitness & nutrition guidance — free & bilingual."),
-    ("og-about-ar", "ar", "عن Alkemos",
-     "رسالتنا: إرشاد رياضي وتغذوي عالمي المستوى — مجاني وثنائي اللغة."),
-    ("og-contact-en", "en", "Contact & Support",
-     "Questions, feedback or partnership — the team reads everything and replies fast."),
-    ("og-contact-ar", "ar", "التواصل والدعم",
-     "سؤال أو ملاحظة أو شراكة — الفريق يقرأ كل شيء ويرد بسرعة."),
-    ("og-faq-en", "en", "Frequently Asked Questions",
-     "Accounts, billing, coaching, EVO AI — the answers, all in one place."),
-    ("og-faq-ar", "ar", "الأسئلة الشائعة",
-     "الحسابات والفواتير والتدريب وEVO — كل الإجابات في مكان واحد."),
-    ("og-affiliate-en", "en", "Alkemos Affiliate Program",
-     "Earn recurring commissions sharing the platform you already train on."),
-    ("og-affiliate-ar", "ar", "برنامج التسويق بالعمولة",
-     "اربح عمولات متكررة بمشاركة المنصة التي تتدرب عليها بالفعل."),
-    ("og-legal-en", "en", "Alkemos — Policies",
-     "Privacy policy & terms of service, in plain language."),
-    ("og-legal-ar", "ar", "سياسات Alkemos",
-     "سياسة الخصوصية وشروط الخدمة بلغة واضحة ومباشرة."),
-    # SOCIAL-OG-3: STATIC per-comparison cards — the dynamic generator
-    # never understood type=compare (it looked the slug up in blog_posts,
-    # missed, and rendered a default-English title), and its ~5s cold
-    # render burned the FB/WhatsApp crawler budget. Static cards kill
-    # both defects. Slugs must mirror src/lib/comparisons.ts — guarded
-    # by og-image-coverage.test.ts (every COMPARISONS slug must have a
-    # card pair on disk).
-    ("og-compare-alkemos-vs-myfitnesspal-en", "en", "Alkemos vs MyFitnessPal",
-     "The full feature-by-feature comparison — database depth, AI coaching, pricing & languages."),
-    ("og-compare-alkemos-vs-myfitnesspal-ar", "ar", "Alkemos مقابل MyFitnessPal",
-     "المقارنة الكاملة ميزةً بميزة — عمق قاعدة البيانات والتدريب الذكي والأسعار واللغات."),
-    ("og-compare-alkemos-vs-freeletics-en", "en", "Alkemos vs Freeletics",
-     "AI coaching vs bodyweight training — features, pricing & content, compared."),
-    ("og-compare-alkemos-vs-freeletics-ar", "ar", "Alkemos مقابل Freeletics",
-     "تدريب الذكاء الاصطناعي مقابل تمارين وزن الجسم — الميزات والأسعار والمحتوى."),
-    ("og-compare-alkemos-vs-exrx-en", "en", "Alkemos vs ExRx.net",
-     "Exercise-library face-off — size, guidance, tools & usability."),
-    ("og-compare-alkemos-vs-exrx-ar", "ar", "Alkemos مقابل ExRx.net",
-     "مواجهة مكتبات التمارين — الحجم والإرشاد والأدوات وسهولة الاستخدام."),
-    # P0 SEO audit (2026-09-30, finding #5): the fourth comparison —
-    # Cronometer (nutrition-tracking depth vs the full training+nutrition
-    # platform). Same law as the three pairs above.
-    ("og-compare-alkemos-vs-cronometer-en", "en", "Alkemos vs Cronometer",
-     "Nutrition-tracking depth vs a complete training platform — the honest comparison."),
-    ("og-compare-alkemos-vs-cronometer-ar", "ar", "Alkemos مقابل Cronometer",
-     "عمق تتبّع التغذية مقابل منصة تدريب متكاملة — المقارنة الصادقة."),
-    # P0 SEO audit (2026-09-30, finding #1): the two search-intent landing
-    # pages ("workout tracker" / "macro tracker" had zero matching pages).
-    # Dedicated family cards per the SOCIAL-OG-3 law — copy stays TIMELESS
-    # (no counts, no years, no claims the product does not ship).
-    ("og-workout-tracker-en", "en", "Workout Planning & Progress Tracking",
-     "AI workout plans, ready programs & exercise guides — plus weight, measurements and progress photos in one place."),
-    ("og-workout-tracker-ar", "ar", "تخطيط التمارين وتتبّع التقدّم",
-     "خطط تمارين بالذكاء الاصطناعي وبرامج جاهزة وأدلة حركات — مع الوزن والقياسات وصور التقدّم في مكان واحد."),
-    ("og-macro-tracker-en", "en", "Macro Planning & Tracking",
-     "Set your macro targets, build meals with live totals, and generate AI meal plans — free to start."),
-    ("og-macro-tracker-ar", "ar", "تخطيط الماكروز وتتبّعه",
-     "حدّد أهداف ماكروزك وابنِ وجباتك بمجاميع حيّة وولّد خطط وجبات بالذكاء الاصطناعي — ابدأ مجانًا."),
 ]
 
 

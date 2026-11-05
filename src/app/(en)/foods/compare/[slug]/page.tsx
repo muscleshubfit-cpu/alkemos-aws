@@ -36,7 +36,7 @@ export function generateStaticParams() {
   return FOOD_COMPARISONS.map((c) => ({ slug: c.slug }));
 }
 
-const OG_IMAGE = "/images/og/og-foods-en.png?v=3";
+const OG_IMAGE = "/images/og/og-home-en.png?v=4";
 
 export async function generateMetadata({
   params,
@@ -70,9 +70,8 @@ export async function generateMetadata({
       description: comparison.descriptionEn,
       siteName: "Alkemos",
       locale: "en_US",
-      // SOCIAL-OG-3 family law: the pilot rides the FOODS family card
-      // (per-pair cards are not generated — the tools/collections
-      // family-card precedent).
+      // SOCIAL-OG-4 (2026-11-06): no own content image on this page —
+      // the homepage card is the default fallback (owner law).
       images: [{ url: OG_IMAGE, width: 1200, height: 630, type: "image/png" }],
     },
     twitter: {

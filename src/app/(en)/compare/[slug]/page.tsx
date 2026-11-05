@@ -67,13 +67,13 @@ export async function generateMetadata({
       // burned the FB/WhatsApp crawler budget. Static file: correct title,
       // brand-true light design, zero cold start. The generator keeps a
       // correct type=compare branch for legacy cached URLs only.
-      images: [{ url: `https://alkemos.com/images/og/og-compare-${comparison.slug}-en.png?v=3`, width: 1200, height: 630, type: "image/png" }],
+      images: [{ url: `https://alkemos.com/images/og/og-home-en.png?v=4`, width: 1200, height: 630, type: "image/png" }],
     },
     twitter: {
       card: "summary_large_image",
       title: comparison.titleEn,
       description: comparison.descriptionEn,
-      images: [`https://alkemos.com/images/og/og-compare-${comparison.slug}-en.png?v=3`],
+      images: [`https://alkemos.com/images/og/og-home-en.png?v=4`],
     },
   };
 }
@@ -98,7 +98,7 @@ export default async function ComparisonPage({
     // consistency — same static card the metadata declares above
     // (SOCIAL-OG-3; previously the /api/og-image generator URL, before
     // that /logo.png).
-    image: `https://alkemos.com/images/og/og-compare-${comparison.slug}-en.png?v=3`,
+    image: `https://alkemos.com/images/og/og-home-en.png?v=4`,
     // W1-1 (E-03, audit 2026-10-02): REAL dates from the data module —
     // the old new Date().toISOString() fabricated all three on every
     // render ("modified + reviewed today" with each request). Now:

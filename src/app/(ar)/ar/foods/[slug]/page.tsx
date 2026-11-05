@@ -101,7 +101,7 @@ export async function generateMetadata({
       // static branded family card (design mirrors /api/og-image).
       images: [
         {
-          url: "/images/og/og-foods-ar.png?v=3",
+          url: "/images/og/og-home-ar.png?v=4",
           width: 1200,
           height: 630,
           alt: "قاعدة أطعمة وقيم غذائية من Alkemos",
@@ -112,7 +112,7 @@ export async function generateMetadata({
       card: "summary_large_image",
       title,
       description,
-      images: ["/images/og/og-foods-ar.png?v=3"],
+      images: ["/images/og/og-home-ar.png?v=4"],
     },
   };
 }

@@ -1,3 +1,13 @@
+> **⚠️ SUPERSEDED LAW (2026-11-06 — SOCIAL-OG-4):** the DEDICATED-FAMILY-CARD
+> system this report shipped (30 new family cards + static per-comparison cards)
+> was retired by the owner's 2026-11-06 order («استخدام الصورة الأولى الخاصة
+> بكل صفحة تلقائيًا كصورة معاينة… وإن لم تكن للصفحة صورة خاصة فصورة الصفحة
+> الرئيسية»): pages with an own content image keep it; every image-less page now
+> shares the homepage card as the default fallback. The design system, the
+> cache-bust mechanism and the crawler edge rules from this frame REMAIN LIVE
+> and are the foundation SOCIAL-OG-4 builds on — see
+> `docs/SOCIAL-OG-4-FIRST-OWN-IMAGE-HOME-FALLBACK-2026-11-06.md`.
+
 # SOCIAL-OG-3 (2026-09-30) — Share-Card System Redesign & Full Coverage
 ## «نفّذ الخطة» — Brand-True Card Redesign, Static Comparison Cards, v=3 Re-bust, Share Buttons on Every Public Page
 

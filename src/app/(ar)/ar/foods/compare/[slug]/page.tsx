@@ -32,7 +32,7 @@ export function generateStaticParams() {
   return FOOD_COMPARISONS.map((c) => ({ slug: c.slug }));
 }
 
-const OG_IMAGE = "/images/og/og-foods-ar.png?v=3";
+const OG_IMAGE = "/images/og/og-home-ar.png?v=4";
 
 export async function generateMetadata({
   params,

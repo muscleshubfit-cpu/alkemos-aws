@@ -37,7 +37,7 @@ export const metadata: Metadata = {
     // design) — it previously reused the homepage card (og-home-en).
     images: [
       {
-        url: "/images/og/og-evo-en.png?v=3",
+        url: "/images/og/og-home-en.png?v=4",
         width: 1200,
         height: 630,
         alt: "EVO — AI Fitness Coach | Alkemos",
@@ -46,7 +46,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    images: ["/images/og/og-evo-en.png?v=3"],
+    images: ["/images/og/og-home-en.png?v=4"],
   },
   alternates: {
     canonical: "https://alkemos.com/evo",

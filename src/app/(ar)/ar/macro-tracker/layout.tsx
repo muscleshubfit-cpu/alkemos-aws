@@ -53,7 +53,7 @@ export const metadata: Metadata = {
     // Dedicated AR family card (SOCIAL-OG-3 dedicated-card law).
     images: [
       {
-        url: "/images/og/og-macro-tracker-ar.png?v=3",
+        url: "/images/og/og-home-ar.png?v=4",
         width: 1200,
         height: 630,
         alt: "متتبّع الماكروز — Alkemos",
@@ -65,7 +65,7 @@ export const metadata: Metadata = {
     title: "متتبّع الماكروز — أهداف واضحة ومجاميع حيّة مجانًا",
     description:
       "أهداف ماكروز، مجاميع حيّة من 8,830+ صنفًا غذائيًا، خطط وجبات بالذكاء الاصطناعي، وتتبّع وزن — ابدأ مجانًا.",
-    images: ["/images/og/og-macro-tracker-ar.png?v=3"],
+    images: ["/images/og/og-home-ar.png?v=4"],
   },
 };
 

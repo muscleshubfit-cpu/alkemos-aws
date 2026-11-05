@@ -55,7 +55,7 @@ export async function generateMetadata({
       // /api/og-image) + the twitter card that was missing entirely.
       images: [
         {
-          url: "/images/og/og-blog-category-ar.png?v=3",
+          url: "/images/og/og-home-ar.png?v=4",
           width: 1200,
           height: 630,
           alt: "مقالات اللياقة والتغذية من Alkemos",
@@ -66,7 +66,7 @@ export async function generateMetadata({
       card: "summary_large_image",
       title: content.titleAr,
       description: content.introAr.slice(0, 158),
-      images: ["/images/og/og-blog-category-ar.png?v=3"],
+      images: ["/images/og/og-home-ar.png?v=4"],
     },
   };
 }

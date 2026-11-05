@@ -37,7 +37,7 @@ export const metadata: Metadata = {
     // card (design mirrors /api/og-image; see scripts/generate-og-cards.py).
     images: [
       {
-        url: "/images/og/og-tools-en.png?v=3",
+        url: "/images/og/og-home-en.png?v=4",
         width: 1200,
         height: 630,
         alt: "Alkemos Free Fitness Calculators",
@@ -46,7 +46,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    images: ["/images/og/og-tools-en.png?v=3"],
+    images: ["/images/og/og-home-en.png?v=4"],
     title: "Calorie Calculator | Alkemos",
     description: "Calculate your daily calorie needs and macros for free.",
   },
