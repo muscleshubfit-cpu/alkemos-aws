@@ -177,6 +177,24 @@ PROBES: list[dict] = [
             {"type": "self_role_patch_rejected"},
         ],
     },
+    # 0106 — ROLE-GUARD WHITELIST (same owner order, the audit log
+    # surfaced the theoretical empty-string reset bypass on pooled
+    # connections): the user-context rejection is now a WHITELIST (only
+    # 'auto-promote'/'admin-rpc' pass) — any reset value ('' NULL 'off'
+    # future contamination) is refused. Behavioral coverage stays the
+    # daily self_role_patch_rejected probe (0105's row); this row asserts
+    # the objects 0106 redefines remain live — honestly weak: the
+    # whitelist vs blacklist distinction is not HTTP-observable
+    # deterministically (needs both steps on one pooled connection).
+    {
+        "file": "20261105145000_0106_role_guard_whitelist.sql",
+        "label": "0106 ROLE-GUARD-WHITELIST",
+        "strength": "weak",
+        "checks": [
+            {"type": "swagger_rpc", "rpc": "admin_set_user_role"},
+            {"type": "swagger_table", "table": "role_audit_log"},
+        ],
+    },
 ]
 # fmt: on
 
