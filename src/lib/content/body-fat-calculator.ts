@@ -421,6 +421,31 @@ export const BODY_FAT_CALCULATOR_CONTENT: ToolReference = {
         ar: "لأن المعادلة ضُبطت على طريقة توزع دهون الأنثى الفعلية: تخزّن النساء في المتوسط حصة أكبر من الدهون حول الوركين والفخذين (النمط الأنثوي) إلى جانب الخصر، ويلتقط محيط الورك تلك الحجرة التي يفوّتها الخصر وحده. فنزع حصة الورك كان سيسيء قراءة الجسم الأنثوي النموذجي الذي بُنيت الصيغة لخدمته منهجياً — فهي ليست زينة، بل الإحداثية الثالثة لخريطة دهون الأنثى.",
       },
     },
+    // SEO-GROWTH-P1 (2026-11-05, owner P1 order «الأسئلة الشائعة ذات
+    // الصلة» — the numeric-value pattern proven on the BMI page
+    // (PRIORITY-PAGES §A-4) extended here: two "what does MY number
+    // mean" answers built from the page's own category tables and the
+    // calculator's own fat-mass arithmetic.
+    {
+      q: {
+        en: "What does 25% body fat mean?",
+        ar: "ماذا تعني نسبة دهون 25%؟",
+      },
+      a: {
+        en: "It depends on the sex the bands are read against. For a man, 25% sits at the very top of the Average band (18–24%) — the boundary where the table moves to above-average, typically a soft midsection with no visible abdominal definition. For a woman, 25% is the start of her Average band (25–31%) — a perfectly ordinary, healthy-looking composition, because female essential fat alone starts near 10–13%. The same number, two different readings: never interpret a body fat percentage without its sex-specific table, and track the direction it moves rather than the single reading.",
+        ar: "يتوقف المعنى على الجنس الذي تُقرأ النطاقات مقابله. فبالنسبة للذكر، تقع 25% عند الحافة العليا لنطاق المتوسط (18–24%) — الحد الذي ينتقل عنده الجدول إلى فوق المتوسط، ويرافقه عادة وسط رخو بلا ظهور لتفصيل البطن. أما بالنسبة للأنثى فـ25% بداية نطاقها المتوسط (25–31%) — تكوين عادي تمامًا ومظهر صحي، لأن الدهون الأساسية الأنثية وحدها تبدأ قرب 10–13%. الرقم نفسه بقراءتين مختلفتين: لا تفسر نسبة دهون الجسم أبدًا بلا جدول جنسها، وتتبّع اتجاه حركتها لا القراءة الواحدة.",
+      },
+    },
+    {
+      q: {
+        en: "How many kilograms of fat am I actually carrying at 25%?",
+        ar: "كم كيلوغرامًا من الدهون أحمل فعليًا عند نسبة 25%؟",
+      },
+      a: {
+        en: "Multiply: fat mass = body weight × percentage ÷ 100. At 80 kg and 25%, that is 80 × 0.25 = 20 kg of fat and 60 kg of lean mass — the same arithmetic this calculator shows beside your result. The gram-level view is what makes percentage goals actionable: dropping from 25% to 20% at 80 kg is not \u201closing 5% of anything\u201d — keeping lean mass steady means reaching about 76.2 kg, i.e. losing roughly 3.8 kg of actual fat while the percentage does the rest of the arithmetic. Weigh the number in kilograms before setting any target.",
+        ar: "اضرب: كتلة الدهون = وزن الجسم × النسبة ÷ 100. فعند 80 كيلوغرامًا و25%، تكون 80 × 0.25 = 20 كيلوغرامًا من الدهون و60 كيلوغرامًا من الكتلة العضلية — الحساب نفسه الذي تعرضه هذه الحاسبة بجوار نتيجتك. والمنظور بالكيلوغرامات هو ما يجعل أهداف النسبة قابلة للتنفيذ: الهبوط من 25% إلى 20% عند وزن 80 ليس «خسارة 5% من أي شيء» — فثبات الكتلة العضلية يعني الوصول إلى نحو 76.2 كجم، أي خسارة قرابة 3.8 كجم من الدهون الفعلية بينما تُكمل النسبة بقية الحساب. زِن الرقم بالكيلوغرامات قبل وضع أي هدف.",
+      },
+    },
   ],
 };
 

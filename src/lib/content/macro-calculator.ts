@@ -416,6 +416,32 @@ export const MACRO_CALCULATOR_CONTENT: ToolReference = {
         ar: "المتوازن (30/40/30)، في كل الأحوال تقريباً. فنتائج المبتدئ تأتي من اتساق التدريب والالتزام الغذائي الكلي، لا من أمثلية النسب؛ والنمط المتوازن يعلمه مهارة جمع مصدر بروتين ومصدر كربوهيدرات وخضروات وحصة دهون معقولة في كل وجبة — قالب ينتقل إلى أي هدف مستقبلي. ارتقِ إلى «عالي البروتين» لخسارة جدية، أو جرب الكيتو فقط إن كانت معركتك الخاصة ضبط الشهية.",
       },
     },
+    // SEO-GROWTH-P1 (2026-11-05, owner P1 order «الأسئلة الشائعة ذات
+    // الصلة» — the measured numeric-value pattern from the BMI page
+    // (PRIORITY-PAGES §A-4: "users search for THEIR numeric value")
+    // extended to this tool: these two answer the "what does my number
+    // mean / how do I convert it" tail directly, with the page's own
+    // documented Atwater arithmetic (4/4/9).
+    {
+      q: {
+        en: "What does 30/40/30 mean in grams on a 2,000-calorie day?",
+        ar: "ماذا يعني توزيع 30/40/30 بالغرامات على يوم بسعرات 2000؟",
+      },
+      a: {
+        en: "Percentages become grams through the Atwater factors: grams = (percentage × daily calories) ÷ energy density. On 2,000 kcal, balanced 30/40/30 gives protein 30% × 2,000 = 600 kcal ÷ 4 = 150 g, carbohydrates 40% × 2,000 = 800 kcal ÷ 4 = 200 g, and fat 30% × 2,000 = 600 kcal ÷ 9 ≈ 67 g — the number that surprises most people, because fat's 9 kcal per gram makes its gram budget the smallest of the three. Run the same division at your own calorie target and every preset on this page collapses into plain gram counts you can build meals from.",
+        ar: "تتحول النسب إلى غرامات عبر عوامل Atwater: الغرامات = (النسبة × السعرات اليومية) ÷ كثافة الطاقة. فعلى ميزانية 2000 سعرة يعطي المتوازن 30/40/30: بروتين 30% × 2000 = 600 سعرة ÷ 4 = 150 غراماً، وكربوهيدرات 40% × 2000 = 800 سعرة ÷ 4 = 200 غرام، ودهون 30% × 2000 = 600 سعرة ÷ 9 ≈ 67 غراماً — وهو الرقم الذي يفاجئ معظم الناس، لأن 9 سعرة لكل غرام من الدهون تجعل ميزانية غراماتها الأصغر بين الثلاثة. أجرِ القسمة نفسها على هدفك السعري الخاص، وينهار كل نمط في هذه الصفحة إلى عدّاد غرامات صريح تبني منه وجباتك.",
+      },
+    },
+    {
+      q: {
+        en: "My coach says 2 g of protein per kg — what percentage is that?",
+        ar: "مدربي يقول 2 غرام بروتين لكل كيلوغرام — كم تساوي كنسبة مئوية؟",
+      },
+      a: {
+        en: "Depends on your weight and your calorie budget, because grams-per-kg and percentages are two different rulers. The conversion: grams × 4 = kcal of protein; that ÷ total calories × 100 = the percentage. An 80 kg trainee at 2 g/kg eats 160 g = 640 kcal — that is 32% of a 2,000-kcal day but only 26.7% of 2,400. This is why the two worlds rarely agree: a fixed gram target keeps protein anchored to your body weight while a fixed percentage floats it with your calorie budget. When they conflict, anchor protein to grams (the body-weight ruler) and let carbs and fat absorb the difference.",
+        ar: "يتوقف ذلك على وزنك وميزانية سعراتك، لأن الغرامات لكل كيلوغرام والنسب المئوية مسطرتان مختلفتان. والتحويل: الغرامات × 4 = سعرات البروتين؛ وهذه ÷ إجمالي السعرات × 100 = النسبة. فمتدرب بوزن 80 كيلوغراماً عند 2 غرام/كجم يأكل 160 غراماً = 640 سعرة — وهي 32% من يوم بسعرات 2000، لكنها 26.7% فقط من يوم بـ2400. لهذا نادراً ما يتفق العالمان: الهدف الغرامي الثابت يرسّخ البروتين إلى وزن جسمك بينما النسبة الثابتة تجعله يطفو مع ميزانية سعراتك. وعند التعارض، رسّخ البروتين بالغرامات (مسطرة وزن الجسم) ودع الكربوهيدرات والدهون تمتصان الفارق.",
+      },
+    },
   ],
 };
 

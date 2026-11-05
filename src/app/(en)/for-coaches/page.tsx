@@ -203,6 +203,32 @@ export default function ForCoachesPage() {
               ? "تتم تفعيل اشتراكات عملائك من محفظتك على المنصة: تشحن محفظتك (انستاباي / فودافون كاش / PayPal) وتفعّل اشتراك عميلك بضغطة واحدة."
               : "Client activations run from your on-platform wallet: top it up (InstaPay / Vodafone Cash / PayPal) and activate a client's subscription with one click."}
           </p>
+          {/* SEO-GROWTH-P2 (2026-11-05, owner order «إضافة روابط داخلية من
+              المقالات والأدوات ذات الصلة»): coaches are the program's
+              most natural partner audience — one contextual line, not a
+              banner; teaching/coaching stays the page's purpose. */}
+          <p className="mt-3 text-sm font-normal leading-relaxed text-[var(--muted-foreground)]">
+            {isAr ? (
+              <>
+                لا تريد إدارة عملاء مباشرة الآن؟ يمكنك أيضًا التوصية بالمنصة
+                لجمهورك وكسب عمولة عبر{" "}
+                <Link href="/ar/affiliate" className="font-medium underline underline-offset-4 hover:text-[var(--text)]">
+                  برنامج الأفلييت (الشركاء)
+                </Link>
+                .
+              </>
+            ) : (
+              <>
+                Not ready to manage clients directly yet? You can also
+                recommend the platform to your audience and earn a
+                commission through the{" "}
+                <Link href="/affiliate" className="font-medium underline underline-offset-4 hover:text-[var(--text)]">
+                  Alkemos Affiliate Program
+                </Link>
+                .
+              </>
+            )}
+          </p>
         </div>
       </section>
 
