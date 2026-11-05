@@ -85,9 +85,9 @@ const SEAFOOD_RE = /^(fish|crustaceans|mollusks)-/;
 
 describe("food-nutrient-lists family (SEO-GROWTH Phase 2 — audit 03 §4.3, gates 03 §6)", () => {
   it(
-    "the family stays at the plan's Phase-2 ten: 10 lists — the 10-15 window's floor (owner order 2026-11-06 «استكمل المرحلة التالية… استكمل جميع الأعمال الممكنة حاليًا»); the list-count ceiling stays plan-governed",
+    "the family completes the plan's Phase-2 window at its ceiling: 15 lists (owner order 2026-11-06 «استكمل تنفيذ خطة استعادة النمو… حتى إتمام جميع مراحلها وبنودها» — the 10-15 item executed to its top)",
     () => {
-      expect(NUTRIENT_LISTS).toHaveLength(10);
+      expect(NUTRIENT_LISTS).toHaveLength(15);
       expect(NUTRIENT_LISTS.map((l) => l.slug)).toEqual([
         "highest-protein-foods",
         "protein-per-calorie",
@@ -99,6 +99,11 @@ describe("food-nutrient-lists family (SEO-GROWTH Phase 2 — audit 03 §4.3, gat
         "low-carb-high-protein-foods",
         "lowest-sugar-fruits",
         "highest-protein-fish",
+        "highest-protein-dairy",
+        "highest-protein-nuts-seeds",
+        "highest-protein-vegetables",
+        "leanest-high-protein-foods",
+        "highest-carb-foods",
       ]);
     },
   );
@@ -204,7 +209,16 @@ describe("food-nutrient-lists family (SEO-GROWTH Phase 2 — audit 03 §4.3, gat
           case "highest-protein-foods":
           case "low-carb-high-protein-foods":
           case "highest-protein-fish":
+          case "highest-protein-dairy":
+          case "highest-protein-nuts-seeds":
+          case "highest-protein-vegetables":
             expect(row.value).toBe(r1(f.per100g.protein));
+            break;
+          case "highest-carb-foods":
+            expect(row.value).toBe(r1(f.per100g.carbs));
+            break;
+          case "leanest-high-protein-foods":
+            expect(row.value).toBe(r1(f.per100g.fat));
             break;
           case "protein-per-calorie":
             expect(row.value).toBe(r1((f.per100g.protein * 100) / kcal));
@@ -274,6 +288,33 @@ describe("food-nutrient-lists family (SEO-GROWTH Phase 2 — audit 03 §4.3, gat
         if (l.slug === "low-carb-high-protein-foods") {
           expect(f.per100g.carbs, `${l.slug}/${row.slug} carbs ≤ 5g`).toBeLessThanOrEqual(5);
         }
+        // Lists 11-15 pools (owner order 2026-11-06 — the 10-15 completion)
+        if (l.slug === "highest-protein-dairy") {
+          expect(f.category, `${l.slug}/${row.slug} dairy category`).toBe("dairy");
+        }
+        if (l.slug === "highest-protein-nuts-seeds") {
+          expect(f.category, `${l.slug}/${row.slug} nuts category`).toBe("nuts");
+        }
+        if (l.slug === "highest-protein-vegetables") {
+          expect(f.category, `${l.slug}/${row.slug} vegetable category`).toBe("vegetable");
+          expect(/\bdehydrated\b/i.test(f.nameEn), `${l.slug}/${row.slug} no dehydrated rows`).toBe(false);
+        }
+        if (l.slug === "leanest-high-protein-foods") {
+          expect(f.per100g.protein, `${l.slug}/${row.slug} protein ≥ 20g bar`).toBeGreaterThanOrEqual(20);
+          expect(
+            /\b(mature seeds|lentils),\s*raw\b/i.test(f.nameEn),
+            `${l.slug}/${row.slug} no raw dry-legume rows`,
+          ).toBe(false);
+        }
+        if (l.slug === "highest-carb-foods") {
+          expect(f.category, `${l.slug}/${row.slug} no fat category`).not.toBe("fat");
+          expect(f.category, `${l.slug}/${row.slug} no drink category`).not.toBe("drink");
+          expect(
+            /^(sugars|candies|sweeteners)-/.test(f.slug) ||
+              /\b(syrup|honey|molasses|jam|jell|preserves|candied|caramel|leather|cookies?|dehydrated|raisins?|cornstarch|starches|starch)\b/i.test(f.nameEn),
+            `${l.slug}/${row.slug} no sweets/starch/dehydrated rows`,
+          ).toBe(false);
+        }
       }
     }
   });
@@ -281,8 +322,8 @@ describe("food-nutrient-lists family (SEO-GROWTH Phase 2 — audit 03 §4.3, gat
   it("SCOPE LAW C — rankings are ordered and correct-typed: descending/ascending per list, deterministic ties", () => {
     for (const l of NUTRIENT_LISTS) {
       const values = l.rows.map((r) => r.value);
-      const desc = ["highest-protein-foods", "protein-per-calorie", "highest-fiber-foods", "lowest-calorie-high-satiety", "highest-fat-foods", "highest-calorie-foods", "low-carb-high-protein-foods", "highest-protein-fish"];
-      const asc = ["lowest-calorie-foods", "lowest-sugar-fruits"];
+      const desc = ["highest-protein-foods", "protein-per-calorie", "highest-fiber-foods", "lowest-calorie-high-satiety", "highest-fat-foods", "highest-calorie-foods", "low-carb-high-protein-foods", "highest-protein-fish", "highest-protein-dairy", "highest-protein-nuts-seeds", "highest-protein-vegetables", "highest-carb-foods"];
+      const asc = ["lowest-calorie-foods", "lowest-sugar-fruits", "leanest-high-protein-foods"];
       if (desc.includes(l.slug)) {
         for (let i = 1; i < values.length; i++) {
           expect(values[i], `${l.slug} order at ${i}`).toBeLessThanOrEqual(values[i - 1]);
@@ -328,7 +369,7 @@ describe("food-nutrient-lists family (SEO-GROWTH Phase 2 — audit 03 §4.3, gat
     }
   });
 
-  it("the sitemap family law: all 20 list URLs present in sitemap-collections.xml (10 lists × 2 mirrors)", () => {
+  it("the sitemap family law: all 30 list URLs present in sitemap-collections.xml (15 lists × 2 mirrors)", () => {
     const src = readFileSync(SITEMAP, "utf8");
     // the route generates the 20 URLs by looping NUTRIENT_LISTS — the
     // canary pins the loop + both per-language templates; the actual 20

@@ -7,6 +7,17 @@
  * «الأطعمة الغنية بـ…» lists that DEEPEN the ten existing food collection
  * hubs (§4.3: «تعميق المجموعات العشر القائمة»).
  *
+ * LISTS 11-15 (owner order 2026-11-06 «استكمل تنفيذ خطة استعادة النمو وتحسين
+ * SEO/GEO لموقع Alkemos حتى إتمام جميع مراحلها وبنادها… نفّذ جميع التحسينات
+ * الممكنة… لا تتجاوز القرارات المعلقة مثل D-2» — completing the plan's
+ * 10-15 window at its ceiling): five more database-ranked lists —
+ * highest-protein-dairy · highest-protein-nuts-seeds ·
+ * highest-protein-vegetables (deepening the vegan hub) ·
+ * leanest-high-protein-foods (deepening the low-fat hub) ·
+ * highest-carb-foods (dry-weight staples, deepening the bulking hub).
+ * Same family laws: every number derived from FOODS at module scope,
+ * disclosed mechanical scope rules, AR/EN editorially independent.
+ *
  * SCOPE LAWS (mechanical, disclosed ON every page — audit 03 §4.3 «مبنية
  *   آليًا من قاعدة البيانات بترتيب حقيقي… لا قوائم مختلقة»):
  *   1. REAL ARABIC NAME only (nameAr has Arabic script and differs from
@@ -60,6 +71,22 @@ const CONCENTRATE_RE = /\b(dried|dry|powder|flour|liquid)\b/i;
 const PURE_FAT_RE = /\b(anhydrous|tallow|suet|lard|separable fat)\b/i;
 /** fish & seafood family for the seafood list (disclosed) */
 const SEAFOOD_PREFIX_RE = /^(fish|crustaceans|mollusks)-/;
+/**
+ * Lists 11-15 scope rules (owner order 2026-11-06 «استكمل تنفيذ خطة استعادة
+ * النمو وتحسين SEO/GEO حتى إتمام جميع مراحلها وبنودها… نفّذ جميع التحسينات
+ * الممكنة» — the 10-15 window's completion):
+ */
+/** dehydrated forms spelled without "dried" (disclosed — concentration) */
+const DEHYDRATED_RE = /\bdehydrated\b/i;
+/** raisins = dried grapes by definition (disclosed — concentration) */
+const RAISIN_RE = /\braisins?\b/i;
+/** pure starch cooking ingredients, not a 100g food (disclosed) */
+const STARCH_RE = /\b(cornstarch|starches|starch)\b/i;
+/** the sweets/spreads class the carb staples list excludes (disclosed) */
+const CARB_SWEET_RE = /\b(syrup|honey|molasses|jam|jell|preserves|candied|caramel|leather|cookies?)\b/i;
+const SWEET_PREFIX_RE = /^(sugars|candies|sweeteners)-/;
+/** raw dry legume rows — never eaten as-is, per-100g ≈ 3× the cooked plate (disclosed) */
+const RAW_DRY_LEGUME_RE = /\b(mature seeds|lentils),\s*raw\b/i;
 
 /** Law 1+2+3: the listable universe — real-Arabic-name, non-spice, non-concentrate. */
 export function isListableFood(f: Food): boolean {
@@ -111,8 +138,31 @@ const POOL_FRESH_FRUIT = LISTABLE.filter(
   (f) => f.category === "fruit" && /\braw\b/i.test(f.nameEn) && sugarOf(f) > 0,
 );
 const POOL_SEAFOOD = LISTABLE.filter((f) => SEAFOOD_PREFIX_RE.test(f.slug));
+// Lists 11-15 pools (each extra criterion is disclosed in its list's copy)
+const POOL_DAIRY = LISTABLE.filter((f) => f.category === "dairy");
+const POOL_NUTS = LISTABLE.filter((f) => f.category === "nuts");
+const POOL_VEG = LISTABLE.filter(
+  (f) => f.category === "vegetable" && !DEHYDRATED_RE.test(f.nameEn),
+);
+/** a "protein food" bar of ≥20g/100g, raw dry legume rows out (not eaten as-is) */
+const POOL_LEAN = LISTABLE.filter(
+  (f) => proteinOf(f) >= 20 && !RAW_DRY_LEGUME_RE.test(f.nameEn),
+);
+/** dry carb staples: no pure fats, no drinks, no sugars/sweets/spreads class,
+ *  no starch ingredients, no dehydrated/dried-fruit forms (all disclosed) */
+const POOL_CARBS = LISTABLE.filter(
+  (f) =>
+    f.category !== "fat" &&
+    f.category !== "drink" &&
+    !PURE_FAT_RE.test(f.nameEn) &&
+    !SWEET_PREFIX_RE.test(f.slug) &&
+    !CARB_SWEET_RE.test(f.nameEn) &&
+    !STARCH_RE.test(f.nameEn) &&
+    !DEHYDRATED_RE.test(f.nameEn) &&
+    !RAISIN_RE.test(f.nameEn),
+);
 
-// The ten ranked tables (20 rows each — the plan's 15-25 window)
+// The fifteen ranked tables (20 rows each — the plan's 15-25 window)
 const PROTEIN_TOP = topBy(POOL_ALL, proteinOf, "desc");
 const PPC_TOP = topBy(LISTABLE.filter((f) => kcalOf(f) > 0), proteinPer100kcal, "desc");
 const FIBER_TOP = topBy(POOL_ALL, fiberOf, "desc");
@@ -127,6 +177,12 @@ const HIGHKCAL_TOP = topBy(POOL_NO_PURE_FAT, kcalOf, "desc");
 const LOWCARB_PROTEIN_TOP = topBy(LISTABLE.filter((f) => carbOf(f) <= 5), proteinOf, "desc");
 const LOWSUGAR_FRUIT_TOP = topBy(POOL_FRESH_FRUIT, sugarOf, "asc");
 const SEAFOOD_PROTEIN_TOP = topBy(POOL_SEAFOOD, proteinOf, "desc");
+// Lists 11-15 ranked tables
+const DAIRY_PROTEIN_TOP = topBy(POOL_DAIRY, proteinOf, "desc");
+const NUTS_PROTEIN_TOP = topBy(POOL_NUTS, proteinOf, "desc");
+const VEG_PROTEIN_TOP = topBy(POOL_VEG, proteinOf, "desc");
+const LEAN_LOWEST_FAT_TOP = topBy(POOL_LEAN, fatOf, "asc");
+const CARBS_TOP = topBy(POOL_CARBS, carbOf, "desc");
 
 // ---------------------------------------------------------------------------
 // Derived row tables — the display layer the copy interpolates (DATA
@@ -145,6 +201,11 @@ const HIGHKCAL_ROWS = HIGHKCAL_TOP.map((f) => row(f, kcalOf(f)));
 const LOWCARB_ROWS = LOWCARB_PROTEIN_TOP.map((f) => row(f, r1(proteinOf(f))));
 const LOWSUGAR_ROWS = LOWSUGAR_FRUIT_TOP.map((f) => row(f, r1(sugarOf(f))));
 const SEAFOOD_ROWS = SEAFOOD_PROTEIN_TOP.map((f) => row(f, r1(proteinOf(f))));
+const DAIRY_ROWS = DAIRY_PROTEIN_TOP.map((f) => row(f, r1(proteinOf(f))));
+const NUTS_ROWS = NUTS_PROTEIN_TOP.map((f) => row(f, r1(proteinOf(f))));
+const VEG_ROWS = VEG_PROTEIN_TOP.map((f) => row(f, r1(proteinOf(f))));
+const LEAN_ROWS = LEAN_LOWEST_FAT_TOP.map((f) => row(f, r1(fatOf(f))));
+const CARBS_ROWS = CARBS_TOP.map((f) => row(f, r1(carbOf(f))));
 
 // ---------------------------------------------------------------------------
 // Types
@@ -971,6 +1032,376 @@ descriptionAr: `الزبدة تقود جدول دهون الأطعمة الكا�
     toolSlug: "macro-calculator",
     collectionSlug: "high-protein-foods",
     rows: SEAFOOD_ROWS,
+  },
+  {
+    slug: "highest-protein-dairy",
+    publishedAt: PUBLISHED_AT,
+    titleEn: "Highest Protein Dairy Foods — Real Database Ranking | Alkemos",
+    titleAr: "ما أعلى منتجات الألبان في البروتين؟ الترتيب الحقيقي",
+    h1En: "Highest Protein Dairy Foods",
+    h1Ar: "ما أعلى منتجات الألبان في البروتين؟",
+    descriptionEn: `Parmesan tops the dairy table at ${DAIRY_ROWS[0].value}g protein per 100g — and nonfat cheddar delivers ${DAIRY_ROWS[3].value}g at ${DAIRY_ROWS[3].calories} kcal. Real ranking from the Alkemos database.`,
+    descriptionAr: `البارميزان يتصدر الألبان بـ${DAIRY_ROWS[0].value} جم بروتين لكل 100 جرام، والشيدر الخالي من الدسم يمنح ${DAIRY_ROWS[3].value} جم عند ${DAIRY_ROWS[3].calories} سعرة فقط — ترتيب حقيقي من قاعدة بيانات Alkemos.`,
+    introEn: `Aged cheese is the dairy aisle's protein champion: parmesan rows open the table at ${DAIRY_ROWS[0].value}–${DAIRY_ROWS[2].value}g per 100g, romano and hard goat cheese follow at ${DAIRY_ROWS[4].value} and ${DAIRY_ROWS[5].value}g, and the whole top twenty stays above ${DAIRY_ROWS[19].value}g. The quiet star sits at row four: nonfat cheddar carries ${DAIRY_ROWS[3].value}g of protein at ${DAIRY_ROWS[3].calories} kcal and 0g fat — a protein density most meats cannot match. Mozzarella lands mid-table at ${DAIRY_ROWS[8].value}g, Swiss at ${DAIRY_ROWS[9].value}g.`,
+    introAr: `الجبن المعتّق هو بطل البروتين في رف الألبان: صفوف البارميزان تفتتح الجدول بـ${DAIRY_ROWS[0].value}–${DAIRY_ROWS[2].value} جرامًا لكل 100 جرام، وتتبعه جبنة الرومانو وجبن الماعز القاسي بـ${DAIRY_ROWS[4].value} و${DAIRY_ROWS[5].value} جرام، ويبقى العشرون الأوائل كلها فوق ${DAIRY_ROWS[19].value} جرامًا. والنجم الصامت يجلس في الصف الرابع: الشيدر الخالي من الدسم يحمل ${DAIRY_ROWS[3].value} جرام بروتين عند ${DAIRY_ROWS[3].calories} سعرة وصفر دهون — كثافة بروتين تعجز عنها معظم اللحوم. والموزاريلا في منتصف الجدول بـ${DAIRY_ROWS[8].value} جرام والسويسرية بـ${DAIRY_ROWS[9].value} جرام.`,
+    criterionEn: `Every dairy-category row in the database with a real Arabic name enters, ranked by protein per 100g, descending. The family scope rules apply (no spice rows, no dried/powder forms); fresh milk, yogurt and cottage cheese rank below the top twenty on their own pages — their water content dilutes the per-100g figure, which is exactly what hard cheese removes.`,
+    criterionAr: `كل صف من فئة الألبان في القاعدة باسم عربي حقيقي يدخل، مرتبًا بالبروتين لكل 100 جرام تنازليًا، مع قواعد نطاق العائلة (لا توابل ولا أشكال مجففة أو مسحوقة). والحليب والزبادي والجبن القريش يقعون أسفل العشرين في صفحاتهم — فالماء في تركيبها يخفف رقم المائة جرام، وهو بالضبط ما ينزعه الجبن القاسي.`,
+    metricEn: "Protein (g / 100g)",
+    metricAr: "البروتين (جم / 100 جرام)",
+    verdicts: [
+      {
+        heading: { en: "Why hard cheese runs away with it", ar: "لماذا يتفوق الجبن القاسي" },
+        body: {
+          en: `Cheese is milk with most of its water removed, so every 100g concentrates the protein of roughly a liter of milk's solids. Parmesan's ${DAIRY_ROWS[0].value}g comes from long aging that also dries it further — you grate it, a serving is grams, and the calorie column (${DAIRY_ROWS[0].calories} kcal) is the honest cost of that concentration.`,
+          ar: `الجبن حليب نُزع معظم مائه، فكل 100 جرام تركز بروتين ما يقارب لترًا من مكونات الحليب الصلبة. و${DAIRY_ROWS[0].value} جرامًا في البارميزان ثمرة تعتيق طويل يجففه أكثر — تبشره وتأكل منه جرامات، وعمود السعرات (${DAIRY_ROWS[0].calories} سعرة) هو الثمن الصادق لهذا التركيز.`,
+        },
+      },
+      {
+        heading: { en: "The nonfat cheddar anomaly", ar: "مفارقة الشيدر الخالي من الدسم" },
+        body: {
+          en: `Row four is the diet hack the table surfaces on its own: ${DAIRY_ROWS[3].value}g protein, ${DAIRY_ROWS[3].calories} kcal, zero fat. In protein-per-calorie terms it outperforms every other row here including the parmesan podium — the trade is texture and melt behavior, which the food page documents honestly.`,
+          ar: `الصف الرابع هو الحل الذي يكشفه الجدول بنفسه: ${DAIRY_ROWS[3].value} جرام بروتين و${DAIRY_ROWS[3].calories} سعرة وصفر دهون. وبمقياس البروتين لكل سعرة يتفوق على كل صفوف هذا الجدول بمن فيهم منصة البارميزان — والثمن هو الملمس وسلوك الذوبان الذي توثقه صفحة الصنف بأمانة.`,
+        },
+      },
+      {
+        heading: { en: "Where your daily glass ranks", ar: "أين يقع كوب الحليب اليومي" },
+        body: {
+          en: `Milk sits near 3g per 100g — far below this table — because it is mostly water. That is not a flaw; it is a different serving reality. The table answers "which dairy packs the most protein per bite"; a glass answers hydration, calcium and routine. Both pages carry their own numbers.`,
+          ar: `يقع الحليب قرب 3 جرامات لكل 100 جرام — بعيدًا أسفل هذا الجدول — لأن معظمه ماء. وهذه ليست عيوبًا بل واقع حصة مختلف: الجدول يجيب عن سؤال «أي الألبان أكثف بروتينًا في اللقمة»، والكوب يجيب عن الترطيب والكالسيوم والروتين. وكلتا الصفحتين تحملان أرقامهما الخاصة.`,
+        },
+      },
+    ],
+    faqs: [
+      {
+        q: {
+          en: "Is cheese a good protein source for muscle building?",
+          ar: "هل الجبن مصدر بروتين جيد لبناء العضلات؟",
+        },
+        a: {
+          en: `Per bite, the hardest cheeses rival meat: ${DAIRY_ROWS[0].value}g in parmesan, ${DAIRY_ROWS[9].value}g in Swiss. The catch is the fat that rides along — ${DAIRY_ROWS[9].fat}g per 100g in Swiss — so lifters on tight calories usually lean on the nonfat rows and treat full-fat cheese as a flavor layer, not the protein base.`,
+          ar: `في اللقمة الواحدة تنافس الأجبان القاسية اللحوم: ${DAIRY_ROWS[0].value} جرامًا في البارميزان و${DAIRY_ROWS[9].value} في السويسرية. والتحفظ هو الدهون المرافقة — ${DAIRY_ROWS[9].fat} جرام لكل 100 جرام في السويسرية — لذا يعتمد الرياضيون داخل سعرات محدودة على الصفوف الخالية من الدسم ويعاملون الجبن كامل الدسم كطبقة نكهة لا كأساس للبروتين.`,
+        },
+      },
+      {
+        q: {
+          en: "Why do so many parmesan rows appear?",
+          ar: "لماذا تتكرر صفوف البارميزان كثيرًا؟",
+        },
+        a: {
+          en: `The database keeps each commercial form as its own measured row — low-sodium, shredded, hard, grated — and each carries slightly different numbers (${DAIRY_ROWS[0].value} down to ${DAIRY_ROWS[7].value}g). The ranking is honest to the data; pick the row that matches what your kitchen actually holds.`,
+          ar: `تحتفظ القاعدة بكل صورة تجارية كصف مقاس مستقل — قليل الصوديوم، مبروش، قاسي، مبشور — وكل صف يحمل أرقامًا مختلفة قليلًا (${DAIRY_ROWS[0].value} نزولًا إلى ${DAIRY_ROWS[7].value} جرام). والترتيب أمين للبيانات؛ اختر الصف الذي يطابق ما في مطبخك فعلًا.`,
+        },
+      },
+      {
+        q: {
+          en: "What about Greek yogurt and cottage cheese?",
+          ar: "ماذا عن الزبادي اليوناني والجبن القريش؟",
+        },
+        a: {
+          en: `They are the per-calorie winners of dairy but sit under the 100g bar this table measures — around 10-12g — because they keep far more water. If your goal is maximum protein per calorie rather than per bite, the efficiency ranking answers it better than this one.`,
+          ar: `هما الفائزان بلغة البروتين لكل سعرة في عائلة الألبان، لكنهما يقعان دون عتبة هذا الجدول — قرب 10-12 جرامًا — لأنهما يحتفظان بماء أكثر بكثير. إن كان هدفك أقصى بروتين لكل سعرة لا لكل لقمة فترتيب الكفاءة يجيبك أفضل من هذا الجدول.`,
+        },
+      },
+    ],
+    toolSlug: "macro-calculator",
+    collectionSlug: "high-protein-foods",
+    rows: DAIRY_ROWS,
+  },
+  {
+    slug: "highest-protein-nuts-seeds",
+    publishedAt: PUBLISHED_AT,
+    titleEn: "Highest Protein Nuts and Seeds — Real Ranking | Alkemos",
+    titleAr: "ما أعلى المكسرات والبذور بروتينًا؟ الترتيب الحقيقي",
+    h1En: "Highest Protein Nuts and Seeds",
+    h1Ar: "ما أعلى المكسرات والبذور بروتينًا؟",
+    descriptionEn: `Hemp seeds lead at ${NUTS_ROWS[0].value}g protein per 100g, pumpkin kernels and peanuts follow — a real ranking of nuts and seeds from the Alkemos food database.`,
+    descriptionAr: `بذور القنب تتصدر بـ${NUTS_ROWS[0].value} جم بروتين لكل 100 جرام، تليها لب القرع والفول السوداني — ترتيب حقيقي للمكسرات والبذور من قاعدة أطعمة Alkemos.`,
+    introEn: `The shelf's quiet protein stack: hulled hemp seeds open at ${NUTS_ROWS[0].value}g per 100g, roasted pumpkin kernels take second at ${NUTS_ROWS[1].value}g, and peanuts — technically a legume that eats like a nut — hold third at ${NUTS_ROWS[2].value}g. Almonds in their many forms occupy the ${NUTS_ROWS[3].value}–${NUTS_ROWS[9].value}g belt, pistachios hold the ${NUTS_ROWS[17].value}g mark, and the whole pumpkin seeds and flaxseed bring up the rear at ${NUTS_ROWS[18].value} and ${NUTS_ROWS[19].value}g — the latter carrying ${NUTS_ROWS[19].fiber}g of fiber alongside.`,
+    introAr: `رَفُّ البروتين الصامت في متاجر البقالة: بذور القنب المقشورة تفتتح بـ${NUTS_ROWS[0].value} جرامًا لكل 100 جرام، ولب بذور القرع المحمص يحتل المركز الثاني بـ${NUTS_ROWS[1].value} جرام، والفول السوداني — بقوليا عمليًا تأكلها كمكسرات — يحتفظ بالثالث بـ${NUTS_ROWS[2].value} جرام. ويشغل اللوز بصوره المتعددة حزام ${NUTS_ROWS[3].value}–${NUTS_ROWS[9].value} جرام، ويحرس الفستق علامة ${NUTS_ROWS[17].value} جرام، وتجلب بذور القرع الكاملة وبذر الكتان المؤخرة بـ${NUTS_ROWS[18].value} و${NUTS_ROWS[19].value} جرام — والأخير محمّل بـ${NUTS_ROWS[19].fiber} جرامًا من الألياف.`,
+    criterionEn: `Every nut and seed row in the database with a real Arabic name enters, ranked by protein per 100g, descending, under the family scope rules (no spice rows, no dried/powder forms). Salted, roasted and raw versions of the same seed are separate measured rows — the sodium belongs to the roasting pan, not the seed.`,
+    criterionAr: `كل صف مكسرات وبذور في القاعدة باسم عربي حقيقي يدخل، مرتبًا بالبروتين لكل 100 جرام تنازليًا، تحت قواعد نطاق العائلة (لا توابل ولا أشكال مجففة أو مسحوقة). والنسخ المملحة والمحمصة والنيئة من البذرة نفسها صفوف مقاسة مستقلة — فالملح ملك لمقلاة التحميص لا للبذرة.`,
+    metricEn: "Protein (g / 100g)",
+    metricAr: "البروتين (جم / 100 جرام)",
+    verdicts: [
+      {
+        heading: { en: "Seeds beat the classic nuts", ar: "البذور تتفوق على المكسرات الكلاسيكية" },
+        body: {
+          en: `The podium is all seeds: hemp ${NUTS_ROWS[0].value}g, pumpkin kernels ${NUTS_ROWS[1].value}g, then peanuts at ${NUTS_ROWS[2].value}g. They also bring the family's better fiber numbers — pumpkin kernels carry ${NUTS_ROWS[1].fiber}g — while walnuts and cashews miss the twenty entirely on protein, whatever their other virtues.`,
+          ar: `المنصة كلها بذور: القنب ${NUTS_ROWS[0].value} جرامًا ولب القرع ${NUTS_ROWS[1].value} ثم الفول السوداني ${NUTS_ROWS[2].value}. وهي أيضًا تحمل أرقام الألياف الأفضل في العائلة — لب القرع يحمل ${NUTS_ROWS[1].fiber} جرامًا — بينما يغيب الجوز والكاجو عن العشرين تمامًا في البروتين مهما كانت فضائلهما الأخرى.`,
+        },
+      },
+      {
+        heading: { en: "The calorie column is the deal", ar: "عمود السعرات هو العقد" },
+        body: {
+          en: `The rows run ${NUTS_ROWS[18].calories}–${NUTS_ROWS[10].calories} kcal per 100g — half a day's budget for many diets. A 30g handful of hemp seeds delivers about ${Math.round(NUTS_ROWS[0].value * 0.3)}g of protein for about ${Math.round(NUTS_ROWS[0].calories * 0.3)} kcal. Useful? Yes. Free? Never — the table says so plainly.`,
+          ar: `تتراوح الصفوف بين ${NUTS_ROWS[18].calories} و${NUTS_ROWS[10].calories} سعرة لكل 100 جرام — نصف ميزانية يوم كامل لدى كثير من الأنظمة. وملء اليد (30 جرامًا) من بذور القنب يمنح نحو ${Math.round(NUTS_ROWS[0].value * 0.3)} جرام بروتين مقابل نحو ${Math.round(NUTS_ROWS[0].calories * 0.3)} سعرة. مفيد؟ نعم. مجاني؟ أبدًا — والجدول يقولها بوضوح.`,
+        },
+      },
+      {
+        heading: { en: "Almond butter counts too", ar: "زبدة اللوز محسوبة أيضًا" },
+        body: {
+          en: `The almond-butter rows sit at ${NUTS_ROWS[10].value}g — grinding changes nothing about the protein, only the eating speed. That is the practical warning of this family: a spoon slides down faster than a chewed handful, and the calorie column does not pause with you.`,
+          ar: `تقع صفوف زبدة اللوز عند ${NUTS_ROWS[10].value} جرامًا — الطحن لا يغير من البروتين شيئًا، بل يغير سرعة الأكل فقط. وهذا تحذير هذه العائلة العملي: الملعقة تنزلق أسرع من حفنة تُمضغ، وعمود السعرات لا يتوقف معك.`,
+        },
+      },
+    ],
+    faqs: [
+      {
+        q: {
+          en: "Can nuts be my main protein source?",
+          ar: "هل يمكن أن تكون المكسرات مصدر بروتيني الأساسي؟",
+        },
+        a: {
+          en: `As a base, the math fights you: reaching 120g of protein from almonds alone means roughly 570g of them — over 3,300 kcal before anything else on the plate. As a contributor — ${Math.round(NUTS_ROWS[2].value * 0.3)}g per peanut handful — they are excellent; pair them with the legume and dairy tables for the heavy lifting.`,
+          ar: `كأساس، تحاربك الحسابات: الوصول إلى 120 جرام بروتين من اللوز وحده يعني نحو 570 جرامًا منه — أكثر من 3300 سعرة قبل أي شيء آخر بالطبق. كمساهم — ${Math.round(NUTS_ROWS[2].value * 0.3)} جرامًا لكل حفنة فول سوداني — ممتازة؛ اقترنها بجدولي البقول والألبان لتحمل الأثقال.`,
+        },
+      },
+      {
+        q: {
+          en: "Are roasted nuts lower in protein than raw?",
+          ar: "هل المكسرات المحمصة أقل بروتينًا من النيئة؟",
+        },
+        a: {
+          en: `The rows barely differ — raw pistachio ${NUTS_ROWS[12].value}g versus the roasted forms within a gram. Roasting's real costs are added oil and salt in some rows, visible in the calorie and sodium columns of each linked page. Home-roasting dry keeps the row's numbers closest.`,
+          ar: `الصفوف تكاد لا تختلف — الفستق النيء ${NUTS_ROWS[12].value} جرامًا مقابل صور محمصة ضمن جرام واحد. أما كلفة التحميص الحقيقية فهي الزيت والملح المضافان في بعض الصفوف، ويظهران في عمودي السعرات والصوديوم بكل صفحة مربوطة. والتحميص الجاف منزليًا يبقي أرقام الصف أقرب ما تكون.`,
+        },
+      },
+      {
+        q: {
+          en: "Why is the peanut in a nuts table?",
+          ar: "لماذا يدخل الفول السوداني جدول المكسرات؟",
+        },
+        a: {
+          en: `Botanically it grows underground as a legume, but it is bought, stored and eaten exactly like its shelf neighbors, and the database's nut category reflects that kitchen reality. Nutritionally it earns the seat honestly: ${NUTS_ROWS[2].value}g of protein per 100g, third on the table.`,
+          ar: `نباتيًا ينمو تحت الأرض ضمن البقوليات، لكنه يُشترى ويُخزّن ويُؤكل تمامًا كجيرانه على الرف، وفئة المكسرات في القاعدة تعكس واقع المطبخ هذا. وغذائيًا يستحق المقعد بجدارة: ${NUTS_ROWS[2].value} جرام بروتين لكل 100 جرام، الثالث على الجدول.`,
+        },
+      },
+    ],
+    toolSlug: "macro-calculator",
+    collectionSlug: "high-protein-foods",
+    rows: NUTS_ROWS,
+  },
+  {
+    slug: "highest-protein-vegetables",
+    publishedAt: PUBLISHED_AT,
+    titleEn: "Highest Protein Vegetables — Real Database Ranking | Alkemos",
+    titleAr: "ما أعلى الخضروات في البروتين؟ الترتيب الحقيقي",
+    h1En: "Highest Protein Vegetables",
+    h1Ar: "ما أعلى الخضروات في البروتين؟",
+    descriptionEn: `Soybean sprouts top the vegetable table at ${VEG_ROWS[0].value}g protein per 100g, green soybeans and edamame follow — the real vegetable-protein ranking from Alkemos.`,
+    descriptionAr: `براعم فول الصويا تتصدر جدول الخضروات بـ${VEG_ROWS[0].value} جم بروتين لكل 100 جرام، تليها حبوب الصويا الخضراء والإدامامي — الترتيب الحقيقي لبروتين الخضروات من قاعدة Alkemos.`,
+    introEn: `Vegetables peak where the legume family lives: soybean sprouts open at ${VEG_ROWS[0].value}g per 100g, green soybeans and edamame hold the ${VEG_ROWS[2].value}–${VEG_ROWS[5].value}g band, and immature pinto beans, black-eyed peas and sprouted lentils fill the middle down to ${VEG_ROWS[19].value}g. The table's honest ceiling matters: not one leafy salad staple reaches it — spinach and broccoli sit far below, on their own pages, at a fraction of these numbers.`,
+    introAr: `تبلغ الخضروات ذروتها حيث تعيش عائلة البقوليات: براعم فول الصويا تفتتح بـ${VEG_ROWS[0].value} جرامًا لكل 100 جرام، وفول الصويا الأخضر والإدامامي يحتفظان بنطاق ${VEG_ROWS[2].value}–${VEG_ROWS[5].value} جرام، وتملأ الفاصوليا الخضراء غير الناضجة ولوبيا العين السوداء والعدس المنبت الوسط نزولًا إلى ${VEG_ROWS[19].value} جرام. وسقف الجدول الصادق مهم: لا تصل إليه أي من أساسيات سلطة الورقيات — فالسبانخ والبروكلي يجلسان أسفل بكثير، في صفحتيهما، عند كسر من هذه الأرقام.`,
+    criterionEn: `Every vegetable-category row with a real Arabic name enters, ranked by protein per 100g, descending. Family scope rules apply, and dehydrated vegetable rows are additionally excluded — removing water concentrates the number without changing any real plate. Immature (green) beans and sprouts stay: they are the category's genuine vegetables-as-protein.`,
+    criterionAr: `كل صف من فئة الخضروات باسم عربي حقيقي يدخل، مرتبًا بالبروتين لكل 100 جرام تنازليًا، مع قواعد نطاق العائلة، واستبعاد إضافي لصفوف الخضروات المجففة — نزع الماء يضخم الرقم دون أن يغير أي طبق حقيقي. وتبقى البقوليات غير الناضجة (الخضراء) والبراعم: فهي خضروات العائلة الحقيقية بوصفها مصدر بروتين.`,
+    metricEn: "Protein (g / 100g)",
+    metricAr: "البروتين (جم / 100 جرام)",
+    verdicts: [
+      {
+        heading: { en: "Soy owns the podium", ar: "الصويا تملك المنصة" },
+        body: {
+          en: `Every top-seven row is a soy vegetable: sprouts at ${VEG_ROWS[0].value}g, green soybeans at ${VEG_ROWS[2].value}g, edamame at ${VEG_ROWS[5].value}g. No other plant in the produce aisle comes close to that band — which is why tofu and its family anchor every serious plant-protein kitchen.`,
+          ar: `كل صف من السبعة الأولى خضار صويا: البراعم عند ${VEG_ROWS[0].value} جرامًا وفول الصويا الأخضر عند ${VEG_ROWS[2].value} والإدامامي عند ${VEG_ROWS[5].value}. ولا يقترب من هذا النطاق أي نبات آخر في قسم الخضروات — ولهذا يرسي التوفو وعائلته مرساة كل مطبخ جاد للبروتين النباتي.`,
+        },
+      },
+      {
+        heading: { en: "The pod vegetables earn their rows", ar: "خضروات القرون تستحق صفوفها" },
+        body: {
+          en: `Immature pinto beans (${VEG_ROWS[7].value}g) and black-eyed peas (${VEG_ROWS[10].value}g) are picked green and eaten as vegetables — pods and all in some kitchens — carrying both protein and ${VEG_ROWS[7].fiber}g-class fiber. Sprouted lentils (${VEG_ROWS[11].value}g) turn a dry pantry staple into a fresh-crisp one within days.`,
+          ar: `تُقطف الفاصوليا البينتو غير الناضجة (${VEG_ROWS[7].value} جرامًا) ولوبيا العين السوداء (${VEG_ROWS[10].value} جرامًا) خضراء وتُؤكل كخضروات — بقرونها في بعض المطابخ — حاملة البروتين وأليافًا من فئة ${VEG_ROWS[7].fiber} جرام. والعدس المنبت (${VEG_ROWS[11].value} جرامًا) يحول أساسًا جافًا من الخزانة إلى طازج مقرمش في أيام.`,
+        },
+      },
+      {
+        heading: { en: "Where the famous greens actually sit", ar: "أين تجلس الورقيات المشهورة فعلًا" },
+        body: {
+          en: `Spinach's celebrated protein lives around 3g per 100g — a tenth of the podium — because a leaf is mostly water and air. This table does not diminish greens; it prices them honestly: eat them for micronutrients and volume, and let the soy and pod rows carry the protein load.`,
+          ar: `بروتين السبانخ المحتفى به يعيش قرب 3 جرامات لكل 100 جرام — عُشر المنصة — لأن الورقة ماء وهواء في معظمها. وهذا الجدول لا يحط من الورقيات؛ بل يسعّرها بصدق: كُلها من أجل المغذيات الدقيقة والحجم، ودع صفوف الصويا والقرون تحمل حمل البروتين.`,
+        },
+      },
+    ],
+    faqs: [
+      {
+        q: {
+          en: "Can I build muscle on vegetable protein alone?",
+          ar: "هل أستطيع بناء العضلات من بروتين الخضروات وحده؟",
+        },
+        a: {
+          en: `Yes, with planning: the soy rows here deliver complete protein at meat-adjacent per-bite density, and the pod vegetables stack alongside. The volume is the challenge — matching a chicken breast's 31g means roughly 240g of edamame. The macro calculator sizes whichever mix you choose.`,
+          ar: `نعم، مع تخطيط: صفوف الصويا هنا تقدم بروتينًا كاملًا بكثافة تقارب اللحوم في اللقمة، وخضروات القرون تتراكم معها. والتحدي هو الحجم — مجاراة 31 جرامًا من صدر الدجاج تعني نحو 240 جرامًا من الإدامامي. وحاسبة الماكروز تحسب أي مزيج تختاره.`,
+        },
+      },
+      {
+        q: {
+          en: "Why are dried vegetables excluded?",
+          ar: "لماذا استبعدت الخضروات المجففة؟",
+        },
+        a: {
+          en: `A dehydrated onion flake measures 8+ grams of protein per 100g — but that 100g started as roughly a kilogram of fresh onions. The number is arithmetically true and practically meaningless, so this list excludes dehydrated rows mechanically, and says so here.`,
+          ar: `رقاقة البصل المجفف تقيس أكثر من 8 جرامات بروتين لكل 100 جرام — لكن هذه الـ100 جرام كانت في الأصل نحو كيلوغرام من البصل الطازج. الرقم صادق حسابيًا وبلا معنى عمليًا، لذا يستبعد هذا الجدول الصفوف المجففة ميكانيكيًا ويصرح بذلك هنا.`,
+        },
+      },
+      {
+        q: {
+          en: "Are sprouts safe to eat raw?",
+          ar: "هل البراعم آمنة للأكل نيئة؟",
+        },
+        a: {
+          en: `The rows offer both states — raw and stir-fried measure the same ${VEG_ROWS[0].value}g band here — and the choice is food safety, not protein: warm sprouting conditions can grow bacteria, so vulnerable groups are advised to cook them. The protein survives the pan either way.`,
+          ar: `تقدم الصفوف الحالتين معًا — النيء والمقلي سريعًا يقيسان نطاق ${VEG_ROWS[0].value} جرامًا نفسه هنا — والاختيار مسألة سلامة غذائية لا بروتين: فظروف الإنبات الدافئة قد تنمو فيها البكتيريا، ويُنصح الفئات الأكثر عرضة بطهيها. والبروتين ينجو من المقلاة في الحالتين.`,
+        },
+      },
+    ],
+    toolSlug: "macro-calculator",
+    collectionSlug: "vegan-protein-sources",
+    rows: VEG_ROWS,
+  },
+  {
+    slug: "leanest-high-protein-foods",
+    publishedAt: PUBLISHED_AT,
+    titleEn: "Leanest High Protein Foods (Lowest Fat) — Ranked | Alkemos",
+    titleAr: "ما أقل مصادر البروتين دهونًا؟ الترتيب الحقيقي",
+    h1En: "Leanest High-Protein Foods",
+    h1Ar: "ما أقل مصادر البروتين دهونًا؟",
+    descriptionEn: `Nonfat cheddar and cod anchor the leanest-proteins table at ${LEAN_ROWS[1].fat}–${LEAN_ROWS[2].value}g fat per 100g with 20g+ protein each — ranked from the Alkemos database.`,
+    descriptionAr: `الشيدر الخالي من الدسم والقدّاك يرسيان جدول البروتينات الأقل دهنًا عند ${LEAN_ROWS[1].fat}–${LEAN_ROWS[2].value} جم دهون لكل 100 جرام مع بروتين يتجاوز 20 جم — مرتبة من قاعدة بيانات Alkemos.`,
+    introEn: `The cutting-phase shortlist: every food here clears the 20g-protein bar per 100g, then ranks by fat, ascending. Two nonfat cheeses sit at zero (${LEAN_ROWS[0].value}g and ${LEAN_ROWS[1].value}g of fat), Pacific cod follows at ${LEAN_ROWS[2].value}g, and shrimp, tuna, scallops, smoked haddock and turkey breast crowd the sub-1.5g band. Even the table's last row — cooked cuttlefish — carries only ${LEAN_ROWS[19].value}g of fat with ${LEAN_ROWS[19].protein}g of protein.`,
+    introAr: `القائمة المختصرة لمرحلة التنشيف: كل صنف هنا يتجاوز عتبة 20 جرام بروتين لكل 100 جرام، ثم يُرتب بالدهون تصاعديًا. جبنان خاليان من الدسم يجلسان عند الصفر (${LEAN_ROWS[0].value} و${LEAN_ROWS[1].value} جرام دهون)، ويتبعهما قدّاك المحيط الهادئ عند ${LEAN_ROWS[2].value} جرام، ويزدحم الجمبري والتونة والسكالوب والهادوك المدخن وصدر الديك الرومي في نطاق ما دون 1.5 جرام. وحتى الصف الأخير بالجدول — السبيط المطهو — لا يحمل سوى ${LEAN_ROWS[19].value} جرام دهون مع ${LEAN_ROWS[19].protein} جرام بروتين.`,
+    criterionEn: `The bar: protein ≥ 20g per 100g — the classic "protein food" threshold. The sort: fat per 100g, ascending, ties broken deterministically. Raw dry-legume rows are excluded (nobody eats raw kidney beans, and their per-100g numbers are triple the cooked plate). Raw fish and meat rows stay — they are standard ingredient states, and each linked page declares its own.`,
+    criterionAr: `العتبة: بروتين ≥ 20 جرامًا لكل 100 جرام — حد «الصنف البروتيني» الكلاسيكي. والترتيب: الدهون لكل 100 جرام تصاعديًا، والتعادل يُحسم حتميًا. واستُبعدت صفوف البقوليات الجافة النيئة (لا أحد يأكل الفاصوليا الحمراء نيئة، وأرقامها لكل 100 جرام ثلاثة أمثال الطبق المطهو). وبقيت صفوف السمك واللحم النيئة — فهي حالات مكونات معيارية، وكل صفحة مربوطة تصرح بحالتها.`,
+    metricEn: "Fat (g / 100g)",
+    metricAr: "الدهون (جم / 100 جرام)",
+    verdicts: [
+      {
+        heading: { en: "White fish is the cut's best friend", ar: "السمك الأبيض صديق التنشيف الأول" },
+        body: {
+          en: `Cod at ${LEAN_ROWS[2].value}g fat and ${LEAN_ROWS[2].protein}g protein, snapper at ${LEAN_ROWS[16].value}g, tuna family rows throughout: the ocean's lean white filets give meat-portion protein at vegetable-adjacent calorie costs (${LEAN_ROWS[2].calories} kcal for cod). If your deficit budget is tight, this column is where you shop.`,
+          ar: `القدّاك عند ${LEAN_ROWS[2].value} جرام دهون و${LEAN_ROWS[2].protein} جرام بروتين، والناجل عند ${LEAN_ROWS[16].value} جرام، وصفوف عائلة التونة في كل مكان: فيليه البحر الأبيض الرشيق يمنح بروتينًا بحجم اللحم بكلفة سعرات تقارب الخضروات (${LEAN_ROWS[2].calories} سعرة للقدّاك). إن كانت ميزانية العجز ضيقة فهذا العمود سوقك.`,
+        },
+      },
+      {
+        heading: { en: "Turkey breast over chicken, this once", ar: "صدر الرومي يتقدم الدجاج هذه المرة" },
+        body: {
+          en: `The table's poultry seat goes to turkey breast: ${LEAN_ROWS[13].protein}g protein against ${LEAN_ROWS[13].value}g of fat at ${LEAN_ROWS[13].calories} kcal. Chicken breast — the default lean pick — carries more fat per row (its pages say exactly how much) and still beats nearly everything else; turkey simply edges it on this one metric.`,
+          ar: `مقعد الدواجن في الجدول لصدر الديك الرومي: ${LEAN_ROWS[13].protein} جرام بروتين مقابل ${LEAN_ROWS[13].value} جرام دهون عند ${LEAN_ROWS[13].calories} سعرة. وصدر الدجاج — الخيار الرشيق الافتراضي — يحمل دهونًا أكثر في صفوفه (صفحاته تقول كم بالضبط) ويظل متفوقًا على كل شيء تقريبًا؛ لكن الرومي يتفوق عليه في هذا المقياس وحده.`,
+        },
+      },
+      {
+        heading: { en: "The zero-fat cheese trade", ar: "صفقة الجبن صفر الدسم" },
+        body: {
+          en: `Nonfat cheddar's row — ${LEAN_ROWS[1].protein}g protein, zero fat, ${LEAN_ROWS[1].calories} kcal — is the most extreme protein-per-calorie object in the database. The honest trade: nonfat cheese melts differently and tastes sharper; it is a tool for the last weeks of a cut, not a way of eating.`,
+          ar: `صف الشيدر الخالي من الدسم — ${LEAN_ROWS[1].protein} جرام بروتين وصفر دهون و${LEAN_ROWS[1].calories} سعرة — أكثر أغراض القالة تطرفًا في البروتين لكل سعرة عبر القاعدة كلها. والصفقة الصادقة: الجبن منزوع الدسم يذوب بشكل مختلف وطعمه أكثر حدّة؛ هو أداة لأسابيع التنشيف الأخيرة لا أسلوب حياة.`,
+        },
+      },
+    ],
+    faqs: [
+      {
+        q: {
+          en: "Does eating lean protein automatically cut body fat?",
+          ar: "هل أكل البروتين قليل الدهن يذيب دهون الجسم تلقائيًا؟",
+        },
+        a: {
+          en: `No — fat loss is the calorie deficit, and these rows simply make building one easier: high protein at minimal fat cost keeps portions large and muscle protected. The calorie column here is the working number; the deficit itself is set outside any single food, in your daily total.`,
+          ar: `لا — خسارة الدهون هي عجز السعرات، وهذه الصفوف تجعل بناءه أسهل فحسب: بروتين عالٍ بأقل كلفة دهنية يبقي الحصص كبيرة والعضلات محمية. عمود السعرات هنا هو رقم العمل؛ أما العجز نفسه فيُضبط خارج أي صنف منفرد، في مجموعك اليومي.`,
+        },
+      },
+      {
+        q: {
+          en: "Why is beef missing from this table?",
+          ar: "لماذا يغيب اللحم البقري عن هذا الجدول؟",
+        },
+        a: {
+          en: `Lean beef rows clear the protein bar easily but carry 4-6g of fat per 100g even trimmed — above every row here. They remain excellent proteins on their own pages; this table simply answers the narrow question of which proteins cost the least fat per bite.`,
+          ar: `صفوف اللحم البقري قليل الدهن تتجاوز عتبة البروتين بسهولة لكنها تحمل 4-6 جرامات دهون لكل 100 جرام حتى بعد التشذيب — فوق كل صف هنا. وتبقى بروتينات ممتازة في صفحاتها؛ هذا الجدول يجيب فقط عن السؤال الضيق: أي البروتينات أقل كلفة دهنية في اللقمة.`,
+        },
+      },
+      {
+        q: {
+          en: "Is raw fish in the list safe advice?",
+          ar: "هل وجود السمك النيء بالقائمة نصيحة آمنة؟",
+        },
+        a: {
+          en: `The raw rows are database states, not serving suggestions — sashimi-grade handling is a separate discipline. Cooked rows of the same species sit beside them (cod, shrimp, tuna all appear both ways), and the protein number barely moves between the two states.`,
+          ar: `الصفوف النيئة حالات قاعدة بيانات لا توصيات تقديم — فالتعامل بجودة الساشيمي انضباط منفصل. وصفوف المطهو من النوع نفسه تجلس بجانبها (القدّاك والجمبري والتونة حاضرة بالحالتين)، ورقم البروتين يكاد لا يتحرك بين الحالتين.`,
+        },
+      },
+    ],
+    toolSlug: "macro-calculator",
+    collectionSlug: "low-fat-foods",
+    rows: LEAN_ROWS,
+  },
+  {
+    slug: "highest-carb-foods",
+    publishedAt: PUBLISHED_AT,
+    titleEn: "Highest Carb Staple Foods — Dry-Weight Ranking | Alkemos",
+    titleAr: "ما أعلى الأطعمة في الكربوهيدرات؟ ترتيب الأوزان الجافة",
+    h1En: "Highest Carb Staple Foods",
+    h1Ar: "ما أعلى الأطعمة في الكربوهيدرات؟",
+    descriptionEn: `Corn flakes, matzo and glutinous rice lead the carb staples at ${CARBS_ROWS[0].value}–${CARBS_ROWS[3].value}g carbs per 100g dry weight — the real ranking from the Alkemos database.`,
+    descriptionAr: `الكورن فليكس وخبز الماتزو والأرز اللزج تقود أطعمة الكربوهيدرات عند ${CARBS_ROWS[0].value}–${CARBS_ROWS[3].value} جم لكل 100 جرام بالوزن الجاف — الترتيب الحقيقي من قاعدة بيانات Alkemos.`,
+    introEn: `The carb-loading shelf, weighed as you buy it: corn flakes open at ${CARBS_ROWS[0].value}g per 100g, matzo and fat-free saltines hold ${CARBS_ROWS[1].value}–${CARBS_ROWS[2].value}g, glutinous rice reaches ${CARBS_ROWS[3].value}g, and the white-rice family fills the ${CARBS_ROWS[7].value}–${CARBS_ROWS[16].value}g band alongside cornmeal. The popcorn rows close at ${CARBS_ROWS[19].value}g — with ${CARBS_ROWS[19].fiber}g of fiber that the polished rices left behind.`,
+    introAr: `رفُّ تحميل الكربوهيدرات، موزونًا كما تشتريه: الكورن فليكس يفتتح بـ${CARBS_ROWS[0].value} جرامًا لكل 100 جرام، ويتمسك الماتزو والبسكويت المملح الخالي من الدهون بـ${CARBS_ROWS[1].value}–${CARBS_ROWS[2].value} جرام، ويبلغ الأرز اللزج ${CARBS_ROWS[3].value} جرام، وتملأ عائلة الأرز الأبيض نطاق ${CARBS_ROWS[7].value}–${CARBS_ROWS[16].value} جرام مع دقيق الذرة. وتختم صفوف الفشار عند ${CARBS_ROWS[19].value} جرامًا — ومعها ${CARBS_ROWS[19].fiber} جرامًا من الألياف التي تركها الأرز المصقول خلفه.`,
+    criterionEn: `Staple carbohydrates ranked by carbs per 100g, descending, at DRY weight — the weight on the package you buy. The sweets class is out by rule (sugars, candies, sweeteners, syrups, honey, jams, cookies), as are pure starch ingredients, pure fats and drinks, and dehydrated or dried-fruit forms whose concentration fakes the podium. Cooked weights differ — rice roughly triples — so compare at the bag, not the plate.`,
+    criterionAr: `الكربوهيدرات الأساسية مرتبة بالكربوهيدرات لكل 100 جرام تنازليًا بالوزن الجاف — الوزن المكتوب على العبوة التي تشتريها. وفئة الحلويات خارجة بقاعدة (السكريات والحلوى والمحليات والشرابات والعسل والمربى والكوكيز)، وكذلك مكونات النشا الصرفة والدهون الصرفة والمشروبات، والأشكال المجففة وفواكهها التي يزيّف تركيزها المنصة. والأوزان المطبوخة مختلفة — الأرز يتضاعف ثلاث مرات تقريبًا — فقارن عند الكيس لا عند الطبق.`,
+    metricEn: "Carbs (g / 100g)",
+    metricAr: "الكربوهيدرات (جم / 100 جرام)",
+    verdicts: [
+      {
+        heading: { en: "Rice is the honest bulk king", ar: "الأرز ملك الحجم الأمين" },
+        body: {
+          en: `Six white-rice rows crowd the top twenty at ${CARBS_ROWS[7].value}–${CARBS_ROWS[16].value}g, and they cost the least per kilo of anything here. For a hard gainer filling a 400g-carb day, that is the arithmetic that works: cheap, neutral, and exactly countable at the dry cup.`,
+          ar: `ستة صفوف من الأرز الأبيض تزدحم في العشرين الأوائل عند ${CARBS_ROWS[7].value}–${CARBS_ROWS[16].value} جرام، وهي الأرخص كيلوغرامًا في القائمة كلها. لمُكتسب الوزن الصعب يملأ يومًا بأربعمائة جرام كربوهيدرات، هذا هو الحساب الذي ينجح: رخيص ومحايد وقابل للعد بدقة عند الكوب الجاف.`,
+        },
+      },
+      {
+        heading: { en: "Breakfast cereals earn row one", ar: "رقائق الفطور تستحق الصف الأول" },
+        body: {
+          en: `Corn flakes at ${CARBS_ROWS[0].value}g beat every rice row — concentration again, this time from the cereal extruder. The serving is the catch: 30g in the bowl, about ${Math.round(CARBS_ROWS[0].value * 0.3)}g of carbs, versus ${Math.round(CARBS_ROWS[7].value * 0.75)}g in a 75g dry rice portion. The column ranks; the portion decides.`,
+          ar: `الكورن فليكس عند ${CARBS_ROWS[0].value} جرامًا يتفوق على كل صفوف الأرز — تركيز مرة أخرى، وهذه المرة من مطحنة البثق. والحصة هي الفخ: 30 جرامًا في الوعاء تعني نحو ${Math.round(CARBS_ROWS[0].value * 0.3)} جرام كربوهيدرات، مقابل ${Math.round(CARBS_ROWS[7].value * 0.75)} جرامًا في حصة 75 جرامًا جافة من الأرز. العمود يرتب؛ والحصة تحسم.`,
+        },
+      },
+      {
+        heading: { en: "Popcorn keeps its fiber", ar: "الفشار يحتفظ بأليافه" },
+        body: {
+          en: `Air-popped popcorn carries ${CARBS_ROWS[19].value}g of carbs together with ${CARBS_ROWS[19].fiber}g of fiber — the whole grain's skin survived the pop. Among these refined-heavy rows it is the one intact grain, and the rye wafer's ${CARBS_ROWS[5].fiber}g fiber says the same for its own row.`,
+          ar: `فشار الهواء الساخن يحمل ${CARBS_ROWS[19].value} جرام كربوهيدرات مع ${CARBS_ROWS[19].fiber} جرام ألياف — قشر الحبة الكاملة نجا من الانفجار. وبين هذه الصفوف المكررة الثقيلة هو الحبة الكاملة الوحيدة، و${CARBS_ROWS[5].fiber} جرام ألياف ويفر الشعير تقول الشيء نفسه عن صفها.`,
+        },
+      },
+    ],
+    faqs: [
+      {
+        q: {
+          en: "Why does the list use dry weight?",
+          ar: "لماذا يستخدم الجدول الوزن الجاف؟",
+        },
+        a: {
+          en: `Because the bag is where the number is honest and identical every time: 100g of dry rice is 100g of rice. Cooked weight depends on your pot, water and time — the same rice lands anywhere from doubled to tripled. The dry column is the only version you can plan a macro day around.`,
+          ar: `لأن العبوة هي المكان الذي يكون فيه الرقم أمينًا ومتطابقًا في كل مرة: 100 جرام أرز جاف هي 100 جرام أرز. أما الوزن المطبوخ فيعتمد على قِدرَك وماءك ووقتك — الأرز نفسه يهبط في أي نقطة بين الضعف والثلاثة أضعاف. والعمود الجاف هو النسخة الوحيدة التي تستطيع تخطيط يوم ماكرو حولها.`,
+        },
+      },
+      {
+        q: {
+          en: "Where are fruits and dates?",
+          ar: "أين الفواكه والتمور؟",
+        },
+        a: {
+          en: `Fresh fruit carries its water — a banana sits near 23g per 100g, a fraction of these rows. Dates and raisins would score high, but drying them is exactly the concentration trick this family's rules exclude; their pages carry their own honest numbers instead.`,
+          ar: `الفاكهة الطازجة تحمل ماءها — الموزة تجلس قرب 23 جرامًا لكل 100 جرام، وهي كسر من هذه الصفوف. والتمور والزبيب سيسجلان عاليًا، لكن تجفيفهما هو بالضبط حيلة التركيز التي تستبعدها قواعد هذه العائلة؛ وصفحاتهما تحمل أرقامهما الصادقة بدلًا من ذلك.`,
+        },
+      },
+      {
+        q: {
+          en: "Is a high-carb list against low-carb diets?",
+          ar: "هل جدول الكربوهيدرات العالية ضد الأنظمة قليلة الكارب؟",
+        },
+        a: {
+          en: `It answers the opposite goal, stated openly: carb loading, gaining weight, and endurance fueling all need these exact foods. The library keeps both doors — a low-carb, high-protein ranking exists for the keto side — and neither table judges the other's diet.`,
+          ar: `هو يجيب عن الهدف المعاكس، معلنًا بوضوح: تحميل الكربوهيدرات وكسب الوزن ووقود التحمّل كلها تحتاج هذه الأطعمة بالذات. والمكتبة تُبقي البابين مفتوحين — يوجد ترتيب قليل الكارب عالي البروتين للجهة الكيتونية — ولا يحكم أي جدول على حمية الآخر.`,
+        },
+      },
+    ],
+    toolSlug: "calorie-calculator",
+    collectionSlug: "foods-for-bulking",
+    rows: CARBS_ROWS,
   },
 ];
 
