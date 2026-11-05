@@ -11,11 +11,13 @@ import { getBreadcrumbSchema, getItemListSchema, jsonLd } from "@/lib/seo";
 /**
  * /foods/compare/[slug] — Food-vs-food comparison page (EN).
  *
- * SEO-GROWTH-P4 pilot (owner order 2026-11-05 «اختبار محدود قابل للقياس»),
- * executing audit 03 §4.2: X-vs-Y pairs from the curated+enriched foods,
- * targeting the measured Arabic PAA patterns («موز أم تفاح؟»…) and their
- * EN equivalents. 4 pairs × 2 mirrors = 8 URLs — deliberately NOT a
- * 500-page batch (the owner's explicit ceiling for this phase).
+ * SEO-GROWTH-P4 (owner order 2026-11-05 batch 2 «اختبار محدود قابل
+ * للقياس» → batch 3 «استكمل الأعمال المؤجلة ذات الأولوية… لا تنتظر
+ * نتائج Google»), executing audit 03 §4.2: X-vs-Y pairs from the
+ * curated+enriched foods, targeting the measured Arabic PAA patterns
+ * («موز أم تفاح؟»…) and their EN equivalents. 10 pairs × 2 mirrors =
+ * 20 URLs — the plan's Phase-1 "first ten" (file 07); the 40-90-pair
+ * expansion stays gated on measured demand (audit 03 §4.2/§8).
  *
  * Schema law (§12.19 DO-NOT + audit 03 §6): ItemList + Breadcrumb only —
  * the FAQ is visible plain text, NOT FAQPage JSON-LD.

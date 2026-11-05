@@ -26,9 +26,10 @@ import { scanArabicDialect, scanLatinContamination } from "@/lib/blog-msa";
  *      serving number equals per100g × defaultGrams ÷ 100 (rounded
  *      0.1); proteinPer100kcal = protein × 100 ÷ calories.
  *
- * Plus the pilot-scope law: ONLY curated (tags>0) foods may join a pair
- * — enforced by the module's own curated() guard, pinned here; and the
- * sitemap family law: all 8 URLs present in sitemap-comparisons.xml.
+ * Plus the family-scope law (updated batch 3, 2026-11-05): ONLY curated
+ * (tags>0) foods may join a pair — enforced by the module's own curated()
+ * guard, pinned here; and the sitemap family law: all 20 URLs present in
+ * sitemap-comparisons.xml (10 pairs × 2 mirrors).
  */
 
 const EN_PAGE = "src/app/(en)/foods/compare/[slug]/page.tsx";
@@ -61,16 +62,25 @@ function jaccard(a: string, b: string): number {
   return inter / (A.size + B.size - inter);
 }
 
-describe("food-comparisons pilot (SEO-GROWTH-P4 — audit 03 §6 gates)", () => {
-  it("the pilot stays a PILOT: 4 pairs (owner ceiling — no 500/1000-page batches)", () => {
-    expect(FOOD_COMPARISONS).toHaveLength(4);
-    expect(FOOD_COMPARISONS.map((c) => c.slug)).toEqual([
-      "banana-vs-apple",
-      "tuna-vs-chicken-breast",
-      "white-rice-vs-brown-rice",
-      "greek-yogurt-vs-cottage-cheese",
-    ]);
-  });
+describe("food-comparisons family (SEO-GROWTH-P4 — audit 03 §6 gates)", () => {
+  it(
+    "the family stays at the plan's Phase-1 first-ten: 10 pairs — batch 2's 4-pair pilot + batch 3's six (owner order 2026-11-05 «استكمل الأعمال المؤجلة ذات الأولوية… لا تنتظر نتائج Google») — the 40-90 expansion stays D-2/demand-gated",
+    () => {
+      expect(FOOD_COMPARISONS).toHaveLength(10);
+      expect(FOOD_COMPARISONS.map((c) => c.slug)).toEqual([
+        "banana-vs-apple",
+        "tuna-vs-chicken-breast",
+        "white-rice-vs-brown-rice",
+        "greek-yogurt-vs-cottage-cheese",
+        "oatmeal-vs-white-rice",
+        "eggs-vs-egg-whites",
+        "tofu-vs-chicken-breast",
+        "olive-oil-vs-coconut-oil",
+        "dates-vs-banana",
+        "lentils-vs-chickpeas",
+      ]);
+    },
+  );
 
   it("GATE 1 — depth: ≥180 unique words per language per pair", () => {
     for (const c of FOOD_COMPARISONS) {
@@ -80,9 +90,11 @@ describe("food-comparisons pilot (SEO-GROWTH-P4 — audit 03 §6 gates)", () => 
   });
 
   it("GATE 2 — template similarity: pairwise Jaccard stays under the measured ceiling", () => {
-    // Measured on the shipped pilot (2026-11-05): max pairwise Jaccard
-    // EN 0.141 / AR 0.152 — pinned at 0.22 with margin (the P1-1/P1-2
-    // law style: the canary pins the observed value, not an aspiration).
+    // Measured on the shipped family (2026-11-05, batches 2+3): max
+    // pairwise Jaccard EN 0.141 / AR 0.152 (batch-2 pilot) — the batch-3
+    // six keep the same style ceiling, pinned at 0.22 with margin (the
+    // P1-1/P1-2 law style: the canary pins the observed value, not an
+    // aspiration).
     for (let i = 0; i < FOOD_COMPARISONS.length; i++) {
       for (let j = i + 1; j < FOOD_COMPARISONS.length; j++) {
         const je = jaccard(flatten(FOOD_COMPARISONS[i], "en"), flatten(FOOD_COMPARISONS[j], "en"));
@@ -192,7 +204,7 @@ describe("food-comparisons pilot (SEO-GROWTH-P4 — audit 03 §6 gates)", () => 
     expect(tunaChicken.introEn).toContain(`${tunaChicken.b.proteinPer100kcal}g`);
   });
 
-  it("sitemap-comparisons advertises all 8 pilot URLs with the hreflang pair", () => {
+  it("sitemap-comparisons advertises all 20 family URLs (10 pairs × 2 mirrors) with the hreflang pair", () => {
     const src = readFileSync(SITEMAP, "utf8");
     expect(src).toContain("FOOD_COMPARISONS");
     // The URLs are template-built (${base}/foods/compare/${fc.slug}) —
@@ -215,7 +227,9 @@ describe("food-comparisons pilot (SEO-GROWTH-P4 — audit 03 §6 gates)", () => 
     expect(readFileSync(AR_PAGE, "utf8")).toContain("en: `https://alkemos.com/foods/compare/");
   });
 
-  it("publishedAt is the stable pilot ship date (W1-1 law — never bump)", () => {
+  it("publishedAt is the stable family ship date (W1-1 law — never bump)", () => {
+    // Batches 2 and 3 both ship 2026-11-05 — the first-publish date stays
+    // truthful and identical for the whole family.
     for (const c of FOOD_COMPARISONS) expect(c.publishedAt).toBe("2026-11-05");
   });
 });

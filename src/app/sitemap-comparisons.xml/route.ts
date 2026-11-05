@@ -44,13 +44,16 @@ export async function GET() {
     });
   }
 
-  // SEO-GROWTH-P4 (2026-11-05, owner order «اختبار محدود قابل للقياس»):
-  // the food-vs-food comparison pilot joins the SAME sitemap family —
-  // 4 pairs × 2 languages = 8 URLs, built exclusively from the curated
-  // enriched foods (audit 03 §4.2). NOTE: this does NOT touch
-  // sitemap-foods.xml or its selection policy in any way — the D-2
-  // decision space (USDA tail / band advertisement) stays byte-identical;
-  // these are NEW URLs of a NEW family, not newly-advertised old ones.
+  // SEO-GROWTH-P4 (2026-11-05, owner orders batch 2 «اختبار محدود قابل
+  // للقياس» + batch 3 «استكمل الأعمال المؤجلة ذات الأولوية… لا تنتظر
+  // نتائج Google»): the food-vs-food comparison family — the plan's
+  // Phase-1 "first ten" pairs (file 07) × 2 languages = 20 URLs, built
+  // exclusively from the curated enriched foods (audit 03 §4.2). NOTE:
+  // this does NOT touch sitemap-foods.xml or its selection policy in any
+  // way — the D-2 decision space (USDA tail / band advertisement) stays
+  // byte-identical; these are NEW URLs of a NEW family, not
+  // newly-advertised old ones. The 40-90-pair expansion stays gated on
+  // measured demand (audit 03 §4.2).
   for (const fc of FOOD_COMPARISONS) {
     urls.push({
       loc: `${base}/foods/compare/${fc.slug}`,

@@ -53,10 +53,12 @@ export const SITEMAP_LASTMOD = {
   foods: "2026-11-04",
   collections: "2026-09-15",
   // Same audit: Freeletics EN+AR titles dropped the suffix (78→64 / 84→74).
-  // SEO-GROWTH-P4 (2026-11-05, owner order «اختبار محدود قابل للقياس»):
-  // the food-vs-food comparison pilot (4 pairs × both mirrors, 8 new
-  // URLs — audit 03 §4.2) joined this family — a material family change
-  // (new URLs first shipped today), so the anchor moves to the ship date.
+  // SEO-GROWTH-P4 (2026-11-05, owner orders batch 2 «اختبار محدود قابل
+  // للقياس» + batch 3 «استكمل الأعمال المؤجلة ذات الأولوية… لا تنتظر
+  // نتائج Google»): the food-vs-food comparison family — the plan's
+  // Phase-1 first-ten (10 pairs × both mirrors, 20 URLs — audit 03 §4.2)
+  // joined this family — a material family change (new URLs first shipped
+  // today, both batches), so the anchor moves to the ship date.
   comparisons: "2026-11-05",
 } as const;
 

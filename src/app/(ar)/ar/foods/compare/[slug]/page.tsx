@@ -11,7 +11,10 @@ import { getBreadcrumbSchema, getItemListSchema, jsonLd } from "@/lib/seo";
 /**
  * /ar/foods/compare/[slug] — Arabic mirror of /foods/compare/[slug].
  *
- * SEO-GROWTH-P4 pilot (owner order 2026-11-05). The AR copy is
+ * SEO-GROWTH-P4 (owner orders 2026-11-05: batch 2 «اختبار محدود قابل
+ * للقياس» + batch 3 «استكمل الأعمال المؤجلة ذات الأولوية… لا تنتظر
+ * نتائج Google» — the plan's Phase-1 first-ten, 10 pairs × 2 mirrors).
+ * The AR copy is
  * editorially independent (order 414 law) with question-shaped AR titles
  * (audit 03 §4.1) — the AR surface is the primary PAA target
  * («موز أم تفاح؟» patterns measured 2026-11-05).
