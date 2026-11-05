@@ -48,6 +48,24 @@ export type SitemapUrl = {
   alternates?: Record<string, string>;
 };
 
+/**
+ * One child entry of the /sitemap.xml INDEX.
+ *
+ * `lastModified` is OPTIONAL BY DESIGN (P-3 fix, 2026-11-05): it must
+ * carry the date the child sitemap FILE actually changed (for the five
+ * static families: the central family anchor; for blog: the greatest
+ * real published/updated date across rows) — and it must be OMITTED
+ * when no truthful date is available, never fabricated. Google uses
+ * <lastmod> for crawl scheduling only while the dates look consistently
+ * accurate and ignores them otherwise (Search Central sitemap docs);
+ * the pre-fix index wrote lastmod=today for every child daily, which
+ * is exactly the pattern that gets the signal discounted.
+ */
+export type SitemapIndexEntry = {
+  loc: string;
+  lastModified?: Date;
+};
+
 function toW3CDate(d: Date): string {
   return d.toISOString().slice(0, 10);
 }
@@ -79,13 +97,21 @@ ${body}
 </urlset>`;
 }
 
-/** Serializes a sitemap index file. */
-export function buildSitemapIndex(children: string[]): string {
-  const body = children
-    .map(
-      (loc) =>
-        `  <sitemap>\n    <loc>${xmlEscape(loc)}</loc>\n  </sitemap>`,
-    )
+/**
+ * Serializes a sitemap index file.
+ *
+ * <lastmod> is emitted ONLY for entries that carry a real Date (P-3
+ * fix, 2026-11-05) — absent dates are omitted, never faked.
+ */
+export function buildSitemapIndex(entries: SitemapIndexEntry[]): string {
+  const body = entries
+    .map((entry) => {
+      const parts = [`<loc>${xmlEscape(entry.loc)}</loc>`];
+      if (entry.lastModified) {
+        parts.push(`<lastmod>${toW3CDate(entry.lastModified)}</lastmod>`);
+      }
+      return `  <sitemap>\n    ${parts.join("\n    ")}\n  </sitemap>`;
+    })
     .join("\n");
   return `<?xml version="1.0" encoding="UTF-8"?>
 <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">

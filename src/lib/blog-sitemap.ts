@@ -47,3 +47,42 @@ export function blogLastmod(post: BlogSitemapPost, fallback: Date): Date {
   if (published && updated) return published > updated ? published : updated;
   return published ?? updated ?? fallback;
 }
+
+/**
+ * Honest <lastmod> for the sitemap-INDEX entry pointing at
+ * /sitemap-blog.xml (P-3 fix, 2026-11-05): the greatest REAL
+ * published_at|updated_at across published rows.
+ *
+ * Deliberately NO fallback-to-now (unlike blogLastmod, which the child
+ * sitemap uses per-row): the index entry must either carry a date the
+ * data actually supports or be omitted entirely — a fabricated "today"
+ * is exactly the dishonest pattern Google discounts (Search Central:
+ * lastmod is used for crawl scheduling only while consistently
+ * accurate). Returns null on empty/absent rows or when no row carries
+ * a parseable date.
+ */
+export function blogIndexLastmod(
+  posts:
+    | ReadonlyArray<{ published_at: string | null; updated_at: string | null }>
+    | null
+    | undefined,
+): Date | null {
+  if (!posts) return null;
+  let max: Date | null = null;
+  for (const post of posts) {
+    const published = post.published_at ? new Date(post.published_at) : null;
+    const updated = post.updated_at ? new Date(post.updated_at) : null;
+    const d =
+      published && updated
+        ? published > updated
+          ? published
+          : updated
+        : (published ?? updated);
+    // Invalid date strings produce NaN Dates — comparisons are false,
+    // so unparseable rows are ignored rather than poisoning the max.
+    if (d && !Number.isNaN(d.getTime()) && (!max || d > max)) {
+      max = d;
+    }
+  }
+  return max;
+}

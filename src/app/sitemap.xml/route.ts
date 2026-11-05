@@ -1,4 +1,12 @@
-import { xmlResponse, siteUrl } from "@/lib/sitemap-xml";
+import { createClient } from "@supabase/supabase-js";
+import {
+  buildSitemapIndex,
+  xmlResponse,
+  siteUrl,
+  type SitemapIndexEntry,
+} from "@/lib/sitemap-xml";
+import { familyLastmod } from "@/lib/sitemap-lastmod";
+import { blogIndexLastmod } from "@/lib/blog-sitemap";
 
 /**
  * GET /sitemap.xml — Sitemap INDEX (audit C2, 2026-09-05).
@@ -7,42 +15,85 @@ import { xmlResponse, siteUrl } from "@/lib/sitemap-xml";
  * at topic-specific children. robots.txt already points here — nothing
  * external changes.
  *
- * Phase SEO-GEO-1 (2026-09-08): added /sitemap-collections.xml — the new
- * hub/collection pages (muscle groups, equipment, food collections).
+ * HISTORY of this file's <lastmod> behavior:
  *
- * Phase SEO-GEO-1.1 (2026-09-08): GSC and Bing reported "Couldn't fetch"
- * on /sitemap-collections.xml for the first ~12 hours after deployment
- * even though the URL was serving HTTP 200 + valid XML the whole time.
- * Root cause: GSC's fetch cache lags behind a freshly-deployed sitemap,
- * and without a <lastmod> on the index entry it has no signal to retry
- * sooner than its default 24h cycle. Adding <lastmod> = today's date
- * on every child entry forces GSC/Bing to treat the index as "updated"
- * and re-fetch each child immediately. This is the same pattern the
- * other sitemap children already use internally on their <url> entries.
+ * Phase SEO-GEO-1.1 (2026-09-08) — the index wrote lastmod = TODAY on
+ * every child entry daily. The motivation was measured and real at the
+ * time: GSC/Bing reported "Couldn't fetch" on freshly deployed children
+ * (GSC's fetch cache lag), and a bumped lastmod forced a same-day
+ * re-fetch. That hack is documented as P-3 in SEO-COLLAPSE-AUDIT
+ * 2026-10-18 §2 and stayed deferred (decision D-4) awaiting
+ * post-recovery stabilization.
+ *
+ * P-3/D-4 EXECUTED (2026-11-05, owner order «نفّذ الإصلاح التقني إذا
+ * ثبت») — the deferral premise is void with new evidence: GSC measured
+ * 29 impressions/28 days across 2026-10-08→11-04 (no recovery window
+ * to protect), and Google's documented trust model makes the daily
+ * fabricated date self-defeating — Search Central: <lastmod> helps
+ * schedule crawling ONLY while dates look consistently accurate;
+ * unreliable dates get ignored wholesale. With no Google-side push
+ * channel available to this deployment (IndexNow does not cover
+ * Google; the URL Inspection API needs an owner-granted read-write
+ * scope), the sitemap lastmod is the one programmatic recrawl signal
+ * the site controls — so it now carries TRUTHFUL dates:
+ *
+ *   - the five static families → the central per-family anchors
+ *     (src/lib/sitemap-lastmod.ts — the SAME anchors their child
+ *     sitemaps already emit, so index and children can never drift);
+ *   - sitemap-blog.xml → the greatest real published_at|updated_at
+ *     across published rows (blogIndexLastmod — no fallback-to-now);
+ *   - when no truthful date is available (Supabase unreachable, no
+ *     rows) the entry is simply emitted WITHOUT <lastmod> — absence is
+ *     honest, a fabricated date is not.
  */
 
 export const revalidate = 3600;
 
 export async function GET() {
   const base = siteUrl();
-  const today = new Date().toISOString().slice(0, 10);
-  const children = [
-    `${base}/sitemap-pages.xml`,
-    `${base}/sitemap-collections.xml`,
-    `${base}/sitemap-comparisons.xml`,
-    `${base}/sitemap-exercises.xml`,
-    `${base}/sitemap-foods.xml`,
-    `${base}/sitemap-blog.xml`,
+  const entries: SitemapIndexEntry[] = [
+    { loc: `${base}/sitemap-pages.xml`, lastModified: familyLastmod("pages") },
+    {
+      loc: `${base}/sitemap-collections.xml`,
+      lastModified: familyLastmod("collections"),
+    },
+    {
+      loc: `${base}/sitemap-comparisons.xml`,
+      lastModified: familyLastmod("comparisons"),
+    },
+    {
+      loc: `${base}/sitemap-exercises.xml`,
+      lastModified: familyLastmod("exercises"),
+    },
+    { loc: `${base}/sitemap-foods.xml`, lastModified: familyLastmod("foods") },
+    { loc: `${base}/sitemap-blog.xml`, ...(await blogEntryLastmod()) },
   ];
-  // buildSitemapIndex does not accept lastmod today — inline-build the
-  // index so each <sitemap> carries a <lastmod>. This keeps the helper
-  // API stable for the other callers.
-  const body = children
-    .map((loc) => `  <sitemap>\n    <loc>${loc}</loc>\n    <lastmod>${today}</lastmod>\n  </sitemap>`)
-    .join("\n");
-  const xml = `<?xml version="1.0" encoding="UTF-8"?>
-<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${body}
-</sitemapindex>`;
-  return xmlResponse(xml);
+  return xmlResponse(buildSitemapIndex(entries));
+}
+
+/**
+ * The blog child's index lastmod — a real max(published_at, updated_at)
+ * from the same table the child sitemap reads, or NO date at all.
+ * Fail-soft by design (mirrors the child route's error posture): an
+ * unreachable Supabase must never 500 the index to a crawler.
+ */
+async function blogEntryLastmod(): Promise<{ lastModified?: Date }> {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!supabaseUrl || !supabaseKey) return {};
+  try {
+    const supabase = createClient(supabaseUrl, supabaseKey, {
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
+    const { data: posts } = await supabase
+      .from("blog_posts")
+      .select("published_at, updated_at")
+      .eq("is_published", true);
+    const max = blogIndexLastmod(posts);
+    return max ? { lastModified: max } : {};
+  } catch {
+    // Supabase unreachable → no lastmod for the blog child (honest
+    // absence — never a fabricated date, never a 500).
+    return {};
+  }
 }
