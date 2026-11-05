@@ -65,6 +65,14 @@
 -- profiles_role_guard_after_upd/profiles_role_guard_after_del · الجداول
 -- والسياسات تعاد لصياغة ما قبل 0105 من التاريخ — لا يُنصح (الملف
 -- يحمل حماية تفقد بالعودة).
+--
+-- ملاحظة قابلية أي بيئة (قانون 0104 — محدّث بعد أول db-migrate validate
+-- أحمر على الاستاك النظيف): عمودا old_role/new_role من نوع text حصرًا
+-- لأن الاستاك النظيف قد لا يملك public.user_role عند تنفيذ هذا الملف
+-- (فشل الإنشاء الأول: type "public.user_role" does not exist) — الإنتاج
+-- طبّق النسخة الأولى بأعمدة enum بتاريخ 2026-11-05T13:39:54Z بشكل مطابق
+-- وظيفيًا (القيم نفسها؛ الاختلاف النوعي شكلي والسجل أرشيفي) والتعديل
+-- للبيئات النظيفة وبوابة الاستاك وللسجل — سابقة 0103/0104.
 -- =====================================================================
 
 -- ═══════════════ PART 1 — role_audit_log (سجل تدقيق الأدوار) ═══════════════
@@ -73,8 +81,11 @@ create table if not exists public.role_audit_log (
   id          uuid primary key default gen_random_uuid(),
   profile_id  uuid not null,                 -- بلا FK عمدًا: السجل يبقى بعد حذف البروفايل
   email       text,
-  old_role    public.user_role,              -- null عند الولادة (INSERT)
-  new_role    public.user_role,              -- null عند الحذف (DELETE)
+  -- العمودان text (لا public.user_role) عمدًا — قانون 0104 لقابلية أي بيئة:
+  -- الاستاك النظيف قد لا يملك الـenum أصلًا، والسجل أرشيفي بحت يقبل أي
+  -- تسمية دور مستقبلية دون ترحيل — القيم تأتي من أعمدة profiles نفسها
+  old_role    text,                          -- null عند الولادة (INSERT)
+  new_role    text,                          -- null عند الحذف (DELETE)
   actor_uid   uuid,                          -- auth.uid() للجلسة؛ null = سياق خدمي/SQL
   actor_email text,                          -- بريد فاعل الجلسة إن وُجد
   context     text not null default 'service', -- القناة: auto-promote | admin-rpc | 0105-restore | service | insert
@@ -135,7 +146,7 @@ begin
     if new.role is not null and new.role::text <> 'client' then
       insert into public.role_audit_log
         (profile_id, email, old_role, new_role, actor_uid, actor_email, context)
-      values (new.id, new.email, null, new.role, v_actor, null, 'insert');
+      values (new.id, new.email, null, new.role::text, v_actor, null, 'insert');
     end if;
     return new;
   end if;
@@ -167,7 +178,7 @@ begin
     select email into v_actor_email from public.profiles where id = v_actor;
     insert into public.role_audit_log
       (profile_id, email, old_role, new_role, actor_uid, actor_email, context)
-    values (old.id, old.email, old.role, new.role, v_actor, v_actor_email, v_ctx);
+    values (old.id, old.email, old.role::text, new.role::text, v_actor, v_actor_email, v_ctx);
     return new;
   end if;
 
@@ -217,7 +228,7 @@ begin
     -- توثيق حذف صفوف الأدمن (الحذف نفسه يمر إن لم يكن أخيرًا)
     insert into public.role_audit_log
       (profile_id, email, old_role, new_role, actor_uid, actor_email, context)
-    select d.id, d.email, d.role, null, auth.uid(), null, v_ctx || ':delete'
+    select d.id, d.email, d.role::text, null, auth.uid(), null, v_ctx || ':delete'
       from guard_del_rows d
      where d.role::text = 'admin';
     select count(*) into v_admins_after from public.profiles where role::text = 'admin';
