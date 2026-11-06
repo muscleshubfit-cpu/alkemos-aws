@@ -69,7 +69,7 @@ async function fetchAll(): Promise<Row[]> {
   const COLS =
     "select=id,slug,language,title,excerpt,content,faq_json,meta_title,meta_description,category,review_status,linked_post_id";
   for (;;) {
-    const url = `${SUPABASE_URL}/rest/v1/blog_posts?status=eq.published&${COLS}&order=id.asc&limit=${PAGE}&offset=${offset}`;
+    const url = `${SUPABASE_URL}/rest/v1/blog_posts?is_published=eq.true&${COLS}&order=id.asc&limit=${PAGE}&offset=${offset}`;
     const res = await fetch(url, {
       headers: { apikey: SERVICE_KEY, Authorization: `Bearer ${SERVICE_KEY}` },
     });
