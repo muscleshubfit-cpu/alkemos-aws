@@ -71,7 +71,7 @@ import {
   addDismissedPlanJobId,
   readDismissedPlanJobIds,
 } from "@/lib/plan-jobs";
-import { buildClientConstraints } from "@/lib/plan-ai-validation";
+import { buildClientConstraints, checkItemConstraints } from "@/lib/plan-ai-validation";
 import type { ClientContext } from "@/lib/ai-local";
 
 /* ── fixtures ── */
@@ -131,27 +131,36 @@ beforeEach(() => {
 
 describe("P0-1 — the local engine is diet/targets/constraints aware", () => {
   it("KETO: no starch, no high-sugar fruit, keto macros honored, target calories closed, meals count honored", () => {
+    // FRAME 443: the SAME built constraints feed the generator AND the
+    // single-source gate assertion below (keto tokens + dairy law + carb
+    // ceiling + the nut allergy with its plant-milk guard) — the old inline
+    // regexes were a SECOND copy of the forbidden/allergen lists and
+    // inherited the substring false positive class («موزاريلا» ⊃ «موز» — a
+    // keto-staple cheese the local pool legitimately serves after the
+    // TOKEN_MATCH_EXCEPTIONS fix; Math.random pool variety made the copies
+    // fail intermittently whenever such a row was drawn).
+    const ketoConstraints = buildClientConstraints({
+      dietType: "keto",
+      allergyText: "مكسرات",
+      dislikedText: "",
+    });
     const plan = generateNutritionPlan(ketoCtx, {
       dailyCalories: 1800,
       macros: { protein_g: 190, carbs_g: 36, fat_g: 130 },
       dietType: "keto",
       mealsCount: 3,
-      constraints: buildClientConstraints({
-        dietType: "keto",
-        allergyText: "مكسرات",
-        dislikedText: "",
-      }),
+      constraints: ketoConstraints,
     });
     expect(plan.meals).toHaveLength(3);
     expect(plan.daily_calories).toBe(1800);
     expect(plan.macros.carbs_g).toBe(36);
     const foods = plan.meals.flatMap((m) => m.items.map((i) => i.food));
     expect(foods.length).toBeGreaterThan(0);
-    for (const f of foods) {
-      expect(String(f)).not.toMatch(/أرز|رز|خبز|عيش|شوفان|مكرونة|بطاطس|بطاطا|كينوا|برغل|فريك|موز|عنب|بطيخ|تمر|بلح|مانجو/);
-    }
-    for (const f of foods) {
-      expect(String(f)).not.toMatch(/لوز|جوز|فستق|بندق|كاجو|مكسرات|فول سوداني/);
+    for (const m of plan.meals as Array<{ items: Array<{ food: string; carbs_g?: number }> }>) {
+      for (const i of m.items) {
+        const v = checkItemConstraints(String(i.food), { carbs_g: i.carbs_g ?? null }, ketoConstraints);
+        expect(v, `fallback item «${String(i.food)}» must pass the full constraint gate: ${v ?? ""}`).toBeNull();
+      }
     }
     const mealsTotal = plan.meals.reduce((s, m) => s + m.items.reduce((x, i) => x + i.calories, 0), 0);
     expect(Math.abs(mealsTotal - 1800) / 1800).toBeLessThanOrEqual(0.25);
