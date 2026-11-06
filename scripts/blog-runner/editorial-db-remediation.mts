@@ -10,9 +10,13 @@
  * MSA noun uses and «طب الباطنة/طب الرياضة» journal names).
  *
  * CHANNEL LAW (the legacy-ar-msa / keyword-tag-remediation precedents):
- *   - Writes touch ONLY: content · reading_time (recomputed) · updated_at ·
- *     excerpt/meta_description/meta_title/faq_json (only the fields an edit
- *     actually hits). Slug/title/is_published/images/links: NEVER touched.
+ *   - Writes touch ONLY: content · reading_time (the SITE's own formula:
+ *     ceil(whitespace-words/200) — src/lib/blog-admin.ts, imported logic
+ *     mirrored) · updated_at · excerpt/meta_description/meta_title/faq_json
+ *     (only the fields an edit actually hits). title: touched ONLY by the
+ *     deterministic tanween orthography swap (exact-literal, count-verified,
+ *     mathematically reversible) — never by a semantic edit.
+ *     Slug/is_published/images/links: NEVER touched.
  *   - Every edit is an exact string or regex pair with an expected match
  *     count — a live row that does not match the expectation is REFUSED
  *     individually (no blind apply).
@@ -40,7 +44,7 @@ if (!SUPABASE_URL || !SERVICE_KEY) {
   process.exit(1);
 }
 
-import { scanArabicDialect, countArabicWords } from "../../src/lib/blog-msa";
+import { scanArabicDialect } from "../../src/lib/blog-msa";
 
 // ---------- the measured patch set (audit run 42292979775) ----------
 
@@ -86,21 +90,21 @@ const PATCHES: Patch[] = [
     edits: [
       {
         desc: "(إي بى إيه + دي إتش إيه) (EPA+DHA) → (EPA+DHA)",
-        re: "\\(إي بى إيه \\+ دي إتش إيه\\) \\((EPA\\+DHA)\\)",
-        replace: "($1)",
-        expect: null,
+        find: "(إي بى إيه + دي إتش إيه) (EPA+DHA)",
+        replace: "(EPA+DHA)",
+        expect: 1,
       },
       {
-        desc: "remaining «إي بى إيه» transliterations → EPA",
-        re: "(?<![\\u0600-\\u06FF(])إي بى إيه(?![\\u0600-\\u06FF)])",
-        replace: "EPA",
-        expect: null,
+        desc: "«**إي بى إيه (EPA) ودي إتش إيه (DHA)**» → «**EPA وDHA**»",
+        find: "**إي بى إيه (EPA) ودي إتش إيه (DHA)**",
+        replace: "**EPA وDHA**",
+        expect: 1,
       },
       {
-        desc: "remaining «دي إتش إيه» transliterations → DHA",
-        re: "(?<![\\u0600-\\u06FF(])دي إتش إيه(?![\\u0600-\\u06FF)])",
-        replace: "DHA",
-        expect: null,
+        desc: "«مجموع إي بى إيه ودي إتش إيه 500 ملجم» → «مجموع EPA وDHA 500 ملجم»",
+        find: "مجموع إي بى إيه ودي إتش إيه 500 ملجم",
+        replace: "مجموع EPA وDHA 500 ملجم",
+        expect: 1,
       },
     ],
   },
@@ -183,6 +187,7 @@ async function processPatch(p: Patch): Promise<void> {
     return;
   }
   const before = {
+    title: row.title || "",
     content: row.content || "",
     excerpt: row.excerpt || "",
     meta_title: row.meta_title || "",
@@ -196,7 +201,7 @@ async function processPatch(p: Patch): Promise<void> {
   for (const e of p.edits) {
     // apply on every field where it matches; count total across fields
     let total = 0;
-    for (const field of ["content", "excerpt", "meta_title", "meta_description", "faq"]) {
+    for (const field of ["title", "content", "excerpt", "meta_title", "meta_description", "faq"]) {
       const { n } = applyEdit(next[field], e);
       total += n;
     }
@@ -211,7 +216,7 @@ async function processPatch(p: Patch): Promise<void> {
     }
     console.log(`  EDIT: ${e.desc} ×${total}`);
     for (const s of msnippets(before.content, e)) console.log(`      …${s}…`);
-    for (const field of ["content", "excerpt", "meta_title", "meta_description", "faq"]) {
+    for (const field of ["title", "content", "excerpt", "meta_title", "meta_description", "faq"]) {
       next[field] = applyEdit(next[field], e).next;
     }
     touched = true;
@@ -228,8 +233,10 @@ async function processPatch(p: Patch): Promise<void> {
     console.log(`  REFUSED: URL count changed (${urlBefore} → ${urlAfter}) — row untouched`);
     return;
   }
-  const wordsBefore = p.language === "ar" ? countArabicWords(before.content) : before.content.split(/\s+/).filter(Boolean).length;
-  const wordsAfter = p.language === "ar" ? countArabicWords(next.content) : next.content.split(/\s+/).filter(Boolean).length;
+  // the SITE's own formula (src/lib/blog-admin.ts): whitespace-token words
+  const wc = (s: string) => s.trim().split(/\s+/).filter(Boolean).length;
+  const wordsBefore = wc(before.content);
+  const wordsAfter = wc(next.content);
   if (Math.abs(wordsAfter - wordsBefore) > 15) {
     console.log(`  REFUSED: word delta ${wordsAfter - wordsBefore} exceeds tolerance — row untouched`);
     return;
@@ -266,6 +273,7 @@ async function processPatch(p: Patch): Promise<void> {
   if (next.meta_title !== before.meta_title) payload.meta_title = next.meta_title;
   if (next.meta_description !== before.meta_description) payload.meta_description = next.meta_description;
   if (next.faq !== before.faq) payload.faq_json = JSON.parse(next.faq);
+  if (next.title !== before.title) payload.title = next.title;
 
   const res = await fetch(`${SUPABASE_URL}/rest/v1/blog_posts?id=eq.${row.id}`, {
     method: "PATCH",
