@@ -10,6 +10,11 @@ import { FoodsFilters } from "@/components/foods/FoodsFilters";
 import { buildFoodsHref, type FoodsQuery } from "@/components/foods/url";
 import { filterFoods } from "@/lib/foods";
 import { FOOD_COLLECTIONS } from "@/lib/hub-collections";
+// GROWTH-PLAN batch 11 (owner order «حسّن الروابط الداخلية»): the ranked
+// nutrient lists join the library surface — the /foods hub previously
+// linked the 10 collections but none of the 15 database-ranked lists,
+// leaving the family reachable only from collection hubs and sitemaps.
+import { NUTRIENT_LISTS } from "@/lib/food-nutrient-lists";
 import {
   CATEGORY_LABELS,
   TAG_LABELS,
@@ -140,6 +145,24 @@ export function FoodsExplorer({
                 className="rounded-full bg-[var(--tint)] px-3 py-1 text-xs font-medium text-[var(--muted-foreground)] transition-colors hover:bg-[var(--card)] hover:text-[var(--text)]"
               >
                 {isAr ? c.h1Ar : c.h1En}
+              </Link>
+            ))}
+          </div>
+
+          {/* GROWTH-PLAN batch 11: ranked lists discoverability — the 15
+              database-ranked «الأطعمة الغنية بـ…» lists join the hub beside
+              the collections (locale-aware mirrors). */}
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-xs font-medium text-[var(--muted-foreground)]">
+              {isAr ? "قوائم مرتبة من قاعدة البيانات:" : "Ranked lists from the database:"}
+            </span>
+            {NUTRIENT_LISTS.map((l) => (
+              <Link
+                key={l.slug}
+                href={`${isAr ? "/ar" : ""}/foods/lists/${l.slug}`}
+                className="rounded-full bg-[var(--tint)] px-3 py-1 text-xs font-medium text-[var(--muted-foreground)] transition-colors hover:bg-[var(--card)] hover:text-[var(--text)]"
+              >
+                {isAr ? l.h1Ar : l.h1En}
               </Link>
             ))}
           </div>

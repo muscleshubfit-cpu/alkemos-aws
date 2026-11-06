@@ -1414,3 +1414,12 @@ export function getNutrientListBySlug(slug: string): NutrientList | null {
 export function listsForCollection(collectionSlug: string): NutrientList[] {
   return NUTRIENT_LISTS.filter((l) => l.collectionSlug === collectionSlug);
 }
+
+/**
+ * GROWTH-PLAN batch 11 (owner order «حسّن الروابط الداخلية»): the ranked
+ * lists that contain a given food row — derived 100% from this module so a
+ * food page's reciprocal links can never drift from the real lists.
+ */
+export function getListsContainingFood(foodSlug: string): NutrientList[] {
+  return NUTRIENT_LISTS.filter((l) => l.rows.some((r) => r.slug === foodSlug));
+}

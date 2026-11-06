@@ -907,6 +907,15 @@ export const FOOD_COMPARISONS: FoodComparison[] = [
   },
 ];
 
+/**
+ * GROWTH-PLAN batch 11 (owner order «حسّن الروابط الداخلية»): the
+ * comparisons featuring a given food — derived 100% from this module so a
+ * food page's reciprocal links can never drift from the real pairs.
+ */
+export function getComparisonsFeaturingFood(foodSlug: string): FoodComparison[] {
+  return FOOD_COMPARISONS.filter((c) => c.aSlug === foodSlug || c.bSlug === foodSlug);
+}
+
 export function getFoodComparisonBySlug(slug: string): FoodComparison | undefined {
   return FOOD_COMPARISONS.find((c) => c.slug === slug);
 }

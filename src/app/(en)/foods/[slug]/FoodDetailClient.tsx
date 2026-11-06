@@ -13,6 +13,11 @@ import {
 import type { FoodEnrichment } from "@/lib/foods-enrichment";
 import { ArrowLeft, Calculator, Target } from "lucide-react";
 import type { HubLinkMini } from "@/lib/hub-collections";
+// GROWTH-PLAN batch 11 (owner order «حسّن الروابط الداخلية»): lightweight
+// link shape for the reciprocal rankings/comparisons section — rows are
+// derived server-side from the source modules, so this component only
+// renders hrefs and titles (zero data duplication).
+export type FeaturedLinkMini = { href: string; titleAr: string; titleEn: string };
 
 /**
  * Client component for food detail page.
@@ -42,6 +47,7 @@ export default function FoodDetailClient({
   related: relatedProp,
   collectionLinks: collectionLinksProp,
   enrichment,
+  featuredIn,
   lang: langProp,
 }: {
   food: Food | null;
@@ -53,6 +59,12 @@ export default function FoodDetailClient({
   collectionLinks?: HubLinkMini[];
   /** P1-1: unique editorial layer for enriched foods (server-resolved). */
   enrichment?: FoodEnrichment | null;
+  /** GROWTH-PLAN batch 11: the ranked lists that include this food and
+   * the comparisons that feature it — server-derived from the source
+   * modules (getListsContainingFood / getComparisonsFeaturingFood),
+   * locale-free hrefs prefixed with /ar here. Empty when the food appears
+   * in none (honest linking only). */
+  featuredIn?: { lists: FeaturedLinkMini[]; comparisons: FeaturedLinkMini[] };
   lang?: Lang;
 }) {
   const { lang: ctxLang } = useI18n();
@@ -462,6 +474,45 @@ export default function FoodDetailClient({
                   <p className="mt-0.5 text-xs font-normal text-[#6e6e73]">
                     {isAr ? `${rel.per100g.calories} سعرة · ${rel.per100g.protein} جم بروتين` : `${rel.per100g.calories} kcal · ${rel.per100g.protein}g protein`}
                   </p>
+                </a>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* GROWTH-PLAN batch 11 (owner order «حسّن الروابط الداخلية»):
+            reciprocal links to the ranked lists that include this food and
+            the comparisons that feature it — both families already link
+            INTO these food pages; this section closes the loop, so the
+            new-family URLs gain inbound links from every food they rank
+            or compare (server-derived, zero drift). */}
+        {featuredIn && (featuredIn.lists.length > 0 || featuredIn.comparisons.length > 0) && (
+          <section className="mt-10">
+            <h2 className="text-xl font-semibold tracking-tight">
+              {isAr ? "هذا الصنف في الترتيبات والمقارنات" : "This food in rankings & comparisons"}
+            </h2>
+            <p className="mt-1.5 text-sm font-normal text-[#6e6e73]">
+              {isAr
+                ? "صفحات مرتبة ومقارنات مباشرة يظهر فيها هذا الصنف ببياناته نفسها."
+                : "Ranked pages and head-to-head comparisons where this food appears with its own numbers."}
+            </p>
+            <div className="mt-4 flex flex-wrap gap-2.5">
+              {featuredIn.lists.map((l) => (
+                <a
+                  key={`list-${l.href}`}
+                  href={`${isAr ? "/ar" : ""}${l.href}`}
+                  className="rounded-full bg-[#f5f5f7] px-4 py-2 text-xs font-medium transition-opacity hover:opacity-80"
+                >
+                  {isAr ? `قائمة: ${l.titleAr}` : `List: ${l.titleEn}`}
+                </a>
+              ))}
+              {featuredIn.comparisons.map((cmp) => (
+                <a
+                  key={`cmp-${cmp.href}`}
+                  href={`${isAr ? "/ar" : ""}${cmp.href}`}
+                  className="rounded-full bg-[#f5f5f7] px-4 py-2 text-xs font-medium transition-opacity hover:opacity-80"
+                >
+                  {isAr ? `مقارنة: ${cmp.titleAr}` : `Compare: ${cmp.titleEn}`}
                 </a>
               ))}
             </div>

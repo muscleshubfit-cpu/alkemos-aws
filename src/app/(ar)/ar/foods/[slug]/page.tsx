@@ -3,6 +3,12 @@ import { notFound } from "next/navigation";
 import { FOODS, getFoodBySlug, getRelatedFoods } from "@/lib/foods";
 import { getFoodEnrichment } from "@/lib/foods-enrichment";
 import { getCollectionsForFoodTags, type HubLinkMini } from "@/lib/hub-collections";
+// GROWTH-PLAN batch 11 (owner order «حسّن الروابط الداخلية»): reciprocal
+// links — same derivation as the EN mirror (locale-free hrefs; the client
+// prefixes /ar).
+import { getComparisonsFeaturingFood } from "@/lib/food-comparisons";
+import { getListsContainingFood } from "@/lib/food-nutrient-lists";
+import type { FeaturedLinkMini } from "@/app/(en)/foods/[slug]/FoodDetailClient";
 import { getBreadcrumbSchema, getReviewedWebPageSchema, jsonLd } from "@/lib/seo";
 import FoodDetailClient from "@/app/(en)/foods/[slug]/FoodDetailClient";
 
@@ -194,6 +200,22 @@ export default async function Page({
             labelAr: c.h1Ar,
           }),
         ) : []}
+        featuredIn={food ? {
+          lists: getListsContainingFood(food.slug).map(
+            (l): FeaturedLinkMini => ({
+              href: `/foods/lists/${l.slug}`,
+              titleAr: l.h1Ar,
+              titleEn: l.h1En,
+            }),
+          ),
+          comparisons: getComparisonsFeaturingFood(food.slug).map(
+            (cmp): FeaturedLinkMini => ({
+              href: `/foods/compare/${cmp.slug}`,
+              titleAr: cmp.h1Ar,
+              titleEn: cmp.h1En,
+            }),
+          ),
+        } : undefined}
         lang="ar"
       />
     </>
