@@ -315,6 +315,25 @@ const TOKEN_MATCH_EXCEPTIONS: Record<string, string[]> = {
   موز: ["موزاريلا"],
 };
 
+/** FRAME 443 (PLAN-PROBE-ROOTCAUSE-3 — live runs 42259406260 + 42261551330,
+ *  measured twice AFTER the item-names prompt law landed): models write
+ *  CLAIMS inside parentheses in item names — «جبن كريمي كامل الدسم (لا
+ *  يحوي سكر مضاف)» and «زبادي يوناني كامل الدسم (نفس الطعم بدون سكر)» —
+ *  and the literal token matcher fires on the negated word («سكر») INSIDE
+ *  the claim, rejecting a compliant plan. A parenthetical carrying a
+ *  NEGATION marker is a claim ABOUT the food, not part of its name: strip
+ *  it before matching. The FOOD words outside the parentheses still match
+ *  («عصير (بدون سكر)» stays forbidden juice; «حليب (بدون سكر)» stays the
+ *  excluded regular-milk class — the claim never was the food). */
+const NEGATION_CLAIM_PAREN =
+  /\s*\([^)]*(?:بدون|لا يحوي|لا يحتوي|لا يوجد|ليس فيه|ليس بها|خال|بلا|صفر|منزوع|نفس الطعم|sugar[-\s]?free|no added|without|zero)[^)]*\)/gi;
+
+/** The name used for constraint MATCHING: negation claims stripped. */
+function stripNegationClaims(name: string): string {
+  const stripped = name.replace(NEGATION_CLAIM_PAREN, " ").replace(/\s+/g, " ").trim();
+  return stripped || name;
+}
+
 /* ─────────────── KETO DAIRY LAW 2026-10-25 (owner mandatory correction) ───────────────
  *
  * MEASURED PRODUCTION EVIDENCE (read read-only, 2026-10-25):
@@ -367,7 +386,9 @@ const KETO_SWEETENED_MARKERS = [
  *   4. unsweetened Greek? → pass (carb ceilings govern the portion)
  *   5. otherwise → the class violation */
 export function ketoDairyViolation(food: string): string | null {
-  const name = normFood(food);
+  // FRAME 443 (ROOTCAUSE-3): claims stripped from the RAW name (normFood
+  // replaces parentheses with spaces — the strip must see them).
+  const name = normFood(stripNegationClaims(String(food || "")));
   if (!name) return null;
   const isDairyClass = KETO_DAIRY_TOKENS.some((t) => name.includes(normFood(t)));
   if (!isDairyClass) return null;
@@ -487,7 +508,12 @@ export function checkItemConstraints(
   constraints?: ClientItemConstraints | null,
 ): string | null {
   if (!hasItemConstraints(constraints)) return null;
-  const name = normFood(food);
+  // FRAME 443 (PLAN-PROBE-ROOTCAUSE-3): match the FOOD, not the model's
+  // parenthetical claims — negation parentheticals are stripped from the
+  // RAW name FIRST (normFood replaces parentheses with spaces, so the
+  // strip must run before it), then every literal match below (tokens,
+  // plant guard, dairy class) runs on the food itself.
+  const name = normFood(stripNegationClaims(String(food || "")));
   if (!name) return null;
 
   const hits = (tokens: string[]): string | null => {

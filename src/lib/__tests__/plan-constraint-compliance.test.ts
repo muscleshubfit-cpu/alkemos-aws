@@ -68,6 +68,27 @@ describe("diet-compliance gate (checkItemConstraints)", () => {
     expect(checkItemConstraints("موزة طازجة", {}, bananaAllergy)).not.toBeNull();
   });
 
+  it("FRAME 443 (PLAN-PROBE-ROOTCAUSE-3, live runs 42259406260 + 42261551330): a parenthetical NEGATION CLAIM is not part of the food name — the gate matches the FOOD, and every real forbidden food stays blocked", () => {
+    // the two MEASURED false rejections (compliant keto items whose plan was
+    // killed because the negated word inside the claim matched a token):
+    expect(checkItemConstraints("جبن كريمي كامل الدسم (لا يحوي سكر مضاف)", {}, { dietType: "keto" })).toBeNull();
+    expect(checkItemConstraints("زبادي يوناني كامل الدسم (نفس الطعم بدون سكر)", {}, { dietType: "keto" })).toBeNull();
+    expect(checkItemConstraints("Greek yogurt (no added sugar)", {}, { dietType: "keto" })).toBeNull();
+    // the claim is NEVER the food: forbidden foods outside the parentheses
+    // keep rejecting, and so does the excluded dairy class with a claim.
+    expect(checkItemConstraints("عصير (بدون سكر)", {}, { dietType: "keto" })).toContain("كيتو");
+    expect(checkItemConstraints("موزة (بدون سكر)", {}, { dietType: "keto" })).toContain("كيتو");
+    expect(checkItemConstraints("حليب كامل الدسم (بدون سكر)", {}, { dietType: "keto" })).toContain("الحليب/الرائب");
+    // sweetened dairy WITHOUT a negation keeps its hard block (the marker is
+    // real wording, not a claim): «زبادي يوناني بالفراولة» stays forbidden.
+    expect(checkItemConstraints("زبادي يوناني بالفراولة", {}, { dietType: "keto" })).toContain("محلى");
+    // an allergy claim does not shadow the allergen itself: nut-free wording
+    // passes, real nuts stay blocked.
+    const nutAllergy = buildClientConstraints({ allergyText: "مكسرات" });
+    expect(checkItemConstraints("شوفان (بدون مكسرات)", {}, nutAllergy)).toBeNull();
+    expect(checkItemConstraints("لوز محمص", {}, nutAllergy)).toContain("حساسيات");
+  });
+
   it("rejects a keto item by its CARB GRAMS even with an innocent name", () => {
     // A "healthy" sounding item carrying 40g carbs is off a 20-50g/day diet.
     const v = checkItemConstraints("مشروب صحي بالخضار", { carbs_g: 40 }, { dietType: "keto" });
