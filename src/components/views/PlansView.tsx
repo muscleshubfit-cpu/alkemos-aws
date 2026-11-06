@@ -68,7 +68,7 @@ function readPendingSwaps(): PendingSwap[] {
  // garbage from the pre-fix jobId bug (enqueue returned undefined →
  // JSON.stringify dropped the field). They can never be polled or
  // removed by removePendingSwap(id) — pruning them self-heals the
- // permanent «جاري التبديل» badge for members carrying legacy rows.
+ // permanent «جارٍ التبديل» badge for members carrying legacy rows.
  return Array.isArray(list)
  ? list.filter(
  (e) =>
@@ -112,7 +112,7 @@ export function PlansView() {
  const [swapLoading, setSwapLoading] = useState<string | null>(null);
  const [swapUsage, setSwapUsage] = useState<SwapUsage>({ meal: { used: 0, limit: 2, remaining: 2, unlimited: false }, exercise: { used: 0, limit: 2, remaining: 2, unlimited: false } });
  // PHASE 99 — pending-swaps snapshot (mirror of the localStorage queue)
- // powering the persistent «جاري التبديل» badge + double-submit guard.
+ // powering the persistent «جارٍ التبديل» badge + double-submit guard.
  const [pendingSwaps, setPendingSwaps] = useState<PendingSwap[]>([]);
  const activeWatchers = useRef<Set<string>>(new Set());
  // PHASE 69 — latest plans snapshot so the swap persists the EXACT mutated
@@ -175,7 +175,7 @@ export function PlansView() {
 
  const removePendingSwap = useCallback((id: string) => {
  writePendingSwaps(readPendingSwaps().filter((e) => e.id !== id));
- // PHASE 99 — keep badge state in sync (the «جاري التبديل» chip
+ // PHASE 99 — keep badge state in sync (the «جارٍ التبديل» chip
  // disappears the moment the watcher applies/removes the entry).
  setPendingSwaps(readPendingSwaps());
  }, []);
@@ -920,7 +920,7 @@ function MealContent({ content, onSwap, swapLoading, planId, isSwapPending }: { 
  <h4 className="flex items-center gap-2 font-semibold"> {m.name}
  {isSwapPending("meal", planId, i) && (
  <span className="rounded-full bg-[#ff9500]/10 px-2 py-0.5 text-[10px] font-semibold text-[#ff9500]">
- ⏳ {isAr ? "جاري التبديل" : "Swapping"}
+ ⏳ {isAr ? "جارٍ التبديل" : "Swapping"}
  </span>
  )}
  </h4>
@@ -1055,7 +1055,7 @@ function WorkoutContent({ content, onSwap, swapLoading, planId, isSwapPending }:
  )}
  {isSwapPending("exercise", planId, i, j) && (
  <span className="rounded-lg bg-[#ff9500]/10 px-3 py-1 text-xs font-semibold text-[#ff9500]">
- ⏳ {isAr ? "جاري التبديل" : "Swapping"}
+ ⏳ {isAr ? "جارٍ التبديل" : "Swapping"}
  </span>
  )}
  {/* PHASE 334 — W1-3b (audit A-04): the exercise swap button carries the

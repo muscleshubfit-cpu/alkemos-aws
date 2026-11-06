@@ -159,7 +159,7 @@ export function BlogAdminView() {
         }
         // Timeout: job may STILL finish — keep the registry entry so the
         // next mount re-watches (PLAN JOB RECOVERY LAW pattern).
-        toast.info(isAr ? "المقال لسه بيتولد في الخلفية — هنكمل المتابعة تلقائيًا لما تفتح الصفحة تاني." : "The article is still generating in the background — tracking resumes automatically the next time you open this page.");
+        toast.info(isAr ? "المقال ما يزال يتولد في الخلفية — سنكمل المتابعة تلقائيًا عند فتح الصفحة مرة أخرى." : "The article is still generating in the background — tracking resumes automatically the next time you open this page.");
       } finally {
         activeGenWatcher.current = null;
       }
@@ -201,7 +201,7 @@ export function BlogAdminView() {
       setGenKeywords("");
       setGenTone("");
       setGenCategory("");
-      toast.success(isAr ? "تم إرسال طلب التوليد — جاري التنفيذ في الخلفية ⏳" : "Generation queued — running in the background");
+      toast.success(isAr ? "تم إرسال طلب التوليد — جارٍ التنفيذ في الخلفية ⏳" : "Generation queued — running in the background");
       void watchArticleJob(entry);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "فشل إرسال الطلب");
@@ -557,8 +557,8 @@ export function BlogAdminView() {
           <div className="flex items-center gap-2.5 text-xs">
             <Loader2 className="h-4 w-4 animate-spin text-primary" />
             <span className="font-medium text-foreground">
-              {isAr ? "جاري توليد مقال:" : "Generating:"}{" "}
-              {genJob.topic || (isAr ? "النظام بيختار العنوان الأنسب تلقائيًا…" : "the system is picking the best title…")}
+              {isAr ? "جارٍ توليد مقال:" : "Generating:"}{" "}
+              {genJob.topic || (isAr ? "النظام يختار العنوان الأنسب تلقائيًا…" : "the system is picking the best title…")}
             </span>
             <span className="text-muted-foreground">
               — {isAr ? "عادةً 1-3 دقائق، تقدر تكمل تنقل والنتيجة هتتفتح لوحدها." : "usually 1-3 minutes; the editor opens automatically when done."}
@@ -881,7 +881,7 @@ export function BlogAdminView() {
               <p className="text-[11px] leading-relaxed text-muted-foreground">
                 {isAr
                   ? genCategory === ""
-                    ? "التدوير التلقائي: كل توليد بيختار نوعًا مختلفًا عن اللي قبله (تغذية ← تمارين ← صحة…) بناءً على آخر المقالات المولّدة والمنشورة."
+                    ? "التناوب التلقائي: كل توليد يختار نوعًا مختلفًا عن سابقه (تغذية ← تمارين ← صحة…) بناءً على آخر المقالات المولّدة والمنشورة."
                     : "هيولّد المقال ضمن النوع المختار تحديدًا."
                   : genCategory === ""
                     ? "Auto-rotation: every generation picks a different type than the previous one (nutrition → workout → health…) based on recent generated & published posts."
@@ -895,7 +895,7 @@ export function BlogAdminView() {
               className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {genBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
-              {genBusy ? (isAr ? "جاري الإرسال..." : "Queueing...") : isAr ? "ابدأ التوليد" : "Start Generating"}
+              {genBusy ? (isAr ? "جارٍ الإرسال..." : "Queueing...") : isAr ? "ابدأ التوليد" : "Start Generating"}
             </button>
           </div>
         </DialogContent>

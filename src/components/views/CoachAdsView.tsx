@@ -130,25 +130,25 @@ export function CoachAdsView() {
         {activeAd ? (
           <>
             <p className="text-sm font-medium text-[#34c759]">
-              {isAr ? "إعلانك شغال الآن" : "Your ad is running"}
+              {isAr ? "إعلانك يعمل الآن" : "Your ad is running"}
             </p>
             <p className="mt-1 text-lg font-semibold tracking-tight">
               {isAr ? `ساري حتى ${fmtDate(activeAd.ends_at)}` : `Active until ${fmtDate(activeAd.ends_at)}`}
             </p>
             <p className="mt-1 text-sm font-normal text-[#6e6e73]">
               {isAr
-                ? "لو اشتركت تاني والرصيد لسه شغال، المدة هتتجمع على المتبقي — مش هتخسر يوم."
+                ? "إن اشتركت مجددًا والرصيد ما يزال يعمل، تتجمع المدة على المتبقي — لن تخسر يومًا."
                 : "Subscribe again while it runs and the days stack on top — you never lose a day."}
             </p>
           </>
         ) : (
           <>
             <p className="text-sm font-medium text-[#6e6e73]">
-              {isAr ? "مفيش إعلان نشط حاليًا" : "No active ad right now"}
+              {isAr ? "لا يوجد إعلان نشط حاليًا" : "No active ad right now"}
             </p>
             <p className="mt-1 text-sm font-normal text-[#6e6e73]">
               {isAr
-                ? "اختار باقة من تحت وابدأ — إعلانك بيشتغل فورًا بعد الخصم من المحفظة."
+                ? "اختر باقة من الأسفل وابدأ — يعمل إعلانك فورًا بعد الخصم من المحفظة."
                 : "Pick a package below — your ad goes live the moment your wallet is debited."}
             </p>
           </>
@@ -214,7 +214,7 @@ export function CoachAdsView() {
         </h2>
         <p className="mt-2 text-sm font-normal text-[#6e6e73]">
           {isAr
-            ? "الكارت بيعرض صورتك واسمك وعنوان تعريفك من صفحتك العامة — وضغطة واحدة تنقل الزائر ليها. كمّل بيانات صفحتك العامة أولًا عشان الإعلان يجيب أقصى نتيجة."
+            ? "يعرض الكارت صورتك واسمك وعنوان تعريفك من صفحتك العامة — وضغطة واحدة تنقل الزائر إليها. أكمل بيانات صفحتك العامة أولًا ليحقق الإعلان أقصى نتيجة."
             : "The card shows your photo, name and headline from your public page — one tap takes the visitor there. Fill in your public page first for maximum impact."}
         </p>
         <button
@@ -251,7 +251,7 @@ export function CoachAdsView() {
                       expired ? "bg-[#6e6e73]/10 text-[#6e6e73]" : "bg-[#34c759]/10 text-[#34c759]",
                     )}
                   >
-                    {expired ? (isAr ? "منتهي" : "Ended") : isAr ? "شغال" : "Running"}
+                    {expired ? (isAr ? "منتهي" : "Ended") : isAr ? "يعمل" : "Running"}
                   </span>
                 </div>
               );

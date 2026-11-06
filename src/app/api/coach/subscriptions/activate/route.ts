@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
     }
     if (!(COACH_ACTIVATABLE_TIERS as readonly string[]).includes(rawTier)) {
       return NextResponse.json(
-        { error: "bad_tier", message: "اختر باقة صحيحة (بريميوم / برو / كوتشينج)" },
+        { error: "bad_tier", message: "اختر باقة صحيحة (بريميوم / برو / التدريب الأونلاين)" },
         { status: 400 },
       );
     }
@@ -133,7 +133,7 @@ export async function POST(request: NextRequest) {
   }
   if (!(COACH_ACTIVATABLE_TIERS as readonly string[]).includes(tier)) {
     return NextResponse.json(
-      { error: "bad_tier", message: "اختر باقة صحيحة (بريميوم / برو / كوتشينج)" },
+      { error: "bad_tier", message: "اختر باقة صحيحة (بريميوم / برو / التدريب الأونلاين)" },
       { status: 400 },
     );
   }

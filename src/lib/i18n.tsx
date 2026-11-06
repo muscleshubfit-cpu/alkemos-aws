@@ -403,7 +403,7 @@ const ar: Dict = {
  "nav.admin": "المدفوعات",
  "nav.logout": "تسجيل الخروج",
  "nav.pricing": "الأسعار",
- "nav.referral": "ادعُ أصدقاءك",
+ "nav.referral": "ادعُ أصدقائك",
  "nav.blog": "المدونة",
  "common.save": "حفظ",
  "common.cancel": "إلغاء",

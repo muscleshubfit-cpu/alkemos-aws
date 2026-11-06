@@ -161,7 +161,7 @@ export function AdminLeadsView() {
           </h1>
           <p className="mt-2 text-base font-normal text-[#6e6e73] md:text-lg">
             {isAr
-              ? "زيارات الأدوات اللي سجّلت إيميل أو واتساب."
+              ? "زيارات الأدوات التي سجّلت بريدًا إلكترونيًا أو رقم واتساب."
               : "Tool visitors who left an email or WhatsApp."}
           </p>
         </div>
@@ -235,7 +235,7 @@ export function AdminLeadsView() {
         </div>
       ) : filtered.length === 0 ? (
         <div className="py-20 text-center text-base font-normal text-[#6e6e73]">
-          {isAr ? "مفيش leads لسه" : "No leads yet"}
+          {isAr ? "لا توجد leads بعد" : "No leads yet"}
         </div>
       ) : (
         <div className="overflow-hidden rounded-2xl border border-[#d2d2d7]">

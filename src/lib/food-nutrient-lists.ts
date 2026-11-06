@@ -824,7 +824,7 @@ descriptionAr: `الزبدة تقود جدول دهون الأطعمة الكا�
     criterionEn: `The carb ceiling is 5g per 100g (a widely used low-carb threshold for a food, stricter than a full meal's), and ranking within it is by protein grams, descending. The family scope rules apply. The two columns printed side by side — protein and carbs — are the whole point: you can verify both numbers on every linked food page.`,
     criterionAr: `سقف الكربوهيدرات 5 جم لكل 100 جرام (عتبة قليلة الكربوهيدرات المعروفة لصنف واحد، أصرم من عتبة الوجبة الكاملة)، والترتيب داخله بجرامات البروتين تنازليًا. وقواعد نطاق العائلة مطبقة. والعمودان المطبوعان جنبًا إلى جنب — البروتين والكربوهيدرات — هما جوهر الصفحة: تستطيع التحقق من الرقمين في صفحة كل صنف مربوط.`,
     metricEn: "Protein (g / 100g, carbs ≤ 5g)",
-    metricAr: "البروتين (جم / 100 جرام، كارب ≤ 5 جم)",
+    metricAr: "البروتين (جم / 100 جرام، كربوهيدرات ≤ 5 جم)",
     verdicts: [
       {
         heading: { en: "The cheese paradox", ar: "مفارقة الجبن" },
@@ -1215,7 +1215,7 @@ descriptionAr: `الزبدة تقود جدول دهون الأطعمة الكا�
         heading: { en: "Where the famous greens actually sit", ar: "أين تجلس الورقيات المشهورة فعلًا" },
         body: {
           en: `Spinach's celebrated protein lives around 3g per 100g — a tenth of the podium — because a leaf is mostly water and air. This table does not diminish greens; it prices them honestly: eat them for micronutrients and volume, and let the soy and pod rows carry the protein load.`,
-          ar: `بروتين السبانخ المحتفى به يعيش قرب 3 جرامات لكل 100 جرام — عُشر المنصة — لأن الورقة ماء وهواء في معظمها. وهذا الجدول لا يحط من الورقيات؛ بل يسعّرها بصدق: كُلها من أجل المغذيات الدقيقة والحجم، ودع صفوف الصويا والقرون تحمل حمل البروتين.`,
+          ar: `بروتين السبانخ المحتفى به يعيش قرب 3 جرامات لكل 100 جرام — عُشر المنصة — لأن الورقة ماء وهواء في معظمها. وهذا الجدول لا ينتقص من الورقيات؛ بل يسعّرها بصدق: كُلها من أجل المغذيات الدقيقة والحجم، ودع صفوف الصويا والقرون تحمل حمل البروتين.`,
         },
       },
     ],

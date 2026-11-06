@@ -97,7 +97,7 @@ export function AdminPaymentsView() {
       toast.success(
         action === "approve"
           ? isAr
-            ? `تم قبول الاسترداد${body?.reversed ? ` — تم عكس ${body.reversed} عمولة أفيليت` : " — مفيش عمولات مرتبطة"}`
+            ? `تم قبول الاسترداد${body?.reversed ? ` — تم عكس ${body.reversed} عمولة أفيليت` : " — لا توجد عمولات مرتبطة"}`
             : `Refund approved${body?.reversed ? ` — ${body.reversed} commission(s) reversed` : ""}`
           : isAr
             ? "تم رفض الطلب"
@@ -332,7 +332,7 @@ export function AdminPaymentsView() {
         <div className="py-16 text-center text-base font-normal text-[#6e6e73]">{t("common.loading")}</div>
       ) : refunds.length === 0 ? (
         <div className="rounded-2xl bg-[#f5f5f7] p-10 text-center text-base font-normal text-[#6e6e73]">
-          {isAr ? "مفيش طلبات استرداد" : "No refund requests"}
+          {isAr ? "لا توجد طلبات استرداد" : "No refund requests"}
         </div>
       ) : (
         <div className="space-y-3">

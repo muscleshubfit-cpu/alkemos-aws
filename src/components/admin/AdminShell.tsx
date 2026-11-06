@@ -241,7 +241,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
       {!isSupabaseConfigured && (
         <div className="bg-[#1d1d1f] px-3 py-1.5 text-center text-xs font-normal text-white">
           {isAr
-            ? "وضع تجريبي — مفيش بيانات Supabase. البيانات بتتخزن محليًا بس."
+            ? "وضع تجريبي — لا تتوفر بيانات Supabase. تُخزَّن البيانات محليًا في هذا المتصفح فقط."
             : "Demo mode — no Supabase credentials. Data stored locally only."}
         </div>
       )}

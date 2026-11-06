@@ -378,7 +378,7 @@ export function AdminExternalPlansView() {
       { action: "restore_version", id: plan.id, version_index: vi },
       `${plan.id}:restore:${vi}`,
       isAr
-        ? "هتسترجع النسخة المحفوظة دي وتستبدل الحالية (الحالية هتتحفظ هي كمان) — موافق؟"
+        ? "سيتم استرجاع هذه النسخة المحفوظة واستبدال الحالية (والحالية ستُحفظ بدورها) — موافق؟"
         : "This saved version will REPLACE the current one (which is saved too) — continue?",
     );
   const histLabel = (action: string) => {
@@ -496,7 +496,7 @@ export function AdminExternalPlansView() {
               <input
                 value={aiForm.person_contact}
                 onChange={(e) => setAIForm({ ...aiForm, person_contact: e.target.value })}
-                placeholder={isAr ? "واتساب / تليفون / إيميل" : "WhatsApp / phone / email"}
+                placeholder={isAr ? "واتساب / هاتف / بريد إلكتروني" : "WhatsApp / phone / email"}
                 className={inputCls}
               />
             </div>
@@ -749,7 +749,7 @@ export function AdminExternalPlansView() {
               {generating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
               {generating
                 ? isAr
-                  ? "جاري التوليد بالذكاء الاصطناعي…"
+                  ? "جارٍ التوليد بالذكاء الاصطناعي…"
                   : "Generating with AI…"
                 : isAr
                   ? "توليد الخطة"
@@ -922,12 +922,12 @@ export function AdminExternalPlansView() {
       {loading ? (
         <div className="flex items-center justify-center gap-2 py-16 text-sm text-[#6e6e73]">
           <Loader2 className="h-4 w-4 animate-spin" />
-          {isAr ? "جاري التحميل…" : "Loading…"}
+          {isAr ? "جارٍ التحميل…" : "Loading…"}
         </div>
       ) : plans.length === 0 ? (
         <div className="rounded-3xl border border-dashed border-[#d2d2d7] py-16 text-center">
           <p className="text-sm text-[#6e6e73]">
-            {isAr ? "مفيش خطط لسه — ابدأ بأول خطة بالذكاء الاصطناعي لشخص خارج الموقع." : "No plans yet — start with the first AI-generated external plan."}
+            {isAr ? "لا توجد خطط بعد — ابدأ بأول خطة بالذكاء الاصطناعي لشخص خارج الموقع." : "No plans yet — start with the first AI-generated external plan."}
           </p>
           {!formMode && (
             <button

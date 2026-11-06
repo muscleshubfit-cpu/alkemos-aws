@@ -123,7 +123,7 @@ export function CoachHelpView() {
 
       {/* Scope note — owner law: client support belongs to the coach */}
       <div className="rounded-2xl bg-[#f5f5f7] p-6">
-        <p className="text-sm font-medium">{isAr ? "مين بيساعد مين؟" : "Who helps whom?"}</p>
+        <p className="text-sm font-medium">{isAr ? "من يساعد من؟" : "Who helps whom?"}</p>
         <div className="mt-3 grid gap-3 md:grid-cols-2">
           <div className="rounded-xl bg-white p-4">
             <p className="text-sm font-semibold text-[#0071e3]">
@@ -151,7 +151,7 @@ export function CoachHelpView() {
       {/* New message */}
       <div className="rounded-3xl bg-[#f5f5f7] p-6 md:p-8">
         <h2 className="text-lg font-semibold tracking-tight">
-          {isAr ? "ابعت رسالة لفريق دعم المدربين" : "Message the coach support team"}
+          {isAr ? "أرسل رسالة إلى فريق دعم المدربين" : "Message the coach support team"}
         </h2>
         <div className="mt-4 space-y-3">
           <input

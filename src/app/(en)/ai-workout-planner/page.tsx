@@ -415,7 +415,7 @@ export default function AiWorkoutPlannerPage() {
                 <Sparkles className="h-4 w-4" aria-hidden="true" />
               )}
               {loading
-                ? isAr ? "جاري التوليد…" : "Generating…"
+                ? isAr ? "جارٍ التوليد…" : "Generating…"
                 : plan
                   ? isAr ? "ولّد نظامًا آخر" : "Generate another split"
                   : isAr ? "ولّد نظامي المجاني" : "Generate my free split"}

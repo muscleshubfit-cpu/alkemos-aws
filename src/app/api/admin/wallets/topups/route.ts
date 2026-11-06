@@ -89,7 +89,7 @@ export async function PATCH(request: NextRequest) {
   }
   if (req.status !== "pending") {
     return NextResponse.json(
-      { error: "already_reviewed", message: "الطلب اتراجع قبل كده" },
+      { error: "already_reviewed", message: "تمت مراجعة هذا الطلب سابقًا" },
       { status: 409 },
     );
   }

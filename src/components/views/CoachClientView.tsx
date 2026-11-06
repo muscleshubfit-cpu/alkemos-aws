@@ -234,7 +234,7 @@ export function CoachClientView({ clientId }: { clientId: string }) {
  // ZERO billing through the coach).
  const planGateMessage = isSiteCoach
  ? isAr
- ? "توليد الخطط مقفول — ده عضو متابعة موقع: اشتراك الكوتشينج بيتفعّل من لوحة الأدمن وهو اللي بيفتح التوليد هنا."
+ ? "توليد الخطط مغلق — هذا عضو متابعة موقع: اشتراك التدريب الأونلاين يُفعَّل من لوحة الإدارة وهو الذي يفتح التوليد هنا."
  : "Plan generation is locked — this is a site follow-up member: the coaching subscription is activated from the admin console and that unlocks generation here."
  : isAr
  ? "توليد الخطط مقفول لحد ما تفعّل اشتراك العميل — من تبويب الاشتراك (شهر 6$ — ٣ شهور 16$ بتخصم من محفظتك)."
@@ -438,7 +438,7 @@ export function CoachClientView({ clientId }: { clientId: string }) {
  }
  // Timeout: the job may STILL finish later — keep the registry entry
  // so the next mount re-watches and the recovery card can pick it up.
- toast.info(isAr ? "الخطة لسه بتتولد في الخلفية — هتتطبق تلقائيًا أول ما تفتح صفحة العميل تاني." : "The plan is still generating in the background — it will apply automatically the next time you open this client's page.");
+ toast.info(isAr ? "الخطة ما تزال تتولد في الخلفية — ستُطبَّق تلقائيًا فور فتح صفحة العميل مرة أخرى." : "The plan is still generating in the background — it will apply automatically the next time you open this client's page.");
  } finally {
  activePlanWatchers.current.delete(entry.id);
  }
@@ -963,7 +963,7 @@ export function CoachClientView({ clientId }: { clientId: string }) {
 
  {allSubs.length === 0 ? (
  <p className="mt-4 text-sm text-muted-foreground">
- {lang === "ar" ? "مفيش اشتراكات بعد." : "No subscriptions yet."}
+ {lang === "ar" ? "لا توجد اشتراكات بعد." : "No subscriptions yet."}
  </p>
  ) : (
  <div className="mt-4 space-y-3">
@@ -1094,7 +1094,7 @@ export function CoachClientView({ clientId }: { clientId: string }) {
  const endStr = end.toLocaleDateString(isAr ? "ar-EG" : "en-US");
  return activeSameTier
  ? (isAr
- ? `اشتراك شغال بنفس النوع — المدة بتتجمع على المتبقي، الجديد هينتهي: ${endStr}`
+ ? `اشتراك فعّال بنفس النوع — تتجمع المدة على المتبقي، والجديد ينتهي: ${endStr}`
  : `Same-tier subscription active — months stack on the remaining time; new end: ${endStr}`)
  : (isAr
  ? `هيبدأ: اليوم → هينتهي: ${endStr}`
@@ -2805,7 +2805,7 @@ function PlanViewerModal({
  <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
  {[
  { key: "macros.protein_g", label: "بروتين", color: "text-success", suffix: "g" },
- { key: "macros.carbs_g", label: "كارب", color: "text-warning", suffix: "g" },
+ { key: "macros.carbs_g", label: "كربوهيدرات", color: "text-warning", suffix: "g" },
  { key: "macros.fat_g", label: "دهون", color: "text-primary", suffix: "g" },
  ].map((stat) => {
  const val = content[stat.key.split(".")[0]]?.[stat.key.split(".")[1]];
@@ -3980,7 +3980,7 @@ function CoachAIPlanGenerator({
  </div>
  <p className="mt-1.5 text-[11px] text-muted-foreground">
  {isAr
- ? "نوع الدايت بيحدد توزيع الماكروز (الكيتو = كارب منخفض جدًا) وبيتوجه لاختيار الأصناف. اختيارك بيتحفظ وبيمرر لعملية التوليد فعليًا."
+ ? "نوع الدايت يحدد توزيع الماكروز (الكيتو = كربوهيدرات منخفضة جدًا) ويوجّه اختيار الأصناف. اختيارك يُحفظ ويُمرَّر إلى عملية التوليد فعليًا."
  : "The diet type drives the macro split (keto = very low carb) and food selection. Your pick is saved and passed into the generation job."}
  </p>
  </div>
@@ -4076,7 +4076,7 @@ function CoachAIPlanGenerator({
  />
  </div>
  <div>
- <Label className="text-xs text-muted-foreground">الكارب (جم)</Label>
+ <Label className="text-xs text-muted-foreground">الكربوهيدرات (جم)</Label>
  <Input
  type="number"
  value={carbsG}
@@ -4127,7 +4127,7 @@ function CoachAIPlanGenerator({
  />
  </div>
  <p className="text-[11px] text-muted-foreground">
- كل الحقول اختيارية — لو فضيتها، الـ AI بيحسب كل حاجة تلقائيًا من بيانات العميل.
+ كل الحقول اختيارية — إن تركتها فارغة، يحسب الذكاء الاصطناعي كل شيء تلقائيًا من بيانات العميل.
  </p>
  </div>
  )}

@@ -39,7 +39,7 @@ export default function MacroTrackerPage() {
         {
           n: "١",
           title: "اضبط أهدافك",
-          desc: "حاسبة الماكروز المجانية توزّع سعراتك اليومية على بروتين وكارب ودهون حسب جسمك وهدفك ونشاطك.",
+          desc: "حاسبة الماكروز المجانية توزّع سعراتك اليومية على بروتين وكربوهيدرات ودهون حسب جسمك وهدفك ونشاطك.",
           href: "/ar/tools/macro-calculator",
           cta: "احسب ماكروزك",
         },
@@ -205,7 +205,7 @@ export default function MacroTrackerPage() {
           </h2>
           <p className="mt-4 text-base font-normal leading-relaxed text-[var(--muted-2)]">
             {isAr
-              ? "كل صنف غذائي في قاعدة الـ8,830+ يحمل سعراته وبروتينه وكاربه ودهونه بمقاسات تقديم ذكية، ومجموعات منتقاة تجمع الأطعمة عالية البروتين ومنخفضة الكارب والكيتو — وبجانبها حاسبة السعرات وحاسبة نسبة الدهون ومتتبع الماء اليومي."
+              ? "كل صنف غذائي في قاعدة الـ8,830+ يحمل سعراته وبروتينه وكربوهيدراته ودهونه بمقاسات تقديم ذكية، ومجموعات منتقاة تجمع الأطعمة عالية البروتين ومنخفضة الكربوهيدرات والكيتو — وبجانبها حاسبة السعرات وحاسبة نسبة الدهون ومتتبع الماء اليومي."
               : "Every food in the 8,830+ database carries its calories, protein, carbs, and fat with smart serving sizes, and curated collections gather high-protein, low-carb, and keto picks — flanked by the calorie calculator, body-fat calculator, and a daily water tracker."}
           </p>
           <div className="mt-5 flex flex-wrap gap-2 text-sm">

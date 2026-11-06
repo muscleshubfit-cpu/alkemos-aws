@@ -204,7 +204,7 @@ function WalletPayPalButtons({
     return (
       <div className="flex items-center justify-center gap-2 py-4 text-sm text-[#6e6e73]">
         <Loader2 className="h-4 w-4 animate-spin" />
-        {isAr ? "جاري معالجة الدفع وشحن المحفظة..." : "Processing payment and wallet credit..."}
+        {isAr ? "جارٍ معالجة الدفع وشحن المحفظة..." : "Processing payment and wallet credit..."}
       </div>
     );
   }
@@ -326,7 +326,7 @@ export function CoachWalletView() {
         </h1>
         <p className="mt-2 text-base font-normal text-[#6e6e73] md:text-lg">
           {isAr
-            ? "اشحن محفظتك عشان تفعّل اشتراكات عملائك — التفعيل بيخصم سعر الباقة الثابت من الرصيد."
+            ? "اشحن محفظتك لتفعيل اشتراكات عملائك — يخصم التفعيل سعر الباقة الثابت من الرصيد."
             : "Top up your wallet to activate client subscriptions — the fixed activation price is debited from the balance."}
         </p>
       </div>
@@ -433,7 +433,7 @@ export function CoachWalletView() {
                 ) : paypalError ? (
                   <div className="rounded-xl bg-[#ff3b30]/5 p-4 text-center text-sm text-[#ff3b30]">
                     {isAr
-                      ? "مفيش إعدادات PayPal — استخدم شحن انستاباي / فودافون كاش"
+                      ? "لا توجد إعدادات PayPal — استخدم الشحن عبر انستاباي / فودافون كاش"
                       : "PayPal is not configured — use InstaPay / Vodafone Cash top-up"}
                   </div>
                 ) : paypalLoaded ? (
@@ -608,7 +608,7 @@ export function CoachWalletView() {
             </h2>
             {(data?.topups?.length ?? 0) === 0 ? (
               <div className="mt-3 rounded-2xl bg-[#f5f5f7] p-8 text-center text-sm text-[#6e6e73]">
-                {isAr ? "مفيش طلبات شحن بعد" : "No top-up requests yet"}
+                {isAr ? "لا توجد طلبات شحن بعد" : "No top-up requests yet"}
               </div>
             ) : (
               <div className="mt-3 overflow-x-auto rounded-2xl border border-[#e5e5ea]">
@@ -667,7 +667,7 @@ export function CoachWalletView() {
             </h2>
             {(data?.transactions?.length ?? 0) === 0 ? (
               <div className="mt-3 rounded-2xl bg-[#f5f5f7] p-8 text-center text-sm text-[#6e6e73]">
-                {isAr ? "مفيش حركات بعد" : "No transactions yet"}
+                {isAr ? "لا توجد حركات بعد" : "No transactions yet"}
               </div>
             ) : (
               <div className="mt-3 overflow-x-auto rounded-2xl border border-[#e5e5ea]">

@@ -360,7 +360,7 @@ export default function AiMealPlannerPage() {
                 <Sparkles className="h-4 w-4" aria-hidden="true" />
               )}
               {loading
-                ? isAr ? "جاري التوليد…" : "Generating…"
+                ? isAr ? "جارٍ التوليد…" : "Generating…"
                 : plan
                   ? isAr ? "ولّد خطة أخرى" : "Generate another plan"
                   : isAr ? "ولّد خطتي المجانية" : "Generate my free plan"}

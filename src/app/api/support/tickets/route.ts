@@ -415,7 +415,7 @@ async function memberCreateTicket(
     .insert({
       type: "new_ticket",
       title: "تذكرة دعم جديدة ",
-      body: `موضوع: ${subject.slice(0, 200)}${priority === "high" ? " — أولوية (عضوية كوتشينج)" : ""}`,
+      body: `موضوع: ${subject.slice(0, 200)}${priority === "high" ? " — أولوية (عضوية التدريب الأونلاين)" : ""}`,
       // NOTIF→PLAN 2026-10-24 (items 1+3): deep link opens the ticket's
       // thread directly (/coach/support?ticket=<id>) — CoachSupportView
       // auto-opens the matching ticket; dedupKey + the guard in

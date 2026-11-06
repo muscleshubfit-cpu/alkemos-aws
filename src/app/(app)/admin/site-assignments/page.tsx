@@ -218,13 +218,13 @@ export default function SiteAssignmentsPage() {
           <EmptyState
             text={
               isAr
-                ? "تعذر التحميل — خدمة العملاء الموحدة (مايجريشن 0067) لسه ما اتطبقتش."
+                ? "تعذر التحميل — خدمة العملاء الموحدة (مايجريشن 0067) لم تُطبَّق بعد."
                 : "Could not load — the unified service (migration 0067) is not applied yet."
             }
           />
         ) : coaches.length === 0 ? (
           <div className="flex flex-wrap items-center gap-3 rounded-2xl bg-[#f5f5f7] p-4 text-sm text-[#6e6e73]">
-            {isAr ? "مفيش مدربي موقع لسه —" : "No site coaches yet —"}
+            {isAr ? "لا يوجد مدربو موقع بعد —" : "No site coaches yet —"}
             <Link href="/admin/coaches" className="font-medium text-[#0071e3] hover:underline">
               {isAr ? "افتح صفحة المدربين لتعيين أول مدرب موقع ›" : "Open the coaches page to designate one ›"}
             </Link>
@@ -275,7 +275,7 @@ export default function SiteAssignmentsPage() {
         {searching && (
           <p className="flex items-center gap-2 text-xs text-[#86868b]">
             <Loader2 className="h-3 w-3 animate-spin" />
-            {isAr ? "جاري البحث…" : "Searching…"}
+            {isAr ? "جارٍ البحث…" : "Searching…"}
           </p>
         )}
 
@@ -320,19 +320,19 @@ export default function SiteAssignmentsPage() {
         title={isAr ? "قائمة التعيينات" : "The roster"}
         sub={
           isAr
-            ? "كل عضو ومين المسؤول عن متابعته — المقيّد هنا مش بيتحسب في فواتير أي مدرب."
+            ? "كل عضو ومن المسؤول عن متابعته — المقيَّد هنا لا يُحتسب في فواتير أي مدرب."
             : "Every member and who follows him up — roster rows never count toward any coach's bill."
         }
       >
         {loadingRoster ? (
           <div className="py-12 text-center text-sm text-[#6e6e73]">
-            {isAr ? "جاري التحميل…" : "Loading…"}
+            {isAr ? "جارٍ التحميل…" : "Loading…"}
           </div>
         ) : assignments.length === 0 ? (
           <EmptyState
             text={
               isAr
-                ? "مفيش تعيينات بعد — اختار مدرب موقع وابحث عن عضو وعيّنه من فوق."
+                ? "لا توجد تعيينات بعد — اختر مدرب موقع وابحث عن عضو وعيّنه من أعلى."
                 : "No assignments yet — pick a site coach, search a member and assign him above."
             }
           />

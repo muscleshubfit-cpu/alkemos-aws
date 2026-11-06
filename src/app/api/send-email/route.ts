@@ -123,7 +123,7 @@ const TOOL_FIELDS: Record<ToolSlug, FieldDef[]> = {
     { key: "meals", ar: "عدد الوجبات", en: "Meals" },
     { key: "calories", ar: "إجمالي السعرات", en: "Total calories", suffix: " kcal", suffixAr: " كالوري" },
     { key: "protein", ar: "إجمالي البروتين", en: "Total protein", suffix: " g", suffixAr: " جم" },
-    { key: "carbs", ar: "إجمالي الكارب", en: "Total carbs", suffix: " g", suffixAr: " جم" },
+    { key: "carbs", ar: "إجمالي الكربوهيدرات", en: "Total carbs", suffix: " g", suffixAr: " جم" },
     { key: "fat", ar: "إجمالي الدهون", en: "Total fat", suffix: " g", suffixAr: " جم" },
   ],
 };

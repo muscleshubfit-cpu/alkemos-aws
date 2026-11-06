@@ -77,7 +77,7 @@ const TOOL_META: Record<
         [isAr ? "BMR" : "BMR", `${d.bmr}`],
         [isAr ? "TDEE" : "TDEE", `${d.tdee}`],
         [isAr ? "بروتين" : "Protein", `${d.protein}g`],
-        [isAr ? "كارب" : "Carbs", `${d.carbs}g`],
+        [isAr ? "كربوهيدرات" : "Carbs", `${d.carbs}g`],
         [isAr ? "دهون" : "Fat", `${d.fat}g`],
       ],
     }),
@@ -106,7 +106,7 @@ const TOOL_META: Record<
       sublabel: isAr ? "سعرة حرارية / يوم" : "calories / day",
       rows: [
         [isAr ? "بروتين" : "Protein", `${d.protein_g ?? d.protein ?? "—"}g`],
-        [isAr ? "كارب" : "Carbs", `${d.carbs_g ?? d.carbs ?? "—"}g`],
+        [isAr ? "كربوهيدرات" : "Carbs", `${d.carbs_g ?? d.carbs ?? "—"}g`],
         [isAr ? "دهون" : "Fat", `${d.fat_g ?? d.fat ?? "—"}g`],
       ],
     }),

@@ -405,7 +405,7 @@ export function CheckoutView({ tier, months }: { tier: TierId | MembershipTier; 
             </h2>
             <p className="mt-3 text-base font-normal text-[var(--muted-foreground)]">
               {isAr
-                ? "تم تفعيل اشتراكك تلقائيًا. جاري تحويلك إلى لوحة التحكم..."
+                ? "تم تفعيل اشتراكك تلقائيًا. جارٍ تحويلك إلى لوحة التحكم..."
                 : "Your subscription is now active. Redirecting to dashboard..."}
             </p>
             <button

@@ -164,16 +164,16 @@ export default function CoachesPage() {
           <EmptyState
             text={
               isAr
-                ? "تعذر تحميل القائمة — خدمة العملاء الموحدة (مايجريشن 0067) لسه ما اتطبقتش. أول ما تتطبق هتشتغل لوحدها."
+                ? "تعذر تحميل القائمة — خدمة العملاء الموحدة (مايجريشن 0067) لم تُطبَّق بعد. ستعمل تلقائيًا فور تطبيقها."
                 : "Could not load the roster — the unified service (migration 0067) is not applied yet."
             }
           />
         ) : loading && rows.length === 0 ? (
           <div className="py-16 text-center text-base font-normal text-[#6e6e73]">
-            {isAr ? "جاري التحميل…" : "Loading…"}
+            {isAr ? "جارٍ التحميل…" : "Loading…"}
           </div>
         ) : rows.length === 0 ? (
-          <EmptyState text={isAr ? "مفيش مدربين مسجلين بعد" : "No coaches yet"} />
+          <EmptyState text={isAr ? "لا يوجد مدربون مسجلون بعد" : "No coaches yet"} />
         ) : (
           <div className="overflow-x-auto rounded-2xl border border-[#f2f2f7]">
             <Table>
@@ -295,7 +295,7 @@ export default function CoachesPage() {
       <p className="flex items-start gap-2 text-xs text-[#6e6e73]">
         <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0" />
         {isAr
-          ? "تفرقة النوع محفوظة في قاعدة البيانات (profiles.coach_kind) — ومدربي B2B تفضل فاتورتهم ومحافظهم شغالة زي ما هي بدون أي تأثير، ومدربي الموقع تعييناتهم في جدول منفصل تمامًا عن الفلوس. أدوات المدربين (الصفحات / التعيينات B2B / المحافظ / الدعم) في القائمة الجانبية — وبادج «صفحات بانتظار المراجعة» على بند صفحات المدربين نفسه."
+          ? "تمييز النوع محفوظ في قاعدة البيانات (profiles.coach_kind) — فواتير مدربي B2B ومحافظهم تبقى كما هي دون أي تأثير، وتعيينات مدربي الموقع في جدول منفصل تمامًا عن الأموال. أدوات المدربين (الصفحات / التعيينات B2B / المحافظ / الدعم) في القائمة الجانبية — وبادج «صفحات بانتظار المراجعة» على بند صفحات المدربين نفسه."
           : "The kind split is stored in the DB (profiles.coach_kind) — B2B coaches keep their wallet and billing untouched, and site-coach rosters live in a table fully separate from money. The coach tools (pages / B2B assignments / wallets / support) live in the sidebar — with the pending-pages badge on the Coach pages item itself."}
       </p>
     </div>

@@ -411,7 +411,7 @@ async function handleRegenerationAction(
   /* 0) Restore a saved version — Phase 79 «حفظ للخطط المولدة» */
   if (action === "restore_version") {
     if (prevHistory.length === 0) {
-      return bad("مفيش نسخ محفوظة للخطة دي — إعادة التوليد هي اللي بتحفظ نسخ تلقائيًا");
+      return bad("لا توجد نسخ محفوظة لهذه الخطة — إعادة التوليد هي التي تحفظ النسخ تلقائيًا");
     }
     const idx = Math.round(numOr(body.version_index, -1));
     const version = prevHistory[idx];
@@ -440,7 +440,7 @@ async function handleRegenerationAction(
   /* 1) Whole plan — same stored brief, fresh variety roll */
   if (action === "regenerate_plan") {
     if (!params || Object.keys(params).length === 0) {
-      return bad("مفيش مواصفات توليد محفوظة للخطة دي — اعمل خطة جديدة بالذكاء الاصطناعي");
+      return bad("لا توجد مواصفات توليد محفوظة لهذه الخطة — أنشئ خطة جديدة بالذكاء الاصطناعي");
     }
     const gen = await generateExternalPlanAI(params);
     if (!gen.ok) return bad(gen.message, 502);
@@ -928,7 +928,7 @@ export async function PATCH(request: NextRequest) {
   }
 
   if (Object.keys(update).length === 0) {
-    return bad("مفيش حاجة للتحديث");
+    return bad("لا يوجد شيء لتحديثه");
   }
 
   const { data, error } = await supabaseAdmin

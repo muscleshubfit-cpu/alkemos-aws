@@ -79,7 +79,7 @@ export async function enqueueAiJobClient(
   // so every localStorage watcher registry (mhe:pending-swaps ·
   // mhe:pending-plan-jobs · mhe:pending-article-job) stored id-less
   // entries, polled ?id=undefined (400 Bad id) and never applied the
-  // finished job — the member saw a permanent «جاري التبديل» badge
+  // finished job — the member saw a permanent «جارٍ التبديل» badge
   // plus a false timeout toast. Accept the canonical `jobId` first,
   // keep `id` as a belt-and-suspenders fallback.
   const jobId =
@@ -97,7 +97,7 @@ export async function getAiJob(id: string): Promise<AiJobRow> {
 /**
  * Fire-and-wait: resolves { result, id } when done, rejects on failure/429/timeout.
  * `onQueued` fires once right after enqueue so UIs can show an immediate
- * "جاري التنفيذ في الخلفية" state.
+ * "جارٍ التنفيذ في الخلفية" state.
  */
 export async function runAiJob(
   type: AiJobType,

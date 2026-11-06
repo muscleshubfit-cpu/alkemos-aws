@@ -161,7 +161,7 @@ export function AdminAssignmentsView() {
         if (json.action === "invited") {
           toast.success(
             isAr
-              ? `تم إرسال دعوة إلى ${email} — هيوصله إيميل فيه لينك تحديد كلمة المرور، وبعد ما يحددها هيظهر هنا كمدرب`
+              ? `تم إرسال دعوة إلى ${email} — سيصله بريد إلكتروني فيه رابط تحديد كلمة المرور، وبعد تحديدها سيظهر هنا كمدرب`
               : `Invite sent to ${email} — he will receive an email with a password link and appear here as a coach once he sets it`,
             { duration: 8000 },
           );
@@ -321,7 +321,7 @@ export function AdminAssignmentsView() {
         </h2>
         <p className="mt-1 text-sm font-normal text-[#6e6e73]">
           {isAr
-            ? "اكتب بريد المدرب الجديد: لو غير مسجل هيوصله دعوة على إيميله يحدد منها كلمة المرور بنفسه، ولو مسجل كعميل هيتمت ترقيته لمدرب فورًا."
+            ? "اكتب بريد المدرب الجديد: إن كان غير مسجل فسيصله بريد دعوة على بريده الإلكتروني يحدد منه كلمة المرور بنفسه، وإن كان مسجلًا كعميل فستتم ترقيته إلى مدرب فورًا."
             : "Enter the new coach's email: if he is not registered yet he receives an invite to set his own password; if he is already a client he is promoted instantly."}
         </p>
         <div className="mt-4 flex flex-col gap-3 sm:flex-row">
@@ -571,7 +571,7 @@ export function AdminAssignmentsView() {
                     {c.coachName ? (
                       staffRoleById[c.coachId ?? ""] === "admin" ? (
                         <span className="rounded-full bg-[#1d1d1f]/5 px-3 py-1 text-xs font-medium text-[#1d1d1f]">
-                          {isAr ? "عميل موقع — الكوتش العام" : "Site client — general coach"}
+                          {isAr ? "عميل موقع — المدرب العام" : "Site client — general coach"}
                         </span>
                       ) : (
                         <span className="rounded-full bg-[#34c759]/10 px-3 py-1 text-xs font-medium text-[#248a3d]">

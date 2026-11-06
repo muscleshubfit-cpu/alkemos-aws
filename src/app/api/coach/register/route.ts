@@ -351,7 +351,7 @@ export async function POST(request: NextRequest) {
 
   await coachBell({
     type: "coach_welcome",
-    title: "أهلًا بك كوتش في Alkemos!",
+    title: "أهلًا بك مدربًا في Alkemos!",
     body:
       "تم تفعيل حسابك. ابدأ بإضافة عملائك وحدّد أسعارك وجهّز محفظتك لتفعيل اشتراكاتهم.",
     link: "/coach",

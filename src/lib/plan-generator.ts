@@ -825,7 +825,7 @@ ${JSON.stringify({ ...clientContext, name: undefined }, null, 2)}`
 الوجبة الحالية (لاحظ تنوع الأصناف وابتعد عن التكرار):
 ${JSON.stringify({ name: meal.name, items: itemsNum, notes: meal.notes }, null, 2)}
 
-${coachNote ? `تعليمات الكوتش: ${coachNote}` : ""}
+${coachNote ? `تعليمات المدرب: ${coachNote}` : ""}
 
 أعد النتيجة بصيغة JSON فقط (بدون أسوار markdown):
 {
@@ -1383,7 +1383,7 @@ function buildNutritionPrompt(
 
   const overridesText = overrides
     ? `
- تعليمات خاصة من الكوتش (يجب الالتزام بها):
+ تعليمات خاصة من المدرب (يجب الالتزام بها):
 ${overrides.targetCalories ? `- السعرات المستهدفة اليومية: ${overrides.targetCalories} سعرة` : ""}
 ${overrides.macros ? `- الماكروز المطلوبة: بروتين ${overrides.macros.protein_g}جم / كارب ${overrides.macros.carbs_g}جم / دهون ${overrides.macros.fat_g}جم` : ""}
 ${overrides.foods && overrides.foods.length > 0 ? `- الأطعمة المطلوب تضمينها: ${overrides.foods.join("، ")}` : ""}
@@ -1559,7 +1559,7 @@ function buildWorkoutPrompt(
       : "";
 
   const overridesText = overrides?.notes
-    ? `\n تعليمات خاصة من الكوتش: ${overrides.notes}\n`
+    ? `\n تعليمات خاصة من المدرب: ${overrides.notes}\n`
     : "";
 
   return `صمّم برنامج تمارين أسبوعي مخصص باللغة العربية لعميل اسمه ${name}.

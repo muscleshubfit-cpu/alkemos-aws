@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
   const { error } = await supabaseAdmin.from("admin_notifications").insert({
     type: "coach_page_reminder",
     title: "أكمل إعداد صفحتك العامة",
-    body: "تذكير من الإدارة: صفحتك العامة لسه محتاجة إكمال — اكتب نبذتك وتخصصاتك واضبط رابطك من «صفحتي العامة».",
+    body: "تذكير من الإدارة: صفحتك العامة ما تزال تحتاج إكمالًا — اكتب نبذتك وتخصصاتك، واضبط رابطك من «صفحتي العامة».",
     link: "/coach/landing",
     target_role: "coach",
     target_coach_id: coachId,

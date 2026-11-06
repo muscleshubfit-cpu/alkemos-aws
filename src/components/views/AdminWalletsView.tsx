@@ -154,7 +154,7 @@ export function AdminWalletsView() {
         </h1>
         <p className="mt-2 text-base font-normal text-[#6e6e73] md:text-lg">
           {isAr
-            ? "راجع إيصالات الشحن واشحن الرصيد يدويًا — التفعيل عند المدرب مش هينفع غير برصيد كفاية."
+            ? "راجع إيصالات الشحن واشحن الرصيد يدويًا — لا يمكن تفعيل اشتراك عند المدرب إلا برصيد كافٍ."
             : "Review top-up receipts and credit balances manually — coaches cannot activate without sufficient balance."}
         </p>
       </div>
@@ -177,7 +177,7 @@ export function AdminWalletsView() {
             </h2>
             {pending.length === 0 ? (
               <div className="mt-3 rounded-2xl bg-[#f5f5f7] p-8 text-center text-sm text-[#6e6e73]">
-                {isAr ? "مفيش طلبات مستنية مراجعة" : "Nothing waiting for review"}
+                {isAr ? "لا توجد طلبات بانتظار المراجعة" : "Nothing waiting for review"}
               </div>
             ) : (
               <div className="mt-3 space-y-3">
@@ -332,7 +332,7 @@ export function AdminWalletsView() {
             </h2>
             {reviewed.length === 0 ? (
               <div className="mt-3 rounded-2xl bg-[#f5f5f7] p-8 text-center text-sm text-[#6e6e73]">
-                {isAr ? "مفيش سجل بعد" : "Nothing reviewed yet"}
+                {isAr ? "لا يوجد سجل بعد" : "Nothing reviewed yet"}
               </div>
             ) : (
               <div className="mt-3 overflow-x-auto rounded-2xl border border-[#e5e5ea]">

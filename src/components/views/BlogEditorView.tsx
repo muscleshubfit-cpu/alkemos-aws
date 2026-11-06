@@ -134,7 +134,7 @@ export function BlogEditorView({ mode, postId }: { mode: "new" | "edit"; postId?
        return;
      }
      if (!data.image?.url) {
-       toast.error(isAr ? "مفيش صورة آمنة مطابقة — جرب كلمات مختلفة في العنوان" : "No safe match found — try different wording");
+       toast.error(isAr ? "لا توجد صورة آمنة مطابقة — جرّب كلمات مختلفة في العنوان" : "No safe match found — try different wording");
        return;
      }
      const nextExclude = [...imgExclude, data.image.url].slice(-12);
@@ -174,7 +174,7 @@ export function BlogEditorView({ mode, postId }: { mode: "new" | "edit"; postId?
      });
      const data = await res.json().catch(() => ({}));
      if (!res.ok || !data.image?.url) {
-       toast.error(data.error || (isAr ? "مفيش بديل آمن مطابق — جرب تاني" : "No safe match found — try again"));
+       toast.error(data.error || (isAr ? "لا يوجد بديل آمن مطابق — جرّب مرة أخرى" : "No safe match found — try again"));
        return;
      }
      const nextExclude = [...imgExclude, data.image.url].slice(-12);
@@ -762,7 +762,7 @@ useEffect(() => {
  {hasBodyImages && (
  <p className="mb-3 text-[11px] text-muted-foreground">
  💡 {isAr
- ? "كل صورة في المعاينة ليها زر «🔄 بدّل الصورة» — هتجيب بديل آمن ويستبدلها في مكانها داخل المحتوى."
+ ? "كل صورة في المعاينة ليها زر «🔄 بدّل الصورة» — سيجلب بديلًا آمنًا ويستبدلها في مكانها داخل المحتوى."
  : "Every preview photo has a swap button — pick a safe replacement right where it stands."}
  </p>
  )}
@@ -782,7 +782,7 @@ useEffect(() => {
  >
  {bodyImgBusy === b.url ? <Loader2 className="h-3 w-3 animate-spin" /> : <ImagePlus className="h-3 w-3" />}
  {bodyImgBusy === b.url
- ? (isAr ? "جاري التبديل…" : "Swapping…")
+ ? (isAr ? "جارٍ التبديل…" : "Swapping…")
  : (isAr ? "🔄 بدّل الصورة" : "🔄 Swap photo")}
  </button>
  </div>
@@ -832,7 +832,7 @@ useEffect(() => {
  >
  {imgBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ImagePlus className="h-3.5 w-3.5" />}
  {imgBusy
- ? (isAr ? "جاري البحث..." : "Searching...")
+ ? (isAr ? "جارٍ البحث..." : "Searching...")
  : post.featured_image
  ? (isAr ? "🔄 صورة مختلفة" : "🔄 Different photo")
  : (isAr ? "✨ اقترح صورة آمنة" : "✨ Suggest safe photo")}
@@ -1007,7 +1007,7 @@ useEffect(() => {
  <div className="mt-2 flex items-center justify-between gap-2">
  <span className="text-[10px] leading-4 text-muted-foreground">
  {isAr
- ? "⏱ النتيجة وظيفة خلفية تحتاج عادة ٢–٥ دقايق — لو غادرت الصفحة هتلاقي النتيجة محفوظة هنا (أو اضغط تحديث)."
+ ? "⏱ النتيجة وظيفة خلفية تحتاج عادة ٢–٥ دقائق — إن غادرت الصفحة ستجد النتيجة محفوظة هنا (أو اضغط تحديث)."
  : "⏱ Results are background jobs (~2–5 min). If you leave the page, finished results are restored here (or press refresh)."}
  </span>
  <button

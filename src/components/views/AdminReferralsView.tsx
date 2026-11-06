@@ -254,7 +254,7 @@ export function AdminReferralsView() {
         <div className="space-y-3">
           {payouts.length === 0 ? (
             <div className="rounded-2xl bg-[#f5f5f7] p-12 text-center text-base font-normal text-[#6e6e73]">
-              {isAr ? "مفيش طلبات صرف" : "No payout requests"}
+              {isAr ? "لا توجد طلبات صرف" : "No payout requests"}
             </div>
           ) : (
             payouts.map((p) => (
@@ -325,7 +325,7 @@ export function AdminReferralsView() {
         <div className="space-y-3">
           {referrals.length === 0 ? (
             <div className="rounded-2xl bg-[#f5f5f7] p-12 text-center text-base font-normal text-[#6e6e73]">
-              {isAr ? "مفيش احالات" : "No referrals"}
+              {isAr ? "لا توجد إحالات" : "No referrals"}
             </div>
           ) : (
             referrals.map((r) => (

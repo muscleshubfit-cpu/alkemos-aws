@@ -216,7 +216,7 @@ export default function AdminFinancesPage() {
       <div className="space-y-8">
         <PageHeader title={isAr ? "المالية" : "Finances"} />
         <div className="py-20 text-center text-base font-normal text-[#6e6e73]">
-          {isAr ? "جاري تجميع الأرقام…" : "Aggregating the numbers…"}
+          {isAr ? "جارٍ تجميع الأرقام…" : "Aggregating the numbers…"}
         </div>
       </div>
     );
@@ -384,7 +384,7 @@ export default function AdminFinancesPage() {
         </div>
 
         {wallets.length === 0 ? (
-          <EmptyState text={isAr ? "مفيش محافظ مدربين بعد" : "No coach wallets yet"} />
+          <EmptyState text={isAr ? "لا توجد محافظ مدربين بعد" : "No coach wallets yet"} />
         ) : (
           <div className="overflow-x-auto rounded-2xl border border-[#f2f2f7]">
             <Table>

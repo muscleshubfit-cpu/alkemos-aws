@@ -229,7 +229,7 @@ export default function CoachRegisterPage() {
             >
               {loading
                 ? isAr
-                  ? "جاري إنشاء الحساب..."
+                  ? "جارٍ إنشاء الحساب..."
                   : "Creating your account..."
                 : isAr
                   ? "سجّل الآن — مجانًا"

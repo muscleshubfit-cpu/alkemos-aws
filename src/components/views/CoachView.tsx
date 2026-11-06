@@ -644,7 +644,7 @@ export function CoachView() {
           { id: "pro", labelAr: "برو", labelEn: "Pro", count: counts.pro, color: "#1d1d1f" },
         ] as const)
       : []),
-    { id: "coaching", labelAr: "كوتشينج", labelEn: "Coaching", count: counts.coaching, color: "#8b5cf6" },
+    { id: "coaching", labelAr: "التدريب الأونلاين", labelEn: "Coaching", count: counts.coaching, color: "#8b5cf6" },
   ];
 
   const toggleClientSelection = (id: string) => {
@@ -763,7 +763,7 @@ export function CoachView() {
         {isB2BCoach && (
           <p className="mt-2 inline-block rounded-full bg-[#8b5cf6]/10 px-4 py-1.5 text-xs font-medium text-[#8b5cf6]">
             {isAr
-              ? "عملاؤك الخاصون فقط — جيب عملاءك عبر صفحتك العامة أو ادعُهم بإيميل"
+              ? "عملاؤك الخاصون فقط — اجلب عملاءك عبر صفحتك العامة أو ادعُهم بالبريد الإلكتروني"
               : "Your private clients only — bring clients via your public page or invite them by email"}
           </p>
         )}

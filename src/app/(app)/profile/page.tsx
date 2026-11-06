@@ -209,7 +209,7 @@ export default function ProfilePage() {
       setCancelRequested(true);
       toast.success(
         isAr
-          ? "تم تسجيل طلب الإلغاء — باقتك شغالة لآخر مدة مدفوعة"
+          ? "تم تسجيل طلب الإلغاء — ستبقى باقتك فعّالة حتى آخر مدة مدفوعة"
           : "Cancellation recorded — your plan stays active until the period ends",
       );
     } catch (e) {
@@ -490,7 +490,7 @@ export default function ProfilePage() {
             {cancelRequested ? (
               <p className="mt-4 inline-flex items-center gap-2 rounded-full bg-[#ff9500]/10 px-4 py-2 text-xs font-medium text-[#ff9500]">
                 {isAr
-                  ? "طلب الإلغاء مسجل — باقتك شغالة لآخر مدة مدفوعة"
+                  ? "طلب الإلغاء مسجَّل — ستبقى باقتك فعّالة حتى آخر مدة مدفوعة"
                   : "Cancellation recorded — your plan stays active until the period ends"}
               </p>
             ) : (
@@ -808,7 +808,7 @@ function EvoFollowupSection({
           </h2>
           <p className="mt-1.5 max-w-xl text-sm font-normal leading-relaxed text-[#6e6e73]">
             {isAr
-              ? "بريد أسبوعي من مدربك EVO (evo@alkemos.com) بملخص تقدمك الحقيقي المسجل على المنصة — أرقامك بس من غير حشو. تقدر توقفيه في أي وقت من هنا."
+              ? "بريد أسبوعي من مدربك EVO (evo@alkemos.com) بملخص تقدمك الحقيقي المسجل على المنصة — أرقامك فقط دون حشو. يمكنك إيقافه في أي وقت من هنا."
               : "A weekly email from your coach EVO (evo@alkemos.com) summarizing your real logged progress — your numbers only, no filler. Turn it off anytime from here."}
           </p>
         </div>

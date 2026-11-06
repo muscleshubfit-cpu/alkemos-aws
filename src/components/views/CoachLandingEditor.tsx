@@ -213,7 +213,7 @@ export function CoachLandingEditor() {
           text:
             (json.page?.review_status ?? "approved") === "pending"
               ? isAr
-                ? "تم الحفظ — صفحتك دلوقتي في انتظار مراجعة الأدمن وهي تظهر للزوار بعد موافقته"
+                ? "تم الحفظ — صفحتك الآن في انتظار مراجعة الإدارة وستظهر للزوار بعد موافقتها"
                 : "Saved — your page is now PENDING admin review and goes public once approved"
               : publish
                 ? isAr ? "تم النشر — شارك رابط صفحتك مع عملائك" : "Published — share your page link with clients"
@@ -741,7 +741,7 @@ export function CoachLandingEditor() {
             </label>
             <p className="mb-3 text-xs font-normal text-[#6e6e73]">
               {isAr
-                ? "الرقم ده بيظهر كزر «تواصل واتساب» عند عملائك المفعّل اشتراكهم فقط — مش بيظهر على صفحتك العامة ولا لأي زائر. اكتبه بأي صيغة (مثال: 01012345678) وهو هيتحفظ تلقائيًا بالصيغة الدولية."
+                ? "يظهر هذا الرقم كزر «تواصل واتساب» لعملائك المفعَّل اشتراكهم فقط — ولا يظهر على صفحتك العامة ولا لأي زائر. اكتبه بأي صيغة (مثال: 01012345678) وسيُحفظ تلقائيًا بالصيغة الدولية."
                 : "This number renders as a «WhatsApp your coach» button for your ACTIVATED clients only — never on your public page or to visitors. Any format works (e.g. 01012345678); it is saved normalized automatically."}
             </p>
             <input

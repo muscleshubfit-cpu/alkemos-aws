@@ -255,7 +255,7 @@ export async function PATCH(request: NextRequest) {
   }
   if (!data) {
     return NextResponse.json(
-      { error: "not_found", message: "مفيش صفحة للمدرب ده" },
+      { error: "not_found", message: "لا توجد صفحة لهذا المدرب" },
       { status: 404 },
     );
   }

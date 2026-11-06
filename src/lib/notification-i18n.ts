@@ -578,7 +578,7 @@ const ADMIN_CATALOG: Record<string, CatalogEntry> = {
       lang === "ar" ? "أكمل إعداد صفحتك العامة" : "Complete your public page setup",
     body: (_p, lang) =>
       lang === "ar"
-        ? "تذكير من الإدارة: صفحتك العامة لسه محتاجة إكمال — اكتب نبذتك وتخصصاتك واضبط رابطك من «صفحتي العامة»."
+        ? "تذكير من الإدارة: صفحتك العامة ما تزال تحتاج إكمالًا — اكتب نبذتك وتخصصاتك، واضبط رابطك من «صفحتي العامة»."
         : "Admin reminder: your public page still needs completing — write your bio and specialties and set your link from “My Public Page”.",
   },
   coach_page_approved: {

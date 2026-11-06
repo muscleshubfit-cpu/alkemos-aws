@@ -80,7 +80,7 @@ const TOOLS = [
     nameAr: "حاسبة الماكروز",
     nameEn: "Macro Calculator",
     url: "/tools/macro-calculator",
-    description: "وزّع سعراتك على بروتين وكارب ودهون",
+    description: "وزّع سعراتك على بروتين وكربوهيدرات ودهون",
     keywords: ["ماكرو", "macro", "بروتين كارب دهون", "keto", "كيتو"],
   },
   {

@@ -43,7 +43,7 @@ export default function ForCoachesPage() {
   const REGISTER_HREF = isAr ? `/ar${REGISTER_HREF_BASE}` : REGISTER_HREF_BASE;
 
   const shareMsg = isAr
-    ? "اعمل كمدرب على Alkemos — عملاؤك بأسعارك وأموالك بين يديك:"
+    ? "اعمل مدربًا على Alkemos — عملاؤك بأسعارك وأموالك بين يديك:"
     : "Coach on Alkemos — your clients, your prices, your money:";
 
   return (

@@ -449,16 +449,16 @@ export default function AdminClientsPage() {
         <EmptyState
           text={
             isAr
-              ? "تعذر تحميل القائمة — خدمة العملاء الموحدة (مايجريشن 0067) لسه ما اتطبقتش على قاعدة البيانات. أول ما تتطبق هتشتغل لوحدها."
+              ? "تعذر تحميل القائمة — خدمة العملاء الموحدة (مايجريشن 0067) لم تُطبَّق بعد على قاعدة البيانات. ستعمل تلقائيًا فور تطبيقها."
               : "Could not load the list — the unified clients service (migration 0067) is not applied yet. It will work automatically once applied."
           }
         />
       ) : loading && rows.length === 0 ? (
         <div className="py-20 text-center text-base font-normal text-[#6e6e73]">
-          {isAr ? "جاري التحميل…" : "Loading…"}
+          {isAr ? "جارٍ التحميل…" : "Loading…"}
         </div>
       ) : rows.length === 0 ? (
-        <EmptyState text={isAr ? "مفيش نتائج مطابقة" : "No matching accounts"} />
+        <EmptyState text={isAr ? "لا توجد نتائج مطابقة" : "No matching accounts"} />
       ) : (
         <div className="overflow-x-auto rounded-2xl border border-[#f2f2f7]">
           <Table>
@@ -473,7 +473,7 @@ export default function AdminClientsPage() {
                   {isAr ? "ينتهي في" : "Ends"}
                 </TableHead>
                 <TableHead className="hidden text-start xl:table-cell">
-                  {isAr ? "الكوتش / المتابعة" : "Coach / follow-up"}
+                  {isAr ? "المدرب / المتابعة" : "Coach / follow-up"}
                 </TableHead>
                 <TableHead className="text-start" />
               </TableRow>
@@ -568,7 +568,7 @@ export default function AdminClientsPage() {
                           <p>
                             {r.assigned_coach_role === "admin"
                               ? isAr ? "متابعة الإدارة: " : "Admin follow-up: "
-                              : isAr ? "كوتش B2B: " : "B2B coach: "}
+                              : isAr ? "مدرب B2B: " : "B2B coach: "}
                             {r.assigned_coach_role
                               ? r.assigned_coach_name || "—"
                               : "—"}

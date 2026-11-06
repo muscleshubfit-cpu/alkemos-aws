@@ -209,7 +209,7 @@ export function AdminCoachPagesView() {
             {isAr ? "تذكير بإكمال الصفحة" : "Remind to complete"}
           </button>
           <span className="text-xs text-[#86868b]">
-            {isAr ? "المدرب لسه ما أنشأش صفحته" : "No page created yet"}
+            {isAr ? "المدرب لم ينشئ صفحته بعد" : "No page created yet"}
           </span>
         </div>
       );
@@ -320,7 +320,7 @@ export function AdminCoachPagesView() {
         </h1>
         <p className="mt-2 max-w-3xl text-base font-normal text-[#6e6e73] md:text-lg">
           {isAr
-            ? "راجع المحتوى اللي بيكتبه المدربون على صفحاتهم العامة. أي تعديل جديد بيرجع الصفحة لـ«في الانتظار» لحد ما توافق — والرفض بيوصله مع السبب. المدرب اللي لسه ما أنشأش صفحته بيظهر هنا بزر «تذكير» بيوصله كإشعار."
+            ? "راجع المحتوى الذي يكتبه المدربون على صفحاتهم العامة. أي تعديل جديد يعيد الصفحة إلى «في الانتظار» حتى توافق — والرفض يصله مع السبب. المدرب الذي لم ينشئ صفحته بعد يظهر هنا بزر «تذكير» يصله كإشعار."
             : "Review the content coaches write on their public pages. Any coach edit sends the page back to PENDING until you approve — rejections reach the coach with your reason. Coaches with no page show a Remind button that pings their bell."}
         </p>
       </div>
@@ -364,8 +364,8 @@ export function AdminCoachPagesView() {
           <LayoutTemplate className="mx-auto h-10 w-10 text-[#d2d2d7]" />
           <p className="mt-3 text-sm text-[#6e6e73]">
             {filter === "pending"
-              ? isAr ? "مفيش صفحات في الانتظار — كله متراجع" : "Nothing pending — all reviewed"
-              : isAr ? "مفيش صفحات هنا" : "No pages here"}
+              ? isAr ? "لا توجد صفحات في الانتظار — تمت مراجعة الجميع" : "Nothing pending — all reviewed"
+              : isAr ? "لا توجد صفحات هنا" : "No pages here"}
           </p>
         </div>
       ) : (

@@ -258,7 +258,7 @@ export const WORKOUT_PROGRAMS: WorkoutProgram[] = [
     descriptionEn:
       "A 4-day/week HIIT program built for fat loss, with 20-30 minute sessions. For intermediate trainees with a training base.",
     methodologyAr:
-      "تمارين HIIT تناوب فترات جهد قصيرة مع راحة غير مكتملة لإبقاء نبض القلب مرتفعًا وحرق السعرات بكفاءة. اعمل بجهد تستطيع الاستمرار عليه طول الفترة لا اندفاعة تنطفئ في منتصف الجولة، واعتبر الراحة المذكورة حدًا أعلى: مع تحسن اللياقة قصّر الراحات قبل أن تطوّل فترات الجهد. أيام الاستشفاء جزء من البرنامج وليست فشلًا.",
+      "تمارين HIIT تناوب فترات جهد قصيرة مع راحة غير مكتملة لإبقاء نبض القلب مرتفعًا وحرق السعرات بكفاءة. اجتهد بوتيرة تستطيع الاستمرار عليها طوال الفترة لا اندفاعة تنطفئ في منتصف الجولة، واعتبر الراحة المذكورة حدًا أعلى: مع تحسن اللياقة قصّر الراحات قبل أن تطوّل فترات الجهد. أيام الاستشفاء جزء من البرنامج وليست فشلًا.",
     methodologyEn:
       "HIIT alternates short work intervals with incomplete recovery to keep your heart rate high and calorie burn efficient. Work at an effort you can hold for the whole interval — not a sprint that dies mid-round — and treat the listed rest as a ceiling: as conditioning improves, shorten the rests before lengthening the work. Recovery days are part of the program, not a failure.",
     progressionAr:
@@ -405,7 +405,7 @@ export const WORKOUT_PROGRAMS: WorkoutProgram[] = [
           en: "Do ab exercises burn belly fat?",
         },
         a: {
-          ar: "لا — استهداف حرق الدهون بموضع التمرين خرافة رفضتها الدراسات لعقود: التمرين يقوي العضلة تحتها، والدهون تُسحب من الجسم كله بعجز سعرات. اعمل عضلات الجذع هنا للتقوية والاستقرار، واخسر الدهون من المطبخ — الاثنان يعملان معًا لا يغني أحدهما عن الآخر.",
+          ar: "لا — استهداف حرق الدهون بموضع التمرين خرافة رفضتها الدراسات لعقود: التمرين يقوي العضلة تحتها، والدهون تُسحب من الجسم كله بعجز سعرات. درّب عضلات الجذع هنا للتقوية والاستقرار، واخسر الدهون من المطبخ — الاثنان يعملان معًا لا يغني أحدهما عن الآخر.",
           en: "No — spot-reducing fat by exercising the area above it is a myth studies have rejected for decades: the work strengthens the muscle underneath while the fat is drawn from the whole body by a calorie deficit. Train the core here for strength and stability, and lose the fat in the kitchen — the two work together, neither replaces the other.",
         },
       },

@@ -191,7 +191,7 @@ export function AdminSavedResultsView() {
         <div className="mt-12 rounded-2xl bg-[#f5f5f7] p-12 text-center">
           <Calculator className="mx-auto h-10 w-10 text-[#d2d2d7]" />
           <p className="mt-3 text-sm font-normal text-[#6e6e73]">
-            {isAr ? "مفيش نتائج محفوظة بعد" : "No saved results yet"}
+            {isAr ? "لا توجد نتائج محفوظة بعد" : "No saved results yet"}
           </p>
         </div>
       ) : (
