@@ -3,7 +3,7 @@
  * scripts/blog-runner/editorial-db-remediation.mts
  *
  * BILINGUAL-EDITORIAL-444B — the deterministic remediation companion of
- * editorial-db-audit.mts (same owner order 2026-11-07 «إلغاء الاستثناءات»).
+ * editorial-db-audit.mts (same owner order 2026-11-06 «إلغاء الاستثناءات»).
  * Applies the measured editorial defects found by the audit run 42292979775
  * (139 published rows scanned → 23 flagged → triaged here to 12 rows with
  * real defects; the rest are documented false positives — «لا حاجة/حاجة»

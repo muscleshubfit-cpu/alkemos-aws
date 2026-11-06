@@ -2,7 +2,7 @@
 /**
  * scripts/blog-runner/editorial-db-audit.mts
  *
- * BILINGUAL-EDITORIAL-444B (owner order 2026-11-07 — «إلغاء الاستثناءات»: the
+ * BILINGUAL-EDITORIAL-444B (owner order 2026-11-06 — «إلغاء الاستثناءات»: the
  * live blog DB content joins the editorial audit scope). READ-ONLY measurement
  * instrument over every PUBLISHED blog_posts row, both languages. Zero write
  * verbs; the service key stays in headers; prints findings + snippet evidence
