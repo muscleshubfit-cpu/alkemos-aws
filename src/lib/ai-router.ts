@@ -66,11 +66,24 @@ export function aiRouterMode(): AIRouterMode {
  * (file:line evidence in ai-registry.ts doc.evidence). The golden canaries
  * pin registry≡legacy per function; this map is what AI_ROUTER_MODE=legacy
  * serves, so a future registry change can never silently alter the
- * pre-migration measured behavior. */
+ * pre-migration measured behavior.
+ *
+ * FRAME 443: the grounded SEARCH ladder joins the rollback snapshot — the
+ * frozen pre-unification §6-أ walk (the engine's former hardcoded split,
+ * verbatim). Registry mode resolves the ladder from the spec; legacy mode
+ * serves this table through the same engine handles. */
 type LegacyPolicy = Pick<
   FallbackChainOptions,
   "maxTokens" | "timeoutMs" | "maxModels" | "temperature" | "jsonMode" | "chain"
 >;
+
+const LEGACY_GROUNDED_ARMS: Record<"ar" | "en", readonly string[]> = {
+  // the §6-أ FINAL language-split state as the engine hardcoded it before
+  // frame 443 (gemini = dormant tail; GEMINI_GROUNDED_ENABLED=0 still drops
+  // it inside the engine, GROUNDED_ARM_ORDER still overrides whole).
+  ar: ["tavily", "groq", "exa", "gemini"],
+  en: ["exa", "tavily", "groq", "gemini"],
+};
 
 const LEGACY_POLICIES: Record<string, LegacyPolicy> = {
   // plans (plan-generator.ts)
@@ -229,16 +242,38 @@ export async function dispatchAI(
   return callFreeAIFallbackChain(prompt, options);
 }
 
-/** Dispatch a grounded-search call — the arm ladder stays the engine's
- *  groundedArmOrder(lang); search queries/lang are call context. */
+/** Dispatch a grounded-search call. FRAME 443 (search unification —
+ *  owner order «استكمال توحيد منظومة الذكاء الاصطناعي» item 1): the arm
+ *  ladder is REGISTRY POLICY now — resolved from the calling spec's
+ *  grounding (armsAr for lang=ar · armsEn for lang=en — blog:research is
+ *  the registered grounded function) and PASSED to the engine as
+ *  `armOrder`. The engine stays the engine: request execution, cooldowns,
+ *  retries and fallback live inside callGroundedSearch, and its
+ *  deploy-free handles (GROUNDED_ARM_ORDER override · GEMINI_GROUNDED_ENABLED
+ *  kill-switch) still win over the passed policy. In AI_ROUTER_MODE=legacy
+ *  the FROZEN pre-unification ladder is served instead (the T8 rollback
+ *  key for the search walk). Search queries/lang are call context. */
 export async function dispatchGrounded(
   id: string,
   prompt: string,
   searchOpts?: Pick<GroundedSearchOptions, "searchQuery" | "searchQueryEn" | "lang">,
   overrides?: AICallOverrides,
 ): Promise<GroundedSearchResult> {
-  const { options } = resolveFunction(id, overrides);
-  return callGroundedSearch(prompt, { ...options, ...searchOpts });
+  const { options, spec } = resolveFunction(id, overrides);
+  const lang = searchOpts?.lang ?? "en"; // the engine's documented lang-less default
+  const armOrder: readonly string[] | undefined =
+    aiRouterMode() === "legacy"
+      ? LEGACY_GROUNDED_ARMS[lang]
+      : spec.grounding
+        ? lang === "ar"
+          ? spec.grounding.armsAr
+          : spec.grounding.armsEn
+        : undefined;
+  return callGroundedSearch(prompt, {
+    ...options,
+    ...searchOpts,
+    ...(armOrder ? { armOrder } : {}),
+  });
 }
 
 /* ─────────── Pure effective-chain resolution (canary/analysis only) ───────────

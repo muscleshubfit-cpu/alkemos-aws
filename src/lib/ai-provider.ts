@@ -70,6 +70,15 @@
 
 export type AIProvider = "openrouter" | "groq" | "nvidia" | "gemini" | "cloudflare";
 
+// FRAME 443 (search unification — owner order «استكمال توحيد منظومة الذكاء
+// الاصطناعي» item 1): the grounded arm ladder is OWNED by the central
+// registry. This is a VALUE import of the pure-data registry (ai-registry
+// holds only a TYPE-only import back here — zero runtime cycle) so the
+// engine's groundedArmOrder() READS the §6-أ language split from its single
+// source instead of keeping an independent second copy. The engine still
+// owns ALL execution (the walk, cooldowns, retries, fallback); this import
+// is data, never routing logic.
+import { AI_FUNCTION_REGISTRY } from "./ai-registry";
 import { trackGeminiUsage } from "./ai-usage-gemini";
 import {
   cfNeuronBarrierTripped,
@@ -1273,6 +1282,15 @@ export type GroundedSearchOptions = CallAIOptions & {
   searchQueryEn?: string;
   /** Language of the research (§6-أ ladder split). */
   lang?: "ar" | "en";
+  /** FRAME 443 (search unification — owner order «استكمال توحيد منظومة
+   *  الذكاء الاصطناعي» item 1): the arm ladder POLICY, resolved by the
+   *  ROUTER (dispatchGrounded — from the calling spec's grounding, or the
+   *  frozen pre-unification ladder in legacy mode) and handed to the
+   *  engine. Execution, cooldowns, retries and fallback stay INSIDE the
+   *  engine; the deploy-free handles (GROUNDED_ARM_ORDER override ·
+   *  GEMINI_GROUNDED_ENABLED kill-switch) still win in groundedArmOrder.
+   *  Direct engine callers omit it and ride the registry default. */
+  armOrder?: readonly string[];
 };
 
 /** OpenRouter web-search plugin body — a REAL search ride-along: the
@@ -2603,32 +2621,73 @@ export async function callGroqGroundedSearch(
  */
 export type GroundedArmId = "exa" | "tavily" | "groq" | "gemini";
 
-/** The effective arm ladder — language-split per §6-أ (the Phase-4
- *  approved FINAL state, landed by Phase 5-B): EN leads with the Exa
- *  semantic-search arm (measured 80/80 results · 46% authority · μ=529ms),
- *  AR leads with Tavily (measured 10/11 Arabic results vs Exa's 2/40) and
- *  reaches Exa THIRD with the English-equivalent query. A lang-less
- *  caller gets the EN order (the research JSON contract is English-keyed
- *  by construction — the same default the probe rides). Ops knobs:
- *  GEMINI_GROUNDED_ENABLED=0 drops the dormant gemini tail arm;
- *  GROUNDED_ARM_ORDER overrides the whole walk without a deploy (comma
- *  subset of exa,tavily,groq,gemini — diagnostics/rollback).
- *  THE NO-FORCED-PRIORITY LAW: every slot above is a measured
+const GROUNDED_ARM_IDS: readonly GroundedArmId[] = ["exa", "tavily", "groq", "gemini"];
+
+/** Coerce an arbitrary string list into a deduplicated, order-preserving
+ *  list of known arm ids (defensive — registry data and env overrides are
+ *  both validated here; unknown ids are dropped, never guessed). */
+function coerceArmIds(list: readonly string[]): GroundedArmId[] {
+  const out: GroundedArmId[] = [];
+  for (const raw of list) {
+    const a = String(raw).trim().toLowerCase();
+    if ((GROUNDED_ARM_IDS as readonly string[]).includes(a) && !out.includes(a as GroundedArmId)) {
+      out.push(a as GroundedArmId);
+    }
+  }
+  return out;
+}
+
+/** The registry's grounded ladder for a language — the SINGLE central
+ *  source (the blog:research spec's grounding.armsAr/armsEn). The engine
+ *  keeps NO second copy of the language split: reading it here is what
+ *  makes the registry decision ACTUAL (frame 443 — owner order
+ *  «استكمال توحيد منظومة الذكاء الاصطناعي», item 1). */
+function registryArmsForLang(lang: "ar" | "en"): GroundedArmId[] {
+  const spec = AI_FUNCTION_REGISTRY["blog:research"];
+  const arms = spec?.grounding
+    ? lang === "ar"
+      ? spec.grounding.armsAr
+      : spec.grounding.armsEn
+    : null;
+  return arms ? coerceArmIds(arms) : [];
+}
+
+/** The effective arm ladder — OWNED by the central registry (the §6-أ
+ *  language-split FINAL state lives in ai-registry.ts blog:research
+ *  grounding: EN leads Exa — measured 80/80 results · 46% authority ·
+ *  μ=529ms; AR leads Tavily — measured 10/11 Arabic results vs Exa's 2/40
+ *  — and reaches Exa THIRD with the English-equivalent query), EXECUTED
+ *  here. Resolution order (frame 443):
+ *    1. GROUNDED_ARM_ORDER env override wins whole (the deploy-free
+ *       diagnostics/rollback handle — UNCHANGED law).
+ *    2. `armOrder` — the policy the ROUTER passed (dispatchGrounded
+ *       resolves it from the calling spec, or the frozen pre-unification
+ *       ladder in AI_ROUTER_MODE=legacy); the engine only executes it.
+ *    3. The registry's own blog:research ladder (direct engine callers —
+ *       probes/canaries; a lang-less caller gets the EN order, the
+ *       research JSON contract is English-keyed by construction).
+ *  Then GEMINI_GROUNDED_ENABLED=0 drops the dormant gemini arm from
+ *  whatever base won (the §6-أ kill-switch — UNCHANGED law).
+ *  THE NO-FORCED-PRIORITY LAW: every slot is a measured
  *  efficiency/availability/quota/task-type decision and every arm fails
  *  over honestly — no provider is pinned by decree (owner order
  *  2026-10-31 «لا أولوية إجبارية لمزود بعينه»). */
-export function groundedArmOrder(lang?: "ar" | "en"): GroundedArmId[] {
-  const geminiTail: GroundedArmId[] =
-    process.env.GEMINI_GROUNDED_ENABLED === "0" ? [] : ["gemini"];
-  const override = (process.env.GROUNDED_ARM_ORDER || "")
-    .split(",")
-    .map((a) => a.trim().toLowerCase())
-    .filter((a): a is GroundedArmId =>
-      a === "exa" || a === "tavily" || a === "groq" || a === "gemini");
+export function groundedArmOrder(
+  lang?: "ar" | "en",
+  armOrder?: readonly string[],
+): GroundedArmId[] {
+  const override = coerceArmIds((process.env.GROUNDED_ARM_ORDER || "").split(","));
   if (override.length > 0) return override;
-  return lang === "ar"
-    ? (["tavily", "groq", "exa", ...geminiTail] as GroundedArmId[])
-    : (["exa", "tavily", "groq", ...geminiTail] as GroundedArmId[]);
+  const base =
+    armOrder !== undefined ? coerceArmIds(armOrder) : registryArmsForLang(lang ?? "en");
+  if (base.length === 0) {
+    throw new Error(
+      "groundedArmOrder: no usable arm ladder — the registry carries no grounded arms for blog:research and no armOrder policy was passed (single-source law: the engine refuses to guess a second copy)",
+    );
+  }
+  return process.env.GEMINI_GROUNDED_ENABLED === "0"
+    ? base.filter((a) => a !== "gemini")
+    : base;
 }
 
 export async function callGroundedSearch(
@@ -2636,7 +2695,9 @@ export async function callGroundedSearch(
   options: GroundedSearchOptions = {},
 ): Promise<GroundedSearchResult> {
   const armFailures: string[] = [];
-  const arms = groundedArmOrder(options.lang);
+  // FRAME 443: the ladder resolves through groundedArmOrder with the
+  // router-passed policy (options.armOrder) — env handles still win inside.
+  const arms = groundedArmOrder(options.lang, options.armOrder);
 
   for (let i = 0; i < arms.length; i++) {
     const arm = arms[i];
@@ -2784,6 +2845,7 @@ export async function callAI(
     // the fields we consume — reasoning-model extras included).
     const data = (await res.json()) as {
       choices?: Array<{
+        finish_reason?: string | null;
         message?: {
           content?: string | null;
           reasoning?: string | null;
@@ -2791,10 +2853,16 @@ export async function callAI(
         } | null;
       }> | null;
     } | null;
-    const msg = data?.choices?.[0]?.message;
+    const choice = data?.choices?.[0];
+    const msg = choice?.message;
+    const finishReason =
+      typeof choice?.finish_reason === "string" && choice.finish_reason
+        ? choice.finish_reason
+        : null;
     // Prefer `content`; fall back to `reasoning` / `reasoning_details` for
     // reasoning models (gpt-oss, gemini-thinking) that hide output there.
     let content: string | undefined = msg?.content ?? undefined;
+    const contentWasEmpty = !content || content.trim().length === 0;
     if (!content && Array.isArray(msg?.reasoning_details)) {
       content = msg.reasoning_details
         .map((r) => (typeof r?.text === "string" ? r.text : ""))
@@ -2806,6 +2874,25 @@ export async function callAI(
     }
     if (!content) {
       throw new Error(`AI provider ${cfg.provider} returned an empty response`);
+    }
+    // HONEST-COMPLETION LAW (frame 443 — the plan-ai-probe root cause,
+    // measured on runs 40105018071 → 41203608645, every probe red since
+    // 2026-10-24): a CoT reasoning model (groq gpt-oss-120b/20b under the
+    // R3 TPM clamp) can burn its WHOLE max_tokens budget on reasoning and
+    // return content:"" — the fallback above then hands the chain the raw
+    // chain-of-thought as if it were the answer, the chain logs
+    // "succeeded" (non-empty text), the caller's quality gate correctly
+    // rejects it («model returned no meals array»), and the walk NEVER
+    // reaches the next ladder entry — a mislabeled transport success that
+    // starved nvidia/gemini on every measured run. The honest contract:
+    // when the ONLY payload is reasoning AND finish_reason=length, the
+    // model never produced an answer — fail THIS entry so the chain fails
+    // over (finish_reason=stop keeps the reasoning fallback untouched:
+    // models that legitimately answer in the reasoning channel).
+    if (contentWasEmpty && finishReason === "length") {
+      throw new Error(
+        `${cfg.provider}/${cfg.model} spent the completion budget on reasoning and hit max_tokens before any final answer (finish_reason=length, no content) — honest failure, the chain moves to the next entry`,
+      );
     }
     return content.trim();
   } finally {
@@ -2916,6 +3003,7 @@ export async function callAIStream(
     let buffer = "";
     let full = "";
     let reasoning = "";
+    let finishReason: string | null = null;
 
     for (;;) {
       const { done, value } = await reader.read();
@@ -2932,7 +3020,11 @@ export async function callAIStream(
         if (payload === "[DONE]") continue;
         try {
           const evt = JSON.parse(payload);
-          const delta = evt?.choices?.[0]?.delta;
+          const choice = evt?.choices?.[0];
+          const delta = choice?.delta;
+          if (typeof choice?.finish_reason === "string" && choice.finish_reason) {
+            finishReason = choice.finish_reason;
+          }
           if (typeof delta?.content === "string" && delta.content.length > 0) {
             full += delta.content;
             onDelta?.(delta.content);
@@ -2949,6 +3041,20 @@ export async function callAIStream(
     const text = (full || reasoning).trim();
     if (!text) {
       throw new Error(`AI provider ${cfg.provider} returned an empty stream`);
+    }
+    // HONEST-COMPLETION LAW (frame 443 — the streaming twin of the callAI
+    // guard): the stream produced ONLY buffered reasoning and ended with
+    // finish_reason=length → the model burned its completion budget on
+    // CoT before any user-visible answer. Handing the raw CoT back (the
+    // `full || reasoning` fallback above) would mislabel a truncated
+    // non-answer as success — fail this entry honestly so the chain (or
+    // the SSE route) treats it as the failure it is. finish_reason=stop
+    // keeps the reasoning fallback for models that legitimately answer
+    // in the reasoning channel.
+    if (!full && finishReason === "length") {
+      throw new Error(
+        `${cfg.provider}/${cfg.model} stream spent the completion budget on reasoning and hit max_tokens before any final answer (finish_reason=length, content never started) — honest failure`,
+      );
     }
     return text;
   } finally {

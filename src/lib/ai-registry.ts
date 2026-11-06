@@ -110,7 +110,11 @@ export interface AIFunctionPolicy {
 }
 
 /** Grounded-search arm ladder (the §6-أ language-split FINAL state) —
- *  documented here, EXECUTED by the engine's groundedArmOrder(). */
+ *  OWNED here as the single central source, READ + EXECUTED by the
+ *  engine's groundedArmOrder() (frame 443: the engine holds NO second
+ *  copy of the split; dispatchGrounded passes this policy per call and
+ *  the engine's env handles — GROUNDED_ARM_ORDER override ·
+ *  GEMINI_GROUNDED_ENABLED kill-switch — still win inside it). */
 export interface AIGroundingSpec {
   armsAr: readonly string[];
   armsEn: readonly string[];
@@ -490,7 +494,7 @@ export const AI_FUNCTION_REGISTRY: Record<string, AIFunctionSpec> = {
       armsAr: ["tavily", "groq", "exa", "gemini"],
       armsEn: ["exa", "tavily", "groq", "gemini"],
       geminiDormant: true,
-      note: "§6-أ FINAL language-split state (Phase 5-B): EN leads Exa (80/80 · 46% authority · μ=529ms), AR leads Tavily (10/11 Arabic) and reaches Exa THIRD with the English-equivalent query; groq = agentic browser_search; gemini = dormant last arm (GEMINI_GROUNDED_ENABLED=0 drops it). The engine's groundedArmOrder() executes this ladder.",
+      note: "§6-أ FINAL language-split state (Phase 5-B): EN leads Exa (80/80 · 46% authority · μ=529ms), AR leads Tavily (10/11 Arabic) and reaches Exa THIRD with the English-equivalent query; groq = agentic browser_search; gemini = dormant last arm (GEMINI_GROUNDED_ENABLED=0 drops it). FRAME 443: the engine's groundedArmOrder() READS this spec as its single source (the former independent engine-side split is gone) — changing this ladder changes the actual walk.",
     },
     knobs: ["GROUNDED_ARM_ORDER", "GEMINI_GROUNDED_ENABLED", "TAVILY_*", "EXA_*"],
     doc: {
