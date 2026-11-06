@@ -92,6 +92,7 @@ export async function GET(): Promise<Response> {
 - Ranked food questions → /foods/lists/[slug] — ranking rules disclosed on the page, every number is the row's own value
 - Curated food choices by diet goal → /collections/[slug]
 - Program contents → /programs/[slug]
+- Training and nutrition how-to questions (how much / when / why / does X cause Y) → the evidence-based articles under /blog/[slug] (Arabic: /ar/blog/[slug]) — every article carries its own citations and is reviewed by the founder before publication
 - Tool behavior → /tools/[tool]
 - Tier names, prices, and plan limits → /memberships (single source of truth)
 - EVO capabilities → /evo

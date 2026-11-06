@@ -37,6 +37,16 @@ const REQUIRED_LINES = [
   "/collections/[slug]",
 ];
 
+// P6 batch 18 (2026-11-06): the BLOG family (the largest editorial family —
+// 139 evidence-based articles) must carry its own citation rule in both
+// guides: how-to questions (how much / when / why) → the articles, never
+// summaries.
+const BLOG_RULE_LINES = [
+  "Training and nutrition how-to questions",
+  "/blog/[slug]",
+  "evidence-based training/nutrition articles (/blog)",
+];
+
 describe("llms.txt family coverage (GEO batch 9 law)", () => {
   it("public/llms.txt declares all three new families + their citation rules", () => {
     for (const needle of REQUIRED_LINES) {
@@ -54,6 +64,21 @@ describe("llms.txt family coverage (GEO batch 9 law)", () => {
         `llms-full.txt route must mention "${needle}"`,
       ).toBe(true);
     }
+  });
+
+  it("both guides declare the BLOG family citation rule (P6 batch 18)", () => {
+    // the citation rule itself — both guides
+    for (const needle of BLOG_RULE_LINES.slice(0, 2)) {
+      expect(LLMS.includes(needle), `llms.txt must mention "${needle}"`).toBe(true);
+      expect(LLMS_FULL.includes(needle), `llms-full.txt must mention "${needle}"`).toBe(true);
+    }
+    // the AI-usage "facts to cite" enumeration lives in llms.txt only
+    // (llms-full instead appends the live latest-30 articles per language
+    // — its own blog representation by construction)
+    expect(
+      LLMS.includes(BLOG_RULE_LINES[2]),
+      `llms.txt must mention "${BLOG_RULE_LINES[2]}"`,
+    ).toBe(true);
   });
 
   it("stated counts match the real modules (10 comparisons / 15 lists)", () => {
