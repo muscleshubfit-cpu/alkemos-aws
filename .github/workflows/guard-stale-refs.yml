@@ -59,6 +59,19 @@ jobs:
       - name: Scan for broken UI wiring (buttons → routes → processors)
         run: bash scripts/check-ui-wiring.sh
 
+      # GLUED ARABIC-LATIN GATE (P4 batch 17, owner order 2026-11-06
+      # «راجع جودة المحتوى والبيانات الموجودة وصحح الأخطاء»): the standing
+      # scanner (scripts/check_glued_latin.py — mirrors the GLUED_RE rule
+      # of src/lib/blog-msa.ts scanLatinContamination) was born un-gated:
+      # the coaching founder-bio carried «وACE/وISSA/وNASM» and
+      # coaching-faq «وEVO» live on production. Direct letter adjacency
+      # between an Arabic letter and a Latin letter is never legitimate;
+      # a real gloss always separates with spaces/parens. Fail the build
+      # on any hit (the 432 lesson: a defect class found once can never
+      # return ungated).
+      - name: Glued Arabic-Latin adjacency scan (23 priority surfaces)
+        run: python3 scripts/check_glued_latin.py
+
       # AI-ROUTER REGISTRY GUARD (R6 of the approved unification plan,
       # 2026-10-31 — audit §9-ت1 + §7 R6 row): after the R3/R4/R5 family
       # migrations EVERY production AI call rides dispatchAI/dispatchGrounded

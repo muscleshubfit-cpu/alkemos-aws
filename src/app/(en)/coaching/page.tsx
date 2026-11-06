@@ -431,7 +431,7 @@ export default function CoachingPage() {
                   // the certificates are shown as issued (strongest E-E-A-T
                   // surface, authors/ahmed-zake renders the certificate scans).
                   body: isAr
-                    ? "المؤسس أحمد زكي — مدرب لياقة وتغذية معتمد (شهادات من ACSM وACE وISSA وNASM) بخبرة تدريبية تناهز عشرين عامًا، نحو عشر منها في التدريب الأونلاين — يشرف على المحتوى والخطط، ويراجع كل مقال للدقة العلمية قبل نشره."
+                    ? "المؤسس أحمد زكي — مدرب لياقة وتغذية معتمد (شهادات من ACSM و ACE و ISSA و NASM) بخبرة تدريبية تناهز عشرين عامًا، نحو عشر منها في التدريب الأونلاين — يشرف على المحتوى والخطط، ويراجع كل مقال للدقة العلمية قبل نشره."
                     : "Founder Ahmed Zake — a certified fitness and nutrition coach (ACSM, ACE, ISSA, and NASM certifications) with about twenty years of training experience, around ten of them coaching online — oversees the platform's content and reviews every article for accuracy before publication.",
                   href: isAr ? "/ar/authors/ahmed-zake" : "/authors/ahmed-zake",
                   cta: isAr ? "شهادات المؤسس كما صدرت ›" : "The founder's certificates, as issued ›",
