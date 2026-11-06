@@ -170,7 +170,7 @@ export function ShoppingListCard({
       ) : (
         <p className="mt-4 text-sm font-normal text-[var(--muted-foreground)]">
           {isAr
-            ? "أضف أطعمة لوجباتك أعلاه — تظهر القائمة هنا فوراً بالكميات المجمعة."
+            ? "أضف أطعمة لوجباتك أعلاه — تظهر القائمة هنا فورًا بالكميات المجمعة."
             : "Add foods to your meals above — the list appears here instantly with aggregated quantities."}
         </p>
       )}

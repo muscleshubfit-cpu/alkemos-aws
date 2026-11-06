@@ -622,7 +622,7 @@ export function EvoChatProvider({ children }: { children: ReactNode }) {
               : acc ||
                 (streamInterrupted
                   ? "حصل انقطاع في الرد. جرب تبعت رسالتك تاني."
-                  : "عذراً، لم أتمكن من الرد. حاول مرة أخرى.");
+                  : "عذرًا، لم أتمكن من الرد. حاول مرة أخرى.");
           const finalLinks = Array.isArray(finalData?.links) ? finalData.links : [];
 
           setState((prev) => ({
@@ -672,7 +672,7 @@ export function EvoChatProvider({ children }: { children: ReactNode }) {
         const assistantMessage: ChatMessage = {
           id: `msg-${Date.now()}-assistant`,
           role: "assistant",
-          content: data.response || "عذراً، لم أتمكن من الرد. حاول مرة أخرى.",
+          content: data.response || "عذرًا، لم أتمكن من الرد. حاول مرة أخرى.",
           timestamp: Date.now(),
           links: data.links || [],
           ...(intent.isPlanCreation

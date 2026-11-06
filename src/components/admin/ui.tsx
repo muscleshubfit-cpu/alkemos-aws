@@ -95,7 +95,7 @@ export type MemberStatus = "active" | "expiring" | "expired" | "no_sub" | "pendi
 
 const STATUS_STYLE: Record<MemberStatus, { cls: string; ar: string; en: string }> = {
   active: { cls: "bg-[#34c759]/10 text-[#34c759]", ar: "نشط", en: "Active" },
-  expiring: { cls: "bg-[#ff9500]/10 text-[#ff9500]", ar: "ينتهي قريباً", en: "Expiring soon" },
+  expiring: { cls: "bg-[#ff9500]/10 text-[#ff9500]", ar: "ينتهي قريبًا", en: "Expiring soon" },
   expired: { cls: "bg-[#ff3b30]/10 text-[#ff3b30]", ar: "منتهي", en: "Expired" },
   no_sub: { cls: "bg-[#6e6e73]/10 text-[#6e6e73]", ar: "بدون اشتراك", en: "No subscription" },
   pending_payment: {

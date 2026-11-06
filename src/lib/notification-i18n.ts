@@ -59,7 +59,7 @@ const TIER_LABELS: Record<string, { en: string; ar: string }> = {
   free: { en: "Free", ar: "مجاني" },
   premium: { en: "Premium", ar: "بريميوم" },
   pro: { en: "Pro", ar: "برو" },
-  coaching: { en: "Coaching", ar: "كوتشينج" },
+  coaching: { en: "Coaching", ar: "التدريب الأونلاين" },
   starter: { en: "Starter", ar: "ستارتر" },
   elite: { en: "Elite", ar: "إيليت" },
 };
@@ -523,7 +523,7 @@ const ADMIN_CATALOG: Record<string, CatalogEntry> = {
       if (!subject) return "";
       const high = asBool(p.high);
       const suffix = high
-        ? lang === "ar" ? " — أولوية (عضوية كوتشينج)" : " — priority (coaching membership)"
+        ? lang === "ar" ? " — أولوية (عضوية التدريب الأونلاين)" : " — priority (coaching membership)"
         : "";
       return lang === "ar" ? `موضوع: ${subject}${suffix}` : `Subject: ${subject}${suffix}`;
     },
@@ -559,7 +559,7 @@ const ADMIN_CATALOG: Record<string, CatalogEntry> = {
   },
   coach_welcome: {
     title: (_p, lang) =>
-      lang === "ar" ? "أهلًا بك كوتش في Alkemos!" : "Welcome to the Alkemos coach team!",
+      lang === "ar" ? "أهلًا بك مدربًا في فريق Alkemos!" : "Welcome to the Alkemos coach team!",
     body: (_p, lang) =>
       lang === "ar"
         ? "تم تفعيل حسابك. ابدأ بإضافة عملائك وحدّد أسعارك وجهّز محفظتك لتفعيل اشتراكاتهم."

@@ -7,7 +7,7 @@ import { ToolSchemaScripts } from "@/components/ToolSchemaScripts";
  * appends exactly one "— Alkemos" (anti-double-brand law, eadb3e7).
  */
 export const metadata: Metadata = {
-  title: "مخطط الوجبات بالذكاء الاصطناعي — ولّد خطة يومك مجاناً",
+  title: "مخطط الوجبات بالذكاء الاصطناعي — ولّد خطة يومك مجانًا",
   description:
     "ولّد خطة يوم كاملة بالغرامات والسعرات بالذكاء الاصطناعي: اختر هدفك من السعرات والنظام الغذائي وأضف ملاحظاتك، واحصل على خطة يوم مُتحققة في ثوانٍ — تجربة مجانية.",
   keywords: [

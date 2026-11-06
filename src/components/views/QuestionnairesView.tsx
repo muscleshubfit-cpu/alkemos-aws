@@ -173,7 +173,7 @@ export function QuestionnairesView() {
     // and returns the original whenever compression is impossible.
     file = await compressImageFile(file, { maxDim: 1600, quality: 0.82 });
     if (file.size > 5 * 1024 * 1024) {
-      toast.error(isAr ? "الصورة كبيرة جداً (الحد 5 ميجا)." : "Image too large (max 5MB).");
+      toast.error(isAr ? "الصورة كبيرة جدًا (الحد 5 ميجا)." : "Image too large (max 5MB).");
       return;
     }
     setUploadingPhoto(true);

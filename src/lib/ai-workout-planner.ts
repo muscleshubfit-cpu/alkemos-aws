@@ -173,7 +173,7 @@ export function buildWorkoutPrompt(req: WorkoutPlanRequest): string {
     : "";
   if (req.language === "ar") {
     return [
-      `أنت مدرب قوة ولياقة. ولّد نظاماً تدريبياً أسبوعياً من ${req.days} أيام تمرين لهدف ${GOAL_LABELS[req.goal].ar}، لمتدرب ${LEVEL_LABELS[req.level].ar}، يتدرب بتجهيزة ${EQUIPMENT_LABELS[req.equipment].ar}.`,
+      `أنت مدرب قوة ولياقة. ولّد نظامًا تدريبيًا أسبوعيًا من ${req.days} أيام تمرين لهدف ${GOAL_LABELS[req.goal].ar}، لمتدرب ${LEVEL_LABELS[req.level].ar}، يتدرب بتجهيزة ${EQUIPMENT_LABELS[req.equipment].ar}.`,
       "اختر تمارين معروفة من عائلاتها الأساسية (سكوات، رفعة ميتة، بنش برس، تجديف، ضغط كتف، سحب، دفع، ثني، بسط...) بحيث تناسب التجهيزة المتاحة، ووزّع عضلات الجسم عبر الأسبوع بتوازن — لا تكرر العضلة الكبيرة في يومين متتاليين.",
       `اكتب اسم كل يوم وعضلاته المستهدفة وأسماء التمارين بالعربية.${notesLine}`,
       `أعد JSON فقط بهذا الشكل: {"days":[{"name":"اليوم الأول","focus":"صدر وترايسبس","exercises":[{"name":"بنش برس بار مستوي","sets":4,"reps":8}]}]}`,

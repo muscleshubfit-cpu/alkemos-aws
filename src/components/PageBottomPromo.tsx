@@ -66,7 +66,7 @@ const EXPLORE_ITEMS: {
     href: "/meal-planner",
     nameAr: "مخطط الوجبات",
     nameEn: "Meal Planner",
-    descAr: "ابنِ وجباتك واحسب الماكروز تلقائياً",
+    descAr: "ابنِ وجباتك واحسب الماكروز تلقائيًا",
     descEn: "Build meals with automatic macros",
     icon: "mealplanner",
   },

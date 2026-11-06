@@ -411,7 +411,7 @@ async function handleRegenerationAction(
   /* 0) Restore a saved version — Phase 79 «حفظ للخطط المولدة» */
   if (action === "restore_version") {
     if (prevHistory.length === 0) {
-      return bad("مفيش نسخ محفوظة للخطة دي — إعادة التوليد هي اللي بتحفظ نسخ تلقائياً");
+      return bad("مفيش نسخ محفوظة للخطة دي — إعادة التوليد هي اللي بتحفظ نسخ تلقائيًا");
     }
     const idx = Math.round(numOr(body.version_index, -1));
     const version = prevHistory[idx];

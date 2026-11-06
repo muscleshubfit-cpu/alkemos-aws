@@ -96,7 +96,7 @@ export async function POST(request: NextRequest) {
   }
   // Receipt is mandatory — the admin has nothing to review without it.
   // P3-11 🔐 (deep-audit confirmed 19, Phase 217 — owner §7 approval
-  // «أوافق على التنفيذ كاملاً»): the path must be the caller's OWN upload.
+  // «أوافق على التنفيذ كاملًا»): the path must be the caller's OWN upload.
   // /api/upload rebuilds receipt paths SERVER-SIDE as
   // receipts/<caller-uid>/<ts>-<name> (the UPLOAD LAW), so the uid
   // segment is the ownership proof — anything else (another user's

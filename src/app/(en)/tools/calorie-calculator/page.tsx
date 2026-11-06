@@ -32,7 +32,7 @@ const ACTIVITY_LABELS_AR: Record<Activity, string> = {
   light: "نشاط خفيف (1-3 أيام/أسبوع)",
   moderate: "نشاط متوسط (3-5 أيام/أسبوع)",
   active: "نشاط عالي (6-7 أيام/أسبوع)",
-  very_active: "نشاط شديد جداً (رياضي محترف)",
+  very_active: "نشاط شديد جدًا (رياضي محترف)",
 };
 
 const ACTIVITY_LABELS_EN: Record<Activity, string> = {

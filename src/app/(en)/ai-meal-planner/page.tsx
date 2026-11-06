@@ -340,7 +340,7 @@ export default function AiMealPlannerPage() {
               onChange={(e) => setNotes(e.target.value)}
               placeholder={
                 isAr
-                  ? "مثال: بلا منتجات الألبان، سمك مرتين أسبوعياً…"
+                  ? "مثال: بلا منتجات الألبان، سمك مرتين أسبوعيًا…"
                   : "e.g. no dairy, fish twice a week…"
               }
               className="mt-1.5 w-full rounded-full border border-[var(--edge)] bg-[var(--card)] px-5 py-2.5 text-sm font-normal outline-none focus:border-[var(--chrome-edge)]"
@@ -520,7 +520,7 @@ export default function AiMealPlannerPage() {
               <div className="mt-6 rounded-2xl border border-[var(--chrome-edge)]/50 bg-[var(--card)] p-5">
                 <h3 className="inline-flex items-center gap-2 text-base font-semibold tracking-tight text-[var(--text)]">
                   <HardDriveDownload className="h-4 w-4" aria-hidden="true" />
-                  {isAr ? "احفظ خطتك في حساب — مجاناً" : "Save your plan to a free account"}
+                  {isAr ? "احفظ خطتك في حساب — مجانًا" : "Save your plan to a free account"}
                 </h3>
                 <p className="mt-2 text-sm font-normal leading-relaxed text-[var(--muted-foreground)]">
                   {isAr
@@ -536,7 +536,7 @@ export default function AiMealPlannerPage() {
                     href="/auth?mode=signup"
                     className="btn-chrome inline-flex items-center gap-2 px-4 py-2 text-sm"
                   >
-                    {isAr ? "أنشئ حساباً مجانياً" : "Create a free account"}
+                    {isAr ? "أنشئ حسابًا مجانيًا" : "Create a free account"}
                   </Link>
                   <Link
                     href={isAr ? "/ar/memberships" : "/memberships"}
@@ -583,7 +583,7 @@ export default function AiMealPlannerPage() {
             </h2>
             <p className="mt-3 text-base font-normal leading-relaxed text-[var(--muted-foreground)]">
               {isAr
-                ? "كل زائر يحصل على توليديْن ناجحيْن شهريًا من رصيده الشهري المجاني — والرصيد يُحسب للتوليد الناجح فقط. بإنشاء حساب مجاني تبقى خططك محفوظة في حسابك من أي جهاز؛ ومع بريميوم يرتفع الرصيد إلى 4 توليدات شهريًا (و8 مع برو) مع الحفظ والإدارة الكاملة. للتحكم اليدوي بلا أي حد، افتح مخطط الوجبات وابنِ يومك صنفاً صنفاً بإجماليات حية؛ ولتصفح جاهز فوري، مصفوفة خطط الطعام تضم 24 خطة يوم معروضة بالغرامات."
+                ? "كل زائر يحصل على توليديْن ناجحيْن شهريًا من رصيده الشهري المجاني — والرصيد يُحسب للتوليد الناجح فقط. بإنشاء حساب مجاني تبقى خططك محفوظة في حسابك من أي جهاز؛ ومع بريميوم يرتفع الرصيد إلى 4 توليدات شهريًا (و8 مع برو) مع الحفظ والإدارة الكاملة. للتحكم اليدوي بلا أي حد، افتح مخطط الوجبات وابنِ يومك صنفًا صنفًا بإجماليات حية؛ ولتصفح جاهز فوري، مصفوفة خطط الطعام تضم 24 خطة يوم معروضة بالغرامات."
                 : "Every visitor gets 2 successful generations per month from a free monthly allowance — no credit card required, and only successful generations count. Create a free account and your plans are saved to it from any device; Premium lifts the pool to 4 generations a month (8 with Pro) with full saving and management. For manual control with no limits at all, open the meal planner and build your day item by item with live totals; for instant browsing, the diet-plan matrix holds 24 complete daily plans laid out in grams."}
             </p>
             <div className="mt-4 flex flex-wrap gap-2">
@@ -617,7 +617,7 @@ export default function AiMealPlannerPage() {
             </h2>
             <p className="mt-3 text-base font-normal leading-relaxed text-[var(--muted-foreground)]">
               {isAr
-                ? "الخطط المولّدة عامة لبالغين أصحاء. إن كان لديك وضع صحي مزمن — سكري أو كلى أو حمل أو اضطراب أكل — فالأرقام المناسبة لك تُضبط مع مختص يرى ملفك كاملاً؛ استعمل الخطة مادة نقاش ممتازة معه لا بديلاً عنه."
+                ? "الخطط المولّدة عامة لبالغين أصحاء. إن كان لديك وضع صحي مزمن — سكري أو كلى أو حمل أو اضطراب أكل — فالأرقام المناسبة لك تُضبط مع مختص يرى ملفك كاملًا؛ استعمل الخطة مادة نقاش ممتازة معه لا بديلًا عنه."
                 : "Generated plans are general guidance for healthy adults. If you live with a chronic condition — diabetes, kidney disease, pregnancy, or an eating disorder — the right numbers for you are set with a professional who sees your full file; use the plan as an excellent discussion piece with them, never a replacement."}
             </p>
           </div>

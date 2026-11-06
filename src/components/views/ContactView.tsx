@@ -38,7 +38,7 @@ export function ContactView() {
         // visitors (the NotificationBell precedent from 182 itself).
         const { createTicket } = await import("@/lib/data");
         await createTicket(profile.id, `[${isAr ? "تواصل" : "Contact"}] ${subject}`, `${message}\n\n— ${name} (${email})`);
-        toast.success(isAr ? "تم إرسال رسالتك! سنرد عليك قريباً." : "Message sent! We'll reply soon.");
+        toast.success(isAr ? "تم إرسال رسالتك! سنرد عليك قريبًا." : "Message sent! We'll reply soon.");
       } else {
         const contactMessages = JSON.parse(localStorage.getItem("mhe:contact_messages") || "[]");
         contactMessages.push({ name, email, subject, message, created_at: new Date().toISOString() });
@@ -173,7 +173,7 @@ export function ContactView() {
                 disabled={sending}
                 className="btn-chrome w-full px-6 py-3 text-base disabled:opacity-50"
               >
-                {sending ? (isAr ? "جاري الإرسال..." : "Sending...") : (isAr ? "إرسال الرسالة" : "Send Message")}
+                {sending ? (isAr ? "جارٍ الإرسال…" : "Sending…") : (isAr ? "إرسال الرسالة" : "Send Message")}
               </button>
             </form>
           </div>

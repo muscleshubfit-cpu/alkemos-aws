@@ -107,7 +107,7 @@ ${enList || "(feed temporarily unavailable — see " + SITE + "/blog)"}
 
 ## Latest Arabic articles (أحدث المقالات العربية)
 
-${arList || "(غير متاح مؤقتاً — راجع " + SITE + "/ar/blog)"}
+${arList || "(غير متاح مؤقتًا — راجع " + SITE + "/ar/blog)"}
 `;
 
   return new Response(body, {

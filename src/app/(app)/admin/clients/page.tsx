@@ -309,7 +309,7 @@ export default function AdminClientsPage() {
   const tabs = [
     { key: "all", label: isAr ? "كل الحالات" : "All statuses", count: null },
     { key: "active", label: isAr ? "نشط" : "Active", count: stats?.active ?? null },
-    { key: "expiring", label: isAr ? "ينتهي قريباً" : "Expiring", count: stats?.expiring ?? null },
+    { key: "expiring", label: isAr ? "ينتهي قريبًا" : "Expiring", count: stats?.expiring ?? null },
     { key: "expired", label: isAr ? "منتهي" : "Expired", count: stats?.expired ?? null },
     {
       key: "pending_payment",
@@ -320,8 +320,8 @@ export default function AdminClientsPage() {
   ];
 
   const sortOptions: { key: SortKey; label: string }[] = [
-    { key: "newest", label: isAr ? "الأحدث تسجيلاً" : "Newest" },
-    { key: "oldest", label: isAr ? "الأقدم تسجيلاً" : "Oldest" },
+    { key: "newest", label: isAr ? "الأحدث تسجيلًا" : "Newest" },
+    { key: "oldest", label: isAr ? "الأقدم تسجيلًا" : "Oldest" },
     { key: "name", label: isAr ? "الاسم" : "Name" },
     { key: "expiry", label: isAr ? "قرب الانتهاء" : "Expiry" },
   ];

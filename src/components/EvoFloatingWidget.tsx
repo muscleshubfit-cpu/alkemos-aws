@@ -611,7 +611,7 @@ export function EvoFloatingWidget() {
                 <span>
                   {quota.plans
                     ? isAr
-                      ? `خطط AI هذا الشهر (تغذية + تمرين): ${quota.plans.used}/${quota.plans.unlimited ? "∞" : quota.plans.limit}`
+                      ? `خطط الذكاء الاصطناعي هذا الشهر (تغذية + تمرين): ${quota.plans.used}/${quota.plans.unlimited ? "∞" : quota.plans.limit}`
                       : `AI plans this month (nutrition + workout): ${quota.plans.used}/${quota.plans.unlimited ? "∞" : quota.plans.limit}`
                     : isAr
                       ? `الخطط الشهرية: ${quota.nutrition.used}/${quota.nutrition.unlimited ? "∞" : quota.nutrition.limit}`
@@ -702,12 +702,12 @@ export function EvoFloatingWidget() {
                           <MessageText content={msg.content} />
                         )}
                         {/* EVO-1 (W5.1) — 👍/👎 on final assistant replies.
-                            Quota/error bubbles («⏰»/«عذراً») are not model
+                            Quota/error bubbles («⏰»/«عذرًا») are not model
                             output — rating them is noise for the review. */}
                         {msg.role === "assistant" &&
                           msg.content &&
                           !msg.content.startsWith("⏰") &&
-                          !msg.content.startsWith("عذراً") && (
+                          !msg.content.startsWith("عذرًا") && (
                             <div className="mt-1.5">
                               {ratedIds.has(msg.id) ? (
                                 <span className="inline-flex items-center gap-1 text-[11px] text-[var(--muted-foreground)]">
@@ -849,7 +849,7 @@ export function EvoFloatingWidget() {
                         href="/memberships"
                         className="btn-chrome mt-3 px-4 py-2 text-xs"
                       >
-                        {isAr ? "اشترك الآن" : "Subscribe now"}
+                        {isAr ? "اشترك" : "Subscribe"}
                       </a>
                     </div>
                   )}

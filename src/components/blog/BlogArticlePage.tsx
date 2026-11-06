@@ -384,7 +384,7 @@ export function BlogArticlePage({
             {linkedUrl && linked && (
               <div className="marble-card my-8 p-6 text-center">
                 <p className="text-sm font-normal text-[var(--muted-foreground)]">
-                  {isAr ? "هذا المقال متاح أيضاً بالإنجليزية:" : "This article is also available in Arabic:"}
+                  {isAr ? "هذا المقال متاح أيضًا بالإنجليزية:" : "This article is also available in Arabic:"}
                 </p>
                 <a href={linkedUrl} className="btn-outline mt-2 inline-block px-6 py-2.5 text-sm">
                   {linked.title} ›

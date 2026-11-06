@@ -143,7 +143,7 @@ export function BlogAdminView() {
                 }),
               );
             } catch {
-              toast.error(isAr ? "تعذّر تخزين المسودة محلياً — افتح المحرر وحاول مرة أخرى." : "Could not store the draft locally — open the editor and try again.");
+              toast.error(isAr ? "تعذّر تخزين المسودة محليًا — افتح المحرر وحاول مرة أخرى." : "Could not store the draft locally — open the editor and try again.");
               return;
             }
             toast.success(isAr ? "وصل المقال وتم فتح المحرر بالمسودة ✅ راجعه قبل الحفظ." : "Article arrived and the editor opened with the draft ✅ Review it before saving.");
@@ -159,7 +159,7 @@ export function BlogAdminView() {
         }
         // Timeout: job may STILL finish — keep the registry entry so the
         // next mount re-watches (PLAN JOB RECOVERY LAW pattern).
-        toast.info(isAr ? "المقال لسه بيتولد في الخلفية — هنكمل المتابعة تلقائياً لما تفتح الصفحة تاني." : "The article is still generating in the background — tracking resumes automatically the next time you open this page.");
+        toast.info(isAr ? "المقال لسه بيتولد في الخلفية — هنكمل المتابعة تلقائيًا لما تفتح الصفحة تاني." : "The article is still generating in the background — tracking resumes automatically the next time you open this page.");
       } finally {
         activeGenWatcher.current = null;
       }
@@ -321,7 +321,7 @@ export function BlogAdminView() {
     if (
       !confirm(
         isAr
-          ? "اعتماد مراجعة هذا المقال؟ هذا يثبت أنك راجعته فعلاً — سيظهر على المقال «راجعه Ahmed Zake» مع تاريخ المراجعة الحقيقي في الصفحة وفي الـ schema."
+          ? "اعتماد مراجعة هذا المقال؟ هذا يثبت أنك راجعته فعلًا — سيظهر على المقال «راجعه Ahmed Zake» مع تاريخ المراجعة الحقيقي في الصفحة وفي الـ schema."
           : "Approve this article's review? This confirms you actually reviewed it — the article then shows «Reviewed by Ahmed Zake» with the real review date on the page and in the schema.",
       )
     )
@@ -423,7 +423,7 @@ export function BlogAdminView() {
           </button>
           <button
             onClick={async () => {
-              if (!confirm(isAr ? "تنظيف النصوص المشوهة في المقالات المنشورة؟ (يدوياً)" : "Clean up garbled text in published articles? (dry run first)")) return;
+              if (!confirm(isAr ? "تنظيف النصوص المشوهة في المقالات المنشورة؟ (يدويًا)" : "Clean up garbled text in published articles? (dry run first)")) return;
               const dryRes = await fetch("/api/admin/blog/cleanup", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -502,7 +502,7 @@ export function BlogAdminView() {
             <p className="text-sm font-semibold text-foreground">{isAr ? "توليد المقالات بالذكاء الاصطناعي" : "AI Article Generation"}</p>
             <p className="text-xs text-muted-foreground mt-0.5">
               {isAr
-                ? "اكتب الموضوع أو سيبه فاضي والنظام يختار العنوان بنفسه — ويكتب مقالاً كاملاً (عنوان + محتوى + وصف ميتا + وسوم + أسئلة شائعة + روابط داخلية) ويفتحه لك في المحرر للمراجعة."
+                ? "اكتب الموضوع أو سيبه فاضي والنظام يختار العنوان بنفسه — ويكتب مقالًا كاملًا (عنوان + محتوى + وصف ميتا + وسوم + أسئلة شائعة + روابط داخلية) ويفتحه لك في المحرر للمراجعة."
                 : "Give a topic — or leave it empty and let the system pick the title — and get a complete article draft (title + body + meta + tags + FAQ + internal links) opened in the editor for review."}
             </p>
             {qHealth && (qHealth.ok ? (
@@ -558,7 +558,7 @@ export function BlogAdminView() {
             <Loader2 className="h-4 w-4 animate-spin text-primary" />
             <span className="font-medium text-foreground">
               {isAr ? "جاري توليد مقال:" : "Generating:"}{" "}
-              {genJob.topic || (isAr ? "النظام بيختار العنوان الأنسب تلقائياً…" : "the system is picking the best title…")}
+              {genJob.topic || (isAr ? "النظام بيختار العنوان الأنسب تلقائيًا…" : "the system is picking the best title…")}
             </span>
             <span className="text-muted-foreground">
               — {isAr ? "عادةً 1-3 دقائق، تقدر تكمل تنقل والنتيجة هتتفتح لوحدها." : "usually 1-3 minutes; the editor opens automatically when done."}
@@ -881,8 +881,8 @@ export function BlogAdminView() {
               <p className="text-[11px] leading-relaxed text-muted-foreground">
                 {isAr
                   ? genCategory === ""
-                    ? "التدوير التلقائي: كل توليد بيختار نوعاً مختلفاً عن اللي قبله (تغذية ← تمارين ← صحة…) بناءً على آخر المقالات المولّدة والمنشورة."
-                    : "هيولّد المقال ضمن النوع المختار تحديداً."
+                    ? "التدوير التلقائي: كل توليد بيختار نوعًا مختلفًا عن اللي قبله (تغذية ← تمارين ← صحة…) بناءً على آخر المقالات المولّدة والمنشورة."
+                    : "هيولّد المقال ضمن النوع المختار تحديدًا."
                   : genCategory === ""
                     ? "Auto-rotation: every generation picks a different type than the previous one (nutrition → workout → health…) based on recent generated & published posts."
                     : "The article will be generated within the selected type."}

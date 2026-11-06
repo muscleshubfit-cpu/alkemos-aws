@@ -209,10 +209,10 @@ export function buildFollowupEmail(input: FollowupEmailInput): FollowupEmail {
 
   const greeting = name
     ? isAr
-      ? `أهلاً ${esc(name)}،`
+      ? `أهلًا ${esc(name)}،`
       : `Hi ${esc(name)},`
     : isAr
-      ? "أهلاً بك،"
+      ? "أهلًا بك،"
       : "Hi there,";
 
   const html = `<!DOCTYPE html>
@@ -261,7 +261,7 @@ export function buildFollowupEmail(input: FollowupEmailInput): FollowupEmail {
 </html>`;
 
   const text = [
-    isAr ? (name ? `أهلاً ${name}،` : "أهلاً بك،") : name ? `Hi ${name},` : "Hi there,",
+    isAr ? (name ? `أهلًا ${name}،` : "أهلًا بك،") : name ? `Hi ${name},` : "Hi there,",
     "",
     progress,
     "",

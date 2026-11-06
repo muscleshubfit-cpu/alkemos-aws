@@ -54,7 +54,7 @@ export default function ToolsPage() {
           </p>
           <p className="mx-auto mt-4 max-w-2xl text-center text-sm font-normal leading-relaxed text-[var(--muted-foreground)] md:max-w-3xl md:text-base">
             {isAr
-              ? "الأرقام أولًا: كل تغيير حقيقي في جسمك يبدأ بمعرفة أرقامك — كم تحرق، وكيف توزّعها، وماذا تقيس. أدوات Alkemos الثماني المجانية تحسبها لك بالكامل بلا حساب: ابدأ بحاسبة السعرات لتعرف رقمك اليومي، وزّعه بالماكروز، ابنِ يومك في مخطط الوجبات من قاعدة 8,830+ صنفًا غذائيًا، أو ولّد خطة كاملة بالذكاء الاصطناعي في ثوانٍ — ثم تابع دهون جسمك وماءك حتى تصل."
+              ? "الأرقام أولًا: كل تغيير حقيقي في جسمك يبدأ بمعرفة أرقامك — كم تحرق، وكيف توزّعها، وماذا تقيس. أدوات Alkemos الثماني المجانية تحسبها لك كاملة دون حاجة إلى حساب: ابدأ بحاسبة السعرات لتعرف رقمك اليومي، وزّعه بالماكروز، ابنِ يومك في مخطط الوجبات من قاعدة 8,830+ صنفًا غذائيًا، أو ولّد خطة كاملة بالذكاء الاصطناعي في ثوانٍ — ثم تابع دهون جسمك وماءك حتى تصل."
               : "Numbers first: every real change in your body starts with knowing your numbers — how much you burn, how you split them, and what you track. Alkemos' eight free tools calculate them all, no account needed: start with the Calorie Calculator for your daily number, split it with the Macro Calculator, build your day in the Meal Planner from 8,830+ foods, or generate a full plan with AI in seconds — then track body fat and water on the way."}
           </p>
         </div>
@@ -95,9 +95,9 @@ export default function ToolsPage() {
                 pathEn: "Start with the Macro Calculator (your protein first) alongside the Calorie Calculator, and generate your split from the AI Workout Planner or the ready programs.",
               },
               {
-                goalAr: "تبدأ بصحتك عامة",
+                goalAr: "هدفك الصحة العامة",
                 goalEn: "You're starting with general health",
-                pathAr: "قياس سريع في دقائق: مؤشر الكتلة، ثم نسبة الدهون، ثم عادة الماء اليومية — ثلاث أدوات تعطيك صورة واضحة أول اليوم.",
+                pathAr: "قياس سريع في دقائق: مؤشر الكتلة، ثم نسبة الدهون، ثم عادة الماء اليومية — ثلاث أدوات ترسم لك صورة واضحة منذ اليوم الأول.",
                 pathEn: "A quick three-minute reading: the BMI Calculator, then Body Fat, then the daily water habit — three tools that give you a clear picture on day one.",
               },
             ].map((lane) => (

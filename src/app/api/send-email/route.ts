@@ -90,7 +90,7 @@ const TOOL_FIELDS: Record<ToolSlug, FieldDef[]> = {
     { key: "tdee", ar: "سعرات الثبات (TDEE)", en: "Maintenance (TDEE)", suffix: " kcal", suffixAr: " كالوري" },
     { key: "bmr", ar: "معدل الأيض الأساسي (BMR)", en: "Basal metabolic rate (BMR)", suffix: " kcal", suffixAr: " كالوري" },
     { key: "protein", ar: "بروتين", en: "Protein", suffix: " g", suffixAr: " جم" },
-    { key: "carbs", ar: "كارب", en: "Carbs", suffix: " g", suffixAr: " جم" },
+    { key: "carbs", ar: "كربوهيدرات", en: "Carbs", suffix: " g", suffixAr: " جم" },
     { key: "fat", ar: "دهون", en: "Fat", suffix: " g", suffixAr: " جم" },
   ],
   "bmi-calculator": [
@@ -102,10 +102,10 @@ const TOOL_FIELDS: Record<ToolSlug, FieldDef[]> = {
   "macro-calculator": [
     { key: "calories", ar: "سعراتك اليومية", en: "Your daily calories", suffix: " kcal", suffixAr: " كالوري" },
     { key: "protein_g", ar: "بروتين", en: "Protein", suffix: " g", suffixAr: " جم" },
-    { key: "carbs_g", ar: "كارب", en: "Carbs", suffix: " g", suffixAr: " جم" },
+    { key: "carbs_g", ar: "كربوهيدرات", en: "Carbs", suffix: " g", suffixAr: " جم" },
     { key: "fat_g", ar: "دهون", en: "Fat", suffix: " g", suffixAr: " جم" },
     { key: "protein_cal", ar: "سعرات البروتين", en: "Protein calories", suffix: " kcal", suffixAr: " كالوري" },
-    { key: "carbs_cal", ar: "سعرات الكارب", en: "Carb calories", suffix: " kcal", suffixAr: " كالوري" },
+    { key: "carbs_cal", ar: "سعرات الكربوهيدرات", en: "Carb calories", suffix: " kcal", suffixAr: " كالوري" },
     { key: "fat_cal", ar: "سعرات الدهون", en: "Fat calories", suffix: " kcal", suffixAr: " كالوري" },
   ],
   "body-fat-calculator": [
@@ -143,9 +143,9 @@ const TOOL_TIPS: Record<ToolSlug, { ar: string[]; en: string[] }> = {
       "التزم بسعراتك المستهدفة أسبوعين كاملين قبل تقييم أي تعديل.",
       "قسّم سعراتك على 3-4 وجبات حتى تبقى شبعان طوال اليوم.",
       "ضع مصدر بروتين في كل وجبة لحماية عضلاتك.",
-      "اشرب 2-3 لتر ماء يومياً — الجفاف بيوهم بالجوع.",
+      "اشرب 2-3 لتر ماء يوميًا — الجفاف بيوهم بالجوع.",
       "نم 7-8 ساعات؛ قلة النوم بتزيد الرغبة في الأكل.",
-      "حاول تصل 8 آلاف خطوة يومياً كحد أدنى.",
+      "حاول تصل 8 آلاف خطوة يوميًا كحد أدنى.",
     ],
     en: [
       "Stick to your target calories for two full weeks before adjusting anything.",
@@ -159,7 +159,7 @@ const TOOL_TIPS: Record<ToolSlug, { ar: string[]; en: string[] }> = {
   "bmi-calculator": {
     ar: [
       "استهدف النطاق الصحي لا رقمًا واحدًا مثاليًا.",
-      "نزول 0.5-1 كجم أسبوعياً هو الهدف الآمن والمستدام.",
+      "نزول 0.5-1 كجم أسبوعيًا هو الهدف الآمن والمستدام.",
       "اجمع بين تمارين المقاومة والكارديو لأفضل نتيجة.",
       "راقب محيط الوسط مع الوزن — مؤشر صحي أهم.",
       "يتجاهل مؤشر كتلة الجسم (BMI) الكتلة العضلية، فقارن النتائج بقياسات جسمك.",
@@ -193,7 +193,7 @@ const TOOL_TIPS: Record<ToolSlug, { ar: string[]; en: string[] }> = {
       "يتطلب الحفاظ على العضلة أثناء التنشيف بروتينًا كافيًا وتمارين مقاومة.",
       "العجز الحراري البسيط (300-500 سعرة) أفضل بكثير من العجز الشديد.",
       "قِس نسبتك بنفس الطريقة وفي الوقت نفسه أسبوعيًا للمقارنة العادلة.",
-      "استهدف هبوط 0.5-1 كجم أسبوعياً كحد أقصى.",
+      "استهدف هبوط 0.5-1 كجم أسبوعيًا كحد أقصى.",
       "امنح نفسك 8-12 أسبوعًا لترى فرقًا واضحًا.",
     ],
     en: [
@@ -220,7 +220,7 @@ const TOOL_TIPS: Record<ToolSlug, { ar: string[]; en: string[] }> = {
   },
   "meal-planner": {
     ar: [
-      "حضّر وجباتك مسبقاً ليومين أو ثلاثة لتلتزم بالخطة.",
+      "حضّر وجباتك مسبقًا ليومين أو ثلاثة لتلتزم بالخطة.",
       "اجعل 80% من طعامك كاملًا غير مصنّع.",
       "استخدم القائمة قبل التسوق لتفادي الشراء العشوائي.",
       "كرر الوصفات الناجحة — التنويع ليس شرطًا يوميًا.",
@@ -298,10 +298,10 @@ function buildEmailHtml(
   const toolName = isAr ? TOOL_NAMES[tool].ar : TOOL_NAMES[tool].en;
   const greeting = name
     ? isAr
-      ? `أهلاً ${esc(name)}،`
+      ? `أهلًا ${esc(name)}،`
       : `Hi ${esc(name)},`
     : isAr
-      ? "أهلاً بك،"
+      ? "أهلًا بك،"
       : "Hi there,";
   const dir = isAr ? "rtl" : "ltr";
   const align = isAr ? "right" : "left";
@@ -367,7 +367,7 @@ function buildEmailText(
     lines.push(`- ${isAr ? f.ar : f.en}: ${raw}${isAr ? (f.suffixAr ?? f.suffix ?? "") : (f.suffix ?? "")}`);
   }
   return [
-    isAr ? (name ? `أهلاً ${name}،` : "أهلاً بك،") : name ? `Hi ${name},` : "Hi there,",
+    isAr ? (name ? `أهلًا ${name}،` : "أهلًا بك،") : name ? `Hi ${name},` : "Hi there,",
     "",
     isAr ? `نتائجك من ${TOOL_NAMES[tool].ar}:` : `Your ${TOOL_NAMES[tool].en} results:`,
     ...lines,

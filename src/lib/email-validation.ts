@@ -1,6 +1,6 @@
 /**
  * Email + name validation — Phase 73 (owner request):
- * «فلترة الواجهة: فحص البريد برمجياً قبل الإرسال، منع الرموز الغريبة
+ * «فلترة الواجهة: فحص البريد برمجيًا قبل الإرسال، منع الرموز الغريبة
  *  والحقول الفارغة، وعرض رسالة خطأ واضحة».
  *
  * Shared by BOTH sides:
@@ -74,7 +74,7 @@ export function validateNameStrict(raw: string, isAr: boolean): string | null {
   const name = String(raw ?? "").trim();
   if (!name) return null; // optional field
   if (name.length < 2) {
-    return isAr ? "الاسم قصير جداً" : "The name is too short";
+    return isAr ? "الاسم قصير جدًا" : "The name is too short";
   }
   if (name.length > 80) {
     return isAr ? "الاسم طويل أكتر من اللازم" : "The name is too long";

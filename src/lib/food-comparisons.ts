@@ -206,7 +206,7 @@ export const FOOD_COMPARISONS: FoodComparison[] = [
         heading: { en: `The sugar question`, ar: `مسألة السكر` },
         body: {
           en: `Neither fruit's sugar disqualifies it from a diet: banana ${banana.per100g.sugar}g/100g, apple ${apple.per100g.sugar}g/100g — both arrive inside a whole-food matrix with fiber, water, and micronutrients, not as free sugar. The WHO free-sugar guidance does not count whole fruit. What disqualifies a cut is the total calorie line, not the fruit bowl.`,
-          ar: `سكر أياً من الثمرتين لا يخرجه من الحمية: الموز ${banana.per100g.sugar} جرام لكل 100، والتفاح ${apple.per100g.sugar} جرام لكل 100 — وكلاهما يأتي داخل مصفوفة طعام كامل بألياف وماء ومغذيات دقيقة، لا كسكر حر. وإرشادات منظمة الصحة العالمية للسكر الحر لا تحسب الثمار الكاملة. الذي يُفسد الخسارة هو سطر إجمالي السعرات، لا سلّة الفاكهة.`,
+          ar: `سكر أيًا من الثمرتين لا يخرجه من الحمية: الموز ${banana.per100g.sugar} جرام لكل 100، والتفاح ${apple.per100g.sugar} جرام لكل 100 — وكلاهما يأتي داخل مصفوفة طعام كامل بألياف وماء ومغذيات دقيقة، لا كسكر حر. وإرشادات منظمة الصحة العالمية للسكر الحر لا تحسب الثمار الكاملة. الذي يُفسد الخسارة هو سطر إجمالي السعرات، لا سلّة الفاكهة.`,
         },
       },
     ],

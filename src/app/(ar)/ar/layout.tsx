@@ -29,7 +29,7 @@ export const metadata: Metadata = {
   // SERP-truncation law now holds; all three proof numbers kept (868+/8,830+/8).
   // BILINGUAL-CONTENT Phase 2 (audit gap #5): tanween orthography unified
   // to «تمرينًا/صنفًا» (the correct modern rendering) — the three copies
-  // below previously wrote «تمريناً/صنفاً» (old style), inconsistent with
+  // below previously wrote «تمرينًا/صنفًا» (old style), inconsistent with
   // the /ar homepage's OWN OG card which already writes «تمرينًا/صنفًا».
   description:
     "تدرّب بذكاء، وتغذَّ بدقة، وتقدّم والأرقام في صفك — منصتك المتكاملة للتمارين والتغذية: 868+ تمرينًا، و8,830+ صنفًا غذائيًا، و8 أدوات مجانية، ومدربك الذكي EVO.",

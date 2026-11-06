@@ -237,7 +237,7 @@ export function AdminSiteContentView() {
       const limit = field.multiline ? LONG_LIMIT : TEXT_LIMIT;
       if (draft.en.length > limit || draft.ar.length > limit) {
         return isAr
-          ? `نص طويل جداً في «${isAr ? field.labelAr : field.labelEn}» (الحد ${limit} حرفاً)`
+          ? `نص طويل جدًا في «${isAr ? field.labelAr : field.labelEn}» (الحد ${limit} حرفًا)`
           : `Too long in "${field.labelEn}" (limit ${limit} chars)`;
       }
     }
@@ -332,7 +332,7 @@ export function AdminSiteContentView() {
     setStatus(
       failures === 0
         ? { ok: true, text: isAr ? "تم الحفظ — يظهر على الموقع فورًا (أو خلال ~5 دقائق إن تعذر الإبطال)." : "Saved — live on the site immediately (or within ~5 minutes if invalidation was skipped)." }
-        : { ok: false, text: isAr ? `فشل حفظ ${failures} عنصراً — أعد المحاولة.` : `Failed to save ${failures} item(s) — try again.` },
+        : { ok: false, text: isAr ? `فشل حفظ ${failures} عنصرًا — أعد المحاولة.` : `Failed to save ${failures} item(s) — try again.` },
     );
   };
 
@@ -656,7 +656,7 @@ export function AdminSiteContentView() {
       <div className="space-y-4">
         <p className="text-xs font-normal text-[#86868b]">
           {isAr
-            ? "في الفقرات يمكن استخدام {exercises} و{foods} لإظهار الأعداد الحية لمكتبة التمارين وقاعدة الأطعمة — تبقى محدّثة تلقائياً. روابط الأقسام داخلية فقط (تبدأ بـ /)."
+            ? "في الفقرات يمكن استخدام {exercises} و{foods} لإظهار الأعداد الحية لمكتبة التمارين وقاعدة الأطعمة — تبقى محدّثة تلقائيًا. روابط الأقسام داخلية فقط (تبدأ بـ /)."
             : "Inside paragraphs you may use {exercises} and {foods} to show the live exercise/food library sizes — they stay auto-updated. Section links are internal only (must start with /)."}
         </p>
         {stamp && (

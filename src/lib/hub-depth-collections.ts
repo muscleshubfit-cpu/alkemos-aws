@@ -677,7 +677,7 @@ export const COLLECTION_DEPTH: Record<string, HubDepthContent> = {
           "Both, reliably. Rice: one part rice to two parts water, covered, high power for 10–12 minutes then rested — fluffy without a pot. Oatmeal: oats and liquid at roughly 1:2, high for 2–3 minutes watching for overflow. Both are standard dorm-and-office techniques, and both land exactly where stovetop versions do nutritionally.",
         qAr: "هل الأرز والشوفان يُصنعان فعلًا في الميكروويف؟",
         aAr:
-          "كلاهما، بثبات. الأرز: جزء أرز لجزأين ماء، مغطى، قدرة عالية 10–12 دقيقة ثم راحة — منفوش بلا قدر. الشوفان: شوفان وسائل بنحو 1:2، قدرة عالية 2–3 دقائق مع مراقبة الفيض. كلتاهما تقنية معيارية للسكن الجامعي والمكتب، وكلتاهما تهبط مغذياً حيث تهبط نسختا الموقد تمامًا.",
+          "كلاهما، بثبات. الأرز: جزء أرز لجزأين ماء، مغطى، قدرة عالية 10–12 دقيقة ثم راحة — منفوش بلا قدر. الشوفان: شوفان وسائل بنحو 1:2، قدرة عالية 2–3 دقائق مع مراقبة الفيض. كلتاهما تقنية معيارية للسكن الجامعي والمكتب، وكلتاهما تهبط مغذيًا حيث تهبط نسختا الموقد تمامًا.",
       },
       {
         qEn: "How do I add variety to the same quick staples?",

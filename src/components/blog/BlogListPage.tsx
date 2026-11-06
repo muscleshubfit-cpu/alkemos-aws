@@ -128,7 +128,7 @@ export function BlogListPage({
           </div>
         ) : posts.length === 0 ? (
           <div className="py-20 text-center text-base font-normal text-[var(--muted-foreground)]">
-            {isAr ? "لا توجد مقالات حالياً" : "No articles yet"}
+            {isAr ? "لا توجد مقالات حاليًا" : "No articles yet"}
           </div>
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">

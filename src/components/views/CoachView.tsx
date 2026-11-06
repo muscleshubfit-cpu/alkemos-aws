@@ -629,7 +629,7 @@ export function CoachView() {
   const tabs: Array<{ id: FilterTab; labelAr: string; labelEn: string; count: number | null; color: string }> = [
     { id: "all", labelAr: "الكل", labelEn: "All", count: counts.all, color: "#1d1d1f" },
     { id: "active", labelAr: "نشط", labelEn: "Active", count: counts.active, color: "#34c759" },
-    { id: "expiring", labelAr: "ينتهي قريباً", labelEn: "Expiring", count: counts.expiring, color: "#ff9500" },
+    { id: "expiring", labelAr: "ينتهي قريبًا", labelEn: "Expiring", count: counts.expiring, color: "#ff9500" },
     { id: "no_plan", labelAr: "بدون اشتراك", labelEn: "No subscription", count: counts.no_plan, color: "#6e6e73" },
     { id: "invite_pending", labelAr: "دعوات معلقة", labelEn: "Invite pending", count: counts.invite_pending, color: "#ff9500" },
     { id: "no_questionnaire", labelAr: "بدون استبيان", labelEn: "No questionnaire", count: counts.no_questionnaire, color: "#ff3b30" },
@@ -1331,7 +1331,7 @@ export function CoachView() {
                           )}
                           {c.isExpiring && (
                             <span className="rounded-full bg-[#ff9500]/10 px-2 py-0.5 text-[10px] font-medium text-[#ff9500]">
-                              {isAr ? "ينتهي قريباً" : "Expiring"}
+                              {isAr ? "ينتهي قريبًا" : "Expiring"}
                             </span>
                           )}
                           {c.isExpired && (

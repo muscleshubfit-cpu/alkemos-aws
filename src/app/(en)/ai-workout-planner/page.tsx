@@ -283,7 +283,7 @@ export default function AiWorkoutPlannerPage() {
           </h1>
           <p className="mx-auto mt-3 max-w-md text-base font-normal text-[var(--muted-foreground)] md:text-lg">
             {isAr
-              ? "ولّد نظاماً تدريبياً أسبوعياً متوازناً في ثوانٍ — مجانًا فورًا."
+              ? "ولّد نظامًا تدريبيًا أسبوعيًا متوازنًا في ثوانٍ — مجانًا فورًا."
               : "Generate a balanced weekly split in seconds — free to try, no credit card required."}
           </p>
           <div className="seal-chip mt-4 inline-flex items-center gap-2">
@@ -344,7 +344,7 @@ export default function AiWorkoutPlannerPage() {
             </div>
             <div>
               <label htmlFor="demo-days" className="text-sm font-medium text-[var(--text)]">
-                {isAr ? "أيام التمرين أسبوعياً" : "Training days per week"}
+                {isAr ? "أيام التمرين أسبوعيًا" : "Training days per week"}
               </label>
               <select
                 id="demo-days"
@@ -417,7 +417,7 @@ export default function AiWorkoutPlannerPage() {
               {loading
                 ? isAr ? "جاري التوليد…" : "Generating…"
                 : plan
-                  ? isAr ? "ولّد نظاماً آخر" : "Generate another split"
+                  ? isAr ? "ولّد نظامًا آخر" : "Generate another split"
                   : isAr ? "ولّد نظامي المجاني" : "Generate my free split"}
             </button>
             {quotaChip && (
@@ -609,7 +609,7 @@ export default function AiWorkoutPlannerPage() {
               <div className="mt-6 rounded-2xl border border-[var(--chrome-edge)]/50 bg-[var(--card)] p-5">
                 <h3 className="inline-flex items-center gap-2 text-base font-semibold tracking-tight text-[var(--text)]">
                   <HardDriveDownload className="h-4 w-4" aria-hidden="true" />
-                  {isAr ? "احفظ نظامك في حساب — مجاناً" : "Save your split to a free account"}
+                  {isAr ? "احفظ نظامك في حساب — مجانًا" : "Save your split to a free account"}
                 </h3>
                 <p className="mt-2 text-sm font-normal leading-relaxed text-[var(--muted-foreground)]">
                   {isAr
@@ -625,7 +625,7 @@ export default function AiWorkoutPlannerPage() {
                     href="/auth?mode=signup"
                     className="btn-chrome inline-flex items-center gap-2 px-4 py-2 text-sm"
                   >
-                    {isAr ? "أنشئ حساباً مجانياً" : "Create a free account"}
+                    {isAr ? "أنشئ حسابًا مجانيًا" : "Create a free account"}
                   </Link>
                   <Link
                     href={isAr ? "/ar/memberships" : "/memberships"}
@@ -667,7 +667,7 @@ export default function AiWorkoutPlannerPage() {
             </h2>
             <p className="mt-3 text-base font-normal leading-relaxed text-[var(--muted-foreground)]">
               {isAr
-                ? "كل زائر يحصل على توليديْن ناجحيْن شهريًا من رصيده الشهري المجاني — والرصيد يُحسب للتوليد الناجح فقط، وخططك السابقة تبقى متاحة بعد استنفاده. بإنشاء حساب مجاني تُحفظ خططك من أي جهاز؛ ومع بريميوم يرتفع الرصيد إلى 4 توليدات شهريًا (و8 مع برو). للتصفح الجاهز فوراً، برامج التدريب الجاهزة معروضة لكل مستوى وهدف؛ ولكل حركة بشرحها، مكتبة التمارين تضم 868+ تمرينًا — ولنظامك الغذائي، مخطط الوجبات بالذكاء الاصطناعي ينتظر رقم سعراتك."
+                ? "كل زائر يحصل على توليديْن ناجحيْن شهريًا من رصيده الشهري المجاني — والرصيد يُحسب للتوليد الناجح فقط، وخططك السابقة تبقى متاحة بعد استنفاده. بإنشاء حساب مجاني تُحفظ خططك من أي جهاز؛ ومع بريميوم يرتفع الرصيد إلى 4 توليدات شهريًا (و8 مع برو). للتصفح الجاهز فورًا، برامج التدريب الجاهزة معروضة لكل مستوى وهدف؛ ولكل حركة بشرحها، مكتبة التمارين تضم 868+ تمرينًا — ولنظامك الغذائي، مخطط الوجبات بالذكاء الاصطناعي ينتظر رقم سعراتك."
                 : "Every visitor gets 2 successful generations per month from a free monthly allowance — no credit card required, and only successful generations count; your previous plans stay available after the quota runs out. Create a free account and your plans are saved from any device; Premium lifts the pool to 4 generations a month (8 with Pro). For instant browsing, the ready workout programs are laid out for every level and goal; for every movement explained, the exercise library holds 868+ exercises — and for the diet side of your week, the AI meal planner is waiting for your calorie number."}
             </p>
             <div className="mt-4 flex flex-wrap gap-2">
@@ -704,7 +704,7 @@ export default function AiWorkoutPlannerPage() {
             </h2>
             <p className="mt-3 text-base font-normal leading-relaxed text-[var(--muted-foreground)]">
               {isAr
-                ? "الأنظمة المولّدة عامة لبالغين أصحاء. إن كان لديك ألم أو إصابة — خصوصاً في الظهر أو الركبة أو الكتف — أو وضع صحي مزمن، فالحركات المناسبة لك تُضبط مع مختص يرى ملفك كاملاً؛ استعمل النظام مادة نقاش ممتازة معه لا بديلاً عنه، وأي تمرين يؤلمك اليوم يُستبدل لا يُجاهد."
+                ? "الأنظمة المولّدة عامة لبالغين أصحاء. إن كان لديك ألم أو إصابة — خصوصًا في الظهر أو الركبة أو الكتف — أو وضع صحي مزمن، فالحركات المناسبة لك تُضبط مع مختص يرى ملفك كاملًا؛ استعمل النظام مادة نقاش ممتازة معه لا بديلًا عنه، وأي تمرين يؤلمك اليوم يُستبدل لا يُجاهد."
                 : "Generated splits are general guidance for healthy adults. If you live with pain or an injury — especially in the back, knees, or shoulders — or a chronic condition, the right movements for you are set with a professional who sees your full file; use the split as an excellent discussion piece with them, never a replacement — and any exercise that hurts today gets swapped, not fought."}
             </p>
           </div>
@@ -770,7 +770,7 @@ export default function AiWorkoutPlannerPage() {
               {
                 q: isAr ? "هل أستطيع تعديل التقسيمة أو طلب غيرها؟" : "Can I change the split or ask for another one?",
                 a: isAr
-                  ? "نعم — زر «ولّد نظاماً آخر» يولّد تقسيمة جديدة من رصيدك الشهري بمدخلات معدلة إن أردت. ومع الاشتراك يستطيع EVO تبديل تمارين فردية داخل خطتك أسبوعيًا (3 تبديلات مع بريميوم و6 مع برو)، وللتبديل اليدوي الكامل برامج التدريب الجاهزة معروضة لكل مستوى وهدف."
+                  ? "نعم — زر «ولّد نظامًا آخر» يولّد تقسيمة جديدة من رصيدك الشهري بمدخلات معدلة إن أردت. ومع الاشتراك يستطيع EVO تبديل تمارين فردية داخل خطتك أسبوعيًا (3 تبديلات مع بريميوم و6 مع برو)، وللتبديل اليدوي الكامل برامج التدريب الجاهزة معروضة لكل مستوى وهدف."
                   : "Yes — the \"Generate another split\" button draws a new split from your monthly pool, with edited inputs if you like. With a subscription, EVO can swap individual exercises inside your plan weekly (3 swaps with Premium, 6 with Pro), and for full manual control the ready workout programs are laid out for every level and goal.",
               },
               {

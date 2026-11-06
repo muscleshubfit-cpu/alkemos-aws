@@ -157,7 +157,7 @@ ${isFatLoss ? " تركيز على حرق الدهون: كثافة عالية، �
 ${isMuscleGain ? " تركيز على بناء العضلات: أوزان ثقيلة، راحة أطول، حجم تدريبي عالي" : ""}
 ${injuries ? " تم مراعاة الإصابات المذكورة — تجنب التمارين المؤذية" : ""}
 
-تدرّب بأوزان صحيحة، ركّز على الأداء قبل زيادة الأوزان، وتابع التقدم أسبوعياً.`;
+تدرّب بأوزان صحيحة، ركّز على الأداء قبل زيادة الأوزان، وتابع التقدم أسبوعيًا.`;
 
  return { overview, days };
 }
@@ -202,7 +202,7 @@ const EXERCISE_LIBRARY: Record<string, { gym: ExerciseVariant; home: ExerciseVar
  },
  pulldown: {
  gym: { name: "سحب أمامي", sets: 4, reps: "10-12", rest: "90 ثانية", notes: "اسحب للصدر", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/Bent-over_row.jpg/200px-Bent-over_row.jpg" },
- home: { name: "سحب باند", sets: 4, reps: "12-15", rest: "60 ثانية", notes: "ثبّت الباند جيداً", image: "/images/categories/exercises/back.webp" },
+ home: { name: "سحب باند", sets: 4, reps: "12-15", rest: "60 ثانية", notes: "ثبّت الباند جيدًا", image: "/images/categories/exercises/back.webp" },
  },
  pullup: {
  gym: { name: "عقلة", sets: 4, reps: "6-10", rest: "2 دقيقة", notes: "مدى حركة كامل", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Pullup.jpg/200px-Pullup.jpg" },
@@ -222,7 +222,7 @@ const EXERCISE_LIBRARY: Record<string, { gym: ExerciseVariant; home: ExerciseVar
  },
  front_squat: {
  gym: { name: "فرنت سكوات", sets: 4, reps: "6-8", rest: "3 دقائق", notes: "حافظ على الصدر مرفوع", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Barbell_squat.jpg/200px-Barbell_squat.jpg" },
- home: { name: "جوبيت سكوات", sets: 4, reps: "10-12", rest: "90 ثانية", notes: "نزل كاملاً", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/Dumbbell_squat.jpg/200px-Dumbbell_squat.jpg" },
+ home: { name: "جوبيت سكوات", sets: 4, reps: "10-12", rest: "90 ثانية", notes: "نزل كاملًا", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/Dumbbell_squat.jpg/200px-Dumbbell_squat.jpg" },
  },
  rdl: {
  gym: { name: "رومانيان ديدليفت", sets: 4, reps: "8-10", rest: "2 دقيقة", notes: "انزل بالورك للخلف", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2b/Deadlift.jpg/200px-Deadlift.jpg" },

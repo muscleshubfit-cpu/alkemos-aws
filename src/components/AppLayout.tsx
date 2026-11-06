@@ -154,7 +154,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
       {!isSupabaseConfigured && (
         <div className="bg-[#1d1d1f] px-3 py-1.5 text-center text-xs font-normal text-white">
           {isAr
-            ? "وضع تجريبي — مفيش بيانات Supabase. البيانات بتتخزن محلياً بس."
+            ? "وضع تجريبي — لا تتوفر بيانات Supabase. تُخزَّن البيانات محليًا في هذا المتصفح فقط."
             : "Demo mode — no Supabase credentials. Data stored locally only."}
         </div>
       )}
@@ -257,7 +257,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
                   console banner above (no duplicate greeting). */}
               {!isCoach && profile && (
                 <p className="mb-4 text-sm font-normal text-[#6e6e73]">
-                  {isAr ? "أهلاً" : "Welcome"}, <span className="font-medium text-[#1d1d1f]">{profile.full_name}</span>
+                  {isAr ? "أهلًا" : "Welcome"}, <span className="font-medium text-[#1d1d1f]">{profile.full_name}</span>
                 </p>
               )}
               {/* Large nav buttons — 2 columns, scrollable */}

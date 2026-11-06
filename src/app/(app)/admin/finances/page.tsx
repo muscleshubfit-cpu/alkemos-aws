@@ -228,7 +228,7 @@ export default function AdminFinancesPage() {
         title={isAr ? "المالية" : "Finances"}
         sub={
           isAr
-            ? "فصل واضح بين أموال الموقع (اشتراكات العملاء B2C) وأموال المدربين (محافظ وتسعير تفعيل ثابت B2B) — كل حسبة من مصادرها الموجودة فعلاً، بدون أي كتابة."
+            ? "فصل واضح بين أموال الموقع (اشتراكات العملاء B2C) وأموال المدربين (محافظ وتسعير تفعيل ثابت B2B) — كل حسبة من مصادرها الموجودة فعلًا، بدون أي كتابة."
             : "A clear split between SITE money (client subscriptions, B2C) and COACH money (wallets & fixed activation pricing, B2B) — aggregated from the existing sources, read-only."
         }
       />
@@ -238,7 +238,7 @@ export default function AdminFinancesPage() {
         title={isAr ? "أموال الموقع — عضويات العملاء (B2C)" : "Site money — client memberships (B2C)"}
         sub={
           isAr
-            ? "إيرادات اشتراكات الموقع المدفوعة يدوياً (انستاباي / فودافون كاش) بعد خصم الاستردادات المعتمدة. الشهر بيتحسب من تاريخ الطلب."
+            ? "إيرادات اشتراكات الموقع المدفوعة يدويًا (انستاباي / فودافون كاش) بعد خصم الاستردادات المعتمدة. يُحسب الشهر من تاريخ الطلب."
             : "Site membership revenue from manual payments (InstaPay / Vodafone Cash), net of approved refunds. Months are bucketed by request date."
         }
       >

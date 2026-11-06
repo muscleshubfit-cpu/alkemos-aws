@@ -501,7 +501,7 @@ ${content.slice(0, isAr ? 12_000 : 14_000)}`;
   const sentinelRule = isAr
     ? `أعد النتيجة بهذا الشكل الحرفي (لا JSON ولا أسوار):
 ${MARKER_MAIN}
-النص النهائي المحسّن كاملاً بصيغة Markdown
+النص النهائي المحسّن كاملًا بصيغة Markdown
 ${MARKER_NOTES}
 - تغيير مهم 1
 - تغيير مهم 2`
@@ -522,7 +522,7 @@ ${MARKER_NOTES}
 
     case "proofread":
       prompt = isAr
-        ? `دقّق نص المقال لغوياً: صحّح الأخطاء الإملائية والنحوية وعلامات الترقيم وحسّن الأسلوب حيث يلزم، دون تغيير المعنى أو حذف محتوى.\n\n${articleContext}\n\n${sentinelRule}`
+        ? `دقّق نص المقال لغويًا: صحّح الأخطاء الإملائية والنحوية وعلامات الترقيم وحسّن الأسلوب حيث يلزم، دون تغيير المعنى أو حذف محتوى.\n\n${articleContext}\n\n${sentinelRule}`
         : `Proofread the article: fix spelling/grammar/punctuation and polish style without changing meaning or cutting content.\n\n${articleContext}\n\n${sentinelRule}`;
       break;
 
@@ -534,7 +534,7 @@ ${MARKER_NOTES}
 
     case "summarize_bullets": {
       prompt = isAr
-        ? `أنشئ ملخصاً للمقال في 50-100 كلمة ثم قائمة نقاط رئيسية (bullet points).\n\n${articleContext}\n\nأعد بهذا الشكل الحرفي:\n${MARKER_MAIN}\n**الملخص:**\nفقرة الملخص (50-100 كلمة)\n\n**النقاط الرئيسية:**\n- نقطة\n- نقطة\n${MARKER_NOTES}\n- ملاحظات إن وجدت`
+        ? `أنشئ ملخصًا للمقال في 50-100 كلمة ثم قائمة نقاط رئيسية (bullet points).\n\n${articleContext}\n\nأعد بهذا الشكل الحرفي:\n${MARKER_MAIN}\n**الملخص:**\nفقرة الملخص (50-100 كلمة)\n\n**النقاط الرئيسية:**\n- نقطة\n- نقطة\n${MARKER_NOTES}\n- ملاحظات إن وجدت`
         : `Summarize in 50-100 words plus a bullet list of key takeaways.\n\n${articleContext}\n\nReply exactly:\n${MARKER_MAIN}\n**Summary:**\n50-100 word paragraph\n\n**Key points:**\n- point\n${MARKER_NOTES}\n- notes`;
       break;
     }
@@ -544,9 +544,9 @@ ${MARKER_NOTES}
     case "meta_desc": {
       prompt = isAr
         ? `حلّل المقال وأخرج حزمة تحسين SEO كاملة:\n\n${articleContext}\n\nأعد JSON فقط بالشكل:\n{
- "meta_description": "وصف ميتا جذاب 120-155 حرفاً يتضمن الكلمة المفتاحية",
+ "meta_description": "وصف ميتا جذاب 120-155 حرفًا يتضمن الكلمة المفتاحية",
  "lsi_keywords": ["8-12 كلمة مفتاحية فرعية LSI"],
- "title_variants": ["3 عناوين بديلة أقل من 60 حرفاً تتضمن الكلمة المفتاحية"],
+ "title_variants": ["3 عناوين بديلة أقل من 60 حرفًا تتضمن الكلمة المفتاحية"],
  "subheading_suggestions": ["2-4 اقتراحات عناوين فرعية محسّنة"],
  "notes": "شرح موجز لأهم التحسينات المقترحة"
 }`
@@ -568,7 +568,7 @@ ${MARKER_NOTES}
       // the non-existent single "book a session" service the coach card
       // was corrected away from.
       prompt = isAr
-        ? `اكتب 3 دعوات لاتخاذ إجراء (CTA) مقنعة خاصة بـ Alkemos بناءً على المقال. القاعدة: اذكر منتجات Alkemos الحقيقية فقط — عضوية التدريب الأونلاين الشهرية، أو مخطط الوجبات، أو الحاسبات المجانية (السعرات/الماكروز/مؤشر كتلة الجسم/نسبة الدهون/متتبع الماء)، أو برامج التدريب — وممنوع نهائيًا أي صياغة «احجز جلسة» أو «جلسة تدريب واحدة» (خدمة غير موجودة).\n\n${articleContext}\n\nأعد شكلاً حرفياً:\n${MARKER_MAIN}\n1. ...\n2. ...\n3. ...\n${MARKER_NOTES}\n- ملاحظات`
+        ? `اكتب 3 دعوات لاتخاذ إجراء (CTA) مقنعة خاصة بـ Alkemos بناءً على المقال. القاعدة: اذكر منتجات Alkemos الحقيقية فقط — عضوية التدريب الأونلاين الشهرية، أو مخطط الوجبات، أو الحاسبات المجانية (السعرات/الماكروز/مؤشر كتلة الجسم/نسبة الدهون/متتبع الماء)، أو برامج التدريب — وممنوع نهائيًا أي صياغة «احجز جلسة» أو «جلسة تدريب واحدة» (خدمة غير موجودة).\n\n${articleContext}\n\nأعد شكلًا حرفيًا:\n${MARKER_MAIN}\n1. ...\n2. ...\n3. ...\n${MARKER_NOTES}\n- ملاحظات`
         : `Write 3 persuasive CTAs for Alkemos from this article. RULE: mention only Alkemos's REAL products — the monthly online-coaching membership, the meal planner, the free calculators (calories/macros/BMI/body-fat/water), or workout programs — NEVER a single "book a session" offer (that service does not exist).\n\n${articleContext}\n\nReply exactly:\n${MARKER_MAIN}\n1. ...\n2. ...\n3. ...\n${MARKER_NOTES}\n- notes`;
       break;
 
@@ -1088,7 +1088,7 @@ async function runArticleGenerate(payload: Record<string, unknown>) {
   }
 
   const sys = isAr
-    ? "أنت كاتب محتوى رياضي خبير لموقع Alkemos (منصة لياقة وتغذية لكل العرب). تكتب بالعربية الفصحى الحديثة السهلة الواضحة لجميع القراء العرب (Pan-Arab Modern Standard Arabic) — بلا لهجة محلية وبلا تعبيرات عامية (عشان، مش، ازاي، بتاع...) وبلا ترجمة حرفية عن الإنجليزية، وبلا خلط كلمات إنجليزية/لاتينية سائبة داخل الجمل العربية (كل مصطلح بالعربية أو معرّب صوتيًا — الاستثناء الوحيد إشارة لاتينية بين قوسين بعد المصطلح العربي مثل «مصل اللبن (Whey)» أو أسماء العلامات مثل Alkemos)، بنحو وإملاء سليمين — وبنبرة تحفيزية عملية، وتلتزم حرفياً بتعليمات الإخراج JSON. تكتب بعمق وتفصيل — المقالات السطحية القصيرة مرفوضة."
+    ? "أنت كاتب محتوى رياضي خبير لموقع Alkemos (منصة لياقة وتغذية لكل العرب). تكتب بالعربية الفصحى الحديثة السهلة الواضحة لجميع القراء العرب (Pan-Arab Modern Standard Arabic) — بلا لهجة محلية وبلا تعبيرات عامية (عشان، مش، ازاي، بتاع...) وبلا ترجمة حرفية عن الإنجليزية، وبلا خلط كلمات إنجليزية/لاتينية سائبة داخل الجمل العربية (كل مصطلح بالعربية أو معرّب صوتيًا — الاستثناء الوحيد إشارة لاتينية بين قوسين بعد المصطلح العربي مثل «مصل اللبن (Whey)» أو أسماء العلامات مثل Alkemos)، بنحو وإملاء سليمين — وبنبرة تحفيزية عملية، وتلتزم حرفيًا بتعليمات الإخراج JSON. تكتب بعمق وتفصيل — المقالات السطحية القصيرة مرفوضة."
     : "You are Alkemos's senior fitness & nutrition content writer (Egyptian fitness blog). Write in clear, practical English and follow the JSON output contract literally. Write with depth and detail — shallow short articles are rejected.";
 
   // ANTI-FORMULA OPENING (owner: «نفس العناوين الثابتة القديمة ومقال سيء»):
@@ -1096,7 +1096,7 @@ async function runArticleGenerate(payload: Record<string, unknown>) {
   // articles don't share the same formulaic skeleton.
   const ARCHETYPES_AR = [
     "افتتح بقصة قصيرة واقعية لشخص واجه نفس المشكلة ثم اربطها بالموضوع",
-    "افتتح بسؤال محدد حقيقي يتساءل عنه القارئ فعلاً ثم أجب عليه بالتدريج",
+    "افتتح بسؤال محدد حقيقي يتساءل عنه القارئ فعلًا ثم أجب عليه بالتدريج",
     "افتتح برقم أو إحصائية مفاجئة مرتبطة بالموضوع (بأرقام معقولة دون اختراع مصادر)",
     "افتتح بخطأ شائع يفعله معظم الناس في هذا الموضوع بالتحديد ثم صحّحه",
     "افتتح بمقارنة سريعة (قبل/بعد) أو (خرافة/حقيقة) توضح الفائدة العملية",
@@ -1119,15 +1119,15 @@ async function runArticleGenerate(payload: Record<string, unknown>) {
   const linkCandidates = await internalLinkCandidates(isAr ? "ar" : "en");
   const internalLinksLine = linkCandidates.length
     ? isAr
-      ? `روابط داخلية متاحة (استخدم 2-3 منها طبيعياً داخل النص بصيغة [النص](الرابط) حرفياً): ${linkCandidates.map((l) => `[خلفية ${l.title}](/ar/blog/${l.slug})`).join(" ، ")}`
+      ? `روابط داخلية متاحة (استخدم 2-3 منها طبيعيًا داخل النص بصيغة [النص](الرابط) حرفيًا): ${linkCandidates.map((l) => `[خلفية ${l.title}](/ar/blog/${l.slug})`).join(" ، ")}`
       : `Available internal links (weave 2-3 naturally as literal [anchor](link) markdown): ${linkCandidates.map((l) => `[More on ${l.title}](/blog/${l.slug})`).join(", ")}`
     : "";
 
   const lines = [
     isAr
-      ? `اكتب مقالاً كاملاً جاهزاً للنشر عن: «${topic}»`
+      ? `اكتب مقالًا كاملًا جاهزًا للنشر عن: «${topic}»`
       : `Write a complete, publication-ready article about: "${topic}"`,
-    isAr ? `الهيكل الافتتاحي لهذا المقال تحديداً: ${archetype}.` : `Opening structure for THIS article: ${archetype}.`,
+    isAr ? `الهيكل الافتتاحي لهذا المقال تحديدًا: ${archetype}.` : `Opening structure for THIS article: ${archetype}.`,
     // PHASE 172 (owner order — GEO answer-first + E-E-A-T without
     // fabrication + fact guard; same laws as the automated pipeline's
     // P2 so both article surfaces ship one quality bar):
@@ -1139,14 +1139,14 @@ async function runArticleGenerate(payload: Record<string, unknown>) {
     EDITORIAL_FACT_GUARD[isAr ? "ar" : "en"],
     internalLinksLine,
     isAr
-      ? `أنشئ أيضاً قسم أسئلة شائعة: ${EDITORIAL_FAQ_COUNT_RANGE.min}-${EDITORIAL_FAQ_COUNT_RANGE.max} أسئلة حقيقية عن هذا الموضوع تحديدًا (نية بحث المقال نفسه — لا أسئلة عامة عن اللياقة) مع إجابات موجزة دقيقة (تعرض في قسم الأسئلة الشائعة بالصفحة).`
+      ? `أنشئ أيضًا قسم أسئلة شائعة: ${EDITORIAL_FAQ_COUNT_RANGE.min}-${EDITORIAL_FAQ_COUNT_RANGE.max} أسئلة حقيقية عن هذا الموضوع تحديدًا (نية بحث المقال نفسه — لا أسئلة عامة عن اللياقة) مع إجابات موجزة دقيقة (تعرض في قسم الأسئلة الشائعة بالصفحة).`
       : `Also produce an FAQ set: ${EDITORIAL_FAQ_COUNT_RANGE.min}-${EDITORIAL_FAQ_COUNT_RANGE.max} genuine questions about THIS topic specifically (the article's own search intent — not generic fitness questions) with concise accurate answers (rendered in the page's FAQ section).`,
     tone && (isAr ? `النبرة: ${tone}.` : `Tone: ${tone}.`),
     audience && (isAr ? `الجمهور المستهدف: ${audience}.` : `Target audience: ${audience}.`),
     category && (isAr ? `التصنيف: ${category}.` : `Category: ${category}.`),
     keywords.length &&
       (isAr
-        ? `الكلمات المفتاحية التي يجب أن تظهر طبيعياً: ${keywords.join("، ")}.`
+        ? `الكلمات المفتاحية التي يجب أن تظهر طبيعيًا: ${keywords.join("، ")}.`
         : `Focus keywords to weave in naturally: ${keywords.join(", ")}.`),
     // PHASE 174 (admin-tools parity with the P4 Phase-173 law): the old
     // hard-requirements line here DEMANDED a closing marketing CTA
@@ -1156,10 +1156,10 @@ async function runArticleGenerate(payload: Record<string, unknown>) {
     // ban as the pipeline's P4 instruction 10, so BOTH article surfaces
     // ship one quality bar.
     isAr
-      ? "المتطلبات الصارمة: 1100-1400 كلمة (شرط إلزامي — المقالات الأقصر تُرفض وتُعاد الكتابة)، مقدمة غير نمطية (ممنوع البدء بـ«في عالم اللياقة» أو أي حشو عام)، 6-9 عناوين فرعية ## منظمة، أمثلة وأرقام عملية محددة داخل الأقسام، قسم «أخطاء شائعة»، قسم تطبيقي خطوة بخطوة قابل للتنفيذ فوراً، خاتمة تلخص جوهر المقال فقط — ممنوع إضافة أي فقرة ختامية تسويقية أو دعوة للاشتراك أو انضمام Alkemos في نهاية المقال (الموقع يعرض بطاقات الاشتراك بعد المقال تلقائياً). بدون جداول HTML وبدون صور وبدون صيغة LaTeX."
+      ? "المتطلبات الصارمة: 1100-1400 كلمة (شرط إلزامي — المقالات الأقصر تُرفض وتُعاد الكتابة)، مقدمة غير نمطية (ممنوع البدء بـ«في عالم اللياقة» أو أي حشو عام)، 6-9 عناوين فرعية ## منظمة، أمثلة وأرقام عملية محددة داخل الأقسام، قسم «أخطاء شائعة»، قسم تطبيقي خطوة بخطوة قابل للتنفيذ فورًا، خاتمة تلخص جوهر المقال فقط — ممنوع إضافة أي فقرة ختامية تسويقية أو دعوة للاشتراك أو انضمام Alkemos في نهاية المقال (الموقع يعرض بطاقات الاشتراك بعد المقال تلقائيًا). بدون جداول HTML وبدون صور وبدون صيغة LaTeX."
       : "Hard requirements: 1100-1400 words (mandatory — shorter drafts are rejected and rewritten), a non-generic hook (never open with filler like 'In the world of fitness…'), 6-9 organized ## subheadings, concrete examples and practical numbers inside sections, a common-mistakes section, an immediately actionable step-by-step section, and a conclusion that ONLY summarizes the article's substance — do NOT append any closing call-to-action, marketing outro, or \"join Alkemos\" pitch paragraph (the website already renders its CTA cards after the article). No HTML tables, no images, no LaTeX.",
     isAr
-      ? "تدقيق إلزامي قبل التسليم: عدد الكلمات 1100+، الأقسام 6-9، كل قسم فيه مثال أو رقم عملي، قسم أخطاء شائعة + قسم خطوة بخطوة موجودان، و2-3 روابط داخلية من القائمة أعلاه مستخدمة فعلاً."
+      ? "تدقيق إلزامي قبل التسليم: عدد الكلمات 1100+، الأقسام 6-9، كل قسم فيه مثال أو رقم عملي، قسم أخطاء شائعة + قسم خطوة بخطوة موجودان، و2-3 روابط داخلية من القائمة أعلاه مستخدمة فعلًا."
       : "Mandatory self-check before answering: 1100+ words, 6-9 sections, every section carries a concrete example or number, common-mistakes + step-by-step sections present, and 2-3 internal links from the list above actually used.",
     isAr
       ? "حقل slug إلزامي: 3-6 كلمات إنجليزية صغيرة مفصولة بشرطات (-) تُلخّص معنى الموضوع بالإنجليزية (ترجمة للمعنى وليس نقل لفظي) — مثال: best-home-workout-beginners. وحقل image_queries إلزامي: 4 عبارات بحث إنجليزية قصيرة (2-4 كلمات لكل عبارة) لمشاهد تصوير حقيقية آمنة ومحتشمة تمثل أقسام المقال (معدات، أكل، مشاهد تدريب عامة) — بلا أسماء أشخاص وبلا عبارات غير لائقة. قانون صارم (Phase 173): ممنوع تمامًا أي مشهد يضم نساء أو فتيات — إن لزم ظهور أشخاص فرجال بالغون فقط، وإلا فمشاهد بلا أشخاص (معدات، طعام، جيم فارغ)."
@@ -1168,15 +1168,15 @@ async function runArticleGenerate(payload: Record<string, unknown>) {
       ? "أعد JSON فقط بالشكل الحرفي (بدون أسوار كود):"
       : "Return ONLY JSON in this exact shape (no code fences):",
     `{
- "title": "${isAr ? "عنوان جذاب أقل من 70 حرفاً" : "catchy title under 70 chars"}",
+ "title": "${isAr ? "عنوان جذاب أقل من 70 حرفًا" : "catchy title under 70 chars"}",
  "slug": "${isAr ? "seo-slug-إنجليزي-3-6-كلمات" : "english-seo-slug-3-6-words"}",
  "excerpt": "${isAr ? "ملخص تشويقي سطرين" : "two-line teaser"}",
- "meta_title": "${isAr ? "عنوان ميتا 50-60 حرفاً مختلف عن العنوان" : "50-60 char meta title (may differ from title)"}",
- "meta_description": "${isAr ? "وصف ميتا 120-155 حرفاً" : "120-155 char meta description"}",
+ "meta_title": "${isAr ? "عنوان ميتا 50-60 حرفًا مختلف عن العنوان" : "50-60 char meta title (may differ from title)"}",
+ "meta_description": "${isAr ? "وصف ميتا 120-155 حرفًا" : "120-155 char meta description"}",
  "tags": ["${isAr ? "5-8 وسوم قصيرة" : "5-8 short tags"}"],
  "image_queries": ["${isAr ? "4 عبارات بحث صور إنجليزية" : "4 english photo search phrases"}"],
  "faq": [{"question": "${isAr ? "سؤال حقيقي" : "genuine question"}", "answer": "${isAr ? "إجابة موجزة دقيقة" : "concise accurate answer"}"}],
- "markdown": "${isAr ? "المقال كاملاً (1100-1400 كلمة) بصيغة Markdown تبدأ بعنوان ## أول قسم (بدون تكرار العنوان الرئيسي)" : "full article (1100-1400 words) in Markdown starting with the first ## section (never repeat the main title)"}"
+ "markdown": "${isAr ? "المقال كاملًا (1100-1400 كلمة) بصيغة Markdown تبدأ بعنوان ## أول قسم (بدون تكرار العنوان الرئيسي)" : "full article (1100-1400 words) in Markdown starting with the first ## section (never repeat the main title)"}"
 }`,
   ].filter(Boolean);
 
@@ -1196,7 +1196,7 @@ async function runArticleGenerate(payload: Record<string, unknown>) {
   const title = String(parsed.title || "").slice(0, 200).trim();
   const markdown = String(parsed.markdown || "").slice(0, 60_000).trim();
   if (!title || markdown.length < 200) {
-    throw new Error("النموذج لم يُرجع مقالاً كاملاً — حاول مرة أخرى.");
+    throw new Error("النموذج لم يُرجع مقالًا كاملًا — حاول مرة أخرى.");
   }
 
   // QUALITY FLOOR (2026-08-28e, tightened 2026-08-28g; recalibrated

@@ -138,7 +138,7 @@ export const ARTICLE_ANGLES: ArticleAngle[] = [
   {
     id: "myths",
     en: "a myth-busting article (claim → what science actually says → what to do instead)",
-    ar: "مقال دحض خرافات (الادعاء ← ماذا يقول العلم فعلاً ← البديل الصحيح)",
+    ar: "مقال دحض خرافات (الادعاء ← ماذا يقول العلم فعلًا ← البديل الصحيح)",
     shapeEn: "one section per myth, each opening with the popular claim then the correction",
     shapeAr: "قسم لكل خرافة، يبدأ بالادعاء الشائع ثم تصحيحه العلمي",
   },
@@ -245,7 +245,7 @@ export async function buildOutline(
   const forced = ARTICLE_ANGLES.find((a) => a.id === opts?.forcedAngle);
   const angle = forced ?? pickArticleAngle();
   const angleLine = lang === "ar"
-    ? `نوع المقال المطلوب: ${angle.ar} — صمّم أقسام H2 بحيث تناسب هذا النوع فعلاً (${angle.shapeAr})؛ ممنوع إعادة استخدام هيكل عام موحّد لكل المقالات.`
+    ? `نوع المقال المطلوب: ${angle.ar} — صمّم أقسام H2 بحيث تناسب هذا النوع فعلًا (${angle.shapeAr})؛ ممنوع إعادة استخدام هيكل عام موحّد لكل المقالات.`
     : `ARTICLE TYPE: ${angle.en} — shape the H2 sections to genuinely fit this type (${angle.shapeEn}); do NOT reuse a generic one-size-fits-all skeleton.`;
 
   // PHASE 172 (owner order — topic/structure differentiation «منع التكرار

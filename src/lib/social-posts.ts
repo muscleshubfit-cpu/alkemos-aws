@@ -48,7 +48,7 @@ export type SocialPostResult = {
 
 const PLATFORM_CONTRACTS: Record<SocialPlatform, { ar: string; en: string }> = {
   facebook: {
-    ar: 'فيسبوك: نص طويل نسبياً (100-200 كلمة) مع سؤال يدفع للتعليق والمشاركة.',
+    ar: 'فيسبوك: نص طويل نسبيًا (100-200 كلمة) مع سؤال يدفع للتعليق والمشاركة.',
     en: "Facebook: relatively long post (100-200 words) ending with a comment/share-driving question.",
   },
   instagram: {
@@ -56,7 +56,7 @@ const PLATFORM_CONTRACTS: Record<SocialPlatform, { ar: string; en: string }> = {
     en: "Instagram: short punchy caption with emojis and 8-12 hashtags suitable for an image.",
   },
   x: {
-    ar: 'تويتر/X: نص مختصر جداً حتى 280 حرفاً فقط مع هاشتاجات — تحقق من العدد حرفياً.',
+    ar: 'تويتر/X: نص مختصر جدًا حتى 280 حرفًا فقط مع هاشتاجات — تحقق من العدد حرفيًا.',
     en: "X/Twitter: max 280 characters INCLUDING hashtags — count literally.",
   },
   linkedin: {
@@ -77,7 +77,7 @@ function buildPrompt(input: SocialPostInput): string {
   const sourceBody =
     input.content?.trim() ||
     input.topic?.trim() ||
-    (isAr ? "مواضيع اللياقة والتغذية الصحية عموماً" : "general fitness & nutrition topics");
+    (isAr ? "مواضيع اللياقة والتغذية الصحية عمومًا" : "general fitness & nutrition topics");
   const topicLine =
     !input.content && input.topic ? `\nالموضوع المطلوب: ${input.topic}\n` : "\n";
 
@@ -90,7 +90,7 @@ function buildPrompt(input: SocialPostInput): string {
     : "";
 
   if (isAr) {
-    return `أنت خبير تسويق محتوى لياقة لمنصة Alkemos. أنشئ منشوراً جاهزاً للنشر.
+    return `أنت خبير تسويق محتوى لياقة لمنصة Alkemos. أنشئ منشورًا جاهزًا للنشر.
 
 مصدر المحتوى:
 ${sourceTitle ? `عنوان المقال: ${sourceTitle}\n` : ""}${topicLine}
@@ -98,7 +98,7 @@ ${sourceTitle ? `عنوان المقال: ${sourceTitle}\n` : ""}${topicLine}
 ${sourceBody.slice(0, 8000)}
 ${linkNote}
 
-مراحل العمل (نفّذها كلها داخلياً):
+مراحل العمل (نفّذها كلها داخليًا):
 1) استخلص أهم 3-5 نقاط رئيسية.
 2) اكتب المسودة حسب مواصفات المنصة: ${platformRules}
 3) حسّن المنشور النهائي: افتتاحية جذابة (سؤال أو تحدٍّ أو إحصائية)، إدراج الرابط إن وجد، ودعوة واضحة لاتخاذ إجراء.
@@ -175,7 +175,7 @@ export async function generateSocialPost(
     {
       systemPrompt:
         input.language === "ar"
-          ? "أنت كاتب محتوى تسويقي خبير. تعيد JSON صالحاً فقط — بلا أي نص خارج الـJSON."
+          ? "أنت كاتب محتوى تسويقي خبير. تعيد JSON صالحًا فقط — بلا أي نص خارج الـJSON."
           : "You are an expert marketing copywriter. Return ONLY valid JSON.",
       ...(input.platform === "linkedin" ? { maxTokens: 2600 } : {}),
     },

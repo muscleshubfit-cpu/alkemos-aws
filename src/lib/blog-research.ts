@@ -365,12 +365,12 @@ export function fallbackResearch(lang: "en" | "ar", recentTitles: string[] = [])
   if (lang === "ar") {
     return {
       keywords: [
-        { keyword: "كم سعرة أحتاج يومياً لخسارة الوزن", searchVolume: "عالي" },
+        { keyword: "كم سعرة أحتاج يوميًا لخسارة الوزن", searchVolume: "عالي" },
         { keyword: "جدول تغذية لبناء العضلات للمبتدئين", searchVolume: "عالي" },
         { keyword: "أفضل تمارين حرق دهون البطن في المنزل", searchVolume: "عالي" },
-        { keyword: "كم جرام بروتين يحتاج الجسم يومياً لبناء العضلات", searchVolume: "عالي" },
+        { keyword: "كم جرام بروتين يحتاج الجسم يوميًا لبناء العضلات", searchVolume: "عالي" },
         { keyword: "بروتين واي منافع وأضرار ومتى أشربه", searchVolume: "متوسط" },
-        { keyword: "أفضل وقت للتمرين لبناء العضلات صباحاً أم مساءً", searchVolume: "متوسط" },
+        { keyword: "أفضل وقت للتمرين لبناء العضلات صباحًا أم مساءً", searchVolume: "متوسط" },
         { keyword: "أكل قبل وبعد التمرين بكمية وكام ساعة", searchVolume: "متوسط" },
         { keyword: "كيف أنشف بطني بدون فقدان عضلات", searchVolume: "عالي" },
         { keyword: "أفضل مكملات زيادة الوزن للنحاف", searchVolume: "متوسط" },
@@ -384,7 +384,7 @@ export function fallbackResearch(lang: "en" | "ar", recentTitles: string[] = [])
         { question: "كم مرة أتدرب في الأسبوع لبناء العضلات؟", answer: "3-5 أيام أسبوعيًا تكفي مع تدرج في الأوزان." },
         { question: "هل الكارديو يحرق العضلات؟", answer: "الكارديو المعتدل لا يحرق العضلات إذا كانت سعراتك كافية." },
         { question: "ما أفضل وقت للتمرين؟", answer: "أي وقت يناسب جدولك باستمرار هو الأفضل." },
-        { question: "كم سعرة أحتاج يومياً لخسارة الوزن؟", answer: "يعتمد على وزنك ونشاطك — احسبها بحاسبة السعرات ثم اطرح 300-500 سعرة." },
+        { question: "كم سعرة أحتاج يوميًا لخسارة الوزن؟", answer: "يعتمد على وزنك ونشاطك — احسبها بحاسبة السعرات ثم اطرح 300-500 سعرة." },
       ],
       topics: curatedFallbackTopics(FALLBACK_TOPICS_AR, recentTitles),
     };

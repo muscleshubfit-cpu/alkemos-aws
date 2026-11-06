@@ -155,7 +155,7 @@ describe("UGC law — user content embedded verbatim", () => {
     };
     expect(en(base).body).toBe("Subject: الموقع بطيء");
     const high = { ...base, payload: { ...base.payload, high: true } };
-    expect(ar(high).body).toBe("موضوع: الموقع بطيء — أولوية (عضوية كوتشينج)");
+    expect(ar(high).body).toBe("موضوع: الموقع بطيء — أولوية (عضوية التدريب الأونلاين)");
     expect(en(high).body).toBe("Subject: الموقع بطيء — priority (coaching membership)");
   });
 });

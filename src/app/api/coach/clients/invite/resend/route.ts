@@ -86,7 +86,7 @@ function buildEmailHtml(coachName: string, isAr: boolean): string {
       <div style="color:#a1a1a6;font-size:14px;margin-top:6px;">${isAr ? "دعوة تدريب" : "Coaching invitation"}</div>
     </div>
     <div style="background:#ffffff;padding:32px 28px;text-align:${align};">
-      <p style="margin:0 0 8px;font-size:18px;font-weight:700;color:#1d1d1f;">${isAr ? "أهلاً بك،" : "Hi there,"}</p>
+      <p style="margin:0 0 8px;font-size:18px;font-weight:700;color:#1d1d1f;">${isAr ? "أهلًا بك،" : "Hi there,"}</p>
       <p style="margin:0 0 24px;color:#6e6e73;line-height:1.9;">${greeting}</p>
       <p style="margin:0 0 12px;font-size:16px;font-weight:700;color:#1d1d1f;">${isAr ? "لتفعيل حسابك (دقيقة واحدة):" : "To activate your account (one minute):"}</p>
       <ul style="margin:0;padding:0 20px 0 0;list-style:decimal;" dir="${dir}">${list}</ul>

@@ -167,7 +167,7 @@ export const STATIC_PAGE_DEFAULTS: Record<
         },
         {
           heading: "استخدام البيانات",
-          paragraphs: ["بياناتك تُستخدم حصراً لـ:"],
+          paragraphs: ["بياناتك تُستخدم حصرًا لـ:"],
           list: [
             "توليد خطط تغذية وتمارين مخصصة",
             "تتبع تقدمك وعرضه لك وللمدرب المعيّن لك",
@@ -293,7 +293,7 @@ export const STATIC_PAGE_DEFAULTS: Record<
         {
           heading: "الاشتراك",
           paragraphs: [
-            "الاشتراك في Alkemos يمنحك وصولاً إلى خطط مخصصة، مساعد ذكي، وتتبع تقدم. الأسعار موضحة في صفحة الأسعار.",
+            "الاشتراك في Alkemos يمنحك وصولًا إلى خطط مخصصة، ومساعدًا ذكيًا، وتتبعًا لتقدمك. الأسعار موضحة في صفحة الأسعار.",
             "يمكنك عدم التجديد في أي وقت. لا توجد عقود ملزمة.",
           ],
         },
@@ -350,7 +350,7 @@ export const STATIC_PAGE_DEFAULTS: Record<
         {
           heading: "Subscription",
           paragraphs: [
-            "Subscribing to Alkemos grants access to personalized plans, AI assistant, and progress tracking. Prices are listed on the pricing page.",
+            "Subscribing to Alkemos grants access to personalized plans, an AI assistant, and progress tracking. Prices are listed on the pricing page.",
             "You can choose not to renew at any time. No binding contracts.",
           ],
         },

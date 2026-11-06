@@ -171,7 +171,7 @@ export function BlogMembershipCard({ lang }: { lang: "en" | "ar" }) {
  *
  * PRESERVED VERBATIM (the surface's required behavior): platform set and
  * order (no Telegram — unchanged), the language-aware share text
- * (title + ≤150-char summary + «اقرأ المقال كاملاً على Alkemos:» / "Read
+ * (title + ≤150-char summary + «اقرأ المقال كاملًا على Alkemos:» / "Read
  * the full article on Alkemos:"), Facebook quoting the FULL share text,
  * window.open with the 600×400 popup, icons, classes and labels.
  *
@@ -189,7 +189,7 @@ export function SocialShare({ path, title, description, lang }: { path: string; 
  // Language-aware share text — always include a summary
  const shortDesc = description ? description.slice(0, 150) + (description.length > 150 ? "..." : "") : (title ? title : "");
  const shareText = isAr
-   ? `${title}\n\n${shortDesc}\n\nاقرأ المقال كاملاً على Alkemos:`
+   ? `${title}\n\n${shortDesc}\n\nاقرأ المقال كاملًا على Alkemos:`
    : `${title}\n\n${shortDesc}\n\nRead the full article on Alkemos:`;
 
  const { copied, copy, nativeShareSupported, nativeShare } = useShareActions({

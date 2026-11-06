@@ -86,7 +86,7 @@ export async function POST(request: NextRequest) {
         {
           error:
             req.language === "ar"
-              ? "عدد كبير من المحاولات من هذا الجهاز اليوم — عد غداً أو تصفّح برامج التدريب الجاهزة الآن."
+              ? "عدد كبير من المحاولات من هذا الجهاز اليوم — عد غدًا أو تصفّح برامج التدريب الجاهزة الآن."
               : "Too many attempts from this device today — come back tomorrow, or browse the ready workout programs now.",
           rateLimited: true,
           resetAt: rl.resetAt,
@@ -125,10 +125,10 @@ export async function POST(request: NextRequest) {
         {
           error: networkBlocked
             ? req.language === "ar"
-              ? "رصيد التوليد المجاني لهذا الشهر على هذه الشبكة استُخدم بالفعل — أنشئ حساباً مجانياً لتحصل على رصيد خاص بك، أو عد أول الشهر عندما يتجدد رصيد الشبكة."
+              ? "رصيد التوليد المجاني لهذا الشهر على هذه الشبكة استُخدم بالفعل — أنشئ حسابًا مجانيًا لتحصل على رصيد خاص بك، أو عد أول الشهر عندما يتجدد رصيد الشبكة."
               : "The free monthly plan generations on this network are already used — create a free account to get your own pool, or come back on the 1st when the network quota resets."
             : req.language === "ar"
-              ? `رصيدك من توليد الخطط لهذا الشهر انتهى (${quota.limit} شهرياً) — خططك السابقة متاحة أدناه، ويتجدد الرصيد أول الشهر.`
+              ? `رصيدك من توليد الخطط لهذا الشهر انتهى (${quota.limit} شهريًا) — خططك السابقة متاحة أدناه، ويتجدد الرصيد أول الشهر.`
               : `Your plan-generation quota for this month is used (${quota.limit}/month) — your previous plans stay available below; the quota resets on the 1st.`,
           quotaExhausted: true,
           quota: { used: quota.used, limit: quota.limit, remaining: 0, reason: quota.reason },

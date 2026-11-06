@@ -200,7 +200,7 @@ export function LeadCaptureCard({ toolSlug, resultSummary, resultJson }: Props) 
 
       <p className="mt-3 text-center text-xs font-normal text-[var(--muted-foreground)]">
         {isAr
-          ? "مجاني تماماً. لا رسائل مزعجة، ويمكنك طلب حذف بريدك في أي وقت."
+          ? "مجاني تمامًا. لا رسائل مزعجة، ويمكنك طلب حذف بريدك في أي وقت."
           : "Completely free. No spam — ask us to remove your email anytime."}
       </p>
     </div>

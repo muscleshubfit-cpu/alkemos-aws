@@ -148,7 +148,7 @@ export const TOOL_SCHEMA_DATA: Record<string, ToolSchemaData> = {
         ar: [
           "احصل على هدف سعراتك اليومي من حاسبة السعرات.",
           "أدخل ميزانية السعرات.",
-          "اختر نمطاً غذائياً: متوازن أو قليل الكربوهيدرات أو عالي البروتين أو كيتو أو قليل الدهون.",
+          "اختر نمطًا غذائيًا: متوازن أو قليل الكربوهيدرات أو عالي البروتين أو كيتو أو قليل الدهون.",
           "اضغط «احسب» لغرامات البروتين والكربوهيدرات والدهون.",
         ],
       },
@@ -242,7 +242,7 @@ export const TOOL_SCHEMA_DATA: Record<string, ToolSchemaData> = {
       },
       description: {
         en: "Estimate body fat at home with a tape measure and the US Navy method via the free Alkemos body fat calculator.",
-        ar: "قدّر دهون جسمك منزلياً بشريط قياس وطريقة البحرية الأمريكية عبر حاسبة Alkemos المجانية.",
+        ar: "قدّر دهون جسمك منزليًا بشريط قياس وطريقة البحرية الأمريكية عبر حاسبة Alkemos المجانية.",
       },
       steps: {
         en: [
@@ -254,8 +254,8 @@ export const TOOL_SCHEMA_DATA: Record<string, ToolSchemaData> = {
         ],
         ar: [
           "قس رقبتك أسفل الحنجرة.",
-          "قس خصرك عند السرة مسترخياً.",
-          "الإناث: قسن الورك أيضاً عند أوسع نقطة.",
+          "قس خصرك عند السرة مسترخيًا.",
+          "الإناث: قسن الورك أيضًا عند أوسع نقطة.",
           "أدخل الطول والقياسات ثم اضغط «احسب».",
           "اقرأ نسبتك وفئتها.",
         ],
@@ -270,7 +270,7 @@ export const TOOL_SCHEMA_DATA: Record<string, ToolSchemaData> = {
     name: { en: "Water Tracker", ar: "متتبع شرب الماء" },
     description: {
       en: "Free daily water tracker: sets a goal of 35 ml per kg of body weight (2–4.5 L safe range), logs cups with one tap, and keeps a seven-day history — no account needed.",
-      ar: "متتبع ماء يومي مجاني: يضبط هدفاً 35 مل لكل كجم من وزن الجسم (نطاق آمن 2–4.5 لتر)، ويسجل الأكواب بلمسة، ويحفظ تاريخاً لأسبوع — مجانًا.",
+      ar: "متتبع ماء يومي مجاني: يضبط هدفًا 35 مل لكل كجم من وزن الجسم (نطاق آمن 2–4.5 لتر)، ويسجل الأكواب بلمسة، ويحفظ تاريخًا لأسبوع — مجانًا.",
     },
     features: {
       en: [
@@ -297,7 +297,7 @@ export const TOOL_SCHEMA_DATA: Record<string, ToolSchemaData> = {
       },
       description: {
         en: "Set a weight-scaled hydration goal and log every glass with one tap using the free Alkemos water tracker.",
-        ar: "اضبط هدف ترطيب مقيساً بوزنك وسجّل كل كأس بلمسة باستخدام متتبع الماء المجاني من Alkemos.",
+        ar: "اضبط هدف ترطيب مقيسًا بوزنك وسجّل كل كأس بلمسة باستخدام متتبع الماء المجاني من Alkemos.",
       },
       steps: {
         en: [
@@ -323,7 +323,7 @@ export const TOOL_SCHEMA_DATA: Record<string, ToolSchemaData> = {
     name: { en: "Meal Planner", ar: "مخطط الوجبات" },
     description: {
       en: "Free meal planner: build meals from a searchable food database, set portions in grams, and watch calories and protein total per meal and per day in real time.",
-      ar: "مخطط وجبات مجاني: ابنِ وجباتك من قاعدة أطعمة قابلة للبحث، وحدّد الحصص بالغرامات، وشاهد السعرات والبروتين يتجمعان لكل وجبة ولكل يوم لحظياً.",
+      ar: "مخطط وجبات مجاني: ابنِ وجباتك من قاعدة أطعمة قابلة للبحث، وحدّد الحصص بالغرامات، وشاهد السعرات والبروتين يتجمعان لكل وجبة ولكل يوم لحظيًا.",
     },
     features: {
       en: [
@@ -364,7 +364,7 @@ export const TOOL_SCHEMA_DATA: Record<string, ToolSchemaData> = {
           "أضف وجبة: فطور أو غداء أو عشاء أو مخصصة.",
           "ابحث في قاعدة البيانات وأضف الأطعمة للوجبة.",
           "حدّد كل حصة بالغرامات.",
-          "راقب إجماليات الوجبة واليوم تُبنى لحظياً.",
+          "راقب إجماليات الوجبة واليوم تُبنى لحظيًا.",
           "عدّل الغرامات حتى يهبط اليوم على هدفك.",
         ],
       },
@@ -423,7 +423,7 @@ export const TOOL_SCHEMA_DATA: Record<string, ToolSchemaData> = {
           "أدخل هدفك اليومي من السعرات.",
           "اختر أحد الأنظمة الأربعة.",
           "أضف ملاحظات اختيارية إن كانت لديك.",
-          "ولّد واقرأ الخطة صنفاً صنفاً بالغرامات.",
+          "ولّد واقرأ الخطة صنفًا صنفًا بالغرامات.",
           "انسخها وعدّلها على مائدتك وتحقق بالاتجاه الأسبوعي.",
         ],
       },
@@ -439,7 +439,7 @@ export const TOOL_SCHEMA_DATA: Record<string, ToolSchemaData> = {
     name: { en: "AI Workout Planner", ar: "مخطط التمارين بالذكاء الاصطناعي" },
     description: {
       en: "Free AI workout planner trial: generate a balanced weekly split from your goal, level, training days, and equipment in seconds — free to try; your plan stays on your device, and a free account saves it permanently.",
-      ar: "تجربة مجانية لمخطط التمارين بالذكاء الاصطناعي: ولّد نظاماً تدريبياً أسبوعياً متوازناً من هدفك ومستواك وأيامك ومعداتك في ثوانٍ — مجانًا؛ خطتك تبقى على جهازك، والحساب المجاني يحفظها بشكل دائم.",
+      ar: "تجربة مجانية لمخطط التمارين بالذكاء الاصطناعي: ولّد نظامًا تدريبيًا أسبوعيًا متوازنًا من هدفك ومستواك وأيامك ومعداتك في ثوانٍ — مجانًا؛ خطتك تبقى على جهازك، والحساب المجاني يحفظها بشكل دائم.",
     },
     features: {
       en: [
@@ -452,7 +452,7 @@ export const TOOL_SCHEMA_DATA: Record<string, ToolSchemaData> = {
       ar: [
         "توليد نظام أسبوعي كامل بضغطة واحدة",
         "أربعة أهداف وثلاثة مستويات وثلاثة عوالم تجهيز",
-        "النظام يطابق أيام تدريبك المطلوبة بالضبط دائماً",
+        "النظام يطابق أيام تدريبك المطلوبة بالضبط دائمًا",
         "تحقق صارم من الشكل لكل نظام مولّد",
         "مجاني للجميع: توليدان شهريًا لكل زائر بلا حساب",
       ],
@@ -482,8 +482,8 @@ export const TOOL_SCHEMA_DATA: Record<string, ToolSchemaData> = {
           "اختر هدفك التدريبي.",
           "حدد مستوى خبرتك.",
           "اختر عدد أيام تدريبك في الأسبوع.",
-          "حدد التجهيزة المتاحة لك فعلاً.",
-          "ولّد واقرأ النظام يوماً يوماً وانسخه.",
+          "حدد التجهيزة المتاحة لك فعلًا.",
+          "ولّد واقرأ النظام يومًا يومًا وانسخه.",
         ],
       },
     },

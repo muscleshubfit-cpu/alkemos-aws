@@ -331,7 +331,7 @@ export function BlogEditorView({ mode, postId }: { mode: "new" | "edit"; postId?
  return;
  }
  if (slug.length > 80) {
- toast.error(isAr ? "الـ slug طويل جداً (حد أقصى 80 حرف)" : "Slug too long (max 80 chars)");
+ toast.error(isAr ? "الـ slug طويل جدًا (حد أقصى 80 حرف)" : "Slug too long (max 80 chars)");
  return;
  }
  setSaving(true);
@@ -847,7 +847,7 @@ useEffect(() => {
  <Input
  value={post.featured_image || ""}
  onChange={(e) => setPost((p) => ({ ...p, featured_image: e.target.value }))}
- placeholder={isAr ? "أو الصق رابط صورة يدوياً (https://...)" : "or paste an image URL (https://...)"}
+ placeholder={isAr ? "أو الصق رابط صورة يدويًا (https://...)" : "or paste an image URL (https://...)"}
  className="mt-2"
  dir="ltr"
  />

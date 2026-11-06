@@ -106,7 +106,7 @@ export function SaveResultButton({ toolSlug, title, resultData }: Props) {
     // useMembershipTier hook (queries subscriptions table, not the
     // missing profile.membership_tier field).
     if (!profile) {
-      toast.error(isAr ? "سجّل الدخول أولاً" : "Log in first");
+      toast.error(isAr ? "سجّل الدخول أولًا" : "Log in first");
       return;
     }
     const allowed = ["premium", "pro", "coaching"].includes(tier);

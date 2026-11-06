@@ -337,10 +337,10 @@ export function calculateSEOScore(post: Partial<AdminBlogPost>): {
     score += 8;
     suggestions.push(
       post.title!.length < 30
-        ? "العنوان قصير جداً (30-60 حرف مثالي)"
-        : "العنوان طويل جداً (30-60 حرف مثالي)",
+        ? "العنوان قصير جدًا (30-60 حرف مثالي)"
+        : "العنوان طويل جدًا (30-60 حرف مثالي)",
     );
-  } else suggestions.push("أضف عنواناً");
+  } else suggestions.push("أضف عنوانًا");
 
   // Meta description (15 pts)
   if (
@@ -397,7 +397,7 @@ export function calculateSEOScore(post: Partial<AdminBlogPost>): {
   // Excerpt (5 pts)
   if (post.excerpt && post.excerpt.length >= 50) score += 5;
   else if (post.excerpt) score += 2;
-  else suggestions.push("أضف ملخصاً");
+  else suggestions.push("أضف ملخصًا");
 
   return { score, suggestions };
 }

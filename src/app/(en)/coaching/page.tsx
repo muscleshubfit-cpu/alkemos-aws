@@ -218,7 +218,7 @@ export default function CoachingPage() {
               {[
                 { n: "01", title: isAr ? "أنشئ حسابك" : "Create your account", desc: isAr ? "في ثوانٍ — بالبريد الإلكتروني أو عبر Google." : "In seconds. Email or Google." },
                 { n: "02", title: isAr ? "أكمل الاستبيانات" : "Complete questionnaires", desc: isAr ? "حدّد هدفك ووزنك وعاداتك اليومية." : "Tell us your goal, weight, habits." },
-                { n: "03", title: isAr ? "EVO يحلل والمدرب يبني" : "EVO analyzes & plans", desc: isAr ? "خطتك تُبنى بأيدٍ بشرية مدعومة بتحليل EVO." : "Coaches + EVO generate your plans." },
+                { n: "03", title: isAr ? "EVO يحلل والمدرب يبني" : "EVO analyzes, your coach builds", desc: isAr ? "خطتك تُبنى بأيدٍ بشرية مدعومة بتحليل EVO." : "Your plan is built by your coach, backed by EVO's analysis." },
                 { n: "04", title: isAr ? "ابدأ التحوّل" : "Start transforming", desc: isAr ? "تتبع تقدمك، اطلب التبديلات، واسأل EVO متى شئت." : "Track, swap, and ask EVO." },
               ].map((s, i) => (
                 <Reveal key={s.n} delay={i * 80}>

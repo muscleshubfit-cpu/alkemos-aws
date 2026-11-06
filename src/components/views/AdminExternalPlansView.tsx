@@ -533,7 +533,7 @@ export function AdminExternalPlansView() {
             <>
               <div className="mt-5 grid gap-4 sm:grid-cols-3">
                 <div>
-                  <label className={labelCls}>{isAr ? "عدد الوجبات يومياً" : "Meals per day"}</label>
+                  <label className={labelCls}>{isAr ? "عدد الوجبات يوميًا" : "Meals per day"}</label>
                   <select
                     value={aiForm.meals_count}
                     onChange={(e) => setAIForm({ ...aiForm, meals_count: Number(e.target.value) })}
@@ -631,7 +631,7 @@ export function AdminExternalPlansView() {
           {aiForm.plan_type === "workout" && (
             <div className="mt-5 grid gap-4 sm:grid-cols-4">
               <div>
-                <label className={labelCls}>{isAr ? "أيام التدريب أسبوعياً" : "Training days / week"}</label>
+                <label className={labelCls}>{isAr ? "أيام التدريب أسبوعيًا" : "Training days / week"}</label>
                 <select
                   value={aiForm.days_per_week}
                   onChange={(e) => setAIForm({ ...aiForm, days_per_week: Number(e.target.value) })}
@@ -721,7 +721,7 @@ export function AdminExternalPlansView() {
           <div className="mt-4 grid gap-4 md:grid-cols-2">
             <div>
               <label className={labelCls}>
-                {isAr ? "عنوان الخطة (اختياري — يتولد تلقائياً)" : "Plan title (optional — auto-generated)"}
+                {isAr ? "عنوان الخطة (اختياري — يتولد تلقائيًا)" : "Plan title (optional — auto-generated)"}
               </label>
               <input
                 value={aiForm.title}

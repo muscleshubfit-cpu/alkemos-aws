@@ -479,7 +479,7 @@ export default function EvoPage() {
             EvoFloatingWidget isSubscriber && planKind). */}
         <section className="mt-12">
           <h2 className="text-center text-2xl font-semibold tracking-tight md:text-3xl">
-            {isAr ? "EVO للمجاني مقابل EVO للمشتركين" : "EVO on Free vs Subscribers"}
+            {isAr ? "EVO في الباقة المجانية مقابل الباقات المدفوعة" : "EVO on Free vs Subscribers"}
           </h2>
           <p className="mx-auto mt-3 max-w-lg text-center text-sm font-normal text-[var(--muted-foreground)]">
             {isAr
@@ -501,7 +501,7 @@ export default function EvoPage() {
             </div>
             {[
               {
-                featAr: "توليد خطط AI (تغذية + تمرين من رصيد واحد)",
+                featAr: "توليد الخطط بالذكاء الاصطناعي (تغذية + تمرين من رصيد واحد)",
                 featEn: "AI plan generation (nutrition + workout, one pool)",
                 freeAr: "✓ توليدان شهريًا — لكل زائر",
                 freeEn: "✓ 2/month — for every visitor",

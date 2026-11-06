@@ -622,7 +622,7 @@ export function CoachClientView({ clientId }: { clientId: string }) {
  const [normalizing, setNormalizing] = useState(false);
  const normalizeAndUpload = async () => {
  if (!planTitle.trim() || !planNotes.trim()) {
- toast.error(isAr ? "اكتب عنوان الخطة والصق محتواها في حقل الملاحظات أولاً." : "Enter a plan title and paste its content into the notes field first.");
+ toast.error(isAr ? "اكتب عنوان الخطة والصق محتواها في حقل الملاحظات أولًا." : "Enter a plan title and paste its content into the notes field first.");
  return;
  }
  if (!planGateOpen) {
@@ -710,7 +710,7 @@ export function CoachClientView({ clientId }: { clientId: string }) {
  if (notClient) {
  return (
  <div className="py-20 text-center">
- <h2 className="text-xl font-semibold">{isAr ? "هذا المستخدم ليس عميلاً" : "This user is not a client"}</h2>
+ <h2 className="text-xl font-semibold">{isAr ? "هذا المستخدم ليس عميلًا" : "This user is not a client"}</h2>
  <p className="mt-2 text-sm text-[#6e6e73]">{isAr ? "لا يمكن عرض بيانات مدرب آخر." : "Cannot view another coach's data."}</p>
  <a href="/coach" className="mt-4 inline-block rounded-full bg-[#0071e3] px-5 py-2 text-sm text-white">{isAr ? "العودة لقائمة العملاء" : "Back to client list"}</a>
  </div>
@@ -1699,7 +1699,7 @@ function QuestionnaireCard({
  const fields = isNutrition ? nutritionFields : fitnessFields;
  const activityLabels: Record<string, string> = {
  sedentary: "خامل", light: "خفيف", moderate: "متوسط",
- active: "نشط", very_active: "نشط جداً", extra_active: "فوق العادي",
+ active: "نشط", very_active: "نشط جدًا", extra_active: "فوق العادي",
  };
 
  return (
@@ -1911,7 +1911,7 @@ function PlanViewerModal({
  const applyTargetDraft = () => {
  const n = parseInt(targetDraft.replace(/[^0-9]/g, ""), 10);
  if (!Number.isFinite(n) || n <= 0) {
- toast.error(isAr ? "اكتب هدفًا صحيحًا بالسعرات (مثلاً 2000)" : "Enter a valid calorie target (e.g. 2000)");
+ toast.error(isAr ? "اكتب هدفًا صحيحًا بالسعرات (مثلًا 2000)" : "Enter a valid calorie target (e.g. 2000)");
  return;
  }
  if (n < 1200) {
@@ -2060,7 +2060,7 @@ function PlanViewerModal({
  <div class="brand-logo">MH</div>
  <div>
  <div class="brand-name">Alkemos</div>
- <div class="brand-tag">كوتش أونلاين للتغذية واللياقة | alkemos.com</div>
+ <div class="brand-tag">مدرب أونلاين للتغذية واللياقة | alkemos.com</div>
  </div>
 </div>
 <h1>${title}</h1>`;
@@ -2096,7 +2096,7 @@ function PlanViewerModal({
  html += `<h2> السعرات والماكروز</h2><div class="stats">`;
  if (printCals > 0) html += `<div class="stat"><span class="stat-label">السعرات اليومية (مجموع الوجبات)</span><span class="stat-value">${printCals}</span></div>`;
  if (c.macros?.protein_g) html += `<div class="stat"><span class="stat-label">بروتين</span><span class="stat-value">${c.macros.protein_g}جم</span></div>`;
- if (c.macros?.carbs_g) html += `<div class="stat"><span class="stat-label">كارب</span><span class="stat-value">${c.macros.carbs_g}جم</span></div>`;
+ if (c.macros?.carbs_g) html += `<div class="stat"><span class="stat-label">كربوهيدرات</span><span class="stat-value">${c.macros.carbs_g}جم</span></div>`;
  if (c.macros?.fat_g) html += `<div class="stat"><span class="stat-label">دهون</span><span class="stat-value">${c.macros.fat_g}جم</span></div>`;
  html += `</div>`;
  }
@@ -2745,7 +2745,7 @@ function PlanViewerModal({
  inputMode="numeric"
  value={targetDraft}
  onChange={(e) => setTargetDraft(e.target.value)}
- placeholder="مثلاً: 2000"
+ placeholder="مثلًا: 2000"
  className="h-8 w-32 text-sm"
  />
  <Button size="sm" className="h-8" onClick={applyTargetDraft} disabled={!targetDraft.trim()}>
@@ -2923,7 +2923,7 @@ function PlanViewerModal({
  newContent.supplements[i] = { ...(newContent.supplements ?? [])[i], dose: e.target.value };
  setContent(newContent);
  }}
- placeholder="الجرعة (مثلاً: 200-400 مج)"
+ placeholder="الجرعة (مثلًا: 200-400 مج)"
  className="h-7 text-xs"
  />
  </div>
@@ -2937,7 +2937,7 @@ function PlanViewerModal({
  newContent.supplements[i] = { ...(newContent.supplements ?? [])[i], timing: e.target.value };
  setContent(newContent);
  }}
- placeholder="الموعد (مثلاً: قبل النوم)"
+ placeholder="الموعد (مثلًا: قبل النوم)"
  className="h-7 text-xs"
  />
  <Input
@@ -3059,7 +3059,7 @@ function PlanViewerModal({
  <Input
  value={content.water_target || ""}
  onChange={(e) => updateField("water_target", e.target.value)}
- placeholder="مثلاً: 2.5 إلى 3 لتر يومياً"
+ placeholder="مثلًا: 2.5 إلى 3 لتر يوميًا"
  className="h-7 text-xs flex-1"
  />
  </div>
@@ -3250,7 +3250,7 @@ function PlanViewerModal({
  <Input
  value={content.weekly_volume || ""}
  onChange={(e) => updateField("weekly_volume", e.target.value)}
- placeholder="مثلاً: 20 مجموعة أسبوعياً"
+ placeholder="مثلًا: 20 مجموعة أسبوعيًا"
  className="mt-1 h-8 text-sm"
  />
  ) : (
@@ -3265,7 +3265,7 @@ function PlanViewerModal({
  <Input
  value={content.progression || ""}
  onChange={(e) => updateField("progression", e.target.value)}
- placeholder="مثلاً: زوّد الوزن 2.5 كجم أسبوعياً"
+ placeholder="مثلًا: زوّد الوزن 2.5 كجم أسبوعيًا"
  className="mt-1 h-8 text-sm"
  />
  ) : (
@@ -3384,7 +3384,7 @@ function PlanViewerModal({
  <Input
  value={ex.image || ""}
  onChange={(e) => updateExercise(dayIdx, exIdx, "image", e.target.value)}
- placeholder="رابط صورة (اختياري — هتتولّد تلقائياً من اسم التمرين)"
+ placeholder="رابط صورة (اختياري — هتتولّد تلقائيًا من اسم التمرين)"
  className="mt-1 h-7 text-xs font-mono"
  dir="ltr"
  />
@@ -3866,7 +3866,7 @@ function CoachAIPlanGenerator({
  <div className="mt-0.5 text-[11px] font-medium text-muted-foreground">
  <span>
  {isAr
- ? `رصيد خطط العميل الموحد (توليدك + ايفو، تغذية وتمارين): ${pool.used}/${pool.limit} شهرياً`
+ ? `رصيد خطط العميل الموحد (توليدك + ايفو، تغذية وتمارين): ${pool.used}/${pool.limit} شهريًا`
  : `Client's unified plan balance (yours + EVO, nutrition + workout): ${pool.used}/${pool.limit} monthly`}
  </span>
  </div>
@@ -3880,7 +3880,7 @@ function CoachAIPlanGenerator({
  <div className="mt-0.5 text-[11px] font-medium text-muted-foreground">
  <span>
  {isAr
- ? `رصيد ${kindAr} العميل (توليدك + ايفو): ${cb.used}/${cb.limit} شهرياً`
+ ? `رصيد ${kindAr} العميل (توليدك + ايفو): ${cb.used}/${cb.limit} شهريًا`
  : `Client's ${kindEn} balance (your + EVO generations): ${cb.used}/${cb.limit} monthly`}
  </span>
  </div>
@@ -4056,12 +4056,12 @@ function CoachAIPlanGenerator({
  <div className="mt-3 space-y-3 rounded-xl border border-border bg-background p-4">
  <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
  <div>
- <Label className="text-xs text-muted-foreground">السعرات المستهدفة (يومياً)</Label>
+ <Label className="text-xs text-muted-foreground">السعرات المستهدفة (يوميًا)</Label>
  <Input
  type="number"
  value={targetCalories}
  onChange={(e) => setTargetCalories(e.target.value)}
- placeholder="مثلاً: 1800"
+ placeholder="مثلًا: 1800"
  className="mt-1 h-8 text-sm"
  />
  </div>
@@ -4071,7 +4071,7 @@ function CoachAIPlanGenerator({
  type="number"
  value={proteinG}
  onChange={(e) => setProteinG(e.target.value)}
- placeholder="مثلاً: 150"
+ placeholder="مثلًا: 150"
  className="mt-1 h-8 text-sm"
  />
  </div>
@@ -4081,7 +4081,7 @@ function CoachAIPlanGenerator({
  type="number"
  value={carbsG}
  onChange={(e) => setCarbsG(e.target.value)}
- placeholder="مثلاً: 200"
+ placeholder="مثلًا: 200"
  className="mt-1 h-8 text-sm"
  />
  </div>
@@ -4091,7 +4091,7 @@ function CoachAIPlanGenerator({
  type="number"
  value={fatG}
  onChange={(e) => setFatG(e.target.value)}
- placeholder="مثلاً: 60"
+ placeholder="مثلًا: 60"
  className="mt-1 h-8 text-sm"
  />
  </div>
@@ -4103,7 +4103,7 @@ function CoachAIPlanGenerator({
  type="number"
  value={mealsCount}
  onChange={(e) => setMealsCount(e.target.value)}
- placeholder="مثلاً: 4"
+ placeholder="مثلًا: 4"
  className="mt-1 h-8 text-sm"
  />
  </div>
@@ -4112,7 +4112,7 @@ function CoachAIPlanGenerator({
  <Input
  value={foods}
  onChange={(e) => setFoods(e.target.value)}
- placeholder="مثلاً: دجاج، أرز، تونة"
+ placeholder="مثلًا: دجاج، أرز، تونة"
  className="mt-1 h-8 text-sm"
  />
  </div>
@@ -4122,12 +4122,12 @@ function CoachAIPlanGenerator({
  <Textarea
  value={notes}
  onChange={(e) => setNotes(e.target.value)}
- placeholder="مثلاً: العميل عنده أنيميا — ركّز على مصادر الحديد. أو: تجنب منتجات الألبان."
+ placeholder="مثلًا: العميل عنده أنيميا — ركّز على مصادر الحديد. أو: تجنب منتجات الألبان."
  className="mt-1 min-h-[60px] text-sm"
  />
  </div>
  <p className="text-[11px] text-muted-foreground">
- كل الحقول اختيارية — لو فضيتها، الـ AI بيحسب كل حاجة تلقائياً من بيانات العميل.
+ كل الحقول اختيارية — لو فضيتها، الـ AI بيحسب كل حاجة تلقائيًا من بيانات العميل.
  </p>
  </div>
  )}

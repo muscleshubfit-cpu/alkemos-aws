@@ -266,7 +266,7 @@ export function ReferralView() {
                 {isAr ? "رابط الأفلييت الخاص بك" : "Your Affiliate Link"}
               </h2>
               <p className="mt-1 text-xs font-normal text-gray-400 sm:text-sm">
-                {isAr ? "شاركه. الكوكيز بيدوم 30 يوم." : "Share it. Cookie lasts 30 days."}
+                {isAr ? "شاركه — صلاحية الكوكيز 30 يومًا من الضغطة." : "Share it — the cookie lasts 30 days."}
               </p>
             </div>
           </div>

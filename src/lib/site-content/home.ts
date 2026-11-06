@@ -137,7 +137,7 @@ export const HOME_COPY_GROUPS: HomeCopyGroup[] = [
         prop: "heroPillTraining",
         key: "home.hero.pill.training",
         labelEn: "Pillar chip 1",
-        labelAr: "رقيق الأعمدة 1",
+        labelAr: "شريحة العمود 1",
         defaultEn: "Training",
         defaultAr: "التدريب",
       },
@@ -145,7 +145,7 @@ export const HOME_COPY_GROUPS: HomeCopyGroup[] = [
         prop: "heroPillNutrition",
         key: "home.hero.pill.nutrition",
         labelEn: "Pillar chip 2",
-        labelAr: "رقيق الأعمدة 2",
+        labelAr: "شريحة العمود 2",
         defaultEn: "Nutrition",
         defaultAr: "التغذية",
       },
@@ -153,7 +153,7 @@ export const HOME_COPY_GROUPS: HomeCopyGroup[] = [
         prop: "heroPillPlanning",
         key: "home.hero.pill.planning",
         labelEn: "Pillar chip 3",
-        labelAr: "رقيق الأعمدة 3",
+        labelAr: "شريحة العمود 3",
         defaultEn: "Smart Planning",
         defaultAr: "التخطيط الذكي",
       },
@@ -563,7 +563,7 @@ export const HOME_FAQ_DEFAULT: { en: SiteFaqItem[]; ar: SiteFaqItem[] } = {
   ar: [
     {
       q: "هل يمكنني استخدام Alkemos مجانًا؟",
-      a: "نعم. التصفح مجاني بالكامل: التمارين والأطعمة والبرامج والأدوات تعمل مباشرة دون أي تسجيل، ولكل زائر رصيد شهري لتوليد خطط التغذية والتمارين، مع 10 رسائل يوميًا مع EVO. وأنشئ حسابًا مجانيًا لتحفظ خططك للأبد وتتزامن عبر أجهزتك.",
+      a: "نعم. التصفح مجاني بالكامل: التمارين والأطعمة والبرامج والأدوات تعمل مباشرة دون أي تسجيل، ولكل زائر رصيد شهري لتوليد خطط التغذية والتمارين، مع 10 رسائل يوميًا مع EVO. وأنشئ حسابًا مجانيًا لتحفظ خططك للأبد وتجدها على جميع أجهزتك.",
     },
     {
       q: "كيف يعمل EVO؟",

@@ -243,7 +243,7 @@ function PayPalButtons({
     return (
       <div className="flex items-center justify-center gap-2 py-4 text-sm text-[var(--muted-foreground)]">
         <Loader2 className="h-4 w-4 animate-spin" />
-        {isAr ? "جاري معالجة الدفع..." : "Processing payment..."}
+        {isAr ? "جارٍ معالجة الدفع…" : "Processing payment…"}
       </div>
     );
   }
@@ -357,7 +357,7 @@ export function CheckoutView({ tier, months }: { tier: TierId | MembershipTier; 
       });
       setDone(true);
       toast.success(
-        isAr ? "تم إرسال طلب الاشتراك! راجعه فريق Alkemos قريباً." : "Subscription request sent!",
+        isAr ? "تم إرسال طلب الاشتراك! راجعه فريق Alkemos قريبًا." : "Subscription request sent!",
       );
       // I-3 (UX-TEST-REPORT-2026-09-21 §5-3): the 3s auto-redirect is
       // RETIRED — the success state is now the post-payment summary (the
@@ -405,7 +405,7 @@ export function CheckoutView({ tier, months }: { tier: TierId | MembershipTier; 
             </h2>
             <p className="mt-3 text-base font-normal text-[var(--muted-foreground)]">
               {isAr
-                ? "تم تفعيل اشتراكك تلقائياً. جاري تحويلك إلى لوحة التحكم..."
+                ? "تم تفعيل اشتراكك تلقائيًا. جاري تحويلك إلى لوحة التحكم..."
                 : "Your subscription is now active. Redirecting to dashboard..."}
             </p>
             <button
@@ -630,7 +630,7 @@ export function CheckoutView({ tier, months }: { tier: TierId | MembershipTier; 
                         <XCircle className="h-8 w-8 text-[#ff3b30]" />
                         <p className="text-sm font-medium text-[#ff3b30]">
                           {isAr
-                            ? "PayPal غير متاح حالياً. استخدم الدفع اليدوي."
+                            ? "PayPal غير متاح حاليًا. استخدم الدفع اليدوي."
                             : "PayPal is not available. Please use manual payment."}
                         </p>
                       </div>
@@ -645,7 +645,7 @@ export function CheckoutView({ tier, months }: { tier: TierId | MembershipTier; 
                       <>
                         <div className="mb-3 rounded-xl border border-[var(--edge)] bg-[var(--tint)] p-3 text-center text-xs text-[var(--muted-2)]">
                           {isAr
-                            ? "ادفع بأمان عبر PayPal. سيتم تفعيل اشتراكك فوراً."
+                            ? "ادفع بأمان عبر PayPal. سيتم تفعيل اشتراكك فورًا."
                             : "Pay securely with PayPal. Your subscription activates instantly."}
                         </div>
                         <PayPalButtons

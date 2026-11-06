@@ -38,8 +38,8 @@ describe("SEO-GROWTH P1: numeric-value FAQs on macro + body-fat tools", () => {
     expect(grams!.a.en).toContain("150 g");
     expect(grams!.a.en).toContain("200 g");
     expect(grams!.a.en).toContain("67 g");
-    expect(grams!.a.ar).toContain("150 غراماً");
-    expect(grams!.a.ar).toContain("67 غراماً");
+    expect(grams!.a.ar).toContain("150 غرامًا");
+    expect(grams!.a.ar).toContain("67 غرامًا");
   });
 
   it("macro calculator carries the g/kg → percentage bridging FAQ with the worked example", () => {

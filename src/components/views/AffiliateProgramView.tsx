@@ -404,7 +404,7 @@ export function AffiliateProgramView() {
                   onClick={() => navigate("auth", { mode: "signup" })}
                   className="btn-chrome mt-6 inline-flex items-center gap-2 px-8 py-3 text-sm font-medium"
                 >
-                  {isAr ? "ابدأ الآن مجاناً" : "START NOW — FREE"}
+                  {isAr ? "ابدأ الآن مجانًا" : "START NOW — FREE"}
                   <ArrowRight className="h-4 w-4 rtl:rotate-180" aria-hidden="true" />
                 </button>
               </div>

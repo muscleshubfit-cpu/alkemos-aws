@@ -632,7 +632,7 @@ export async function POST(request: NextRequest) {
     await serverCreateAdminNotification(
       "payment_request",
       "دفع PayPal جديد ✅",
-      `تم دفع $${paymentAmount.toFixed(2)} عبر PayPal لخطة ${plan_tier} (${duration_months} ${duration_months === 1 ? "شهر" : "أشهر"}). الاشتراك مُفعّل تلقائياً.`,
+      `تم دفع $${paymentAmount.toFixed(2)} عبر PayPal لخطة ${plan_tier} (${duration_months} ${duration_months === 1 ? "شهر" : "أشهر"}). الاشتراك مُفعّل تلقائيًا.`,
       "/admin/payments",
       user_id,
       { provider: "paypal", tier: plan_tier, months: duration_months, price_usd: paymentAmount },

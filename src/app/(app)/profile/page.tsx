@@ -195,7 +195,7 @@ export default function ProfilePage() {
   const requestCancelSubscription = async () => {
     const confirmed = confirm(
       isAr
-        ? "تأكيد طلب إلغاء الاشتراك؟ باقتك هتفضل شغالة لآخر مدة دفعتها، ومفيش أي خصم تلقائي بعدها."
+        ? "تأكيد طلب إلغاء الاشتراك؟ ستبقى باقتك فعّالة حتى نهاية المدة التي دفعتها، ولا يوجد أي خصم تلقائي بعدها."
         : "Confirm cancellation request? Your plan stays active until the end of the period you paid for, and nothing renews automatically.",
     );
     if (!confirmed) return;
@@ -484,7 +484,7 @@ export default function ProfilePage() {
             </h2>
             <p className="mt-2 text-sm font-normal text-[#6e6e73]">
               {isAr
-                ? `باقتك الحالية: ${membership?.nameAr ?? tier}${subEndDate ? ` — شغالة حتى ${new Date(subEndDate).toLocaleDateString(isAr ? "ar-EG" : "en-US")}` : ""}. مفيش أي خصم تلقائي في الموقع — اشتراكك بينتهي لوحده لو ما جدّدتش.`
+                ? `باقتك الحالية: ${membership?.nameAr ?? tier}${subEndDate ? ` — فعّالة حتى ${new Date(subEndDate).toLocaleDateString(isAr ? "ar-EG" : "en-US")}` : ""}. لا يوجد أي خصم تلقائي في الموقع — ينتهي اشتراكك من تلقاء نفسه إن لم تُجدّده.`
                 : `Current plan: ${membership?.nameEn ?? tier}${subEndDate ? ` — active until ${new Date(subEndDate).toLocaleDateString(isAr ? "ar-EG" : "en-US")}` : ""}. Nothing renews automatically — your plan simply ends if you don't pay again.`}
             </p>
             {cancelRequested ? (
@@ -687,7 +687,7 @@ export default function ProfilePage() {
                 { label: isAr ? "EVO رسائل يوميًا" : "EVO messages a day", value: limits.evoChatDailyLimit === null ? "∞" : `${limits.evoChatDailyLimit}` },
                 // Unified pool (2026-09-13): ONE monthly budget for
                 // nutrition + workout AI generations combined.
-                { label: isAr ? "توليدات خطط AI/شهر" : "AI plan gens/mo", value: `${planPoolLimit ?? limits.aiPlanMonthlyLimit}` },
+                { label: isAr ? "توليدات الخطط بالذكاء الاصطناعي/شهر" : "AI plan gens/mo", value: `${planPoolLimit ?? limits.aiPlanMonthlyLimit}` },
                 { label: isAr ? "تبديلات/أسبوع" : "Swaps/week", value: limits.evoSwapLimit === 0 ? "—" : limits.evoSwapLimit === null ? "∞" : `${limits.evoSwapLimit}` },
                 { label: isAr ? "حفظ نتائج" : "Saved results", value: limits.savedResultsLimit === null ? "∞" : `${limits.savedResultsLimit}` },
                 { label: isAr ? "جداول وجبات" : "Meal plans saved", value: limits.mealPlannerMaxSaved === null ? "∞" : `${limits.mealPlannerMaxSaved}` },
@@ -945,7 +945,7 @@ function SavedResultsSection({ isAr, userId }: { isAr: boolean; userId?: string 
           <Bookmark className="mx-auto h-8 w-8 text-[#d2d2d7]" />
           <p className="mt-3 text-sm font-normal text-[#6e6e73]">
             {isAr
-              ? "مفيش نتائج محفوظة بعد. استخدم الأدوات واحفظ نتائجك."
+              ? "لا توجد نتائج محفوظة بعد. استخدم الأدوات واحفظ نتائجك."
               : "No saved results yet. Use the tools and save your results."}
           </p>
           <a
@@ -1081,7 +1081,7 @@ function SavedMealPlansSection({ isAr, userId }: { isAr: boolean; userId?: strin
           <Utensils className="mx-auto h-8 w-8 text-[#d2d2d7]" />
           <p className="mt-3 text-sm font-normal text-[#6e6e73]">
             {isAr
-              ? "مفيش جداول محفوظة بعد. ابدأ ببناء جدول وجباتك."
+              ? "لا توجد جداول محفوظة بعد. ابدأ ببناء جدول وجباتك."
               : "No saved meal plans yet. Start building your meal plan."}
           </p>
           <a
