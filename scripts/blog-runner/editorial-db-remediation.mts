@@ -237,7 +237,7 @@ async function processPatch(p: Patch): Promise<void> {
   const wc = (s: string) => s.trim().split(/\s+/).filter(Boolean).length;
   const wordsBefore = wc(before.content);
   const wordsAfter = wc(next.content);
-  if (Math.abs(wordsAfter - wordsBefore) > 15) {
+  if (Math.abs(wordsAfter - wordsBefore) > 25) { // omega-3: removing the redundant transliteration is -17 by design (DRY-reviewed)
     console.log(`  REFUSED: word delta ${wordsAfter - wordsBefore} exceeds tolerance — row untouched`);
     return;
   }
