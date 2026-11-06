@@ -248,13 +248,24 @@ const metrics: Metric[] = rows.map((r) => {
   const md = typeof r.content === "string" ? r.content : "";
   const { external, internal } = links(md);
   const stains = legacyStains(md, r.language);
-  // keyword/tag topical relevance (P1 batch 13): orphans vs the article's own
-  // topical words (title + category + focus_keyword).
-  const topical = contentWords(
-    [r.title, r.category, r.focus_keyword].filter(Boolean).join(" "),
+  // keyword/tag topical relevance (P1 batch 13/14): orphans vs the article's
+  // own topical basis. ALIGNED with the remediation channel's validation
+  // basis (batch-14 lesson, measured): title + category + focus_keyword
+  // widened with the row's own H2 headings + FAQ questions — measurement
+  // and validation share ONE standard (the shared detector).
+  const kwBasis = contentWords(
+    [
+      r.title,
+      r.category,
+      r.focus_keyword,
+      ...(md.match(/^##\s+(.+)$/gm) || []),
+      ...((r.faq_json || []).map((f) => f.question)),
+    ]
+      .filter(Boolean)
+      .join(" "),
   );
-  const keywordOrphans = orphanEntries(r.keywords, topical);
-  const tagOrphans = orphanEntries(r.tags, topical);
+  const keywordOrphans = orphanEntries(r.keywords, kwBasis);
+  const tagOrphans = orphanEntries(r.tags, kwBasis);
   const sourcesClaim =
     stains.includes("sources-cited claim") ||
     stains.includes("sources-cited heading") ||
