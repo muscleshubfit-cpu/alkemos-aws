@@ -161,7 +161,8 @@ export default function MembershipsPage({ lang: langProp }: { lang?: Lang } = {}
                       <span className={`text-xs font-medium ${isPro ? "text-[#B9BEC4]" : "text-[var(--muted-2)]"}`}>
                         {isAr ? "سنوي" : "Yearly"}
                       </span>
-                      <span className="seal-chip">-33%</span>
+                      {/* GROWTH-PLAN batch 10 (owner order «إبراز القيمة التي تدفع المستخدم للاشتراك»): the savings chip is now DERIVED from memberships.ts (the single source of truth) instead of the hardcoded -33% — any future price change updates the chip automatically (no-drift law). */}
+                      <span className="seal-chip">-{Math.round((1 - tier.priceYearly! / (12 * tier.priceMonthly!)) * 100)}%</span>
                     </div>
                     <div className="mt-1.5 flex items-baseline gap-1">
                       <span className={`text-xl font-semibold tracking-tight ${isPro ? "chrome-text chrome-text-on-dark" : "chrome-text"}`}>
@@ -173,6 +174,12 @@ export default function MembershipsPage({ lang: langProp }: { lang?: Lang } = {}
                     </div>
                     <p className={`mt-1 text-[10px] font-normal ${isPro ? "text-[#9BA0A6]" : "text-[var(--muted-foreground)]"}`}>
                       ${(tier.priceYearly! / 12).toFixed(2)}/{isAr ? "شهر" : "mo"} {isAr ? "بمعدل" : "avg"}
+                    </p>
+                    {/* GROWTH-PLAN batch 10: the explicit dollar saving — pure arithmetic from the same source (12 × monthly − yearly), stated at the decision moment so the yearly value needs no mental math. */}
+                    <p className={`mt-0.5 text-[10px] font-medium ${isPro ? "text-[#C9CED3]" : "text-[var(--text)]"}`}>
+                      {isAr
+                        ? `وفّر $${(12 * tier.priceMonthly! - tier.priceYearly!).toFixed(2)} مقابل الشهري`
+                        : `Save $${(12 * tier.priceMonthly! - tier.priceYearly!).toFixed(2)} vs monthly`}
                     </p>
                   </div>
                 )}
@@ -218,7 +225,7 @@ export default function MembershipsPage({ lang: langProp }: { lang?: Lang } = {}
                           }`}
                         >
                           <span>{isAr ? `سنوي — $${tier.priceYearly!.toFixed(2)}` : `Yearly — $${tier.priceYearly!.toFixed(2)}`}</span>
-                          <span className="seal-chip">-33%</span>
+                          <span className="seal-chip">-{Math.round((1 - tier.priceYearly! / (12 * tier.priceMonthly!)) * 100)}%</span>
                         </a>
                       )}
                     </>

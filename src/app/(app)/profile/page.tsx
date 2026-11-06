@@ -631,7 +631,7 @@ export default function ProfilePage() {
             { label: isAr ? "مخطط الوجبات" : "Meal Planner", href: "/meal-planner", icon: Utensils },
             { label: isAr ? "تقدمي" : "Progress", href: "/progress", icon: Calculator },
             // EVO CHAT SURFACE LAW: opens the floating widget — /chat is removed.
-            { label: isAr ? "كوتش EVO" : "EVO Coach", href: "#evo-chat", icon: Bell, evoChat: true },
+            { label: isAr ? "مدرب EVO" : "EVO Coach", href: "#evo-chat", icon: Bell, evoChat: true },
             { label: isAr ? "الإحالات" : "Referral", href: "/referral", icon: Crown },
             { label: isAr ? "الدعم" : "Support", href: "/support", icon: Settings },
           ].map((link, i) => {

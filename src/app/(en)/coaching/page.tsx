@@ -4,6 +4,10 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useI18n } from "@/lib/i18n";
 import { COACHING_FAQ } from "@/lib/coaching-faq";
+// GROWTH-PLAN batch 10 (owner order «إبراز القيمة التي تدفع المستخدم للاشتراك»):
+// the yearly saving is DERIVED from memberships.ts (single source of truth)
+// — 12 × monthly − yearly — instead of stating the yearly price alone.
+import { MEMBERSHIPS } from "@/lib/memberships";
 import { useNav } from "@/hooks/use-nav";
 import { useAuth } from "@/hooks/use-auth";
 import { SiteHeader } from "@/components/SiteHeader";
@@ -505,7 +509,12 @@ export default function CoachingPage() {
                     <span className="chrome-text chrome-text-on-dark text-4xl font-semibold tracking-tight md:text-5xl">$39.99</span>
                     <span className="text-base font-normal opacity-60">{isAr ? "/شهر" : "/mo"}</span>
                   </div>
-                  <p className="mt-1 text-sm font-normal opacity-60">{isAr ? "أو $359 سنويًا" : "or $359/yr"}</p>
+                  {/* GROWTH-PLAN batch 10: the derived dollar saving rides the yearly line (12 × $39.99 − $359 = $120.88) — value stated at the decision moment, zero new facts (pure arithmetic from memberships.ts). */}
+                  <p className="mt-1 text-sm font-normal opacity-60">
+                    {isAr
+                      ? `أو $${(MEMBERSHIPS.find((m) => m.id === "coaching")?.priceYearly ?? 359).toFixed(0)} سنويًا — وفّر $${((12 * (MEMBERSHIPS.find((m) => m.id === "coaching")?.priceMonthly ?? 39.99)) - (MEMBERSHIPS.find((m) => m.id === "coaching")?.priceYearly ?? 359)).toFixed(2)}`
+                      : `or $${(MEMBERSHIPS.find((m) => m.id === "coaching")?.priceYearly ?? 359).toFixed(0)}/yr — save $${((12 * (MEMBERSHIPS.find((m) => m.id === "coaching")?.priceMonthly ?? 39.99)) - (MEMBERSHIPS.find((m) => m.id === "coaching")?.priceYearly ?? 359)).toFixed(2)}`}
+                  </p>
                   <ul className="mt-8 space-y-3 text-base font-normal">
                     {/* 2026-09-15 (consistency fix — memberships.ts says
                         coaching inherits every Pro limit; this card now says
@@ -529,13 +538,13 @@ export default function CoachingPage() {
                   >
                     {/* BILINGUAL-CONTENT Phase 2 (owner order: «وحّد أزرار
                         الاشتراك بإزالة «الآن»»): the checkout button drops
-                        the pressure word and now carries the page's own
-                        established CTA label («ابدأ التدريب الأونلاين» —
-                        the hero + final-CTA wording), so every subscribe
-                        button on the site follows ONE pressure-free law.
-                        EN twin "Get Started" unchanged — its rewording
-                        (optional item 9) was NOT in the approved batch. */}
-                    {isAr ? "ابدأ التدريب الأونلاين" : "Get Started"}
+                        the pressure word and carries the page's own
+                        established CTA label. GROWTH-PLAN batch 10 (owner
+                        order «أولوية خاصة لصفحات الخدمات المدفوعة»): the
+                        previously-pending optional item 9 is executed by
+                        the blanket improvement order — the EN twin now
+                        matches the AR label and the hero ("Start coaching"). */}
+                    {isAr ? "ابدأ التدريب الأونلاين" : "Start coaching"}
                   </button>
                   {/* CONVERSION-2026 (competitor study §4): the REAL risk
                       terms surfaced beside the money moment — no

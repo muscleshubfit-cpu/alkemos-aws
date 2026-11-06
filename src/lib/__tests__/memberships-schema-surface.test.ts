@@ -123,7 +123,10 @@ describe("BILINGUAL-CONTENT Phase 2 — schema + consistency canaries", () => {
     expect(page).toContain("اشترك في ${tier.nameAr}");
     expect(page).toContain("Subscribe to ${tier.nameEn}");
     expect(page).toContain("ابدأ التدريب الأونلاين ›");
-    expect(coaching).toContain('"ابدأ التدريب الأونلاين" : "Get Started"');
+    // GROWTH-PLAN batch 10 (owner blanket order «أولوية خاصة لصفحات الخدمات
+    // المدفوعة»): optional item 9 executed — EN button now matches the AR
+    // label and the hero.
+    expect(coaching).toContain('"ابدأ التدريب الأونلاين" : "Start coaching"');
   });
 
   // (5) og:site_name pinned on the three paid surfaces that dropped it
@@ -182,5 +185,24 @@ describe("BILINGUAL-CONTENT Phase 2 — schema + consistency canaries", () => {
     expect(page).toContain('ctaLabel("free", isAr)');
     // No new route literals beyond the existing coaching link pair.
     expect(page).not.toContain('href="/checkout?tier=free');
+  });
+
+  // (6) GROWTH-PLAN batch 10 (owner order «إبراز القيمة التي تدفع المستخدم
+  //     للاشتراك»): subscription savings must be DERIVED from memberships.ts —
+  //     the hardcoded -33% chip is banned (it was already wrong for any tier
+  //     whose yearly ratio differs), and both paid surfaces must state the
+  //     dollar saving at the decision moment (12 × monthly − yearly).
+  it("yearly savings derive from memberships.ts — no hardcoded discount chips", () => {
+    const page = read(MEMBERSHIPS_PAGE);
+    const coaching = read(COACHING_PAGE);
+    // The hardcoded chip is gone…
+    expect(page, "the -33% literal chip must never return").not.toContain('seal-chip">-33%');
+    // …replaced by the derived percentage in BOTH chip spots.
+    expect(page).toContain("Math.round((1 - tier.priceYearly! / (12 * tier.priceMonthly!)) * 100)");
+    // The dollar saving line is present and derived.
+    expect(page).toContain("12 * tier.priceMonthly! - tier.priceYearly!");
+    // The coaching page states its derived yearly saving from the same source.
+    expect(coaching).toContain("12 * (MEMBERSHIPS.find((m) => m.id === \"coaching\")?.priceMonthly");
+    expect(coaching).not.toContain('"أو $359 سنويًا"');
   });
 });

@@ -271,7 +271,7 @@ const DRAWER_GROUP_DEFS: MenuGroupDef[] = [
       { labelAr: "خططي", labelEn: "My Plans", icon: FileText, nav: "plans" },
       { labelAr: "تقدمي", labelEn: "My Progress", icon: LineChart, nav: "progress" },
       // EVO CHAT SURFACE LAW: opens the floating widget — never a /chat page.
-      { labelAr: "كوتش EVO", labelEn: "EVO Coach", icon: Bot, evo: true },
+      { labelAr: "مدرب EVO", labelEn: "EVO Coach", icon: Bot, evo: true },
       { labelAr: "الاستبيانات", labelEn: "Questionnaires", icon: ClipboardList, nav: "questionnaires" },
       { labelAr: "الإحالات", labelEn: "Referrals", icon: Gift, nav: "referral" },
       { labelAr: "الدعم", labelEn: "Support", icon: LifeBuoy, nav: "support" },
@@ -286,11 +286,11 @@ const DRAWER_GROUP_DEFS: MenuGroupDef[] = [
   //   - ADMIN: NO coach group at all — one link to HIS console (below).
   {
     id: "coach",
-    titleAr: "إدارة الكوتش",
+    titleAr: "إدارة المدرب",
     titleEn: "Coach Admin",
     audience: "b2bCoach",
     items: [
-      { labelAr: "لوحة الكوتش", labelEn: "Coach Dashboard", icon: LayoutDashboard, nav: "coach" },
+      { labelAr: "لوحة المدرب", labelEn: "Coach Dashboard", icon: LayoutDashboard, nav: "coach" },
       { labelAr: "صفحتي العامة", labelEn: "My Public Page", icon: Globe, nav: "coach-landing" },
       // 0035 wallet — the B2B partner's money rail (was drawer-missing).
       { labelAr: "محفظتي", labelEn: "My Wallet", icon: Wallet, nav: "coach-wallet" },
