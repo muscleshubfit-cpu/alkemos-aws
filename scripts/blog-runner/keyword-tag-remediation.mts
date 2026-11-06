@@ -37,7 +37,8 @@
  *
  * EXIT: 0 = ok · 1 = at least one failure · 2 = misconfig.
  *
- * Usage (GHA keyword-tag-remediation.yml, or locally with the same env):
+ * Usage (GHA keyword-tag-remediation.yml, or locally with the same env —
+ * always from the repo root, like every blog-runner script):
  *   npx --no-install tsx scripts/blog-runner/keyword-tag-remediation.mts
  * ENV:
  *   NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
@@ -50,16 +51,14 @@ import { supabaseAdmin, isSupabaseAdminConfigured } from "../../src/lib/supabase
 import { contentWords, orphanEntries } from "../../src/lib/blog-keyword-relevance";
 
 const DRY_RUN = process.env.DRY_RUN !== "0";
-const REPO = join(dirname(import.meta.url), "..", "..");
-const PATCH_PATH = join(REPO, "scripts", "blog-runner", "keyword-tag-remediation.json");
+const PATCH_PATH = join(
+  process.cwd(),
+  "scripts/blog-runner/keyword-tag-remediation.json",
+);
 const SLUGS = (process.env.SLUGS || "")
   .split(",")
   .map((s) => s.trim())
   .filter(Boolean);
-
-function dirname(url: string): string {
-  return url.replace(/\/[^/]*$/, "");
-}
 
 type PatchEntry = {
   slug: string;
