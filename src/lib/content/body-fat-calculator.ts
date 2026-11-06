@@ -217,6 +217,36 @@ export const BODY_FAT_CALCULATOR_CONTENT: ToolReference = {
       ],
     },
     {
+      id: "using-your-percentage",
+      heading: {
+        en: "Using your percentage: setting the target and steering the cut",
+        ar: "ماذا تفعل برقمك؟ ضبط الهدف وقيادة مرحلة الخسارة",
+      },
+      blocks: [
+        {
+          kind: "p",
+          text: {
+            en: "«ما نسبة الدهون المستهدفة؟» — the answer comes from the categories table above, not from magazine covers. A man in the fitness band (14–17%) and a woman in hers (21–24%) are both carrying an athletic, healthy amount of fat relative to their biology; the athlete bands below are seasonal homes, not permanent addresses. Pick the band that matches your life, then translate it into behavior: the number itself changes only through the energy and protein scaffolding the site's other calculators build.",
+            ar: "«ما نسبة الدهون المستهدفة؟» — الجواب من جدول الفئات أعلاه لا من أغلفة المجلات. رجل في حزام اللياقة (14–17%) وامرأة في حزامها (21–24%) يحمل كلاهما مقداراً رياضياً صحياً من الدهن نسبةً إلى بيولوجيته؛ وأحزمة الرياضيين تحتها مساكن موسمية لا عناوين دائمة. اختر الحزام الذي يطابق حياتك ثم ترجمه إلى سلوك: فالرقم نفسه لا يتغير إلا عبر سقالة الطاقة والبروتين التي تبنيها حاسبات الموقع الأخرى.",
+          },
+        },
+        {
+          kind: "p",
+          text: {
+            en: "«بأي سرعة أنزل؟» — the honest steering number is the one this page already documents: aim to lose about 0.5–1% of body weight per week in fat while training and keeping protein high. Faster than that and the deficit starts billing muscle; slower and the season stretches past motivation's shelf life. Recomposition — the slow simultaneous trade of fat for muscle at a stable weight — suits beginners, returning trainees, and higher starting percentages, and it judges progress by the measuring tape and the mirror as much as by any tape-measure formula.",
+            ar: "«بأي سرعة أنزل؟» — رقم القيادة الأمين هو الموثق في هذه الصفحة نفسها: استهدف خسارة نحو 0.5–1% من وزن الجسم دهوناً أسبوعياً مع التدريب وبروتين مرتفع. أسرع من ذلك يبدأ العجز يحاسب العضلة؛ وأبطأ يتمدد الموسم إلى ما بعد عمر التحفيز. وإعادة التكوين — المبادلة البطيئة للدهون بالعضل عند وزن ثابت — تناسب المبتدئين والعودين ونسب البداية الأعلى، وهي تحكم التقدم بشريط القياس والمرآة بقدر ما تحكمه بأي صيغة مقاسات.",
+          },
+        },
+        {
+          kind: "p",
+          text: {
+            en: "«كيف أتتبع النسبة بدقة؟» — by worshipping consistency, not frequency. Measure under the same conditions the protocol section prescribes — same morning slot, same fasting state, same tape tension — and read the four-week average, because circumference formulas are sensitive enough that a salty dinner can impersonate a week of progress. Pair the monthly reading with daily morning weights (their weekly average) and monthly photos: three independent instruments agreeing is evidence; one instrument alone is a mood.",
+            ar: "«كيف أتتبع النسبة بدقة؟» — بعبادة الثبات لا التكرار. قِس تحت الشروط نفسها التي يصفها قسم البروتوكول — التوقيت الصباحي نفسه وحالة الصيام نفسها وشدّ الشريط نفسه — واقرأ متوسط أربعة أسابيع، فصيغات المحيطات حساسة بما يكفي لأن عشاءً مالحاً ينتحل أسبوعاً كاملاً من التقدم. واقرن القراءة الشهرية بأوزان صباحية يومية (بمتوسطها الأسبوعي) وصور شهرية: ثلاث أدوات مستقلة تتفق هي الدليل؛ وأداة وحدها مزاج.",
+          },
+        },
+      ],
+    },
+    {
       id: "limitations",
       heading: {
         en: "Limits, cautions, and who should wait",

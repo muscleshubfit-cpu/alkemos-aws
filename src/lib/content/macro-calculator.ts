@@ -239,6 +239,36 @@ export const MACRO_CALCULATOR_CONTENT: ToolReference = {
       ],
     },
     {
+      id: "macros-by-goal",
+      heading: {
+        en: "Using the calculator by goal: cutting, building, holding",
+        ar: "كيف تستخدم الحاسبة لهدفك؟ تخسيس أم بناء أم ثبات",
+      },
+      blocks: [
+        {
+          kind: "p",
+          text: {
+            en: "Macros for fat loss (the Arabic searcher's «حساب الماكروز للتخسيس») start from the energy side: set the calorie target a few hundred below maintenance — the site's documented working band is roughly 300–500 kcal — then defend muscle from inside the shortage. That means protein parked at the top of the 1.6–2.2 g/kg range or the high-protein preset, fat kept above its health floor, and the cut taken from carbohydrates first, exactly as the split-choosing section prescribes. Track the weekly average of your morning weight, not any single day's reading: the scale swings with water and glycogen, and decisions belong to the trend line.",
+            ar: "ماكروز التخسيس («حساب الماكروز للتخسيس») تبدأ من جهة الطاقة: اضبط هدف السعرات أدنى من الثبات بمقدار مئات قليلة — نطاق العمل الموثق في الموقع يقارب 300–500 سعرة — ثم دافع عن العضلة من داخل العجز. يعني هذا بروتيناً مثبتاً عند أعلى نطاق 1.6–2.2 غرام للكيلوغرام أو إعداد البروتين المرتفع، ودهوناً فوق أرضيتها الصحية، والخفض من الكربوهيدرات أولاً كما يصف قسم اختيار التوزيع بالضبط. وتابع متوسط الأسبوع لوزن صباحك لا قراءة يوم واحد: فالميزان يتأرجح بالماء والجليكوجين، والقرارات ملك خط الاتجاه.",
+          },
+        },
+        {
+          kind: "p",
+          text: {
+            en: "Macros for muscle gain («كم أحتاج لبناء العضل؟») flip the energy sign without flipping the discipline: a modest surplus — not a feast — rides on top of the balanced preset, protein stays in the same protective range, and carbohydrates earn their share by fueling the training that supplies the stimulus. The honest pace marker is the mirror and the lifts alongside a weight that climbs slowly; when fat arrives faster than muscle, the prescription is trimming the surplus, never the protein. Gaining is a longer project than losing — plan in months and log honestly.",
+            ar: "ماكروز بناء العضل («كم أحتاج لبناء العضل؟») تقلب إشارة الطاقة دون أن تقلب الانضباط: فائض متواضع — لا وليمة — فوق الإعداد المتوازن، وبروتين يظل في النطاق الوقائي نفسه، وكربوهيدرات تكسب حصتها بوقودها للتدريب الذي يمنح التحفيز. ومؤشر الوتيرة الأمين هو المرآة والأوزان المرفوعة مع وزن يصعد ببطء؛ وحين تصل الدهون أسرع من العضل تكون الوصفة تقليم الفائض لا تقليم البروتين أبداً. البناء مشروع أطول من الخسارة — خطط بالشهرين وسجّل بأمانة.",
+          },
+        },
+        {
+          kind: "p",
+          text: {
+            en: "Macros for holding weight («ماكروز الثبات») are the quietest and most underrated job: eat at maintenance with protein still high, and let training plus time do the slow work of recomposition — trading a little fat for a little muscle at a stable scale number. This suits beginners, returners, and anyone whose weight goal is already met; the body-fat calculator's own page documents that recomposition moves both numbers slowly and works best from those starting points. Maintenance is also the season's rest stop between cutting and building blocks — visiting it deliberately beats falling into it exhausted.",
+            ar: "ماكروز الثبات أهدأ الوظائف وأكثرها إهمالاً: كُل عند الثبات وبروتينك ما زال مرتفعاً، ودع التدريب والزمن ينجزا عمل إعادة التكوين البطيء — مبادلة قليل من الدهون بقليل من العضل عند رقم ثابت على الميزان. هذا يناسب المبتدئين والعودين ومن حقق هدف وزنه أصلاً؛ وصفحة حاسبة دهون الجسم نفسها توثق أن إعادة التكوين تحرك الرقمين ببطء وتعمل أفضل من نقاط البداية تلك. والثبات أيضاً محطة راحة الموسم بين كتل التنشيف والبناء — زيارته عمداً أفضل من السقوط فيه منهكاً.",
+          },
+        },
+      ],
+    },
+    {
       id: "grams-to-meals",
       heading: {
         en: "From daily grams to actual meals",
