@@ -108,6 +108,8 @@ import { BATCH_11 } from "@/lib/exercises-enrichment-batch11";
 import { BATCH_12 } from "@/lib/exercises-enrichment-batch12";
 import { BATCH_13 } from "@/lib/exercises-enrichment-batch13";
 import { BATCH_14 } from "@/lib/exercises-enrichment-batch14";
+import { BATCH_15 } from "@/lib/exercises-enrichment-batch15";
+import { BATCH_16 } from "@/lib/exercises-enrichment-batch16";
 
 export type EnrichedFaq = { q: string; a: string };
 
@@ -162,6 +164,8 @@ export const EXERCISES_ENRICHMENT: Record<string, ExerciseEnrichment> = {
   ...BATCH_12,
   ...BATCH_13,
   ...BATCH_14,
+  ...BATCH_15,
+  ...BATCH_16,
 };
 
 /** Resolve the enrichment layer for an exercise slug (undefined = none). */

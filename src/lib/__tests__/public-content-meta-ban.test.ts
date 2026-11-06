@@ -42,6 +42,8 @@ const GUARDED_FILES = [
   "src/lib/exercises-enrichment-batch12.ts",
   "src/lib/exercises-enrichment-batch13.ts",
   "src/lib/exercises-enrichment-batch14.ts",
+  "src/lib/exercises-enrichment-batch15.ts",
+  "src/lib/exercises-enrichment-batch16.ts",
   "src/lib/foods-enrichment.ts",
   "src/lib/food-comparisons.ts",
   "src/lib/food-nutrient-lists.ts",

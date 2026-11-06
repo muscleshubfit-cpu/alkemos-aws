@@ -37,7 +37,7 @@ import { SITEMAP_LASTMOD } from "@/lib/sitemap-lastmod";
  * 2026-11-06 «استكمل تنفيذ خطة استعادة النمو… نفّذ جميع التحسينات
  * الممكنة للتمارين» — audit 05 §ج priority: abs/chest hubs first).
  */
-const EXPECTED_COVERED = 70;
+const EXPECTED_COVERED = 80;
 
 const words = (s: string) =>
   s.replace(/[\u200f\u200e]/g, "").split(/\s+/).filter(Boolean).length;

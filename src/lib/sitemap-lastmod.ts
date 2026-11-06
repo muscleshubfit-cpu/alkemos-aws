@@ -47,7 +47,10 @@ export const SITEMAP_LASTMOD = {
   // P1-2 (2026-11-04, SEO-ADSENSE-RECOVERY-PLAN · owner order «ابدأ
   // تنفيذ المرحلة P1-2»): the top-50 demand exercises (100 URLs across
   // both language mirrors) now carry the unique editorial layer.
-  // SEO-GROWTH tail batch 1 (2026-11-06, owner order «استكمل تنفيذ خطة
+  // SEO-GROWTH tail batch 2 (2026-11-06, direction-correction order
+  // «حسّن صفحات التمارين الموجودة بالفعل») — batches 15-16 add ten more
+  // enriched pages same-day; anchor unchanged (honest same-ship date).
+  // Tail batch 1 (2026-11-06, owner order «استكمل تنفيذ خطة
   // استعادة النمو… نفّذ جميع التحسينات الممكنة للتمارين» — plan
   // Phase 3, audit 05 §ج abs/chest priority): 20 more exercise pages
   // (40 URLs across both mirrors) gained the unique editorial layer —
