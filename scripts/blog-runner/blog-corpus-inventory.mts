@@ -57,6 +57,9 @@ type Row = {
   last_reviewed_at: string | null;
   reading_time: number | null;
   linked_post_id: string | null;
+  focus_keyword: string | null;
+  keywords: string[] | null;
+  tags: string[] | null;
   faq_json: FaqItem[] | null;
   content: string | null;
   meta_title: string | null;
@@ -174,11 +177,64 @@ function legacyStains(md: string, lang: "en" | "ar") {
   return found;
 }
 
+// ── keyword/tag topical relevance (P1 batch 13, owner order 2026-11-06) ───
+// The on-site search predicate (matchesBlogSearch) matches on keywords+tags,
+// so a legacy random keyword pool pollutes search results for unrelated
+// queries. Deterministic ORPHAN detector: an entry is orphan when NONE of
+// its content words (>=4 chars, lowercase, stopword-stripped, plural-stripped
+// Latin) appears among the article's own topical words (title + category +
+// focus_keyword). Report-only — fixes flow through article-treatment.
+const RELEVANCE_STOPWORDS = new Set([
+  "best", "how", "what", "when", "why", "which", "with", "without", "for",
+  "and", "the", "you", "your", "that", "this", "from", "into", "about",
+  "many", "much", "should", "can", "will", "does", "are", "was", "were",
+  "has", "have", "been", "its", "their", "over", "under", "between",
+  "during", "before", "after", "while", "than", "then", "some", "most",
+  "أفضل", "كيف", "ما", "هل", "في", "على", "مع", "إلى", "الى", "بين",
+  "أكثر", "اكثر", "عندما", "لماذا", "الذي", "التي", "هذا", "هذه",
+  "ذلك", "تلك", "كان", "كانت", "يكون", "عن", "على", "هو", "هي",
+]);
+
+function contentWords(s: string | null | undefined): Set<string> {
+  const out = new Set<string>();
+  for (const raw of (s || "").toLowerCase().replace(/[^\p{L}\p{N}\s]/gu, " ").split(/\s+/)) {
+    if (raw.length < 4 || RELEVANCE_STOPWORDS.has(raw)) continue;
+    // Every word contributes its RAW form plus lightly-normalized variants,
+    // so matching stays robust on both sides (calories/calorie, classes/class).
+    // Extra variants only ever widen matching (conservative for the orphan
+    // detector: fewer false orphans, never more).
+    const forms = new Set<string>([raw]);
+    // Latin plural variants (calories->calorie via s-strip, classes->class via
+    // es-strip, studies->stud via ies-strip) — every variant widens matching,
+    // so all are added; the ss-guard protects mass/class/atlas.
+    if (/s$/.test(raw) && !/ss$/.test(raw) && raw.length - 1 >= 3) {
+      forms.add(raw.slice(0, -1));
+    }
+    if (/ies$/.test(raw) && raw.length - 3 >= 3) forms.add(raw.slice(0, -3));
+    else if (/es$/.test(raw) && raw.length - 2 >= 3) forms.add(raw.slice(0, -2));
+    // Arabic definite article (ال) root form when the root stays >=3 chars
+    if (raw.startsWith("ال") && raw.length - 2 >= 3) forms.add(raw.slice(2));
+    for (const f of forms) if (f.length >= 3 && !RELEVANCE_STOPWORDS.has(f)) out.add(f);
+  }
+  return out;
+}
+
+function orphanEntries(entries: string[] | null, topical: Set<string>): string[] {
+  const out: string[] = [];
+  for (const raw of entries || []) {
+    const words = contentWords(raw);
+    let hit = false;
+    for (const w of words) if (topical.has(w)) { hit = true; break; }
+    if (!hit && words.size > 0) out.push(raw);
+  }
+  return out;
+}
+
 // ── fetch all published rows (paginated) ──────────────────────────────────
 
 async function fetchAll(): Promise<Row[]> {
   const cols =
-    "id,slug,language,title,excerpt,category,author,published_at,updated_at,review_status,last_reviewed_at,reading_time,linked_post_id,faq_json,content,meta_title,meta_description";
+    "id,slug,language,title,excerpt,category,author,published_at,updated_at,review_status,last_reviewed_at,reading_time,linked_post_id,focus_keyword,keywords,tags,faq_json,content,meta_title,meta_description";
   const out: Row[] = [];
   let offset = 0;
   const PAGE = 500;
@@ -223,12 +279,23 @@ type Metric = {
   linked_lang_pair_ok: boolean | null;
   backlink_from: string | null;
   pairing: "bidirectional" | "one-way" | "unpaired" | "broken";
+  keywords_count: number;
+  tags_count: number;
+  keyword_orphans: string[];
+  tag_orphans: string[];
 };
 
 const metrics: Metric[] = rows.map((r) => {
   const md = typeof r.content === "string" ? r.content : "";
   const { external, internal } = links(md);
   const stains = legacyStains(md, r.language);
+  // keyword/tag topical relevance (P1 batch 13): orphans vs the article's own
+  // topical words (title + category + focus_keyword).
+  const topical = contentWords(
+    [r.title, r.category, r.focus_keyword].filter(Boolean).join(" "),
+  );
+  const keywordOrphans = orphanEntries(r.keywords, topical);
+  const tagOrphans = orphanEntries(r.tags, topical);
   const sourcesClaim =
     stains.includes("sources-cited claim") ||
     stains.includes("sources-cited heading") ||
@@ -276,6 +343,10 @@ const metrics: Metric[] = rows.map((r) => {
       linked !== null ? linked.language !== r.language : null,
     backlink_from: backlinkFrom,
     pairing,
+    keywords_count: (r.keywords || []).length,
+    tags_count: (r.tags || []).length,
+    keyword_orphans: keywordOrphans,
+    tag_orphans: tagOrphans,
   };
 });
 
@@ -359,6 +430,19 @@ const summary = {
     const w = metrics.map((m) => m.words).sort((a, b) => a - b);
     return w.length ? w[Math.floor(w.length / 2)] : 0;
   })(),
+  keyword_tag_relevance: {
+    rows_with_keywords: metrics.filter((m) => m.keywords_count > 0).length,
+    rows_zero_keywords: metrics.filter((m) => m.keywords_count === 0).length,
+    rows_with_orphan_keywords: metrics.filter((m) => m.keyword_orphans.length > 0)
+      .length,
+    orphan_keyword_entries: metrics.reduce(
+      (n, m) => n + m.keyword_orphans.length,
+      0,
+    ),
+    rows_with_orphan_tags: metrics.filter((m) => m.tag_orphans.length > 0)
+      .length,
+    orphan_tag_entries: metrics.reduce((n, m) => n + m.tag_orphans.length, 0),
+  },
 };
 
 // ── PAIR PARITY (E8, owner order 2026-11-01 clause 3-d: «فحص النسختين
@@ -442,4 +526,8 @@ console.error(JSON.stringify(summary, null, 2));
 console.error("pair parity:", JSON.stringify(pairParitySummary));
 console.error(
   `unpaired ledger: ${unpairedLedger.length} (${unpairedLedger.filter((u) => u.eligible_for_counterpart).length} eligible A/B)`,
+);
+console.error(
+  "keyword/tag relevance:",
+  JSON.stringify(summary.keyword_tag_relevance),
 );

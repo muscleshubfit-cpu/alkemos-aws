@@ -15087,3 +15087,20 @@ Stage Summary:
 - **المراجعة التصحيحية مكتملة بقيودها الخمسة**: التاريخ صحيح 2026-11-05 في كل الأسطح (التقرير معاد التسمية + الإحالات + الفهارس + STATE + worklog) · وصف الأطعمة صادق مقيسًا (ثنائي للنواة ودفعات التعريب · ذيل USDA إنجليزي يُعرض كما هو — بلا أرقام مختلقة) · SHA الإنتاج مثبت حيًا (dbbe84e6) · حماية main موثقة غير مفعلة مع توصية بلا تغيير · قرار العمومية موثق وفحص الأسرار نظيف — التقرير المختصر الحاكم: **docs/DOCUMENTATION-REWRITE-CORRECTIONS-2026-11-05.md** — مسجل بصفه بسجل docs/README.md بنفس الكوميت
 - Push status: منفذ ومتحقق — **b7d7397c** إلى main · إثبات ما بعد الدفع مقيسًا: بوابات التوثيق الثلاث الحية اشتغلت وكلها نجاح (docs-parity [يشتغل داخله docs_audit] · guard · migration-audit) وبوابة الجودة وخط النشر تخطيا الدفعة التوثيقية بقانون النطاق Phase 290 (كل المسارات ضمن paths-ignore) · الإنتاج يبقى على dbbe84e6 (build-info مقيس 18:45Z — كما تنبأ الإطار التوثيقي بلا ادعاء) — كوميت إثبات ما بعد الدفع صحح سطر هذا البند من صيغة قبل القياس
 
+
+<!-- rotated 2026-11-06 by scripts/worklog_rotate.py (Phase 288, ARCH-REMEDIATION): 1 entries moved verbatim from worklog.md -->
+---
+Task ID: BRANCH-PROTECTION-BASIC-426-2026-11-05
+Agent: Main (Z.ai)
+Task: أمر المالك (2026-11-05) — «نفّذ الآن تفعيل حماية أساسية لفرع main في مستودع muscleshubfit-cpu/alkemos-aws»: (1) فحص إعدادات المستودع الحالية وصلاحيات GitHub المتاحة · (2) تفعيل الحماية: منع حذف الفرع · منع Force Push · السماح بالدفع المباشر دون اشتراط PR · عدم فرض status checks إلزامية · عدم اشتراط مراجعات أو موافقات · (3) لا تغيير خصوصية (إبقاء عام بقرار مقصود — حدود دقائق Actions) · (4) لا تعديل كود/إعدادات نشر/CI/أسرار · (5) تحقق بعد التفعيل عبر GitHub API من أن الحماية مطبقة فعلًا ومطابقة للمطلوب · (6) عند التعذر: تحديد السبب بدقة بلا ادعاء نجاح · التوثيق: تحديث STATE.md + تقرير مختصر داخل docs/ ثم commit/push على main مباشرة — دون توسيع نطاق المهمة.
+
+Work Log:
+- **الفحص المسبق (1):** مقيس عبر API: التوكن يوثّق بمالك المستودع muscleshubfit-cpu (نطاقات repo/workflow · صلاحيات admin/maintain/push كاملة) · المستودع عام غير مؤرشف والفرع الافتراضي main · الحماية قبل التفعيل: GET protection = 404 «Branch not protected» وprotected=false (مطابق لتوثيق 425 §4) — لا مانع من التفعيل
+- **التفعيل (2):** PUT /repos/muscleshubfit-cpu/alkemos-aws/branches/main/protection — استجابة 200 بالجسم: allow_deletions=false · allow_force_pushes=false · required_pull_request_reviews=null · required_status_checks=null · restrictions=null · enforce_admins=false (التفضيل الموثق 425 §4) + بقية المفاتيح الاختيارية false
+- **التحقق (5):** GET مستقل بعد التفعيل: protected=true · allow_deletions.enabled=false · allow_force_pushes.enabled=false · required_status_checks=null · required_pull_request_reviews=null · restrictions=null — مطابق للمطلوب حرفيًا (قياس 2026-11-05T19:43:51Z) · النجاح حقيقي مقيسًا (بند التعذر 6 لم يُفعَّل — لم يتعذر شيء)
+- **ما لم يُمس (3/4):** الخصوصية (عام بقرار تشغيلي) · الكود/قاعدة البيانات · إعدادات النشر · سير عمل CI · الأسرار — التغييرات: ملفات توثيق + قاعدة الحماية ذاتها
+
+Stage Summary:
+- **حماية أساسية مفعّلة ومتحقق منها مقيسًا على main (أمر المالك 2026-11-05):** منع الحذف وforce-push مع إبقاء الدفع المباشر بلا PR ولا فحوصات/مراجعات إلزامية · enforce_admins=OFF كالتفضيل الموثق (المالك/المشرفون خارج القاعدة — «Include administrators» خيار لاحق بقرار مالك) · التوصية المتبقية اختيارية بقرار مالك: اشتراط الفحوص الأربعة (quality · parity · guard · migration-audit) — التقرير الحاكم docs/BRANCH-PROTECTION-BASIC-2026-11-05.md — مسجل بصفه بسجل docs/README.md بنفس الكوميت
+- Push status: pushed — دفعة توثيقية صرفة إلى main مباشرة بعد التفعيل (إثبات عضوي أن الدفع المباشر يعمل تحت الحماية الجديدة) · المتوقع المقيس من سوابق 423/424/425: بوابات التوثيق الثلاث تعمل (docs-parity [يشتغل داخله docs_audit] · guard · migration-audit) وخط الجودة والنشر يتخطيان الدفعة بقانون النطاق (كل المسارات ضمن paths-ignore) · الإنتاج يبقى على dbbe84e6 · SHA اختياري بقانون 288
+
