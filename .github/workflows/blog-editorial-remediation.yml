@@ -1,0 +1,57 @@
+# WHY: BILINGUAL-EDITORIAL-444B (owner order 2026-11-07 — «إلغاء الاستثناءات…
+# وعالج جميع الأخطاء والصياغات غير الطبيعية»): the audit channel
+# (blog-editorial-audit.yml, run 42292979775) measured the live blog corpus
+# and found 12 rows with real editorial defects (strong dialect quote ·
+# awkward Arabic-letter transliteration of EPA/DHA · 44 old-style tanween
+# spots · 14 EN double-spaces). This workflow is the deterministic
+# remediation channel — the legacy-ar-msa / keyword-tag-remediation pattern.
+#
+# LAW: scripts/blog-runner/editorial-db-remediation.mts writes ONLY
+# content/reading_time/updated_at (+ the excerpt/meta/faq fields an edit
+# actually hits). Slug/title/is_published/images/links: never touched.
+# Every edit is an exact pair with an expected match count — a live row not
+# matching the expectation is refused individually. Validation before any
+# write: URL count unchanged · word delta tolerance · AR must not gain strong
+# dialect markers (repo detector) · EN ends with zero double-spaces outside
+# code. updated_at bumps (honest-lastmod D-4 — content changes are visible).
+# Idempotent — clean rows are skipped.
+#
+# Dispatch with dry_run (default) first, review, then apply.
+name: Blog editorial remediation (dispatch-only, dry-run default)
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "DRY_RUN — report + validation only, zero DB writes"
+        type: boolean
+        default: true
+
+concurrency:
+  group: blog-editorial-remediation
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  remediate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5 — pinned 2026-10-10 audit
+
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2 — pinned 2026-10-10 audit
+        with:
+          bun-version: 1.3.14
+
+      - name: Install dependencies (frozen bun.lock = production tree)
+        run: bun install --frozen-lockfile
+
+      - name: Editorial remediation (validated before any write)
+        run: bun scripts/blog-runner/editorial-db-remediation.mts
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          DRY_RUN: ${{ github.event.inputs.dry_run == 'false' && '0' || '1' }}
