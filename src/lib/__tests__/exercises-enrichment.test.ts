@@ -31,8 +31,13 @@ import { SITEMAP_LASTMOD } from "@/lib/sitemap-lastmod";
  *     (truthful-recency protocol in sitemap-lastmod.ts).
  */
 
-/** Batch protocol coverage — grows to 50 when all five batches land. */
-const EXPECTED_COVERED = 50;
+/**
+ * Batch protocol coverage — 50 for the P1-2 batches (1-10), 70 with the
+ * SEO-GROWTH tail batch 1 (batches 11-14: core + chest tails, owner order
+ * 2026-11-06 «استكمل تنفيذ خطة استعادة النمو… نفّذ جميع التحسينات
+ * الممكنة للتمارين» — audit 05 §ج priority: abs/chest hubs first).
+ */
+const EXPECTED_COVERED = 70;
 
 const words = (s: string) =>
   s.replace(/[\u200f\u200e]/g, "").split(/\s+/).filter(Boolean).length;
@@ -272,6 +277,6 @@ describe("exercises-enrichment batches (P1-2 canaries)", () => {
     // The 2026-11-04 title-ceiling fix already bumped the anchor; P1-2's
     // enrichment is a second material change to the family's served HTML
     // on the same ship date, so the anchor stays truthful at 2026-11-04.
-    expect(SITEMAP_LASTMOD.exercises).toBe("2026-11-04");
+    expect(SITEMAP_LASTMOD.exercises).toBe("2026-11-06");
   });
 });

@@ -77,6 +77,21 @@
  *   batch  8     — conditioning legs + hinge + biceps flags (5)
  *   batch  9     — biceps close + triceps loaded half (5)
  *   batch  10    — triceps home version + core tail (4)
+ *
+ * TAIL BATCH 1 (2026-11-06 — SEO-GROWTH plan Phase 3, owner order
+ * «استكمل تنفيذ خطة استعادة النمو وتحسين SEO/GEO حتى إتمام جميع مراحلها
+ * وبنودها… نفّذ جميع التحسينات الممكنة للتمارين»): batches 11-14 open the
+ * 818-thin-tail enrichment at the plan's own priority (audit 05 §ج: the
+ * abs/chest hubs first). Same laws, same canary, same gates.
+ *   batch 11 — core tail I: 34-sit-up · decline-crunch · cable-seated-crunch
+ *                · ab-crunch-machine · flat-bench-lying-leg-raise (5)
+ *   batch 12 — core tail II: decline-reverse-crunch · cable-reverse-crunch
+ *                · cable-russian-twists · barbell-ab-rollout · air-bike (5)
+ *   batch 13 — chest tail I: decline-barbell-bench-press · decline-dumbbell
+ *                bench-press · decline-dumbbell-flyes · decline-push-up ·
+ *                cable-chest-press (5)
+ *   batch 14 — chest tail II: flat-bench-cable-flyes · butterfly · neutral-
+ *                grip dumbbell press · bent-arm pullover · around-the-worlds (5)
  */
 
 import { BATCH_1 } from "@/lib/exercises-enrichment-batch1";
@@ -89,6 +104,10 @@ import { BATCH_7 } from "@/lib/exercises-enrichment-batch7";
 import { BATCH_8 } from "@/lib/exercises-enrichment-batch8";
 import { BATCH_9 } from "@/lib/exercises-enrichment-batch9";
 import { BATCH_10 } from "@/lib/exercises-enrichment-batch10";
+import { BATCH_11 } from "@/lib/exercises-enrichment-batch11";
+import { BATCH_12 } from "@/lib/exercises-enrichment-batch12";
+import { BATCH_13 } from "@/lib/exercises-enrichment-batch13";
+import { BATCH_14 } from "@/lib/exercises-enrichment-batch14";
 
 export type EnrichedFaq = { q: string; a: string };
 
@@ -139,6 +158,10 @@ export const EXERCISES_ENRICHMENT: Record<string, ExerciseEnrichment> = {
   ...BATCH_8,
   ...BATCH_9,
   ...BATCH_10,
+  ...BATCH_11,
+  ...BATCH_12,
+  ...BATCH_13,
+  ...BATCH_14,
 };
 
 /** Resolve the enrichment layer for an exercise slug (undefined = none). */

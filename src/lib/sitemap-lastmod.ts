@@ -46,10 +46,13 @@ export const SITEMAP_LASTMOD = {
   // 97 → 63 via the three-tier template) — family template change.
   // P1-2 (2026-11-04, SEO-ADSENSE-RECOVERY-PLAN · owner order «ابدأ
   // تنفيذ المرحلة P1-2»): the top-50 demand exercises (100 URLs across
-  // both language mirrors) now carry the unique editorial layer — a
-  // second material family change on the same ship date, so the anchor
-  // stays truthful at 2026-11-04.
-  exercises: "2026-11-04",
+  // both language mirrors) now carry the unique editorial layer.
+  // SEO-GROWTH tail batch 1 (2026-11-06, owner order «استكمل تنفيذ خطة
+  // استعادة النمو… نفّذ جميع التحسينات الممكنة للتمارين» — plan
+  // Phase 3, audit 05 §ج abs/chest priority): 20 more exercise pages
+  // (40 URLs across both mirrors) gained the unique editorial layer —
+  // a material family change, so the anchor moves to the ship date.
+  exercises: "2026-11-06",
   foods: "2026-11-04",
   // SEO-GROWTH Phase 2 (2026-11-06, owner order «استكمل المرحلة التالية
   // من خطة استعادة النمو… استكمل جميع الأعمال الممكنة حاليًا»): the
