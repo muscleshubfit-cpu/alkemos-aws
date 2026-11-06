@@ -298,6 +298,23 @@ const VEGAN_DAIRY_TOKENS = [
 ];
 const PLANT_BASED_GUARD = /جوز هند|جوزهند|صويا|نباتي|شوفان|لوز|بذر الكتان|ارز|رز|coconut|almond|soy|soya|oat|rice|plant/;
 
+/** PLAN-PROBE-ROOTCAUSE-2 (frame 443 — live run 42252228333, the SECOND
+ *  root cause the honest-completion law unmasked): a forbidden token must
+ *  NOT fire when the name carries a LONGER known food whose spelling
+ *  merely CONTAINS the token. MEASURED: the keto token «موز» (banana)
+ *  rejected «جبن موزاريلا» — a cheese the KETO DAIRY LAW explicitly
+ *  protects («Cheeses and creams are untouched — keto staples») — because
+ *  «موزاريلا» starts with «موز». The map lists, per colliding token, the
+ *  LONGER term that suppresses the hit: the name IS that food, not one
+ *  containing the token (mozzarella contains no banana — the exception is
+ *  factually correct on every surface: diet tables, allergy tokens and
+ *  disliked tokens all ride the same hits()). The real banana keeps
+ *  matching (موز · موزة · عصير الموز…) — the gate is not weakened, only
+ *  its aim corrected. */
+const TOKEN_MATCH_EXCEPTIONS: Record<string, string[]> = {
+  موز: ["موزاريلا"],
+};
+
 /* ─────────────── KETO DAIRY LAW 2026-10-25 (owner mandatory correction) ───────────────
  *
  * MEASURED PRODUCTION EVIDENCE (read read-only, 2026-10-25):
@@ -482,7 +499,16 @@ export function checkItemConstraints(
       if (VEGAN_DAIRY_TOKENS.includes(rawTok) && PLANT_BASED_GUARD.test(name)) {
         continue;
       }
-      if (name.includes(tok)) return tok;
+      if (name.includes(tok)) {
+        // FRAME 443 (PLAN-PROBE-ROOTCAUSE-2): the name may be a LONGER
+        // known food that merely CONTAINS the token (موزاريلا ⊃ موز) —
+        // the exception suppresses the hit; the token still matches every
+        // other wording (موزة · موز بلح…).
+        const longer = TOKEN_MATCH_EXCEPTIONS[tok] ?? TOKEN_MATCH_EXCEPTIONS[rawTok];
+        if (!longer?.some((t) => name.includes(normFood(t)))) {
+          return tok;
+        }
+      }
     }
     return null;
   };

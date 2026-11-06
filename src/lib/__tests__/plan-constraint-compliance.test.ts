@@ -43,6 +43,31 @@ describe("diet-compliance gate (checkItemConstraints)", () => {
     }
   });
 
+  it("FRAME 443 (PLAN-PROBE-ROOTCAUSE-2, live run 42252228333): «موزاريلا» is keto-clean — the banana token «موز» must NOT fire on the LONGER cheese name the keto-dairy law protects; the REAL banana keeps matching", () => {
+    // the live-measured false positive: the probe's attempt-2 plan (a REAL
+    // qwen plan) was rejected «جبن موزاريلا … يحتوي «موز»» — موزاريلا merely
+    // STARTS WITH موز. The keto dairy law: «Cheeses and creams are untouched
+    // (keto staples)».
+    for (const food of ["جبن موزاريلا", "موزاريلا", "سلطة موزاريلا بالطماطم", "Mozzarella cheese"]) {
+      expect(checkItemConstraints(food, {}, { dietType: "keto" }), `«${food}» must be keto-clean`).toBeNull();
+    }
+    // the gate is NOT weakened: every real-banana wording still rejects.
+    for (const food of ["موزة وسطة", "موز بلحي", "عصير موز بالحليب", "Banana smoothie"]) {
+      const v = checkItemConstraints(food, {}, { dietType: "keto" });
+      expect(v, `«${food}» must stay rejected in a keto plan`).toContain("كيتو");
+    }
+    // vegan keeps blocking mozzarella (its OWN dairy token — a different
+    // list entry, not the banana token).
+    expect(checkItemConstraints("جبن موزاريلا", {}, { dietType: "vegan" })).toContain("النباتي الصرف");
+    // the factually-correct exception holds on the ALLERGY surface too: a
+    // banana-allergic client can still have mozzarella (it contains no
+    // banana), while the real banana stays blocked (here via the keto
+    // table first — checkItemConstraints order — any rejection is correct).
+    const bananaAllergy = buildClientConstraints({ dietType: "keto", allergyText: "موز" });
+    expect(checkItemConstraints("جبن موزاريلا", {}, bananaAllergy)).toBeNull();
+    expect(checkItemConstraints("موزة طازجة", {}, bananaAllergy)).not.toBeNull();
+  });
+
   it("rejects a keto item by its CARB GRAMS even with an innocent name", () => {
     // A "healthy" sounding item carrying 40g carbs is off a 20-50g/day diet.
     const v = checkItemConstraints("مشروب صحي بالخضار", { carbs_g: 40 }, { dietType: "keto" });
