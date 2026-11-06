@@ -1,0 +1,2236 @@
+{
+ "batch": "KEYWORD/TAG REMEDIATION — P1 batch 14 (owner order 2026-11-06 «راجع جميع المقالات المنشورة… وصحح المعلومات»): whole-list replacement of the legacy generator's random keyword/tag pools on every row the batch-13 corpus audit measured as polluted (99 rows with orphan keywords — 446 entries — + 113 rows with orphan tags — 276 entries — + 18 zero-keyword rows; 131 unique rows). Every replacement entry is composed from the article's OWN vocabulary (title + category + H2 headings — zero invented topics) in the p22-1 quality bar form: natural search phrasings + question shapes. Validated per entry against the live row's basis by the channel script before any write; metadata-only writes (no updated_at bump — keywords/tags never render; the honest-lastmod law D-4).",
+ "entries": [
+  {
+   "slug": "macro-tracking-meal-prep-1800-fat-loss",
+   "language": "en",
+   "keywords": [
+    "macro tracking meal prep",
+    "1800 calorie meal plan for fat loss",
+    "how to track macros effectively",
+    "high protein meal prep for busy weeks",
+    "meal prep grocery list for fat loss",
+    "common macro tracking mistakes"
+   ],
+   "tags": [
+    "meal prep",
+    "macro tracking",
+    "fat loss",
+    "1800 calorie diet"
+   ]
+  },
+  {
+   "slug": "chest-muscle-home-workout-guide",
+   "language": "ar",
+   "keywords": [
+    "تمارين الصدر في المنزل",
+    "بناء عضلات الصدر بوزن الجسم",
+    "برنامج صدر منزلي بأدوات بسيطة",
+    "التدرج في تمارين الصدر بدون أوزان",
+    "تغذية بناء عضلات الصدر",
+    "أخطاء أداء تمارين الصدر المنزلية"
+   ],
+   "tags": [
+    "تمارين الصدر",
+    "الضغط المنزلي",
+    "الأدوات الدنيا"
+   ]
+  },
+  {
+   "slug": "deload-week-structure-strength-gains",
+   "language": "en",
+   "keywords": [
+    "how to structure a deload week",
+    "deload week for strength training",
+    "do I stop training during a deload week",
+    "deload volume and intensity rules",
+    "when to schedule a deload week",
+    "coming back after a deload week"
+   ],
+   "tags": [
+    "deload week",
+    "strength training",
+    "recovery"
+   ]
+  },
+  {
+   "slug": "home-muscle-building-guide-simple-weights",
+   "language": "ar",
+   "keywords": [
+    "تمارين بناء العضلات في المنزل بأوزان بسيطة",
+    "الجدول الأسبوعي المتوازن بثلاثة أيام قوة",
+    "الجدول الأسبوعي لبناء العضلات بالمنزل",
+    "قانون التدرج بأوزان بسيطة",
+    "قواعد الأداء الصحيح في التمرين المنزلي",
+    "إحماء خمس دقائق قبل الجلسة"
+   ],
+   "tags": [
+    "تمارين المنزل",
+    "أوزان بسيطة",
+    "قانون التدرج"
+   ]
+  },
+  {
+   "slug": "muscle-building-home-workout-guide",
+   "language": "ar",
+   "keywords": [
+    "تصميم برنامج تمارين بناء العضلات في المنزل",
+    "برنامج منزلي بوزن الجسم",
+    "تقسيم علوي سفلي بالدمبل",
+    "التغذية الداعمة للبناء المنزلي",
+    "التعافي في التدريب المنزلي",
+    "أخطاء المتدرب المنزلي"
+   ],
+   "tags": [
+    "برنامج التمارين المنزلي",
+    "بناء العضلات",
+    "بوزن الجسم"
+   ]
+  },
+  {
+   "slug": "intermittent-fasting-muscle-gain-guide",
+   "language": "ar",
+   "keywords": [
+    "الصيام المتقطع لبناء العضلات",
+    "جدولة الجلسات أثناء الصيام المتقطع",
+    "بروتوكول الصيام المناسب للتضخيم",
+    "ماذا آكل بعد الجلسة صائمًا",
+    "علامات الإرهاق أثناء الصيام",
+    "يوم تطبيقي صيام وتدريب"
+   ],
+   "tags": [
+    "الصيام المتقطع",
+    "بناء العضلات",
+    "جدولة الجلسات"
+   ]
+  },
+  {
+   "slug": "sleep-muscle-growth-science",
+   "language": "ar",
+   "keywords": [
+    "تأثير النوم على بناء العضلات",
+    "النوم وهرمونات النمو",
+    "كم ساعة نوم يحتاج الرياضي",
+    "السهر وتخليق البروتين العضلي",
+    "قصر النوم وخسارة الدهون",
+    "النوم والقوة القصوى"
+   ],
+   "tags": [
+    "النوم",
+    "هرمونات النمو",
+    "دليل علمي"
+   ]
+  },
+  {
+   "slug": "calculate-daily-calories-weight-loss",
+   "language": "ar",
+   "keywords": [
+    "كم سعرة أحتاج يوميا لخسارة الوزن",
+    "حساب الأيض الأساسي لخسارة الوزن",
+    "معامل النشاط في حساب السعرات",
+    "عجز السعرات لخسارة الدهون",
+    "أخطاء التسجيل في حساب السعرات",
+    "بروتوكول التعديل كل أسبوعين"
+   ],
+   "tags": [
+    "حساب السعرات",
+    "خسارة الوزن",
+    "طريقة حساب دقيقة"
+   ]
+  },
+  {
+   "slug": "schedule-cardio-muscle-gain-guide",
+   "language": "en",
+   "keywords": [
+    "cardio before or after weights",
+    "how to schedule cardio with strength training",
+    "cardio sessions per week for muscle gain",
+    "steady cardio or short intervals for lifters",
+    "cycling vs running for muscle gain",
+    "sample week lifting plus cardio"
+   ],
+   "tags": [
+    "cardio",
+    "muscle gain",
+    "strength training"
+   ]
+  },
+  {
+   "slug": "calorie-cycling-fat-loss-guide",
+   "language": "ar",
+   "keywords": [
+    "تدوير السعرات لخسارة الدهون",
+    "حساب الماكروز لخسارة الوزن ببروتين مرتفع",
+    "وجبات عالية البروتين لجدول مزدحم",
+    "دمج نوافذ الصيام مع التدريب",
+    "النوم والكرياتين في خطة الحرق",
+    "المكملات التي تستحق في خسارة الدهون"
+   ],
+   "tags": [
+    "تدوير السعرات",
+    "خسارة الدهون",
+    "الماكروز",
+    "البروتين"
+   ]
+  },
+  {
+   "slug": "red-light-therapy-muscle-recovery-mistakes",
+   "language": "en",
+   "keywords": [
+    "red light therapy for muscle recovery",
+    "red light therapy wavelength mistakes",
+    "red light therapy session timing",
+    "red light therapy dosing distance and time",
+    "red light therapy as a standalone tool",
+    "red light therapy eye safety"
+   ],
+   "tags": [
+    "red light therapy",
+    "muscle recovery",
+    "wellness"
+   ]
+  },
+  {
+   "slug": "adjust-training-volume-cut-muscle-retention",
+   "language": "en",
+   "keywords": [
+    "how to adjust training volume during a cut",
+    "training volume to keep muscle while cutting",
+    "weekly rate of fat loss for muscle retention",
+    "autoregulate effort with RPE",
+    "minimum effective training volume",
+    "cardio placement during a cut"
+   ],
+   "tags": [
+    "keep muscle",
+    "RPE",
+    "training volume"
+   ]
+  },
+  {
+   "slug": "creatine-cycling-long-term-gains",
+   "language": "en",
+   "keywords": [
+    "how to cycle creatine for long term gains",
+    "creatine cycling evidence",
+    "when a creatine break makes sense",
+    "creatine washout what happens",
+    "8 week on 4 week off creatine template",
+    "creatine non-cycling decision"
+   ],
+   "tags": [
+    "creatine",
+    "supplements",
+    "cycling"
+   ]
+  },
+  {
+   "slug": "best-plant-based-protein-powder-muscle-gain-2026",
+   "language": "en",
+   "keywords": [
+    "best plant based protein powder for muscle gain",
+    "pea plus rice protein blend",
+    "plant protein complete amino acid profile",
+    "third party tested plant protein",
+    "newest trials on plant protein blends",
+    "plant protein for muscle gain 2026"
+   ],
+   "tags": [
+    "plant protein",
+    "protein powder",
+    "supplements"
+   ]
+  },
+  {
+   "slug": "progressive-weight-increase",
+   "language": "ar",
+   "keywords": [
+    "كيف أزيد وزن الحمل بأمان كل أسبوع",
+    "زيادة الحمل التدريجي للتقوية",
+    "النسب الآمنة لزيادة الأوزان",
+    "التدرج المزدوج في رفع الأحمال",
+    "كم أضيف على كل تمرين أسبوعيًا",
+    "ماذا أفعل عند ثبات الحمل أسبوعين"
+   ],
+   "tags": [
+    "الحمل التدريجي",
+    "بناء العضلات",
+    "التدرج"
+   ]
+  },
+  {
+   "slug": "track-macros-without-scale-guide",
+   "language": "ar",
+   "keywords": [
+    "تتبع الماكروز بدون ميزان طعام",
+    "التقدير البصري للماكروز",
+    "قاعدة اليد في حساب الماكروز",
+    "أدوات المطبخ للتتبع بلا ميزان",
+    "تدقيق تتبع الماكروز نهاية اليوم",
+    "أخطاء تتبع الماكروز البصري"
+   ],
+   "tags": [
+    "الماكروز",
+    "تتبع التغذية",
+    "التقدير البصري"
+   ]
+  },
+  {
+   "slug": "deload-week-guide",
+   "language": "ar",
+   "keywords": [
+    "متى آخذ أسبوع راحة من التمرين",
+    "أسبوع تنازلي بدون خسارة التقدم",
+    "طريقة التنازل في الحجم والشدة",
+    "جدولة الأسبوع التنازلي عمليًا",
+    "علامات استدعاء التنازل فورًا",
+    "العودة بعد الأسبوع التنازلي"
+   ],
+   "tags": [
+    "الأسبوع التنازلي",
+    "الراحة من التمرين",
+    "جدولة التنازل"
+   ]
+  },
+  {
+   "slug": "best-protein-supplement-women-ramadan",
+   "language": "ar",
+   "keywords": [
+    "أفضل مكمل بروتين للنساء في رمضان",
+    "وقت تناول البروتين بعد التمرين في رمضان",
+    "كم بروتين تحتاجها المرأة الرياضية في الصيام",
+    "اختيار مكمل البروتين في رمضان",
+    "وجبة ما بعد التمرين في رمضان",
+    "بروتين النساء أثناء الصيام"
+   ],
+   "tags": [
+    "مكمل البروتين",
+    "رمضان",
+    "المرأة الرياضية"
+   ]
+  },
+  {
+   "slug": "calculate-maintenance-calories-muscle-gain",
+   "language": "en",
+   "keywords": [
+    "how to calculate maintenance calories",
+    "maintenance calories for muscle gain",
+    "Mifflin-St Jeor activity multiplier",
+    "two week validation protocol for maintenance",
+    "TEF and protein in maintenance calories",
+    "recalculate maintenance after weight change"
+   ],
+   "tags": [
+    "maintenance calories",
+    "calorie calculator",
+    "muscle gain"
+   ]
+  },
+  {
+   "slug": "calorie-macro-guide-muscle-fat",
+   "language": "ar",
+   "keywords": [
+    "حساب السعرات وتوزيع الماكروز",
+    "توزيع الماكروز لبناء العضلات وحرق الدهون",
+    "حساب سعرات الثبات",
+    "توزيع الماكروز بأرقام متسقة",
+    "أخطاء توزيع الماكروز الشائعة",
+    "بروتوكول التعديل الأسبوعي للماكروز"
+   ],
+   "tags": [
+    "الماكروز",
+    "حساب السعرات",
+    "بناء العضلات",
+    "حرق الدهون"
+   ]
+  },
+  {
+   "slug": "4-day-split-hypertrophy-fat-loss",
+   "language": "en",
+   "keywords": [
+    "4 day split workout plan",
+    "muscle building and fat loss together",
+    "why four days suits hypertrophy and fat loss",
+    "rep ranges and volume for hypertrophy",
+    "two ready made 4 day templates",
+    "supporting nutrition for a 4 day split"
+   ],
+   "tags": [
+    "4 day split",
+    "hypertrophy",
+    "fat loss"
+   ]
+  },
+  {
+   "slug": "calculate-daily-calories-weight-loss-muscle-gain",
+   "language": "ar",
+   "keywords": [
+    "كيف أحسب سعراتي اليومية بدقة",
+    "حساب السعرات لخسارة الوزن أو التضخيم",
+    "حساب معدل الأيض الأساسي ومعامل النشاط",
+    "عجز القطع لخسارة الدهون",
+    "فائض التضخيم النظيف",
+    "توزيع الماكروز على الهدف"
+   ],
+   "tags": [
+    "حساب السعرات",
+    "خسارة الوزن",
+    "التضخيم",
+    "الماكروز"
+   ]
+  },
+  {
+   "slug": "cardio-scheduling-muscle-gain-guide",
+   "language": "ar",
+   "keywords": [
+    "كيف تجدول الكارديو مع بناء العضلات",
+    "الكارديو قبل الحديد أم بعده",
+    "كم جلسة كارديو أسبوعيًا",
+    "كارديو مستمر أم فترات قصيرة",
+    "الدراجة قبل الجري للرياضي",
+    "أسبوع نموذجي حديد وكارديو"
+   ],
+   "tags": [
+    "الكارديو",
+    "بناء العضلات",
+    "جدولة التدريب"
+   ]
+  },
+  {
+   "slug": "creatine-water-retention-scientific-analysis-beginners-guide",
+   "language": "ar",
+   "keywords": [
+    "هل الكرياتين يسبب احتباس الماء",
+    "ماء الكرياتين داخل الخلية",
+    "الكرياتين والميزان كم كيلو",
+    "تحميل سريع أم جرعة ثابتة للكرياتين",
+    "ماء الكرياتين مقابل الانتفاخ",
+    "الكرياتين للمبتدئين دليل علمي"
+   ],
+   "tags": [
+    "الكرياتين",
+    "احتباس الماء",
+    "ماء الكرياتين",
+    "للمبتدئين"
+   ]
+  },
+  {
+   "slug": "cold-bath-home-wellness",
+   "language": "ar",
+   "keywords": [
+    "الحمام البارد للفوائد الصحية",
+    "بروتوكول التدرج للحمام البارد",
+    "نمط التنفس داخل الماء البارد",
+    "الحمام البارد في المنزل خطوة بخطوة",
+    "إشارات الأمان في الحمام البارد",
+    "متى يتجه الرأي ضد الحمام البارد"
+   ],
+   "tags": [
+    "الحمام البارد",
+    "بروتوكول التدرج",
+    "نمط التنفس"
+   ]
+  },
+  {
+   "slug": "chest-muscle-bodyweight-home",
+   "language": "ar",
+   "keywords": [
+    "بناء عضلة الصدر في البيت بوزن الجسم",
+    "مكتبة تمارين الصدر بوزن الجسم",
+    "نظام التدرج في تمارين الصدر المنزلية",
+    "الجدول الأسبوعي لجلستي صدر",
+    "التقنية التي تحمي الكتف وتعزل الصدر",
+    "مثال أسبوع أول لتمارين الصدر"
+   ],
+   "tags": [
+    "تمارين الصدر",
+    "وزن الجسم",
+    "التدريب المنزلي"
+   ]
+  },
+  {
+   "slug": "best-time-to-take-creatine-guide",
+   "language": "en",
+   "keywords": [
+    "best time to take creatine",
+    "creatine before or after workout",
+    "creatine on rest days",
+    "pairing creatine with carbs and protein",
+    "creatine loading phase optional",
+    "why monohydrate still wins"
+   ],
+   "tags": [
+    "creatine",
+    "supplements",
+    "timing"
+   ]
+  },
+  {
+   "slug": "build-muscle-without-supplements-guide",
+   "language": "en",
+   "keywords": [
+    "build muscle without protein supplements",
+    "food first protein guide",
+    "anchor foods for muscle building",
+    "protein cost per 30 grams",
+    "sample days without protein powder",
+    "budget protein from food"
+   ],
+   "tags": [
+    "food first",
+    "muscle building",
+    "no supplements"
+   ]
+  },
+  {
+   "slug": "nutrition-periodization-body-recomposition-guide",
+   "language": "ar",
+   "keywords": [
+    "توزيع التغذية لإعادة تشكيل الجسم",
+    "نموذج الأيام السبعة لإعادة التشكيل",
+    "عجز صغير في أيام الراحة",
+    "ضبط البروتين قبل كل شيء",
+    "تتبع أسبوع إعادة التشكيل",
+    "إعادة تشكيل الجسم بالتغذية الموزعة"
+   ],
+   "tags": [
+    "إعادة تشكيل الجسم",
+    "توزيع التغذية",
+    "البروتين"
+   ]
+  },
+  {
+   "slug": "home-muscle-building-guide-no-equipment",
+   "language": "ar",
+   "keywords": [
+    "تمارين بناء العضلات في البيت بدون معدات",
+    "وزن الجسم يبني عضلة حقيقية",
+    "مكتبة الحركات لتغطية الجسد كله",
+    "الجدول الأسبوعي أربع جلسات بلا معدات",
+    "التدرج بلا أوزان بأربع عدادات",
+    "أرضية التغذية للبناء في البيت"
+   ],
+   "tags": [
+    "وزن الجسم",
+    "تمارين منزلية",
+    "بدون معدات"
+   ]
+  },
+  {
+   "slug": "progressive-overload-home-food-plan",
+   "language": "en",
+   "keywords": [
+    "progressive overload at home food plan",
+    "what to buy for progressive overload at home",
+    "protein rich meals for daily strength gains",
+    "carbs after leg day for recovery",
+    "progressive overload nutrition plan"
+   ],
+   "tags": [
+    "progressive overload",
+    "home training",
+    "nutrition plan"
+   ]
+  },
+  {
+   "slug": "sauna-muscle-recovery-guide",
+   "language": "ar",
+   "keywords": [
+    "الساونا لاستشفاء العضلات",
+    "مدة جلسة الساونا ودرجة الحرارة",
+    "توقيت الساونا بعد التدريب",
+    "الساونا والهرمونات ما يقاس",
+    "الساونا مرتين إلى ثلاث أسبوعيًا",
+    "الدليل المقيس للساونا والاستشفاء"
+   ],
+   "tags": [
+    "الساونا",
+    "استشفاء العضلات",
+    "الدليل المقيس"
+   ]
+  },
+  {
+   "slug": "12-week-progressive-overload-home-workout",
+   "language": "en",
+   "keywords": [
+    "12 week progressive overload home workout",
+    "home workout no equipment 12 weeks",
+    "three 4 week blocks bodyweight plan",
+    "progression measured in reps and tempo",
+    "block by block home workout plan",
+    "12 week no equipment plan"
+   ],
+   "tags": [
+    "progressive overload",
+    "home workout",
+    "no equipment"
+   ]
+  },
+  {
+   "slug": "best-protein-timing-after-workout",
+   "language": "ar",
+   "keywords": [
+    "أفضل وقت لتناول البروتين بعد التمرين",
+    "نافذة ما بعد الجلسة للبروتين",
+    "التوقيت المهم للبروتين فعليًا",
+    "جدول توقيت البروتين حول التدريب",
+    "البروتين بعد التمرين لزيادة العضلات",
+    "ماذا عن توقيت البروتين قبل النوم"
+   ],
+   "tags": [
+    "توقيت البروتين",
+    "ما بعد التمرين",
+    "بناء العضلات"
+   ]
+  },
+  {
+   "slug": "protein-intake-calculator-muscle-build",
+   "language": "ar",
+   "keywords": [
+    "كم كمية البروتين اليومية لبناء العضلات",
+    "1.6 إلى 2.2 غرام لكل كيلوغرام",
+    "توزيع البروتين على اليوم",
+    "الطعام أولًا في البروتين",
+    "مثال يوم كامل لمتدرب 75 كيلوغرامًا",
+    "بروتين الرجال والنساء لبناء العضلات"
+   ],
+   "tags": [
+    "البروتين",
+    "حساب البروتين",
+    "بناء العضلات"
+   ]
+  },
+  {
+   "slug": "smart-water-bottle-hydration-tracking-during-workouts",
+   "language": "en",
+   "keywords": [
+    "smart water bottle hydration tracking",
+    "hydration during workouts tracking",
+    "sensor technology in smart water bottles",
+    "real time hydration feedback research",
+    "calibrate for your sweat rate",
+    "hydration and training performance"
+   ],
+   "tags": [
+    "hydration",
+    "smart bottle",
+    "training"
+   ]
+  },
+  {
+   "slug": "warm-up-before-lifting-5min-routine",
+   "language": "en",
+   "keywords": [
+    "how to warm up before lifting",
+    "5 minute warm up routine",
+    "ramp up sets before heavy lifting",
+    "what not to do before heavy lifting",
+    "does warming up prevent injuries",
+    "warm up adapted to the session"
+   ],
+   "tags": [
+    "warm up",
+    "ramp up sets",
+    "prevent injuries"
+   ]
+  },
+  {
+   "slug": "choose-whey-protein-muscle-gain-guide",
+   "language": "ar",
+   "keywords": [
+    "كيف أختار بروتين مصل اللبن",
+    "بروتين مصل اللبن لبناء العضلات",
+    "هل يستحق المعزول فرق السعر",
+    "قراءة ملصق بروتين مصل اللبن",
+    "بروتين مصل اللبن للنباتيين",
+    "توقيت بروتين مصل اللبن"
+   ],
+   "tags": [
+    "بروتين مصل اللبن",
+    "الدليل المقيس",
+    "المعزول"
+   ]
+  },
+  {
+   "slug": "12-week-progressive-overload-intermediate",
+   "language": "en",
+   "keywords": [
+    "12 week progressive overload program",
+    "progressive overload for intermediate lifters",
+    "three blocks plus a deload program",
+    "4 day upper lower week",
+    "progression rules how to actually overload",
+    "auto-regulation reading RPE"
+   ],
+   "tags": [
+    "progressive overload",
+    "intermediate",
+    "program design"
+   ]
+  },
+  {
+   "slug": "optimal-rest-periods-resistance-training",
+   "language": "ar",
+   "keywords": [
+    "فترات الراحة بين المجموعات",
+    "كم دقيقة راحة بين المجموعات",
+    "الراحة حسب الهدف والشدة",
+    "لماذا لا تكفي دقيقة واحدة للتضخيم",
+    "راحة المجموعات في تمارين المقاومة",
+    "تطبيق فترات الراحة في جلستك"
+   ],
+   "tags": [
+    "فترات الراحة",
+    "إدارة الراحة",
+    "فرص المجموعات"
+   ]
+  },
+  {
+   "slug": "carb-loading-plan-competition",
+   "language": "ar",
+   "keywords": [
+    "تحميل الكربوهيدرات قبل المنافسة",
+    "خطة تحميل الكربوهيدرات",
+    "كم كربوهيدرات يوميًا قبل المنافسة",
+    "مصادر منخفضة الألياف قبل المنافسة",
+    "توزيع وجبات أيام التحميل",
+    "خفض التدريب في الأيام الأخيرة"
+   ],
+   "tags": [
+    "تحميل الكربوهيدرات",
+    "أيام التحميل",
+    "المنافسة"
+   ]
+  },
+  {
+   "slug": "nutrition-before-workout-guide",
+   "language": "ar",
+   "keywords": [
+    "ماذا تأكل قبل التمرين",
+    "وجبة ما قبل التمرين",
+    "الكربوهيدرات قبل الجلسة",
+    "البروتين قبل التمرين",
+    "ما تجنبه قبل الجلسة",
+    "الترطيب قبل التمرين"
+   ],
+   "tags": [
+    "ما قبل التمرين",
+    "وقود الجلسة",
+    "قبل الجلسة"
+   ]
+  },
+  {
+   "slug": "calorie-cycling-fat-loss-diet",
+   "language": "en",
+   "keywords": [
+    "calorie cycling fat loss diet plan",
+    "high protein meal plan for busy schedules",
+    "calculating macros for weight loss",
+    "integrating fasting windows with training",
+    "recovery sleep and supplements for fat loss",
+    "calorie cycling for busy professionals"
+   ],
+   "tags": [
+    "calorie cycling",
+    "fat loss",
+    "high protein"
+   ]
+  },
+  {
+   "slug": "women-bodyweight-muscle-workout",
+   "language": "ar",
+   "keywords": [
+    "برنامج تمارين بناء العضلات للنساء في المنزل",
+    "تمارين وزن الجسم للمرأة",
+    "نظام التدرج لتمارين النساء",
+    "قالبا أسبوع لبرنامج المرأة",
+    "تغذية المرأة لبناء العضلات",
+    "مكتبة تمارين وزن الجسم للمرأة"
+   ],
+   "tags": [
+    "تمارين وزن الجسم",
+    "تدرج المرأة",
+    "قالبا الأسبوع"
+   ]
+  },
+  {
+   "slug": "bfr-training-checklist",
+   "language": "en",
+   "keywords": [
+    "blood flow restriction training",
+    "BFR training for muscle growth",
+    "BFR protocol numbers",
+    "BFR safety checklist",
+    "BFR with light loads",
+    "who does BFR actually serve"
+   ],
+   "tags": [
+    "BFR training",
+    "muscle growth",
+    "training"
+   ]
+  },
+  {
+   "slug": "home-muscle-building-no-equipment-guide",
+   "language": "en",
+   "keywords": [
+    "home muscle building without equipment",
+    "bodyweight builds real muscle",
+    "nine movement patterns bodyweight",
+    "four sessions twice per muscle",
+    "progression without weights four dials",
+    "nutrition floor for home muscle"
+   ],
+   "tags": [
+    "bodyweight",
+    "home training",
+    "no equipment"
+   ]
+  },
+  {
+   "slug": "women-home-muscle-building-program-guide",
+   "language": "en",
+   "keywords": [
+    "women's home muscle building program",
+    "bodyweight exercise library for women",
+    "progression system for women at home",
+    "weekly templates for women",
+    "nutrition for women muscle building",
+    "design a home program for women"
+   ],
+   "tags": [
+    "women",
+    "home training",
+    "program design"
+   ]
+  },
+  {
+   "slug": "improve-gut-health-muscle-gain-4-week-plan",
+   "language": "en",
+   "keywords": [
+    "improve gut health for muscle gain",
+    "gut health 4 week plan",
+    "fiber baseline for gut health",
+    "probiotic experiment for athletes",
+    "time meals around training",
+    "test score adjust gut plan"
+   ],
+   "tags": [
+    "gut health",
+    "muscle gain",
+    "nutrition"
+   ]
+  },
+  {
+   "slug": "choose-whey-protein-muscle-gain",
+   "language": "en",
+   "keywords": [
+    "how to choose whey protein for muscle gain",
+    "is whey isolate worth the markup",
+    "reading the whey protein label",
+    "whey digestion comfort",
+    "whey timing less important than sold",
+    "total protein decides whey choice"
+   ],
+   "tags": [
+    "whey protein",
+    "supplements",
+    "muscle gain"
+   ]
+  },
+  {
+   "slug": "12-week-periodized-muscle-building-plan",
+   "language": "en",
+   "keywords": [
+    "12 week periodized muscle building plan",
+    "periodization for muscle growth",
+    "structuring a 12 week training cycle",
+    "weekly workout split and exercise selection",
+    "nutrition strategies for muscle building",
+    "periodized plan for intermediate lifters"
+   ],
+   "tags": [
+    "periodization",
+    "muscle building",
+    "12 week plan"
+   ]
+  },
+  {
+   "slug": "creatine-beginners-guide",
+   "language": "ar",
+   "keywords": [
+    "اختيار مكمل كرياتين للمبتدئين",
+    "كرياتين مونوهيدرات للمبتدئين",
+    "جرعة الكرياتين ثابتة أم تحميل",
+    "توقيت الكرياتين للمبتدئين",
+    "أمان الكرياتين وخرافاته",
+    "أسبوع بأسبوع مع الكرياتين"
+   ],
+   "tags": [
+    "الكرياتين",
+    "للمبتدئين",
+    "المكملات"
+   ]
+  },
+  {
+   "slug": "choose-smart-scale-body-composition",
+   "language": "en",
+   "keywords": [
+    "choose a smart scale checklist",
+    "how consumer BIA works",
+    "smart scale accuracy expectations",
+    "buying checklist for smart scales",
+    "budget tiers for smart scales",
+    "setup routine for a smart scale"
+   ],
+   "tags": [
+    "smart scale",
+    "body composition",
+    "fitness"
+   ]
+  },
+  {
+   "slug": "best-creatine-supplement-for-women-guide",
+   "language": "ar",
+   "keywords": [
+    "أفضل مكمل كرياتين للنساء",
+    "كرياتين للنساء خطوة بخطوة",
+    "جرعة الكرياتين للنساء",
+    "أسطورة التضخم والكرياتين للنساء",
+    "توقيت الكرياتين للمرأة",
+    "اختيار الكرياتين للمرأة الرياضية"
+   ],
+   "tags": [
+    "الكرياتين",
+    "النساء",
+    "المكملات"
+   ]
+  },
+  {
+   "slug": "how-to-start-muscle-building-beginners",
+   "language": "ar",
+   "keywords": [
+    "كيف أبدأ بناء العضلات للمبتدئين",
+    "كم مرة أتدرب في الأسبوع للمبتدئ",
+    "كم بروتين وسعرات تحتاج للمبتدئ",
+    "يوم غذائي لمبتدئ وزنه 75 كيلوغرامًا",
+    "زيارة الجيم الأولى للمبتدئ",
+    "الخطة الثلاثية للمبتدئين"
+   ],
+   "tags": [
+    "للمبتدئين",
+    "بناء العضلات",
+    "خطة الحصة الواحدة"
+   ]
+  },
+  {
+   "slug": "choose-creatine-women-guide",
+   "language": "ar",
+   "keywords": [
+    "كيف أختار مكمل كرياتين للنساء",
+    "كرياتين مونوهيدرات للنساء",
+    "قراءة ملصق الكرياتين سطرًا سطرًا",
+    "علامات الجودة والفحص المستقل للكرياتين",
+    "حجم عبوة الكرياتين والتكلفة",
+    "تخزين الكرياتين وتحضيره"
+   ],
+   "tags": [
+    "الكرياتين",
+    "النساء",
+    "دليل التسوق"
+   ]
+  },
+  {
+   "slug": "protein-supplements-veg-animal-comparison",
+   "language": "ar",
+   "keywords": [
+    "مقارنة بروتين النباتيين والحيوانيين",
+    "بروتين للرياضيين النباتيين",
+    "الأحماض الأمينية والليوسين في البروتين",
+    "الهضم والتحمل في بروتين المكملات",
+    "اختيار بروتين المكملات حسب الهدف",
+    "بروتين المكملات للرياضيين"
+   ],
+   "tags": [
+    "بروتين المكملات",
+    "مقارنة النباتيين والحيوانيين",
+    "الأحماض الأمينية"
+   ]
+  },
+  {
+   "slug": "deload-week-rest-training-guide",
+   "language": "en",
+   "keywords": [
+    "when to take a deload week",
+    "deload week step by step",
+    "a deload week is not a zero week",
+    "pick your deload style",
+    "signs that pull the deload forward",
+    "coming back after the deload"
+   ],
+   "tags": [
+    "deload week",
+    "rest",
+    "training"
+   ]
+  },
+  {
+   "slug": "lose-belly-fat-without-losing-muscle-cardio-plan",
+   "language": "en",
+   "keywords": [
+    "lose belly fat without losing muscle",
+    "4 week cardio plan for fat loss",
+    "deficit protein sleep in week one",
+    "add cardio in the non interfering dose",
+    "sync food to training",
+    "read the signals before the deload"
+   ],
+   "tags": [
+    "belly fat",
+    "cardio plan",
+    "muscle retention"
+   ]
+  },
+  {
+   "slug": "protein-after-workout-grams-guide",
+   "language": "en",
+   "keywords": [
+    "how many grams of protein after a workout",
+    "20 to 40 grams protein post workout",
+    "calculate your protein dose in three steps",
+    "where the protein dose fits in your day",
+    "choosing the source for your protein dose",
+    "protein ceiling that matters"
+   ],
+   "tags": [
+    "protein",
+    "post workout",
+    "nutrition"
+   ]
+  },
+  {
+   "slug": "how-to-periodize-nutrition-body-recomposition",
+   "language": "en",
+   "keywords": [
+    "periodize nutrition for body recomposition",
+    "7 day template for recomposition",
+    "small deficit on rest days",
+    "near maintenance on training days",
+    "set protein before anything else",
+    "calculate the numbers your week runs on"
+   ],
+   "tags": [
+    "body recomposition",
+    "nutrition",
+    "protein"
+   ]
+  },
+  {
+   "slug": "heart-rate-monitor-fat-loss-guide",
+   "language": "en",
+   "keywords": [
+    "heart rate monitor for fat loss",
+    "estimate max heart rate formula",
+    "draw your moderate zone",
+    "program weekly minutes not heroic sessions",
+    "field test your heart rate zones",
+    "heart rate monitor simple science"
+   ],
+   "tags": [
+    "heart rate",
+    "fat loss",
+    "fitness"
+   ]
+  },
+  {
+   "slug": "4-day-split-muscle-fat-loss-guide",
+   "language": "ar",
+   "keywords": [
+    "التقسيم الرباعي للتمرين",
+    "دليل بناء العضلات وحرق الدهون معًا",
+    "هيكل التقسيم الرباعي",
+    "نطاقات التكرار والحجم",
+    "القالبان الجاهزان للتقسيم الرباعي",
+    "التغذية الداعمة للتقسيم الرباعي"
+   ],
+   "tags": [
+    "التقسيم الرباعي",
+    "بناء العضلات",
+    "حرق الدهون"
+   ]
+  },
+  {
+   "slug": "belly-fat-loss-8-weeks-guide",
+   "language": "ar",
+   "keywords": [
+    "حرق دهون البطن في 8 أسابيع",
+    "هل يمكن استهداف دهون البطن",
+    "حساب العجز لحرق دهون البطن",
+    "البروتين يمنع عودة البطن",
+    "المقاومة أولًا والكارديو خادمًا",
+    "النوم في معادلة دهون البطن"
+   ],
+   "tags": [
+    "دهون البطن",
+    "خسارة الدهون",
+    "خطة 8 أسابيع"
+   ]
+  },
+  {
+   "slug": "best-protein-timing-after-workout-guide",
+   "language": "en",
+   "keywords": [
+    "best protein timing after a workout",
+    "your whole day is the window",
+    "when protein timing actually matters",
+    "practical timing around training patterns",
+    "what happens to the muscle after the session",
+    "timing when training fasted"
+   ],
+   "tags": [
+    "protein timing",
+    "post workout",
+    "nutrition"
+   ]
+  },
+  {
+   "slug": "12-week-dumbbell-band-muscle-plan",
+   "language": "en",
+   "keywords": [
+    "12 week workout plan with dumbbells and bands",
+    "dumbbell and band home plan",
+    "how the 12 weeks are structured",
+    "weekly split for dumbbells and bands",
+    "progression rules within each mesocycle",
+    "nutrition numbers that feed the plan"
+   ],
+   "tags": [
+    "dumbbells",
+    "bands",
+    "12 week plan"
+   ]
+  },
+  {
+   "slug": "combine-hiit-strength-fat-loss-guide",
+   "language": "en",
+   "keywords": [
+    "how to combine HIIT with strength training",
+    "HIIT and strength for fat loss",
+    "set the fat loss target before the schedule",
+    "build the weekly calendar for HIIT and lifting",
+    "sprint short with long rests",
+    "feed the work nutrition for HIIT"
+   ],
+   "tags": [
+    "HIIT",
+    "strength training",
+    "fat loss"
+   ]
+  },
+  {
+   "slug": "best-dynamic-stretching-exercises-athletes-injury-prevention",
+   "language": "ar",
+   "keywords": [
+    "تمارين الإطالة الديناميكية للرياضيين",
+    "روتين الإطالة الديناميكية قبل الجلسة",
+    "8 حركات إطالة قبل أي جلسة",
+    "تخصيص الإطالة حسب تمرين اليوم",
+    "أخطاء الإطالة الديناميكية الشائعة",
+    "الإطالة الساكنة بعد التمرين"
+   ],
+   "tags": [
+    "الإطالة الديناميكية",
+    "الوقاية من الإصابات",
+    "روتين الإطالة الأساسي"
+   ]
+  },
+  {
+   "slug": "pilates-hypertrophy-muscle-building-guide",
+   "language": "en",
+   "keywords": [
+    "Pilates for hypertrophy",
+    "can Pilates alone build muscle",
+    "reformer vs mat Pilates for hypertrophy",
+    "progressive overload in Pilates",
+    "which Pilates style builds muscle",
+    "7 step Pilates muscle plan"
+   ],
+   "tags": [
+    "Pilates",
+    "hypertrophy",
+    "muscle building"
+   ]
+  },
+  {
+   "slug": "fat-burning-macro-diet-plan",
+   "language": "ar",
+   "keywords": [
+    "نظام غذائي لحرق الدهون",
+    "حساب الماكرو للرياضيين",
+    "احسب سعراتك بعجز صحي",
+    "ابدأ بالبروتين ثم املأ الباقي",
+    "بدائل الأطباق العربية للدايت",
+    "راجع أسبوعيًا وعدّل رقمًا واحدًا"
+   ],
+   "tags": [
+    "حرق الدهون",
+    "حساب الماكروز",
+    "نظام غذائي"
+   ]
+  },
+  {
+   "slug": "how-many-hours-sleep-for-muscle-growth",
+   "language": "ar",
+   "keywords": [
+    "كم ساعة نوم يحتاج الرياضي",
+    "النوم وبناء العضلات",
+    "الأدلة الأثرية على النوم والأداء",
+    "النوم والخسارة دهونًا لا عضلات",
+    "كيف تصل إلى 7-9 ساعات نوم",
+    "نوم القيلولة والرياضي"
+   ],
+   "tags": [
+    "النوم",
+    "بناء العضلات",
+    "نوم القيلولة"
+   ]
+  },
+  {
+   "slug": "quick-healthy-meal-ideas-busy-people",
+   "language": "en",
+   "keywords": [
+    "quick healthy meal ideas for busy people",
+    "meal library under 5 minutes",
+    "90 minute Sunday prep",
+    "desk drawer backup system",
+    "busy day assembled meals",
+    "honest science notes on shortcuts"
+   ],
+   "tags": [
+    "meal prep",
+    "busy people",
+    "nutrition"
+   ]
+  },
+  {
+   "slug": "choose-whey-protein-ramadan-women",
+   "language": "ar",
+   "keywords": [
+    "اختيار بروتين مصل الحليب للنساء في رمضان",
+    "بروتين مصل الحليب في رمضان",
+    "قراءة ملصق البروتين بترتيب الأولويات",
+    "اختيار نوع البروتين لحالتك",
+    "توزيع البروتين داخل نافذة الأكل",
+    "علامات جودة البروتين قبل الشراء"
+   ],
+   "tags": [
+    "بروتين مصل الحليب",
+    "رمضان",
+    "النساء"
+   ]
+  },
+  {
+   "slug": "increase-muscle-mass-no-protein-supplements",
+   "language": "ar",
+   "keywords": [
+    "زيادة الكتلة العضلية بدون مكملات",
+    "بناء العضلة بلا مسحوق بروتين",
+    "الأطعمة المرتكزة لبناء العضلات",
+    "برنامج 8 أسابيع للمقاومة",
+    "ثلاثة أيام نموذجية بلا مسحوق",
+    "ركائز بناء العضلة بالطعام"
+   ],
+   "tags": [
+    "بناء العضلات",
+    "بلا مكملات",
+    "الأطعمة المرتكزة"
+   ]
+  },
+  {
+   "slug": "calculate-daily-calories-muscle-gain-beginners-guide",
+   "language": "ar",
+   "keywords": [
+    "حساب السعرات لزيادة الكتلة العضلية للمبتدئين",
+    "احسب معدل الأيض الأساسي",
+    "معامل النشاط الصادق",
+    "الفائض المحسوب للتضخيم",
+    "وزّع الماكروز على السعرات",
+    "أخطاء المبتدئين في حساب السعرات"
+   ],
+   "tags": [
+    "حساب السعرات",
+    "للمبتدئين",
+    "الفائض المحسوب"
+   ]
+  },
+  {
+   "slug": "4-day-upper-lower-hypertrophy-split",
+   "language": "en",
+   "keywords": [
+    "4 day upper lower split",
+    "upper lower split for hypertrophy",
+    "exercise choice sets reps and rest",
+    "progressive overload techniques",
+    "nutrition foundations macros",
+    "budget meals for hypertrophy"
+   ],
+   "tags": [
+    "upper lower split",
+    "hypertrophy",
+    "nutrition foundations"
+   ]
+  },
+  {
+   "slug": "4-week-beginner-muscle-building-plan-guide",
+   "language": "ar",
+   "keywords": [
+    "خطة بناء العضلات للمبتدئين أربعة أسابيع",
+    "خطة أربعة أسابيع يومًا بيوم",
+    "الجدول اليوم بيوم للمبتدئ",
+    "كيف يعمل التدرج للمبتدئ",
+    "أكل الشهر الأول للمبتدئ",
+    "ثلاثة أيام جسم كامل في الأسبوع الأول"
+   ],
+   "tags": [
+    "للمبتدئين",
+    "بناء العضلات",
+    "خطة 4 أسابيع"
+   ]
+  },
+  {
+   "slug": "optimize-preworkout-nutrition-evening-training",
+   "language": "en",
+   "keywords": [
+    "pre workout nutrition for evening training",
+    "the pre evening meal",
+    "protein around the evening session",
+    "caffeine at 6 pm the timing problem",
+    "fasted evening training",
+    "practical evening pre workout plan"
+   ],
+   "tags": [
+    "pre workout nutrition",
+    "evening training",
+    "nutrition"
+   ]
+  },
+  {
+   "slug": "budget-home-gym-equipment-comparison",
+   "language": "en",
+   "keywords": [
+    "budget home gym equipment comparison",
+    "four piece budget kit",
+    "bands vs free weights",
+    "under $30 starter path",
+    "space requirements home gym",
+    "DIY garage setup vs packages"
+   ],
+   "tags": [
+    "home gym",
+    "equipment",
+    "budget"
+   ]
+  },
+  {
+   "slug": "muscle-group-frequency-optimal",
+   "language": "ar",
+   "keywords": [
+    "كم مرة أتدرب كل مجموعة عضلية",
+    "تكرار العضلة مرتين أسبوعيًا",
+    "هيكل الأسبوع علوي سفلي",
+    "اضبط الحجم الأسبوعي داخل كل تكرار",
+    "وزّع الاستشفاء بين الجلسات",
+    "مثال أسبوع تطبيقي للتكرار"
+   ],
+   "tags": [
+    "تكرار العضلة",
+    "الحجم الأسبوعي",
+    "هيكل الأسبوع"
+   ]
+  },
+  {
+   "slug": "protein-myths-muscle-gain-guide",
+   "language": "ar",
+   "keywords": [
+    "خرافات البروتين لبناء العضلات",
+    "أخطاء البروتين الشائعة",
+    "قاعدة غرام لكل رطل",
+    "البروتين في أيام الراحة",
+    "الصيام المتقطع والبروتين",
+    "شراء مسحوق البروتين بحكمة"
+   ],
+   "tags": [
+    "البروتين",
+    "خرافات",
+    "بناء العضلات"
+   ]
+  },
+  {
+   "slug": "best-omega-3-supplement-athletes",
+   "language": "ar",
+   "keywords": [
+    "أفضل مكمل أوميغا-3 للرياضيين",
+    "قراءة ملصق أوميغا-3",
+    "الجرعة الحقيقية لأوميغا-3",
+    "النقاء وشهادات الطرف الثالث",
+    "جرعة أوميغا-3 العملية",
+    "أوميغا-3 للرياضيين"
+   ],
+   "tags": [
+    "أوميغا 3",
+    "المكملات",
+    "الرياضيون"
+   ]
+  },
+  {
+   "slug": "healthy-high-protein-meals-office",
+   "language": "ar",
+   "keywords": [
+    "وجبات صحية سريعة عالية البروتين للموظفين",
+    "وجبات المكتب عالية البروتين",
+    "تجهيز الأحد 90 دقيقة",
+    "حلول طوارئ وجبات المكتب",
+    "البروتين النباتي في يوم المكتب",
+    "قائمة شراء أسبوعية عالية البروتين"
+   ],
+   "tags": [
+    "وجبات المكتب",
+    "البروتين",
+    "درج المكتب"
+   ]
+  },
+  {
+   "slug": "how-many-calories-to-gain-muscle-and-lose-fat",
+   "language": "en",
+   "keywords": [
+    "calories to gain muscle and lose fat",
+    "baseline BMR with Mifflin-St Jeor",
+    "choose the margin recomp lean bulk or cycle",
+    "worked example for muscle gain and fat loss",
+    "recomp vs lean bulk",
+    "calories for gaining muscle and losing fat"
+   ],
+   "tags": [
+    "calories",
+    "recomp",
+    "nutrition"
+   ]
+  },
+  {
+   "slug": "contrast-therapy-7day-recovery-plan",
+   "language": "en",
+   "keywords": [
+    "contrast therapy for muscle recovery",
+    "7 day contrast therapy plan",
+    "what the evidence says about contrast therapy",
+    "contrast therapy safety first",
+    "home setup for contrast therapy",
+    "customize the contrast protocol"
+   ],
+   "tags": [
+    "contrast therapy",
+    "recovery",
+    "wellness"
+   ]
+  },
+  {
+   "slug": "hiit-strength-training-fat-loss-guide",
+   "language": "ar",
+   "keywords": [
+    "دمج تدريب الفترات مع الحديد",
+    "تدريب الفترات لحرق الدهون دون خسارة العضلة",
+    "الحديد أولًا في أولوية الأسبوع",
+    "وصفة الفترات التي توفر العضلة",
+    "عدْ قصير براحة طويلة",
+    "غذِّ الشغل في الحرق"
+   ],
+   "tags": [
+    "تدريب الفترات",
+    "حرق الدهون",
+    "التدريب المقاوم"
+   ]
+  },
+  {
+   "slug": "sleep-better-faster-gym-results",
+   "language": "en",
+   "keywords": [
+    "sleep better for faster gym results",
+    "7 recovery mistakes in sleep",
+    "treating sleep as optional recovery",
+    "caffeine too late in the day",
+    "supplements do not replace sleep",
+    "sleep and gym results"
+   ],
+   "tags": [
+    "sleep",
+    "recovery mistakes",
+    "gym results"
+   ]
+  },
+  {
+   "slug": "protein-grams-after-workout-guide",
+   "language": "ar",
+   "keywords": [
+    "كم غرام بروتين بعد التمرين",
+    "حساب جرعة البروتين بالكيلوغرام",
+    "20 إلى 40 غرام بروتين بعد الجلسة",
+    "مصدر جرعة البروتين",
+    "الجرعة ضمن إجمالي اليوم",
+    "بروتين ما بعد التمرين بالأرقام"
+   ],
+   "tags": [
+    "البروتين",
+    "ما بعد التمرين",
+    "الحساب المقيس"
+   ]
+  },
+  {
+   "slug": "creatine-loading-strength-hypertrophy-guide",
+   "language": "en",
+   "keywords": [
+    "creatine loading phase",
+    "creatine loading for strength vs hypertrophy",
+    "the loading protocol exact numbers",
+    "what loading actually does in numbers",
+    "timing around training",
+    "loading for strength and hypertrophy"
+   ],
+   "tags": [
+    "creatine",
+    "loading phase",
+    "supplements"
+   ]
+  },
+  {
+   "slug": "upper-lower-split-4-days-guide",
+   "language": "ar",
+   "keywords": [
+    "تقسيم العلوي والسفلي أربعة أيام",
+    "برنامج 4 أيام لبناء العضلات",
+    "تقسيم علوي سفلي للتضخيم",
+    "اختيار التمارين والمجموعات والتكرارات",
+    "تقنيات الحمل التدريجي للقوة",
+    "أسس التغذية للتقسيم التدريبي"
+   ],
+   "tags": [
+    "تقسيم العلوي والسفلي",
+    "بناء العضلات",
+    "الحمل التدريجي"
+   ]
+  },
+  {
+   "slug": "hiit-home-fat-burning-workout",
+   "language": "en",
+   "keywords": [
+    "HIIT home workout for fat loss",
+    "the 25 minute HIIT system",
+    "HIIT starter protocol weeks 1-4",
+    "HIIT progressions weeks 5-8",
+    "HIIT at home with no equipment",
+    "protecting muscle while burning fat"
+   ],
+   "tags": [
+    "HIIT",
+    "home workout",
+    "fat loss"
+   ]
+  },
+  {
+   "slug": "choose-smartwatch-fitness-tracking",
+   "language": "en",
+   "keywords": [
+    "how to choose a smartwatch for fitness tracking",
+    "wrist worn accuracy validation research",
+    "core sensors heart rate GPS",
+    "recovery metrics HRV and sleep staging",
+    "battery life for daily training",
+    "smartwatch for gains"
+   ],
+   "tags": [
+    "smartwatch",
+    "fitness tracking",
+    "recovery"
+   ]
+  },
+  {
+   "slug": "best-protein-supplement-ramadan-guide",
+   "language": "en",
+   "keywords": [
+    "best protein supplement for Ramadan",
+    "training while fasting evidence",
+    "your protein map across the night",
+    "choosing the supplement three types",
+    "total protein first timing second",
+    "protein during Ramadan nights"
+   ],
+   "tags": [
+    "protein supplement",
+    "Ramadan",
+    "fasting"
+   ]
+  },
+  {
+   "slug": "weekly-fat-burning-diet-plan",
+   "language": "ar",
+   "keywords": [
+    "نظام غذائي أسبوعي لحرق الدهون",
+    "جدول الأيام السبعة لحرق الدهون",
+    "حساب السعرات اليومية بفعالية",
+    "حدد رقمك المستهدف قبل الجدول",
+    "اليوم المرن داخل حدود",
+    "اربط الجدول بتمارين الأسبوع"
+   ],
+   "tags": [
+    "خطة أسبوعية",
+    "حرق الدهون",
+    "جدول الأيام السبعة"
+   ]
+  },
+  {
+   "slug": "track-macros-no-food-scale",
+   "language": "en",
+   "keywords": [
+    "track macros without a food scale",
+    "the hand rule for macros",
+    "three kitchen tools for tracking",
+    "hundred grams of everything memory",
+    "audit your tracking at day end",
+    "kitchen guide to macro tracking"
+   ],
+   "tags": [
+    "macro tracking",
+    "no food scale",
+    "nutrition"
+   ]
+  },
+  {
+   "slug": "progressive-overload-no-weight",
+   "language": "en",
+   "keywords": [
+    "progressive overload without adding weight",
+    "4 ways to beat plateaus",
+    "manipulating repetition tempo",
+    "adding sets reps or volume",
+    "density techniques for overload",
+    "beat plateaus without more weight"
+   ],
+   "tags": [
+    "progressive overload",
+    "beat plateaus",
+    "no extra weight"
+   ]
+  },
+  {
+   "slug": "bmr-calculator-athletes",
+   "language": "ar",
+   "keywords": [
+    "حساب معدل الأيض الأساسي للرياضيين",
+    "معادلة ميفلين-سانت جور",
+    "الفرق بين الأيض الأساسي والإنفاق اليومي",
+    "اضرب في معامل النشاط",
+    "تعديل السعرات بدقة",
+    "أخطاء القياس الأسبوعي"
+   ],
+   "tags": [
+    "الأيض الأساسي",
+    "حساب السعرات",
+    "الرياضيون"
+   ]
+  },
+  {
+   "slug": "protein-calculator-women-muscle-gain",
+   "language": "en",
+   "keywords": [
+    "protein calculator for women muscle gain",
+    "how many grams of protein for women",
+    "baseline protein target for women",
+    "adjust protein for training volume",
+    "distribute protein across meals for MPS",
+    "protein for muscle gain women"
+   ],
+   "tags": [
+    "protein",
+    "women",
+    "calculator"
+   ]
+  },
+  {
+   "slug": "12-week-progressive-overload-intermediate-guide",
+   "language": "ar",
+   "keywords": [
+    "برنامج الحمل التدريجي 12 أسبوعًا للمتوسطين",
+    "الخطة الكاملة يومًا بيوم",
+    "بنية الأسابيع الاثني عشر",
+    "أربعة أيام علوي سفلي",
+    "قواعد التقدم كيف ترفع الحمل",
+    "أسبوع تفريغ في البرنامج"
+   ],
+   "tags": [
+    "الحمل التدريجي",
+    "للمتوسطين",
+    "أسبوع التفريغ"
+   ]
+  },
+  {
+   "slug": "calculate-daily-calories-fuel-fat-loss-bulking",
+   "language": "en",
+   "keywords": [
+    "calories should I eat to lose weight",
+    "7 day template calories",
+    "basal metabolic rate the honest way",
+    "the activity factor you actually earn",
+    "the deficit that protects muscle",
+    "the surplus that limits fat gain"
+   ],
+   "tags": [
+    "fat loss",
+    "surplus and deficit",
+    "7 day template"
+   ]
+  },
+  {
+   "slug": "bfr-training-guide",
+   "language": "ar",
+   "keywords": [
+    "تدريب تقييد تدفق الدم",
+    "بروتوكول BFR المقيس",
+    "أحمال 20-30% من أقصى تكرار",
+    "قائمة السلامة قبل كل جلسة",
+    "الجرعة الكاملة أرقام البروتوكول",
+    "لمن يعمل BFR فعلًا"
+   ],
+   "tags": [
+    "تقييد تدفق الدم",
+    "البروتوكول المقيس",
+    "قائمة السلامة"
+   ]
+  },
+  {
+   "slug": "home-muscle-gain-8-weeks",
+   "language": "ar",
+   "keywords": [
+    "برنامج تمارين منزلية 8 أسابيع",
+    "زيادة الكتلة العضلية بدون معدات",
+    "أربع مراحل من أسبوعين",
+    "التدرج مقيس بالتكرار والرافعة والإيقاع",
+    "بناء القاعدة الحركية ثم الشدة",
+    "برنامج منزلي لزيادة الكتلة"
+   ],
+   "tags": [
+    "الكتلة العضلية",
+    "بلا معدات",
+    "تدرج بلا أوزان"
+   ]
+  },
+  {
+   "slug": "best-dynamic-stretching-before-gym",
+   "language": "ar",
+   "keywords": [
+    "تمارين الإطالة الديناميكية قبل الجيم",
+    "الإطالة الديناميكية لتقليل الإصابات",
+    "قائمة إطالة ديناميكية جاهزة",
+    "الوقت المثالي للإطالة قبل التمرين",
+    "إطالة قبل الجلسة حسب تمرين اليوم",
+    "ديناميكية أم ثابتة قبل التمرين"
+   ],
+   "tags": [
+    "الإطالة الديناميكية",
+    "قبل الجيم",
+    "تقليل الإصابات"
+   ]
+  },
+  {
+   "slug": "protein-per-day-muscle-build-plan",
+   "language": "en",
+   "keywords": [
+    "how much protein per day to build muscle",
+    "1.6 to 2.2 grams per kilogram",
+    "top or bottom of the range",
+    "distribution split across the day",
+    "food first the sourcing table",
+    "7 day protein plan"
+   ],
+   "tags": [
+    "protein",
+    "muscle building",
+    "nutrition"
+   ]
+  },
+  {
+   "slug": "post-workout-recovery-meal-plan-7-recipes",
+   "language": "en",
+   "keywords": [
+    "post workout recovery meal plan",
+    "7 easy recipes for muscle repair",
+    "20-40 g protein within two hours",
+    "carbs matched to session volume",
+    "the seven recovery meals",
+    "fluids with a pinch of salt"
+   ],
+   "tags": [
+    "recovery meals",
+    "post workout",
+    "recipes"
+   ]
+  },
+  {
+   "slug": "common-fat-burning-mistakes",
+   "language": "ar",
+   "keywords": [
+    "أخطاء تمنع حرق الدهون رغم التمرين",
+    "تحسب تمرينك ولا تحسب سعراتك",
+    "البروتين أقل من حاجة العضلات",
+    "كارديو بلا تمارين مقاومة",
+    "تعويض ما بعد التمرين",
+    "أخطاء حرق الدهون الشائعة"
+   ],
+   "tags": [
+    "حرق الدهون",
+    "أخطاء شائعة",
+    "التمرين اليومي"
+   ]
+  },
+  {
+   "slug": "olive-oil-fat-loss-guide",
+   "language": "ar",
+   "keywords": [
+    "زيت الزيتون للتخسيس",
+    "كم ملعقة زيت الزيتون في اليوم",
+    "كم سعرة في زيت الزيتون",
+    "هل يساعد زيت الزيتون على حرق الدهون",
+    "نصف ملعقة زيت زيتون يوميًا",
+    "زيت الزيتون في ميزانية يومك"
+   ],
+   "tags": [
+    "زيت الزيتون",
+    "التخسيس",
+    "حرق الدهون"
+   ]
+  },
+  {
+   "slug": "post-workout-recovery-meal-plan-guide",
+   "language": "ar",
+   "keywords": [
+    "خطة وجبات الاستشفاء بعد التمرين",
+    "7 وصفات سهلة لبناء العضلة",
+    "20-40 غ بروتين خلال ساعتين",
+    "كربوهيدرات بمقدار حجم الجلسة",
+    "وجبات الاستشفاء السبع",
+    "الترطيب والكهارل بعد الجلسة"
+   ],
+   "tags": [
+    "وجبات الاستشفاء",
+    "ما بعد التمرين",
+    "وصفات"
+   ]
+  },
+  {
+   "slug": "water-intake-athlete-guide",
+   "language": "ar",
+   "keywords": [
+    "كم كمية الماء التي يحتاجها الرياضي",
+    "دليل عملي للترطيب",
+    "احسب احتياجك الأساسي من وزن جسمك",
+    "بدل التمرين قبل أن تبدأ",
+    "جرعات صغيرة أثناء التمرين",
+    "الوزن ميزانك الأصدق بعد التمرين"
+   ],
+   "tags": [
+    "الترطيب",
+    "الماء",
+    "الرياضيون"
+   ]
+  },
+  {
+   "slug": "how-to-calc-daily-protein-athletes",
+   "language": "ar",
+   "keywords": [
+    "كيف أحسب البروتين اليومية للرياضيين",
+    "معامل النشاط في حساب البروتين",
+    "اضرب المعامل في وزن جسمك",
+    "وزّع البروتين على 3-5 وجبات",
+    "عدّل حسب هدف المرحلة",
+    "نسبة البروتين اليومية بدقة"
+   ],
+   "tags": [
+    "حساب البروتين",
+    "الرياضيون",
+    "نسبة البروتين اليومية"
+   ]
+  },
+  {
+   "slug": "choose-best-wearable-sleep-tracker-athletes",
+   "language": "ar",
+   "keywords": [
+    "اختيار جهاز تتبع النوم للرياضيين",
+    "المقاييس الخمسة لتتبع النوم",
+    "الدقة الموثقة لا وعود الملصق",
+    "البطارية وتجربة الارتداء الليلي",
+    "التطبيق والبيانات القابلة للتصدير",
+    "أفضل جهاز قابل للارتداء للنوم"
+   ],
+   "tags": [
+    "تتبع النوم",
+    "أجهزة قابلة للارتداء",
+    "الرياضيون"
+   ]
+  },
+  {
+   "slug": "pre-workout-nutrition-guide",
+   "language": "en",
+   "keywords": [
+    "pre workout nutrition guide",
+    "what to eat and when before training",
+    "how the fuel actually works",
+    "caffeine the legal multiplier",
+    "fasted training does empty burn more fat",
+    "boost energy burn fat build muscle"
+   ],
+   "tags": [
+    "pre workout",
+    "nutrition",
+    "training"
+   ]
+  },
+  {
+   "slug": "choose-weightlifting-shoes-men",
+   "language": "ar",
+   "keywords": [
+    "اختيار حذاء رفع أثقال للرجال",
+    "المعايير الخمسة لحذاء الرفع",
+    "ارتفاع الكعب حسب حركتك الأساسية",
+    "خطوات القياس والاختبار قبل الشراء",
+    "حذاء مخصص للرفع للمبتدئين",
+    "لماذا يحتاج الرافع حذاءً مخصصًا"
+   ],
+   "tags": [
+    "حذاء الرفع",
+    "ارتفاع الكعب",
+    "دليل المبتدئين"
+   ]
+  },
+  {
+   "slug": "best-protein-supplement-ramadan",
+   "language": "ar",
+   "keywords": [
+    "اختيار مكمل بروتين في رمضان",
+    "الإجمالي أولًا ثم التوزيع ثم النوع",
+    "القياسات عن التدريب أثناء الصيام",
+    "خريطة البروتين عبر الليل",
+    "جدول الأنواع الثلاثة للمسحوق",
+    "أفضل مكمل بروتين للرياضيين في رمضان"
+   ],
+   "tags": [
+    "مكمل البروتين",
+    "رمضان",
+    "الصيام"
+   ]
+  },
+  {
+   "slug": "foam-roller-recovery-4-week-guide",
+   "language": "en",
+   "keywords": [
+    "foam roller muscle recovery",
+    "4 week foam rolling progression",
+    "week 1 technique and baseline tests",
+    "pairing rolling with static stretching",
+    "integration with training and food",
+    "honest logging of foam rolling"
+   ],
+   "tags": [
+    "foam roller",
+    "recovery",
+    "wellness"
+   ]
+  },
+  {
+   "slug": "hiit-home-workout-guide",
+   "language": "ar",
+   "keywords": [
+    "تمارين HIIT في المنزل",
+    "HIIT لحرق الدهون وبناء العضلات",
+    "أفعال HIIT الأكثر فعالية في المنزل",
+    "دمج نظام غذائي مع HIIT",
+    "بناء عضلات بوزن الجسم في HIIT",
+    "وقت تناول المكملات بعد HIIT"
+   ],
+   "tags": [
+    "HIIT",
+    "التمارين المنزلية",
+    "حرق الدهون"
+   ]
+  },
+  {
+   "slug": "beef-protein-vs-whey-isolate-muscle-comparison",
+   "language": "en",
+   "keywords": [
+    "beef protein vs whey isolate",
+    "is beef protein better than whey",
+    "what the trial evidence says",
+    "protein quality leucine and DIAAS",
+    "digestion lactose and bloating",
+    "collagen the real reason beef is interesting"
+   ],
+   "tags": [
+    "beef protein",
+    "whey",
+    "per scoop math"
+   ]
+  },
+  {
+   "slug": "hrv-overtraining-7day-plan-athletes",
+   "language": "en",
+   "keywords": [
+    "how to use HRV to avoid overtraining",
+    "7 day plan for athletes",
+    "build an honest baseline",
+    "set your traffic light bands",
+    "read trends not days",
+    "HRV plan for athletes"
+   ],
+   "tags": [
+    "HRV",
+    "avoid overtraining",
+    "traffic light bands"
+   ]
+  },
+  {
+   "slug": "beta-alanine-guide-selection",
+   "language": "ar",
+   "keywords": [
+    "اختيار مكمل بيتا ألانين",
+    "بيتا ألانين للرياضيين لزيادة القوة",
+    "الجرعة المقيسة 4-6 غ يوميًا",
+    "من يستفيد من بيتا ألانين",
+    "الوخز مزعج لا خطر",
+    "مخزن العضلة المضاد للحموضة"
+   ],
+   "tags": [
+    "بيتا ألانين",
+    "المكملات",
+    "القوة"
+   ]
+  },
+  {
+   "slug": "train-muscle-group-frequency-fixes",
+   "language": "en",
+   "keywords": [
+    "how often to train each muscle group",
+    "5 fixes for training frequency",
+    "stop the once a week bro split",
+    "rotate intensity instead of repeating weeks",
+    "schedule deloads on recovery cues",
+    "train each muscle group per week"
+   ],
+   "tags": [
+    "muscle group frequency",
+    "5 fixes",
+    "recovery cues"
+   ]
+  },
+  {
+   "slug": "chicken-breast-muscle-building-guide",
+   "language": "ar",
+   "keywords": [
+    "صدور الدجاج لبناء العضلات",
+    "كم بروتين في صدر الدجاج",
+    "كم صدرًا تحتاج يوميًا",
+    "الوزن النيء أم المطبوخ عند القياس",
+    "الجدول الأسبوعي لصدور الدجاج",
+    "بروتين صدور الدجاج أسبوعيًا"
+   ],
+   "tags": [
+    "صدور الدجاج",
+    "البروتين",
+    "بناء العضلات"
+   ]
+  },
+  {
+   "slug": "reduce-water-retention-muscle-building",
+   "language": "ar",
+   "keywords": [
+    "تقليل احتباس الماء في بناء العضلات",
+    "الصوديوم والبوتاسيوم والانتفاخ",
+    "الكربوهيدرات والتوقيت في احتباس الماء",
+    "يوم بوتاسيوم واقعي",
+    "كل ماء ليس عدوًا",
+    "احتباس الماء للرياضيين"
+   ],
+   "tags": [
+    "احتباس الماء",
+    "الصوديوم والبوتاسيوم",
+    "الكربوهيدرات"
+   ]
+  },
+  {
+   "slug": "calculate-calories-fat-loss",
+   "language": "ar",
+   "keywords": [
+    "برنامج 8 أسابيع لحرق الدهون",
+    "حساب معدل الأيض الأساسي لتحديد السعرات",
+    "ضبط عجز السعرات لأسبوعيًا",
+    "كم سعرة أوفرها يوميًا",
+    "خطة أسبوعية بالتمارين والسعرات",
+    "السعرات اليومية في برنامج الحرق"
+   ],
+   "tags": [
+    "حساب السعرات",
+    "حرق الدهون",
+    "برنامج 8 أسابيع"
+   ]
+  },
+  {
+   "slug": "best-creatine-men-guide",
+   "language": "ar",
+   "keywords": [
+    "أفضل مكمل كرياتين للرجال",
+    "كرياتين مونوهيدرات نقي",
+    "معايير النقاء في الكرياتين",
+    "الجرعة حسب وزن جسمك",
+    "التوقيت مع أي وجبة",
+    "وصفات مطبخ تخفي الجرعة"
+   ],
+   "tags": [
+    "الكرياتين",
+    "للرجال",
+    "المكملات"
+   ]
+  },
+  {
+   "slug": "best-wearable-sleep-tracking-athletes-guide",
+   "language": "en",
+   "keywords": [
+    "best wearable for sleep tracking",
+    "sleep tracking for athletes",
+    "judge accuracy like a skeptic",
+    "battery that survives a training block",
+    "app ecosystem and exportable data",
+    "five metrics worth tracking"
+   ],
+   "tags": [
+    "wearable",
+    "sleep tracking",
+    "athletes"
+   ]
+  },
+  {
+   "slug": "intermittent-fasting-muscle-gain-workout-plan",
+   "language": "en",
+   "keywords": [
+    "intermittent fasting for muscle gain",
+    "fasted workout planning",
+    "fasting does not block muscle growth",
+    "choosing the protocol muscle growth first",
+    "scheduling the session fasted or fed",
+    "after the fasted session what and how much"
+   ],
+   "tags": [
+    "intermittent fasting",
+    "fasted training",
+    "muscle gain"
+   ]
+  },
+  {
+   "slug": "design-diet-fat-loss-egyptian-lifestyle",
+   "language": "ar",
+   "keywords": [
+    "تصميم نظام غذائي لحرق الدهون",
+    "نظام غذائي يناسب نمط الحياة المصري",
+    "قراءة الطبق المصري",
+    "الخطوات الأربع لتصميم نظامك",
+    "يوم مصري كامل محسوب",
+    "قراءة الطبق المصري في يومك"
+   ],
+   "tags": [
+    "الدايت المصري",
+    "حرق الدهون",
+    "نمط الحياة المصري"
+   ]
+  },
+  {
+   "slug": "best-plant-based-protein-powder-guide",
+   "language": "ar",
+   "keywords": [
+    "أفضل بروتين نباتي لبناء العضلات",
+    "خليط البازلاء والأرز",
+    "مصفوفة أحماض كاملة للبروتين النباتي",
+    "مختبر من جهة مستقلة",
+    "ما تقوله أحدث التجارب عن البروتين النباتي",
+    "دليل الاختيار المقيس للبروتين النباتي"
+   ],
+   "tags": [
+    "البروتين النباتي",
+    "مصفوفة أحماض كاملة",
+    "دليل الاختيار"
+   ]
+  },
+  {
+   "slug": "science-backed-belly-fat-loss-8-weeks",
+   "language": "en",
+   "keywords": [
+    "science backed strategies to lose belly fat",
+    "lose belly fat in 8 weeks",
+    "you cannot target belly fat",
+    "sizing the deficit slow wins",
+    "protein the armor against belly fat",
+    "resistance first cardio as a servant"
+   ],
+   "tags": [
+    "belly fat",
+    "fat loss",
+    "science based"
+   ]
+  },
+  {
+   "slug": "4-week-beginner-muscle-building-plan",
+   "language": "en",
+   "keywords": [
+    "beginner muscle building workout plan",
+    "4 week day by day guide",
+    "three full body days in week one",
+    "the four weeks at a glance",
+    "how progression actually works",
+    "day by day schedule for beginners"
+   ],
+   "tags": [
+    "beginner",
+    "muscle building",
+    "4 week plan"
+   ]
+  },
+  {
+   "slug": "progressive-overload-without-weights-guide",
+   "language": "ar",
+   "keywords": [
+    "الحمل التدريجي بدون أوزان",
+    "4 طرق مقيسة لتكسير الثبات",
+    "التلاعب بإيقاع التكرار",
+    "إضافة مجموعات وتكرارات وحجم",
+    "تقنيات الكثافة للحمل الزائد",
+    "زيادة الوزن ليست الطريق الوحيد"
+   ],
+   "tags": [
+    "الحمل التدريجي",
+    "تكسير الثبات",
+    "بلا أوزان"
+   ]
+  },
+  {
+   "slug": "sleep-recovery-gym-results",
+   "language": "ar",
+   "keywords": [
+    "النوم والاستشفاء ونتائج الجيم",
+    "كيف يؤثر النوم على بناء العضلات",
+    "روتين ليلة الاستشفاء",
+    "أيام الراحة راحة لا سكون",
+    "البروتوكول أربعة أسابيع بأربعة محاور",
+    "الاستشفاء جزء من البرنامج"
+   ],
+   "tags": [
+    "النوم",
+    "الاستشفاء",
+    "نتائج الجيم"
+   ]
+  }
+ ]
+}

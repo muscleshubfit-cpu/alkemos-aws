@@ -1,0 +1,57 @@
+{
+ "batch": "E-37 — P1 batch 14 (owner order 2026-11-06 «راجع جميع المقالات المنشورة… وصحح الصياغة والمعلومات»): the corpus audit measured exactly ONE legacy stain left in the whole 139-article library — the query-echo plain pattern (broken splice) in the intro of calculate-maintenance-calories-muscle-gain (EN): «…which settles the \"which formula\" question most of this article's mistakes revolve around». Minimal-intervention fix: the sentence now reads as intended («settling the formula question that most of this article's mistakes revolve around») — the query-echo shape is gone, the grammar is repaired, the Frankenfield citation and every other word of the applied E-24 rewrite are untouched. Keywords/tags for this row are NOT in this batch — they ride the keyword-tag-remediation channel (metadata-only, no updated_at bump). (P1-ARTICLES batch 14, 2026-11-06)",
+ "articles": [
+  {
+   "slug": "calculate-maintenance-calories-muscle-gain",
+   "language": "en",
+   "mode": "rewrite",
+   "expect_old_words": [
+    1020,
+    1040
+   ],
+   "note": "query-echo stain fix — the corpus audit's only remaining legacy stain (batch 13 measurement). One sentence repaired; nothing else changed vs the applied E-24 rewrite. (P1-ARTICLES E-37)",
+   "fix": {
+    "focus_keyword": "calculate maintenance calories muscle gain",
+    "category": "nutrition",
+    "excerpt": "Find your true maintenance calories for muscle gain: the equation comparison that settled Mifflin-St Jeor, the activity-multiplier trap, and the two-week weight-trend protocol that validates any number you calculate.",
+    "meta_title": "How to Calculate Maintenance Calories for Muscle Gain",
+    "meta_description": "Maintenance calories calculated then verified: Mifflin-St Jeor vs the alternatives, activity multipliers fixed, TEF math, and a 2-week validation protocol.",
+    "keywords": [
+     "best creatine monohydrate for women over 40",
+     "intermittent fasting 16/8 meal plan for fat loss",
+     "how to improve sleep quality for muscle recovery",
+     "optimal rest interval for hypertrophy training",
+     "best vegan omega-3 supplement for athletes",
+     "how to periodize training for powerlifting",
+     "how to track micronutrients without apps",
+     "best pre workout supplement for high blood pressure",
+     "how to prevent overtraining symptoms",
+     "calorie calculator spreadsheet template"
+    ],
+    "content": "To calculate maintenance calories for muscle gain, estimate with the Mifflin-St Jeor equation multiplied by a realistic activity factor, then verify the number with a two-week weight-trend protocol before adding your surplus — because the equation gets you within about 10%, and your validation loop closes the remaining gap. Once maintenance is confirmed, a modest surplus of 250–300 kcal (with protein at 1.6–2.2 g/kg) supports lean gain with minimal fat.\n\nThe systematic review that compared predictive equations ([Frankenfield and colleagues](https://pubmed.ncbi.nlm.nih.gov/15883556/)) concluded Mifflin-St Jeor is the most reliable choice for healthy adults — settling the formula question that most of this article's mistakes revolve around. Here is the full method, worked with real numbers.\n\n## Step 1: BMR with Mifflin-St Jeor — the settled formula\n\nThe equation itself ([Mifflin and colleagues](https://pubmed.ncbi.nlm.nih.gov/2305711/)):\n\n- **Men:** 10 × weight (kg) + 6.25 × height (cm) − 5 × age + 5\n- **Women:** 10 × weight (kg) + 6.25 × height (cm) − 5 × age − 161\n\nWorked example — a 75 kg, 178 cm, 28-year-old male: 10×75 + 6.25×178 − 5×28 + 5 = **1,728 kcal/day** BMR. Generic calculators still defaulting to the older Harris-Benedict equation tend to misestimate, especially at higher muscle masses — one of the six classic mistakes, and now fixed by the equation-review verdict above.\n\n## Step 2: The activity multiplier trap\n\nThe multiplier is where calculated maintenance goes wrong most often. Applying 1.2 (\"sedentary\") while training five days a week and walking 8,000 steps leaves you 400–600 kcal short; applying 1.725 for one lifting session plus a desk job overshoots the other way.\n\n| Real weekly activity | Multiplier | 75 kg example (BMR 1,728) |\n|---|---|---|\n| Desk job, 2–3 sessions, low steps | 1.4–1.5 | 2,419–2,592 |\n| Desk job, 4–5 sessions, 8k steps | 1.55–1.6 | 2,678–2,765 |\n| Active job + 4–5 sessions | 1.725 | 2,981 |\n| Active job + endurance training | 1.8–1.9 | 3,110–3,283 |\n\nTwo honesty rules: every equation carries roughly ±10% individual error, and deliberate cardio sessions are cleaner added as their measured cost (a 30-minute easy run ≈ 300–400 kcal for our example) than baked into the multiplier. Start at the [calorie calculator](/tools/calorie-calculator) with the conservative row, then let Step 3 correct it.\n\n## Step 3: The two-week validation protocol — where you actually \"calculate\" maintenance\n\nThis step is what separates a maintained number from a guessed one:\n\n1. Eat the calculated figure daily for 14 days, tracked honestly (including weekends — under-logging on one day erases the whole adjustment).\n2. Weigh yourself every morning after the bathroom, before food or drink.\n3. Take week-1 average and week-2 average. Stable weight = you found maintenance. Falling >0.3 kg/week = add 150–200 kcal. Rising >0.3 kg/week = cut 150–200 kcal.\n4. Iterate until two consecutive weeks sit inside ±0.3 kg.\n\nOnly now is the number truly yours — physiology beats arithmetic.\n\n## Step 4: TEF and protein — the thermic advantage\n\nFood digestion itself burns energy, and the hierarchy is well documented ([Westerterp's review of diet-induced thermogenesis](https://pubmed.ncbi.nlm.nih.gov/15507147/)): protein costs roughly 20–30% of its own energy, carbohydrate 5–10%, fat 0–3%. Raising protein from 1.6 to 2.2 g/kg therefore nudges daily expenditure up by only ~30–55 kcal while doing double duty for muscle: the meta-analytic ceiling for hypertrophy support sits around 1.6 g/kg with benefit up to ~2.2 ([Morton and colleagues](https://pubmed.ncbi.nlm.nih.gov/28698222/)).\n\nPractical settings for our 75 kg example: protein 150–165 g/day (600–660 kcal), fat 0.8–1 g/kg (540–675 kcal), carbohydrate fills the remainder — distribute it with the [macro calculator](/tools/macro-calculator), across 3–5 feedings of 30–40 g protein each.\n\n## Step 5: Muscle really does raise maintenance — honestly sized\n\nClassic physiology established skeletal muscle metabolism as a major determinant of resting energy expenditure ([Zurlo and colleagues](https://pubmed.ncbi.nlm.nih.gov/2243122/)). The popular exaggeration (\"each kg of muscle burns 50+ kcal/day\") overstates the per-kg figure, but the direction is real and compounding: as you gain muscle and body weight, your old maintenance number drifts into a deficit.\n\nThe rule that keeps you honest: **recalculate after every 3–4 kg of body-weight change** (or every 8–10 weeks of gaining), rerunning Steps 1–3. Skipping this is the mistake behind the classic \"gained great for two months, then stalled without changing anything.\"\n\n## Step 6: From maintenance to muscle gain\n\nWith maintenance validated, enter your surplus deliberately:\n\n| Goal | Daily intake | Expected trend |\n|---|---|---|\n| Lean gain (most lifters) | Maintenance + 250–300 | +0.25–0.5 kg/month, minimal fat |\n| Faster gain / hardgainer | Maintenance + 400–500 | +0.5–1 kg/month, more fat risk |\n| Revisit after 8–10 weeks | Re-run Steps 1–3 | Number rises with new body weight |\n\nThe companion decisions that protect the gain: progressive training volume, 7–9 hours of sleep ([CDC sleep guidance](https://www.cdc.gov/sleep/about/index.html)), and — when you eventually diet — the volume-adjusted approach in our [training-during-a-cut guide](/blog/adjust-training-volume-cut-muscle-retention). For the mirror-image calculation (deficit plus surplus in one plan), see [how many calories to gain muscle and lose fat](/blog/how-many-calories-to-gain-muscle-and-lose-fat); for the full bulking-and-cutting fueling framework, our [daily calories for fat loss and bulking guide](/blog/calculate-daily-calories-fuel-fat-loss-bulking).\n\n## Frequently Asked Questions\n\n### How do I calculate my maintenance calories?\n\nCalculate BMR with Mifflin-St Jeor, multiply by an honest activity factor (1.4–1.7 for most trainees), then validate with a two-week weight-trend protocol and adjust by 150–200 kcal until your weekly average is stable.\n\n### Which BMR formula is most accurate?\n\nMifflin-St Jeor. The systematic review comparing predictive equations in healthy adults found it more reliable than Harris-Benedict and most alternatives — and it needs only weight, height, age, and sex.\n\n### How do I verify my calculated maintenance number?\n\nEat the calculated intake for two weeks, weigh yourself every morning, and compare weekly averages: stable weight confirms maintenance; drift beyond ±0.3 kg per week means adjusting calories by 150–200 and re-testing.\n\n### How many calories above maintenance should I eat for muscle gain?\n\nA surplus of 250–300 kcal over verified maintenance supports lean gains of 0.25–0.5 kg per month for most lifters; hardgainers can push 400–500 with more fat-gain risk.\n\n### Does building muscle raise my maintenance calories?\n\nYes — skeletal muscle is a major determinant of resting energy expenditure — but the popular per-kg figures are exaggerated. Recalculate after every 3–4 kg of body-weight change and your number will track reality.",
+    "faq_json": [
+     {
+      "answer": "Calculate BMR with Mifflin-St Jeor, multiply by an honest activity factor (1.4–1.7 for most trainees), then validate with a two-week weight-trend protocol and adjust by 150–200 kcal until your weekly average is stable.",
+      "question": "How do I calculate my maintenance calories?"
+     },
+     {
+      "answer": "Mifflin-St Jeor. The systematic review comparing predictive equations in healthy adults found it more reliable than Harris-Benedict and most alternatives — and it needs only weight, height, age, and sex.",
+      "question": "Which BMR formula is most accurate?"
+     },
+     {
+      "answer": "Eat the calculated intake for two weeks, weigh yourself every morning, and compare weekly averages: stable weight confirms maintenance; drift beyond ±0.3 kg per week means adjusting calories by 150–200 and re-testing.",
+      "question": "How do I verify my calculated maintenance number?"
+     },
+     {
+      "answer": "A surplus of 250–300 kcal over verified maintenance supports lean gains of 0.25–0.5 kg per month for most lifters; hardgainers can push 400–500 with more fat-gain risk.",
+      "question": "How many calories above maintenance should I eat for muscle gain?"
+     },
+     {
+      "answer": "Yes — skeletal muscle is a major determinant of resting energy expenditure — but the popular per-kg figures are exaggerated. Recalculate after every 3–4 kg of body-weight change and your number will track reality.",
+      "question": "Does building muscle raise my maintenance calories?"
+     }
+    ]
+   }
+  }
+ ]
+}

@@ -30,6 +30,11 @@
  *     bun scripts/blog-runner/blog-corpus-inventory.mts > inventory.json
  */
 
+import {
+  contentWords,
+  orphanEntries,
+} from "../../src/lib/blog-keyword-relevance";
+
 const SUPABASE_URL =
   process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || "";
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
@@ -180,55 +185,9 @@ function legacyStains(md: string, lang: "en" | "ar") {
 // ── keyword/tag topical relevance (P1 batch 13, owner order 2026-11-06) ───
 // The on-site search predicate (matchesBlogSearch) matches on keywords+tags,
 // so a legacy random keyword pool pollutes search results for unrelated
-// queries. Deterministic ORPHAN detector: an entry is orphan when NONE of
-// its content words (>=4 chars, lowercase, stopword-stripped, plural-stripped
-// Latin) appears among the article's own topical words (title + category +
-// focus_keyword). Report-only — fixes flow through article-treatment.
-const RELEVANCE_STOPWORDS = new Set([
-  "best", "how", "what", "when", "why", "which", "with", "without", "for",
-  "and", "the", "you", "your", "that", "this", "from", "into", "about",
-  "many", "much", "should", "can", "will", "does", "are", "was", "were",
-  "has", "have", "been", "its", "their", "over", "under", "between",
-  "during", "before", "after", "while", "than", "then", "some", "most",
-  "أفضل", "كيف", "ما", "هل", "في", "على", "مع", "إلى", "الى", "بين",
-  "أكثر", "اكثر", "عندما", "لماذا", "الذي", "التي", "هذا", "هذه",
-  "ذلك", "تلك", "كان", "كانت", "يكون", "عن", "على", "هو", "هي",
-]);
-
-function contentWords(s: string | null | undefined): Set<string> {
-  const out = new Set<string>();
-  for (const raw of (s || "").toLowerCase().replace(/[^\p{L}\p{N}\s]/gu, " ").split(/\s+/)) {
-    if (raw.length < 4 || RELEVANCE_STOPWORDS.has(raw)) continue;
-    // Every word contributes its RAW form plus lightly-normalized variants,
-    // so matching stays robust on both sides (calories/calorie, classes/class).
-    // Extra variants only ever widen matching (conservative for the orphan
-    // detector: fewer false orphans, never more).
-    const forms = new Set<string>([raw]);
-    // Latin plural variants (calories->calorie via s-strip, classes->class via
-    // es-strip, studies->stud via ies-strip) — every variant widens matching,
-    // so all are added; the ss-guard protects mass/class/atlas.
-    if (/s$/.test(raw) && !/ss$/.test(raw) && raw.length - 1 >= 3) {
-      forms.add(raw.slice(0, -1));
-    }
-    if (/ies$/.test(raw) && raw.length - 3 >= 3) forms.add(raw.slice(0, -3));
-    else if (/es$/.test(raw) && raw.length - 2 >= 3) forms.add(raw.slice(0, -2));
-    // Arabic definite article (ال) root form when the root stays >=3 chars
-    if (raw.startsWith("ال") && raw.length - 2 >= 3) forms.add(raw.slice(2));
-    for (const f of forms) if (f.length >= 3 && !RELEVANCE_STOPWORDS.has(f)) out.add(f);
-  }
-  return out;
-}
-
-function orphanEntries(entries: string[] | null, topical: Set<string>): string[] {
-  const out: string[] = [];
-  for (const raw of entries || []) {
-    const words = contentWords(raw);
-    let hit = false;
-    for (const w of words) if (topical.has(w)) { hit = true; break; }
-    if (!hit && words.size > 0) out.push(raw);
-  }
-  return out;
-}
+// queries. The detector lives in src/lib/blog-keyword-relevance.ts (single
+// source — shared with the remediation channel); this script measures, the
+// remediation channel fixes. Basis here: title + category + focus_keyword.
 
 // ── fetch all published rows (paginated) ──────────────────────────────────
 
