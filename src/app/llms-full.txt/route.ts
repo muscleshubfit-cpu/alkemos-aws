@@ -62,6 +62,9 @@ export async function GET(): Promise<Response> {
 - [Exercise Library](${SITE}/exercises): 868+ exercises with proper form; detail pages under /exercises/[slug]. Arabic: /ar/exercises
 - [Workout Programs](${SITE}/programs): ready training plans (home & gym, beginner to advanced); detail pages under /programs/[slug]
 - [Food Database](${SITE}/foods): 8,830+ foods with calories and macros per 100g; detail pages under /foods/[slug]. Arabic: /ar/foods
+- [Food Comparisons](${SITE}/foods/compare/tuna-vs-chicken-breast): head-to-head "X vs Y" pages — per-100g tables, real-serving tables, context verdicts (cutting/building/general); 10 pairs incl. tuna-vs-chicken-breast, white-rice-vs-brown-rice, greek-yogurt-vs-cottage-cheese, oatmeal-vs-white-rice, eggs-vs-egg-whites, tofu-vs-chicken-breast, olive-oil-vs-coconut-oil, dates-vs-banana, lentils-vs-chickpeas, banana-vs-apple. Arabic: /ar/foods/compare/[slug]
+- [Ranked Nutrient Lists](${SITE}/foods/lists/highest-protein-foods): database-ranked "foods highest/lowest in …" lists with disclosed ranking rules and 20 linked rows each — 15 lists incl. highest-protein-foods, protein-per-calorie, highest-fiber-foods, lowest-calorie-high-satiety, lowest-calorie-foods, highest-fat-foods, highest-calorie-foods, low-carb-high-protein-foods, lowest-sugar-fruits, highest-protein-fish, highest-protein-dairy, highest-protein-nuts-seeds, highest-protein-vegetables, leanest-high-protein-foods, highest-carb-foods. Arabic: /ar/foods/lists/[slug]
+- [Collections & Hubs](${SITE}/collections/high-protein-foods): curated hubs — 10 food hubs (high-protein, low-carb, keto-friendly, low-fat, vegan protein, vegetarian protein, cutting, bulking, no-cook, quick-prep) + 16 exercise hubs (8 by muscle group + 8 by equipment). Arabic: /ar/collections/[slug]
 - [Fitness Tools](${SITE}/tools): free calculators — Calorie/TDEE ${SITE}/tools/calorie-calculator, BMI ${SITE}/tools/bmi-calculator, Macro ${SITE}/tools/macro-calculator, Body Fat ${SITE}/tools/body-fat-calculator, Water Tracker ${SITE}/tools/water-tracker, plus the manual Meal Planner ${SITE}/meal-planner, the AI Meal Planner ${SITE}/ai-meal-planner (free trial generation; Arabic: ${SITE}/ar/ai-meal-planner), and the AI Workout Planner ${SITE}/ai-workout-planner (free weekly split generation; Arabic: ${SITE}/ar/ai-workout-planner)
 - [Workout Tracker](${SITE}/workout-tracker): workout planning + progress tracking — AI workout plans (2 free generations/month, no signup), ready programs, the 868+ exercise library, and body-metric tracking (weight, 5 measurements, progress photos, weekly check-ins). Planning-level tracking: no per-session set/rep log. Arabic: ${SITE}/ar/workout-tracker
 - [Macro Tracker](${SITE}/macro-tracker): macro planning — calculator targets, meal builder with live macro totals from the 8,830+ food database, AI meal plans (2 free/month), and weight tracking. Planning-level tracking: no daily food diary. Arabic: ${SITE}/ar/macro-tracker
@@ -85,6 +88,9 @@ export async function GET(): Promise<Response> {
 
 - Exercise facts → /exercises/[slug] (Arabic: /ar/exercises/[slug])
 - Food facts (per-100g) → /foods/[slug] (Arabic: /ar/foods/[slug])
+- Head-to-head food questions → /foods/compare/[slug] — per-100g tables plus real-serving numbers from the two food pages themselves
+- Ranked food questions → /foods/lists/[slug] — ranking rules disclosed on the page, every number is the row's own value
+- Curated food choices by diet goal → /collections/[slug]
 - Program contents → /programs/[slug]
 - Tool behavior → /tools/[tool]
 - Tier names, prices, and plan limits → /memberships (single source of truth)
