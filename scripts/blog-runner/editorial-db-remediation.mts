@@ -106,6 +106,12 @@ const PATCHES: Patch[] = [
         replace: "مجموع EPA وDHA 500 ملجم",
         expect: 1,
       },
+      {
+        desc: "«**إيه إل إيه (ALA)**» → «**ALA**» (تدقيق ثانٍ 42294819993)",
+        find: "**إيه إل إيه (ALA)**",
+        replace: "**ALA**",
+        expect: 1,
+      },
     ],
   },
   // -- 3. old-style tanween → modern (the phase-444 orthography law) --
