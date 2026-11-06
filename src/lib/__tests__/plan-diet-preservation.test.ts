@@ -51,6 +51,7 @@ import {
 } from "@/lib/plan-generator";
 import { sanitizeJobPayload } from "@/lib/ai-jobs";
 import { resolvePlanDietType } from "@/lib/diet-types";
+import { checkItemConstraints } from "@/lib/plan-ai-validation";
 import type { ClientContext } from "@/lib/ai-local";
 
 /* ── THE INCIDENT CLIENT ──
@@ -192,8 +193,18 @@ describe("the keto-loss incident replay (whole-plan regeneration)", () => {
     // The audit now rides the fallback content too (same law as the AI path).
     expect(fallbackPlan.audit?.recomputed.meals_total_calories.value).toBeGreaterThan(0);
     const allFoods = fallbackPlan.meals.flatMap((m) => m.items.map((i) => i.food));
-    for (const food of allFoods) {
-      expect(String(food)).not.toMatch(/أرز|رز|خبز|عيش|شوفان|مكرونة|بطاطس|بطاطا|موز|عنب|بطيخ|تمر|بلح|كينوا|برغل|فريك/);
+    for (const m of fallbackPlan.meals) {
+      for (const i of m.items) {
+        // FRAME 443 (PLAN-PROBE-ROOTCAUSE-2): assert keto-cleanliness
+        // through the SINGLE-SOURCE gate (checkItemConstraints) — the old
+        // inline regex was a SECOND copy of the forbidden-token list and
+        // inherited the substring false positive it pinned to prevent
+        // («موزاريلا» ⊃ «موز» — a keto-staple cheese the local pool now
+        // legitimately serves after the exception fix). The gate carries
+        // the real law: tokens + dairy class + per-item carb ceiling.
+        const v = checkItemConstraints(String(i.food), { carbs_g: i.carbs_g ?? null }, { dietType: "keto" });
+        expect(v, `fallback item «${String(i.food)}» must be keto-clean: ${v ?? ""}`).toBeNull();
+      }
     }
     // The keto carb band holds on the recomputed items (≤ 50g for the day).
     const dayCarbs = fallbackPlan.meals.reduce(
