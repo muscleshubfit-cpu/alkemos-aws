@@ -206,6 +206,10 @@ export function LanguageToggle() {
  // every prefix below has a complete /ar mirror (exercises + foods are
  // one bilingual library; muscles/equipment/collections/authors share
  // the same static hub slugs; blog categories share the same ids).
+ // F-2-A regression fix (2026-11-07 follow-up): "/guides/" added — its
+ // omission made the toggle on /ar/guides/* do a chrome-only swap (EN
+ // chrome under an /ar URL — a mixed state that violates the
+ // URL-governs principle) instead of navigating to the EN mirror.
  const PREFIX_MIRROR = [
  "/exercises/",
  "/foods/",
@@ -214,6 +218,7 @@ export function LanguageToggle() {
  "/collections/",
  "/blog/category/",
  "/authors/",
+ "/guides/",
  ];
  for (const prefix of PREFIX_MIRROR) {
  if (pathname.startsWith(prefix)) {

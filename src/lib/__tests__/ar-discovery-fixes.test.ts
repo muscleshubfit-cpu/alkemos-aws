@@ -34,6 +34,10 @@ const read = (rel: string) => readFileSync(resolve(__dirname, rel), "utf8");
 
 const FOOTER = "../../components/SiteFooter.tsx";
 const ARTICLE_VIEW = "../../components/blog/BlogArticlePage.tsx";
+const EVO_PAGE = "../../app/(en)/evo/page.tsx";
+const COACHING_PAGE = "../../app/(en)/coaching/page.tsx";
+const EVO_WIDGET = "../../components/EvoFloatingWidget.tsx";
+const LANG_TOGGLE = "../../components/LanguageToggle.tsx";
 const EN_ARTICLE_PAGE = "../../app/(en)/blog/[slug]/page.tsx";
 const AR_ARTICLE_PAGE = "../../app/(ar)/ar/blog/[slug]/page.tsx";
 const AUTH_HOOK = "../../hooks/use-auth.tsx";
@@ -201,5 +205,48 @@ describe("F-6 — the dead mhe:locale cookie write is gone", () => {
     expect(src).toContain('response.headers.set("x-pathname"');
     // The Supabase session machinery is untouched.
     expect(src).toContain("await supabase.auth.getUser()");
+  });
+});
+
+describe("F-2-A regression fix — internal links keep the visitor inside their own language tree (2026-11-07 follow-up)", () => {
+  // Live-reproduced root cause: F-2-A made the URL the sole language
+  // governor (correct — kept verbatim), which EXPOSED a latent bug class
+  // the removed localStorage chrome-flip (audit R-1) used to mask:
+  // bilingual surfaces with hardcoded EN hrefs dropped the Arabic
+  // visitor onto full-English pages even though /ar mirrors existed —
+  // the reported "switch to Arabic, navigate, the UI turns English".
+  // The toggle had the same gap for /guides/* (EN chrome under an /ar
+  // URL — a mixed state violating the very principle). Six pins:
+  it("evo: BOTH «See plans» CTAs are locale-aware (no hardcoded /memberships left)", () => {
+    const src = read(EVO_PAGE);
+    expect(
+      src.match(/href=\{isAr \? "\/ar\/memberships" : "\/memberships"\}/g),
+      "both CTAs converted",
+    ).toHaveLength(2);
+    expect(src).not.toMatch(/href="\/memberships"/);
+  });
+
+  it("coaching: the «Learn more about EVO» link is locale-aware", () => {
+    const src = read(COACHING_PAGE);
+    expect(src).toContain('href={isAr ? "/ar/evo" : "/evo"}');
+    expect(src).not.toMatch(/href="\/evo"/);
+  });
+
+  it("blog article: the Home breadcrumb crumb follows the page locale (not a hardcoded «/»)", () => {
+    const src = read(ARTICLE_VIEW);
+    expect(src).toContain('href={isAr ? "/ar" : "/"}');
+    // The Blog crumb right next to it stays locale-aware as before.
+    expect(src).toContain('href={isAr ? "/ar/blog" : "/blog"}');
+  });
+
+  it("EvoFloatingWidget: the paywall «Subscribe» link is locale-aware (the widget renders on EVERY page via root-shell)", () => {
+    const src = read(EVO_WIDGET);
+    expect(src).toContain('href={isAr ? "/ar/memberships" : "/memberships"}');
+    expect(src).not.toMatch(/href="\/memberships"/);
+  });
+
+  it("LanguageToggle: the /guides/ subtree is in PREFIX_MIRROR — the toggle navigates to the EN mirror instead of leaving EN chrome under an /ar URL", () => {
+    const src = read(LANG_TOGGLE);
+    expect(src).toContain('"/guides/",');
   });
 });

@@ -367,7 +367,11 @@ export default function CoachingPage() {
                 single quiet informational link. */}
             <div className="mt-6">
               <a
-                href="/evo"
+                /* F-2-A regression fix (2026-11-07 follow-up): locale-aware —
+                   /ar/evo mirror exists; a hardcoded /evo dropped the Arabic
+                   reader into a full-English UI once the URL (not localStorage)
+                   became the sole governor of the interface language. */
+                href={isAr ? "/ar/evo" : "/evo"}
                 className="btn-outline inline-flex items-center gap-2 px-5 py-2.5 text-sm"
               >
                 {isAr ? "اعرف المزيد عن EVO" : "Learn more about EVO"}

@@ -846,7 +846,12 @@ export function EvoFloatingWidget() {
                           : "Subscribe to continue chatting without limits"}
                       </p>
                       <a
-                        href="/memberships"
+                        /* F-2-A regression fix (2026-11-07 follow-up): the
+                           widget renders on EVERY page via root-shell, so a
+                           hardcoded /memberships sent the Arabic reader from
+                           any /ar/* page into a full-English UI the moment
+                           the URL became the sole language governor. */
+                        href={isAr ? "/ar/memberships" : "/memberships"}
                         className="btn-chrome mt-3 px-4 py-2 text-xs"
                       >
                         {isAr ? "اشترك" : "Subscribe"}

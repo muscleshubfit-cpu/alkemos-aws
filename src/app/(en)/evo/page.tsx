@@ -601,7 +601,12 @@ export default function EvoPage() {
               : "Coaching subscription includes: EVO with full features + personalized nutrition plans + workout programs + personal follow-up + all platform tools. No extra cost."}
           </p>
           <a
-            href="/memberships"
+            /* F-2-A regression fix (2026-11-07 follow-up): locale-aware —
+               the Arabic tree's "See plans" CTA stays in the Arabic tree
+               (/ar/memberships mirror exists); a hardcoded /memberships
+               dropped the Arabic reader into a full-English UI the moment
+               the URL (not localStorage) became the sole governor. */
+            href={isAr ? "/ar/memberships" : "/memberships"}
             className="btn-chrome mt-6 inline-block px-6 py-3 text-base"
           >
             {isAr ? "اطّلع على الباقات ›" : "See plans ›"}
@@ -731,7 +736,9 @@ export default function EvoPage() {
               <ArrowRight className="h-4 w-4 rtl:rotate-180" />
             </button>
             <a
-              href="/memberships"
+              /* F-2-A regression fix (2026-11-07 follow-up): same
+                 locale-aware fix as the band CTA above. */
+              href={isAr ? "/ar/memberships" : "/memberships"}
               className="inline-flex items-center gap-2 rounded-full border border-white/30 px-6 py-3 text-base font-medium text-white transition-colors hover:bg-white/10"
             >
               <span>{isAr ? "اطّلع على الباقات" : "See all plans"}</span>

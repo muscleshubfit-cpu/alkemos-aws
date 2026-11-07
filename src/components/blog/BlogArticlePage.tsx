@@ -194,9 +194,15 @@ export function BlogArticlePage({
           correct SEO pattern. */}
 
       <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-12 sm:px-6 md:py-20">
-        {/* Breadcrumb */}
+        {/* Breadcrumb. F-2-A regression fix (2026-11-07 follow-up): the
+            Home crumb used a hardcoded "/" — on /ar/blog/[slug] it dropped
+            the Arabic reader onto the ENGLISH homepage (the audit-R-1
+            localStorage chrome-flip used to mask it; with the URL governing,
+            the whole UI turns English — "the interface reverts"). The crumb
+            now follows the page's own locale, keeping the visitor inside
+            their language tree. */}
         <nav className="mb-8 flex items-center gap-2 text-sm font-normal text-[var(--muted-foreground)]">
-          <a href="/" className="transition-opacity hover:opacity-70">{isAr ? "الرئيسية" : "Home"}</a>
+          <a href={isAr ? "/ar" : "/"} className="transition-opacity hover:opacity-70">{isAr ? "الرئيسية" : "Home"}</a>
           <span>/</span>
           <a href={isAr ? "/ar/blog" : "/blog"} className="transition-opacity hover:opacity-70">{isAr ? "المدونة" : "Blog"}</a>
           <span>/</span>
