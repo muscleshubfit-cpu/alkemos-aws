@@ -16,15 +16,19 @@ import { resolve } from "node:path";
  *             (the "logged-out → logged-in" flash window)
  *   F-4 (P2)  the homepage #learn island renders from SERVER props —
  *             no deferIdle(2500) client REST fetch (the R-3 late shift)
- *   F-5 (P2)  the (app) group pre-paint lang/dir stamp (the R-5
- *             LTR→RTL full-page re-layout at hydration)
+ *   F-5 (P2)  RECONCILED by F-2-A: the (app) pre-paint lang/dir stamp
+ *             shipped by the 446 frame is REMOVED (phase 447 — its
+ *             "matches what hydration settles on" premise died when the
+ *             URL became the sole language governor; keeping it would
+ *             re-create a post-hydration dir flip on the account surfaces)
  *   F-6 (P3)  the dead `mhe:locale` cookie write is GONE (R-6: zero
  *             readers; pure Set-Cookie noise on dynamic surfaces)
  *
- * F-2 (the Arabic-returning-user experience on "/") and F-7 (owner
- * actions: Bing WMT verification, token rotation) are DELIBERATELY
- * unpinned — they require owner decisions and are documented as such
- * in the report's execution section.
+ * F-2 was EXECUTED 2026-11-07 (phase 447 — owner order «نفّذ الآن القرار
+ * F-2 بالخيار A»: the URL path is the sole governor of the UI language)
+ * and is pinned in context-render-storm.test.tsx (source pin + the
+ * saved-AR-preference behavior test). F-7 (owner actions: token
+ * rotation, GSC) remains deliberately unpinned — owner-side actions.
  */
 const read = (rel: string) => readFileSync(resolve(__dirname, rel), "utf8");
 
@@ -163,23 +167,27 @@ describe("F-4 — the homepage #learn island renders from server props", () => {
   });
 });
 
-describe("F-5 — the (app) pre-paint lang/dir stamp", () => {
-  it("RootShell carries the gated script on the theme-init pattern", () => {
+describe("F-5 — RECONCILED by F-2-A: the (app) pre-paint lang/dir stamp is REMOVED", () => {
+  it("RootShell carries no prePaintLangDir prop and no alkemos-app-lang-init script", () => {
     const src = read(ROOT_SHELL);
-    expect(src).toContain("prePaintLangDir");
-    expect(src).toContain('id="alkemos-app-lang-init"');
-    // The resolution chain mirrors UrlLocaleSync (saved pref → browser
-    // language) and stamps ONLY the Arabic case (en/ltr is the server
-    // default — nothing to touch).
-    expect(src).toContain("localStorage.getItem('mhe:lang')");
-    expect(src).toContain("document.documentElement.dir='rtl'");
-    expect(src).not.toContain("document.documentElement.dir='ltr'");
+    // The 446-frame script read the saved preference (mhe:lang → browser
+    // language) and stamped ar/rtl pre-paint on the (app) group. With F-2-A
+    // (URL governs) non-/ar URLs settle on en/ltr — the script would stamp
+    // ar/rtl pre-paint then flip BACK after hydration: a fresh post-
+    // hydration dir flip violating the owner order. Removed in phase 447.
+    expect(src).not.toContain("prePaintLangDir");
+    expect(src).not.toContain('id="alkemos-app-lang-init"');
+    expect(src).not.toContain("localStorage.getItem('mhe:lang')");
+    // The THEME pre-paint script stays (theme was never URL-based).
+    expect(src).toContain('id="alkemos-theme-init"');
   });
 
-  it("the (app) group opts in; the public (en)/(ar) groups do NOT (F-2 is an owner decision)", () => {
-    expect(read(APP_LAYOUT)).toContain("prePaintLangDir");
+  it("no group layout opts in — every URL's lang/dir comes from the static per-group root", () => {
+    expect(read(APP_LAYOUT)).not.toContain("prePaintLangDir");
     expect(read(EN_LAYOUT)).not.toContain("prePaintLangDir");
     expect(read(AR_LAYOUT)).not.toContain("prePaintLangDir");
+    // F-2-A's own source pin (URL-only resolution, no localStorage read)
+    // lives in context-render-storm.test.tsx alongside its behavior test.
   });
 });
 

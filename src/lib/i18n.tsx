@@ -790,22 +790,24 @@ export function I18nProvider({
  // audit P-01) — the provider itself no longer subscribes to pathname.
 
  useEffect(() => {
-   // H1 fix (Option B): this `useEffect` is intentionally RETAINED as a
-   // client-side fallback. The server-side root layout now sets
-   // `<html lang dir>` based on the `x-pathname` header + `mhe:locale`
-   // cookie (see `src/app/layout.tsx` `resolveLocale()`), so the initial
-   // server-rendered HTML already has correct attributes — no flash on
-   // first paint. However, when the user toggles the language via the
-   // in-page `LanguageToggle` component (calling `setLang()` below) the
-   // change must reflect immediately without a full page reload. This
-   // `useEffect` mutates `document.documentElement` to keep the HTML
-   // attributes in sync with the client-side `lang` state.
-   //
-   // The `suppressHydrationWarning` on `<html>` in `RootLayout` is
-   // required because the server may render `<html lang="en">` while
-   // the client `useEffect` may set it to `<html lang="ar">` based on
-   // `localStorage["mhe:lang"]`. This is the expected, intentional
-   // behavior for client-side language switching.
+   // F-2 Option A (AR-DISCOVERY-UI-SETTLE-AUDIT-2026-11-07 §6 — owner
+   // decision 2026-11-07): `<html lang dir>` come from the STATIC
+   // per-locale route-group root layouts ((en)/(app) → en/ltr · (ar) →
+   // ar/rtl — VERCEL-USAGE-3), so the first server HTML and first paint
+   // already match the URL. This effect mutates `document.documentElement`
+   // only when `lang` legitimately changes client-side, which after F-2-A
+   // happens ONLY through:
+   //   1. an SPA navigation across the locale boundary — UrlLocaleSync
+   //      below re-resolves the new path (LanguageToggle's M31 mirror
+   //      navigation / ↔ /ar, or any cross-locale link);
+   //   2. the in-page LanguageToggle on mirror-less private surfaces
+   //      (/auth, /checkout, /profile…) — a session-only chrome swap
+   //      with no URL change.
+   // The legacy post-hydration flip driven by `localStorage["mhe:lang"]`
+   // on non-/ar URLs (audit R-1) is GONE — the URL is the sole governor.
+   // The `suppressHydrationWarning` on `<html>` in `RootShell` stays for
+   // case 2: a client state that intentionally diverges from the server
+   // attributes later in the session.
    const dir = lang === "ar" ? "rtl" : "ltr";
    document.documentElement.lang = lang;
    document.documentElement.dir = dir;
@@ -848,13 +850,34 @@ export function I18nProvider({
 
 /* ── W1-4a (audit P-01 — 2026-10-02): pathname subscription torn off ────
  *
- * URL-first language resolution, moved VERBATIM from the provider body:
- * `/ar/*` URLs ALWAYS render Arabic (the H2 homepage-mirror fix,
- * 2026-08-30); non-/ar URLs keep the legacy saved-preference →
- * browser-language → "en" chain. Living in this null-rendering leaf,
- * the per-route re-render stays INSIDE this component instead of
- * re-rendering the provider + every useI18n consumer in the app
- * (setLangState arrives as a stable setState reference). */
+ * F-2 Option A (AR-DISCOVERY-UI-SETTLE-AUDIT-2026-11-07 §6 — owner
+ * decision 2026-11-07): the URL path is the SOLE governor of the UI
+ * language — `/ar` and `/ar/*` render Arabic, every other URL renders
+ * English — from the first server HTML through the whole session.
+ *
+ * URL-only resolution (the H2 homepage-mirror fix, 2026-08-30, retained
+ * verbatim: `/ar/*` URLs ALWAYS render Arabic — previously /ar
+ * redirected to / and the language was guessed from localStorage /
+ * browser settings, so crawlers + non-Arabic browsers saw English). The
+ * legacy non-/ar chain (saved preference `localStorage["mhe:lang"]` →
+ * browser language → "en") is REMOVED: it flipped the whole chrome
+ * (header/nav/footer + document dir) AFTER hydration (audit R-1),
+ * producing a permanently MIXED UI on `/` (English URL-locked content
+ * under Arabic chrome) and a full EN→AR flip with RTL re-layout on the
+ * (app) surfaces (/auth, /checkout, /dashboard). The saved preference
+ * is still WRITTEN by setLang (the LanguageToggle) but no longer READ
+ * anywhere at runtime.
+ *
+ * The LanguageToggle remains the change mechanism: on mirrored pages
+ * it navigates to the mirror URL (M31) and this leaf re-resolves the
+ * new path; on mirror-less private surfaces it swaps the in-page chrome
+ * for the session (this effect re-enforces the URL language on the next
+ * pathname change).
+ *
+ * Living in this null-rendering leaf, the per-route re-render stays
+ * INSIDE this component instead of re-rendering the provider + every
+ * useI18n consumer in the app (setLangState arrives as a stable
+ * setState reference). */
 function UrlLocaleSync({
  setLangState,
 }: {
@@ -863,36 +886,13 @@ function UrlLocaleSync({
  const pathname = usePathname() || "/";
 
  useEffect(() => {
-   // H2 fix (homepage AR mirror, 2026-08-30): URL-FIRST resolution.
-   //
-   // 1. `/ar/*` URLs ALWAYS render Arabic — an explicit user choice and
-   //    the only way Google can index the Arabic homepage (previously
-   //    /ar redirected to / and the language was guessed from
-   //    localStorage / browser settings, so crawlers + non-Arabic
-   //    browsers saw English).
-   // 2. Non-/ar URLs keep the legacy behavior (saved preference →
-   //    browser language → "en") so pages WITHOUT an Arabic mirror keep
-   //    their toggle-only UX.
+   // F-2-A resolution: /ar + /ar/* → Arabic; every other URL → English.
+   // Identical to the initial state the static layouts provide
+   // (urlLocale), so a plain mount is a no-op setState — the effect's
+   // real job is SPA navigations across the locale boundary (e.g.
+   // LanguageToggle's mirror push / → /ar, or an /ar link back to /).
    const isArPath = pathname === "/ar" || pathname.startsWith("/ar/");
-   if (isArPath) {
-     setLangState("ar");
-     return;
-   }
-   const saved =
-     typeof window !== "undefined"
-       ? (localStorage.getItem("mhe:lang") as Lang | null)
-       : null;
-   if (saved === "ar" || saved === "en") {
-     setLangState(saved);
-   } else if (typeof navigator !== "undefined") {
-     // Auto-detect from browser: if browser is Arabic, use Arabic
-     const browserLang = navigator.language?.toLowerCase() || "";
-     if (browserLang.startsWith("ar")) {
-       setLangState("ar");
-     } else {
-       setLangState("en");
-     }
-   }
+   setLangState(isArPath ? "ar" : "en");
  }, [pathname, setLangState]);
 
  return null;

@@ -30,6 +30,12 @@ import { createElement } from "react";
  *      element-type pin IS the keyboard-contract pin.)
  */
 
+// F-2 Option A (AR-DISCOVERY-UI-SETTLE-AUDIT-2026-11-07, owner decision
+// 2026-11-07): usePathname is a MUTABLE seam so the AR case mounts the
+// provider the way a real /ar page does — urlLocale "ar" under an /ar
+// path. The legacy localStorage ("mhe:lang") override is gone from the
+// provider, so a saved preference no longer flips the language.
+const navState = vi.hoisted(() => ({ pathname: null as string | null }));
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
     push: vi.fn(),
@@ -38,7 +44,7 @@ vi.mock("next/navigation", () => ({
     prefetch: vi.fn(),
     back: vi.fn(),
   }),
-  usePathname: () => null,
+  usePathname: () => navState.pathname,
 }));
 
 // next/image would need the image loader — the cover preview renders
@@ -76,12 +82,12 @@ const repoRoot = resolve(__dirname, "../../..");
 const editorSrc = () =>
   readFileSync(resolve(repoRoot, "src/components/views/BlogEditorView.tsx"), "utf8");
 
-async function renderEditor() {
+async function renderEditor(locale: "en" | "ar" = "en") {
   const rtl = await import("@testing-library/react");
   const view = rtl.render(
     // eslint-disable-next-line react/no-children-prop -- createElement needs children in props (test-only; repo precedent modal-a11y.test.tsx)
     createElement(I18nProvider, {
-      urlLocale: "en",
+      urlLocale: locale,
       children: createElement(BlogEditorView, { mode: "new" }),
     })
   );
@@ -134,6 +140,7 @@ describe("W1-3e behavior — the real editor in jsdom (keyboard user flow)", () 
     window.localStorage.clear();
     window.sessionStorage.clear();
     document.body.innerHTML = "";
+    navState.pathname = null;
     // The mount-time job-recovery scan fetches /api/ai/jobs — stubbed to
     // an honest not-ok so the effect settles instantly (its catch is the
     // app's own best-effort contract).
@@ -216,9 +223,11 @@ describe("W1-3e behavior — the real editor in jsdom (keyboard user flow)", () 
     view.unmount();
   });
 
-  it("Arabic: all four control names are localized (saved preference)", async () => {
-    window.localStorage.setItem("mhe:lang", "ar");
-    const { view, fireEvent } = await renderEditor();
+  it("Arabic: all four control names are localized (URL /ar)", async () => {
+    // F-2-A: Arabic now renders the URL-correct way — urlLocale "ar"
+    // under an /ar path (the saved-preference override is gone).
+    navState.pathname = "/ar";
+    const { view, fireEvent } = await renderEditor("ar");
 
     const addKw = document.body.querySelector('button[aria-label="أضف كلمة مفتاحية"]');
     const addTag = document.body.querySelector('button[aria-label="أضف وسمًا"]');

@@ -32,6 +32,12 @@ import { createElement, useState, type Context as ReactContext } from "react";
  *      openChat/closeChat route through the test spies before flipping it.
  */
 
+// F-2 Option A (AR-DISCOVERY-UI-SETTLE-AUDIT-2026-11-07, owner decision
+// 2026-11-07): usePathname is a MUTABLE seam so the AR case mounts the
+// provider the way a real /ar page does — urlLocale "ar" under an /ar
+// path. The legacy localStorage ("mhe:lang") override is gone from the
+// provider, so a saved preference no longer flips the language.
+const navState = vi.hoisted(() => ({ pathname: null as string | null }));
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
     push: vi.fn(),
@@ -40,7 +46,7 @@ vi.mock("next/navigation", () => ({
     prefetch: vi.fn(),
     back: vi.fn(),
   }),
-  usePathname: () => null,
+  usePathname: () => navState.pathname,
 }));
 
 // next/image would need the image loader — the avatar renders through a
@@ -178,7 +184,7 @@ function makeHarness(DrawerCtx: ReactContext<unknown>) {
   };
 }
 
-async function renderWidget(props: HarnessProps = {}) {
+async function renderWidget(props: HarnessProps = {}, locale: "en" | "ar" = "en") {
   const rtl = await import("@testing-library/react");
   const mocked = (await import("@/lib/evo-chat-context")) as unknown as {
     __DrawerHarnessContext: ReactContext<unknown>;
@@ -188,7 +194,7 @@ async function renderWidget(props: HarnessProps = {}) {
     view: rtl.render(
       // eslint-disable-next-line react/no-children-prop -- createElement needs children in props (test-only; repo precedent modal-a11y.test.tsx)
       createElement(I18nProvider, {
-        urlLocale: "en",
+        urlLocale: locale,
         children: createElement(Harness, props),
       })
     ),
@@ -270,6 +276,7 @@ describe("W1-3c behavior — the real widget in jsdom", () => {
   beforeEach(() => {
     window.localStorage.clear();
     document.body.innerHTML = "";
+    navState.pathname = null;
   });
 
   it("renders role=dialog with the EVO title wired via aria-labelledby", async () => {
@@ -371,8 +378,10 @@ describe("W1-3c behavior — the real widget in jsdom", () => {
     ).not.toBeNull();
     en.view.unmount();
 
-    window.localStorage.setItem("mhe:lang", "ar");
-    const ar = await renderWidget({ initialOpen: true });
+    // F-2-A: Arabic now renders the URL-correct way — urlLocale "ar"
+    // under an /ar path (the saved-preference override is gone).
+    navState.pathname = "/ar";
+    const ar = await renderWidget({ initialOpen: true }, "ar");
     expect(
       dialogEl()?.querySelector('button[aria-label="إغلاق"]')
     ).not.toBeNull();

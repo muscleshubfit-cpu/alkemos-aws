@@ -194,10 +194,13 @@ describe("W1-4a source pins — memoized values, torn-off pathname, module-scope
     expect(provider).not.toMatch(/usePathname\(\)/);
     const leaf = span(s, "function UrlLocaleSync", "export function useI18n");
     expect(leaf).toContain("usePathname()");
-    // URL-first resolution moved VERBATIM: /ar/* always Arabic; the
-    // saved-preference → browser-language → "en" chain for the rest.
+    // F-2 Option A (2026-11-07): the URL path is the SOLE governor —
+    // /ar/* always Arabic, every other URL English. The legacy
+    // saved-preference → browser-language override is extinct in the
+    // leaf: no localStorage read, no navigator.language sniff.
     expect(leaf).toContain('pathname === "/ar" || pathname.startsWith("/ar/")');
-    expect(leaf).toContain('localStorage.getItem("mhe:lang")');
+    expect(leaf).not.toContain('localStorage.getItem("mhe:lang")');
+    expect(leaf).not.toContain("navigator.language");
   });
 
   // ── SiteHeader ─────────────────────────────────────────────────────────
@@ -321,6 +324,35 @@ describe("W1-4a behavior — a faithful SPA navigation in jsdom", () => {
     expect(bag.last).not.toBe(before);
     expect(bag.last?.lang).toBe("ar");
     expect(bag.last?.dir).toBe("rtl");
+    view.unmount();
+  });
+
+  it("F-2-A: a saved Arabic preference does NOT flip a non-/ar URL — the URL governs", async () => {
+    const bag = i18nBag;
+    // The exact return-visitor regression the audit measured live (R-1):
+    // mhe:lang=ar used to flip the whole chrome to Arabic AFTER hydration
+    // on `/` (a permanently mixed UI — English content, Arabic chrome).
+    // With the override removed, the URL is the sole governor.
+    window.localStorage.setItem("mhe:lang", "ar");
+    // eslint-disable-next-line react/no-children-prop -- createElement needs children in props (test-only; repo precedent mobile-drawer-a11y.test.tsx)
+    const app = createElement(I18nProvider, { urlLocale: "en", children: createElement(I18nProbe) });
+    const { navigate, view } = await mountAt("/", app);
+    await (await import("@testing-library/react")).act(async () => {});
+    expect(bag.last?.lang).toBe("en");
+    expect(bag.last?.dir).toBe("ltr");
+    // No post-hydration re-render at all — the flip is gone, not merely
+    // faster: the leaf's URL resolution equals the initial urlLocale.
+    expect(bag.renders).toBe(1);
+
+    // The URL governs BOTH ways across an SPA boundary: into /ar the
+    // language flips to Arabic…
+    await navigate("/ar");
+    expect(bag.last?.lang).toBe("ar");
+    expect(bag.last?.dir).toBe("rtl");
+    // …and back out of it re-resolves English even with the saved pref.
+    await navigate("/");
+    expect(bag.last?.lang).toBe("en");
+    expect(bag.last?.dir).toBe("ltr");
     view.unmount();
   });
 

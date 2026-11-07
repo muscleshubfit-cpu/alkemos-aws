@@ -32,6 +32,12 @@ import { createElement } from "react";
  *      exactly the way a keyboard user would.
  */
 
+// F-2 Option A (AR-DISCOVERY-UI-SETTLE-AUDIT-2026-11-07, owner decision
+// 2026-11-07): usePathname is a MUTABLE seam so the AR case mounts the
+// provider the way a real /ar page does — urlLocale "ar" under an /ar
+// path. The legacy localStorage ("mhe:lang") override is gone from the
+// provider, so a saved preference no longer flips the language.
+const navState = vi.hoisted(() => ({ pathname: null as string | null }));
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
     push: vi.fn(),
@@ -40,7 +46,7 @@ vi.mock("next/navigation", () => ({
     prefetch: vi.fn(),
     back: vi.fn(),
   }),
-  usePathname: () => null,
+  usePathname: () => navState.pathname,
 }));
 
 // next/image would need the image loader — the helmet MARK renders through
@@ -74,12 +80,12 @@ const repoRoot = resolve(__dirname, "../../..");
 const headerSrc = () =>
   readFileSync(resolve(repoRoot, "src/components/SiteHeader.tsx"), "utf8");
 
-async function renderHeader() {
+async function renderHeader(locale: "en" | "ar" = "en") {
   const rtl = await import("@testing-library/react");
   const view = rtl.render(
     // eslint-disable-next-line react/no-children-prop -- createElement needs children in props (test-only; repo precedent evo-drawer-a11y.test.tsx)
     createElement(I18nProvider, {
-      urlLocale: "en",
+      urlLocale: locale,
       children: createElement(SiteHeader),
     })
   );
@@ -172,6 +178,7 @@ describe("W1-3d behavior — the real header in jsdom", () => {
   beforeEach(() => {
     window.localStorage.clear();
     document.body.innerHTML = "";
+    navState.pathname = null;
   });
 
   it("the hamburger: aria-expanded flips on open and aria-controls resolves to the dialog", async () => {
@@ -302,8 +309,10 @@ describe("W1-3d behavior — the real header in jsdom", () => {
     ).not.toBeNull();
     en.view.unmount();
 
-    window.localStorage.setItem("mhe:lang", "ar");
-    const ar = await renderHeader();
+    // F-2-A: Arabic now renders the URL-correct way — urlLocale "ar"
+    // under an /ar path (the saved-preference override is gone).
+    navState.pathname = "/ar";
+    const ar = await renderHeader("ar");
     expect(
       document.body.querySelector('button[aria-label="فتح القائمة"]')
     ).not.toBeNull();

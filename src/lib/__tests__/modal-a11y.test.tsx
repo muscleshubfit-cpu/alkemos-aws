@@ -34,7 +34,13 @@ import { createElement } from "react";
  *      provider languages.
  */
 
-vi.mock("next/navigation", () => ({ usePathname: () => null }));
+// F-2 Option A (AR-DISCOVERY-UI-SETTLE-AUDIT-2026-11-07, owner decision
+// 2026-11-07): usePathname is a MUTABLE seam so the AR case mounts the
+// provider the way a real /ar page does — urlLocale "ar" under an /ar
+// path. The legacy localStorage ("mhe:lang") override is gone from the
+// provider, so a saved preference no longer flips the language.
+const navState = vi.hoisted(() => ({ pathname: null as string | null }));
+vi.mock("next/navigation", () => ({ usePathname: () => navState.pathname }));
 
 import { I18nProvider } from "@/lib/i18n";
 import { Modal, type ModalProps } from "@/components/ui/modal";
@@ -146,9 +152,10 @@ describe("W1-3a behavior — jsdom render of the wrapper", () => {
   beforeEach(() => {
     window.localStorage.clear();
     document.body.innerHTML = "";
+    navState.pathname = null;
   });
 
-  const renderModal = async (over: Partial<ModalProps> = {}) => {
+  const renderModal = async (over: Partial<ModalProps> = {}, locale: "en" | "ar" = "en") => {
     const { render } = await import("@testing-library/react");
     const props: ModalProps = {
       open: true,
@@ -160,7 +167,7 @@ describe("W1-3a behavior — jsdom render of the wrapper", () => {
     return render(
       // eslint-disable-next-line react/no-children-prop -- createElement needs children in props (test-only; repo precedent share-url.test.tsx)
       createElement(I18nProvider, {
-        urlLocale: "en",
+        urlLocale: locale,
         children: createElement(Modal, props),
       })
     );
@@ -202,9 +209,10 @@ describe("W1-3a behavior — jsdom render of the wrapper", () => {
     expect(enClose?.getAttribute("aria-label")).toBe("Close");
     en.unmount();
 
-    // Arabic: the provider effect resolves from the saved preference.
-    window.localStorage.setItem("mhe:lang", "ar");
-    const ar = await renderModal({});
+    // F-2-A: Arabic now renders the URL-correct way — urlLocale "ar"
+    // under an /ar path (the saved-preference override is gone).
+    navState.pathname = "/ar";
+    const ar = await renderModal({}, "ar");
     const arClose = document.body.querySelector('button[aria-label="إغلاق"]');
     expect(arClose).not.toBeNull();
     ar.unmount();
