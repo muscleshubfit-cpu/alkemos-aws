@@ -47,7 +47,12 @@ import { getBlogPost, getLinkedPost } from "@/lib/blog";
  * Pages without Arabic mirrors (private surfaces like /checkout,
  * /profile, /admin, /auth): just toggle the UI language (the
  * page content is already bilingual via useI18n, so the user sees the
- * new language without a URL change).
+ * new language without a URL change). 449 SURFACE LOCALE LAW: the swap
+ * is PERSISTENT — setLang writes the choice to localStorage AND the
+ * mhe:lang cookie, and UrlLocaleSync's special-surface branch
+ * re-resolves that SAME preference on every subsequent navigation (the
+ * (app) root layout even server-renders it from the first HTML), so
+ * the language survives sidebar clicks and reloads on these surfaces.
  */
 export function LanguageToggle() {
  const { lang, setLang } = useI18n();

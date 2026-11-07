@@ -75,11 +75,19 @@ const cairo = Cairo({
  * root layout (src/app/layout.tsx), now a STATIC component mounted by the
  * per-locale route-group root layouts:
  *
- *   src/app/(en)/layout.tsx  → <html lang="en" dir="ltr"> (ads on)
- *   src/app/(app)/layout.tsx → <html lang="en" dir="ltr"> (ads off —
- *                              the authenticated/admin surface, where the
- *                              Phase-139 ad-free law applies wholesale)
- *   src/app/(ar)/layout.tsx  → <html lang="ar" dir="rtl"> (ads on)
+ *   src/app/(en)/layout.tsx  → <html lang="en" dir="ltr"> (ads on,
+ *                              STATIC — URL-pinned)
+ *   src/app/(app)/layout.tsx → <html lang dir> from the mhe:lang
+ *                              preference COOKIE (ads off — the
+ *                              authenticated/admin surface, where the
+ *                              Phase-139 ad-free law applies wholesale;
+ *                              449 SURFACE LOCALE LAW: this group is
+ *                              force-dynamic + noindex + edge-cache-
+ *                              excluded, so the cookie read is free and
+ *                              the mirror-less account surfaces render
+ *                              the owner's language from the first HTML)
+ *   src/app/(ar)/layout.tsx  → <html lang="ar" dir="rtl"> (ads on,
+ *                              STATIC — URL-pinned)
  *
  * WHY: the old layout resolved the locale from middleware headers()
  * (and cookies()) — which opted EVERY route on the site into dynamic
@@ -108,6 +116,13 @@ const cairo = Cairo({
  * ("no language change after hydration"). With the flip gone there is
  * nothing to pre-stamp: every URL's lang/dir is correct in the first
  * server HTML (the static per-group layouts below).
+ *
+ * 449 ADDENDUM (same report §11): the (app) group's lang/dir NOW comes
+ * from the preference COOKIE resolved in its DYNAMIC layout (not a
+ * pre-paint script and not a client override) — server-correct from
+ * the first HTML on the mirror-less account surfaces, with the steady
+ * state still flip-free (the client sync re-resolves the SAME value).
+ * The PUBLIC trees keep the static URL-pinned law above verbatim.
  *
  * Per-route <head> resources moved DOWN to where they are statically
  * known (React 19 hoists <link> elements into <head> wherever they

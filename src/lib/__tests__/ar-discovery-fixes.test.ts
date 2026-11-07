@@ -186,10 +186,21 @@ describe("F-5 — RECONCILED by F-2-A: the (app) pre-paint lang/dir stamp is REM
     expect(src).toContain('id="alkemos-theme-init"');
   });
 
-  it("no group layout opts in — every URL's lang/dir comes from the static per-group root", () => {
+  it("the public group layouts stay static — (app) resolves via its DYNAMIC 449 layout (report §11)", () => {
     expect(read(APP_LAYOUT)).not.toContain("prePaintLangDir");
     expect(read(EN_LAYOUT)).not.toContain("prePaintLangDir");
     expect(read(AR_LAYOUT)).not.toContain("prePaintLangDir");
+    // 449 SURFACE LOCALE LAW re-scope: F-2-A's "every URL's lang/dir
+    // comes from the static per-group root" held for the PUBLIC trees
+    // only once 449 landed — the mirror-less (app) group now resolves
+    // lang/dir from the mhe:lang preference cookie inside its
+    // force-dynamic layout (server-correct from the first HTML; the
+    // admin panel keeps the owner's language across navigations and
+    // reloads). The static-law pins for (en)/(ar) + the (app) cookie
+    // wiring live in surface-locale.test.ts (449 section).
+    expect(read(EN_LAYOUT)).not.toContain("next/headers");
+    expect(read(AR_LAYOUT)).not.toContain("next/headers");
+    expect(read(APP_LAYOUT)).toContain("(await cookies()).get(LANG_COOKIE)");
     // F-2-A's own source pin (URL-only resolution, no localStorage read)
     // lives in context-render-storm.test.tsx alongside its behavior test.
   });

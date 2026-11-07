@@ -188,6 +188,15 @@ alkemos/
 - A custom lightweight i18n provider (no next-intl) with shared AR/EN copy in
   the source; Arabic content follows a Modern-Standard-Arabic purity law
   enforced by CI-tested detectors (`src/lib/blog-msa.ts`)
+- **Surface Locale Law (phase 449):** one central classifier
+  (`src/lib/surface-locale.ts`) decides which source governs the UI language
+  per URL — the URL on the public trees (F-2 Option A, byte-identical) and
+  the persisted preference (`mhe:lang` localStorage + cookie) on the
+  mirror-less account surfaces (/admin, /auth, /checkout, /profile, the
+  (authed) subtree) — so the admin panel keeps the owner's language across
+  navigations AND reloads (the dynamic (app) layout server-renders it from
+  the first HTML; the cookie is client-written only — zero server
+  Set-Cookie, public cache untouched)
 
 ### Data layer
 - Supabase Postgres with **Row Level Security on every auto-applied table**

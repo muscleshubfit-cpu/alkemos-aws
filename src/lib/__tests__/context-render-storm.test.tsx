@@ -194,11 +194,23 @@ describe("W1-4a source pins — memoized values, torn-off pathname, module-scope
     expect(provider).not.toMatch(/usePathname\(\)/);
     const leaf = span(s, "function UrlLocaleSync", "export function useI18n");
     expect(leaf).toContain("usePathname()");
-    // F-2 Option A (2026-11-07): the URL path is the SOLE governor —
-    // /ar/* always Arabic, every other URL English. The legacy
-    // saved-preference → browser-language override is extinct in the
-    // leaf: no localStorage read, no navigator.language sniff.
-    expect(leaf).toContain('pathname === "/ar" || pathname.startsWith("/ar/")');
+    // F-2 Option A (2026-11-07): the URL path is the SOLE governor of
+    // the PUBLIC trees — /ar/* always Arabic, public non-/ar always
+    // English. The legacy saved-preference → browser-language override
+    // is extinct there: no inline localStorage read, no
+    // navigator.language sniff.
+    // 449 SURFACE LOCALE LAW (report §11): the leaf now resolves
+    // through the CENTRAL CLASSIFIER (src/lib/surface-locale.ts) —
+    // isArabicPath (public AR) / isSpecialSurface (mirror-less (app)
+    // surfaces → the persisted PREFERENCE) / else public EN. The
+    // classifier's own pins + the (app)-layout cookie wiring live in
+    // surface-locale.test.ts.
+    expect(leaf).toContain("if (isArabicPath(pathname))");
+    expect(leaf).toContain("if (isSpecialSurface(pathname))");
+    expect(leaf).toContain("readPersistedLang()");
+    // The binary force that caused the admin-panel revert is GONE…
+    expect(leaf).not.toContain('isArPath ? "ar" : "en"');
+    // …and the leaf still never sniffs the browser language.
     expect(leaf).not.toContain('localStorage.getItem("mhe:lang")');
     expect(leaf).not.toContain("navigator.language");
   });
@@ -264,6 +276,10 @@ describe("W1-4a behavior — a faithful SPA navigation in jsdom", () => {
 
   beforeEach(() => {
     window.localStorage.clear();
+    // 449: the mhe:lang preference cookie (client-written by setLang /
+    // the sync's special-surface backfill) is per-test state too.
+    document.cookie =
+      "mhe:lang=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
     document.body.innerHTML = "";
     dataLayer.cb = null;
     dataLayer.profile = null;
@@ -353,6 +369,103 @@ describe("W1-4a behavior — a faithful SPA navigation in jsdom", () => {
     await navigate("/");
     expect(bag.last?.lang).toBe("en");
     expect(bag.last?.dir).toBe("ltr");
+    view.unmount();
+  });
+
+  it("449: special surfaces resolve the PERSISTED preference — and KEEP it across navigations (the admin-panel bug)", async () => {
+    const bag = i18nBag;
+    // The live-reproduced production bug (report §11): pre-449 the leaf
+    // force-reset EVERY non-/ar pathname to "en", so the admin panel
+    // could not stay Arabic — toggle on /admin/dashboard → one sidebar
+    // link → full revert to en/ltr with mhe:lang=ar still saved, and a
+    // reload booted English (the server never saw the preference).
+    window.localStorage.setItem("mhe:lang", "ar");
+    // The (app) layout now server-renders urlLocale from the SAME
+    // preference cookie — simulated by the matching initial prop.
+    // eslint-disable-next-line react/no-children-prop -- createElement needs children in props (test-only; repo precedent mobile-drawer-a11y.test.tsx)
+    const app = createElement(I18nProvider, { urlLocale: "ar", children: createElement(I18nProbe) });
+    const { navigate, view } = await mountAt("/admin/dashboard", app);
+    await (await import("@testing-library/react")).act(async () => {});
+    expect(bag.last?.lang).toBe("ar");
+    expect(bag.last?.dir).toBe("rtl");
+    // THE regression these lines pin shut: pre-449 each of these
+    // navigations reverted the chrome to English.
+    await navigate("/admin/clients");
+    expect(bag.last?.lang).toBe("ar");
+    expect(bag.last?.dir).toBe("rtl");
+    await navigate("/admin/blog");
+    expect(bag.last?.lang).toBe("ar");
+    await navigate("/auth");
+    expect(bag.last?.lang).toBe("ar");
+    await navigate("/checkout");
+    expect(bag.last?.lang).toBe("ar");
+    // The special-surface branch backfilled the cookie mirror (the
+    // store the (app) layout SSRs from).
+    expect(document.cookie).toContain("mhe:lang=ar");
+    view.unmount();
+  });
+
+  it("449: leaving a special surface for a PUBLIC URL re-arms F-2-A — the URL governs, both directions", async () => {
+    const bag = i18nBag;
+    window.localStorage.setItem("mhe:lang", "ar");
+    // eslint-disable-next-line react/no-children-prop -- createElement needs children in props (test-only; repo precedent mobile-drawer-a11y.test.tsx)
+    const app = createElement(I18nProvider, { urlLocale: "ar", children: createElement(I18nProbe) });
+    const { navigate, view } = await mountAt("/admin/dashboard", app);
+    await (await import("@testing-library/react")).act(async () => {});
+    expect(bag.last?.lang).toBe("ar");
+    // Into the public EN tree: the URL governs — the preference does
+    // NOT follow (the R-1 mixed state stays dead — F-2-A verbatim).
+    await navigate("/");
+    expect(bag.last?.lang).toBe("en");
+    expect(bag.last?.dir).toBe("ltr");
+    await navigate("/memberships");
+    expect(bag.last?.lang).toBe("en");
+    // Into the public AR tree: the URL governs there too.
+    await navigate("/ar/memberships");
+    expect(bag.last?.lang).toBe("ar");
+    expect(bag.last?.dir).toBe("rtl");
+    // Back into a special surface: the preference re-arms.
+    await navigate("/profile");
+    expect(bag.last?.lang).toBe("ar");
+    expect(bag.last?.dir).toBe("rtl");
+    view.unmount();
+  });
+
+  it("449: a fresh visitor on special surfaces stays English — nothing sniffs the browser language", async () => {
+    const bag = i18nBag;
+    // No localStorage, no cookie: the documented default is "en" (the
+    // browser-language chain died with R-1 and 449 does not revive it).
+    // eslint-disable-next-line react/no-children-prop -- createElement needs children in props (test-only; repo precedent mobile-drawer-a11y.test.tsx)
+    const app = createElement(I18nProvider, { urlLocale: "en", children: createElement(I18nProbe) });
+    const { navigate, view } = await mountAt("/admin/dashboard", app);
+    await (await import("@testing-library/react")).act(async () => {});
+    expect(bag.last?.lang).toBe("en");
+    expect(bag.last?.dir).toBe("ltr");
+    await navigate("/auth");
+    expect(bag.last?.lang).toBe("en");
+    view.unmount();
+  });
+
+  it("449: setLang persists to BOTH stores — localStorage AND the mhe:lang cookie (the SSR source)", async () => {
+    const bag = i18nBag;
+    // eslint-disable-next-line react/no-children-prop -- createElement needs children in props (test-only; repo precedent mobile-drawer-a11y.test.tsx)
+    const app = createElement(I18nProvider, { urlLocale: "en", children: createElement(I18nProbe) });
+    const { navigate, view } = await mountAt("/auth", app);
+    const rtl = await import("@testing-library/react");
+    await rtl.act(async () => {});
+    // The in-page toggle on a mirror-less surface (the documented
+    // change mechanism there) — driven through the REAL ctx setLang:
+    await rtl.act(async () => {
+      bag.last?.setLang("ar");
+    });
+    expect(bag.last?.lang).toBe("ar");
+    expect(window.localStorage.getItem("mhe:lang")).toBe("ar");
+    expect(document.cookie).toContain("mhe:lang=ar");
+    // …and the swap SURVIVES the next navigation (pre-449 it died on
+    // the very next click — the reported admin bug).
+    await navigate("/admin/clients");
+    expect(bag.last?.lang).toBe("ar");
+    expect(bag.last?.dir).toBe("rtl");
     view.unmount();
   });
 

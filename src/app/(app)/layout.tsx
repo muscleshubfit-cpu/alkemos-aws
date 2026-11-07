@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
+import { cookies } from "next/headers";
 import RootShell from "@/components/root-shell";
+import { LANG_COOKIE, normalizeLang } from "@/lib/surface-locale";
 import { metadata, viewport } from "../metadata";
 
 export { metadata, viewport };
@@ -14,10 +16,18 @@ export { metadata, viewport };
 // excluded from the Cloudflare public-HTML cache, and a negligible share
 // of crawler traffic (the usage-critical surface is the public content
 // in (en)/(ar), which stays static/ISR).
+//
+// 449 NOTE: this `force-dynamic` is also what makes the cookie read below
+// FREE — the subtree already renders per request, so resolving the UI
+// language from the preference cookie adds zero rendering-mode cost (the
+// exact reason the PUBLIC layouts must NOT do the same is pinned in
+// surface-locale.ts + canaries: their static/ISR + edge-cache law).
 export const dynamic = "force-dynamic";
 
 /**
- * (APP) ROOT LAYOUT — VERCEL-USAGE-3 (2026-09-21).
+ * (APP) ROOT LAYOUT — VERCEL-USAGE-3 (2026-09-21) · 449 SURFACE LOCALE
+ * LAW (AR-DISCOVERY-UI-SETTLE-AUDIT-2026-11-07 §11 — owner order
+ * 2026-11-07).
  *
  * This group hosts the authenticated/admin surface that the Phase-139
  * ad-free law covers wholesale: /dashboard, /coach/*, /plans,
@@ -25,25 +35,37 @@ export const dynamic = "force-dynamic";
  * its AuthGate + noindex) plus /admin, /profile, /checkout, /auth and
  * /preview (each keeps its own gating exactly as before).
  *
- * AdSense loader: OFF for the entire group — the loader tag disappears
- * from the authenticated surfaces by construction (the isAdFreePath()
- * per-request check it replaces no longer exists anywhere).
+ * 449 — WHY THIS LAYOUT NOW READS THE PREFERENCE COOKIE: these are the
+ * MIRROR-LESS special surfaces (documented owner decision — their URLs
+ * carry NO language dimension; the LanguageToggle is the change
+ * mechanism there). Pre-449 the shell was pinned to a static
+ * lang="en" dir="ltr" and the client sync force-reset every non-/ar
+ * pathname to English, so the admin panel could not stay Arabic
+ * (live-reproduced on production: toggle → one sidebar link → full
+ * revert to en/ltr; reload booted English even with mhe:lang=ar saved).
+ * The surfaces are ALREADY force-dynamic + noindex + excluded from the
+ * Cloudflare public-HTML cache (the SEO-GEO-4 private-path list), so
+ * resolving the shell's lang/dir from the mhe:lang cookie here costs
+ * NOTHING and server-renders the owner's language from the FIRST HTML:
+ * no post-hydration flip on the account surfaces, correct RTL from
+ * first paint, and the toggle's choice survives reloads.
  *
- * NOTE: these routes are session-aware and stay server-rendered — that
- * is fine: the traffic-heavy CRAWLER surface (public content) is what
- * the usage crisis was measured on, and it lives in (en)/(ar).
+ * The PUBLIC trees are UNTOUCHED: (en)/(ar) stay static and NEVER read
+ * cookies (F-2 Option A byte-identical — the URL governs public pages;
+ * pinned by canaries in surface-locale.test.ts). The cookie itself is
+ * CLIENT-written only (setLang / the legacy backfill) — this layout
+ * only READS it; no server Set-Cookie is added anywhere.
  */
-export default function AppGroupRootLayout({ children }: { children: ReactNode }) {
+export default async function AppGroupRootLayout({
+  children,
+}: {
+  children: ReactNode;
+}) {
+  // normalizeLang: only "ar" survives as Arabic; absent/invalid → "en"
+  // (the documented default — no browser-language sniffing anywhere).
+  const lang = normalizeLang((await cookies()).get(LANG_COOKIE)?.value);
   return (
-    // F-5 RECONCILED by F-2 Option A (AR-DISCOVERY-UI-SETTLE-AUDIT-2026-11-07
-    // §9 — owner order 2026-11-07): the pre-paint lang/dir opt-in shipped by
-    // the parallel 446 frame is REMOVED. Non-/ar URLs now stay EN/LTR for the
-    // whole session (the URL is the sole language governor), so a saved-
-    // preference pre-paint stamp would have flipped dir BACK to ltr after
-    // hydration — a fresh post-hydration flip. The account surfaces keep the
-    // server-static EN/LTR root (the SSG/ISR law below); the distant «split
-    // (app) into language mirrors» idea stays an owner-gated frame.
-    <RootShell lang="en" dir="ltr" showAds={false}>
+    <RootShell lang={lang} dir={lang === "ar" ? "rtl" : "ltr"} showAds={false}>
       {children}
     </RootShell>
   );
