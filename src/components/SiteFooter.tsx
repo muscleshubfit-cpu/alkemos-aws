@@ -1,6 +1,7 @@
 "use client";
 
 import { useI18n } from "@/lib/i18n";
+import { usePathname } from "next/navigation";
 import { ThemeImg } from "@/components/ThemeImg";
 import { SOCIAL_PROFILES } from "@/lib/social";
 import { NewsletterForm } from "@/components/NewsletterForm";
@@ -54,9 +55,59 @@ import { NewsletterForm } from "@/components/NewsletterForm";
  *    navigation» rule).
  */
 
-export function SiteFooter() {
+/*
+ * F-1 — CROSS-LANGUAGE BRIDGE LINK (AR-DISCOVERY-UI-SETTLE-AUDIT-2026-11-07
+ * §3.3/§6, P0): the audit measured ZERO crawlable <a href> content links
+ * crossing the language boundary in either direction (the only bridges
+ * were the head's hreflang cluster + the sitemap) — with near-zero
+ * external authority, internal links are the site's only equity flow,
+ * so the Arabic tree relied entirely on sitemap/hreflang for discovery.
+ * This footer now carries ONE plain text link to the CURRENT PAGE's
+ * mirror («العربية ←» on EN pages · «English →» on AR pages) on every
+ * public surface that renders this shared footer.
+ *
+ * LAWS:
+ *  - The href derives from usePathname() — the URL's OWN locale subtree,
+ *    NOT the reactive i18n `lang` state — so the server-rendered HTML
+ *    (what crawlers see) and the first paint both pin it to the page's
+ *    locale, and it stays stable across the post-hydration language
+ *    flip the audit documents as R-1 (the mixed-state page keeps a
+ *    correct «go to the full Arabic version» affordance).
+ *  - Pure prefix swap by the (ar)-tree architectural law (every Arabic
+ *    route IS the /ar-prefixed twin of its (en) parent) — EXCEPT blog
+ *    articles, whose twins pair via linked_post_id with LANGUAGE-SPECIFIC
+ *    slugs (a prefix swap 404s). Article pages pass the server-computed
+ *    twin via the `mirrorHref` prop (fallback: the opposite-language blog
+ *    list — the LanguageToggle precedent for unpaired posts); the guard
+ *    below keeps the link honest even without the prop.
+ *  - ONE link per footer (the audit's risk note: «رابط واحد بالتذييل») —
+ *    no duplicate switches; the header's LanguageToggle stays the
+ *    interactive control.
+ */
+function crossLangMirrorHref(pathname: string, explicit?: string): string {
+  if (explicit) return explicit;
+  // Blog article leaves: slug-divergent twins — see the law block above.
+  if (/^\/blog\/[^/]+$/.test(pathname)) return "/ar/blog";
+  if (/^\/ar\/blog\/[^/]+$/.test(pathname)) return "/blog";
+  if (pathname === "/ar") return "/";
+  if (pathname.startsWith("/ar/")) return pathname.slice(3) || "/";
+  if (pathname === "/") return "/ar";
+  return `/ar${pathname}`;
+}
+
+export function SiteFooter({
+  mirrorHref,
+}: {
+  /** F-1: server-computed mirror override (blog articles — see the law
+   * block above). Optional: every other footer surface prefix-swaps. */
+  mirrorHref?: string;
+} = {}) {
   const { lang } = useI18n();
   const isAr = lang === "ar";
+  // F-1: the URL's own locale — NOT the reactive lang (see the law block).
+  const pathname = usePathname() || "/";
+  const pageIsAr = pathname === "/ar" || pathname.startsWith("/ar/");
+  const crossLangHref = crossLangMirrorHref(pathname, mirrorHref);
 
   return (
     <footer className="footer-marble relative mt-auto px-4 pb-8 pt-10 text-[var(--muted-foreground)]">
@@ -95,6 +146,23 @@ export function SiteFooter() {
               {isAr ? "تدرّب بذكاء. وتغذَّ بدقة." : "Train smarter. Eat with precision."}
             </p>
             <p className="mt-3 text-[10px] font-normal text-[var(--muted-foreground)]">{isAr ? `© ${new Date().getFullYear()} جميع الحقوق محفوظة` : `© ${new Date().getFullYear()} All rights reserved`}</p>
+            {/* F-1 — the cross-language bridge link (see the law block at
+                the top of this file): ONE crawlable <a href> to this page's
+                mirror, labeled in the TARGET language (the audit's «العربية ←»
+                / «English →» pair). m1 fix law: block row + py-1 tap target. */}
+            <a
+              href={crossLangHref}
+              hrefLang={pageIsAr ? "en" : "ar"}
+              className="mt-2 inline-block py-1 text-[13px] font-medium hover:underline"
+            >
+              {pageIsAr ? (
+                /* dir=ltr pins the report's literal «English →» glyph order
+                   inside the RTL footer (bidi would otherwise mirror it). */
+                <span dir="ltr">English →</span>
+              ) : (
+                "العربية ←"
+              )}
+            </a>
             {/* Phase SEO-GEO-4.6 (2026-09-09): owned-profile icon row — the
                 human counterpart of Organization.sameAs (src/lib/social.ts).
                 Plain links with NO nofollow: these are OWNED profiles and the

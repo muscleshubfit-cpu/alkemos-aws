@@ -26,6 +26,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { getFAQSchema, jsonLd } from "@/lib/seo";
 import { resolveHomeCopy, resolveHomeFaq, type HomeCopy, type SiteCopyMap } from "@/lib/site-content/home";
+import type { BlogPostCard } from "@/lib/blog";
 import Image from "next/image";
 import { ThemeImg, EngravedIcon } from "@/components/ThemeImg";
 import { Reveal, CountUp, CarouselShell, LibraryBrowser, EvoCard, HeroCta } from "./LandingViewIslands";
@@ -475,7 +476,22 @@ function TierFeatureRows({ rows, pinDark = false }: { rows: readonly string[]; p
   );
 }
 
-export function LandingView({ samples, content, isAr }: { samples: HomeSamples; content?: SiteCopyMap; isAr: boolean }) {
+export function LandingView({
+  samples,
+  content,
+  isAr,
+  blogCarousels,
+}: {
+  samples: HomeSamples;
+  content?: SiteCopyMap;
+  isAr: boolean;
+  /** F-4 (AR-DISCOVERY-UI-SETTLE-AUDIT-2026-11-07 §6): the server-selected
+   *  blog carousel posts for the #learn island (latest + featured — the
+   *  home route pages run listPublishedPostsForListPage +
+   *  selectHomeBlogCarousels at ISR time). Optional for API compatibility;
+   *  both production home routes pass it. */
+  blogCarousels?: { latest: BlogPostCard[]; featured: BlogPostCard[] };
+}) {
   // SITE-CONTENT-281: the admin-editable marketing copy for the active
   // locale — Supabase overrides (passed down by the server route) win,
   // the code defaults in site-content/home.ts are the eternal fallback
@@ -1031,12 +1047,20 @@ export function LandingView({ samples, content, isAr }: { samples: HomeSamples; 
           The simple title the owner asked for («أحدث المقالات»), and
           the carousel is LATEST-FIRST: the newest posts actually lead
           the row (featured posts fill the rest; featured slugs keep
-          the dark lead-card styling). The section renders only when
-          posts loaded (the needsPosts law). SEO-P1-6: the deferIdle
-          (2500ms) fetch + the conditional section moved VERBATIM into
-          the BlogSection dynamic island — the copy arrives as props
-          from the server registry. */}
-      <BlogSection learnTitle={c.learnTitle} learnCta={c.learnCta} isAr={isAr} />
+          the dark lead-card styling). SEO-P1-6: the section lives in
+          the BlogSection dynamic island with the copy arriving as
+          props from the server registry. F-4
+          (AR-DISCOVERY-UI-SETTLE-AUDIT-2026-11-07): the POSTS now also
+          arrive as server props — no deferIdle(2500) client fetch, no
+          late layout shift, one REST trip saved per visit (the null
+          render stays as the honest empty fallback). */}
+      <BlogSection
+        learnTitle={c.learnTitle}
+        learnCta={c.learnCta}
+        isAr={isAr}
+        latestPosts={blogCarousels?.latest ?? []}
+        featuredPosts={blogCarousels?.featured ?? []}
+      />
 
       {/* Greek meander divider — the TWO narrative acts law: exploration
           ends here, the services act begins. */}

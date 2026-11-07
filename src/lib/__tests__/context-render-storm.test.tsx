@@ -172,7 +172,11 @@ describe("W1-4a source pins — memoized values, torn-off pathname, module-scope
     const leaf = span(s, "function AuthRouteTrigger", "export function useAuth");
     expect(leaf).toContain("usePathname()");
     expect(leaf).toContain("isGatedPath(pathname)");
-    expect(leaf).toContain("deferIdle(() => void startAuth(), 2500)");
+    // F-3 re-pin (AR-DISCOVERY-UI-SETTLE-AUDIT-2026-11-07 §6, executed
+    // 2026-11-07): the returning-user idle cap dropped 2500 → 1200 —
+    // the pin follows the text (the trigger engine itself is unchanged).
+    expect(leaf).toContain("deferIdle(() => void startAuth(), 1200)");
+    expect(leaf).not.toContain("deferIdle(() => void startAuth(), 2500)");
     expect(leaf).toContain("setLoading(false)");
   });
 

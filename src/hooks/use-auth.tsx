@@ -259,8 +259,25 @@ function AuthRouteTrigger({
       void startAuth();
     } else if (hasSupabaseSessionCookie()) {
       // Returning user on a public page: resolve after the critical
-      // window (idle, hard timeout 2.5s) — never compete with LCP.
-      deferIdle(() => void startAuth(), 2500);
+      // window (idle callback, hard timeout below) — never compete with
+      // LCP.
+      //
+      // F-3 (AR-DISCOVERY-UI-SETTLE-AUDIT-2026-11-07 §6, executed
+      // 2026-11-07): 2500ms → 1200ms. The audit measured the perceived
+      // "logged-out → logged-in" header flip at ~1.5–4.5s end-to-end
+      // (idle cap + dynamic chunk + two network round trips) and
+      // recommended cutting the idle cap. 1200ms keeps the deferral
+      // PRINCIPLE intact (requestIdleCallback still fires first whenever
+      // the browser goes idle — the timeout is only the worst-case
+      // guarantee, so an idle main thread still resolves the session
+      // long before the cap) while halving the worst-case wait. The
+      // alternative in the report (server-side sb-* cookie branch →
+      // hasSession prop) was NOT taken: a per-cookie server branch opts
+      // public pages out of ISR/edge-cache — the exact damage §5 of the
+      // audit forbids (110 dynamic routes + fragmented edge cache), and
+      // behind the CF edge cache (12h TTL) the branch would not even
+      // execute for most public traffic.
+      deferIdle(() => void startAuth(), 1200);
     } else {
       // Anonymous visitor on a public page: auth state is resolved as
       // logged-out — no chunk, no network. Auth actions load on demand.

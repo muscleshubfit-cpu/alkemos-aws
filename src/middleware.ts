@@ -54,14 +54,16 @@ function isArabicPath(pathname: string): boolean {
  * policy (non-CF paths). Full layer documentation: SECURITY.md §10 +
  * TECH_REFERENCE §5 + docs/CACHE-POLICY-AUDIT-2026-10-22.md.
  *
- * What THIS file still owns: the `mhe:locale` cookie is now written ONLY
- * when the value actually changes. The old unconditional write put
- * Set-Cookie on EVERY response, and any response with Set-Cookie is
- * uncacheable at every CDN edge — that made the next.config policy
- * theoretical. With the change-only write, the vast majority of public
- * responses carry no Set-Cookie and become edge-cacheable. Locale
- * correctness never depends on this cookie for /ar paths (the
- * x-pathname header wins in the root layout).
+ * What THIS file still owns: the Content-Language response header and
+ * the x-pathname header. The `mhe:locale` cookie write was REMOVED by
+ * F-6 (AR-DISCOVERY-UI-SETTLE-AUDIT-2026-11-07 §6, executed 2026-11-07):
+ * the audit's R-6 proved it DEAD — zero readers anywhere (the old
+ * resolveLocale() consumer was retired by VERCEL-USAGE-3), while it
+ * still stamped Set-Cookie on the DYNAMIC surfaces (/auth, /checkout)
+ * as pure state noise. The public surfaces never saw it anyway (the CF
+ * cache rule strips Set-Cookie on edge hits — measured in the audit's
+ * §4.2-R6). Removing the write changes no behavior: locale correctness
+ * is URL-pinned by the route groups.
  *
  * The PRIVATE-path exclusion list (api/admin/auth/checkout/dashboard/
  * questionnaires/progress/plans/profile/support/referral/preview/coach)
@@ -88,25 +90,20 @@ export async function middleware(request: NextRequest) {
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   // ──────────────────────────────────────────────────────────────────
-  // H1 fix (Option B): Locale detection — ALWAYS runs, even in demo
-  // mode (when Supabase env vars are not set). This is critical because
-  // the root layout (`src/app/layout.tsx`) depends on the `x-pathname`
-  // header + `mhe:locale` cookie to render `<html lang dir>` correctly.
-  //
-  // Precedence (enforced in the root layout, NOT here):
-  //   1. URL pathname (`/ar/...` → `ar`) — always wins
-  //   2. `mhe:locale` cookie (fallback for non-`/ar` routes)
-  //   3. Default `en`
-  //
-  // The cookie is always set to match the current pathname so that:
-  //   - `/ar/*` requests always get `mhe:locale=ar` (cookie can NOT override)
-  //   - English requests get `mhe:locale=en` (resets any stale `ar` cookie)
+  // H1 fix (Option B) history — locale detection. The cookie this block
+  // used to write (mhe:locale) was REMOVED by F-6
+  // (AR-DISCOVERY-UI-SETTLE-AUDIT-2026-11-07 §6, executed 2026-11-07):
+  // zero readers remained after VERCEL-USAGE-3 retired resolveLocale()
+  // (the route-group layouts are URL-pinned), so the write was pure
+  // Set-Cookie noise on the dynamic surfaces (/auth, /checkout). The
+  // two response HEADERS below stay: Content-Language is a real crawler
+  // signal; x-pathname is harmless (its readers retired with the same
+  // resolveLocale removal — kept for continuity, zero cost).
   // ──────────────────────────────────────────────────────────────────
   const pathname = request.nextUrl.pathname;
-  // Route locale — DYNAMIC, derived from the URL itself: `/ar/*` routes are
-  // Arabic, every other route is English. This drives the Content-Language
-  // header, the `x-pathname` header (read by the root layout to render
-  // `<html lang dir>`) and the `mhe:locale` cookie.
+  // Route locale — derived from the URL itself: `/ar/*` routes are
+  // Arabic, every other route is English. This drives the
+  // Content-Language header and the x-pathname header.
   const isArabic = isArabicPath(pathname);
 
   let response = NextResponse.next({
@@ -119,28 +116,11 @@ export async function middleware(request: NextRequest) {
   // original implementation, now always set even in demo mode).
   response.headers.set("Content-Language", isArabic ? "ar-EG" : "en-US");
 
-  // Expose the pathname to the root layout via a custom header. The
-  // root layout cannot receive `params` (it's the parent of all routes,
-  // not a dynamic segment), so `headers().get('x-pathname')` is the
-  // cleanest server-side way to know which URL the user requested.
+  // Expose the pathname to the route tree via a custom header.
   response.headers.set("x-pathname", pathname);
 
-  // Write a `mhe:locale` cookie so the root layout can read it via
-  // `cookies()` as a fallback when the pathname doesn't determine the
-  // locale. SEO-GEO-4: written ONLY when the value actually changes —
-  // an unconditional write put Set-Cookie on EVERY response, which
-  // makes the response uncacheable at any CDN edge.
-  const desiredLocale = isArabic ? "ar" : "en";
-  if (request.cookies.get("mhe:locale")?.value !== desiredLocale) {
-    response.cookies.set("mhe:locale", desiredLocale, {
-      path: "/",
-      sameSite: "lax",
-      maxAge: 60 * 60 * 24 * 365, // 1 year — survives browser restarts
-    });
-  }
-
   // If Supabase isn't configured, skip session refresh (demo mode).
-  // The locale headers/cookies above are already set — return now.
+  // The locale headers above are already set — return now.
   if (!supabaseUrl || !supabaseAnonKey) {
     return response;
   }
@@ -164,7 +144,7 @@ export async function middleware(request: NextRequest) {
   //      sb-* prefixed — authenticated flows keep the full cookie-sync
   //      + refresh path below.
   //
-  // Locale headers/cookies above are complete for every case — this
+  // Locale headers above are complete for every case — this
   // return is behavior-identical for the two skipped classes.
   const hasSbCookies = request.cookies
     .getAll()
@@ -188,22 +168,14 @@ export async function middleware(request: NextRequest) {
             headers: request.headers,
           },
         });
-        // Re-apply locale headers/cookies on the new response object
-        // (the `setAll` callback creates a new `NextResponse` that
-        // replaces the original, so we must re-set our locale headers
-        // on it to avoid losing them). SEO-GEO-4: same change-only
-        // cookie write as the main path (see the block comment above).
-        const isAr = isArabicPath(pathname);
-        response.headers.set("Content-Language", isAr ? "ar-EG" : "en-US");
+        // Re-apply the locale headers on the new response object (the
+        // `setAll` callback creates a new `NextResponse` that replaces
+        // the original, so we must re-set our headers on it to avoid
+        // losing them). F-6 (AR-DISCOVERY-UI-SETTLE-AUDIT-2026-11-07):
+        // the mhe:locale cookie re-write that used to live here was
+        // removed with the main-path write — same dead-cookie law.
+        response.headers.set("Content-Language", isArabicPath(pathname) ? "ar-EG" : "en-US");
         response.headers.set("x-pathname", pathname);
-        const desired = isAr ? "ar" : "en";
-        if (request.cookies.get("mhe:locale")?.value !== desired) {
-          response.cookies.set("mhe:locale", desired, {
-            path: "/",
-            sameSite: "lax",
-            maxAge: 60 * 60 * 24 * 365,
-          });
-        }
         cookiesToSet.forEach(({ name, value, options }) =>
           response.cookies.set(name, value, options),
         );
@@ -225,12 +197,8 @@ export const config = {
  // OG image generator. VERCEL-USAGE-2 (2026-09-16): /api/og-image/*
  // serves PNGs to social crawlers — the middleware added zero value
  // there (locale header + Supabase session refresh are meaningless for
- // an image response) but DID stamp `Set-Cookie: mhe:locale` on every
- // cookieless crawler request, which makes a response uncacheable at
- // any CDN edge — so the s-maxage added to that route could never
- // fire. Excluded here, crawler responses are cookie-free and
- // edge-cacheable, and each bot fetch no longer pays the wasted
- // `getUser()` network hop either (audit item #5).
+ // an image response), so each bot fetch no longer pays the wasted
+ // `getUser()` network hop (audit item #5).
  "/((?!_next/static|api/og-image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|txt|xml|js|css)$).*)",
  ],
 };

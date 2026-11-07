@@ -92,6 +92,18 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
     notFound();
   }
 
+  // F-1 (AR-DISCOVERY-UI-SETTLE-AUDIT-2026-11-07 §6): the footer's
+  // cross-language bridge for THIS article — the real linked_post_id twin
+  // from the cached fetchBlogForOG payload, else the EN blog list (the
+  // LanguageToggle fallback precedent for unpaired posts). Server-side so
+  // the link is crawlable in the raw HTML — see the EN mirror for the
+  // full rationale.
+  const mirrorHref = og.twinSlug
+    ? og.twinLang === "en"
+      ? `/blog/${og.twinSlug}`
+      : `/ar/blog/${og.twinSlug}`
+    : "/blog";
+
   // Phase SEO-GEO-4 (2026-09-08): real DB dates — see EN mirror for the rationale.
   const publishedAt = og.publishedAt || new Date().toISOString();
   const updatedAt = og.updatedAt || publishedAt;
@@ -198,7 +210,7 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
           dangerouslySetInnerHTML={{ __html: jsonLd(faqPageSchema) }}
         />
       )}
-      <BlogArticlePage lang="ar" slug={slug} initialPost={fullPost} publishedAt={publishedAt} updatedAt={updatedAt} lastReviewedAt={og.lastReviewedAt ?? undefined} />
+      <BlogArticlePage lang="ar" slug={slug} initialPost={fullPost} publishedAt={publishedAt} updatedAt={updatedAt} lastReviewedAt={og.lastReviewedAt ?? undefined} mirrorHref={mirrorHref} />
     </>
   );
 }

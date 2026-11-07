@@ -2,6 +2,8 @@ import { LandingView } from "@/components/views/LandingView";
 import { AuthErrorToast } from "@/components/AuthErrorToast";
 import { getHomeSamples } from "@/lib/home-samples";
 import { fetchSiteContentOverrides } from "@/lib/site-content/server";
+import { listPublishedPostsForListPage } from "@/lib/blog-server";
+import { selectHomeBlogCarousels } from "@/lib/blog-home-carousel";
 
 /**
  * HOMEPAGE (EN canonical "/") — Phase 202 «Product-Website Homepage»
@@ -32,6 +34,15 @@ export const revalidate = 300;
 
 export default async function Page() {
   const samples = getHomeSamples();
+  // F-4 (AR-DISCOVERY-UI-SETTLE-AUDIT-2026-11-07 §6): the #learn island's
+  // carousel posts are selected SERVER-SIDE (the /blog list-page precedent
+  // + the getHomeSamples pattern — listPublishedPostsForListPage is the
+  // same card-fields law, and the failed-fetch law returns [] so the
+  // section honestly doesn't render). The fetch rides the page's ISR
+  // window (revalidate=300), so the rotating featured window advances at
+  // regeneration — and each visit saves the old client REST trip.
+  const posts = await listPublishedPostsForListPage("en");
+  const blogCarousels = selectHomeBlogCarousels(posts);
   const content = await fetchSiteContentOverrides();
   return (
     <>
@@ -40,7 +51,7 @@ export default async function Page() {
           URL-resolved, the BlogListPage precedent (no client locale
           guess on the body; the header/footer chrome keeps its own
           provider behavior). */}
-      <LandingView samples={samples} content={content} isAr={false} />
+      <LandingView samples={samples} content={content} isAr={false} blogCarousels={blogCarousels} />
     </>
   );
 }

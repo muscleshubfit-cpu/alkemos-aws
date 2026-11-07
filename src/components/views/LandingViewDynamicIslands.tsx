@@ -5,25 +5,26 @@
 // 1–2): the homepage's two DATA-FETCH sections, split out of the
 // old 1,851-line "use client" LandingView and loaded through
 // next/dynamic (WITHOUT ssr:false — not allowed in a server
-// component, and functionally a no-op here because both sections
-// render NOTHING on the server today: their initial state is empty
-// and their markup is gated on the fetched data).
+// component; the coaches strip still renders nothing on the
+// server — its markup is gated on the fetched data).
 //
 // WHY a separate file from LandingViewIslands.tsx: the static
 // islands (Reveal/CountUp/…) are imported by the server view at
 // module level, so anything living in that file would ride the
-// initial bundle. Keeping the blog fetch in ITS OWN module behind
-// the dynamic() boundary takes it off the hydration-critical path
-// (Next ships it as a NON-BLOCKING async script) and out of the
+// initial bundle. Keeping these islands in THEIR OWN module behind
+// the dynamic() boundary takes them off the hydration-critical path
+// (Next ships them as a NON-BLOCKING async script) and out of the
 // page's main chunk graph — the KPI mandate of plan §2/§6 (islands
 // file layout refinement, documented in the frame's worklog entry;
 // the plan's island inventory and behavior contract are untouched).
 //
-// Zero behavior change (plan §4): the fetches keep their exact
-// timing semantics — the blog carousel still loads via deferIdle
-// (2500ms, so the Supabase chunk never competes with LCP/INP) and
-// the coaches strip still fetches at mount with silent failure.
-// The locale arrives as an `isAr` prop from the server pages (the
+// F-4 (AR-DISCOVERY-UI-SETTLE-AUDIT-2026-11-07 §6, executed
+// 2026-11-07): BlogSection NO LONGER fetches — the carousel posts
+// arrive as SERVER props (see its doc block below), so the section
+// server-renders with the first HTML. The coaches strip keeps its
+// mount-time fetch with silent failure (out of F-4's scope — it is
+// the ad-gated «أعلن معنا» strip, not the content island). The
+// locale arrives as an `isAr` prop from the server pages (the
 // BlogListPage precedent: server-resolved, URL-pinned — see the
 // plan's §3 boundary analysis).
 // ============================================================
@@ -31,8 +32,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { useAuth } from "@/hooks/use-auth";
-import { listBlogPosts, getCategoryLabel, selectHomeBlogCarousels, type BlogPostCard } from "@/lib/blog";
-import { deferIdle } from "@/lib/defer-idle";
+import { getCategoryLabel, type BlogPostCard } from "@/lib/blog";
 import { EngravedIcon } from "@/components/ThemeImg";
 import { CarouselShell, Reveal } from "./LandingViewIslands";
 
@@ -121,36 +121,34 @@ function BlogCarousel({
   );
 }
 
-// ── BlogSection — the #learn island (moved verbatim from the old
-//    client LandingView: the deferred fetch + the conditional
-//    section). The copy strings arrive as props from the server
-//    (the site-content registry resolves on the server side —
-//    the copy stays single-source in site-content/home.ts). ──
+// ── BlogSection — the #learn island. F-4
+//    (AR-DISCOVERY-UI-SETTLE-AUDIT-2026-11-07 §6, executed 2026-11-07):
+//    the carousel posts now arrive as SERVER props (the two home route
+//    pages fetch listPublishedPostsForListPage + run selectHomeBlogCarousels
+//    at ISR time — the /blog list-page precedent and the getHomeSamples
+//    pattern) instead of the old deferIdle(2500) + client REST fetch, so
+//    the section renders inside the FIRST HTML (kills the audit's R-3
+//    late layout shift) and every visit saves one Supabase REST round
+//    trip. The copy strings still arrive as props from the server
+//    (site-content registry). An empty `latestPosts` (failed/empty server
+//    fetch) keeps the honest null render — the section simply doesn't
+//    appear, exactly as before. ──
 export function BlogSection({
   learnTitle,
   learnCta,
   isAr,
+  latestPosts = [],
+  featuredPosts = [],
 }: {
   learnTitle: string;
   learnCta: string;
   isAr: boolean;
+  /** F-4: server-selected newest posts (selectHomeBlogCarousels().latest). */
+  latestPosts?: BlogPostCard[];
+  /** F-4: server-selected rotating featured posts (… .featured). */
+  featuredPosts?: BlogPostCard[];
 }) {
   const { isCoach } = useAuth();
-  const [latestPosts, setLatestPosts] = useState<BlogPostCard[]>([]);
-  const [featuredPosts, setFeaturedPosts] = useState<BlogPostCard[]>([]);
-
-  useEffect(() => {
-    // Supabase client chunk loads on demand — deferred to idle so it
-    // never competes with LCP/INP on slow networks.
-    deferIdle(() => {
-      void (async () => {
-        const posts = await listBlogPosts(isAr ? "ar" : "en");
-        const { latest, featured } = selectHomeBlogCarousels(posts);
-        setLatestPosts(latest);
-        setFeaturedPosts(featured);
-      })();
-    }, 2500);
-  }, [isAr]);
 
   const blogHref = isCoach ? "/admin/blog" : isAr ? "/ar/blog" : "/blog";
 

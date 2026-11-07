@@ -3,6 +3,8 @@ import { LandingView } from "@/components/views/LandingView";
 import { AuthErrorToast } from "@/components/AuthErrorToast";
 import { getHomeSamples } from "@/lib/home-samples";
 import { fetchSiteContentOverrides } from "@/lib/site-content/server";
+import { listPublishedPostsForListPage } from "@/lib/blog-server";
+import { selectHomeBlogCarousels } from "@/lib/blog-home-carousel";
 
 // SITE-CONTENT-281: ISR freshness for the admin-editable homepage copy —
 // the SAME 300 s window the blog article pages use (their precedent,
@@ -91,13 +93,19 @@ export default async function Page() {
   // fallback). Adding the fetch converts this page from fully-static to
   // ISR, so wording changes go live WITHOUT a deploy.
   const samples = getHomeSamples();
+  // F-4 (AR-DISCOVERY-UI-SETTLE-AUDIT-2026-11-07 §6): the #learn island's
+  // carousel posts are selected SERVER-SIDE — the EN mirror's twin change
+  // (see (en)/(home)/page.tsx for the full rationale: /blog list-page
+  // precedent, card-fields law, ISR-window rotation, REST trip saved).
+  const posts = await listPublishedPostsForListPage("ar");
+  const blogCarousels = selectHomeBlogCarousels(posts);
   const content = await fetchSiteContentOverrides();
   return (
     <>
       <AuthErrorToast />
       {/* SEO-P1-6 (frame 315): the AR mirror pins isAr=true — URL-resolved
           (the /ar page ALWAYS renders Arabic for crawlers and visitors). */}
-      <LandingView samples={samples} content={content} isAr={true} />
+      <LandingView samples={samples} content={content} isAr={true} blogCarousels={blogCarousels} />
     </>
   );
 }

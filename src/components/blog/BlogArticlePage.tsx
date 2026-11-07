@@ -33,6 +33,7 @@ export function BlogArticlePage({
   publishedAt,
   updatedAt,
   lastReviewedAt,
+  mirrorHref,
 }: {
   lang: "en" | "ar";
   slug: string;
@@ -48,6 +49,14 @@ export function BlogArticlePage({
    *  omitted (the old code passed the auto updated_at as a review date —
    *  audit C2/F2: a fabricated E-E-A-T claim on every article). */
   lastReviewedAt?: string | null;
+  /** F-1 (AR-DISCOVERY-UI-SETTLE-AUDIT-2026-11-07 §6): server-computed
+   *  cross-language mirror URL for the footer bridge link. Blog twins pair
+   *  via linked_post_id with LANGUAGE-SPECIFIC slugs, so the footer's
+   *  prefix swap cannot derive it — the server route resolves the twin
+   *  (fallback: the opposite-language blog list, the LanguageToggle
+   *  precedent) and hands it down here so the link is crawlable in the
+   *  raw HTML, not only after a client lookup. */
+  mirrorHref?: string;
 }) {
   const isAr = lang === "ar";
   // M28 fix: accept initialPost as a prop from the server component.
@@ -461,8 +470,11 @@ export function BlogArticlePage({
 
       {/* Access-point fix (2026-09-14): slim copyright line replaced by the
           SHARED marble footer — this public page now carries the same
-          persistent link grid as the homepage (SiteFooter component). */}
-      <SiteFooter />
+          persistent link grid as the homepage (SiteFooter component).
+          F-1 (AR-DISCOVERY-UI-SETTLE-AUDIT-2026-11-07): mirrorHref hands
+          the server-resolved language twin down to the footer's
+          cross-language bridge link (see the props doc above). */}
+      <SiteFooter mirrorHref={mirrorHref} />
     </div>
   );
 }

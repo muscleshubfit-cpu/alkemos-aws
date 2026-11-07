@@ -109,6 +109,19 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
     notFound();
   }
 
+  // F-1 (AR-DISCOVERY-UI-SETTLE-AUDIT-2026-11-07 §6): the footer's
+  // cross-language bridge for THIS article — the real linked_post_id twin
+  // (already resolved inside the cached fetchBlogForOG payload), else the
+  // AR blog list (the LanguageToggle fallback precedent for unpaired
+  // posts). Computed on the SERVER so the link is crawlable in the raw
+  // HTML — the client-side `linked` lookup (BlogArticlePage) only feeds
+  // the in-page alternate box AFTER hydration, which crawlers never see.
+  const mirrorHref = og.twinSlug
+    ? og.twinLang === "ar"
+      ? `/ar/blog/${og.twinSlug}`
+      : `/blog/${og.twinSlug}`
+    : "/ar/blog";
+
   // Phase SEO-GEO-4 (2026-09-08): pass real DB published_at + updated_at
   // to the Article schema so dateModified + lastReviewed reflect actual
   // edit history. Was: new Date().toISOString() at request time → every
@@ -236,7 +249,7 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
           dangerouslySetInnerHTML={{ __html: jsonLd(faqPageSchema) }}
         />
       )}
-      <BlogArticlePage lang="en" slug={slug} initialPost={fullPost} publishedAt={publishedAt} updatedAt={updatedAt} lastReviewedAt={og.lastReviewedAt ?? undefined} />
+      <BlogArticlePage lang="en" slug={slug} initialPost={fullPost} publishedAt={publishedAt} updatedAt={updatedAt} lastReviewedAt={og.lastReviewedAt ?? undefined} mirrorHref={mirrorHref} />
     </>
   );
 }

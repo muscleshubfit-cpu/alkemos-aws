@@ -35,7 +35,14 @@ export const dynamic = "force-dynamic";
  */
 export default function AppGroupRootLayout({ children }: { children: ReactNode }) {
   return (
-    <RootShell lang="en" dir="ltr" showAds={false}>
+    // F-5 (AR-DISCOVERY-UI-SETTLE-AUDIT-2026-11-07 §6): prePaintLangDir —
+    // the account surfaces stay server-static EN/LTR (the SSG/ISR law
+    // below) but returning Arabic users now get dir=rtl stamped pre-paint
+    // (root-shell's alkemos-app-lang-init), killing the R-5 full-page
+    // LTR→RTL re-layout at hydration. The distant «split (app) into
+    // language mirrors» idea stays an owner-gated architectural frame —
+    // explicitly out of scope here.
+    <RootShell lang="en" dir="ltr" showAds={false} prePaintLangDir>
       {children}
     </RootShell>
   );

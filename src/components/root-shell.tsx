@@ -96,6 +96,17 @@ const cairo = Cairo({
  * they arrive as STATIC props and every page under the shell becomes
  * statically prerenderable (ISR exports on the pages finally apply).
  *
+ * F-5 (AR-DISCOVERY-UI-SETTLE-AUDIT-2026-11-07 §6, executed 2026-11-07):
+ * the optional `prePaintLangDir` prop (set ONLY by the (app) group layout)
+ * renders a theme-init-style pre-paint script that reads the saved
+ * `mhe:lang` preference (browser-language fallback — the UrlLocaleSync
+ * chain) and stamps lang/dir on <html> BEFORE first paint, so Arabic
+ * returning users on the account surfaces no longer pay the full
+ * LTR→RTL re-layout at hydration (the audit's R-5: /auth SSRs zero
+ * Arabic then flips the whole page). The (en)/(ar) public groups do NOT
+ * set it — their language is pinned by the URL (the audit's R-1 mixed
+ * state is F-2, an owner decision, and must not be touched here).
+ *
  * Per-route <head> resources moved DOWN to where they are statically
  * known (React 19 hoists <link> elements into <head> wherever they
  * render):
@@ -112,11 +123,15 @@ export default function RootShell({
   lang,
   dir,
   showAds,
+  prePaintLangDir = false,
   children,
 }: Readonly<{
   lang: "en" | "ar";
   dir: "ltr" | "rtl";
   showAds: boolean;
+  /** F-5: (app) group only — stamp the saved/client-detected language
+   * direction pre-paint (see the doc comment above). Default off. */
+  prePaintLangDir?: boolean;
   children: React.ReactNode;
 }>) {
   // §12.40 (P2-14): locale-aware entity schemas — see the note above the
@@ -183,6 +198,26 @@ export default function RootShell({
             __html: `(function(){try{var m=localStorage.getItem('alkemos-theme');var d=m==='dark'||m==='light'?m:(window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',d);}catch(e){document.documentElement.setAttribute('data-theme','light');}})();`,
           }}
         />
+        {/* F-5 (AR-DISCOVERY-UI-SETTLE-AUDIT-2026-11-07 §6): (app) group
+            only — pre-paint lang/dir stamp on the theme-init pattern. The
+            resolution chain mirrors UrlLocaleSync's non-/ar branch VERBATIM
+            (saved mhe:lang → browser language → en) so the pre-paint value
+            always matches what hydration will settle on: an Arabic returning
+            user gets dir=rtl from the very first paint and only the TEXTS
+            flip at hydration (no LTR→RTL re-layout — the audit's R-5).
+            Stamps only the 'ar' case: 'en'/'ltr' is already the server's
+            static default, so nothing is touched for English users. The
+            suppressHydrationWarning on <html> (the theme-init precedent)
+            absorbs the attribute delta; the i18n provider's useEffect then
+            re-asserts the same values post-hydration. */}
+        {prePaintLangDir && (
+          <script
+            id="alkemos-app-lang-init"
+            dangerouslySetInnerHTML={{
+              __html: `(function(){try{var m=localStorage.getItem('mhe:lang');var l=(m==='ar'||m==='en')?m:((navigator.language||'').toLowerCase().indexOf('ar')===0?'ar':'en');if(l==='ar'){document.documentElement.lang='ar';document.documentElement.dir='rtl';}}catch(e){}})();`,
+            }}
+          />
+        )}
         <a href="#main-content-skip" className="sr-only-focusable">
           Skip to content
         </a>
