@@ -10,7 +10,12 @@ import { I18nProvider } from "@/lib/i18n";
 // ShareButtons/I18nProvider are client components — under vitest there is
 // no Next router, so usePathname() is stubbed (the provider already
 // tolerates null: `usePathname() || "/"`).
-vi.mock("next/navigation", () => ({ usePathname: () => null }));
+vi.mock("next/navigation", () => ({
+  usePathname: () => null,
+  // 450: UrlLocaleSync (inside I18nProvider) also subscribes to the
+  // router for the mirror-replace safety net — stub the seam.
+  useRouter: () => ({ push: () => {}, replace: () => {}, refresh: () => {}, prefetch: () => {}, back: () => {} }),
+}));
 
 /**
  * SHARE URL LAW (Phase 230 — P0 of the Social Sharing deep audit, owner

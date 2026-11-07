@@ -10,7 +10,12 @@ import { CoachShareButtons } from "@/components/CoachShareButtons";
 import { SocialShare } from "@/components/blog/BlogComponents";
 import { I18nProvider } from "@/lib/i18n";
 
-vi.mock("next/navigation", () => ({ usePathname: () => null }));
+vi.mock("next/navigation", () => ({
+  usePathname: () => null,
+  // 450: UrlLocaleSync (inside I18nProvider) also subscribes to the
+  // router for the mirror-replace safety net — stub the seam.
+  useRouter: () => ({ push: () => {}, replace: () => {}, refresh: () => {}, prefetch: () => {}, back: () => {} }),
+}));
 
 /**
  * PHASE 231 — SHARE UNIFICATION LAW + COVERAGE GUARD

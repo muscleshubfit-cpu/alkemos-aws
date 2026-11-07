@@ -39,20 +39,23 @@ import { createElement, useEffect, type ReactNode } from "react";
 // ── The navigation seam: a context-backed usePathname ────────────────────
 // (exported from the factory as __PathnameCtx so the harness can provide
 // it — the same React-legal pattern the evo-drawer canary uses for its
-// chat-context harness).
+// chat-context harness). The router is a HOISTED stable mock so the 450
+// behavioral canaries can assert the mirror-replace calls (a fresh vi.fn
+// per call — the pre-450 shape — was unassertable).
+const routerMock = vi.hoisted(() => ({
+  push: vi.fn(),
+  replace: vi.fn(),
+  refresh: vi.fn(),
+  prefetch: vi.fn(),
+  back: vi.fn(),
+}));
 vi.mock("next/navigation", async () => {
   const { createContext, useContext } = await import("react");
   const PathnameCtx = createContext<string>("/");
   return {
     __PathnameCtx: PathnameCtx,
     usePathname: () => useContext(PathnameCtx),
-    useRouter: () => ({
-      push: vi.fn(),
-      replace: vi.fn(),
-      refresh: vi.fn(),
-      prefetch: vi.fn(),
-      back: vi.fn(),
-    }),
+    useRouter: () => routerMock,
   };
 });
 
@@ -194,20 +197,22 @@ describe("W1-4a source pins — memoized values, torn-off pathname, module-scope
     expect(provider).not.toMatch(/usePathname\(\)/);
     const leaf = span(s, "function UrlLocaleSync", "export function useI18n");
     expect(leaf).toContain("usePathname()");
-    // F-2 Option A (2026-11-07): the URL path is the SOLE governor of
-    // the PUBLIC trees — /ar/* always Arabic, public non-/ar always
-    // English. The legacy saved-preference → browser-language override
-    // is extinct there: no inline localStorage read, no
-    // navigator.language sniff.
-    // 449 SURFACE LOCALE LAW (report §11): the leaf now resolves
-    // through the CENTRAL CLASSIFIER (src/lib/surface-locale.ts) —
-    // isArabicPath (public AR) / isSpecialSurface (mirror-less (app)
-    // surfaces → the persisted PREFERENCE) / else public EN. The
-    // classifier's own pins + the (app)-layout cookie wiring live in
-    // surface-locale.test.ts.
-    expect(leaf).toContain("if (isArabicPath(pathname))");
+    // F-2 Option A (2026-11-07) for CHOICE-LESS visitors: the URL
+    // governs the public trees' RENDER language — /ar/* always Arabic,
+    // public non-/ar always English — and the legacy saved-preference →
+    // browser-language override stays extinct there: no inline
+    // localStorage read, no navigator.language sniff.
+    // 450 UNIFIED CHOICE LAW (report §12): the leaf resolves ONE
+    // governor — the RECORDED CHOICE (readStoredLang, cookie-first) —
+    // special surfaces render it verbatim; public pages render their
+    // URL language but a choice-holder in the WRONG tree is replaced
+    // to the structural mirror (mirrorPath — the central map shared
+    // with the toggle and the middleware). The classifier's own pins +
+    // the (app)-layout cookie wiring live in surface-locale.test.ts.
     expect(leaf).toContain("if (isSpecialSurface(pathname))");
-    expect(leaf).toContain("readPersistedLang()");
+    expect(leaf).toContain('isArabicPath(pathname) ? "ar" : "en"');
+    expect(leaf).toContain("readStoredLang()");
+    expect(leaf).toContain("mirrorPath(pathname, stored)");
     // The binary force that caused the admin-panel revert is GONE…
     expect(leaf).not.toContain('isArPath ? "ar" : "en"');
     // …and the leaf still never sniffs the browser language.
@@ -288,6 +293,11 @@ describe("W1-4a behavior — a faithful SPA navigation in jsdom", () => {
     i18nBag.last = null;
     authBag.renders = 0;
     authBag.last = null;
+    routerMock.push.mockClear();
+    routerMock.replace.mockClear();
+    routerMock.refresh.mockClear();
+    routerMock.prefetch.mockClear();
+    routerMock.back.mockClear();
   });
 
   /** Renders `app` under a pathname provider the test can navigate; the
@@ -343,32 +353,39 @@ describe("W1-4a behavior — a faithful SPA navigation in jsdom", () => {
     view.unmount();
   });
 
-  it("F-2-A: a saved Arabic preference does NOT flip a non-/ar URL — the URL governs", async () => {
+  it("450: a stored Arabic choice on a public EN URL replaces to the structural mirror — no unchosen flip, no re-render storm", async () => {
     const bag = i18nBag;
-    // The exact return-visitor regression the audit measured live (R-1):
-    // mhe:lang=ar used to flip the whole chrome to Arabic AFTER hydration
-    // on `/` (a permanently mixed UI — English content, Arabic chrome).
-    // With the override removed, the URL is the sole governor.
+    // The 447-era test pinned "the URL governs, renders=1". The 450 law
+    // (report §12) keeps BOTH invariants and adds the guarantee the
+    // owner ordered: a choice-holder landing on the WRONG tree (an
+    // edge-cache HIT, an external link) is moved to their chosen
+    // language's mirror — the client safety net (use-nav already
+    // lands chrome view navigations in the chosen tree directly).
     window.localStorage.setItem("mhe:lang", "ar");
     // eslint-disable-next-line react/no-children-prop -- createElement needs children in props (test-only; repo precedent mobile-drawer-a11y.test.tsx)
     const app = createElement(I18nProvider, { urlLocale: "en", children: createElement(I18nProbe) });
     const { navigate, view } = await mountAt("/", app);
     await (await import("@testing-library/react")).act(async () => {});
+    // The transient page still RENDERS its URL language (no mixed
+    // chrome) — and the render storm stays dead (renders=1).
     expect(bag.last?.lang).toBe("en");
     expect(bag.last?.dir).toBe("ltr");
-    // No post-hydration re-render at all — the flip is gone, not merely
-    // faster: the leaf's URL resolution equals the initial urlLocale.
     expect(bag.renders).toBe(1);
+    // …and the safety net fired exactly once, to the mirror.
+    expect(routerMock.replace).toHaveBeenCalledTimes(1);
+    expect(routerMock.replace).toHaveBeenCalledWith("/ar");
+    expect(routerMock.push).not.toHaveBeenCalled();
 
-    // The URL governs BOTH ways across an SPA boundary: into /ar the
-    // language flips to Arabic…
+    // The followed replace lands on /ar: Arabic renders, no further
+    // replaces (steady state — no loop).
     await navigate("/ar");
     expect(bag.last?.lang).toBe("ar");
     expect(bag.last?.dir).toBe("rtl");
-    // …and back out of it re-resolves English even with the saved pref.
-    await navigate("/");
-    expect(bag.last?.lang).toBe("en");
-    expect(bag.last?.dir).toBe("ltr");
+    expect(routerMock.replace).toHaveBeenCalledTimes(1);
+
+    // The legacy localStorage choice was backfilled into the cookie
+    // (the store the (app) SSR + middleware read).
+    expect(document.cookie).toContain("mhe:lang=ar");
     view.unmount();
   });
 
@@ -405,29 +422,138 @@ describe("W1-4a behavior — a faithful SPA navigation in jsdom", () => {
     view.unmount();
   });
 
-  it("449: leaving a special surface for a PUBLIC URL re-arms F-2-A — the URL governs, both directions", async () => {
+  it("450: leaving a special surface for a PUBLIC EN URL lands in the CHOSEN tree — the boundary conflict is dead, both directions", async () => {
     const bag = i18nBag;
+    // The 449-era test pinned "leaving to `/` renders en even with the
+    // saved ar preference" — URL sovereignty at the boundary, the exact
+    // «تغيير اللغة دون اختيار المستخدم» the 450 order outlaws. Under
+    // 450 the choice follows the user across the boundary: the sync
+    // replaces the wrong-tree URL to its mirror (the same law use-nav
+    // enforces directly for every chrome view navigation).
     window.localStorage.setItem("mhe:lang", "ar");
     // eslint-disable-next-line react/no-children-prop -- createElement needs children in props (test-only; repo precedent mobile-drawer-a11y.test.tsx)
     const app = createElement(I18nProvider, { urlLocale: "ar", children: createElement(I18nProbe) });
     const { navigate, view } = await mountAt("/admin/dashboard", app);
     await (await import("@testing-library/react")).act(async () => {});
     expect(bag.last?.lang).toBe("ar");
-    // Into the public EN tree: the URL governs — the preference does
-    // NOT follow (the R-1 mixed state stays dead — F-2-A verbatim).
+    // Into the public EN tree: the choice now FOLLOWS (replace to the
+    // mirror — the client net proving the same law use-nav enforces
+    // directly for chrome view navigations).
     await navigate("/");
-    expect(bag.last?.lang).toBe("en");
-    expect(bag.last?.dir).toBe("ltr");
-    await navigate("/memberships");
-    expect(bag.last?.lang).toBe("en");
-    // Into the public AR tree: the URL governs there too.
-    await navigate("/ar/memberships");
+    expect(routerMock.replace).toHaveBeenCalledWith("/ar");
+    // The followed replace lands Arabic.
+    await navigate("/ar");
     expect(bag.last?.lang).toBe("ar");
     expect(bag.last?.dir).toBe("rtl");
-    // Back into a special surface: the preference re-arms.
+    // A mirrored public EN path replaces too (the logo → "/memberships"
+    // case for an EN-choice user crossing from an AR admin works the
+    // same — verified by the reverse-direction test below).
+    await navigate("/memberships");
+    expect(routerMock.replace).toHaveBeenLastCalledWith("/ar/memberships");
+    await navigate("/ar/memberships");
+    expect(bag.last?.lang).toBe("ar");
+    // Back into a special surface: the choice re-arms (449 verbatim).
     await navigate("/profile");
     expect(bag.last?.lang).toBe("ar");
     expect(bag.last?.dir).toBe("rtl");
+    view.unmount();
+  });
+
+  it("450: the EN direction holds too — an EN-choice user landing on /ar is mirrored back", async () => {
+    const bag = i18nBag;
+    window.localStorage.setItem("mhe:lang", "en");
+    // eslint-disable-next-line react/no-children-prop -- createElement needs children in props (test-only; repo precedent mobile-drawer-a11y.test.tsx)
+    const app = createElement(I18nProvider, { urlLocale: "ar", children: createElement(I18nProbe) });
+    const { navigate, view } = await mountAt("/ar/memberships", app);
+    await (await import("@testing-library/react")).act(async () => {});
+    expect(routerMock.replace).toHaveBeenCalledWith("/memberships");
+    await navigate("/memberships");
+    expect(bag.last?.lang).toBe("en");
+    expect(bag.last?.dir).toBe("ltr");
+    view.unmount();
+  });
+
+  it("450: single-language content is NEVER mirror-bounced — an EN-only blog article serves EN in full", async () => {
+    const bag = i18nBag;
+    // The deliberate boundary (report §12): /blog/[slug] mirrors exist
+    // only when the DB row has a linked twin — enforcement cannot know
+    // without a DB call, and a 404 bounce would be strictly worse.
+    window.localStorage.setItem("mhe:lang", "ar");
+    // eslint-disable-next-line react/no-children-prop -- createElement needs children in props (test-only; repo precedent mobile-drawer-a11y.test.tsx)
+    const app = createElement(I18nProvider, { urlLocale: "en", children: createElement(I18nProbe) });
+    const { navigate, view } = await mountAt("/blog/english-only-post", app);
+    await (await import("@testing-library/react")).act(async () => {});
+    // No replace, no push — the page renders fully in its URL language.
+    expect(routerMock.replace).not.toHaveBeenCalled();
+    expect(routerMock.push).not.toHaveBeenCalled();
+    expect(bag.last?.lang).toBe("en");
+    expect(bag.renders).toBe(1);
+    view.unmount();
+  });
+
+  it("450: a FIRST Arabic-tree visit passively records the choice — the visitor→auth boundary keeps the reader's language", async () => {
+    const bag = i18nBag;
+    // No localStorage, no cookie — a first-time visitor browsing /ar
+    // (e.g. from an Arabic search result) gets the browsing language
+    // recorded, so /auth server-renders Arabic (the (app) layout reads
+    // the cookie) instead of flipping them to an English login.
+    // eslint-disable-next-line react/no-children-prop -- createElement needs children in props (test-only; repo precedent mobile-drawer-a11y.test.tsx)
+    const app = createElement(I18nProvider, { urlLocale: "ar", children: createElement(I18nProbe) });
+    const { navigate, view } = await mountAt("/ar/memberships", app);
+    await (await import("@testing-library/react")).act(async () => {});
+    expect(bag.last?.lang).toBe("ar");
+    expect(document.cookie).toContain("mhe:lang=ar");
+    expect(window.localStorage.getItem("mhe:lang")).toBe("ar");
+    // The recorded choice now governs the special surfaces (SSR would
+    // have rendered the same value — here the client resolution).
+    await navigate("/auth");
+    expect(bag.last?.lang).toBe("ar");
+    expect(bag.last?.dir).toBe("rtl");
+    view.unmount();
+  });
+
+  it("450: a FIRST EN visit records NOTHING — the EN default needs no cookie (crawlers + first-time EN visitors byte-identical)", async () => {
+    const bag = i18nBag;
+    // English is the documented default when no choice exists; recording
+    // it passively would bounce first-time EN visitors off the /ar links
+    // they deliberately follow. Zero writes on the EN tree.
+    // eslint-disable-next-line react/no-children-prop -- createElement needs children in props (test-only; repo precedent mobile-drawer-a11y.test.tsx)
+    const app = createElement(I18nProvider, { urlLocale: "en", children: createElement(I18nProbe) });
+    const { navigate, view } = await mountAt("/memberships", app);
+    await (await import("@testing-library/react")).act(async () => {});
+    expect(document.cookie).not.toContain("mhe:lang=");
+    expect(window.localStorage.getItem("mhe:lang")).toBeNull();
+    // And an /ar link they follow still serves Arabic (no stored choice
+    // → no redirect — F-2-A verbatim for the choice-less visitor).
+    await navigate("/ar/memberships");
+    expect(routerMock.replace).not.toHaveBeenCalled();
+    expect(bag.last?.lang).toBe("ar");
+    view.unmount();
+  });
+
+  it("450: the cookie WINS over a divergent localStorage — the server and client governors can never bounce-loop", async () => {
+    const bag = i18nBag;
+    // The 450 cookie-first priority: the middleware + (app) SSR read the
+    // cookie, so the client must resolve the SAME store first — a
+    // half-synced legacy browser (cookie=ar, ls=en) on /ar must STAY
+    // (no client-replace back to /), and the divergent store heals.
+    document.cookie = "mhe:lang=ar; path=/";
+    window.localStorage.setItem("mhe:lang", "en");
+    // eslint-disable-next-line react/no-children-prop -- createElement needs children in props (test-only; repo precedent mobile-drawer-a11y.test.tsx)
+    const app = createElement(I18nProvider, { urlLocale: "ar", children: createElement(I18nProbe) });
+    const { navigate, view } = await mountAt("/ar/memberships", app);
+    await (await import("@testing-library/react")).act(async () => {});
+    expect(routerMock.replace).not.toHaveBeenCalled();
+    expect(bag.last?.lang).toBe("ar");
+    // The legacy store healed to the cookie's value.
+    expect(window.localStorage.getItem("mhe:lang")).toBe("ar");
+    // …and the reverse divergence (cookie=en on a fresh /ar path)
+    // resolves en and mirrors — consistently with the middleware's
+    // cookie read (a DIFFERENT pathname: the effect is path-keyed).
+    document.cookie = "mhe:lang=en; path=/";
+    window.localStorage.setItem("mhe:lang", "ar");
+    await navigate("/ar/exercises");
+    expect(routerMock.replace).toHaveBeenCalledWith("/exercises");
     view.unmount();
   });
 

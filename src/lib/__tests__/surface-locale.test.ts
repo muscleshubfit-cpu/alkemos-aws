@@ -3,40 +3,55 @@ import { readFileSync, readdirSync, statSync } from "node:fs";
 import { resolve } from "node:path";
 import {
   SPECIAL_LOCALE_PREFIXES,
+  PUBLIC_INDEX_MIRRORS,
+  PUBLIC_PREFIX_MIRRORS,
   isArabicPath,
   isSpecialSurface,
   normalizeLang,
+  mirrorPath,
   LANG_COOKIE,
   LANG_STORAGE_KEY,
   LANG_COOKIE_MAX_AGE,
 } from "../surface-locale";
 
 /**
- * 449 SURFACE LOCALE LAW — execution canaries (2026-11-07).
+ * 449 SURFACE LOCALE LAW + 450 UNIFIED CHOICE LAW — execution canaries
+ * (2026-11-07 / 2026-11-08).
  *
- * Source: docs/AR-DISCOVERY-UI-SETTLE-AUDIT-2026-11-07.md §11 (owner
- * order «مراجعة شاملة لمنظومة اللغة والتنقل على مستوى الموقع بالكامل…
- * حدد سبب عدم وجود ضمان مركزي لاستمرار اللغة في جميع الصفحات والمكونات،
- * بما فيها لوحة الأدمن والأسطح الخاصة»).
+ * Sources: docs/AR-DISCOVERY-UI-SETTLE-AUDIT-2026-11-07.md §11 (449 —
+ * owner order «مراجعة شاملة لمنظومة اللغة والتنقل على مستوى الموقع
+ * بالكامل… حدد سبب عدم وجود ضمان مركزي لاستمرار اللغة في جميع الصفحات
+ * والمكونات، بما فيها لوحة الأدمن والأسطح الخاصة») and §12 (450 —
+ * owner order «حلاً موحداً وشاملاً لإدارة لغة الموقع. القاعدة الوحيدة:
+ * عندما يختار المستخدم العربية، يظل الموقع بالكامل بالعربية أثناء
+ * التنقل بين جميع الصفحات، وعندما يختار الإنجليزية يظل الموقع
+ * بالكامل بالإنجليزية. أزل أي تعارض بين الرابط والتفضيلات المحفوظة…»).
  *
- * The live-reproduced production bug this law fixes: the admin panel
- * could not stay Arabic — /admin/dashboard toggled to Arabic → ONE
- * sidebar link → the whole chrome reverted to en/ltr (UrlLocaleSync
- * force-reset every non-/ar pathname), and a reload booted English
- * even with mhe:lang=ar saved (the server never saw the preference).
+ * The live-reproduced production bugs these laws fix: 449 — the admin
+ * panel could not stay Arabic (toggle → one sidebar link → full revert
+ * to en/ltr; reload booted English; SSR never saw the choice). 450 —
+ * the TWO-governor boundary: an Arabic-choice user crossing from a
+ * special surface to a public EN URL (logo → "/") was flipped to
+ * English by URL sovereignty, and a first-time Arabic visitor hit an
+ * English /auth — both "language changes without the user's choice".
  *
- * Three layers, mirroring the repo's canary discipline:
- *   1. PREDICATES — the classifier's boundary behavior.
- *   2. THE CENTRAL GUARANTEE — the prefix list IS the (app) route group
- *      (filesystem walk: a new (app) route without a classifier prefix
- *      FAILS the suite — the guarantee can never silently drift).
- *   3. SOURCE PINS — the law is wired in all three layers (the sync
- *      leaf, the setLang cookie mirror, the dynamic (app) layout) and
- *      the PUBLIC trees stay static/cookie-free (F-2-A byte-identical).
+ * Layers, mirroring the repo's canary discipline:
+ *   1. PREDICATES — the classifier's boundary behavior + the 450
+ *      structural mirror map.
+ *   2. THE CENTRAL GUARANTEES — the prefix list IS the (app) route
+ *      group AND the mirror map IS the real (en)↔(ar) route topology
+ *      (filesystem walks: a new route without its classifier entry
+ *      FAILS the suite — the guarantees can never silently drift).
+ *   3. SOURCE PINS — the law is wired in all layers (the sync leaf,
+ *      the setLang store writer, the dynamic (app) layout, the
+ *      middleware RSC redirect) and the PUBLIC trees stay
+ *      static/cookie-free (F-2-A byte-identical for choice-less
+ *      visitors and crawlers).
  *
- * The BEHAVIORAL side (SPA navigations across the three surface
- * classes) lives in context-render-storm.test.tsx alongside the
- * F-2-A behavior test it must keep green.
+ * The BEHAVIORAL side (SPA navigations across the surface classes +
+ * the 450 redirect/record/heal behaviors) lives in
+ * context-render-storm.test.tsx alongside the F-2-A behavior tests it
+ * keeps green.
  */
 const read = (rel: string) => readFileSync(resolve(__dirname, rel), "utf8");
 
@@ -46,6 +61,8 @@ const EN_LAYOUT = "../../app/(en)/layout.tsx";
 const AR_LAYOUT = "../../app/(ar)/layout.tsx";
 const MIDDLEWARE = "../../middleware.ts";
 const SURFACE_LOCALE = "../../lib/surface-locale.ts";
+const TOGGLE = "../../components/LanguageToggle.tsx";
+const USE_NAV = "../../hooks/use-nav.tsx";
 
 describe("449 predicates — the classifier's boundaries", () => {
   it("isArabicPath: exactly /ar or the /ar/ subtree (the middleware's rule)", () => {
@@ -96,7 +113,47 @@ describe("449 predicates — the classifier's boundaries", () => {
   });
 });
 
-describe("449 the central guarantee — the prefix list IS the (app) route group", () => {
+describe("450 predicates — the structural mirror map", () => {
+  it("mirrorPath resolves every index pair, both directions", () => {
+    expect(mirrorPath("/", "ar")).toBe("/ar");
+    expect(mirrorPath("/ar", "en")).toBe("/");
+    expect(mirrorPath("/memberships", "ar")).toBe("/ar/memberships");
+    expect(mirrorPath("/ar/memberships", "en")).toBe("/memberships");
+    expect(mirrorPath("/for-coaches/register", "ar")).toBe("/ar/for-coaches/register");
+    expect(mirrorPath("/ar/for-coaches/register", "en")).toBe("/for-coaches/register");
+  });
+
+  it("mirrorPath prefix-swaps the same-slug subtrees, both directions", () => {
+    expect(mirrorPath("/exercises/barbell-squat", "ar")).toBe("/ar/exercises/barbell-squat");
+    expect(mirrorPath("/ar/exercises/barbell-squat", "en")).toBe("/exercises/barbell-squat");
+    expect(mirrorPath("/foods/lists/high-protein", "ar")).toBe("/ar/foods/lists/high-protein");
+    expect(mirrorPath("/ar/foods/lists/high-protein", "en")).toBe("/foods/lists/high-protein");
+    expect(mirrorPath("/blog/category/nutrition", "ar")).toBe("/ar/blog/category/nutrition");
+    expect(mirrorPath("/ar/blog/category/nutrition", "en")).toBe("/blog/category/nutrition");
+    expect(mirrorPath("/diet-plan/beginner/balanced", "ar")).toBe("/ar/diet-plan/beginner/balanced");
+    expect(mirrorPath("/ar/diet-plan/beginner/balanced", "en")).toBe("/diet-plan/beginner/balanced");
+    expect(mirrorPath("/coaches/sara", "ar")).toBe("/ar/coaches/sara");
+    expect(mirrorPath("/tools/bmi-calculator", "ar")).toBe("/ar/tools/bmi-calculator");
+  });
+
+  it("mirrorPath returns null for the deliberate boundaries — no 404 bounces, no mixed state", () => {
+    // Blog ARTICLE slugs are DB-linked (linked_post_id) — never structural.
+    expect(mirrorPath("/blog/some-post", "ar")).toBeNull();
+    expect(mirrorPath("/ar/blog/some-post", "en")).toBeNull();
+    // Special surfaces carry no language dimension.
+    expect(mirrorPath("/admin/clients", "ar")).toBeNull();
+    expect(mirrorPath("/auth", "ar")).toBeNull();
+    expect(mirrorPath("/dashboard", "ar")).toBeNull();
+    // Already in the target tree — nothing to resolve.
+    expect(mirrorPath("/ar/exercises", "ar")).toBeNull();
+    expect(mirrorPath("/exercises", "en")).toBeNull();
+    // Unknown / non-mirrored paths.
+    expect(mirrorPath("/nonexistent-page", "ar")).toBeNull();
+    expect(mirrorPath("/ar/nonexistent-page", "en")).toBeNull();
+  });
+});
+
+describe("449+450 the central guarantees — the lists ARE the route tree", () => {
   it("every (app) route folder (top level + (authed)) has its prefix, and NOTHING else does", () => {
     const appDir = resolve(__dirname, "../../app/(app)");
     const dirsOf = (p: string) =>
@@ -108,27 +165,117 @@ describe("449 the central guarantee — the prefix list IS the (app) route group
       .sort();
     expect([...SPECIAL_LOCALE_PREFIXES].sort()).toEqual(expected);
   });
+
+  it("450: the index-mirror map IS the real (en)↔(ar) static-pair topology — resolvable both ways, inventing nothing", () => {
+    const enDir = resolve(__dirname, "../../app/(en)");
+    const arDir = resolve(__dirname, "../../app/(ar)/ar");
+    // Walk a public tree collecting EVERY static page route (route
+    // groups add no segment; a page at the base IS the home route).
+    const staticRoutes = (base: string, arPrefix: string) => {
+      const out = new Set<string>();
+      const walk = (dir: string, prefix: string) => {
+        for (const f of readdirSync(dir)) {
+          const full = resolve(dir, f);
+          if (statSync(full).isDirectory()) {
+            if (f.startsWith("(")) walk(full, prefix);
+            else if (!f.startsWith("[")) walk(full, `${prefix}/${f}`);
+          } else if (f === "page.tsx" || f === "page.ts") {
+            const route = prefix === "" ? "/" : prefix;
+            out.add(arPrefix ? `${arPrefix}${route === "/" ? "" : route}` : route);
+          }
+        }
+      };
+      walk(base, "");
+      return out;
+    };
+    const en = staticRoutes(enDir, "");
+    const ar = staticRoutes(arDir, "/ar");
+    // Every static page that exists in BOTH trees must resolve through
+    // the central map (exact pair or prefix) — index pages, static
+    // sub-pages (foods/methodology, guides/macro-tracking-accuracy, the
+    // five tool pages…), all of it. THE guarantee: a new mirrored route
+    // cannot silently miss the map.
+    for (const r of en) {
+      const twin = r === "/" ? "/ar" : `/ar${r}`;
+      if (ar.has(twin)) {
+        expect(mirrorPath(r, "ar"), `EN static pair ${r} must resolve to ${twin}`).toBe(twin);
+        expect(mirrorPath(twin, "en"), `AR static pair ${twin} must resolve to ${r}`).toBe(r);
+      }
+    }
+    // The map invents nothing: every index row's ar side exists on the
+    // filesystem, and every prefix row names a REAL subtree in BOTH trees.
+    for (const m of PUBLIC_INDEX_MIRRORS) {
+      expect(ar.has(m.ar), `map row ${m.en} → ${m.ar}: AR route missing`).toBe(true);
+      expect(en.has(m.en) || [...en].some((r) => r.startsWith(m.en + "/")), `map row ${m.en}: EN route missing`).toBe(true);
+    }
+    for (const p of PUBLIC_PREFIX_MIRRORS) {
+      // Prefix rows may cover DYNAMIC subtrees (no static page collects
+      // them above) — verify the route FOLDER exists on both sides.
+      expect(statSync(resolve(enDir, `.${p}`)).isDirectory(), `prefix ${p}: EN route folder missing`).toBe(true);
+      expect(statSync(resolve(arDir, `.${p}`)).isDirectory(), `prefix ${p}: AR route folder missing`).toBe(true);
+    }
+  });
+
+  it("450: every shared dynamic subtree is prefix-mirrorable — /blog/[slug] alone is the documented DB-linked exception", () => {
+    const enDir = resolve(__dirname, "../../app/(en)");
+    const arDir = resolve(__dirname, "../../app/(ar)/ar");
+    // Collect the PARENT prefixes of every [param] page (the subtree a
+    // dynamic slug hangs under), in both trees.
+    const dynamicParents = (base: string) => {
+      const out = new Set<string>();
+      const walk = (dir: string, prefix: string) => {
+        for (const f of readdirSync(dir)) {
+          const full = resolve(dir, f);
+          if (statSync(full).isDirectory()) {
+            if (f.startsWith("(")) walk(full, prefix);
+            else if (f.startsWith("[")) out.add(prefix === "" ? "/" : `${prefix}/`);
+            else walk(full, `${prefix}/${f}`);
+          }
+        }
+      };
+      walk(base, "");
+      return out;
+    };
+    const enParents = dynamicParents(enDir);
+    const arParents = dynamicParents(arDir);
+    for (const p of enParents) {
+      const arP = p === "/" ? "/ar" : `/ar${p}`;
+      if (!arParents.has(arP)) continue; // EN-only dynamic subtree — nothing to mirror
+      // The ONE deliberate exception, pinned: blog ARTICLE slugs are
+      // resolved per-post via linked_post_id (the toggle's DB lookup),
+      // never structurally — a 404 bounce would be strictly worse.
+      if (p === "/blog/") {
+        expect(mirrorPath("/blog/some-post", "ar")).toBeNull();
+        continue;
+      }
+      const probe = `${p}example-slug`;
+      expect(mirrorPath(probe, "ar"), `dynamic subtree ${p} must prefix-swap`).toBe(`/ar${probe}`);
+      expect(mirrorPath(`/ar${probe}`, "en"), `AR dynamic subtree /ar${p} must prefix-swap back`).toBe(probe);
+    }
+  });
 });
 
-describe("449 source pins — the law is wired in all three layers", () => {
-  it("UrlLocaleSync resolves through the classifier: ar / special-preference / en — no binary force", () => {
+describe("449+450 source pins — the law is wired in every layer", () => {
+  it("UrlLocaleSync resolves through the classifier: special-preference / public-URL + choice sync — no binary force", () => {
     const src = read(I18N);
-    // The three-class resolution (report §11)…
-    expect(src).toContain("if (isArabicPath(pathname))");
+    // The 450 resolution (report §12)…
     expect(src).toContain("if (isSpecialSurface(pathname))");
-    expect(src).toContain("readPersistedLang()");
-    expect(src).toContain("persistLangCookie(pref)");
-    // …and the binary force that caused the admin revert is GONE.
+    expect(src).toContain("readStoredLang()");
+    expect(src).toContain("mirrorPath(pathname, stored)");
+    expect(src).toContain("healLangStores(stored)");
+    expect(src).toContain("router.replace(");
+    // …and the binary force that caused the admin revert stays GONE.
     expect(src).not.toContain('isArPath ? "ar" : "en"');
     // The imports come from the central classifier (single source).
     expect(src).toContain('from "@/lib/surface-locale"');
   });
 
-  it("setLang mirrors the choice into the cookie (the SSR-readable store)", () => {
+  it("setLang persists the choice through the ONE store writer (both stores, one step)", () => {
     const src = read(I18N);
-    expect(src).toContain("persistLangCookie(l)");
-    expect(src).toContain("localStorage.setItem(LANG_STORAGE_KEY, l)");
+    expect(src).toContain("persistLangChoice(l)");
+    // No divergent hand-rolled store writes survive in the provider.
     expect(src).not.toContain('localStorage.setItem("mhe:lang"');
+    expect(src).not.toContain("localStorage.setItem(LANG_STORAGE_KEY");
   });
 
   it("the (app) root layout server-renders lang/dir from the preference cookie (dynamic group)", () => {
@@ -153,16 +300,51 @@ describe("449 source pins — the law is wired in all three layers", () => {
     }
   });
 
+  it("450: the middleware stays OUT of the language law — no mhe:lang knowledge, no new redirect surface", () => {
+    // 450 evaluated a middleware mirror-redirect and REJECTED it on
+    // measured evidence: Next 16's proxy layer strips the RSC flight
+    // markers (RSC header + _rsc param) from the middleware's view
+    // (server/web/adapter.js — "users only see page requests, never
+    // data requests"), so an RSC-only redirect is undetectable there
+    // without private APIs; and a full-page redirect would inherit the
+    // SEO-GEO-4 public Cache-Control from next.config headers() — an
+    // edge-cacheable 30xx on a public URL is an unacceptable crawler
+    // tail risk. The law therefore has exactly TWO enforcers (use-nav
+    // + the UrlLocaleSync net) and the middleware stays 449-clean.
+    const src = read(MIDDLEWARE);
+    expect(src).not.toContain("mhe:lang");
+    expect(src).not.toContain("mirrorPath");
+    expect(src).not.toContain("surface-locale");
+  });
+
+  it("450: use-nav resolves every PUBLIC view target through the CENTRAL map by the recorded choice", () => {
+    // The second central consumer: the logo / account buttons / logout
+    // landing (every view navigation in the chrome) lands DIRECTLY in
+    // the chosen tree — no wrong-language render, no replace needed.
+    const src = read(USE_NAV);
+    expect(src).toContain("readStoredLang()");
+    expect(src).toContain("mirrorPath(target, stored)");
+    // The 449 URL-based remap survives ONLY for choice-less visitors.
+    expect(src).toContain("AR_VIEW_MIRRORS[v]");
+    expect(src).toContain('from "@/lib/surface-locale"');
+  });
+
+  it("450: the toggle consumes the CENTRAL map — no private mirror copies left to drift", () => {
+    const src = read(TOGGLE);
+    expect(src).toContain("mirrorPath(pathname, nextLang)");
+    expect(src).not.toContain("MIRROR_ROUTES");
+    expect(src).not.toContain("PREFIX_MIRROR");
+    // The ONE deliberate local exception stays: the DB-linked blog pair.
+    expect(src).toContain("getLinkedPost(post)");
+  });
+
   it("no server Set-Cookie of the preference anywhere — the cookie is CLIENT-written only", () => {
-    // The middleware (the only server edge that stamps cookies wholesale)
-    // must not know about mhe:lang at all — public cache noise stays zero
-    // and the (app) layout only READS.
-    expect(read(MIDDLEWARE)).not.toContain("mhe:lang");
-    const layout = read(APP_LAYOUT);
-    expect(layout).not.toMatch(/cookies\.set/);
     // The writer lives in the client module, guarded to document.cookie.
     const law = read(SURFACE_LOCALE);
     expect(law).toContain("document.cookie = `${LANG_COOKIE}=${l}");
     expect(law).not.toContain("navigator.language"); // no browser sniffing — R-1 stays dead
+    // Cookie-first priority: the store the server governors read is the
+    // store the client resolves first (no client/server bounce loop).
+    expect(law).toContain("export function readStoredLang(): \"ar\" | \"en\" | null");
   });
 });

@@ -188,15 +188,23 @@ alkemos/
 - A custom lightweight i18n provider (no next-intl) with shared AR/EN copy in
   the source; Arabic content follows a Modern-Standard-Arabic purity law
   enforced by CI-tested detectors (`src/lib/blog-msa.ts`)
-- **Surface Locale Law (phase 449):** one central classifier
-  (`src/lib/surface-locale.ts`) decides which source governs the UI language
-  per URL — the URL on the public trees (F-2 Option A, byte-identical) and
-  the persisted preference (`mhe:lang` localStorage + cookie) on the
-  mirror-less account surfaces (/admin, /auth, /checkout, /profile, the
-  (authed) subtree) — so the admin panel keeps the owner's language across
-  navigations AND reloads (the dynamic (app) layout server-renders it from
-  the first HTML; the cookie is client-written only — zero server
-  Set-Cookie, public cache untouched)
+- **Unified Choice Law (phase 450, superseding 449's two-governor split):**
+  the RECORDED choice (`mhe:lang` — cookie-first, localStorage fallback)
+  governs the UI language on EVERY surface for anyone who has one: the
+  dynamic (app) layout server-renders the account surfaces'
+  (/admin /auth /checkout /profile + the (authed) subtree) lang/dir from
+  the FIRST HTML, and one central structural mirror map (`mirrorPath` in
+  `src/lib/surface-locale.ts`, canary-pinned against the route folders)
+  is consumed by the language toggle, `use-nav` (every chrome view
+  navigation — logo, account buttons, logout landing — lands directly in
+  the chosen tree) and the `UrlLocaleSync` client safety net (a
+  wrong-tree public URL — edge-cache HIT, external link — is replaced to
+  its mirror; a first `/ar` visit is passively recorded so a first-time
+  Arabic reader gets an Arabic `/auth`). Choice-less visitors and
+  crawlers keep the 447 URL law byte-identical (the cookie is
+  client-written only — zero server Set-Cookie, public cache untouched);
+  single-language content (blog articles without a linked twin) serves
+  in its own language, both directions
 
 ### Data layer
 - Supabase Postgres with **Row Level Security on every auto-applied table**

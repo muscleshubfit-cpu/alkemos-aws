@@ -40,7 +40,12 @@ import { createElement } from "react";
 // path. The legacy localStorage ("mhe:lang") override is gone from the
 // provider, so a saved preference no longer flips the language.
 const navState = vi.hoisted(() => ({ pathname: null as string | null }));
-vi.mock("next/navigation", () => ({ usePathname: () => navState.pathname }));
+vi.mock("next/navigation", () => ({
+  usePathname: () => navState.pathname,
+  // 450: UrlLocaleSync (inside I18nProvider) also subscribes to the
+  // router for the mirror-replace safety net — stub the seam.
+  useRouter: () => ({ push: () => {}, replace: () => {}, refresh: () => {}, prefetch: () => {}, back: () => {} }),
+}));
 
 import { I18nProvider } from "@/lib/i18n";
 import { Modal, type ModalProps } from "@/components/ui/modal";

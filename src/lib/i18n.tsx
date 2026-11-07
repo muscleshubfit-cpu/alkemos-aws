@@ -11,13 +11,14 @@ import {
  type ReactNode,
  type SetStateAction,
 } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   isArabicPath,
   isSpecialSurface,
-  readPersistedLang,
-  persistLangCookie,
-  LANG_STORAGE_KEY,
+  readStoredLang,
+  persistLangChoice,
+  healLangStores,
+  mirrorPath,
 } from "@/lib/surface-locale";
 
 export type Lang = "ar" | "en";
@@ -830,17 +831,15 @@ export function I18nProvider({
 
  const setLang = useCallback((l: Lang) => {
  setLangState(l);
- try {
- localStorage.setItem(LANG_STORAGE_KEY, l);
- } catch {}
  // 449 SURFACE LOCALE LAW (src/lib/surface-locale.ts — report §11):
  // mirror the explicit choice into the mhe:lang COOKIE so the (app)
  // group's dynamic root layout can server-render the right lang/dir
  // from the FIRST HTML (localStorage is invisible to SSR — the exact
  // reason the pre-449 admin panel could never reload in Arabic).
- // Client-side document.cookie ONLY: no server Set-Cookie anywhere,
- // so public responses and the edge cache see zero new cookie noise.
- persistLangCookie(l);
+ // 450: persistLangChoice writes BOTH stores in one step (cookie via
+ // document.cookie ONLY — no server Set-Cookie anywhere — plus the
+ // legacy localStorage key), so the two can never drift apart.
+ persistLangChoice(l);
  }, []);
 
  const t = useCallback(
@@ -873,83 +872,116 @@ export function I18nProvider({
 
 /* ── W1-4a (audit P-01 — 2026-10-02): pathname subscription torn off ────
  *
- * F-2 Option A (AR-DISCOVERY-UI-SETTLE-AUDIT-2026-11-07 §6 — owner
- * decision 2026-11-07): the URL path is the SOLE governor of the UI
- * language on the PUBLIC trees — `/ar` and `/ar/*` render Arabic,
- * every other PUBLIC URL renders English — from the first server HTML
- * through the whole session. 449 did NOT touch that law.
+ * 450 UNIFIED CHOICE LAW (owner order 2026-11-08 — governing report
+ * §12: docs/AR-DISCOVERY-UI-SETTLE-AUDIT-2026-11-07.md). The 449 law
+ * this leaf enforced had TWO governors (the URL for the public trees,
+ * the persisted preference for the special surfaces) — and the bridges
+ * between them (the logo → "/", use-nav view paths, any latent EN
+ * link) changed the language for a choice-holding user on every
+ * boundary crossing, exactly the "تغيير اللغة دون اختيار المستخدم"
+ * the owner's order outlaws. The 450 law this leaf now enforces has
+ * ONE governor — the RECORDED CHOICE — and this leaf keeps the URL in
+ * sync with it on public surfaces:
  *
- * 449 SURFACE LOCALE LAW (same report §11 — owner order 2026-11-07
- * «مراجعة شاملة لمنظومة اللغة والتنقل على مستوى الموقع بالكامل»): this
- * leaf is now driven by the CENTRAL CLASSIFIER (src/lib/surface-locale.ts)
- * instead of the raw binary that force-reset every non-Arabic pathname
- * to English. The root cause it fixes (live-reproduced on production
- * with the QA admin account): that binary force-reset the language on
- * EVERY non-/ar pathname — INCLUDING the mirror-less private surfaces
- * (/admin, /auth, /checkout, /profile, the (authed) subtree…), erasing
- * the toggle's chrome swap on the next click. The admin panel could not
- * stay Arabic: toggle → any sidebar link → full revert to en/ltr, and
- * a reload booted English even with mhe:lang=ar saved (the server never
- * saw the choice — localStorage is invisible to SSR).
+ *   1. SPECIAL surfaces → the PERSISTED CHOICE (449 verbatim: the URL
+ *      carries no language dimension there; the toggle is the change
+ *      mechanism; the (app) layout already SSR'd the same value from
+ *      the mhe:lang cookie — steady state this is a no-op setState).
+ *      A legacy localStorage-only choice gets its cookie backfilled
+ *      here, and a DIVERGENT pair (cookie≠localStorage) is healed to
+ *      the cookie's value — the store the server governors read (the
+ *      450 cookie-first priority: a client that resolved a different
+ *      store than the middleware would bounce forever).
+ *   2. PUBLIC + a recorded choice → the RENDER language still follows
+ *      the URL (F-2-A: no mixed chrome — an EN-only article page
+ *      renders fully EN), but a URL in the WRONG tree is replaced to
+ *      its structural mirror (mirrorPath — the central map shared
+ *      with the toggle and use-nav). This is the client safety net
+ *      for the paths the central view resolver cannot reach (a
+ *      Cloudflare edge-cache HIT serves cached HTML without touching
+ *      the origin, external links/bookmarks, latent stray links). In
+ *      steady navigation it NEVER fires: in-tree links keep the tree
+ *      and use-nav lands view navigations in the chosen tree directly.
+ *   3. PUBLIC + no recorded choice → the 447/F-2-A law VERBATIM: the
+ *      URL governs (crawlers and first-time visitors are
+ *      byte-identical), with ONE addition — a first visit to the
+ *      Arabic tree passively records the browsing language (ar) as
+ *      the choice, so the visitor→auth boundary never flips a
+ *      first-time Arabic reader to an English login. English needs no
+ *      passive record: it is the documented default when no choice
+ *      exists, and recording it would bounce first-time EN visitors
+ *      off the /ar links they deliberately follow.
  *
- * The law this leaf enforces per navigation (the classifier holds the
- * full contract):
- *   1. /ar + /ar/*            → "ar"  (URL sovereign — F-2-A verbatim)
- *   2. special (app) surfaces → the PERSISTED PREFERENCE (the URL has
- *      no language dimension there — mirror-less by the documented
- *      owner decision; the toggle is the change mechanism). Steady
- *      state this is a NO-OP: the (app) layout already server-rendered
- *      the same value from the mhe:lang cookie. A legacy localStorage
- *      choice that predates the cookie converges here (resolved value
- *      wins + cookie backfilled → the next load is SSR-correct; at
- *      most one flip, once, ever).
- *   3. every other PUBLIC URL → "en"  (URL sovereign — F-2-A verbatim)
- *
- * The saved preference is WRITTEN by setLang (the LanguageToggle —
- * localStorage + cookie) and READ ONLY on class-2 surfaces: public
- * pages never read it, so the R-1 mixed state (audit §4.2) stays dead.
- *
- * Living in this null-rendering leaf, the per-route re-render stays
- * INSIDE this component instead of re-rendering the provider + every
- * useI18n consumer in the app (setLangState arrives as a stable
- * setState reference). */
+ * The saved choice is WRITTEN by setLang (the toggle — both stores)
+ * and read cookie-first (readStoredLang). Living in this
+ * null-rendering leaf, the per-route re-render stays INSIDE this
+ * component instead of re-rendering the provider + every useI18n
+ * consumer in the app (setLangState arrives as a stable setState
+ * reference). */
 function UrlLocaleSync({
  setLangState,
 }: {
  setLangState: Dispatch<SetStateAction<Lang>>;
 }) {
  const pathname = usePathname() || "/";
+ const router = useRouter();
 
  useEffect(() => {
-   // 449 SURFACE LOCALE LAW — one classifier, three classes (the full
-   // contract + the live-reproduced admin bug it fixes: report §11 and
-   // src/lib/surface-locale.ts). A plain mount is a no-op setState in
-   // the steady state (the static public layouts / the cookie-reading
-   // dynamic (app) layout already provided the same value); the
-   // effect's real job stays SPA navigations across surface-class
-   // boundaries (the M31 mirror toggle, an /ar link back to /,
-   // entering/leaving the account surfaces).
-   if (isArabicPath(pathname)) {
-     // Class 1: the URL says Arabic — F-2-A verbatim.
-     setLangState("ar");
-     return;
-   }
+   const stored = readStoredLang(); // cookie-first (null = fresh visitor)
+
    if (isSpecialSurface(pathname)) {
-     // Class 2: mirror-less private surface — the URL carries NO
-     // language dimension, so the PERSISTED PREFERENCE governs the
-     // chrome (pre-449 this branch did not exist: the leaf forced "en"
-     // here and the toggle's swap died on the next navigation — the
-     // admin-panel bug). The backfill converges legacy localStorage
-     // choices into the cookie so the NEXT load is SSR-correct.
-     const pref = readPersistedLang();
+     // Class 1: mirror-less private surface — the URL carries NO
+     // language dimension, so the RECORDED CHOICE governs the chrome
+     // (pre-449 the leaf forced "en" here and the toggle's swap died
+     // on the next navigation — the admin-panel bug). Steady state
+     // this equals the (app) layout's SSR value (a no-op setState);
+     // a legacy localStorage-only choice converges via the heal, and
+     // a divergent pair heals to the cookie's value. A fresh visitor
+     // (stored=null) records nothing — English is the documented
+     // default, and 450 adds no cookie noise for it.
+     const pref = stored ?? "en";
      setLangState(pref);
-     persistLangCookie(pref);
+     if (stored !== null) healLangStores(pref);
      return;
    }
-   // Class 3: public English tree — the URL says English, F-2-A
-   // verbatim (a saved Arabic preference NEVER flips a public URL).
-   setLangState("en");
- }, [pathname, setLangState]);
+
+   // PUBLIC surface — the URL's tree decides the RENDER language…
+   const urlLang: Lang = isArabicPath(pathname) ? "ar" : "en";
+
+   if (stored === null) {
+     // Class 3 — fresh visitor: F-2-A verbatim (the URL governs), plus
+     // the passive record of a FIRST Arabic-tree visit so the
+     // visitor→special-surface boundary keeps the reader's language.
+     if (urlLang === "ar") persistLangChoice("ar");
+     setLangState(urlLang);
+     return;
+   }
+
+   // Converge the stores to the resolved choice (write-free in
+   // steady state): a legacy localStorage-only choice gets its
+   // cookie backfilled here so the NEXT SSR/middleware read is
+   // correct, and a half-synced pair heals to the cookie's value.
+   healLangStores(stored);
+
+   // …but a choice-holder never STAYS in the wrong tree: replace to
+   // the structural mirror (replace, not push — no history entry for
+   // the wrong-tree URL; the back button returns to the content in
+   // the user's chosen language). No mirror (single-language content,
+   // e.g. an EN-only blog article): serve the URL's language — the
+   // page renders fully in it, no mixed chrome, no 404 bounce.
+   if (stored !== urlLang) {
+     const mirror = mirrorPath(pathname, stored);
+     if (mirror) {
+       const qs =
+         typeof window !== "undefined" && window.location.search
+           ? window.location.search
+           : "";
+       router.replace(qs && !mirror.includes("?") ? `${mirror}${qs}` : mirror);
+       return;
+     }
+   }
+   setLangState(urlLang);
+ }, [pathname, router, setLangState]);
 
  return null;
 }

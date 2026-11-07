@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import { mirrorPath, readStoredLang } from "@/lib/surface-locale";
 
 export type View =
  | "landing"
@@ -120,12 +121,22 @@ function viewForPath(pathname: string): View {
 /**
  * AR mirrors for the PUBLIC marketing views (access-point fix 2026-09-14).
  *
- * When the visitor is on an /ar/* URL, navigate() resolves these views to
- * their Arabic mirror instead of dropping them back on the EN path — the
- * header logo / «الرئيسية» button on /ar/memberships now lands on /ar,
- * and the FAQ-page «تواصل معنا» CTA lands on /ar/contact. Views without
- * an Arabic mirror (auth, checkout, dashboard, … — private or EN-only
- * surfaces) are untouched and keep their EN routes.
+ * When a CHOICE-LESS visitor is on an /ar/* URL, navigate() resolves these
+ * views to their Arabic mirror instead of dropping them back on the EN
+ * path — the header logo / «الرئيسية» button on /ar/memberships now lands
+ * on /ar, and the FAQ-page «تواصل معنا» CTA lands on /ar/contact. Views
+ * without an Arabic mirror (auth, checkout, dashboard, … — private or
+ * EN-only surfaces) are untouched and keep their EN routes.
+ *
+ * 450 UNIFIED CHOICE LAW: a visitor WITH a recorded choice no longer
+ * depends on this URL-based table at all — every PUBLIC view target is
+ * resolved through the CENTRAL structural map (mirrorPath in
+ * src/lib/surface-locale.ts) into the CHOSEN tree, from ANY surface
+ * (the logo → "/" from an Arabic admin session lands on /ar directly,
+ * no wrong-language page renders first — the boundary conflict the law
+ * outlaws, fixed once here for all 25 useNav consumers instead of per
+ * component). Special-surface targets carry no language dimension and
+ * pass through untouched.
  */
 const AR_VIEW_MIRRORS: Partial<Record<View, string>> = {
  landing: "/ar",
@@ -167,13 +178,22 @@ export function useNav() {
 
  const navigate = useCallback(
  (v: View, p: Record<string, string> = {}) => {
- // Access-point fix (2026-09-14): on an /ar/* URL, public views with
- // Arabic mirrors keep the visitor inside the Arabic tree. Only
- // parameter-less mirrors are remapped; anything with params (auth
- // modes, checkout tiers) keeps its EN path.
- const onAr = /^\/ar(\/|$)/.test(pathname || "/");
- const mirror = onAr && Object.keys(p).length === 0 ? AR_VIEW_MIRRORS[v] : undefined;
- router.push(mirror ?? pathForView(v, p));
+ const target = pathForView(v, p);
+ // 450 UNIFIED CHOICE LAW (src/lib/surface-locale.ts — report §12): a
+ // RECORDED choice governs the TREE of every public view target — the
+ // logo, the account buttons, the logout landing, every view navigation
+ // in the chrome. A choice-holder leaving a special surface (or any
+ // page) for a public view lands DIRECTLY in their chosen tree — no
+ // wrong-language render, no post-hydration replace. Choice-less
+ // visitors keep the 449 URL-based remap below (F-2-A verbatim: the
+ // URL governs when nobody has chosen).
+ const stored = readStoredLang();
+ const mirror = stored
+ ? mirrorPath(target, stored)
+ : /^\/ar(\/|$)/.test(pathname || "/") && Object.keys(p).length === 0
+ ? AR_VIEW_MIRRORS[v]
+ : undefined;
+ router.push(mirror ?? target);
  // NOTE: Do NOT call window.scrollTo here.
  // The smooth-scroll on every navigation was causing a jarring "scroll
  // to top before page change" effect. The browser's default behavior

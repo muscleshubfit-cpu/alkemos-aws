@@ -256,8 +256,13 @@ describe("F-2-A regression fix — internal links keep the visitor inside their 
     expect(src).not.toMatch(/href="\/memberships"/);
   });
 
-  it("LanguageToggle: the /guides/ subtree is in PREFIX_MIRROR — the toggle navigates to the EN mirror instead of leaving EN chrome under an /ar URL", () => {
+  it("LanguageToggle: the /guides/ subtree is in the CENTRAL prefix map — the toggle navigates to the EN mirror instead of leaving EN chrome under an /ar URL", () => {
+    // 450: the toggle resolves through the central structural map
+    // (mirrorPath) — the guarantee moved with it: the /guides/ prefix
+    // must live in PUBLIC_PREFIX_MIRRORS.
     const src = read(LANG_TOGGLE);
-    expect(src).toContain('"/guides/",');
+    expect(src).toContain("mirrorPath(pathname, nextLang)");
+    const law = read("../surface-locale.ts");
+    expect(law).toContain('"/guides/",');
   });
 });

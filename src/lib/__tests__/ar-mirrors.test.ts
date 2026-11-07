@@ -180,12 +180,19 @@ describe("AR mirror for /affiliate (§12.53 item 11 — Phase 208)", () => {
   });
 
   it("the language toggle carries the affiliate mirror route", () => {
-    const src = readFileSync(
+    // 450: the toggle resolves through the CENTRAL structural map
+    // (mirrorPath) — the affiliate pair must live in it.
+    const toggle = readFileSync(
       resolve(__dirname, "../../components/LanguageToggle.tsx"),
       "utf8",
     );
-    expect(src).toContain('{ en: "/affiliate", ar: "/ar/affiliate" }');
+    expect(toggle).toContain("mirrorPath(pathname, nextLang)");
+    const law = readFileSync(
+      resolve(__dirname, "../surface-locale.ts"),
+      "utf8",
+    );
+    expect(law).toContain('{ en: "/affiliate", ar: "/ar/affiliate" }');
     // The old “no mirror for /affiliate” claim must be gone from the docs.
-    expect(src).not.toContain("e.g. /affiliate");
+    expect(toggle).not.toContain("e.g. /affiliate");
   });
 });
