@@ -9,6 +9,7 @@ import {
   isSpecialSurface,
   normalizeLang,
   mirrorPath,
+  boundaryRefererRecord,
   LANG_COOKIE,
   LANG_STORAGE_KEY,
   LANG_COOKIE_MAX_AGE,
@@ -43,8 +44,8 @@ import {
  *      (filesystem walks: a new route without its classifier entry
  *      FAILS the suite — the guarantees can never silently drift).
  *   3. SOURCE PINS — the law is wired in all layers (the sync leaf,
- *      the setLang store writer, the dynamic (app) layout, the
- *      middleware RSC redirect) and the PUBLIC trees stay
+ *      the setLang store writer, the dynamic (app) layout, the 451
+ *      boundary recorder in the middleware) and the PUBLIC trees stay
  *      static/cookie-free (F-2-A byte-identical for choice-less
  *      visitors and crawlers).
  *
@@ -150,6 +151,68 @@ describe("450 predicates — the structural mirror map", () => {
     // Unknown / non-mirrored paths.
     expect(mirrorPath("/nonexistent-page", "ar")).toBeNull();
     expect(mirrorPath("/ar/nonexistent-page", "en")).toBeNull();
+  });
+});
+
+describe("451 predicates — the boundary recorder (the always-fresh server twin of the passive record)", () => {
+  const ORIGIN = "https://alkemos.com";
+
+  it("records ar at EVERY special-surface crossing from the Arabic tree — the owner's case-2 flow", () => {
+    for (const p of SPECIAL_LOCALE_PREFIXES) {
+      expect(boundaryRefererRecord(p, false, `${ORIGIN}/ar`, ORIGIN)).toBe("ar");
+      expect(boundaryRefererRecord(`${p}/deep/child`, false, `${ORIGIN}/ar`, ORIGIN)).toBe("ar");
+    }
+    // The exact reproduction surface (live-measured on production
+    // 2026-11-07: /dashboard with Referer /ar SSR'd en/ltr — §13.1).
+    expect(boundaryRefererRecord("/dashboard", false, `${ORIGIN}/ar`, ORIGIN)).toBe("ar");
+    expect(boundaryRefererRecord("/auth", false, `${ORIGIN}/ar`, ORIGIN)).toBe("ar");
+    expect(boundaryRefererRecord("/admin/dashboard", false, `${ORIGIN}/ar`, ORIGIN)).toBe("ar");
+    // Deep Arabic referers and referers carrying query strings.
+    expect(boundaryRefererRecord("/dashboard", false, `${ORIGIN}/ar/memberships?plan=pro`, ORIGIN)).toBe("ar");
+    expect(boundaryRefererRecord("/coach", false, `${ORIGIN}/ar/blog/some-post`, ORIGIN)).toBe("ar");
+  });
+
+  it("NEVER overrides a recorded choice — the ONE governor", () => {
+    expect(boundaryRefererRecord("/dashboard", true, `${ORIGIN}/ar`, ORIGIN)).toBeNull();
+    expect(boundaryRefererRecord("/auth", true, `${ORIGIN}/ar`, ORIGIN)).toBeNull();
+    // An explicit EN choice reading /ar then crossing keeps EN too.
+    expect(boundaryRefererRecord("/dashboard", true, `${ORIGIN}/ar`, ORIGIN)).toBeNull();
+  });
+
+  it("records NOTHING for public surfaces — the URL law (F-2-A) governs there, and the edge cache must never see Set-Cookie", () => {
+    expect(boundaryRefererRecord("/", false, `${ORIGIN}/ar`, ORIGIN)).toBeNull();
+    expect(boundaryRefererRecord("/memberships", false, `${ORIGIN}/ar`, ORIGIN)).toBeNull();
+    expect(boundaryRefererRecord("/ar", false, `${ORIGIN}/ar`, ORIGIN)).toBeNull();
+    expect(boundaryRefererRecord("/blog/some-post", false, `${ORIGIN}/ar`, ORIGIN)).toBeNull();
+    // Boundary discipline: /coaching and /coaches/* are PUBLIC.
+    expect(boundaryRefererRecord("/coaching", false, `${ORIGIN}/ar`, ORIGIN)).toBeNull();
+    expect(boundaryRefererRecord("/coaches/sara", false, `${ORIGIN}/ar`, ORIGIN)).toBeNull();
+  });
+
+  it("an EN-tree referer records nothing — English is the documented default (450 rationale)", () => {
+    expect(boundaryRefererRecord("/dashboard", false, `${ORIGIN}/`, ORIGIN)).toBeNull();
+    expect(boundaryRefererRecord("/dashboard", false, `${ORIGIN}/memberships`, ORIGIN)).toBeNull();
+    // /archive is NOT Arabic (the isArabicPath boundary).
+    expect(boundaryRefererRecord("/dashboard", false, `${ORIGIN}/archive`, ORIGIN)).toBeNull();
+  });
+
+  it("a missing, external, or malformed referer proves nothing — null, no guesswork", () => {
+    expect(boundaryRefererRecord("/dashboard", false, null, ORIGIN)).toBeNull();
+    expect(boundaryRefererRecord("/dashboard", false, undefined, ORIGIN)).toBeNull();
+    expect(boundaryRefererRecord("/dashboard", false, "", ORIGIN)).toBeNull();
+    // External Arabic pages linking to our auth are not OUR reader.
+    expect(boundaryRefererRecord("/auth", false, "https://external.example/ar", ORIGIN)).toBeNull();
+    expect(boundaryRefererRecord("/auth", false, "https://facebook.com/", ORIGIN)).toBeNull();
+    // Malformed referer strings.
+    expect(boundaryRefererRecord("/dashboard", false, "not-a-url", ORIGIN)).toBeNull();
+    expect(boundaryRefererRecord("/dashboard", false, "https://", ORIGIN)).toBeNull();
+  });
+
+  it("port-aware: a different-port referer is a different origin — null", () => {
+    // Local E2E runs on :3000 — the recorder must not accept a
+    // cross-origin referer even when the hostname matches.
+    expect(boundaryRefererRecord("/dashboard", false, "http://localhost:3000/ar", "https://alkemos.com")).toBeNull();
+    expect(boundaryRefererRecord("/dashboard", false, "http://localhost:3001/ar", "http://localhost:3000")).toBeNull();
   });
 });
 
@@ -300,21 +363,47 @@ describe("449+450 source pins — the law is wired in every layer", () => {
     }
   });
 
-  it("450: the middleware stays OUT of the language law — no mhe:lang knowledge, no new redirect surface", () => {
-    // 450 evaluated a middleware mirror-redirect and REJECTED it on
-    // measured evidence: Next 16's proxy layer strips the RSC flight
-    // markers (RSC header + _rsc param) from the middleware's view
-    // (server/web/adapter.js — "users only see page requests, never
-    // data requests"), so an RSC-only redirect is undetectable there
-    // without private APIs; and a full-page redirect would inherit the
-    // SEO-GEO-4 public Cache-Control from next.config headers() — an
-    // edge-cacheable 30xx on a public URL is an unacceptable crawler
-    // tail risk. The law therefore has exactly TWO enforcers (use-nav
-    // + the UrlLocaleSync net) and the middleware stays 449-clean.
+  it("451: the middleware is the law's ALWAYS-FRESH enforcer at the special-surface boundary — record, never redirect", () => {
+    // 450 rejected a middleware MIRROR-REDIRECT on measured evidence
+    // (Next 16's proxy strips the RSC flight markers; a redirect would
+    // inherit the edge-cacheable public Cache-Control) and the middleware
+    // stayed 449-clean. 451 (report §13) adds the BOUNDARY RECORDER — a
+    // different animal: no redirect anywhere, and the cookie write fires
+    // ONLY on the PRIVATE surfaces (never edge-cached), ONLY when no
+    // recorded choice exists, ONLY from a same-origin /ar referer. It is
+    // the always-fresh server twin of the 450 passive record — the CF
+    // edge serves public HTML up to 12h stale after every deploy, and
+    // the owner's case-2 failure (choose Arabic on the homepage → open
+    // the dashboard → English) was exactly a stale-generation public
+    // page whose toggle wrote no cookie meeting a fresh special surface
+    // whose SSR reads only the cookie.
     const src = read(MIDDLEWARE);
-    expect(src).not.toContain("mhe:lang");
+    // The REDIRECT surface stays rejected — 450's measured law.
     expect(src).not.toContain("mirrorPath");
-    expect(src).not.toContain("surface-locale");
+    expect(src).not.toMatch(/NextResponse\.redirect/);
+    // The pure decision is IMPORTED from the central classifier — the
+    // middleware must not re-implement it (single source).
+    expect(src).toContain('from "@/lib/surface-locale"');
+    expect(src).toContain("boundaryRefererRecord(");
+    // The choice-holder guard: the recorder never overrides a choice.
+    expect(src).toContain("request.cookies.has(LANG_COOKIE)");
+    // The REQUEST injection (before NextResponse.next — this render is
+    // correct from the first HTML: no flip).
+    expect(src).toContain("request.cookies.set(LANG_COOKIE, boundaryLang)");
+    // The RESPONSE persistence — applied on the main path AND
+    // re-applied inside the @supabase/ssr setAll callback (which
+    // REPLACES the response object mid-flight; without the re-apply a
+    // logged-in user's first crossing renders Arabic but never
+    // persists the record, and the next special-surface navigation —
+    // referer /dashboard, not /ar — flips back to English).
+    expect(src.match(/applyBoundaryCookie\(response\)/g)?.length).toBe(2);
+    expect(src).toContain("sameSite: \"lax\"");
+    expect(src).toContain("maxAge: LANG_COOKIE_MAX_AGE");
+    // The dead cookie stays dead (F-6) — pin the CODE, not the prose
+    // (the middleware's historical comments legitimately MENTION the
+    // removed write; only an actual write would match this pattern).
+    expect(src).not.toContain('cookies.set("mhe:locale"');
+    expect(src).not.toMatch(/mhe:locale',\s*desired/);
   });
 
   it("450: use-nav resolves every PUBLIC view target through the CENTRAL map by the recorded choice", () => {

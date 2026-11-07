@@ -284,9 +284,10 @@ const nextConfig: NextConfig = {
         //   - Browsers (origin-direct): max-age=0 + must-revalidate →
         //     revalidate every visit (identical freshness to no-store).
         //   - CDN edge: s-maxage=3600 + stale-while-revalidate=86400.
-        // Edge cacheability also requires NO Set-Cookie — the middleware
-        // writes `mhe:locale` only when it changes (SEO-GEO-4), so the
-        // vast majority of public responses are cacheable.
+        // Edge cacheability also requires NO Set-Cookie — the 451
+        // boundary recorder writes `mhe:lang` ONLY on the PRIVATE
+        // surfaces excluded below (never edge-cached), so every public
+        // response stays Set-Cookie-free and cacheable.
         // PRIVATE surfaces are EXCLUDED via the lookahead (api, admin,
         // auth, checkout, dashboard, questionnaires, progress, plans,
         // profile, support, referral, preview, coach — segment-exact

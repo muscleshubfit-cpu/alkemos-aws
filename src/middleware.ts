@@ -1,5 +1,10 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
+import {
+  boundaryRefererRecord,
+  LANG_COOKIE,
+  LANG_COOKIE_MAX_AGE,
+} from "@/lib/surface-locale";
 
 /**
  * Supabase session middleware.
@@ -106,11 +111,75 @@ export async function middleware(request: NextRequest) {
   // Content-Language header and the x-pathname header.
   const isArabic = isArabicPath(pathname);
 
+  // ──────────────────────────────────────────────────────────────────
+  // 451 UNIFIED CHOICE LAW — THE BOUNDARY RECORDER (owner order
+  // 2026-11-08, report §13: docs/AR-DISCOVERY-UI-SETTLE-AUDIT-
+  // 2026-11-07.md). The 450 client enforcers (setLang's cookie write,
+  // the passive first-/ar record, healLangStores) ship in the PUBLIC
+  // pages' JS chunks — which the Cloudflare edge keeps serving up to
+  // 12h STALE after every deploy (edge_ttl 43200 + SWR 86400,
+  // docs/CACHE-POLICY-AUDIT-2026-10-22.md). Live-reproduced on
+  // production after the 450 deploy: / and /ar served pre-449 chunks
+  // whose toggle writes ONLY localStorage, so the owner's exact
+  // case-2 flow (choose Arabic on the homepage → open the dashboard)
+  // hit a special surface whose SSR reads ONLY the cookie → an
+  // English dashboard — a post-hydration flip at best, PERSISTENT
+  // English when the /ar arrival recorded nothing at all.
+  //
+  // THIS is the always-fresh server twin of the 450 passive record:
+  // the special surfaces are force-dynamic + edge-cache-excluded, so
+  // this code is ALWAYS the current deploy. At the one boundary the
+  // stale client code cannot cover — a request INTO a special surface
+  // — the recorder derives the READING language from the navigation
+  // itself (a same-origin Referer inside the Arabic tree) when NO
+  // recorded choice exists anywhere, and lands it in BOTH directions:
+  //   · the REQUEST cookies (mutated before NextResponse.next — the
+  //     (app) layout's cookies() read renders the RIGHT lang/dir from
+  //     the first HTML of THIS request: no flip, no wrong paint);
+  //   · the RESPONSE Set-Cookie (private surfaces only — never
+  //     edge-cached, so the F-2-A public byte-identity and the
+  //     CACHE-POLICY law are untouched; crawlers never see it on
+  //     public URLs because public paths never enter this branch).
+  // A choice-holder is NEVER touched (the ONE governor), an EN-tree
+  // referer records NOTHING (English is the documented default — the
+  // 450 rationale), and NO redirect is ever issued (the 450-measured
+  // rejection stands: Next 16's proxy strips the RSC flight markers
+  // and a redirect would inherit the edge-cacheable public
+  // Cache-Control). Pure decision: boundaryRefererRecord — unit-
+  // tested; this wiring is source-pinned by the 451 canary.
+  // ──────────────────────────────────────────────────────────────────
+  const boundaryLang = boundaryRefererRecord(
+    pathname,
+    request.cookies.has(LANG_COOKIE),
+    request.headers.get("referer"),
+    request.nextUrl.origin,
+  );
+  if (boundaryLang) {
+    request.cookies.set(LANG_COOKIE, boundaryLang);
+  }
+  /** Re-apply the boundary record's Set-Cookie — must be called on
+   * EVERY response object that can be returned (the @supabase/ssr
+   * setAll callback REPLACES the response mid-flight; without the
+   * re-apply a logged-in user's first crossing would render Arabic
+   * but never persist the record, and the NEXT special-surface
+   * navigation — referer /dashboard, not /ar — would flip back).
+   * Cookie attributes mirror persistLangCookie exactly (the ONE
+   * writer's contract): path=/ · max-age=1y · samesite=lax. */
+  const applyBoundaryCookie = (res: NextResponse) => {
+    if (!boundaryLang) return;
+    res.cookies.set(LANG_COOKIE, boundaryLang, {
+      path: "/",
+      maxAge: LANG_COOKIE_MAX_AGE,
+      sameSite: "lax",
+    });
+  };
+
   let response = NextResponse.next({
     request: {
       headers: request.headers,
     },
   });
+  applyBoundaryCookie(response);
 
   // Content-Language header — additional crawler signal (kept from
   // original implementation, now always set even in demo mode).
@@ -174,8 +243,12 @@ export async function middleware(request: NextRequest) {
         // losing them). F-6 (AR-DISCOVERY-UI-SETTLE-AUDIT-2026-11-07):
         // the mhe:locale cookie re-write that used to live here was
         // removed with the main-path write — same dead-cookie law.
+        // 451: the boundary record's Set-Cookie is re-applied here too
+        // (see applyBoundaryCookie — the response object replacement
+        // would otherwise silently drop it for logged-in crossings).
         response.headers.set("Content-Language", isArabicPath(pathname) ? "ar-EG" : "en-US");
         response.headers.set("x-pathname", pathname);
+        applyBoundaryCookie(response);
         cookiesToSet.forEach(({ name, value, options }) =>
           response.cookies.set(name, value, options),
         );

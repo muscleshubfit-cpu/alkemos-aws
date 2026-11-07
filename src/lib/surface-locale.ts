@@ -4,7 +4,12 @@
  * · UNIFIED CHOICE LAW — phase 450 (owner order 2026-11-08 «حلاً موحداً
  * وشاملاً لإدارة لغة الموقع… القاعدة الوحيدة: عندما يختار المستخدم
  * العربية، يظل الموقع بالكامل بالعربية أثناء التنقل بين جميع الصفحات»;
- * governing report §12, same file).
+ * governing report §12, same file)
+ * · BOUNDARY RECORDER — phase 451 (owner order 2026-11-08, report §13:
+ * the always-fresh SERVER twin of the 450 passive record — the CF edge
+ * serves public HTML up to 12h stale after every deploy, so the public
+ * pages' client enforcers can be a whole generation behind; the special
+ * surfaces' boundary recorder keeps the choice handoff generation-proof).
  *
  * THE CENTRAL CLASSIFIER for "which source governs the UI language on
  * this URL" — the single guarantee that was MISSING when the admin
@@ -69,9 +74,13 @@
  * cookie is new in 449 and is the server-readable governor). NOTE: this
  * is a DIFFERENT cookie than the dead `mhe:locale` one F-6 removed in
  * phase 446 — that one had zero readers; this one has exactly two
- * server readers (the (app) root layout SSR + the 450 middleware
- * mirror redirect, both READ-only) and one client writer
- * (persistLangChoice — setLang / the backfill / the passive record).
+ * server readers (the (app) root layout SSR + the 451 middleware
+ * boundary recorder, both serving special surfaces only) and two
+ * writers (persistLangChoice — setLang / the backfill / the passive
+ * record, all CLIENT-side; and the 451 middleware boundary recorder —
+ * the SERVER-side writer, which fires ONLY at a special-surface
+ * crossing with no recorded choice and a same-origin /ar referer, and
+ * never overrides an existing choice).
  */
 export const LANG_STORAGE_KEY = "mhe:lang";
 export const LANG_COOKIE = "mhe:lang";
@@ -365,4 +374,59 @@ export function mirrorPath(pathname: string, target: "ar" | "en"): string | null
   if (PUBLIC_INDEX_MIRRORS.some((m) => m.en === pathname)) return `/ar${pathname === "/" ? "" : pathname}`;
   if (PUBLIC_PREFIX_MIRRORS.some((p) => pathname.startsWith(p))) return `/ar${pathname}`;
   return null;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+ * 451 — THE BOUNDARY RECORDER decision (pure).
+ *
+ * THE MEASURED GAP (live-reproduced on production 2026-11-07, report
+ * §13): the 450 client enforcers (setLang's cookie write · the passive
+ * first-/ar record · healLangStores) live in the PUBLIC pages' JS
+ * chunks — and the CF edge serves public HTML for edge_ttl=43200
+ * (12h) + SWR 86400, so for up to half a day after EVERY deploy the
+ * public pages run the PREVIOUS generation's JS. Measured live after
+ * the 450 deploy: / and /ar served pre-449 chunks whose setLang
+ * writes ONLY localStorage — so the owner's exact case-2 flow (choose
+ * Arabic on the homepage → open the dashboard) hit a special surface
+ * whose SSR reads ONLY the cookie → an English dashboard: a visible
+ * post-hydration flip at best (localStorage had the value), PERSISTENT
+ * English at worst (a /ar arrival by URL records nothing in the old
+ * JS — the passive record is a 450 feature the stale chunk lacks).
+ *
+ * THE LAW'S SERVER TWIN: the special surfaces are force-dynamic and
+ * edge-cache-excluded, so their server code is ALWAYS the current
+ * deploy. This pure decision answers, at the one boundary the stale
+ * client code cannot cover — a request INTO a special surface — the
+ * same question the 450 passive record answers on /ar: "is this
+ * reader demonstrably reading Arabic, with no recorded choice?" The
+ * evidence is the navigation itself: a same-origin Referer inside the
+ * Arabic tree. Returns "ar" (record it) or null (nothing to record:
+ * a choice-holder is never touched — the ONE governor; an EN-tree
+ * referer records nothing — English is the documented default, the
+ * same 450 rationale; public surfaces are not this recorder's
+ * business; a missing/external/malformed referer proves nothing).
+ *
+ * Consumers: the middleware (src/middleware.ts) — the ONLY always-
+ * fresh execution point. NO redirect is ever issued (the 450-rejected
+ * surface stays rejected: RSC-marker stripping + Cache-Control
+ * inheritance); the record rides the REQUEST cookies (this render is
+ * correct from the first HTML — no flip) and the RESPONSE Set-Cookie
+ * (private surfaces only — never edge-cached, never public noise).
+ */
+export function boundaryRefererRecord(
+  pathname: string,
+  hasChoice: boolean,
+  referer: string | null | undefined,
+  origin: string,
+): "ar" | null {
+  if (hasChoice) return null; // the recorded choice governs — never overridden
+  if (!isSpecialSurface(pathname)) return null; // public surfaces stay URL-law (F-2-A)
+  if (!referer) return null; // direct load / privacy strip — nothing proven
+  try {
+    const u = new URL(referer);
+    if (u.origin !== origin) return null; // external referer — not OUR Arabic tree
+    return isArabicPath(u.pathname) ? "ar" : null;
+  } catch {
+    return null; // malformed referer — prove nothing, change nothing
+  }
 }

@@ -156,4 +156,43 @@ ls -1dt "$APP_ROOT"/releases/*/ 2>/dev/null | tail -n +"$((KEEP_RELEASES + 1))" 
   rm -rf "$r"
 done
 
+# ---------------------------------- 7) CF edge purge — the two entry roots
+# 451 UNIFIED CHOICE LAW (report §13: docs/AR-DISCOVERY-UI-SETTLE-AUDIT-
+# 2026-11-07.md): the CF zone serves public HTML from the edge for
+# edge_ttl=43200 (12h — the Fluid CPU guard, CACHE-POLICY-AUDIT
+# 2026-10-22) + SWR 86400, so a deploy's new PUBLIC client chunks only
+# reach browsers as the per-URL cache entries roll over — measured live
+# after the 450 deploy: / and /ar kept serving pre-449 chunks (whose
+# language toggle writes NO cookie) for hours, which is exactly the
+# stale generation the boundary recorder now guards. The recorder makes
+# every boundary generation-proof, but the two ENTRY ROOTS — where the
+# language toggle and the passive record actually run — are purged on
+# every VERIFIED deploy so the current client law goes live there
+# immediately instead of after the 12h window. TARGETED by design (2
+# URLs): a full purge would dump the whole cached public corpus onto
+# the origin — the CPU-overage pattern the 43200s TTL exists to guard.
+# Fail-soft by contract (same law as src/lib/edge-purge.ts): a failed
+# or unconfigured purge NEVER fails the deploy — the edge self-heals
+# within its TTL and the boundary recorder covers the window.
+purge_entry_roots() {
+  local zid tok out
+  zid="$(grep -m1 '^CLOUDFLARE_ZONE_ID=' "$ENV_FILE" 2>/dev/null | cut -d= -f2- || true)"
+  tok="$(grep -m1 '^CLOUDFLARE_PURGE_TOKEN=' "$ENV_FILE" 2>/dev/null | cut -d= -f2- || true)"
+  if [ -z "$zid" ] || [ -z "$tok" ]; then
+    log "CF purge: SKIP (CLOUDFLARE_ZONE_ID/CLOUDFLARE_PURGE_TOKEN not in shared env — edge keeps the old entry roots until TTL; the 451 boundary recorder covers the window)"
+    return 0
+  fi
+  if out="$(curl -fsS -m 10 -X POST \
+      "https://api.cloudflare.com/client/v4/zones/${zid}/purge_cache" \
+      -H "Authorization: Bearer ${tok}" \
+      -H "Content-Type: application/json" \
+      -d '{"files":["https://alkemos.com/","https://alkemos.com/ar"]}' 2>&1)"; then
+    log "CF purge: entry roots / and /ar purged (fresh client law on the next hit)"
+  else
+    log "CF purge: FAIL-SOFT (${out}) — deploy stays verified; edge self-heals within TTL"
+  fi
+  return 0
+}
+purge_entry_roots
+
 log "DONE — release $SHA is live"

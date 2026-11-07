@@ -15357,3 +15357,20 @@ Stage Summary:
 - **المرحلة 440 منفذة (فريم مراجعة):** الدفعة 16 بسجل docs/seo-growth-audit-2026-11-05/08-implementation-log.md
 - Push status: pushed — الإثبات بسجل التنفيذ (CI أخضر · build-info يخدمه · الإصلاحات حية بالأصل)
 ---
+
+<!-- rotated 2026-11-07 by scripts/worklog_rotate.py (Phase 288, ARCH-REMEDIATION): 1 entries moved verbatim from worklog.md -->
+---
+Task ID: EXERCISES-REVIEW-441-2026-11-06
+Agent: Main (Z.ai)
+Task: أمر المالك (الأولوية 4): مراجعة جودة المحتوى والبيانات الموجودة فقط وتصحيح الأخطاء — بلا دفعة توسع.
+
+Work Log:
+- **التدقيق (868):** الأسماء AR/EN · أسر 432 كلها · التكرارات · سلامة التعليمات/العضلات — كلها نظيفة إلا عيبًا واحدًا مثبتًا
+- **الإصلاحات الثلاثة:** سيرة المؤسس (لحام وACE/وISSA/وNASM → مفصولة بمسافات) · coaching-faq (وEVO → و EVO) · exercises (مفتتتين → منقسمتين بتوثيق التوأم EN «split»)
+- **البوابنة:** check_glued_latin.py كان بلا باب (العيوب ظهرت حية لأن لا شيء يشغله) — الآن خطوة دائمة بـguard-stale-refs يفشل البناء عند أي إصابة
+- **البطارية:** tsc 0 · eslint 0 · vitest 5,624/5,624 · build 2,248 · الماسح 0/23 · صفر مسارات جديدة (لا توسع بأمر الجلسة)
+
+Stage Summary:
+- **المرحلة 441 منفذة ومختبرة:** الدفعة 17 بسجل docs/seo-growth-audit-2026-11-05/08-implementation-log.md
+- Push status: pushed — الإثبات بسجل التنفيذ (CI أخضر · build-info يخدمه · الإصلاحات حية بالأصل)
+---

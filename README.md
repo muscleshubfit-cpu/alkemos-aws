@@ -201,10 +201,24 @@ alkemos/
   wrong-tree public URL — edge-cache HIT, external link — is replaced to
   its mirror; a first `/ar` visit is passively recorded so a first-time
   Arabic reader gets an Arabic `/auth`). Choice-less visitors and
-  crawlers keep the 447 URL law byte-identical (the cookie is
-  client-written only — zero server Set-Cookie, public cache untouched);
-  single-language content (blog articles without a linked twin) serves
-  in its own language, both directions
+  crawlers keep the 447 URL law byte-identical (zero redirects, public
+  cache untouched); single-language content (blog articles without a
+  linked twin) serves in its own language, both directions
+- **Boundary Recorder (phase 451 — the choice handoff is
+  generation-proof):** the 450 client enforcers ship in the PUBLIC
+  pages' JS chunks, which the Cloudflare edge can serve up to 12h stale
+  after a deploy — so a language choice made on a public page during
+  that window never reached the cookie and the account surfaces (whose
+  SSR reads only the cookie) rendered English first. The always-fresh
+  server twin now lives in the middleware: a crossing INTO a special
+  surface with NO recorded choice derives the reading language from a
+  same-origin `/ar` referer, injects it into the request cookies (the
+  (app) layout renders the right lang/dir from the FIRST HTML — zero
+  flip) and persists it via Set-Cookie (private surfaces only — public
+  responses stay Set-Cookie-free); a recorded choice is never
+  overridden, no redirect is ever issued, and every verified deploy
+  purges the CF edge for the two entry roots (`/` + `/ar`) so the
+  current client law goes live immediately
 
 ### Data layer
 - Supabase Postgres with **Row Level Security on every auto-applied table**
