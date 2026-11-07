@@ -155,64 +155,78 @@ describe("450 predicates — the structural mirror map", () => {
 });
 
 describe("451 predicates — the boundary recorder (the always-fresh server twin of the passive record)", () => {
-  const ORIGIN = "https://alkemos.com";
+  const HOST = "alkemos.com";
 
   it("records ar at EVERY special-surface crossing from the Arabic tree — the owner's case-2 flow", () => {
     for (const p of SPECIAL_LOCALE_PREFIXES) {
-      expect(boundaryRefererRecord(p, false, `${ORIGIN}/ar`, ORIGIN)).toBe("ar");
-      expect(boundaryRefererRecord(`${p}/deep/child`, false, `${ORIGIN}/ar`, ORIGIN)).toBe("ar");
+      expect(boundaryRefererRecord(p, false, `https://${HOST}/ar`, HOST)).toBe("ar");
+      expect(boundaryRefererRecord(`${p}/deep/child`, false, `https://${HOST}/ar`, HOST)).toBe("ar");
     }
     // The exact reproduction surface (live-measured on production
     // 2026-11-07: /dashboard with Referer /ar SSR'd en/ltr — §13.1).
-    expect(boundaryRefererRecord("/dashboard", false, `${ORIGIN}/ar`, ORIGIN)).toBe("ar");
-    expect(boundaryRefererRecord("/auth", false, `${ORIGIN}/ar`, ORIGIN)).toBe("ar");
-    expect(boundaryRefererRecord("/admin/dashboard", false, `${ORIGIN}/ar`, ORIGIN)).toBe("ar");
+    expect(boundaryRefererRecord("/dashboard", false, `https://${HOST}/ar`, HOST)).toBe("ar");
+    expect(boundaryRefererRecord("/auth", false, `https://${HOST}/ar`, HOST)).toBe("ar");
+    expect(boundaryRefererRecord("/admin/dashboard", false, `https://${HOST}/ar`, HOST)).toBe("ar");
     // Deep Arabic referers and referers carrying query strings.
-    expect(boundaryRefererRecord("/dashboard", false, `${ORIGIN}/ar/memberships?plan=pro`, ORIGIN)).toBe("ar");
-    expect(boundaryRefererRecord("/coach", false, `${ORIGIN}/ar/blog/some-post`, ORIGIN)).toBe("ar");
+    expect(boundaryRefererRecord("/dashboard", false, `https://${HOST}/ar/memberships?plan=pro`, HOST)).toBe("ar");
+    expect(boundaryRefererRecord("/coach", false, `https://${HOST}/ar/blog/some-post`, HOST)).toBe("ar");
+    // §13.5 (live-measured behind the CF→Caddy→Next chain): the client
+    // speaks https to the edge while the origin socket is plain http —
+    // the SCHEME is not part of the site's identity; the host is.
+    expect(boundaryRefererRecord("/dashboard", false, `http://${HOST}/ar`, HOST)).toBe("ar");
+    // A proxy comma-chain: the FIRST entry is the client-addressed host.
+    expect(boundaryRefererRecord("/dashboard", false, `https://${HOST}/ar`, `${HOST}, 10.0.0.5:3000`)).toBe("ar");
+    // Host comparison is case-insensitive (DNS law).
+    expect(boundaryRefererRecord("/dashboard", false, `https://${HOST.toUpperCase()}/ar`, HOST)).toBe("ar");
   });
 
   it("NEVER overrides a recorded choice — the ONE governor", () => {
-    expect(boundaryRefererRecord("/dashboard", true, `${ORIGIN}/ar`, ORIGIN)).toBeNull();
-    expect(boundaryRefererRecord("/auth", true, `${ORIGIN}/ar`, ORIGIN)).toBeNull();
+    expect(boundaryRefererRecord("/dashboard", true, `https://${HOST}/ar`, HOST)).toBeNull();
+    expect(boundaryRefererRecord("/auth", true, `https://${HOST}/ar`, HOST)).toBeNull();
     // An explicit EN choice reading /ar then crossing keeps EN too.
-    expect(boundaryRefererRecord("/dashboard", true, `${ORIGIN}/ar`, ORIGIN)).toBeNull();
+    expect(boundaryRefererRecord("/dashboard", true, `https://${HOST}/ar`, HOST)).toBeNull();
   });
 
   it("records NOTHING for public surfaces — the URL law (F-2-A) governs there, and the edge cache must never see Set-Cookie", () => {
-    expect(boundaryRefererRecord("/", false, `${ORIGIN}/ar`, ORIGIN)).toBeNull();
-    expect(boundaryRefererRecord("/memberships", false, `${ORIGIN}/ar`, ORIGIN)).toBeNull();
-    expect(boundaryRefererRecord("/ar", false, `${ORIGIN}/ar`, ORIGIN)).toBeNull();
-    expect(boundaryRefererRecord("/blog/some-post", false, `${ORIGIN}/ar`, ORIGIN)).toBeNull();
+    expect(boundaryRefererRecord("/", false, `https://${HOST}/ar`, HOST)).toBeNull();
+    expect(boundaryRefererRecord("/memberships", false, `https://${HOST}/ar`, HOST)).toBeNull();
+    expect(boundaryRefererRecord("/ar", false, `https://${HOST}/ar`, HOST)).toBeNull();
+    expect(boundaryRefererRecord("/blog/some-post", false, `https://${HOST}/ar`, HOST)).toBeNull();
     // Boundary discipline: /coaching and /coaches/* are PUBLIC.
-    expect(boundaryRefererRecord("/coaching", false, `${ORIGIN}/ar`, ORIGIN)).toBeNull();
-    expect(boundaryRefererRecord("/coaches/sara", false, `${ORIGIN}/ar`, ORIGIN)).toBeNull();
+    expect(boundaryRefererRecord("/coaching", false, `https://${HOST}/ar`, HOST)).toBeNull();
+    expect(boundaryRefererRecord("/coaches/sara", false, `https://${HOST}/ar`, HOST)).toBeNull();
   });
 
   it("an EN-tree referer records nothing — English is the documented default (450 rationale)", () => {
-    expect(boundaryRefererRecord("/dashboard", false, `${ORIGIN}/`, ORIGIN)).toBeNull();
-    expect(boundaryRefererRecord("/dashboard", false, `${ORIGIN}/memberships`, ORIGIN)).toBeNull();
+    expect(boundaryRefererRecord("/dashboard", false, `https://${HOST}/`, HOST)).toBeNull();
+    expect(boundaryRefererRecord("/dashboard", false, `https://${HOST}/memberships`, HOST)).toBeNull();
     // /archive is NOT Arabic (the isArabicPath boundary).
-    expect(boundaryRefererRecord("/dashboard", false, `${ORIGIN}/archive`, ORIGIN)).toBeNull();
+    expect(boundaryRefererRecord("/dashboard", false, `https://${HOST}/archive`, HOST)).toBeNull();
   });
 
   it("a missing, external, or malformed referer proves nothing — null, no guesswork", () => {
-    expect(boundaryRefererRecord("/dashboard", false, null, ORIGIN)).toBeNull();
-    expect(boundaryRefererRecord("/dashboard", false, undefined, ORIGIN)).toBeNull();
-    expect(boundaryRefererRecord("/dashboard", false, "", ORIGIN)).toBeNull();
-    // External Arabic pages linking to our auth are not OUR reader.
-    expect(boundaryRefererRecord("/auth", false, "https://external.example/ar", ORIGIN)).toBeNull();
-    expect(boundaryRefererRecord("/auth", false, "https://facebook.com/", ORIGIN)).toBeNull();
+    expect(boundaryRefererRecord("/dashboard", false, null, HOST)).toBeNull();
+    expect(boundaryRefererRecord("/dashboard", false, undefined, HOST)).toBeNull();
+    expect(boundaryRefererRecord("/dashboard", false, "", HOST)).toBeNull();
+    // A missing requestHost proves nothing either (defense in depth).
+    expect(boundaryRefererRecord("/dashboard", false, `https://${HOST}/ar`, null)).toBeNull();
+    // External pages linking to our auth are not OUR reader.
+    expect(boundaryRefererRecord("/auth", false, "https://external.example/ar", HOST)).toBeNull();
+    expect(boundaryRefererRecord("/auth", false, "https://facebook.com/", HOST)).toBeNull();
+    // The suffix attack: alkemos.com.evil.com is NOT alkemos.com.
+    expect(boundaryRefererRecord("/dashboard", false, `https://${HOST}.evil.com/ar`, HOST)).toBeNull();
     // Malformed referer strings.
-    expect(boundaryRefererRecord("/dashboard", false, "not-a-url", ORIGIN)).toBeNull();
-    expect(boundaryRefererRecord("/dashboard", false, "https://", ORIGIN)).toBeNull();
+    expect(boundaryRefererRecord("/dashboard", false, "not-a-url", HOST)).toBeNull();
+    expect(boundaryRefererRecord("/dashboard", false, "https://", HOST)).toBeNull();
   });
 
-  it("port-aware: a different-port referer is a different origin — null", () => {
-    // Local E2E runs on :3000 — the recorder must not accept a
-    // cross-origin referer even when the hostname matches.
-    expect(boundaryRefererRecord("/dashboard", false, "http://localhost:3000/ar", "https://alkemos.com")).toBeNull();
-    expect(boundaryRefererRecord("/dashboard", false, "http://localhost:3001/ar", "http://localhost:3000")).toBeNull();
+  it("port discipline: a different-port referer host is a different site", () => {
+    // Local E2E runs on :3100 — a referer from another port must not
+    // match (strict host equality, port included when non-default).
+    expect(boundaryRefererRecord("/dashboard", false, "http://localhost:3000/ar", "localhost:3100")).toBeNull();
+    expect(boundaryRefererRecord("/dashboard", false, "http://localhost:3001/ar", "localhost:3000")).toBeNull();
+    // The default port is dropped by URL parsing — matches the bare host.
+    expect(boundaryRefererRecord("/dashboard", false, "https://alkemos.com:443/ar", HOST)).toBe("ar");
   });
 });
 
@@ -385,6 +399,11 @@ describe("449+450 source pins — the law is wired in every layer", () => {
     // middleware must not re-implement it (single source).
     expect(src).toContain('from "@/lib/surface-locale"');
     expect(src).toContain("boundaryRefererRecord(");
+    // §13.5 (live-measured): request.nextUrl.origin is a frankenstein
+    // behind the CF→Caddy→Next chain (x-forwarded-proto + the upstream
+    // SOCKET host) — the same-site reference is the FORWARDED HOST.
+    expect(src).toContain('request.headers.get("x-forwarded-host") ?? request.headers.get("host")');
+    expect(src).not.toContain("request.nextUrl.origin");
     // The choice-holder guard: the recorder never overrides a choice.
     expect(src).toContain("request.cookies.has(LANG_COOKIE)");
     // The REQUEST injection (before NextResponse.next — this render is

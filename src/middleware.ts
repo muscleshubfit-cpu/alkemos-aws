@@ -152,7 +152,14 @@ export async function middleware(request: NextRequest) {
     pathname,
     request.cookies.has(LANG_COOKIE),
     request.headers.get("referer"),
-    request.nextUrl.origin,
+    // SAME-SITE REFERENCE (§13.5, live-measured behind the production
+    // chain CF→Caddy→Next): the request URL's origin value resolves to
+    // a frankenstein there (x-forwarded-proto + the UPSTREAM SOCKET
+    // host — "https://127.0.0.1:3000"), matching neither the public
+    // origin nor the referer. The request's FORWARDED HOST is the
+    // client-addressed identity: Caddy sets it from the original Host
+    // and Next defaults it to the Host header when no proxy set it.
+    request.headers.get("x-forwarded-host") ?? request.headers.get("host"),
   );
   if (boundaryLang) {
     request.cookies.set(LANG_COOKIE, boundaryLang);

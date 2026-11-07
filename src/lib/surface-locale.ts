@@ -399,12 +399,28 @@ export function mirrorPath(pathname: string, target: "ar" | "en"): string | null
  * client code cannot cover — a request INTO a special surface — the
  * same question the 450 passive record answers on /ar: "is this
  * reader demonstrably reading Arabic, with no recorded choice?" The
- * evidence is the navigation itself: a same-origin Referer inside the
+ * evidence is the navigation itself: a same-site Referer inside the
  * Arabic tree. Returns "ar" (record it) or null (nothing to record:
  * a choice-holder is never touched — the ONE governor; an EN-tree
  * referer records nothing — English is the documented default, the
  * same 450 rationale; public surfaces are not this recorder's
  * business; a missing/external/malformed referer proves nothing).
+ *
+ * SAME-SITE IS HOST-BASED (measured, §13.5): the deployed chain is
+ * browser → Cloudflare → Caddy → Next on :3000, and behind that chain
+ * `request.nextUrl.origin` resolves to a FRANKENSTEIN value — the
+ * x-forwarded-proto (https) stapled onto the UPSTREAM SOCKET host
+ * (live-measured: "https://localhost:3100" behind a Caddy-shaped
+ * proxy, i.e. "https://127.0.0.1:3000" in production) — matching
+ * neither the public origin nor the socket. The referer's HOST is
+ * therefore compared against the request's FORWARDED HOST
+ * (x-forwarded-host — set by Caddy from the client's original Host,
+ * defaulted by Next to the Host header when no proxy set it; a comma
+ * chain's first entry is the client-addressed host). The scheme is
+ * deliberately NOT compared: the client speaks https to the edge
+ * while the origin socket is plain http — the HOST is the site's
+ * identity, and a port mismatch (or a suffix attack like
+ * alkemos.com.evil.com) still fails the strict host equality.
  *
  * Consumers: the middleware (src/middleware.ts) — the ONLY always-
  * fresh execution point. NO redirect is ever issued (the 450-rejected
@@ -417,15 +433,20 @@ export function boundaryRefererRecord(
   pathname: string,
   hasChoice: boolean,
   referer: string | null | undefined,
-  origin: string,
+  requestHost: string | null | undefined,
 ): "ar" | null {
   if (hasChoice) return null; // the recorded choice governs — never overridden
   if (!isSpecialSurface(pathname)) return null; // public surfaces stay URL-law (F-2-A)
-  if (!referer) return null; // direct load / privacy strip — nothing proven
+  if (!referer || !requestHost) return null; // nothing proven, nothing recorded
   try {
     const u = new URL(referer);
-    if (u.origin !== origin) return null; // external referer — not OUR Arabic tree
-    return isArabicPath(u.pathname) ? "ar" : null;
+    // A proxy chain may comma-append hosts — the FIRST entry is the
+    // host the client addressed (Caddy overwrites the header with the
+    // original Host; Next defaults it from Host when no proxy set it).
+    const host = requestHost.split(",")[0].trim().toLowerCase();
+    return u.host.toLowerCase() === host && isArabicPath(u.pathname)
+      ? "ar"
+      : null;
   } catch {
     return null; // malformed referer — prove nothing, change nothing
   }
