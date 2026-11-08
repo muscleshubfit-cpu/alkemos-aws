@@ -191,3 +191,9 @@ scripts/repro/repro-fixtures/
 !/scripts/db/
 !/scripts/db/*
 scripts/db/__pycache__/
+#   scripts/precompress-static.mjs → build-time brotli+gzip sidecars for the
+#   /_next/static family (PERF-VERCEL-UNIFIED-EXECUTION-2026-11-08 P1-4,
+#   owner order 2026-11-08 — runs in deploy-aws.yml right after `next build`;
+#   hit the same /scripts/* blanket trap as db/ — first deploy of phase 452
+#   failed on MODULE_NOT_FOUND, exception added the same frame).
+!/scripts/precompress-static.mjs
