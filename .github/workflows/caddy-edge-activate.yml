@@ -1,0 +1,279 @@
+name: Caddy edge activation (alkemos)
+
+# =====================================================================
+# Automated §5 of docs/PERF-VERCEL-UNIFIED-EXECUTION-2026-11-08.md —
+# the single owner step that report left manual ("owner manual step
+# §5: install deploy/Caddyfile to /etc/caddy + reload").
+#
+# WHY THIS WORKFLOW EXISTS (owner precedent, law of 0105 /
+# LOCAL-PAYMENT-EGP-PRICES-2026-11-05.md): the owner ordered
+# «تصحيح نهائي: لا تتركني أمام خطوة يدوية تتطلب الدخول إلى الخادم» —
+# that order created exchange-rate-daily.yml; this workflow applies the
+# same principle to the LAST remaining manual server step in the repo:
+# whenever deploy/Caddyfile changes on main, the file shipped in the
+# release tarball is NOT installed to /etc/caddy (deploy.sh never
+# touches caddy — hosting-migration law), so the edge config lags the
+# repo until someone SSHes in. Batch 452 (P0-ب CSP entry removal +
+# P1-4 precompressed Brotli) is the first Caddyfile change since the
+# 2026-10-10 cutover — it shipped INERT until this activation.
+#
+# WHAT IT DOES (the §5 runbook VERBATIM, plus safety gates):
+#   1. sha256 gate — /srv/alkemos/current/deploy/Caddyfile (the live
+#      release) must be byte-identical to deploy/Caddyfile at the
+#      dispatch SHA → can never activate config from an undeployed or
+#      rolled-back release.
+#   2. `sudo caddy validate` BEFORE any change → a broken file aborts
+#      with zero impact.
+#   3. Idempotence — if /etc/caddy/Caddyfile already matches, it is a
+#      clean no-op (no backup, no reload).
+#   4. Timestamped backup of the previous /etc/caddy/Caddyfile.
+#   5. `sudo install -m 0644` + `sudo systemctl reload caddy` +
+#      `systemctl is-active` (a failed reload keeps the old config
+#      serving — caddy keeps the last good config on error).
+#   6. Post-activation verification DIRECT TO ORIGIN (--resolve →
+#      Caddy :443, bypasses Cloudflare cache so it measures the change
+#      itself): mainstream-browser Accept-Encoding → `content-encoding:
+#      br` for /_next/static (was gzip), gzip-only clients still get
+#      gzip, `Vary: Accept-Encoding` present, CSP-Report-Only free of
+#      va.vercel-scripts.com, bilingual smoke 200s.
+#
+# ROLLBACK (documented §5 of the governing report):
+#   sudo cp /etc/caddy/Caddyfile.backup-<timestamp> /etc/caddy/Caddyfile \
+#     && sudo systemctl reload caddy
+#
+# AUTH — dual path, no manual SSH anywhere:
+#   Path A: the CI deploy user (secrets AWS_DEPLOY_*) IF it has
+#           passwordless sudo (probe first — cheap, needs nothing new).
+#   Path B: Lightsail temporary SSH keys (AWS API
+#           GetInstanceAccessDetails) as the sudo-capable `ubuntu`
+#           user. Keys live only in runner memory/files for seconds,
+#           never in logs. Needs repo secrets
+#           AWS_LIGHTSAIL_ACCESS_KEY_ID / AWS_LIGHTSAIL_SECRET_ACCESS_KEY
+#           (IAM user with lightsail:GetInstanceAccessDetails +
+#           lightsail:GetInstances read access — least privilege note:
+#           a dedicated read-only IAM user is recommended long-term).
+#   Both paths run the SAME fixed §5 script (stage-remote step) — the
+#   workflow takes no free-form remote input (dry_run boolean only).
+#
+# Like every workflow here: workflow_dispatch ONLY — never fires on a
+# push or schedule. Zero GITHUB_TOKEN scopes beyond checkout read.
+# Template law (GD-3): ${{ }} markers live ONLY in env/if/with —
+# scripts reference step-env variables.
+# =====================================================================
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "validate + release-sha gate only — no backup/install/reload"
+        type: boolean
+        required: false
+        default: false
+
+concurrency:
+  group: caddy-edge-activate
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  activate:
+    name: "§5 validate → backup → install → reload → verify"
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      LIGHTSAIL_REGION: eu-north-1
+      LIGHTSAIL_INSTANCE: alkemos-test
+    steps:
+      - name: Checkout (deploy/Caddyfile at the dispatch SHA)
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4 — pinned 2026-10-10 audit
+
+      - name: Hash repo deploy/Caddyfile (dispatch SHA)
+        id: hash
+        run: |
+          set -euo pipefail
+          echo "sha=$(sha256sum deploy/Caddyfile | awk '{print $1}')" >> "$GITHUB_OUTPUT"
+
+      - name: Stage the fixed §5 remote script (shared by both paths)
+        run: |
+          set -euo pipefail
+          cat > "$RUNNER_TEMP/edge5.sh" <<'EOS'
+          set -euo pipefail
+          EXPECTED_SHA="$1"
+          DRY_RUN="$2"
+          cd /srv/alkemos/current
+          ACTUAL_SHA="$(sha256sum deploy/Caddyfile | awk '{print $1}')"
+          if [ "$ACTUAL_SHA" != "$EXPECTED_SHA" ]; then
+            echo "FATAL: /srv/alkemos/current/deploy/Caddyfile ($ACTUAL_SHA) != repo deploy/Caddyfile at dispatch SHA ($EXPECTED_SHA)"
+            echo "       → deploy the release first (push to main), then re-run this workflow"
+            exit 1
+          fi
+          sudo caddy validate --config deploy/Caddyfile --adapter caddyfile
+          if [ "$DRY_RUN" = "true" ]; then
+            echo "DRY_RUN: validate + release-sha gate passed — stopping before any change"
+            exit 0
+          fi
+          if sudo cmp -s /etc/caddy/Caddyfile /srv/alkemos/current/deploy/Caddyfile; then
+            echo "already identical — idempotent no-op (no backup, no install, no reload)"
+            exit 0
+          fi
+          BACKUP="/etc/caddy/Caddyfile.backup-$(date +%Y%m%d%H%M%S)"
+          sudo cp /etc/caddy/Caddyfile "$BACKUP"
+          echo "backup of previous edge config: $BACKUP"
+          sudo install -m 0644 /srv/alkemos/current/deploy/Caddyfile /etc/caddy/Caddyfile
+          sudo systemctl reload caddy
+          sleep 1
+          sudo systemctl is-active caddy
+          echo "§5 DONE: edge config installed + caddy reloaded"
+          EOS
+          echo "staged $RUNNER_TEMP/edge5.sh"
+
+      - name: Write CI deploy user key (Path A probe/runner)
+        env:
+          DEPLOY_KEY: ${{ secrets.AWS_DEPLOY_SSH_KEY }}
+        run: |
+          set -euo pipefail
+          if [ -z "$DEPLOY_KEY" ]; then echo "AWS_DEPLOY_SSH_KEY secret absent — Path A unavailable"; exit 0; fi
+          printf '%s\n' "$DEPLOY_KEY" > "$RUNNER_TEMP/deploy.key"
+          chmod 600 "$RUNNER_TEMP/deploy.key"
+
+      - name: Path A probe — does the deploy user have passwordless sudo?
+        id: probe
+        env:
+          DEPLOY_HOST: ${{ secrets.AWS_DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.AWS_DEPLOY_USER }}
+        run: |
+          set -euo pipefail
+          if [ ! -f "$RUNNER_TEMP/deploy.key" ] || [ -z "$DEPLOY_HOST" ] || [ -z "$DEPLOY_USER" ]; then
+            echo "has_sudo=false" >> "$GITHUB_OUTPUT"
+            echo "deploy secrets incomplete — skipping to Path B (Lightsail)"
+            exit 0
+          fi
+          if ssh -i "$RUNNER_TEMP/deploy.key" -o StrictHostKeyChecking=accept-new \
+               -o ConnectTimeout=15 -o BatchMode=yes \
+               "$DEPLOY_USER@$DEPLOY_HOST" 'sudo -n true >/dev/null 2>&1'; then
+            echo "has_sudo=true" >> "$GITHUB_OUTPUT"
+            echo "deploy user HAS passwordless sudo — using Path A"
+          else
+            echo "has_sudo=false" >> "$GITHUB_OUTPUT"
+            echo "deploy user has NO passwordless sudo — using Path B (Lightsail temp SSH)"
+          fi
+
+      - name: Path A — run §5 as the deploy user
+        if: steps.probe.outputs.has_sudo == 'true'
+        env:
+          DEPLOY_HOST: ${{ secrets.AWS_DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.AWS_DEPLOY_USER }}
+          EXPECTED_SHA: ${{ steps.hash.outputs.sha }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          set -euo pipefail
+          ssh -i "$RUNNER_TEMP/deploy.key" -o StrictHostKeyChecking=accept-new \
+            -o ConnectTimeout=15 -o BatchMode=yes \
+            "$DEPLOY_USER@$DEPLOY_HOST" 'bash -s' -- "$EXPECTED_SHA" "$DRY_RUN" \
+            < "$RUNNER_TEMP/edge5.sh"
+
+      - name: Path B — Lightsail temporary SSH (ubuntu, sudo)
+        if: steps.probe.outputs.has_sudo != 'true'
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_LIGHTSAIL_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_LIGHTSAIL_SECRET_ACCESS_KEY }}
+          EXPECTED_SHA: ${{ steps.hash.outputs.sha }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          set -euo pipefail
+          if [ -z "$AWS_ACCESS_KEY_ID" ] || [ -z "$AWS_SECRET_ACCESS_KEY" ]; then
+            echo "FATAL: AWS_LIGHTSAIL_ACCESS_KEY_ID / AWS_LIGHTSAIL_SECRET_ACCESS_KEY secrets are not configured"
+            echo "       and the deploy user has no sudo — add the two secrets (IAM user with"
+            echo "       lightsail:GetInstances + lightsail:GetInstanceAccessDetails) and re-run"
+            exit 1
+          fi
+          for attempt in 1 2; do
+            echo "--- attempt $attempt: fetching temporary SSH keys from Lightsail API ---"
+            aws lightsail get-instance-access-details \
+              --instance-name "$LIGHTSAIL_INSTANCE" --region "$LIGHTSAIL_REGION" \
+              --output json > "$RUNNER_TEMP/access.json"
+            # privateKey is a PEM string on current API versions; tolerate an
+            # object shape too — jq unescapes \n into real PEM newlines (-r).
+            jq -r '.accessDetails.privateKey | if type == "object" then (.pem // .[keys[0]]) else . end' \
+              "$RUNNER_TEMP/access.json" > "$RUNNER_TEMP/lsh.key"
+            jq -r '.accessDetails.certKey' "$RUNNER_TEMP/access.json" > "$RUNNER_TEMP/lsh.key-cert.pub"
+            chmod 600 "$RUNNER_TEMP/lsh.key"
+            SSH_USER="$(jq -r '.accessDetails.username' "$RUNNER_TEMP/access.json")"
+            SSH_IP="$(jq -r '.accessDetails.ipAddress' "$RUNNER_TEMP/access.json")"
+            if [ ! -s "$RUNNER_TEMP/lsh.key" ] || [ -z "$SSH_IP" ]; then
+              echo "attempt $attempt: Lightsail API returned no usable keys"; sleep 3; continue
+            fi
+            if ssh -i "$RUNNER_TEMP/lsh.key" \
+                 -o CertificateFile="$RUNNER_TEMP/lsh.key-cert.pub" \
+                 -o IdentitiesOnly=yes \
+                 -o StrictHostKeyChecking=accept-new \
+                 -o ConnectTimeout=15 \
+                 "${SSH_USER}@${SSH_IP}" 'bash -s' -- "$EXPECTED_SHA" "$DRY_RUN" \
+                 < "$RUNNER_TEMP/edge5.sh"; then
+              echo "§5 executed via Lightsail temporary SSH (${SSH_USER})"
+              exit 0
+            fi
+            echo "attempt $attempt failed — refetching fresh temporary keys"
+            sleep 3
+          done
+          echo "FATAL: could not activate via Lightsail temporary SSH (both attempts failed)"
+          exit 1
+
+      - name: Verify the live edge DIRECT TO ORIGIN (bypasses Cloudflare cache)
+        if: inputs.dry_run != true
+        env:
+          ORIGIN_IP: ${{ secrets.AWS_DEPLOY_HOST }}
+        run: |
+          set -euo pipefail
+          base="https://alkemos.com"
+          R="--resolve alkemos.com:443:${ORIGIN_IP}"
+          # a real /_next/static chunk URL from the served homepage
+          CHUNK="$(curl -s $R "$base/" | grep -oE '/_next/static/chunks/[a-z0-9_.-]+\.js' | head -1 || true)"
+          if [ -z "$CHUNK" ]; then echo "FATAL: no /_next/static chunk found on the homepage"; exit 1; fi
+          echo "probe chunk: $CHUNK"
+
+          # GET with header dump (-D - -o /dev/null): for Caddy file_server
+          # precompressed the negotiated Content-Encoding is authoritative on GET
+          # responses (HEAD behavior varies by version — measured caution).
+
+          # 1) mainstream browsers (gzip, deflate, br, zstd) must now get brotli (was gzip — the §2-ب measured defect)
+          ENC="$(curl -s $R -o /dev/null -D - -H 'Accept-Encoding: gzip, deflate, br, zstd' "$base$CHUNK" | tr -d '\r' | awk 'tolower($1)=="content-encoding:"{print tolower($2)}')"
+          if [ "$ENC" != "br" ]; then echo "FAIL: mainstream-AE content-encoding is '$ENC' (expected br)"; exit 1; fi
+          echo "OK  1/6 /_next/static serves brotli to mainstream browsers (was gzip)"
+
+          # 2) gzip-only clients must still receive gzip (precompressed fallback)
+          ENC2="$(curl -s $R -o /dev/null -D - -H 'Accept-Encoding: gzip' "$base$CHUNK" | tr -d '\r' | awk 'tolower($1)=="content-encoding:"{print tolower($2)}')"
+          if [ "$ENC2" != "gzip" ]; then echo "FAIL: gzip-only content-encoding is '$ENC2' (expected gzip)"; exit 1; fi
+          echo "OK  2/6 gzip-only clients still get gzip"
+
+          # 3) explicit Vary (caddy 2.8 does not add it on its own — P1-4 note)
+          if curl -s $R -o /dev/null -D - -H 'Accept-Encoding: br' "$base$CHUNK" | tr -d '\r' | grep -qi '^vary:.*accept-encoding'; then
+            echo "OK  3/6 Vary: Accept-Encoding present"
+          else
+            echo "FAIL: Vary: Accept-Encoding missing on /_next/static"; exit 1
+          fi
+
+          # 4) immutable cache-control preserved inside the new handle
+          if curl -s $R -o /dev/null -D - "$base$CHUNK" | tr -d '\r' | grep -qi '^cache-control:.*immutable'; then
+            echo "OK  4/6 cache-control immutable preserved"
+          else
+            echo "FAIL: immutable cache-control missing"; exit 1
+          fi
+
+          # 5) CSP-Report-Only must be free of the dead Vercel entry (P0-ب)
+          CSP="$(curl -s $R -o /dev/null -D - "$base/" | tr -d '\r' | grep -i '^content-security-policy-report-only:' || true)"
+          if [ -z "$CSP" ]; then echo "FAIL: CSP-Report-Only header absent"; exit 1; fi
+          if echo "$CSP" | grep -q 'va.vercel-scripts.com'; then
+            echo "FAIL: va.vercel-scripts.com still present in CSP-Report-Only"; exit 1
+          fi
+          echo "OK  5/6 CSP-Report-Only free of va.vercel-scripts.com"
+
+          # 6) bilingual smoke through the new config, direct to origin
+          for p in / /ar /tools /ar/tools /blog /ar/blog /coaching /ar/coaching /api/build-info; do
+            CODE="$(curl -s $R -o /dev/null -w '%{http_code}' "$base$p")"
+            if [ "$CODE" != "200" ]; then echo "FAIL: $p → $CODE (direct to origin)"; exit 1; fi
+          done
+          echo "OK  6/6 bilingual smoke 9/9 → 200 (direct to origin)"
+          echo "=== §5 VERIFIED ON THE LIVE ORIGIN ==="
