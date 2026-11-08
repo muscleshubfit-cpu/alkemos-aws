@@ -1,4 +1,15 @@
 # Vercel stale-deployment purge — push-triggered + hourly backstop
+#
+# ⛔ STATUS: DISABLED MANUALLY since the AWS cutover (2026-10-10) —
+# GitHub API state: `disabled_manually` in BOTH repos (alkemos-aws live
+# + frozen alkemos). The origin is AWS Lightsail; the Vercel project
+# remains ONLY as the documented DNS-flip rollback point and accumulates
+# no deployments. Measured + documented by
+# docs/VERCEL-LEFTOVERS-AUDIT-2026-11-08.md (P1-ب row fix in
+# docs/CI_GATES.md matches this banner). Do NOT re-enable while the
+# rollback point stands — see the audit's P2-أ drop sequence for the
+# single owner order that retires this file with everything else.
+#
 # (Phase 145, owner directive 2026-09-08 · tightened VERCEL-USAGE-2
 # 2026-09-16, owner order «المشكلة كبيرة» · tightened VERCEL-USAGE-4
 # 2026-09-19, owner order «مطلوب تنفيذ حل لمشكلة تجاوز الاستخدام
