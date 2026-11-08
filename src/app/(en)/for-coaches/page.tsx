@@ -270,13 +270,22 @@ export default function ForCoachesPage() {
           </div>
           <div className="order-1 md:order-2">
             <div className="overflow-hidden rounded-3xl shadow-xl shadow-[#1d1d1f]/10">
-              <Image
-                src="/images/hero/coaching-1.jpg"
+              {/* P0-4 (PERFORMANCE-AUDIT-2026-11-08): coaching-1 JPG →
+                  responsive WebP triplet (640/828/1200) — displayed at
+                  ≤520px here so mobile picks the 640w file (60.3KB vs the
+                  old 160KB JPG). Same prebuilt-variant plain-<img> pattern
+                  (unoptimized law). */}
+              {/* eslint-disable-next-line @next/next/no-img-element -- prebuilt responsive WebP variants (unoptimized law) */}
+              <img
+                src="/images/hero/coaching-1.webp"
+                srcSet="/images/hero/coaching-1-640.webp 640w, /images/hero/coaching-1-828.webp 828w, /images/hero/coaching-1.webp 1200w"
+                sizes="(max-width: 768px) 90vw, 520px"
                 alt={isAr ? "مدرب يتابع عميله أثناء التمرين" : "Coach guiding a client through training"}
                 width={1200}
                 height={800}
                 className="h-auto w-full object-cover"
-                sizes="(max-width: 768px) 90vw, 520px"
+                loading="lazy"
+                decoding="async"
               />
             </div>
           </div>

@@ -82,6 +82,18 @@ export default function CoachingLayout({
 }) {
   return (
     <>
+      {/* P0-4 (PERFORMANCE-AUDIT-2026-11-08): preload the page's LCP image
+          (coaching-1 hero — measured 4.1s mobile) at TTFB with the SAME
+          responsive candidates the <img> srcset offers (imageSrcSet parity
+          law — the preload must match the candidate the browser picks). */}
+      <link
+        rel="preload"
+        as="image"
+        href="/images/hero/coaching-1.webp"
+        fetchPriority="high"
+        imageSrcSet="/images/hero/coaching-1-640.webp 640w, /images/hero/coaching-1-828.webp 828w, /images/hero/coaching-1.webp 1200w"
+        imageSizes="(max-width: 895px) calc(100vw - 32px), 864px"
+      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: jsonLd(coachingSchema) }}

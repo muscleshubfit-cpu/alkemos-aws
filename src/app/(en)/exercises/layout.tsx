@@ -62,8 +62,14 @@ export default function ExercisesLayout({
 }: {
   children: React.ReactNode;
 }) {
+  // PERFORMANCE-AUDIT-2026-11-08 P0-3 (owner order 2026-11-08): the
+  // https://wger.de preconnect is REMOVED — a dead-origin TLS handshake
+  // on every exercises page (measured on the audit: 1,736 detail pages ×
+  // 2 languages). No wger asset has been served since the Batch-2
+  // self-hosting (2026-09-16 removed the remote pattern from
+  // next.config.ts); hosts=[] keeps the banner preload only.
   return (
-    <Resources hosts={["https://wger.de"]} banner="exercises">
+    <Resources hosts={[]} banner="exercises">
       {children}
     </Resources>
   );

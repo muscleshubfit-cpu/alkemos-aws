@@ -58,6 +58,15 @@ const read = (f: string) => readFileSync(join(ROOT, f), "utf8");
 describe("P2-12 rule 1 — PageBanner pair carries intrinsic dimensions", () => {
   const src = read("src/components/PageBanner.tsx");
 
+  // P1-1 (PERFORMANCE-AUDIT-2026-11-08): the pair now carries responsive
+  // srcset — the split keys append the closing backtick of the src
+  // attribute so the srcSet's own `header-…-light.webp 1280w` candidate
+  // (which repeats the filename) can no longer truncate the attrs region.
+  // The pins are unchanged in intent + the new responsive-srcset law
+  // (both variants offer the 640/828/1280 prebuilt candidates).
+  const LIGHT_KEY = "header-${section}-light.webp`";
+  const DARK_KEY = "header-${section}-dark.webp`";
+
   it("light variant: width 1280 + height 477 + fetchPriority high (LCP law)", () => {
     expect(src).toContain('src={`/images/brand/header-${section}-light.webp`}');
     // attrs region of the LIGHT tag only: from its src template literal up
@@ -65,7 +74,7 @@ describe("P2-12 rule 1 — PageBanner pair carries intrinsic dimensions", () => 
     // this segment and mask a regression (caught by negative-testing the
     // canary: patching the light width alone still passed with a plain
     // "everything-before-theme-img-dark" split).
-    const light = src.split("header-${section}-light.webp")[1].split("header-${section}-dark.webp")[0];
+    const light = src.split(LIGHT_KEY)[1].split(DARK_KEY)[0];
     expect(light).toContain("width={1280}");
     expect(light).toContain("height={477}");
     expect(light).toContain('fetchPriority="high"');
@@ -73,11 +82,26 @@ describe("P2-12 rule 1 — PageBanner pair carries intrinsic dimensions", () => 
   });
 
   it("dark variant: width 1280 + height 477 + loading lazy (Phase 139 law)", () => {
-    const dark = src.split("header-${section}-dark.webp")[1];
+    const dark = src.split(DARK_KEY)[1];
     expect(dark).toContain("width={1280}");
     expect(dark).toContain("height={477}");
     expect(dark).toContain('loading="lazy"');
     expect(dark).not.toContain("fetchPriority");
+  });
+
+  it("responsive srcset law (P1-1): both variants offer 640/828/1280", () => {
+    const light = src.split(LIGHT_KEY)[1].split(DARK_KEY)[0];
+    const dark = src.split(DARK_KEY)[1];
+    // NOTE: plain quoted strings — ${section} is the LITERAL template
+    // placeholder inside PageBanner's source, not a JS interpolation.
+    for (const [label, region] of [["light", light], ["dark", dark]] as const) {
+      expect(region, `${label} srcset`).toContain(`header-\${section}-${label}-640.webp 640w`);
+      expect(region, `${label} srcset`).toContain(`header-\${section}-${label}-828.webp 828w`);
+      expect(region, `${label} srcset`).toContain(`header-\${section}-${label}.webp 1280w`);
+      expect(region, `${label} sizes`).toContain("sizes={sizes}");
+    }
+    // the shared sizes law: hub container ceiling (max-w-6xl px-4)
+    expect(src).toContain('"(max-width: 1152px) calc(100vw - 2rem), 1120px"');
   });
 
   it("parent container keeps the aspect-[1280/477] reservation", () => {

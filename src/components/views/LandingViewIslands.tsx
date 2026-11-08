@@ -30,6 +30,8 @@ import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { useAuth } from "@/hooks/use-auth";
 import { EXERCISES_COUNT, EXERCISE_CATEGORY_COUNTS } from "@/lib/exercises-shared";
+import { getExerciseImageSrcSet } from "@/lib/exercise-images";
+import { ImageWithFallback } from "@/components/ui/image-with-fallback";
 import { openEvoFloatingChat } from "@/lib/evo-chat-events";
 import { ThemeImg, EngravedIcon } from "@/components/ThemeImg";
 import type { HomeExerciseSample, HomeSamples } from "@/lib/home-samples";
@@ -324,16 +326,25 @@ function LandingExerciseCard({ ex, isAr }: { ex: HomeExerciseSample; isAr: boole
       className="marble-card card-lift group flex flex-col"
     >
       {/* Real exercise image (start-position frame from the library
-          artwork) — object-contain keeps the full-body framing honest. */}
+          artwork) — object-contain keeps the full-body framing honest.
+          P1-2 (PERFORMANCE-AUDIT-2026-11-08): prebuilt responsive srcset
+          (400w/200w) — the audit measured ~80% waste per card photo at
+          ~175px display; mobile now ships ~3-8KB instead of 12-22KB. */}
       <div className="relative aspect-[4/3] w-full overflow-hidden bg-[var(--card)]">
         {ex.image ? (
-          <Image
+          <ImageWithFallback
             src={ex.image}
             alt={name}
             fill
+            srcSet={getExerciseImageSrcSet(ex.image)}
             sizes="(max-width: 768px) 45vw, 22vw"
             className="object-contain p-2 transition-transform duration-300 group-hover:scale-105"
             loading="lazy"
+            fallbackElement={
+              <div className="grid h-full w-full place-items-center">
+                <EngravedIcon name="dumbbell" alt="" size={40} className="h-10 w-10 opacity-60" />
+              </div>
+            }
           />
         ) : (
           <div className="grid h-full w-full place-items-center">

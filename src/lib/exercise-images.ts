@@ -51,6 +51,45 @@ export function getExerciseImages(imageKey: string): string[] {
   return imageKey.split(",").map((path) => getExerciseImageUrl(path.trim()));
 }
 
+/**
+ * P1-2 (PERFORMANCE-AUDIT-2026-11-08, owner order 2026-11-08): responsive
+ * srcset for a self-hosted exercise photo. The audit's image-delivery
+ * insight measured ~80% waste per exercise photo inside card grids (cards
+ * display ~175px per half while the full 640w 12-22KB file shipped).
+ *
+ * Prebuilt variants (same discipline as Batch-2: q85, method 6 — content
+ * quality law; originals NEVER renamed — immutable-cache family law):
+ *   /images/exercises/<Exercise>/<i>.webp      native (640w landscape ·
+ *                                               427w portrait · two 275w
+ *                                               outliers)
+ *   /images/exercises/<Exercise>/<i>-400.webp  the ≤400w variant
+ *   /images/exercises/<Exercise>/<i>-200.webp  the ≤200w variant
+ *
+ * Descriptor honesty note: the native candidate is declared 640w for ALL
+ * files (incl. the ~7% portrait 427w and the two 275w outliers) — a native
+ * declared wider than it is can only ever be picked for slots where
+ * today's behavior ships the identical file anyway (zero regression), and
+ * the 400w/200w candidates deliver the card-grid savings everywhere they
+ * apply. The -400/-200 files are min(target, native) — for the two 275w
+ * sources they are byte-copies of the native (uniform candidate list, no
+ * upscaling ever).
+ *
+ * Returns undefined for anything that is NOT a self-hosted exercise asset
+ * (http passthrough, other local paths) → the caller renders WITHOUT
+ * srcset (byte-identical to the pre-P1-2 markup).
+ */
+export function getExerciseImageSrcSet(url: string): string | undefined {
+  if (!url.startsWith(`${IMAGE_BASE}/`)) return undefined;
+  const m = url.match(/^(\/images\/exercises\/.+)\/(\d)\.webp$/);
+  if (!m) return undefined;
+  const [, dir, idx] = m;
+  return [
+    `${url} 640w`,
+    `${dir}/${idx}-400.webp 400w`,
+    `${dir}/${idx}-200.webp 200w`,
+  ].join(", ");
+}
+
 // Keep old function names for backward compatibility with existing code
 export function getWgerImageUrl(exerciseName: string): string | null {
   // This function is no longer used — images come from the exercise's imageKey field

@@ -3,7 +3,7 @@
 import { useI18n, type Lang } from "@/lib/i18n";
 import { SiteHeader } from "@/components/SiteHeader";
 import { ShareButtons } from "@/components/ShareButtons";
-import { getExerciseImages, getFallbackSVG } from "@/lib/exercise-images";
+import { getExerciseImages, getFallbackSVG, getExerciseImageSrcSet } from "@/lib/exercise-images";
 import {
   CATEGORY_LABELS,
   EQUIPMENT_LABELS,
@@ -109,10 +109,16 @@ export default function ExerciseDetailClient({
               {imgUrls.length > 0 ? (
                 imgUrls.map((url, idx) => (
                   <div key={idx} className="relative aspect-square w-full">
+                    {/* P1-2 (PERFORMANCE-AUDIT-2026-11-08): prebuilt
+                        responsive srcset — each half displays ~180-210px;
+                        mobile now ships 3-8KB per frame instead of
+                        12-22KB. */}
                     <ImageWithFallback
                       src={url}
                       alt={`${isAr ? exercise.nameAr : exercise.nameEn} — ${idx === 0 ? (isAr ? "البداية" : "Start") : (isAr ? "النهاية" : "End")}`}
                       fill
+                      srcSet={getExerciseImageSrcSet(url)}
+                      sizes="(max-width: 768px) 45vw, 208px"
                       className="object-contain"
                       fallbackSrc={getFallbackSVG(exercise.category)}
                     />
@@ -404,6 +410,8 @@ export default function ExerciseDetailClient({
                           src={relImg}
                           alt={isAr ? rel.nameAr : rel.nameEn}
                           fill
+                          srcSet={getExerciseImageSrcSet(relImg)}
+                          sizes="(max-width: 640px) calc(100vw - 32px), 270px"
                           className="object-contain"
                           fallbackSrc={getFallbackSVG(rel.category)}
                         />

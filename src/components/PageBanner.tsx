@@ -22,6 +22,17 @@ export function PageBanner({
   section: "tools" | "exercises" | "programs" | "foods" | "blog" | "pricing";
   className?: string;
 }) {
+  /* P1-1 (PERFORMANCE-AUDIT-2026-11-08, owner order 2026-11-08): the
+   * banner pair now ships responsive srcset (640/828/1280 prebuilt
+   * variants — hero-light-* pattern, q85 method 6). Measured before:
+   * every phone (390px CSS) downloaded the full 1280w file (exercises
+   * 66.5KB = the heaviest image on the worst-LCP page of the audit,
+   * 6.2s). Mobile now picks 640w (~50% saving). sizes reflects the
+   * widest hub container (max-w-6xl px-4 → 1120px; tools' max-w-4xl
+   * displays smaller — over-declaring keeps its desktop pick identical
+   * to today's 1280w, zero regression). The layout-side BannerPreloads
+   * mirrors these candidates exactly (preload/srcset parity law). */
+  const sizes = "(max-width: 1152px) calc(100vw - 2rem), 1120px";
   return (
     <div
       className={`marble-card relative aspect-[1280/477] w-full ${className}`}
@@ -37,6 +48,8 @@ export function PageBanner({
           canary seo-image-dimensions.test.ts locks the pair. */}
       <img
         src={`/images/brand/header-${section}-light.webp`}
+        srcSet={`/images/brand/header-${section}-light-640.webp 640w, /images/brand/header-${section}-light-828.webp 828w, /images/brand/header-${section}-light.webp 1280w`}
+        sizes={sizes}
         alt=""
         width={1280}
         height={477}
@@ -57,6 +70,8 @@ export function PageBanner({
            flipping the theme to dark reveals it and it loads then. */}
       <img
         src={`/images/brand/header-${section}-dark.webp`}
+        srcSet={`/images/brand/header-${section}-dark-640.webp 640w, /images/brand/header-${section}-dark-828.webp 828w, /images/brand/header-${section}-dark.webp 1280w`}
+        sizes={sizes}
         alt=""
         width={1280}
         height={477}

@@ -114,6 +114,18 @@ Upload wider images (600×400 recommended, 16:10 aspect).
 - **File size:** < 100 KB each (compress before upload if larger)
 - **Compression tool:** https://tinypng.com/ (free, handles JPG/PNG/WebP)
 
+### 📁 `hero/` — section hero photos (responsive WebP triplets)
+
+P0-4 (PERFORMANCE-AUDIT-2026-11-08, owner order 2026-11-08): the two
+REFERENCED hero photos (`coaching-1`, `coaching-2` — used by `/coaching`,
+`/ar/coaching` and `/for-coaches`) ship as responsive WebP triplets on the
+`hero-light-*` pattern: `<name>.webp` (native) + `<name>-640.webp` +
+`<name>-828.webp` (q85, method 6). The old single-size JPGs were deleted —
+mobile now loads the 640w file (60.3KB vs 160KB, ~63% saving). The
+remaining `*.jpg` files in this folder are unreferenced by any page
+(verified by `rg` on `src/` + live-production HTML grep) and are kept only
+as owner source material.
+
 ## Existing Images (already in repo)
 
 The following images already exist in `public/images/` (root level, not in subfolders):

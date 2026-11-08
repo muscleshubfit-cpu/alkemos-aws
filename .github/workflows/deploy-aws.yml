@@ -371,6 +371,19 @@ jobs:
       - name: Build
         run: bun run build
 
+      # P1-4 (PERFORMANCE-AUDIT-2026-11-08, owner order 2026-11-08): brotli
+      # + gzip sidecars for the /_next/static text family (~5-8% of the
+      # ~356KB initial JS/CSS per cold visit — measured: mainstream AE
+      # headers receive gzip from the origin today; the Caddy file_server
+      # `precompressed br gzip` rule serves these sidecars with
+      # Content-Encoding: br to every br-capable client). The sidecars live
+      # INSIDE .next/static so the tarball below ships them unchanged. Zero
+      # dependency (Node zlib only). INERT on the server until the owner
+      # updates + reloads /etc/caddy/Caddyfile — see deploy/Caddyfile P1-4
+      # notes + the owner runbook in the governing report.
+      - name: Precompress static assets (brotli + gzip sidecars)
+        run: node scripts/precompress-static.mjs
+
       # output: standalone stays FORBIDDEN (Vercel law in next.config.ts)
       # — the release ships the full .next + bun install on the server.
       - name: Package release

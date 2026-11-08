@@ -33,12 +33,21 @@ export function Preconnects({ hosts }: { hosts: string[] }) {
 }
 
 export function BannerPreloads({ section }: { section: string }) {
+  /* P1-1 (PERFORMANCE-AUDIT-2026-11-08): the preloads now carry
+   * imageSrcSet/imageSizes mirroring PageBanner's srcset/sizes exactly
+   * (preload/srcset parity law — same as the homepage hero preloads):
+   * the preloaded candidate is the one the <img> will pick, so mobile
+   * preloads the 640w file instead of the old single 1280w URL. */
+  const imageSrcSet = (theme: "light" | "dark") =>
+    `/images/brand/header-${section}-${theme}-640.webp 640w, /images/brand/header-${section}-${theme}-828.webp 828w, /images/brand/header-${section}-${theme}.webp 1280w`;
   return (
     <>
       <link
         rel="preload"
         as="image"
         href={`/images/brand/header-${section}-light.webp`}
+        imageSrcSet={imageSrcSet("light")}
+        imageSizes="(max-width: 1152px) calc(100vw - 2rem), 1120px"
         media="(prefers-color-scheme: light)"
         fetchPriority="high"
       />
@@ -46,6 +55,8 @@ export function BannerPreloads({ section }: { section: string }) {
         rel="preload"
         as="image"
         href={`/images/brand/header-${section}-dark.webp`}
+        imageSrcSet={imageSrcSet("dark")}
+        imageSizes="(max-width: 1152px) calc(100vw - 2rem), 1120px"
         media="(prefers-color-scheme: dark)"
         fetchPriority="high"
       />

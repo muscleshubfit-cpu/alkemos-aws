@@ -42,57 +42,94 @@
 # =====================================================================
 
 alkemos.com {
-	encode zstd gzip
+        encode zstd gzip
 
-	# ---- security headers (VERBATIM values from vercel.json) ---------
-	header {
-		defer
-		X-Content-Type-Options "nosniff"
-		X-Frame-Options "SAMEORIGIN"
-		Referrer-Policy "strict-origin-when-cross-origin"
-		Strict-Transport-Security "max-age=63072000; includeSubDomains; preload"
-		Permissions-Policy "camera=(), microphone=(), geolocation=(), browsing-topics=(), interest-cohort=()"
-		Content-Security-Policy "frame-ancestors 'self'; base-uri 'self'; object-src 'none'; form-action 'self'"
-		Content-Security-Policy-Report-Only "default-src 'self'; script-src 'self' 'unsafe-inline' https://pagead2.googlesyndication.com https://www.googletagmanager.com https://static.cloudflareinsights.com https://*.adtrafficquality.google https://va.vercel-scripts.com https://www.paypal.com https://www.sandbox.paypal.com https://www.paypalobjects.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://openrouter.ai https://api.groq.com https://api.github.com https://api.pwnedpasswords.com https://*.google-analytics.com https://analytics.google.com https://*.adtrafficquality.google; frame-src https://www.paypal.com https://www.sandbox.paypal.com https://googleads.g.doubleclick.net https://td.doubleclick.net https://www.youtube.com https://www.google.com https://*.adtrafficquality.google; media-src 'self' https:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'"
-		-Server
-	}
+        # ---- security headers (VERBATIM values from vercel.json) ---------
+        header {
+                defer
+                X-Content-Type-Options "nosniff"
+                X-Frame-Options "SAMEORIGIN"
+                Referrer-Policy "strict-origin-when-cross-origin"
+                Strict-Transport-Security "max-age=63072000; includeSubDomains; preload"
+                Permissions-Policy "camera=(), microphone=(), geolocation=(), browsing-topics=(), interest-cohort=()"
+                Content-Security-Policy "frame-ancestors 'self'; base-uri 'self'; object-src 'none'; form-action 'self'"
+                Content-Security-Policy-Report-Only "default-src 'self'; script-src 'self' 'unsafe-inline' https://pagead2.googlesyndication.com https://www.googletagmanager.com https://static.cloudflareinsights.com https://*.adtrafficquality.google https://www.paypal.com https://www.sandbox.paypal.com https://www.paypalobjects.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://openrouter.ai https://api.groq.com https://api.github.com https://api.pwnedpasswords.com https://*.google-analytics.com https://analytics.google.com https://*.adtrafficquality.google; frame-src https://www.paypal.com https://www.sandbox.paypal.com https://googleads.g.doubleclick.net https://td.doubleclick.net https://www.youtube.com https://www.google.com https://*.adtrafficquality.google; media-src 'self' https:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'"
+                -Server
+        }
 
-	# ---- Cache-Control parity with vercel.json (defer = replace) -----
-	# NOTE: vercel.json also sets max-age=86400 on /_next/image(.*) —
-	# that route is intentionally DEAD on this origin (410 quota guard
-	# via images.unoptimized=true), so its rule is NOT replicated.
-	# HTML Cache-Control (SEO-GEO-4) is NOT set here on purpose — it is
-	# emitted by the origin from next.config.ts headers() and must pass
-	# through untouched.
-	header /images/* {
-		defer
-		Cache-Control "public, max-age=86400"
-	}
-	header /sw.js {
-		defer
-		Cache-Control "public, max-age=0, must-revalidate"
-	}
-	header /_next/static/* {
-		defer
-		Cache-Control "public, max-age=31536000, immutable"
-	}
-	header /images/brand/* {
-		defer
-		Cache-Control "public, max-age=300, stale-while-revalidate=604800"
-	}
-	header /images/exercises/* {
-		defer
-		Cache-Control "public, max-age=31536000, immutable"
-	}
+        # ---- Cache-Control parity with vercel.json (defer = replace) -----
+        # NOTE: vercel.json also sets max-age=86400 on /_next/image(.*) —
+        # that route is intentionally DEAD on this origin (410 quota guard
+        # via images.unoptimized=true), so its rule is NOT replicated.
+        # HTML Cache-Control (SEO-GEO-4) is NOT set here on purpose — it is
+        # emitted by the origin from next.config.ts headers() and must pass
+        # through untouched.
+        header /images/* {
+                defer
+                Cache-Control "public, max-age=86400"
+        }
+        header /sw.js {
+                defer
+                Cache-Control "public, max-age=0, must-revalidate"
+        }
+        header /_next/static/* {
+                defer
+                Cache-Control "public, max-age=31536000, immutable"
+        }
+        header /images/brand/* {
+                defer
+                Cache-Control "public, max-age=300, stale-while-revalidate=604800"
+        }
+        header /images/exercises/* {
+                defer
+                Cache-Control "public, max-age=31536000, immutable"
+        }
 
-	# ---- reverse proxy to the Next.js process ------------------------
-	# flush_interval -1 → zero buffering: required for the EVO SSE stream
-	# (text/event-stream) and honest for the 300s maxDuration routes.
-	reverse_proxy 127.0.0.1:3000 {
-		flush_interval -1
-	}
+        # ---- P1-4 (PERFORMANCE-AUDIT-2026-11-08): precompressed static
+        # assets — brotli + gzip sidecars served straight from the release
+        # dir. Measured live 2026-11-08: browsers sending the mainstream
+        # `Accept-Encoding: gzip, deflate, br, zstd` receive the ORIGIN's
+        # gzip for /_next/static JS/CSS through the edge (only br-only
+        # clients get brotli). The ONLY deterministic fix is the origin
+        # replying `Content-Encoding: br` to every br-capable client —
+        # which `file_server precompressed br gzip` does from build-time
+        # sidecars (scripts/precompress-static.mjs, run by deploy-aws.yml
+        # right after `next build`; ~5-8% of the ~356KB initial JS/CSS).
+        #
+        # Notes: root follows the `current` symlink — each release flip
+        # re-points it and the file names are content-hashed (no stale
+        # window). Vary is set EXPLICITLY (caddy 2.8's file_server does
+        # not add it — that landed upstream in 2.10): without it a shared
+        # cache could hand a brotli variant to a gzip-only client.
+        # Cache-Control is ALSO set inside the handle: handle_path strips
+        # the prefix before file_server runs, so the global deferred rule
+        # above and this one are a belt-and-suspenders pair (same value;
+        # header ops REPLACE, never append). INERT until /etc/caddy/
+        # Caddyfile is updated + reloaded (deploy.sh never touches caddy —
+        # see the owner runbook in the P1-4 governing report).
+        handle_path /_next/static/* {
+                root * /srv/alkemos/current/.next/static
+                header Cache-Control "public, max-age=31536000, immutable"
+                header Vary "Accept-Encoding"
+                file_server {
+                        precompressed br gzip
+                }
+        }
+
+        # ---- reverse proxy to the Next.js process ------------------------
+        # flush_interval -1 → zero buffering: required for the EVO SSE stream
+        # (text/event-stream) and honest for the 300s maxDuration routes.
+        # (Wrapped in a catch-all handle — handle blocks are mutually
+        # exclusive, so the static handle above never falls through to the
+        # proxy, and the explicit final handle removes any directive-order
+        # doubt. Behavior for non-static paths is byte-identical.)
+        handle {
+                reverse_proxy 127.0.0.1:3000 {
+                        flush_interval -1
+                }
+        }
 }
 
 www.alkemos.com {
-	redir https://alkemos.com{uri} permanent
+        redir https://alkemos.com{uri} permanent
 }

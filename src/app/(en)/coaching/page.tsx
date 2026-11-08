@@ -22,7 +22,6 @@ import {
 import { listBlogPosts, getCategoryLabel, type BlogPostCard } from "@/lib/blog";
 import { deferIdle } from "@/lib/defer-idle";
 import { Dumbbell, Apple, BarChart3, Bot, Check, ArrowRight, Sparkles } from "lucide-react";
-import Image from "next/image";
 
 // PHASE 193 (copy audit — claims honesty): the previous data here was 9
 // fabricated testimonials (stock-avatar portraits + invented names and
@@ -169,14 +168,29 @@ export default function CoachingPage() {
               <br />
               {isAr ? "وأخصائيو تغذية." : "& nutrition specialists."}
             </h1>
-            {/* Image 1 — directly under the hero title */}
+            {/* Image 1 — directly under the hero title.
+                P0-4 (PERFORMANCE-AUDIT-2026-11-08, owner order 2026-11-08):
+                this image IS the page's LCP (measured 4.1s mobile — the
+                160,042B coaching-1.jpg alone took 2,522ms of it). Responsive
+                WebP triplet (640/828/1200 — the hero-light-* pattern) cuts
+                the mobile payload ~63% (60.3KB at 640w). next/image cannot
+                emit srcset under images.unoptimized (the Hobby-quota guard
+                law), so this is the plain-<img> prebuilt-variant pattern the
+                repo already uses (ThemeImg/PageBanner). The layout preloads
+                the same candidates at TTFB (imageSrcSet parity law). */}
             <div className="relative mt-8 aspect-[3/2] w-full overflow-hidden rounded-3xl shadow-2xl">
-              <Image
-                src="/images/hero/coaching-1.jpg"
+              {/* eslint-disable-next-line @next/next/no-img-element -- prebuilt responsive WebP variants (unoptimized law) */}
+              <img
+                src="/images/hero/coaching-1.webp"
+                srcSet="/images/hero/coaching-1-640.webp 640w, /images/hero/coaching-1-828.webp 828w, /images/hero/coaching-1.webp 1200w"
+                sizes="(max-width: 895px) calc(100vw - 32px), 864px"
                 alt={isAr ? "التدريب الأونلاين مع مدربك على Alkemos" : "Online fitness coaching with your Alkemos coach"}
-                fill
-                className="object-cover"
+                width={1200}
+                height={800}
+                className="absolute inset-0 h-full w-full object-cover"
                 loading="eager"
+                fetchPriority="high"
+                decoding="async"
               />
             </div>
             <p className="mx-auto mt-8 max-w-xl text-lg font-normal leading-snug text-[var(--muted-foreground)] md:text-xl">
@@ -330,15 +344,22 @@ export default function CoachingPage() {
         </section>
 
         {/* ===================== COACHING VISUALS ===================== */}
-        {/* Image 2 (coaching-2) — placed between Features and EVO sections */}
+        {/* Image 2 (coaching-2) — placed between Features and EVO sections.
+            P0-4 (same frame as image 1): responsive WebP triplet
+            (640/828/1024) — lazy (below the fold) per the original law. */}
         <section className="bg-[var(--bg)] px-4 py-12 md:py-20">
           <div className="relative mx-auto aspect-[3/2] w-full max-w-4xl overflow-hidden rounded-3xl shadow-2xl">
-            <Image
-              src="/images/hero/coaching-2.jpg"
+            {/* eslint-disable-next-line @next/next/no-img-element -- prebuilt responsive WebP variants (unoptimized law) */}
+            <img
+              src="/images/hero/coaching-2.webp"
+              srcSet="/images/hero/coaching-2-640.webp 640w, /images/hero/coaching-2-828.webp 828w, /images/hero/coaching-2.webp 1024w"
+              sizes="(max-width: 895px) calc(100vw - 32px), 864px"
               alt={isAr ? "تدريب احترافي مدعوم بالذكاء الاصطناعي" : "Professional AI-assisted training"}
-              fill
-              className="object-cover"
+              width={1024}
+              height={1024}
+              className="absolute inset-0 h-full w-full object-cover"
               loading="lazy"
+              decoding="async"
             />
           </div>
         </section>

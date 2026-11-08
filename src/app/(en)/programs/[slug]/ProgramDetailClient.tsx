@@ -13,7 +13,7 @@ import {
   GOAL_LABELS,
   type WorkoutProgram,
 } from "@/lib/workout-programs";
-import { getExerciseImages, getFallbackSVG } from "@/lib/exercise-images";
+import { getExerciseImages, getFallbackSVG, getExerciseImageSrcSet } from "@/lib/exercise-images";
 import type { ExerciseMini } from "@/lib/exercises-shared";
 import { ArrowLeft, Clock, Calendar, Dumbbell, Coffee } from "lucide-react";
 import Image from "next/image";
@@ -262,10 +262,16 @@ export default function ProgramDetailClient({
                             <div className="flex h-24 w-full items-center justify-center gap-1 bg-[#f5f5f7]">
                               {imgUrls.slice(0, 2).map((url, idx) => (
                                 <div key={idx} className="relative h-full w-1/2">
+                                  {/* P1-2 (PERFORMANCE-AUDIT-2026-11-08):
+                                      prebuilt responsive srcset — this
+                                      strip is h-24 (~96px); the 200w
+                                      variant serves it. */}
                                   <ImageWithFallback
                                     src={url}
                                     alt={`${isAr ? ex.nameAr : ex.nameEn} ${idx + 1}`}
                                     fill
+                                    srcSet={getExerciseImageSrcSet(url)}
+                                    sizes="(max-width: 640px) 21vw, 180px"
                                     className="object-contain"
                                     fallbackSrc={getFallbackSVG(exerciseData?.category || "default")}
                                   />

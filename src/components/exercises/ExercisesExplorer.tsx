@@ -16,6 +16,7 @@ import {
   getExerciseImages,
   getFallbackSVG,
   getExerciseImageUrl,
+  getExerciseImageSrcSet,
 } from "@/lib/exercise-images";
 import { filterExercises } from "@/lib/exercises";
 import { MUSCLE_HUBS, EQUIPMENT_HUBS } from "@/lib/hub-collections";
@@ -199,10 +200,16 @@ export function ExercisesExplorer({
                         <div className="grid h-full grid-cols-2 gap-0.5">
                           {imgUrls.slice(0, 2).map((url, idx) => (
                             <div key={idx} className="relative">
+                              {/* P1-2 (PERFORMANCE-AUDIT-2026-11-08):
+                                  prebuilt responsive srcset (400w/200w) —
+                                  cards display ~175px per half; ~80% waste
+                                  measured by the audit is gone. */}
                               <ImageWithFallback
                                 src={url}
                                 alt={`${isAr ? exercise.nameAr : exercise.nameEn} ${idx + 1}`}
                                 fill
+                                srcSet={getExerciseImageSrcSet(url)}
+                                sizes="(max-width: 640px) 45vw, (max-width: 1024px) 22vw, 15vw"
                                 className="object-contain"
                                 fallbackSrc={getFallbackSVG(exercise.category)}
                               />
