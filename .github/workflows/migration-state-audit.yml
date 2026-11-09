@@ -76,6 +76,23 @@ jobs:
           REPO: ${{ github.repository }}
         run: bash scripts/db/file_drift_issue.sh
 
+      # The OTHER half of the issue's own lifecycle law ("stays open until
+      # the state gate is green") — added 2026-11-10: issue #3 stayed open
+      # for 5 consecutive GREEN days because nothing owned the closing half
+      # (docs/MIGRATION-GATE-ISSUE3-RESOLUTION-2026-11-10.md). Closes every
+      # OPEN migration-drift issue with the green evidence attached. Never
+      # fails the gate itself: an API hiccup here must not falsify the DB
+      # verdict — it surfaces as a step warning and the issue simply stays
+      # open (the pre-2026-11-10 behavior).
+      - name: Close the drift issue on green (evidence attached — lifecycle law)
+        if: env.STATE_RC == '0'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          STATE_JSON: ${{ runner.temp }}/state.json
+          REPO: ${{ github.repository }}
+        run: bash scripts/db/file_drift_issue.sh --close-on-green
+
       - name: Final verdict (propagates the probe exit code)
         if: ${{ always() }}
         run: |

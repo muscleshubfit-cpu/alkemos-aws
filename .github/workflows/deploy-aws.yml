@@ -214,7 +214,21 @@ jobs:
             | grep -E 'supabase/migrations/([0-9]{14}|[0-9]{4})_.+\.sql$' || true)
           if [ -n "$SQL_CHANGED" ]; then echo "sql=true" >> "$GITHUB_OUTPUT";
           else echo "sql=false" >> "$GITHUB_OUTPUT"; fi
+          echo "range=$RANGE" >> "$GITHUB_OUTPUT"
           echo "applicable migration files shipped: ${SQL_CHANGED:-none}"
+
+      # IMMUTABLE-AFTER-LANDING law (2026-11-10 — the 42804 class, same
+      # guard as db-migrate.yml's validate job): an applicable migration
+      # file may only be ADDED — an edit against a version the production
+      # ledger already records will never run (the edited 0105 left enum
+      # columns live under ::text-cast trigger 0106 → every role write
+      # failed 42804 → the gate went UNVERIFIABLE). A push that edits a
+      # landed migration has NO honest apply channel — block the deploy
+      # (same class as "migrations shipped but no apply channel").
+      - name: Migration edit guard (immutable-after-landing law)
+        env:
+          MIGRATION_EDIT_RANGE: ${{ steps.changed.outputs.range }}
+        run: python3 scripts/db/migration_edit_guard.py
 
       - name: Apply pending migrations (ledger-driven · SUPABASE_DB_URL path)
         if: steps.changed.outputs.sql == 'true' && env.HAS_DB_URL == 'true'

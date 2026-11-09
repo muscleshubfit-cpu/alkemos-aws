@@ -83,7 +83,7 @@ jobs:
           elif [ "$GITHUB_EVENT_NAME" = "push" ]; then
             RANGE="${{ github.event.before }}..HEAD"
           else
-            RANGE=""
+            RANGE="HEAD^..HEAD"
           fi
           if [ -n "$RANGE" ]; then
             git fetch --quiet origin "${{ github.base_ref || 'main' }}" 2>/dev/null || true
@@ -96,8 +96,22 @@ jobs:
             echo "files<<CHANGED_EOF"
             echo "$CHANGED"
             echo "CHANGED_EOF"
+            echo "range=$RANGE"
           } >> "$GITHUB_OUTPUT"
           echo "changed count: $(echo "$CHANGED" | grep -c . || true)"
+
+      # IMMUTABLE-AFTER-LANDING law (2026-11-10 — the 42804 class): an
+      # applicable migration file may only be ADDED. Editing a file whose
+      # version the production ledger already records desynchronizes the
+      # file from the applied shape (the edited 0105 → enum columns on
+      # prod, ::text casts from 0106 → every role write failed 42804, the
+      # probe session died, the gate went UNVERIFIABLE, a deploy was
+      # blocked). Corrections ship as a NEW migration (the 0107 pattern) —
+      # docs/MIGRATION-GATE-ISSUE3-RESOLUTION-2026-11-10.md.
+      - name: Migration edit guard (immutable-after-landing law)
+        env:
+          MIGRATION_EDIT_RANGE: ${{ steps.changed.outputs.range }}
+        run: python3 scripts/db/migration_edit_guard.py
 
       - name: Install pinned Supabase CLI (v2.122.0)
         run: |
@@ -216,6 +230,18 @@ jobs:
           STATE_JSON: ${{ runner.temp }}/state.json
           REPO: ${{ github.repository }}
         run: bash scripts/db/file_drift_issue.sh
+
+      # The closing half of the issue lifecycle law — same step as
+      # migration-state-audit.yml (2026-11-10): a post-apply GREEN verdict
+      # closes the open migration-drift issue with this evidence.
+      - name: Close the drift issue on green (evidence attached — lifecycle law)
+        if: env.STATE_RC == '0'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          STATE_JSON: ${{ runner.temp }}/state.json
+          REPO: ${{ github.repository }}
+        run: bash scripts/db/file_drift_issue.sh --close-on-green
 
       - name: Final verdict
         if: ${{ always() }}

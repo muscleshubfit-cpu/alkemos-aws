@@ -1,7 +1,19 @@
 #!/usr/bin/env bash
-# File (or dedupe) the migration-drift issue — called by
-# migration-state-audit.yml and db-migrate.yml whenever the state gate
-# is RED. One open issue per incident class, evidence attached.
+# File (or dedupe) the migration-drift issue — the FULL lifecycle owner.
+#
+# Two modes, one law: "This issue stays open until the state gate is green."
+#   (default)          RED run  — file a new drift issue or comment fresh
+#                      evidence on the open one (the visibility law).
+#   --close-on-green   GREEN run — close every OPEN migration-drift issue
+#                      with the green evidence attached.
+#
+# WHY THE CLOSE MODE EXISTS (2026-11-10 — MIGRATION-GATE-ISSUE3):
+#   issue #3 stayed OPEN for 5 consecutive GREEN days after the
+#   0105/0106/0107 chain was reconciled (green since 2026-11-05T14:23Z,
+#   40+ consecutive green runs) — because the repo owned only the OPEN
+#   half of the lifecycle. A stale open drift issue is its own honesty
+#   problem: the label keeps screaming "drift!" while production is
+#   verified green, training everyone to ignore it.
 #
 # Env: GH_TOKEN (issues:write) · STATE_JSON (optional state.json) · REPO
 set -euo pipefail
@@ -9,18 +21,8 @@ set -euo pipefail
 LABEL="migration-drift"
 TITLE="MIGRATION DRIFT: latest migration not applied on production"
 
-ensure_label() {
-  gh label create "$LABEL" --color D93F0B \
-    --description "Latest repo migration is not proven applied on production" \
-    --repo "$REPO" 2>/dev/null || true
-}
-
-existing() {
-  gh issue list --repo "$REPO" --label "$LABEL" --state open \
-    --json number --jq '.[0].number' 2>/dev/null || echo ""
-}
-
-VERDICT="$(python3 - <<'PY'
+verdict_block() {
+  python3 - <<'PY'
 import json, os
 try:
     d = json.load(open(os.environ.get("STATE_JSON", "/nonexistent")))
@@ -34,7 +36,51 @@ try:
 except Exception:
     print("(state.json unavailable — see the workflow log table)")
 PY
+}
+
+ensure_label() {
+  gh label create "$LABEL" --color D93F0B \
+    --description "Latest repo migration is not proven applied on production" \
+    --repo "$REPO" 2>/dev/null || true
+}
+
+open_issue_numbers() {
+  gh issue list --repo "$REPO" --label "$LABEL" --state open \
+    --json number --jq '.[].number' 2>/dev/null || true
+}
+
+close_on_green() {
+  local closed=0
+  for NUM in $(open_issue_numbers); do
+    VERDICT="$(verdict_block)"
+    BODY="$(cat <<EOF
+State gate GREEN — closing per this issue's own law ("this issue stays open until the state gate is green"):
+
+\`\`\`
+${VERDICT}
+\`\`\`
+
+The gate now proves the latest repo migration APPLIED on production — every registered probe green, evidence above. If drift ever returns, the daily/push gate files a fresh deduplicated migration-drift issue with the new evidence automatically.
+EOF
 )"
+    echo "green run: closing drift issue #$NUM with the green evidence"
+    gh issue comment "$NUM" --repo "$REPO" --body "$BODY"
+    gh issue close "$NUM" --repo "$REPO"
+    closed=$((closed + 1))
+  done
+  if [ "$closed" -eq 0 ]; then
+    echo "green run: no open migration-drift issue — nothing to close (clean)"
+  fi
+}
+
+# ---- mode dispatch ----------------------------------------------------------
+if [ "${1:-}" = "--close-on-green" ]; then
+  close_on_green
+  exit 0
+fi
+
+# ---- RED path (file / dedupe — unchanged behavior) --------------------------
+VERDICT="$(verdict_block)"
 
 BODY="$(cat <<EOF
 ## Migration state gate: RED
@@ -75,7 +121,8 @@ Full incident analysis + design: docs/DB-MIGRATION-PIPELINE-2026-10-27.md
 EOF
 )"
 
-NUM="$(existing)"
+NUM="$(gh issue list --repo "$REPO" --label "$LABEL" --state open \
+  --json number --jq '.[0].number' 2>/dev/null || echo "")"
 if [ -n "${NUM:-}" ]; then
   echo "open drift issue #$NUM exists — commenting fresh evidence"
   gh issue comment "$NUM" --repo "$REPO" --body "State gate still RED:
