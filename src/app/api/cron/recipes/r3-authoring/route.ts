@@ -152,6 +152,9 @@ export async function GET(request: NextRequest) {
     }
 
     // Replace any prior version rows (repair path), then insert the pair.
+    // THE JSONB-WIRE LAW (first-live-run lesson 2026-11-10): jsonb columns
+    // take plain OBJECTS/ARRAYS — JSON.stringify'd values land as string
+    // documents and read back as text (the 0-steps Q-GATE-3 hold class).
     await supabaseAdmin.from("recipe_versions").delete().eq("recipe_id", qi.recipe_id);
     const versionRows = versions.map(({ language, version }) => ({
       recipe_id: qi.recipe_id as string,
@@ -159,10 +162,10 @@ export async function GET(request: NextRequest) {
       title: version.title,
       slug: finalSlug,
       excerpt: version.excerpt,
-      steps: JSON.stringify(version.steps),
+      steps: version.steps,
       tips: version.tips || null,
       storage_info: version.storageInfo || null,
-      substitutions: JSON.stringify(version.substitutions),
+      substitutions: version.substitutions,
       meta_title: version.metaTitle,
       meta_description: version.metaDescription,
       is_published: false,

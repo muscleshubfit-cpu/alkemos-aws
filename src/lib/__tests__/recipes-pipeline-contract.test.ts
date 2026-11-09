@@ -5,6 +5,7 @@ import {
   narrativeAdvisorySampled,
   parseNarrativeAdvisory,
 } from "../recipes-pipeline";
+import { parseJsonCell } from "../recipes-queue";
 
 /**
  * RECIPES PIPELINE CONTRACT — the follow-up canary for the fixes that
@@ -198,6 +199,53 @@ describe("3) the runner pair exists and carries the repair contract", () => {
       const map = QUEUE.slice(mapIdx, QUEUE.indexOf("};", mapIdx));
       expect(map).toContain(`${target}: ${status}`);
     }
+  });
+});
+
+describe("5) the jsonb-wire law (the first-live-run lesson, 2026-11-10)", () => {
+  const R2 = readFileSync(
+    resolve(process.cwd(), "src/app/api/cron/recipes/r2-nutrition/route.ts"),
+    "utf-8",
+  );
+  const R3 = readFileSync(
+    resolve(process.cwd(), "src/app/api/cron/recipes/r3-authoring/route.ts"),
+    "utf-8",
+  );
+
+  it("R2 writes PLAIN OBJECTS to the recipes jsonb columns (never JSON.stringify)", () => {
+    // A JSON.stringify'd value lands in a jsonb column as a STRING document;
+    // reading it back gives text and `.calories` silently reads undefined →
+    // the all-zeros N-GATE-3 hold class caught by the first live run.
+    expect(R2).not.toMatch(/nutrition_total:\s*JSON\.stringify/);
+    expect(R2).not.toMatch(/nutrition_per_serving:\s*JSON\.stringify/);
+    expect(R2).not.toMatch(/nutrition_sources:\s*JSON\.stringify/);
+    expect(R2).not.toMatch(/calories_kcal_consistency:\s*JSON\.stringify/);
+    expect(R2).toMatch(/nutrition_per_serving:\s*computation\.perServing/);
+  });
+
+  it("R3 writes steps/substitutions as the plain array/object", () => {
+    expect(R3).not.toMatch(/steps:\s*JSON\.stringify/);
+    expect(R3).not.toMatch(/substitutions:\s*JSON\.stringify/);
+    expect(R3).toMatch(/steps:\s*version\.steps/);
+  });
+
+  it("R5 stamps verification as a plain object and reads cells tolerantly", () => {
+    expect(R5).not.toMatch(/verification:\s*JSON\.stringify/);
+    // the tolerant reader covers pre-fix rows (string-valued jsonb) forever
+    expect(R5).toContain("parseJsonCell");
+    expect(R5).toMatch(/typeof raw === "string"/);
+  });
+
+  it("parseJsonCell: both wire shapes read correctly (object and string)", () => {
+    const obj = { calories: 788, protein_g: 41.79 };
+    expect(parseJsonCell(obj)).toEqual(obj);
+    expect(parseJsonCell(JSON.stringify(obj))).toEqual(obj);
+    // junk and empties degrade to {} — never throw, never leak text through
+    expect(parseJsonCell(null)).toEqual({});
+    expect(parseJsonCell("")).toEqual({});
+    expect(parseJsonCell("not json")).toEqual({});
+    expect(parseJsonCell(42)).toEqual({});
+    expect(parseJsonCell(undefined)).toEqual({});
   });
 });
 

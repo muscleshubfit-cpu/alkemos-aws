@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyCronAuth } from "@/lib/cron-auth";
 import { supabaseAdmin, isSupabaseAdminConfigured } from "@/lib/supabase/admin";
+import type { Json } from "@/lib/supabase/types";
 import {
   runRecipeQualityGates,
   assembleGateReport,
@@ -18,6 +19,7 @@ import {
   fetchRecipeQueueItem,
   updateRecipeQueueItem,
   markRecipeQueueFailed,
+  parseJsonCell,
 } from "@/lib/recipes-queue";
 
 export const maxDuration = 120;
@@ -87,10 +89,15 @@ export async function GET(request: NextRequest) {
       cook_minutes: number;
       image_url: string | null;
       image_verified: boolean;
-      nutrition_per_serving: Record<string, number> | null;
-      calories_kcal_consistency: { total?: { pass: boolean; computed: number; fromMacros: number }; perServing?: { pass: boolean; computed: number; fromMacros: number } } | null;
+      nutrition_per_serving: unknown;
+      calories_kcal_consistency: unknown;
       diets: string[];
     };
+    // THE JSONB-WIRE LAW (first-live-run lesson 2026-11-10): cells may come
+    // back as objects (correct writers) or as JSON strings (pre-fix rows /
+    // drift) — parseJsonCell keeps both shapes reading correctly.
+    const nutritionCell = parseJsonCell(master.nutrition_per_serving);
+    const consistencyCell = parseJsonCell(master.calories_kcal_consistency);
 
     const { data: verData, error: verErr } = await supabaseAdmin
       .from("recipe_versions")
@@ -101,7 +108,21 @@ export async function GET(request: NextRequest) {
       language: String(v.language) as "ar" | "en",
       title: String(v.title ?? ""),
       excerpt: String(v.excerpt ?? ""),
-      steps: Array.isArray(v.steps) ? (v.steps as Array<{ position: number; text: string }>) : [],
+      // jsonb-wire law: steps may be an array (correct) or a JSON string
+      // (pre-fix rows) — tolerate both, never silently drop to [].
+      steps: (() => {
+        const raw = v.steps;
+        if (Array.isArray(raw)) return raw as Array<{ position: number; text: string }>;
+        if (typeof raw === "string") {
+          try {
+            const parsed = JSON.parse(raw);
+            return Array.isArray(parsed) ? (parsed as Array<{ position: number; text: string }>) : [];
+          } catch {
+            return [];
+          }
+        }
+        return [];
+      })(),
       tips: (v.tips as string | null) ?? null,
       storageInfo: (v.storage_info as string | null) ?? null,
       metaTitle: (v.meta_title as string | null) ?? null,
@@ -177,13 +198,13 @@ export async function GET(request: NextRequest) {
     }
 
     const perServing: NutritionTotals = {
-      calories: Number(master.nutrition_per_serving?.calories ?? 0),
-      protein_g: Number(master.nutrition_per_serving?.protein_g ?? 0),
-      carbs_g: Number(master.nutrition_per_serving?.carbs_g ?? 0),
-      fat_g: Number(master.nutrition_per_serving?.fat_g ?? 0),
-      fiber_g: Number(master.nutrition_per_serving?.fiber_g ?? 0),
-      sat_fat_g: typeof master.nutrition_per_serving?.sat_fat_g === "number" ? master.nutrition_per_serving.sat_fat_g : null,
-      sodium_mg: typeof master.nutrition_per_serving?.sodium_mg === "number" ? master.nutrition_per_serving.sodium_mg : null,
+      calories: Number(nutritionCell.calories ?? 0),
+      protein_g: Number(nutritionCell.protein_g ?? 0),
+      carbs_g: Number(nutritionCell.carbs_g ?? 0),
+      fat_g: Number(nutritionCell.fat_g ?? 0),
+      fiber_g: Number(nutritionCell.fiber_g ?? 0),
+      sat_fat_g: typeof nutritionCell.sat_fat_g === "number" ? nutritionCell.sat_fat_g : null,
+      sodium_mg: typeof nutritionCell.sodium_mg === "number" ? nutritionCell.sodium_mg : null,
     };
 
     const violations = runRecipeQualityGates({
@@ -198,14 +219,14 @@ export async function GET(request: NextRequest) {
       perServing,
       consistency: {
         total: {
-          pass: Boolean(master.calories_kcal_consistency?.total?.pass),
-          computed: Number(master.calories_kcal_consistency?.total?.computed ?? 0),
-          fromMacros: Number(master.calories_kcal_consistency?.total?.fromMacros ?? 0),
+          pass: Boolean((consistencyCell.total as { pass?: boolean } | undefined)?.pass),
+          computed: Number((consistencyCell.total as { computed?: number } | undefined)?.computed ?? 0),
+          fromMacros: Number((consistencyCell.total as { fromMacros?: number } | undefined)?.fromMacros ?? 0),
         },
         perServing: {
-          pass: Boolean(master.calories_kcal_consistency?.perServing?.pass),
-          computed: Number(master.calories_kcal_consistency?.perServing?.computed ?? 0),
-          fromMacros: Number(master.calories_kcal_consistency?.perServing?.fromMacros ?? 0),
+          pass: Boolean((consistencyCell.perServing as { pass?: boolean } | undefined)?.pass),
+          computed: Number((consistencyCell.perServing as { computed?: number } | undefined)?.computed ?? 0),
+          fromMacros: Number((consistencyCell.perServing as { fromMacros?: number } | undefined)?.fromMacros ?? 0),
         },
       },
       derivedDiets: (master.diets ?? []) as RecipeDiet[],
@@ -222,6 +243,8 @@ export async function GET(request: NextRequest) {
     // ── Advisory tail (sampled, fail-open — see header). Runs ONLY on
     //    the deterministic pass path: an advisory can hold an otherwise
     //    passing pair, but can NEVER rescue a failing one. ──
+    // (jsonb-wire law: the stamped verification is a PLAIN OBJECT cast to
+    // the column's Json type — JSON.stringify would land as a string doc.)
     let advisoryStamped: Record<string, unknown> | null = null;
     if (report.passed && narrativeAdvisorySampled(String(qi.scheduled_for ?? ""))) {
       const idea = (qi.idea ?? {}) as { themeAr?: string; themeEn?: string };
@@ -261,7 +284,8 @@ export async function GET(request: NextRequest) {
           await supabaseAdmin
             .from("recipes")
             .update({
-              verification: JSON.stringify({ ...report, advisoryNarrative: advisoryStamped }),
+              // jsonb-wire law: plain object (Json-cast), never JSON.stringify
+              verification: { ...report, advisoryNarrative: advisoryStamped } as unknown as Json,
               verification_status: "failed",
               updated_at: new Date().toISOString(),
             })
@@ -284,12 +308,13 @@ export async function GET(request: NextRequest) {
 
     // Stamp the report (pass OR fail — the full production record law;
     // carries the advisory tail on sampled days, null otherwise).
+    // jsonb-wire law: plain object, never JSON.stringify.
     await supabaseAdmin
       .from("recipes")
       .update({
-        verification: JSON.stringify(
-          advisoryStamped ? { ...report, advisoryNarrative: advisoryStamped } : report,
-        ),
+        verification: (advisoryStamped
+          ? { ...report, advisoryNarrative: advisoryStamped }
+          : report) as unknown as Json,
         verification_status: report.passed ? "passed" : "failed",
         updated_at: new Date().toISOString(),
       })

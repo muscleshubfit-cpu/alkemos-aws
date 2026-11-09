@@ -118,13 +118,16 @@ export async function GET(request: NextRequest) {
       mealTypes: master.meal_types ?? [],
     });
 
+    // THE JSONB-WIRE LAW (first-live-run lesson 2026-11-10): jsonb columns
+    // take plain OBJECTS — a JSON.stringify'd value lands as a string-valued
+    // document and reads back as text (the all-zeros N-GATE-3 hold class).
     const { error: updErr } = await supabaseAdmin
       .from("recipes")
       .update({
-        nutrition_total: JSON.stringify(computation.totals),
-        nutrition_per_serving: JSON.stringify(computation.perServing),
-        nutrition_sources: JSON.stringify(computation.sources),
-        calories_kcal_consistency: JSON.stringify(computation.consistency),
+        nutrition_total: computation.totals,
+        nutrition_per_serving: computation.perServing,
+        nutrition_sources: computation.sources,
+        calories_kcal_consistency: computation.consistency,
         sodium_coverage: computation.sodiumCoverage,
         serving_weight_g: computation.servingWeightG,
         diets,

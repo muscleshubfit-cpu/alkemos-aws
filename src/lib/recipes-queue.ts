@@ -57,8 +57,16 @@ export function getRecipeQueueIdParam(request: NextRequest): string | null {
   return v && v.trim() ? v.trim() : null;
 }
 
-/** Parse a jsonb cell that may come back as a JSON string or an object. */
-function parseJsonCell(v: unknown): Record<string, unknown> {
+/** Parse a jsonb cell that may come back as a JSON string or an object.
+ *
+ * THE JSONB-WIRE LAW (the first-live-run lesson, 2026-11-10): a value
+ * written as `JSON.stringify(x)` reaches a jsonb column as a JSON STRING
+ * (a string-valued jsonb document), NOT the object — reading it back
+ * gives text, and `cell.calories` / `Array.isArray(cell)` silently produce
+ * undefined/[] (the all-zeros + 0-steps N-GATE hold class). Writers must
+ * send plain OBJECTS to jsonb columns; this reader stays tolerant of both
+ * shapes so pre-fix rows and any future drift degrade safely. */
+export function parseJsonCell(v: unknown): Record<string, unknown> {
   if (!v) return {};
   if (typeof v === "string") {
     try {
