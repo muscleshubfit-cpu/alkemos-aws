@@ -20,7 +20,7 @@ import { EngravedIcon } from "@/components/ThemeImg";
  * Arabic via the page's langProp while the context may report "en".
  */
 
-type ExploreKey = "exercises" | "foods" | "diet-plan" | "meal-planner" | "programs" | "tools" | "blog";
+type ExploreKey = "exercises" | "foods" | "recipes" | "diet-plan" | "meal-planner" | "programs" | "tools" | "blog";
 
 const EXPLORE_ITEMS: {
   key: ExploreKey;
@@ -47,6 +47,17 @@ const EXPLORE_ITEMS: {
     nameEn: "Food Library",
     descAr: "8,830+ صنف غذائي بالسعرات والماكروز",
     descEn: "8,830+ foods with calories and macros",
+    icon: "protein",
+  },
+  // HEALTHY-RECIPES-PLATFORM plan §9.3: the recipes library joins the
+  // cross-navigation cluster (EXPLORE_ITEMS).
+  {
+    key: "recipes",
+    href: "/recipes",
+    nameAr: "الوصفات الصحية",
+    nameEn: "Healthy Recipes",
+    descAr: "وصفات ثنائية اللغة بقيم محسوبة برمجيًا بالجرام",
+    descEn: "Bilingual recipes with computed per-gram nutrition",
     icon: "protein",
   },
   // §12.33: the ready-made diet plans join the libraries cluster under

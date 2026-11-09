@@ -9,6 +9,7 @@ import { SiteFooter } from "@/components/SiteFooter";
 import { ShareButtons } from "@/components/ShareButtons";
 import { AdSenseAd } from "@/components/AdSenseAd";
 import { OtherTools } from "@/components/OtherTools";
+import { RecipeSuggestStrip } from "@/components/recipes/RecipeSuggestStrip";
 import { ReviewInviteCard } from "@/components/ReviewInviteCard";
 import { demoSystemOptions, type DemoPlan } from "@/lib/ai-meal-planner";
 import {
@@ -514,6 +515,17 @@ export default function AiMealPlannerPage() {
                 ? "الخطة تقدير تعليمي قابل للنسخ — راجعها وعدّل كمياتها على مائدتك، وقِس أثرها بالاتجاه الأسبوعي لا بقراءة يوم. خطتك تبقى معك على هذا الجهاز في التنقل والتحديث، ولا تختفي عند استنفاد رصيد الشهر."
                 : "This plan is a copyable educational estimate — review it, adjust the portions to your table, and measure its effect on the weekly trend, not a single reading. Your plan stays with you on this device across navigation and refreshes — and never disappears when the month's quota runs out."}
             </p>
+
+            {/* HEALTHY-RECIPES-PLATFORM (plan §9.4): 2-3 published recipes
+                compatible with the day's calories — READ-ONLY suggestions
+                beside the plan (the plan engine itself stays isolated:
+                plan-generator untouched, the isolation law). */}
+            <div className="mt-6">
+              <RecipeSuggestStrip
+                lang={lang}
+                maxCalories={Math.max(300, Math.round((plan.meals.reduce((s, m) => s + m.kcal, 0) || 1800) / 3) * 1.1)}
+              />
+            </div>
 
             {/* SOFT signup nudge (guests only) — benefits, never a wall. */}
             {!profile && (

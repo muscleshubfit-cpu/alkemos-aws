@@ -47,6 +47,12 @@ const REAL_SITE_PATHS = [
   "/ai-workout-planner",
   "/blog",
   "/ar/blog",
+  // HEALTHY-RECIPES-PLATFORM (2026-11-10): the recipes family's primary
+  // surfaces (plan §10-5) — concrete hub canonicals (the egyptian
+  // cuisine hub + the keto diet hub own their clusters' head queries).
+  "/recipes",
+  "/recipes/cuisine/egyptian",
+  "/recipes/diet/keto",
 ] as const;
 
 const PARAMETRIC_PATH_PREFIXES = [

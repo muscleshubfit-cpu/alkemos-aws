@@ -32,7 +32,7 @@ import { FOODS_SEARCH_INDEX } from "@/lib/foods-search-index";
 import { WORKOUT_PROGRAMS } from "@/lib/workout-programs";
 
 export type SearchResult = {
-  type: "exercise" | "food" | "program" | "tool";
+  type: "exercise" | "food" | "program" | "tool" | "recipe";
   slug: string;
   nameAr: string;
   nameEn: string;
@@ -311,6 +311,138 @@ function searchTools(query: string): SearchResult[] {
 }
 
 /**
+ * HEALTHY-RECIPES-PLATFORM (plan §9.4 — EVO knowledge): the recipes
+ * family joins the platform search. Recipe PAGES are DB-backed (not
+ * searchable in-memory), but the TAXONOMY HUBS are static code — so
+ * EVO honestly points recipe-intent questions («وصفة كيتو»، «أفكار
+ * عشاء صحي») at the matching hub page. Keywords are bilingual and
+ * recipe-INTENT specific (a «دجاج» query still belongs to /foods).
+ */
+const RECIPE_HUBS = [
+  {
+    slug: "recipes",
+    nameAr: "الوصفات الصحية",
+    nameEn: "Healthy Recipes",
+    url: "/recipes",
+    description: "وصفات ثنائية اللغة بقيم محسوبة بالجرام لكل حصة",
+    keywords: ["وصفة", "وصفات", "طبخ", "اكل صحي", "وصفة صحية", "recipe", "recipes", "healthy recipe", "meal ideas"],
+  },
+  {
+    slug: "diet-keto",
+    nameAr: "وصفات كيتو",
+    nameEn: "Keto Recipes",
+    url: "/recipes/diet/keto",
+    description: "كربوهيدرات صافية ≤ 10 جم للحصة — قاعدة المحرك معلنة",
+    keywords: ["وصفة كيتو", "وصفات كيتو", "كيتو", "keto recipes", "keto meal"],
+  },
+  {
+    slug: "diet-high-protein",
+    nameAr: "وصفات عالية البروتين",
+    nameEn: "High-Protein Recipes",
+    url: "/recipes/diet/high-protein",
+    description: "بروتين ≥ 25 جم أو ≥ 30% من السعرات للحصة",
+    keywords: ["وصفة بروتين", "وصفات عالية البروتين", "high protein recipes", "protein meal"],
+  },
+  {
+    slug: "diet-vegan",
+    nameAr: "وصفات نباتية صرفة",
+    nameEn: "Vegan Recipes",
+    url: "/recipes/diet/vegan",
+    description: "بلا أي مكونات حيوانية — محسوبة من الأعلام",
+    keywords: ["وصفة نباتية", "وصفات نباتية", "vegan recipes", "vegan meal"],
+  },
+  {
+    slug: "diet-vegetarian",
+    nameAr: "وصفات نباتية بالبيض والألبان",
+    nameEn: "Vegetarian Recipes",
+    url: "/recipes/diet/vegetarian",
+    description: "بلا لحوم أو أسماك",
+    keywords: ["وصفة نباتية بالبيض", "vegetarian recipes"],
+  },
+  {
+    slug: "diet-gluten-free",
+    nameAr: "وصفات خالية من الجلوتين",
+    nameEn: "Gluten-Free Recipes",
+    url: "/recipes/diet/gluten-free",
+    description: "صفر أعلام جلوتين",
+    keywords: ["وصفة خالية الجلوتين", "بدون جلوتين", "gluten free recipes"],
+  },
+  {
+    slug: "diet-low-carb",
+    nameAr: "وصفات قليلة الكربوهيدرات",
+    nameEn: "Low-Carb Recipes",
+    url: "/recipes/diet/low-carb",
+    description: "كربوهيدرات ≤ 20 جم للحصة",
+    keywords: ["وصفة قليلة الكارب", "low carb recipes"],
+  },
+  {
+    slug: "cuisine-egyptian",
+    nameAr: "وصفات مصرية صحية",
+    nameEn: "Healthy Egyptian Recipes",
+    url: "/recipes/cuisine/egyptian",
+    description: "المطبخ المصري بقيم محسوبة بالجرام",
+    keywords: ["وصفة مصرية", "اكل مصري صحي", "egyptian recipes"],
+  },
+  {
+    slug: "meal-breakfast",
+    nameAr: "وصفات إفطار صحية",
+    nameEn: "Healthy Breakfast Recipes",
+    url: "/recipes/meal/breakfast",
+    description: "إفطار بقيم محسوبة لكل حصة",
+    keywords: ["وصفة افطار", "افطار صحي", "healthy breakfast ideas", "breakfast recipes"],
+  },
+  {
+    slug: "meal-dinner",
+    nameAr: "وصفات عشاء صحية",
+    nameEn: "Healthy Dinner Recipes",
+    url: "/recipes/meal/dinner",
+    description: "عشاء بقيم محسوبة لكل حصة",
+    keywords: ["وصفة عشاء", "عشاء صحي", "dinner recipes", "healthy dinner"],
+  },
+  {
+    slug: "meal-pre-workout",
+    nameAr: "وصفات قبل التمرين",
+    nameEn: "Pre-Workout Recipes",
+    url: "/recipes/meal/pre-workout",
+    description: "وقود ما قبل التمرين بقيم محسوبة",
+    keywords: ["قبل التمرين", "اكل قبل التمرين", "pre workout meal"],
+  },
+  {
+    slug: "meal-post-workout",
+    nameAr: "وصفات بعد التمرين",
+    nameEn: "Post-Workout Recipes",
+    url: "/recipes/meal/post-workout",
+    description: "استشفاء ما بعد التمرين ببروتين محسوب",
+    keywords: ["بعد التمرين", "اكل بعد التمرين", "post workout meal"],
+  },
+];
+
+/**
+ * Search the recipes taxonomy hubs (EVO's recipes knowledge — plan §9.4).
+ */
+function searchRecipeHubs(query: string): SearchResult[] {
+  const results: SearchResult[] = [];
+  for (const hub of RECIPE_HUBS) {
+    const keywordScore = Math.max(
+      0,
+      ...hub.keywords.map((kw) => scoreMatch(query, kw)),
+    );
+    if (keywordScore > 0.45) {
+      results.push({
+        type: "recipe",
+        slug: hub.slug,
+        nameAr: hub.nameAr,
+        nameEn: hub.nameEn,
+        url: hub.url,
+        description: hub.description,
+        relevance: keywordScore,
+      });
+    }
+  }
+  return results.sort((a, b) => b.relevance - a.relevance).slice(0, 2);
+}
+
+/**
  * Main search function — searches all local databases.
  * Returns combined results sorted by relevance.
  */
@@ -320,6 +452,7 @@ export function searchPlatform(query: string): SearchResult[] {
     ...searchFoods(query),
     ...searchPrograms(query),
     ...searchTools(query),
+    ...searchRecipeHubs(query),
   ];
 
   return all.sort((a, b) => b.relevance - a.relevance).slice(0, 5);

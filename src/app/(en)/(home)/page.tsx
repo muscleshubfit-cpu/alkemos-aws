@@ -3,6 +3,7 @@ import { AuthErrorToast } from "@/components/AuthErrorToast";
 import { getHomeSamples } from "@/lib/home-samples";
 import { fetchSiteContentOverrides } from "@/lib/site-content/server";
 import { listPublishedPostsForListPage } from "@/lib/blog-server";
+import { listHomeSampleRecipes } from "@/lib/recipes-server";
 import { selectHomeBlogCarousels } from "@/lib/blog-home-carousel";
 
 /**
@@ -42,6 +43,9 @@ export default async function Page() {
   // window (revalidate=300), so the rotating featured window advances at
   // regeneration — and each visit saves the old client REST trip.
   const posts = await listPublishedPostsForListPage("en");
+  // HEALTHY-RECIPES-PLATFORM (plan §9.3): the featured-recipes slice —
+  // [] until the first pair publishes (the honest-empty section law).
+  const recipeSamples = await listHomeSampleRecipes("en", 3);
   const blogCarousels = selectHomeBlogCarousels(posts);
   const content = await fetchSiteContentOverrides();
   return (
@@ -51,7 +55,7 @@ export default async function Page() {
           URL-resolved, the BlogListPage precedent (no client locale
           guess on the body; the header/footer chrome keeps its own
           provider behavior). */}
-      <LandingView samples={samples} content={content} isAr={false} blogCarousels={blogCarousels} />
+      <LandingView samples={samples} content={content} isAr={false} blogCarousels={blogCarousels} recipeSamples={recipeSamples} />
     </>
   );
 }

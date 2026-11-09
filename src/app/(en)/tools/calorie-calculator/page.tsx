@@ -7,6 +7,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { AdSenseAd } from "@/components/AdSenseAd";
 import { OtherTools } from "@/components/OtherTools";
+import { RecipeSuggestStrip } from "@/components/recipes/RecipeSuggestStrip";
 import { LeadCaptureCard } from "@/components/LeadCaptureCard";
 import { SaveResultButton } from "@/components/SaveResultButton";
 import { ShareButtons } from "@/components/ShareButtons";
@@ -336,6 +337,15 @@ export default function CalorieCalculatorPage() {
                   : `Calories: ${result.target}/day · Protein: ${result.protein}g · Carbs: ${result.carbs}g · Fat: ${result.fat}g`
               }
               resultJson={result}
+            />
+
+            {/* HEALTHY-RECIPES-PLATFORM (plan §9.4): recipes that fit a meal
+                share of the daily target (~1/3 — the heuristic is stated in
+                the aria label; honest empty until the pipeline publishes). */}
+            <RecipeSuggestStrip
+              lang={lang}
+              goal={goal === "lose" ? "weight-loss" : goal === "gain" ? "muscle-gain" : "maintenance"}
+              maxCalories={Math.round(result.target / 3)}
             />
 
             {/* Share buttons */}

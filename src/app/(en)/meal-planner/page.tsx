@@ -8,6 +8,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { AdSenseAd } from "@/components/AdSenseAd";
 import { OtherTools } from "@/components/OtherTools";
+import { RecipeSuggestStrip } from "@/components/recipes/RecipeSuggestStrip";
 import { ShareButtons } from "@/components/ShareButtons";
 import { ReviewInviteCard } from "@/components/ReviewInviteCard";
 import { ShoppingListCard } from "@/components/ShoppingListCard";
@@ -352,6 +353,16 @@ export default function MealPlannerPage() {
               ? "ابنِ وجباتك من قاعدة بيانات 8,830+ صنف غذائي وتابع الماكروز لكل وجبة والإجمالي."
               : "Build your meals from 8,830+ foods and see per-meal + total macros."}
           </p>
+          {/* HEALTHY-RECIPES-PLATFORM (plan §9.4): «استبدل هذا الطبق
+              بوصفة جاهزة» — ready recipes beside the builder; honest
+              empty until the pipeline publishes (zero regression). */}
+          <div className="mt-6 text-start">
+            <RecipeSuggestStrip
+              lang={lang}
+              maxCalories={700}
+              title={isAr ? "أو استبدل طبقك بوصفة جاهزة محسوبة" : "Or swap the dish for a ready computed recipe"}
+            />
+          </div>
           {/* Tier badge */}
           <div className="seal-chip mt-4 inline-flex items-center gap-2">
             <Utensils className="h-3.5 w-3.5 text-[var(--muted-2)]" />

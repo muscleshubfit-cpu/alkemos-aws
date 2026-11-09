@@ -677,3 +677,122 @@ export function stripTrailingBrandForArTemplate(title: string): string {
 }
 
 export { SITE_URL, SITE_NAME, SITE_LOGO };
+
+/**
+ * Recipe schema — HEALTHY-RECIPES-PLATFORM plan §10-1 (the audit's
+ * «getRecipeSchema يُبنى جديدًا» gap, built on the honest-dates
+ * getArticleSchema precedent + the foods pages' hand-made
+ * NutritionInformation node).
+ *
+ * LAWS (owner §11 + repo E-E-A-T law):
+ *  - NO aggregateRating EVER — zero real reviews exist; a fabricated
+ *    rating is a Google penalty (the blog's honest-schema precedent).
+ *  - Author/publisher follow the platform honesty pattern: the daily
+ *    pipeline is the author (Organization), never a fabricated Person.
+ *  - Every nutrition number comes from the COMPUTED layer
+ *    (recipes-nutrition), passed in by the caller — this function
+ *    serializes, it never computes.
+ *  - saturatedFat/sodium are included ONLY when the caller passes a
+ *    non-null value (owner §2 «لا تختلق قيم» — the enrichment columns
+ *    are optional by design).
+ *  - recipeIngredient carries the weight + weight-state in the VERSION's
+ *    language; recipeInstructions is a HowToStep list from the stored
+ *    steps; suitableForDiet maps from the diets[] the RULES ENGINE
+ *    computed (never model-claimed — D-GATE-1).
+ */
+export function getRecipeSchema(params: {
+  lang: "en" | "ar";
+  title: string;
+  description: string;
+  pageUrl: string;
+  image?: string;
+  datePublished: string;
+  dateModified?: string;
+  recipeYield: number;
+  prepMinutes: number;
+  cookMinutes: number;
+  cuisineLabels: string[];
+  suitableForDietLabels: string[];
+  /** Per-serving computed values (the caller's single source of truth). */
+  nutrition: {
+    calories: number;
+    proteinG: number;
+    carbsG: number;
+    fatG: number;
+    fiberG?: number | null;
+    saturatedFatG?: number | null;
+    sodiumMg?: number | null;
+  };
+  /** Already localized "120 g rice (raw)" strings. */
+  recipeIngredient: string[];
+  instructions: string[];
+}) {
+  const toIso = (minutes: number) => `PT${Math.max(0, Math.round(minutes))}M`;
+  return {
+    "@context": "https://schema.org",
+    "@type": "Recipe",
+    name: params.title,
+    description: params.description,
+    inLanguage: params.lang === "ar" ? "ar" : "en",
+    url: params.pageUrl,
+    ...(params.image ? { image: [params.image] } : {}),
+    datePublished: params.datePublished,
+    dateModified: params.dateModified || params.datePublished,
+    recipeYield: `${params.recipeYield}`,
+    prepTime: toIso(params.prepMinutes),
+    cookTime: toIso(params.cookMinutes),
+    totalTime: toIso(params.prepMinutes + params.cookMinutes),
+    ...(params.cuisineLabels.length > 0 ? { recipeCuisine: params.cuisineLabels } : {}),
+    ...(params.suitableForDietLabels.length > 0
+      ? { suitableForDiet: params.suitableForDietLabels }
+      : {}),
+    recipeIngredient: params.recipeIngredient,
+    recipeInstructions: params.instructions.map((text, i) => ({
+      "@type": "HowToStep",
+      position: i + 1,
+      text,
+    })),
+    nutrition: {
+      "@type": "NutritionInformation",
+      // «~245 kcal» — schema.org expects a string per property.
+      calories: `${params.nutrition.calories} kcal`,
+      proteinContent: `${params.nutrition.proteinG} g`,
+      carbohydrateContent: `${params.nutrition.carbsG} g`,
+      fatContent: `${params.nutrition.fatG} g`,
+      ...(params.nutrition.fiberG != null ? { fiberContent: `${params.nutrition.fiberG} g` } : {}),
+      ...(params.nutrition.saturatedFatG != null
+        ? { saturatedFatContent: `${params.nutrition.saturatedFatG} g` }
+        : {}),
+      ...(params.nutrition.sodiumMg != null ? { sodiumContent: `${params.nutrition.sodiumMg} mg` } : {}),
+    },
+    author: {
+      "@type": "Organization",
+      name: SITE_NAME,
+      url: SITE_URL,
+    },
+    publisher: {
+      "@type": "Organization",
+      name: SITE_NAME,
+      logo: { "@type": "ImageObject", url: SITE_LOGO },
+    },
+    mainEntityOfPage: { "@type": "WebPage", "@id": params.pageUrl },
+  };
+}
+
+/**
+ * Maps an internal diets[] value to the schema.org restrictedDiet enum
+ * (getRecipeSchema's suitableForDiet input). Values with NO honest
+ * schema.org enum are OMITTED — never approximated:
+ *   keto / low-carb / high-protein / mediterranean / pescatarian have
+ *   no restrictedDiet enum member, so they are simply not emitted.
+ * dairy-free → LowLactoseDiet is sound by construction (zero dairy ⇒
+ * zero lactose); dash → LowSaltDiet because the rules engine's DASH
+ * criterion IS the sodium ceiling (≤600 mg/serving).
+ */
+export const SCHEMA_SUITABLE_FOR_DIET: Record<string, string> = {
+  vegetarian: "VegetarianDiet",
+  vegan: "VeganDiet",
+  "gluten-free": "GlutenFreeDiet",
+  "dairy-free": "LowLactoseDiet",
+  dash: "LowSaltDiet",
+};

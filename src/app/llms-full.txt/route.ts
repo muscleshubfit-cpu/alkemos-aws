@@ -48,7 +48,7 @@ export async function GET(): Promise<Response> {
 
   const body = `# Alkemos (llms-full)
 
-> Alkemos is a bilingual (English/Arabic) fitness and nutrition platform for a global audience: an 868+ exercise library with form instructions, ready workout programs, a food database with per-100g nutrition for 8,830+ foods, and 8 free tools — four calculators (calorie/TDEE, BMI, macro, body fat), a water tracker, a meal planner, an AI meal planner, and an AI workout planner — plus the EVO AI coach and personal online coaching. This file extends the short /llms.txt with the latest articles per language.
+> Alkemos is a bilingual (English/Arabic) fitness and nutrition platform for a global audience: an 868+ exercise library with form instructions, ready workout programs, a food database with per-100g nutrition for 8,830+ foods, daily healthy recipe pairs with gram-level computed nutrition, and 8 free tools — four calculators (calorie/TDEE, BMI, macro, body fat), a water tracker, a meal planner, an AI meal planner, and an AI workout planner — plus the EVO AI coach and personal online coaching. This file extends the short /llms.txt with the latest articles per language.
 
 - Platform: ${SITE}
 - Arabic homepage: ${SITE}/ar
@@ -70,6 +70,7 @@ export async function GET(): Promise<Response> {
 - [Macro Tracker](${SITE}/macro-tracker): macro planning — calculator targets, meal builder with live macro totals from the 8,830+ food database, AI meal plans (2 free/month), and weight tracking. Planning-level tracking: no daily food diary. Arabic: ${SITE}/ar/macro-tracker
 - [Comparisons](${SITE}/compare): honest feature-by-feature comparisons — vs MyFitnessPal, Freeletics, ExRx.net, and Cronometer (${SITE}/compare/alkemos-vs-cronometer); Arabic: ${SITE}/ar/compare
 - [Diet Plan Library](${SITE}/diet-plan): 24 ready-made daily plans (6 calorie levels × 4 systems — balanced, high-protein, keto, vegetarian) in grams and calories, one card per system with its calorie options; Arabic: ${SITE}/ar/diet-plan
+- [Healthy Recipes](${SITE}/recipes): bilingual recipe pairs (independently authored Arabic + English — never a translation) with per-serving nutrition computed in grams from a verified USDA-based reference; ingredients carry gram weights and raw/cooked states; detail pages under /recipes/[slug] (one shared slug per pair); taxonomy hubs under /recipes/cuisine|diet|goal|meal/[slug]; methodology at ${SITE}/recipes/methodology. Arabic: ${SITE}/ar/recipes
 - [Fitness Blog](${SITE}/blog): evidence-based training and nutrition articles; Arabic articles at ${SITE}/ar/blog
 - [Online Coaching](${SITE}/coaching): personal coaches and nutrition specialists
 - [EVO — AI Fitness Coach](${SITE}/evo): the platform's AI fitness coach and performance engine — the single primary page for AI-coach intent; the AI planners and tools feed into it
@@ -91,6 +92,7 @@ export async function GET(): Promise<Response> {
 - Head-to-head food questions → /foods/compare/[slug] — per-100g tables plus real-serving numbers from the two food pages themselves
 - Ranked food questions → /foods/lists/[slug] — ranking rules disclosed on the page, every number is the row's own value
 - Curated food choices by diet goal → /collections/[slug]
+- Recipe requests and meal ideas ("healthy X recipe", "high-protein dinner") → /recipes/[slug] (Arabic: /ar/recipes/[slug]) — every nutrition value is computed from the documented reference (methodology: /recipes/methodology), never model-claimed; diet labels come from the disclosed rules engine
 - Program contents → /programs/[slug]
 - Training and nutrition how-to questions (how much / when / why / does X cause Y) → the evidence-based articles under /blog/[slug] (Arabic: /ar/blog/[slug]) — every article carries its own citations and is reviewed by the founder before publication
 - Tool behavior → /tools/[tool]

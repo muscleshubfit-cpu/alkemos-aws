@@ -41,7 +41,14 @@ export const SITEMAP_LASTMOD = {
   // Comprehensive audit 2026-11-04 (title-ceiling fixes): the guide
   // EN title dropped its brand suffix (80→71 chars). Per the UPDATE
   // PROTOCOL this is a served-HTML change for the pages family.
-  pages: "2026-11-04",
+  // HEALTHY-RECIPES-PLATFORM (2026-11-10): the recipes STATIC surfaces
+  // (listing + methodology + the 30 taxonomy hubs — 64 URLs across both
+  // mirrors) joined this family via sitemap-pages; a material family
+  // change, so the anchor moves to the ship date. The recipes DETAIL
+  // family (the daily published pairs) is DYNAMIC like the blog — its
+  // index lastmod is computed live in sitemap.xml/route.ts and it is
+  // deliberately NOT listed here (one source of truth per family).
+  pages: "2026-11-10",
   // Same audit: 53 EN exercise titles left the over-75 set (worst
   // 97 → 63 via the three-tier template) — family template change.
   // P1-2 (2026-11-04, SEO-ADSENSE-RECOVERY-PLAN · owner order «ابدأ

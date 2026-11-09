@@ -4,6 +4,7 @@ import { AuthErrorToast } from "@/components/AuthErrorToast";
 import { getHomeSamples } from "@/lib/home-samples";
 import { fetchSiteContentOverrides } from "@/lib/site-content/server";
 import { listPublishedPostsForListPage } from "@/lib/blog-server";
+import { listHomeSampleRecipes } from "@/lib/recipes-server";
 import { selectHomeBlogCarousels } from "@/lib/blog-home-carousel";
 
 // SITE-CONTENT-281: ISR freshness for the admin-editable homepage copy —
@@ -98,6 +99,7 @@ export default async function Page() {
   // (see (en)/(home)/page.tsx for the full rationale: /blog list-page
   // precedent, card-fields law, ISR-window rotation, REST trip saved).
   const posts = await listPublishedPostsForListPage("ar");
+  const recipeSamples = await listHomeSampleRecipes("ar", 3);
   const blogCarousels = selectHomeBlogCarousels(posts);
   const content = await fetchSiteContentOverrides();
   return (
@@ -105,7 +107,7 @@ export default async function Page() {
       <AuthErrorToast />
       {/* SEO-P1-6 (frame 315): the AR mirror pins isAr=true — URL-resolved
           (the /ar page ALWAYS renders Arabic for crawlers and visitors). */}
-      <LandingView samples={samples} content={content} isAr={true} blogCarousels={blogCarousels} />
+      <LandingView samples={samples} content={content} isAr={true} blogCarousels={blogCarousels} recipeSamples={recipeSamples} />
     </>
   );
 }

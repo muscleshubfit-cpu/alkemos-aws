@@ -2,6 +2,12 @@ import { buildUrlSet, xmlResponse, siteUrl, type SitemapUrl } from "@/lib/sitema
 import { familyLastmod } from "@/lib/sitemap-lastmod";
 import { WORKOUT_PROGRAMS } from "@/lib/workout-programs";
 import { DIET_LEVELS, DIET_SYSTEMS } from "@/lib/diet-plan-matrix";
+import {
+  RECIPE_CUISINES,
+  RECIPE_DIETS,
+  RECIPE_GOALS,
+  RECIPE_MEAL_TYPES,
+} from "@/lib/recipes-shared";
 import { BLOG_CATEGORY_CONTENT } from "@/lib/blog-category-content";
 
 /**
@@ -24,6 +30,24 @@ export async function GET() {
     { loc: `${base}/ar/exercises`, changefreq: "weekly", priority: 0.9, alternates: { en: `${base}/exercises`, ar: `${base}/ar/exercises` } },
     { loc: `${base}/foods`, changefreq: "weekly", priority: 0.9, alternates: { en: `${base}/foods`, ar: `${base}/ar/foods` } },
     { loc: `${base}/ar/foods`, changefreq: "weekly", priority: 0.9, alternates: { en: `${base}/foods`, ar: `${base}/ar/foods` } },
+    // HEALTHY-RECIPES-PLATFORM (2026-11-10, plan §10-3): the recipes
+    // STATIC surfaces (listing + methodology + the 30 taxonomy hubs)
+    // ride the pages child — detail pairs ride sitemap-recipes.xml.
+    { loc: `${base}/recipes`, changefreq: "daily", priority: 0.9, alternates: { en: `${base}/recipes`, ar: `${base}/ar/recipes` } },
+    { loc: `${base}/ar/recipes`, changefreq: "daily", priority: 0.9, alternates: { en: `${base}/recipes`, ar: `${base}/ar/recipes` } },
+    { loc: `${base}/recipes/methodology`, changefreq: "monthly", priority: 0.7, alternates: { en: `${base}/recipes/methodology`, ar: `${base}/ar/recipes/methodology` } },
+    { loc: `${base}/ar/recipes/methodology`, changefreq: "monthly", priority: 0.7, alternates: { en: `${base}/recipes/methodology`, ar: `${base}/ar/recipes/methodology` } },
+    ...(
+      [
+        ...RECIPE_CUISINES.map((c) => `cuisine/${c}`),
+        ...RECIPE_DIETS.map((d) => `diet/${d}`),
+        ...RECIPE_GOALS.map((g) => `goal/${g}`),
+        ...RECIPE_MEAL_TYPES.map((m) => `meal/${m}`),
+      ] as const
+    ).flatMap((tail): SitemapUrl[] => [
+      { loc: `${base}/recipes/${tail}`, changefreq: "weekly", priority: 0.6, alternates: { en: `${base}/recipes/${tail}`, ar: `${base}/ar/recipes/${tail}` } },
+      { loc: `${base}/ar/recipes/${tail}`, changefreq: "weekly", priority: 0.6, alternates: { en: `${base}/recipes/${tail}`, ar: `${base}/ar/recipes/${tail}` } },
+    ]),
     { loc: `${base}/programs`, changefreq: "weekly", priority: 0.9, alternates: { en: `${base}/programs`, ar: `${base}/ar/programs` } },
     { loc: `${base}/ar/programs`, changefreq: "weekly", priority: 0.9, alternates: { en: `${base}/programs`, ar: `${base}/ar/programs` } },
     // (/tools moved to the tool detail block below — now with its AR mirror pair)

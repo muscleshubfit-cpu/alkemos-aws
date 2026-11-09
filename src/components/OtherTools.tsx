@@ -30,6 +30,9 @@ const ALL_TOOLS = [
 const LIBRARIES = [
   { slug: "/exercises", nameAr: "مكتبة التمارين", nameEn: "Exercise Library", icon: "dumbbell" },
   { slug: "/foods", nameAr: "مكتبة الأطعمة", nameEn: "Food Library", icon: "protein" },
+  // HEALTHY-RECIPES-PLATFORM (2026-11-10, plan §9.3): the recipes library
+  // joins the cluster.
+  { slug: "/recipes", nameAr: "الوصفات الصحية", nameEn: "Healthy Recipes", icon: "protein" },
   // §12.33: moved from the tools list into the libraries, renamed per the
   // owner's directive.
   { slug: "/diet-plan", nameAr: "مكتبة الخطط الغذائية الجاهزة", nameEn: "Diet Plan Library", icon: "fruits" },

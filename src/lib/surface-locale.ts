@@ -324,6 +324,7 @@ export const PUBLIC_INDEX_MIRRORS: ReadonlyArray<Readonly<{ en: string; ar: stri
   { en: "/memberships", ar: "/ar/memberships" },
   { en: "/privacy", ar: "/ar/privacy" },
   { en: "/programs", ar: "/ar/programs" },
+  { en: "/recipes", ar: "/ar/recipes" },
   { en: "/terms", ar: "/ar/terms" },
   { en: "/tools", ar: "/ar/tools" },
   { en: "/workout-tracker", ar: "/ar/workout-tracker" },
@@ -343,6 +344,7 @@ export const PUBLIC_PREFIX_MIRRORS: readonly string[] = [
   "/guides/",
   "/muscles/",
   "/programs/",
+  "/recipes/",
   "/tools/",
 ];
 

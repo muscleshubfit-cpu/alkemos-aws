@@ -60,6 +60,7 @@ export type AIFunctionFamily =
   | "blog" // the paired pipeline + pairing + topics + latin tools (blog-*.ts)
   | "evo" // chat/memory/eval family — fast chain, streaming where marked
   | "social" // social post generation (social-posts.ts)
+  | "recipes" // the healthy-recipes pipeline (recipe:* — HEALTHY-RECIPES-PLATFORM 2026-11-10)
   | "demo" // visitor synchronous demo surfaces (Vercel, EVO-style)
   | "tools"; // the ai_jobs article tools (ai-job-processors.ts)
 
@@ -1227,6 +1228,162 @@ export const AI_FUNCTION_REGISTRY: Record<string, AIFunctionSpec> = {
       since: "EVO-5 eval frames",
       rationale: "Cheap strict grader (temperature 0).",
       evidence: "evo-eval-runner.ts:119 option block (audit §3-ب row 34)",
+    },
+  },
+
+  /* ═══════════════════ FAMILY: recipes (HEALTHY-RECIPES-PLATFORM — owner
+     order 2026-11-10 «Alkemos Healthy Recipes – Full Implementation»).
+     Five functions, all through the SAME engine doors (no parallel motor,
+     no new keys — plan §6.1). Nutrition numbers are NEVER model output:
+     recipe:structure proposes the skeleton (ingredients/grams/states),
+     and R2 recomputes every number from nutrient_reference (plan §5.2). ═══════════════════ */
+
+  "recipe:idea": {
+    id: "recipe:idea",
+    family: "recipes",
+    role: { json: true, streaming: false, language: "both", payloadClass: "light" },
+    ladder: [...ROTATED_LEADS, GEMINI_TAIL],
+    policy: {
+      temperature: 0.7,
+      maxTokens: 700,
+      jsonMode: true,
+      timeoutMs: 45_000,
+      maxModels: 3,
+      budgetEnv: "AI_CHAIN_TOTAL_BUDGET_MS",
+    },
+    gates: [
+      "zod idea schema (themeAr/En, cuisine, goal, mealType from the closed taxonomy)",
+      "Q-GATE-4/5 dup + intent-collision checks at R0",
+      "deterministic fallback idea list (no AI) on failure",
+    ],
+    metering: { scope: "recipe:idea" },
+    entry: { surface: "gha-workflow", trigger: "recipes pipeline R0 (daily cron 06:30 UTC)" },
+    knobs: ["AI_CHAIN_TOTAL_BUDGET_MS"],
+    doc: {
+      since: "HEALTHY-RECIPES-PLATFORM P3 (2026-11-10)",
+      rationale:
+        "Daily recipe concept choice (theme + cuisine + goal + meal) inside the closed taxonomy. Light JSON (~300 tokens).",
+      evidence: "plan §6.1 table row 1 — rides the standard rotated ladder like blog:topics.",
+    },
+  },
+
+  "recipe:structure": {
+    id: "recipe:structure",
+    family: "recipes",
+    role: { json: true, streaming: false, language: "both", payloadClass: "medium" },
+    ladder: [...ROTATED_LEADS, GEMINI_TAIL],
+    policy: {
+      temperature: 0.4,
+      maxTokens: 2600,
+      // jsonMode deliberately FALSE (the PHASE 161.5 pattern): strict json
+      // mode hard-fails on reasoning models that burn completion tokens on
+      // hidden CoT — the hardened parseJSON salvages fenced/partial JSON.
+      jsonMode: false,
+      timeoutMs: 90_000,
+      maxModels: 3,
+      budgetEnv: "AI_CHAIN_TOTAL_BUDGET_MS",
+    },
+    gates: [
+      "zod structure schema (ingredients with amount_g + weight_state + ref slug guesses)",
+      "N-GATE-1/2 ingredient-reference grounding at R1 (all refs must resolve)",
+      "≤2 targeted repair cycles with the missing-refs feedback, then honest hold",
+      "diets wiped before storage (D-GATE-1 — rules engine only)",
+    ],
+    metering: { scope: "recipe:structure" },
+    entry: { surface: "gha-workflow", trigger: "recipes pipeline R1" },
+    knobs: ["AI_CHAIN_TOTAL_BUDGET_MS"],
+    doc: {
+      since: "HEALTHY-RECIPES-PLATFORM P3 (2026-11-10)",
+      rationale:
+        "The recipe skeleton JSON (servings/times/ingredients+grams/steps outline). The ONLY model output touching nutrition STRUCTURALLY — every number is recomputed by R2 from nutrient_reference.",
+      evidence: "plan §6.1 table row 2 — mirrors the blog:outline payload class.",
+    },
+  },
+
+  "recipe:author-ar": {
+    id: "recipe:author-ar",
+    family: "recipes",
+    role: { json: true, streaming: false, language: "ar", payloadClass: "medium" },
+    ladder: [...ROTATED_LEADS, GEMINI_TAIL],
+    policy: {
+      temperature: 0.6,
+      maxTokens: 3000,
+      jsonMode: false,
+      timeoutMs: 110_000,
+      maxModels: 3,
+      budgetEnv: "AI_CHAIN_TOTAL_BUDGET_MS",
+    },
+    gates: [
+      "MSA + latin-contamination laws (Q-GATE-1 — blog-msa.ts verbatim)",
+      "steps 3–15 (Q-GATE-3)",
+      "narrative numbers must match computed nutrition (N-GATE-4)",
+      "original authoring — the EN text is never in the prompt",
+    ],
+    metering: { scope: "recipe:author-ar" },
+    entry: { surface: "gha-workflow", trigger: "recipes pipeline R3 (Arabic half)" },
+    knobs: ["AI_CHAIN_TOTAL_BUDGET_MS"],
+    doc: {
+      since: "HEALTHY-RECIPES-PLATFORM P3 (2026-11-10)",
+      rationale:
+        "Original Arabic authoring from the shared structure ONLY (independent production, never a translation — the Phase-157 blog pattern hardened).",
+      evidence: "plan §6.1 table row 3.",
+    },
+  },
+
+  "recipe:author-en": {
+    id: "recipe:author-en",
+    family: "recipes",
+    role: { json: true, streaming: false, language: "en", payloadClass: "medium" },
+    ladder: [...ROTATED_LEADS, GEMINI_TAIL],
+    policy: {
+      temperature: 0.6,
+      maxTokens: 3000,
+      jsonMode: false,
+      timeoutMs: 110_000,
+      maxModels: 3,
+      budgetEnv: "AI_CHAIN_TOTAL_BUDGET_MS",
+    },
+    gates: [
+      "steps 3–15 (Q-GATE-3)",
+      "narrative numbers must match computed nutrition (N-GATE-4)",
+      "original authoring — the AR text is never in the prompt",
+    ],
+    metering: { scope: "recipe:author-en" },
+    entry: { surface: "gha-workflow", trigger: "recipes pipeline R3 (English half)" },
+    knobs: ["AI_CHAIN_TOTAL_BUDGET_MS"],
+    doc: {
+      since: "HEALTHY-RECIPES-PLATFORM P3 (2026-11-10)",
+      rationale:
+        "Original English authoring from the shared structure ONLY. The two halves never see each other's prose.",
+      evidence: "plan §6.1 table row 4.",
+    },
+  },
+
+  "recipe:verify-narrative": {
+    id: "recipe:verify-narrative",
+    family: "recipes",
+    role: { json: true, streaming: false, language: "both", payloadClass: "light" },
+    ladder: [...ROTATED_LEADS, GEMINI_TAIL],
+    policy: {
+      temperature: 0.2,
+      maxTokens: 900,
+      jsonMode: true,
+      timeoutMs: 60_000,
+      maxModels: 2,
+      budgetEnv: "AI_CHAIN_TOTAL_BUDGET_MS",
+    },
+    gates: [
+      "advisory ONLY — flags inconsistencies, never decides numbers",
+      "feeds RERUN_TARGET like every other diagnostic",
+    ],
+    metering: { scope: "recipe:verify-narrative" },
+    entry: { surface: "gha-workflow", trigger: "recipes pipeline R5 (sampled consistency read)" },
+    knobs: ["AI_CHAIN_TOTAL_BUDGET_MS"],
+    doc: {
+      since: "HEALTHY-RECIPES-PLATFORM P3 (2026-11-10)",
+      rationale:
+        "Optional critical read for cross-version consistency (samples). Advisory — the deterministic gates own every verdict.",
+      evidence: "plan §6.1 table row 5.",
     },
   },
 };

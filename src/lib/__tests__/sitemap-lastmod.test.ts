@@ -42,8 +42,13 @@ describe("sitemap lastmod anchors (#14)", () => {
     expect(SITEMAP_LASTMOD.exercises).toBe("2026-11-06");
   });
 
-  it("pages + comparisons carry their latest material ship dates (guide/Freeletics titles 11-04 · food-comparison pilot 11-05)", () => {
-    expect(SITEMAP_LASTMOD.pages).toBe("2026-11-04");
+  it("pages + comparisons carry their latest material ship dates (recipes static surfaces 11-10 · food-comparison pilot 11-05)", () => {
+    // HEALTHY-RECIPES-PLATFORM (2026-11-10): the recipes static surfaces
+    // (listing + methodology + the 30 taxonomy hubs — 64 URLs across both
+    // mirrors) joined the pages family via sitemap-pages — a material
+    // family change, so the anchor moved to the ship date (the UPDATE
+    // PROTOCOL; the comparisons-family precedent).
+    expect(SITEMAP_LASTMOD.pages).toBe("2026-11-10");
     // SEO-GROWTH-P4 (2026-11-05): the food-vs-food comparison pilot (8
     // new URLs — audit 03 §4.2) is a material family change, so the
     // comparisons anchor moved to the ship date (the UPDATE PROTOCOL).

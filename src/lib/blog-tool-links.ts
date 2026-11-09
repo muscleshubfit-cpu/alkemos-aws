@@ -123,6 +123,23 @@ const TOOL_RULES: ToolLinkRule[] = [
     patternsAr: [/شرب الماء/, /الترطيب/, /ترطيب الجسم/, /كوب ماء/, /لتر من الماء/],
   },
   {
+    id: "recipes-hub",
+    // HEALTHY-RECIPES-PLATFORM (2026-11-10, plan §9.3): recipe mentions in
+    // articles route to the recipes library — MOST-SPECIFIC-FIRST above
+    // the generic hubs (a «وصفة/recipe» mention must reach /recipes, not
+    // /foods), and above calorie/macro mentions so «وصفة عالية البروتين»
+    // keeps its recipe intent.
+    url: "/recipes",
+    urlAr: "/ar/recipes",
+    patternsEn: [
+      /\bhealthy recipes?\b/i,
+      /\bhigh[- ]protein recipes?\b/i,
+      /\brecipe ideas?\b/i,
+      /\b\d+ (?:easy|quick|healthy) recipes?\b/i,
+    ],
+    patternsAr: [/وصفة صحية/, /وصفات صحية/, /وصفة عالية البروتين/, /وصفات خفيفة/, /أفكار وصفات/],
+  },
+  {
     id: "programs-hub",
     url: "/programs",
     urlAr: "/ar/programs",

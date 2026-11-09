@@ -206,6 +206,8 @@ export function SiteFooter({
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-wider text-[var(--text)]">{isAr ? "التغذية" : "Nutrition"}</p>
             <ul className="mt-3 space-y-2 text-[13px] leading-7">
+              {/* HEALTHY-RECIPES-PLATFORM (2026-11-10): the recipes library. */}
+              <li><a href={isAr ? "/ar/recipes" : "/recipes"} className="block py-1 hover:underline">{isAr ? "الوصفات الصحية" : "Recipes"}</a></li>
               <li><a href={isAr ? "/ar/foods" : "/foods"} className="block py-1 hover:underline">{isAr ? "مكتبة الأطعمة" : "Foods"}</a></li>
               {/* §12.27: the diet-plan matrix entry. */}
               <li><a href={isAr ? "/ar/diet-plan" : "/diet-plan"} className="block py-1 hover:underline">{isAr ? "مكتبة الخطط الغذائية الجاهزة" : "Diet Plans"}</a></li>

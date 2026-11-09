@@ -15,6 +15,10 @@
  *   2. Every example slug named in the files exists in the real source
  *      modules — the guide can never reference a route that does not exist.
  *   3. The counts stated in the guide match the modules (10 pairs / 15 lists).
+ *
+ * HEALTHY-RECIPES-PLATFORM (2026-11-10, plan §10-4/§12-1): the recipes
+ * family joins the coverage law — its section line, citation rule, and
+ * hub route pattern are pinned in BOTH guides.
  */
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
@@ -35,6 +39,10 @@ const REQUIRED_LINES = [
   "/foods/lists/[slug]",
   "Collections & Hubs",
   "/collections/[slug]",
+  // HEALTHY-RECIPES-PLATFORM (2026-11-10): the recipes family.
+  "Healthy Recipes",
+  "/recipes/[slug]",
+  "/recipes/methodology",
 ];
 
 // P6 batch 18 (2026-11-06): the BLOG family (the largest editorial family —
@@ -88,6 +96,16 @@ describe("llms.txt family coverage (GEO batch 9 law)", () => {
     expect(LLMS_FULL).toContain("10 pairs");
     expect(LLMS).toContain("15 lists");
     expect(LLMS_FULL).toContain("15 lists");
+  });
+
+  it("both guides declare the RECIPES family + its citation rule (2026-11-10 law)", () => {
+    for (const src of [LLMS, LLMS_FULL]) {
+      expect(src).toContain("Healthy Recipes");
+      expect(src).toContain("/recipes/[slug]");
+      expect(src).toMatch(/[Rr]ecipe requests and meal ideas/);
+      // the computed-nutrition honesty claim travels with the family line
+      expect(src).toMatch(/computed in grams|gram-level computed/);
+    }
   });
 
   it("every example slug cited in the guides exists as a real route source", () => {

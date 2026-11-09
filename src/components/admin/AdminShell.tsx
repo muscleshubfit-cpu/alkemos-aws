@@ -113,6 +113,9 @@ const SECTIONS: AdminNavSection[] = [
     en: "Content",
     items: [
       { href: "/admin/blog", emoji: "📝", ar: "المدونة", en: "Blog" },
+      // HEALTHY-RECIPES-PLATFORM (2026-11-10): the daily bilingual
+      // recipes pipeline dashboard (plan §11-10).
+      { href: "/admin/recipes", emoji: "🥗", ar: "الوصفات", en: "Recipes" },
       // SITE-CONTENT-281: the static marketing-copy editor — homepage
       // sections + about/privacy/terms/FAQ, bilingual, saves straight to
       // the site_content table (ISR picks it up within ~5 min).

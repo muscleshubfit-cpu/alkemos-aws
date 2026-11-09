@@ -10,6 +10,7 @@ import {
   Calculator,
   Dumbbell,
   Utensils,
+  UtensilsCrossed,
   LayoutDashboard,
   ClipboardList,
   LineChart,
@@ -170,6 +171,9 @@ const DRAWER_GROUP_DEFS: MenuGroupDef[] = [
     titleEn: "Nutrition",
     audience: "all",
     items: [
+      // HEALTHY-RECIPES-PLATFORM (2026-11-10): the recipes library leads
+      // the Nutrition group — the newest daily bilingual content family.
+      { labelAr: "الوصفات الصحية", labelEn: "Recipes", icon: UtensilsCrossed, hrefAr: "/ar/recipes", hrefEn: "/recipes" },
       { labelAr: "مكتبة الأطعمة", labelEn: "Foods", icon: Utensils, hrefAr: "/ar/foods", hrefEn: "/foods" },
       { labelAr: "مخطط الوجبات", labelEn: "Meal Planner", icon: Pizza, hrefAr: "/ar/meal-planner", hrefEn: "/meal-planner" },
       // §12.33: the ready-made diet plans join the content libraries
@@ -367,6 +371,7 @@ const SERVICE_NAV_DEFS: ServiceNavDef[] = [
     labelEn: "Nutrition",
     icon: Utensils,
     items: [
+      { labelAr: "الوصفات الصحية", labelEn: "Recipes", hrefAr: "/ar/recipes", hrefEn: "/recipes" },
       { labelAr: "مكتبة الأطعمة", labelEn: "Foods", hrefAr: "/ar/foods", hrefEn: "/foods" },
       { labelAr: "مخطط الوجبات", labelEn: "Meal Planner", hrefAr: "/ar/meal-planner", hrefEn: "/meal-planner" },
       { labelAr: "مكتبة الخطط الغذائية الجاهزة", labelEn: "Diet Plans", hrefAr: "/ar/diet-plan", hrefEn: "/diet-plan" },

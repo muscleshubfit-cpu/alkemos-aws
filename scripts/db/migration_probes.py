@@ -217,8 +217,25 @@ PROBES: list[dict] = [
             {"type": "swagger_table", "table": "role_audit_log"},
         ],
     },
-]
-# fmt: on
+    # 0108 — HEALTHY-RECIPES-FOUNDATION (owner order 2026-11-10): the six
+    # recipe-pair tables + the two atomic publish RPCs. Strong probes: the
+    # tables/RPCs this migration creates exist in the PostgREST spec.
+    {
+        "file": "20261110100000_0108_healthy_recipes_foundation.sql",
+        "label": "0108 HEALTHY-RECIPES-FOUNDATION",
+        "strength": "strong",
+        "checks": [
+            {"type": "swagger_table", "table": "nutrient_reference"},
+            {"type": "swagger_table", "table": "recipes"},
+            {"type": "swagger_table", "table": "recipe_versions"},
+            {"type": "swagger_table", "table": "recipe_ingredients"},
+            {"type": "swagger_table", "table": "recipe_generation_queue"},
+            {"type": "swagger_table", "table": "recipe_favorites"},
+            {"type": "swagger_rpc", "rpc": "publish_recipe_pair"},
+            {"type": "swagger_rpc", "rpc": "unpublish_recipe_pair"},
+        ],
+    },
+]# fmt: on
 
 # --- named transforms for rest_rows probes ----------------------------------
 

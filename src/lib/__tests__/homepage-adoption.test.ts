@@ -768,14 +768,17 @@ describe("HOME-PLATFORM-284 — density, CTA & card contract", () => {
   // rides the .card-lift recipe — HOME-POLISH-285: ELEVEN families
   // (food-card, tool-tile, ai-card, evo-card, exercise, program,
   // diet, blog, coach, free-card, premium-card).
-  it("unified card hover: card-lift on all eleven interactive card families; recipe + reduced-motion guard in css", () => {
-    // SEO-P1-6: the eleven card families now span the view (food · tool
-    // · ai · diet · program · free · premium) + the islands (evo ·
-    // exercise) + the dynamic islands (blog · coach) — the count pins
-    // the whole surface, still exactly eleven.
+  // HEALTHY-RECIPES-PLATFORM (2026-11-10): the LandingRecipeCard joins
+  // the unified hover law as the TWELFTH family (the daily bilingual
+  // recipes section — plan §9.3).
+  it("unified card hover: card-lift on all twelve interactive card families; recipe + reduced-motion guard in css", () => {
+    // SEO-P1-6 + 2026-11-10: the twelve card families now span the view
+    // (food · tool · ai · diet · program · free · premium · recipe) +
+    // the islands (evo · exercise) + the dynamic islands (blog · coach)
+    // — the count pins the whole surface, still exactly twelve.
     const src = readAll();
     const css = readFileSync("src/app/globals.css", "utf8");
-    expect(src.match(/marble-card card-lift/g)?.length).toBe(11);
+    expect(src.match(/marble-card card-lift/g)?.length).toBe(12);
     for (const required of [
       ".marble-card.card-lift:hover {",
       "transform: translateY(-2px)",
@@ -798,10 +801,15 @@ describe("HOME-PLATFORM-284 — density, CTA & card contract", () => {
   // food card); everywhere else the mono-ramp law still holds.
   it("food surfaces: mono ramp holds EXCEPT the owner-ordered food-card macro cells", () => {
     const src = readFileSync(LANDING, "utf8");
-    // Exactly one occurrence of each macro accent — the four labeled
-    // per-100g cells of LandingFoodCard and nothing else.
-    expect(src.match(/text-\[#0071e3\]/g)?.length).toBe(1);
-    expect(src.match(/text-\[#34c759\]/g)?.length).toBe(1);
+    // Exactly TWO occurrences of kcal-blue and protein-green — the four
+    // labeled per-100g cells of LandingFoodCard + the per-serving cells
+    // of LandingRecipeCard (2026-11-10: same visual grammar for the same
+    // labeled-nutrition purpose, per the owner's «استخدم نفس الألوان»
+    // directive). Orange (carbs) and red (fat) stay SINGLE — the recipe
+    // card's third cell is TIME, a neutral value, so the macro accents
+    // keep their exact semantics.
+    expect(src.match(/text-\[#0071e3\]/g)?.length).toBe(2);
+    expect(src.match(/text-\[#34c759\]/g)?.length).toBe(2);
     expect(src.match(/text-\[#ff9500\]/g)?.length).toBe(1);
     expect(src.match(/text-\[#ff3b30\]/g)?.length).toBe(1);
     // …and those cells live inside LandingFoodCard (the food-library
@@ -1074,11 +1082,13 @@ describe("TPL-REF-280 — the selective template-reference contract", () => {
     // Opt-in scope: every .chev span in the view is a pill-CTA chevron
     // (the 286 frame: the hero CTAs went arrow-free with the static-hero
     // order — the five browse-all CTAs (library/eat/train/diet/tools) +
-    // the blog CTA + the three tier CTAs + the AiCard CTA — ten in all).
+    // the blog CTA + the three tier CTAs + the AiCard CTA).
     // SEO-P1-6: the chevrons span the homepage surface now (the library
     // CTA rides inside the LibraryBrowser island; the blog CTA inside
-    // the BlogSection dynamic island) — still exactly ten.
-    expect(readAll().match(/className="chev rtl:rotate-180"/g)?.length).toBe(10);
+    // the BlogSection dynamic island).
+    // HEALTHY-RECIPES-PLATFORM (2026-11-10): the recipes browse-all CTA
+    // joins the set — eleven in all.
+    expect(readAll().match(/className="chev rtl:rotate-180"/g)?.length).toBe(11);
     expect(src).toContain('className="chev rtl:rotate-180" aria-hidden="true">›</span>');
   });
 

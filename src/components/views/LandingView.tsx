@@ -36,6 +36,10 @@ import type {
   HomeProgramSample,
   HomeSamples,
 } from "@/lib/home-samples";
+// HEALTHY-RECIPES-PLATFORM (plan §9.3): the serializable home slice —
+// defined in recipes-server (a DB-backed family, unlike the static
+// library samples), but the same plain-data law.
+import type { HomeRecipeSample } from "@/lib/recipes-server";
 
 // The two data-fetch islands load through next/dynamic (ssr: true —
 // ssr:false is not allowed in a server component, and functionally a
@@ -218,6 +222,73 @@ function LandingFoodCard({ food, isAr }: { food: HomeFoodSample; isAr: boolean }
         {isAr ? "القيم لكل 100 جم" : "Values per 100 g"}
       </p>
       <p className="chrome-text mt-3 text-xs font-semibold">{isAr ? "اعرض الصنف ›" : "View food ›"}</p>
+    </a>
+  );
+}
+
+// ── LandingRecipeCard — one featured recipe card (HEALTHY-RECIPES-
+//    PLATFORM plan §9.3 — the LandingFoodCard pattern applied to the
+//    newest daily bilingual family). Real computed per-serving facts
+//    only; the ONE shared image; a plain crawlable <a>.
+function LandingRecipeCard({ recipe, isAr }: { recipe: HomeRecipeSample; isAr: boolean }) {
+  return (
+    <a
+      href={recipe.href}
+      className="marble-card card-lift group flex flex-col overflow-hidden text-start"
+    >
+      {recipe.imageUrl ? (
+        <div className="relative aspect-[16/10] w-full bg-[var(--tint)]">
+          <Image
+            src={recipe.imageUrl}
+            alt={recipe.imageAlt ?? recipe.title}
+            fill
+            sizes="(max-width: 768px) 50vw, 33vw"
+            className="object-cover transition-transform duration-300 group-hover:scale-105"
+          />
+        </div>
+      ) : null}
+      <div className="flex flex-1 flex-col p-4">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.12em]" style={{ color: PALETTE.textMuted }}>
+          {[recipe.cuisineLabel, recipe.dietLabel].filter(Boolean).join(" · ")}
+        </p>
+        <h3 className="mt-1 text-base font-semibold leading-tight tracking-tight" style={{ color: PALETTE.textPrim }}>
+          {recipe.title}
+        </h3>
+        <p className="mt-1.5 line-clamp-2 text-xs font-normal leading-relaxed" style={{ color: PALETTE.textSec }}>
+          {recipe.excerpt}
+        </p>
+        <div className="mt-2.5 grid grid-cols-3 gap-1">
+          <div className="rounded bg-white px-1.5 py-1 text-center">
+            <p className="text-xs font-semibold leading-tight text-[#0071e3]">
+              {isAr ? recipe.calories.toLocaleString("ar-EG") : recipe.calories}
+            </p>
+            <p className="text-[9px] font-normal leading-tight text-[var(--muted-foreground)]">
+              {isAr ? "سعرة/حصة" : "kcal/serving"}
+            </p>
+          </div>
+          <div className="rounded bg-white px-1.5 py-1 text-center">
+            <p className="text-xs font-semibold leading-tight text-[#34c759]">
+              {isAr ? `${recipe.protein.toLocaleString("ar-EG")} جم` : `${recipe.protein}g`}
+            </p>
+            <p className="text-[9px] font-normal leading-tight text-[var(--muted-foreground)]">
+              {isAr ? "بروتين/حصة" : "Protein/serving"}
+            </p>
+          </div>
+          <div className="rounded bg-white px-1.5 py-1 text-center">
+            {/* neutral value — orange stays the CARBS accent in the shared
+                card grammar (the food-card law); time is not a macro. */}
+            <p className="text-xs font-semibold leading-tight text-[var(--text)]">
+              {isAr ? `${recipe.minutes.toLocaleString("ar-EG")} د` : `${recipe.minutes} min`}
+            </p>
+            <p className="text-[9px] font-normal leading-tight text-[var(--muted-foreground)]">
+              {isAr ? "وقت التحضير" : "Total time"}
+            </p>
+          </div>
+        </div>
+        <p className="chrome-text mt-3 text-xs font-semibold">
+          {isAr ? "اعرض الوصفة ›" : "View recipe ›"}
+        </p>
+      </div>
     </a>
   );
 }
@@ -481,6 +552,7 @@ export function LandingView({
   content,
   isAr,
   blogCarousels,
+  recipeSamples,
 }: {
   samples: HomeSamples;
   content?: SiteCopyMap;
@@ -491,6 +563,11 @@ export function LandingView({
    *  selectHomeBlogCarousels at ISR time). Optional for API compatibility;
    *  both production home routes pass it. */
   blogCarousels?: { latest: BlogPostCard[]; featured: BlogPostCard[] };
+  /** HEALTHY-RECIPES-PLATFORM (plan §9.3): the «وصفات مختارة» slice —
+   *  the latest published recipe pairs (listHomeSampleRecipes at ISR
+   *  time). OPTIONAL + honestly absent: until the first pair publishes
+   *  the section does not render at all (no fake placeholder cards). */
+  recipeSamples?: HomeRecipeSample[];
 }) {
   // SITE-CONTENT-281: the admin-editable marketing copy for the active
   // locale — Supabase overrides (passed down by the server route) win,
@@ -845,6 +922,47 @@ export function LandingView({
           </div>
         </div>
       </section>
+
+      {/* ===================== 5-b. HEALTHY RECIPES — the featured pairs (2026-11-10) =====================
+          HEALTHY-RECIPES-PLATFORM plan §9.3: the «وصفات مختارة» section —
+          the LandingFoodCard pattern applied to the daily bilingual recipe
+          pairs. HONEST-EMPTY LAW: the section renders ONLY when the
+          server passed at least one published pair (recipeSamples); until
+          the pipeline's first publish the homepage shows nothing rather
+          than fake placeholder cards. */}
+      {recipeSamples && recipeSamples.length > 0 ? (
+        <section id="recipes" className="scroll-mt-20 border-y border-[var(--edge)] bg-[var(--tint)] px-4 py-10 md:py-20">
+          <div className="mx-auto max-w-6xl">
+            <Reveal className="text-center">
+              <span className="seal-chip">
+                <EngravedIcon name="protein" alt="" size={12} className="h-3 w-3" />
+                {isAr ? "وصفات صحية بالجرام" : "HEALTHY RECIPES"}
+              </span>
+              <h2 className="mt-5 text-3xl font-semibold tracking-tight md:text-4xl">
+                {isAr ? "وصفات مختارة بقيم محسوبة" : "Featured recipes, computed to the gram"}
+              </h2>
+              <p className="mx-auto mt-3 max-w-2xl text-base font-normal md:text-lg" style={{ color: PALETTE.textSec }}>
+                {isAr
+                  ? "زوج وصفات جديد كل يوم (عربي + إنجليزي) — القيم الغذائية لكل حصة محسوبة برمجيًا من مرجع موثق، والمكونات بأوزانها بالجرام."
+                  : "A new verified pair every day (Arabic + English) — per-serving nutrition computed programmatically from a verified reference, ingredients weighed in grams."}
+              </p>
+            </Reveal>
+            <div className="mt-7 grid grid-cols-2 gap-4 md:grid-cols-3">
+              {recipeSamples.map((recipe, i) => (
+                <Reveal key={recipe.slug} delay={80 + i * 40} className="h-full">
+                  <LandingRecipeCard recipe={recipe} isAr={isAr} />
+                </Reveal>
+              ))}
+            </div>
+            <div className="mt-5 text-center">
+              <a href={isAr ? "/ar/recipes" : "/recipes"} className="btn-outline px-7 py-3 text-sm font-medium md:text-base">
+                {isAr ? "استكشف كل الوصفات الصحية" : "Explore all healthy recipes"}
+                <span className="chev rtl:rotate-180" aria-hidden="true">›</span>
+              </a>
+            </div>
+          </div>
+        </section>
+      ) : null}
 
       {/* ===================== 6. THE READY-MADE DIET LIBRARY — carousel (R4) =====================
           The owner directive: add the ready-made diet-plan library

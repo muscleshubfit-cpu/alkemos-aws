@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { ImageResponse } from "next/og";
 import { fetchBlogForOG } from "@/lib/blog-server";
 import { getComparisonBySlug } from "@/lib/comparisons";
+import { fetchRecipeDetail } from "@/lib/recipes-server";
 
 /**
  * Dynamic OG image generator.
@@ -115,6 +116,20 @@ export async function GET(
     if (comparison) {
       title = lang === "ar" ? comparison.h1Ar : comparison.h1En;
       description = lang === "ar" ? comparison.descriptionAr : comparison.descriptionEn;
+    }
+  } else if (type === "recipe") {
+    // HEALTHY-RECIPES-PLATFORM (plan §7-5): the recipe card. Published
+    // recipes are cover-first (the pair's REAL image as og:image — the
+    // same file for both languages, the pairing law), so this branch is
+    // the honest fallback for a photo-less pair only.
+    try {
+      const detail = await fetchRecipeDetail(slug, lang);
+      if (detail) {
+        title = detail.title;
+        description = detail.excerpt;
+      }
+    } catch {
+      // keep defaults
     }
   } else {
     try {

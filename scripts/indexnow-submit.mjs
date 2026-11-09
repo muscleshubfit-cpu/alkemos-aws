@@ -62,6 +62,10 @@ const SITEMAPS = [
   "sitemap-comparisons.xml",
   "sitemap-exercises.xml",
   "sitemap-foods.xml",
+  // HEALTHY-RECIPES-PLATFORM (2026-11-10): the recipes child joins the
+  // IndexNow inventory (the audit §11 trap: without this line the
+  // family is never submitted for indexing).
+  "sitemap-recipes.xml",
   "sitemap-blog.xml",
 ];
 

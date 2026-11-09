@@ -2157,9 +2157,322 @@ export type Database = {
           { foreignKeyName: "external_plans_created_by_fkey"; columns: ["created_by"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
         ];
       };
+      // ── 0108 (HEALTHY-RECIPES-FOUNDATION) — the bilingual recipe pair system ──
+      recipes: {
+        Row: {
+          id: string;
+          pair_slug: string;
+          status: string;
+          scheduled_for: string | null;
+          servings: number;
+          serving_weight_g: number;
+          prep_minutes: number;
+          cook_minutes: number;
+          image_url: string | null;
+          image_alt_ar: string | null;
+          image_alt_en: string | null;
+          image_source: string | null;
+          image_verified: boolean;
+          nutrition_total: Json;
+          nutrition_per_serving: Json;
+          nutrition_sources: Json;
+          calories_kcal_consistency: Json | null;
+          sodium_coverage: string;
+          cuisines: string[];
+          goals: string[];
+          diets: string[];
+          meal_types: string[];
+          budget_tier: string | null;
+          verification: Json;
+          verification_status: string;
+          published_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          pair_slug: string;
+          status?: string;
+          scheduled_for?: string | null;
+          servings: number;
+          serving_weight_g: number;
+          prep_minutes?: number;
+          cook_minutes?: number;
+          image_url?: string | null;
+          image_alt_ar?: string | null;
+          image_alt_en?: string | null;
+          image_source?: string | null;
+          image_verified?: boolean;
+          nutrition_total?: Json;
+          nutrition_per_serving?: Json;
+          nutrition_sources?: Json;
+          calories_kcal_consistency?: Json | null;
+          sodium_coverage?: string;
+          cuisines?: string[];
+          goals?: string[];
+          diets?: string[];
+          meal_types?: string[];
+          budget_tier?: string | null;
+          verification?: Json;
+          verification_status?: string;
+          published_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          pair_slug?: string;
+          status?: string;
+          scheduled_for?: string | null;
+          servings?: number;
+          serving_weight_g?: number;
+          prep_minutes?: number;
+          cook_minutes?: number;
+          image_url?: string | null;
+          image_alt_ar?: string | null;
+          image_alt_en?: string | null;
+          image_source?: string | null;
+          image_verified?: boolean;
+          nutrition_total?: Json;
+          nutrition_per_serving?: Json;
+          nutrition_sources?: Json;
+          calories_kcal_consistency?: Json | null;
+          sodium_coverage?: string;
+          cuisines?: string[];
+          goals?: string[];
+          diets?: string[];
+          meal_types?: string[];
+          budget_tier?: string | null;
+          verification?: Json;
+          verification_status?: string;
+          published_at?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      recipe_versions: {
+        Row: {
+          id: string;
+          recipe_id: string;
+          language: string;
+          title: string;
+          slug: string;
+          excerpt: string;
+          steps: Json;
+          tips: string | null;
+          storage_info: string | null;
+          substitutions: Json;
+          meta_title: string | null;
+          meta_description: string | null;
+          faq_json: Json | null;
+          is_published: boolean;
+          published_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          recipe_id: string;
+          language: string;
+          title: string;
+          slug: string;
+          excerpt: string;
+          steps?: Json;
+          tips?: string | null;
+          storage_info?: string | null;
+          substitutions?: Json;
+          meta_title?: string | null;
+          meta_description?: string | null;
+          faq_json?: Json | null;
+          is_published?: boolean;
+          published_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          recipe_id?: string;
+          language?: string;
+          title?: string;
+          slug?: string;
+          excerpt?: string;
+          steps?: Json;
+          tips?: string | null;
+          storage_info?: string | null;
+          substitutions?: Json;
+          meta_title?: string | null;
+          meta_description?: string | null;
+          faq_json?: Json | null;
+          is_published?: boolean;
+          published_at?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [
+          { foreignKeyName: "recipe_versions_recipe_id_fkey"; columns: ["recipe_id"]; isOneToOne: false; referencedRelation: "recipes"; referencedColumns: ["id"] },
+        ];
+      };
+      recipe_ingredients: {
+        Row: {
+          id: string;
+          recipe_id: string;
+          position: number;
+          amount_g: number;
+          weight_state: string;
+          name_ar: string;
+          name_en: string;
+          nutrient_ref_slug: string;
+          is_optional: boolean;
+          note_ar: string | null;
+          note_en: string | null;
+        };
+        Insert: {
+          id?: string;
+          recipe_id: string;
+          position: number;
+          amount_g: number;
+          weight_state?: string;
+          name_ar: string;
+          name_en: string;
+          nutrient_ref_slug: string;
+          is_optional?: boolean;
+          note_ar?: string | null;
+          note_en?: string | null;
+        };
+        Update: {
+          recipe_id?: string;
+          position?: number;
+          amount_g?: number;
+          weight_state?: string;
+          name_ar?: string;
+          name_en?: string;
+          nutrient_ref_slug?: string;
+          is_optional?: boolean;
+          note_ar?: string | null;
+          note_en?: string | null;
+        };
+        Relationships: [
+          { foreignKeyName: "recipe_ingredients_recipe_id_fkey"; columns: ["recipe_id"]; isOneToOne: false; referencedRelation: "recipes"; referencedColumns: ["id"] },
+          { foreignKeyName: "recipe_ingredients_nutrient_slug_fkey"; columns: ["nutrient_ref_slug"]; isOneToOne: false; referencedRelation: "nutrient_reference"; referencedColumns: ["slug"] },
+        ];
+      };
+      nutrient_reference: {
+        Row: {
+          slug: string;
+          name_en: string;
+          name_ar: string;
+          category: string;
+          per100g: Json;
+          fdc_id: string | null;
+          source_name: string;
+          source_version: string;
+          yield_cooked_g: number | null;
+          flags: string[];
+          verified_at: string;
+        };
+        Insert: {
+          slug: string;
+          name_en: string;
+          name_ar: string;
+          category?: string;
+          per100g: Json;
+          fdc_id?: string | null;
+          source_name?: string;
+          source_version?: string;
+          yield_cooked_g?: number | null;
+          flags?: string[];
+          verified_at?: string;
+        };
+        Update: {
+          name_en?: string;
+          name_ar?: string;
+          category?: string;
+          per100g?: Json;
+          fdc_id?: string | null;
+          source_name?: string;
+          source_version?: string;
+          yield_cooked_g?: number | null;
+          flags?: string[];
+          verified_at?: string;
+        };
+        Relationships: [];
+      };
+      recipe_generation_queue: {
+        Row: {
+          id: string;
+          recipe_id: string | null;
+          status: string;
+          idea: Json;
+          bundle: Json;
+          error_message: string | null;
+          rerun_target: string | null;
+          repair_cycles: number;
+          scheduled_for: string;
+          created_at: string;
+          published_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          recipe_id?: string | null;
+          status?: string;
+          idea?: Json;
+          bundle?: Json;
+          error_message?: string | null;
+          rerun_target?: string | null;
+          repair_cycles?: number;
+          scheduled_for: string;
+          created_at?: string;
+          published_at?: string | null;
+        };
+        Update: {
+          recipe_id?: string | null;
+          status?: string;
+          idea?: Json;
+          bundle?: Json;
+          error_message?: string | null;
+          rerun_target?: string | null;
+          repair_cycles?: number;
+          scheduled_for?: string;
+          published_at?: string | null;
+        };
+        Relationships: [
+          { foreignKeyName: "recipe_generation_queue_recipe_id_fkey"; columns: ["recipe_id"]; isOneToOne: false; referencedRelation: "recipes"; referencedColumns: ["id"] },
+        ];
+      };
+      recipe_favorites: {
+        Row: {
+          id: string;
+          user_id: string;
+          recipe_id: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          recipe_id: string;
+          created_at?: string;
+        };
+        Update: {
+          user_id?: string;
+          recipe_id?: string;
+          created_at?: string;
+        };
+        Relationships: [
+          { foreignKeyName: "recipe_favorites_user_id_fkey"; columns: ["user_id"]; isOneToOne: false; referencedRelation: "users"; referencedColumns: ["id"] },
+          { foreignKeyName: "recipe_favorites_recipe_id_fkey"; columns: ["recipe_id"]; isOneToOne: false; referencedRelation: "recipes"; referencedColumns: ["id"] },
+        ];
+      };
     };
     Views: {};
     Functions: {
+      // 0108 (HEALTHY-RECIPES-FOUNDATION) — the atomic pair publish RPCs
+      // («ممنوع نشر نسخة منفردة» enforced in the database itself).
+      publish_recipe_pair: {
+        Args: { p_recipe_id: string };
+        Returns: undefined;
+      };
+      unpublish_recipe_pair: {
+        Args: { p_recipe_id: string; p_reason: string };
+        Returns: undefined;
+      };
+
       // EVO-5 (migration 0081) — one round-trip cache lookup: exact hash
       // first, else the most similar unexpired same-language row at/above
       // the pg_trgm similarity floor. Caller: service-role only.
@@ -2430,3 +2743,11 @@ export type EvoChatUsage = Database["public"]["Tables"]["evo_chat_usage"]["Row"]
 export type EvoAnonUsage = Database["public"]["Tables"]["evo_anon_usage"]["Row"];
 export type AiPlanUsage = Database["public"]["Tables"]["ai_plan_usage"]["Row"];
 export type SiteCoachAssignment = Database["public"]["Tables"]["site_coach_assignments"]["Row"];
+
+// 0108 (HEALTHY-RECIPES-FOUNDATION) row types
+export type Recipe = Database["public"]["Tables"]["recipes"]["Row"];
+export type RecipeVersion = Database["public"]["Tables"]["recipe_versions"]["Row"];
+export type RecipeIngredient = Database["public"]["Tables"]["recipe_ingredients"]["Row"];
+export type NutrientReference = Database["public"]["Tables"]["nutrient_reference"]["Row"];
+export type RecipeGenerationQueueItem = Database["public"]["Tables"]["recipe_generation_queue"]["Row"];
+export type RecipeFavorite = Database["public"]["Tables"]["recipe_favorites"]["Row"];

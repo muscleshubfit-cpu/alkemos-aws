@@ -74,6 +74,9 @@ const SITEMAPS = [
   "sitemap-comparisons.xml",
   "sitemap-exercises.xml",
   "sitemap-foods.xml",
+  // HEALTHY-RECIPES-PLATFORM (2026-11-10): same registration law for the
+  // Bing submission inventory.
+  "sitemap-recipes.xml",
 ];
 
 const BING_ENDPOINT = "https://ssl.bing.com/webmaster/api.svc/2.0/SubmitUrls";

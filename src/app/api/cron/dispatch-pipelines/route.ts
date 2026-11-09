@@ -50,6 +50,11 @@ const REPO = "muscleshubfit-cpu/alkemos-aws"; // OPS-TRANSITION 2026-10-10: pipe
 const EN_WORKFLOW = "blog-post-en.yml";
 const AR_WORKFLOW = "blog-post-ar.yml";
 const AI_JOBS_WORKFLOW = "process-ai-jobs.yml";
+// HEALTHY-RECIPES-PLATFORM (2026-11-10, plan §6.3): the daily pair's
+// backstop — same top-up law (one pair per day; coverage = max(non-failed
+// runs today, published pairs today); a published pair by ANY path covers
+// the slot). Slot 06:30 UTC → hour 6.
+const RECIPES_WORKFLOW = "recipe-post.yml";
 // Phase 119 (owner directive 2026-09-04): ONE slot per language per day,
 // different times per audience geography — EN 22:00 UTC (18:00 US Eastern,
 // evening peak) · AR 05:00 UTC (08:00 Cairo EEST, morning window).
@@ -148,6 +153,35 @@ async function postsTodayFor(
   }
 }
 
+/**
+ * HEALTHY-RECIPES-PLATFORM (2026-11-10): pairs PUBLISHED today (UTC) —
+ * the recipes daily-quota law's source of truth (the postsTodayFor
+ * precedent; read-only SELECT, null on DB trouble — never throws).
+ */
+async function pairsTodayFor(utcNow: Date): Promise<number | null> {
+  if (!isSupabaseAdminConfigured || !supabaseAdmin) return null;
+  try {
+    const dayStart = new Date(
+      Date.UTC(utcNow.getUTCFullYear(), utcNow.getUTCMonth(), utcNow.getUTCDate()),
+    ).toISOString();
+    const { count, error } = await supabaseAdmin
+      .from("recipes")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "published")
+      .gte("published_at", dayStart);
+    if (error) {
+      console.warn(`[dispatch-pipelines] pairsToday degraded: ${error.message}`);
+      return null;
+    }
+    return count ?? 0;
+  } catch (e) {
+    console.warn(
+      `[dispatch-pipelines] pairsToday degraded: ${e instanceof Error ? e.message : e}`,
+    );
+    return null;
+  }
+}
+
 async function dispatchWorkflow(token: string, workflow: string): Promise<void> {
   const res = await fetch(
     `https://api.github.com/repos/${REPO}/actions/workflows/${workflow}/dispatches`,
@@ -186,13 +220,20 @@ export async function GET(request: NextRequest) {
   const plans: Array<{ workflow: string; slots: number[] }> = [
     { workflow: EN_WORKFLOW, slots: EN_SLOTS },
     { workflow: AR_WORKFLOW, slots: AR_SLOTS },
+    // HEALTHY-RECIPES-PLATFORM: the pair's backstop (plan §6.3).
+    { workflow: RECIPES_WORKFLOW, slots: [6] },
   ];
 
   for (const plan of plans) {
     try {
+      const isRecipes = plan.workflow === RECIPES_WORKFLOW;
       const lang = plan.workflow === EN_WORKFLOW ? "en" : "ar";
       const runsToday = await runsTodayFor(token, plan.workflow, utcNow);
-      const postsToday = await postsTodayFor(lang, utcNow);
+      // Recipes coverage counts PAIRS (language-agnostic by design —
+      // one atomic publish serves both languages).
+      const postsToday = isRecipes
+        ? await pairsTodayFor(utcNow)
+        : await postsTodayFor(lang, utcNow);
       // PHASE 171: grace-aware expectation + coverage = max(runs, posts).
       // A slot is "expected" only 90 min after its hour (GitHub's
       // documented scheduler delay); a post that landed by ANY path

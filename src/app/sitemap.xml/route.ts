@@ -66,6 +66,10 @@ export async function GET() {
       lastModified: familyLastmod("exercises"),
     },
     { loc: `${base}/sitemap-foods.xml`, lastModified: familyLastmod("foods") },
+    // HEALTHY-RECIPES-PLATFORM (2026-11-10): the recipes child — dynamic
+    // truthful lastmod (the same law as the blog child: max real
+    // published_at/updated_at from the table, or NO date at all).
+    { loc: `${base}/sitemap-recipes.xml`, ...(await recipesEntryLastmod()) },
     { loc: `${base}/sitemap-blog.xml`, ...(await blogEntryLastmod()) },
   ];
   return xmlResponse(buildSitemapIndex(entries));
@@ -77,6 +81,32 @@ export async function GET() {
  * Fail-soft by design (mirrors the child route's error posture): an
  * unreachable Supabase must never 500 the index to a crawler.
  */
+async function recipesEntryLastmod(): Promise<{ lastModified?: Date }> {
+  try {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    if (!url || !anon) return {};
+    const supabase = createClient(url, anon, {
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
+    const { data } = await supabase
+      .from("recipes")
+      .select("published_at, updated_at")
+      .eq("status", "published")
+      .order("updated_at", { ascending: false })
+      .limit(200);
+    const stamps = (data ?? [])
+      .map((r: { published_at?: string | null; updated_at?: string | null }) =>
+        new Date(r.updated_at ?? r.published_at ?? 0).getTime(),
+      )
+      .filter((t: number) => Number.isFinite(t) && t > 0);
+    if (stamps.length === 0) return {};
+    return { lastModified: new Date(Math.max(...stamps)) };
+  } catch {
+    return {};
+  }
+}
+
 async function blogEntryLastmod(): Promise<{ lastModified?: Date }> {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;

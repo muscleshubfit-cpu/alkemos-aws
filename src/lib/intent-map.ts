@@ -162,6 +162,59 @@ export const SEARCH_INTENT_MAP: SearchIntentEntry[] = [
       "قاعدة بيانات الأطعمة",
     ],
   },
+  // ── HEALTHY-RECIPES-PLATFORM (2026-11-10, plan §10-5): the recipes
+  // family's three primary surfaces. Registered HERE so the blog topic
+  // gate protects them (no article competes for their head queries)
+  // AND so the recipes idea gate (Q-GATE-5) can consult this map. The
+  // /blog/category/recipes overlap (decision ق5): separate intents,
+  // cross-linked, rename deferred to the owner.
+  {
+    cluster: "recipes-library",
+    labelEn: "Healthy recipes library",
+    labelAr: "مكتبة الوصفات الصحية",
+    primaryIntent: "Find a healthy recipe with computed per-serving nutrition.",
+    canonical: "/recipes",
+    supporting: ["/foods", "/meal-planner", "/recipes/methodology", "/tools/calorie-calculator"],
+    kind: "library",
+    queries: [
+      "healthy recipes",
+      "healthy recipe with calories",
+      "high protein recipes",
+      "وصفات صحية",
+      "وصفة صحية بالسعرات",
+      "وصفات دايت",
+    ],
+  },
+  {
+    cluster: "recipes-cuisines",
+    labelEn: "Healthy recipes by cuisine",
+    labelAr: "وصفات صحية حسب المطبخ",
+    primaryIntent: "Browse healthy recipes from a specific cuisine.",
+    canonical: "/recipes/cuisine/egyptian",
+    supporting: ["/recipes", "/recipes/cuisine/arab", "/recipes/cuisine/gulf"],
+    kind: "hub",
+    queries: [
+      "healthy egyptian recipes",
+      "arabic healthy recipes",
+      "وصفات مصرية صحية",
+      "وصفات عربية صحية",
+    ],
+  },
+  {
+    cluster: "recipes-diets",
+    labelEn: "Healthy recipes by diet",
+    labelAr: "وصفات صحية حسب النظام الغذائي",
+    primaryIntent: "Browse recipes compatible with a specific diet.",
+    canonical: "/recipes/diet/keto",
+    supporting: ["/recipes/diet/high-protein", "/recipes/diet/vegan", "/recipes"],
+    kind: "hub",
+    queries: [
+      "keto recipes",
+      "high protein diet recipes",
+      "وصفات كيتو",
+      "وصفات عالية البروتين",
+    ],
+  },
   // ── Phase 318 (P1-8 — SEO audit item 8): the accuracy chain's two new
   // primary surfaces. Registered HERE so the blog topic gate protects
   // them: no future article may compete for their head queries — the
