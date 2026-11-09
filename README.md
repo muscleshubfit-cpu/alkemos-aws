@@ -403,6 +403,7 @@ Vercel completed 2026-10-10; the migration record lives in
 | [`.env.example`](./.env.example) | Annotated environment variable reference |
 | [`SECURITY.md`](./SECURITY.md) | Security policy |
 | [`docs/AUTHORITY-ENGINE-RELATION-2026-11-09.md`](./docs/AUTHORITY-ENGINE-RELATION-2026-11-09.md) | The independent Authority Growth Engine (backlinks) project — its relation to this site, isolation guarantees, and verified results (Arabic) |
+| [`docs/healthy-recipes-platform/`](./docs/healthy-recipes-platform/) | The Healthy Recipes platform — the full repository audit and the executable implementation plan for the bilingual daily recipes engine (Arabic; planning approved-pending, nothing executed yet) |
 | [`CONTRIBUTING.md`](./CONTRIBUTING.md) | Contribution policy (proprietary — issues only) |
 | [`worklog.md`](./worklog.md) | Active task log (full history in `archive/`) |
 | [`CHANGELOG.md`](./CHANGELOG.md) | How change history is tracked in this repo |
