@@ -10,6 +10,10 @@ import type { NutrientRefRow, NutritionTotals } from "@/lib/recipes-nutrition";
 import type { RecipeDiet } from "@/lib/recipes-shared";
 import { mapR5FailureToRerunTarget } from "@/lib/recipes-repair-target";
 import {
+  narrativeAdvisorySampled,
+  verifyPairNarrative,
+} from "@/lib/recipes-pipeline";
+import {
   getRecipeQueueIdParam,
   fetchRecipeQueueItem,
   updateRecipeQueueItem,
@@ -28,6 +32,14 @@ export const maxDuration = 120;
  * stage chain on the SAME row, ≤ MAX_REPAIRS cycles, then the honest
  * held/failed verdict. The report is stamped into recipes.verification
  * (the «سجل كامل لعمليات الإنتاج والتحقق» owner requirement).
+ *
+ * ADVISORY TAIL (plan §6.1 row 5 — recipe:verify-narrative): AFTER the
+ * deterministic battery passes, a deterministic 1-in-3 sample of
+ * scheduled days gets the optional cross-version consistency read. It
+ * is advisory ONLY — it never decides numbers; a HIGH-severity flag
+ * holds the pair with the r3-authoring rerun target exactly like every
+ * other diagnostic, and any provider/parse trouble fails OPEN (the
+ * deterministic verdict stands untouched).
  *
  * GET /api/cron/recipes/r5-gates?queueId=<uuid>
  */
@@ -207,11 +219,77 @@ export async function GET(request: NextRequest) {
 
     const report = assembleGateReport(violations);
 
-    // Stamp the report (pass OR fail — the full production record law).
+    // ── Advisory tail (sampled, fail-open — see header). Runs ONLY on
+    //    the deterministic pass path: an advisory can hold an otherwise
+    //    passing pair, but can NEVER rescue a failing one. ──
+    let advisoryStamped: Record<string, unknown> | null = null;
+    if (report.passed && narrativeAdvisorySampled(String(qi.scheduled_for ?? ""))) {
+      const idea = (qi.idea ?? {}) as { themeAr?: string; themeEn?: string };
+      const advisory = await verifyPairNarrative({
+        themeAr: String(idea.themeAr ?? ""),
+        themeEn: String(idea.themeEn ?? ""),
+        servings: master.servings,
+        prepMinutes: master.prep_minutes,
+        cookMinutes: master.cook_minutes,
+        ingredients: ingredients.map((i) => ({
+          nameAr: i.name_ar,
+          nameEn: i.name_en,
+          amountG: i.amount_g,
+        })),
+        perServing: {
+          calories: Math.round(perServing.calories),
+          protein: Math.round(perServing.protein_g),
+          carbs: Math.round(perServing.carbs_g),
+          fat: Math.round(perServing.fat_g),
+          fiber: Math.round(perServing.fiber_g),
+        },
+        versions: versions.map((v) => ({
+          language: v.language,
+          title: v.title,
+          excerpt: v.excerpt,
+          steps: v.steps.map((s) => s.text),
+          tips: v.tips ?? "",
+        })),
+      });
+      if (advisory) {
+        advisoryStamped = { ...advisory.advisory, source: advisory.source, sampledFor: String(qi.scheduled_for) };
+        const highIssues = advisory.advisory.issues.filter((i) => i.severity === "high");
+        if (!advisory.advisory.consistent && highIssues.length > 0) {
+          const reason = `R5: NARRATIVE-ADV: ${highIssues
+            .map((i) => `[${i.language}${i.field ? `/${i.field}` : ""}] ${i.problem}`)
+            .join(" · ")}`.slice(0, 2000);
+          await supabaseAdmin
+            .from("recipes")
+            .update({
+              verification: JSON.stringify({ ...report, advisoryNarrative: advisoryStamped }),
+              verification_status: "failed",
+              updated_at: new Date().toISOString(),
+            })
+            .eq("id", recipeId);
+          await updateRecipeQueueItem(queueId, {
+            status: "held",
+            error_message: reason,
+            rerun_target: "r3-authoring",
+          });
+          return NextResponse.json({
+            ok: false,
+            queueId,
+            held: true,
+            rerunTarget: "r3-authoring",
+            advisory: advisoryStamped,
+          });
+        }
+      }
+    }
+
+    // Stamp the report (pass OR fail — the full production record law;
+    // carries the advisory tail on sampled days, null otherwise).
     await supabaseAdmin
       .from("recipes")
       .update({
-        verification: JSON.stringify(report),
+        verification: JSON.stringify(
+          advisoryStamped ? { ...report, advisoryNarrative: advisoryStamped } : report,
+        ),
         verification_status: report.passed ? "passed" : "failed",
         updated_at: new Date().toISOString(),
       })
@@ -239,13 +317,24 @@ export async function GET(request: NextRequest) {
 
     const qErr = await updateRecipeQueueItem(queueId, {
       status: "gates_passed",
-      bundle: JSON.stringify({ ...(qi.bundle ?? {}), gates: report }),
+      bundle: JSON.stringify({
+        ...(qi.bundle ?? {}),
+        gates: report,
+        ...(advisoryStamped ? { advisoryNarrative: advisoryStamped } : {}),
+      }),
       error_message: null,
       rerun_target: null,
     });
     if (qErr) throw new Error(qErr);
 
-    return NextResponse.json({ ok: true, step: "r5", queueId, gates: report.gateCount, violations: 0 });
+    return NextResponse.json({
+      ok: true,
+      step: "r5",
+      queueId,
+      gates: report.gateCount,
+      violations: 0,
+      advisorySampled: advisoryStamped !== null,
+    });
   } catch (err) {
     console.error("[recipes/r5] failed:", err);
     await markRecipeQueueFailed(queueId, `R5: ${err instanceof Error ? err.message : "unknown"}`);

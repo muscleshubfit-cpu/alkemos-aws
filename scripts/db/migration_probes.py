@@ -235,6 +235,28 @@ PROBES: list[dict] = [
             {"type": "swagger_rpc", "rpc": "unpublish_recipe_pair"},
         ],
     },
+    # 0109 — RECIPES-FOUNDATION CLEAN-STACK GUARD (owner order 2026-11-10
+    # «استكمال مشروع Healthy Recipes»): re-asserts 0108's foundation
+    # idempotently with the 0105 pg_proc guard on the 11 admin-write
+    # policies (the clean-stack is_admin() failure fix). Honest weak
+    # strength: on production it is a verified NO-OP over 0108 (same
+    # tables/RPCs — 0108's strong probe already covers them); its OWN
+    # observable effect through PostgREST is simply that the same six
+    # tables remain present after it, which is exactly what these
+    # checks pin.
+    {
+        "file": "20261110140000_0109_recipes_foundation_clean_stack_guard.sql",
+        "label": "0109 RECIPES-CLEAN-STACK-GUARD",
+        "strength": "weak",
+        "checks": [
+            {"type": "swagger_table", "table": "nutrient_reference"},
+            {"type": "swagger_table", "table": "recipes"},
+            {"type": "swagger_table", "table": "recipe_versions"},
+            {"type": "swagger_table", "table": "recipe_ingredients"},
+            {"type": "swagger_table", "table": "recipe_generation_queue"},
+            {"type": "swagger_table", "table": "recipe_favorites"},
+        ],
+    },
 ]# fmt: on
 
 # --- named transforms for rest_rows probes ----------------------------------

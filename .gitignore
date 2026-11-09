@@ -77,6 +77,13 @@ pnpm-lock.yaml
 scripts/qa/**/__pycache__/
 !/scripts/blog-runner/
 !/scripts/ai-jobs-runner/
+!/scripts/recipes-runner/
+#   scripts/recipes-runner/ → the healthy-recipes daily pipeline runner pair
+#   (HEALTHY-RECIPES-PLATFORM §6.3/P8, owner order 2026-11-10): run-step.sh +
+#   run-step.mts — invoked by recipe-post.yml for all eight stages; hit the
+#   same /scripts/* blanket trap as blog-runner/ — exception added in the
+#   same frame (the 24de79d1 lesson: the workflow referencing an
+#   uncommitted runner is invisible to every CI gate).
 !/scripts/vercel-cleanup/
 #   scripts/qa/ → the QA test-accounts channel tool (QA-TEST-ACCOUNTS-2026-10-26, owner directive
 #   2026-10-26 — the single guarded lifecycle instrument of the Test-Accounts Channel; hit the

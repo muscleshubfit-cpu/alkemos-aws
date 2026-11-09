@@ -546,6 +546,22 @@ jobs:
             [ "$code" = "200" ] && ok "$p -> 200" || bad "$p -> $code"
           done
 
+          # HEALTHY-RECIPES-PLATFORM (plan §12.2/P9 — the bilingual smoke
+          # battery): the recipes section surfaces must serve 200 with the
+          # right direction markers BEFORE any pair is published (honest
+          # empty states), and stay 200 after publishing starts.
+          echo "== recipes section (bilingual smoke — plan §12.2) =="
+          code=$(R -o /tmp/rec-en -w '%{http_code}' "$BASE/recipes")
+          [ "$code" = "200" ] && ok "/recipes -> 200" || bad "/recipes -> $code"
+          grep -q 'lang="en"' /tmp/rec-en && ok "/recipes is English" || bad "/recipes lang=en marker missing"
+          code=$(R -o /tmp/rec-ar -w '%{http_code}' "$BASE/ar/recipes")
+          [ "$code" = "200" ] && ok "/ar/recipes -> 200" || bad "/ar/recipes -> $code"
+          grep -q 'dir="rtl"' /tmp/rec-ar && ok "/ar/recipes is RTL" || bad "/ar/recipes dir=rtl marker missing"
+          for p in /recipes/methodology /ar/recipes/methodology /sitemap-recipes.xml /recipes/rss.xml /ar/recipes/rss.xml; do
+            code=$(R -o /dev/null -w '%{http_code}' "$BASE$p")
+            [ "$code" = "200" ] && ok "$p -> 200" || bad "$p -> $code"
+          done
+
           echo "== security headers on / (the 7 from vercel.json) =="
           R -I "$BASE/" > /tmp/hdrs
           for h in X-Content-Type-Options X-Frame-Options Referrer-Policy Strict-Transport-Security Permissions-Policy Content-Security-Policy Content-Security-Policy-Report-Only; do

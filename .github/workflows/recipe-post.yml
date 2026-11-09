@@ -129,31 +129,41 @@ jobs:
       # ══════════════════════════════════════════════════════════
       # EIGHT-STAGE PIPELINE — ONE PAIR (each stage retries ×3 with
       # backoff and threads queueId automatically from r0's response;
-      # R5 gate failures carry the RERUN_TARGET repair contract)
+      # holds carry the RERUN_TARGET repair contract — the runner's
+      # repair chain re-runs the targeted stages in-run, ≤2 cycles).
+      # An honest skip (daily quota / circuit breaker / kill switch)
+      # exports RECIPES_SKIPPED=1 — every later stage stops gracefully.
       # ══════════════════════════════════════════════════════════
 
       - name: R0 — Idea of the day (coverage matrix + guards)
         run: bash scripts/recipes-runner/run-step.sh r0-idea 3
 
       - name: R1 — Structure JSON (zod + N-GATE-1/2, creates the pair)
+        if: env.RECIPES_SKIPPED != '1'
         run: bash scripts/recipes-runner/run-step.sh r1-structure 3
 
       - name: R2 — Programmatic nutrition (no AI — the deterministic engine)
+        if: env.RECIPES_SKIPPED != '1'
         run: bash scripts/recipes-runner/run-step.sh r2-nutrition 3
 
       - name: R3 — Independent AR + EN authoring (two dispatchAI calls)
+        if: env.RECIPES_SKIPPED != '1'
         run: bash scripts/recipes-runner/run-step.sh r3-authoring 3
 
       - name: R4 — Image (Pexels→Unsplash→Pixabay + match verification)
+        if: env.RECIPES_SKIPPED != '1'
         run: bash scripts/recipes-runner/run-step.sh r4-image 3
 
       - name: R5 — Deterministic gate battery (hold or pass, never bend)
+        if: env.RECIPES_SKIPPED != '1'
         run: bash scripts/recipes-runner/run-step.sh r5-gates 3
 
       - name: R6 — Atomic publish (publish_recipe_pair + ISR flush)
+        if: env.RECIPES_SKIPPED != '1'
         run: bash scripts/recipes-runner/run-step.sh r6-publish 3
 
       - name: R7 — Indexing (IndexNow + sitemap lastmod — warn-only)
+        if: env.RECIPES_SKIPPED != '1'
         run: bash scripts/recipes-runner/run-step.sh r7-indexing 3
 
       - name: Summary
@@ -161,6 +171,7 @@ jobs:
         run: |
           echo "=== recipes pipeline run summary ==="
           echo "QUEUE_ID processed: ${QUEUE_ID:-<none>}"
+          echo "Honest skip this run: ${RECIPES_SKIPPED:-0} (1 = daily quota/circuit-breaker/kill-switch — nothing to do)"
           echo "Kill switch (RECIPES_PUBLISH_ENABLED): ${RECIPES_PUBLISH_ENABLED:-true}"
-          echo "R1 repair-loop cycles this run: ${REPAIRS_USED:-0}"
-          echo "Full logs above — green ✓ = one pair published (AR + EN together), red ❌ = copy last lines and report."
+          echo "Repair-loop cycles this run: ${REPAIRS_USED:-0}"
+          echo "Full logs above — green ✓ = one pair published (AR + EN together) or an honest skip, red ❌ = copy last lines and report."

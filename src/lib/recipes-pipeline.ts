@@ -414,12 +414,19 @@ export async function authorRecipeVersion(
         `{"title":"...","excerpt":"...","steps":["..."],"tips":"...","storageInfo":"...","substitutions":[{"from":"...","to":"...","note":"..."}],"metaTitle":"...","metaDescription":"..."}`,
       ].join("\n");
 
-  const fn = ar ? "recipe:author-ar" : "recipe:author-en";
-  const { text, provider, model } = await dispatchAI(fn, prompt, {
-    systemPrompt: ar
-      ? "أنت واجهة JSON صارمة. أخرج كائن JSON واحدًا صحيحًا فقط بلا أي نص خارجه."
-      : "You are a strict JSON API endpoint. Output ONE valid JSON object and nothing else.",
-  });
+  // NOTE (guard law, scripts/check-ai-router-guard.sh check 3): the two
+  // authoring ids ride an INLINE conditional first argument — the guard's
+  // token scan sees both literals. A variable indirection (const fn = …)
+  // hides them and reads as dead registrations (the 24de79d1 CI lesson).
+  const { text, provider, model } = await dispatchAI(
+    ar ? "recipe:author-ar" : "recipe:author-en",
+    prompt,
+    {
+      systemPrompt: ar
+        ? "أنت واجهة JSON صارمة. أخرج كائن JSON واحدًا صحيحًا فقط بلا أي نص خارجه."
+        : "You are a strict JSON API endpoint. Output ONE valid JSON object and nothing else.",
+    },
+  );
   const parsed = authoredSchema.parse(parseJsonLoose(text));
 
   const version: AuthoredVersion = {
@@ -434,6 +441,122 @@ export async function authorRecipeVersion(
     metaDescription: parsed.metaDescription,
   };
   return { version, source: `${provider}:${model}` };
+}
+
+/* ───────────── R5 advisory — the sampled narrative read ───────────── */
+/* plan §6.1 row 5 / §6.2 R5: recipe:verify-narrative is an OPTIONAL,
+ * SAMPLED cross-version consistency read. Advisory ONLY — it never
+ * decides a number (the deterministic battery owns every numeric
+ * verdict); at worst it holds the pair with a rerun-target exactly
+ * like every other diagnostic. Fail-open: any provider/parse trouble
+ * degrades to «no advisory», never blocks the deterministic verdict. */
+
+export type NarrativeAdvisoryIssue = {
+  severity: "high" | "low";
+  language: "ar" | "en" | "both";
+  field: string;
+  problem: string;
+};
+
+export type NarrativeAdvisory = {
+  consistent: boolean;
+  issues: NarrativeAdvisoryIssue[];
+};
+
+const narrativeAdvisorySchema = z.object({
+  consistent: z.boolean(),
+  issues: z
+    .array(
+      z.object({
+        severity: z.enum(["high", "low"]).catch("low"),
+        language: z.enum(["ar", "en", "both"]).catch("both"),
+        field: z.string().trim().max(60).catch(""),
+        problem: z.string().trim().min(3).max(400),
+      }),
+    )
+    .max(10)
+    .default([]),
+});
+
+/** Deterministic 1-in-3 sample by scheduled day (days 1, 4, 7, … of the
+ * month → ~10 pairs/month). No randomness — audits reproduce exactly
+ * which days carried the advisory read. */
+export function narrativeAdvisorySampled(scheduledFor: string): boolean {
+  const day = Number((scheduledFor ?? "").slice(8, 10));
+  return Number.isFinite(day) && day >= 1 && day <= 31 && day % 3 === 1;
+}
+
+/** Tolerant parse for the advisory payload (fail-open → null). */
+export function parseNarrativeAdvisory(text: string): NarrativeAdvisory | null {
+  try {
+    return narrativeAdvisorySchema.parse(parseJsonLoose(text));
+  } catch {
+    return null;
+  }
+}
+
+export async function verifyPairNarrative(input: {
+  themeAr: string;
+  themeEn: string;
+  servings: number;
+  prepMinutes: number;
+  cookMinutes: number;
+  ingredients: ReadonlyArray<{ nameAr: string; nameEn: string; amountG: number }>;
+  perServing: { calories: number; protein: number; carbs: number; fat: number; fiber: number };
+  versions: ReadonlyArray<{ language: "ar" | "en"; title: string; excerpt: string; steps: string[]; tips: string }>;
+}): Promise<{ advisory: NarrativeAdvisory; source: string } | null> {
+  const factLines = input.ingredients
+    .map((i) => `- ${i.nameEn} / ${i.nameAr}: ${i.amountG} g`)
+    .join("\n");
+  const ar = input.versions.find((v) => v.language === "ar");
+  const en = input.versions.find((v) => v.language === "en");
+  if (!ar || !en) return null;
+
+  const prompt = [
+    `Cross-version consistency audit for the recipe pair "${input.themeEn}" / «${input.themeAr}».`,
+    ``,
+    `SHARED TRUTH (both versions must describe exactly this):`,
+    `- Servings: ${input.servings} · Prep: ${input.prepMinutes} min · Cook: ${input.cookMinutes} min`,
+    `- Ingredients (same grams in both):`,
+    factLines,
+    `- Computed per serving: ${input.perServing.calories} kcal · protein ${input.perServing.protein} g · carbs ${input.perServing.carbs} g · fat ${input.perServing.fat} g · fiber ${input.perServing.fiber} g`,
+    ``,
+    `ARABIC VERSION:`,
+    `Title: ${ar.title}`,
+    `Excerpt: ${ar.excerpt}`,
+    `Steps: ${ar.steps.map((s, i) => `${i + 1}. ${s}`).join(" ")}`,
+    `Tips: ${ar.tips}`,
+    ``,
+    `ENGLISH VERSION:`,
+    `Title: ${en.title}`,
+    `Excerpt: ${en.excerpt}`,
+    `Steps: ${en.steps.map((s, i) => `${i + 1}. ${s}`).join(" ")}`,
+    `Tips: ${en.tips}`,
+    ``,
+    `Flag ONLY material contradictions: a step, technique, ingredient emphasis, serving/storage`,
+    `instruction, or preparation claim that differs between the two versions OR contradicts the`,
+    `shared truth. IGNORE stylistic voice, length, and phrasing differences — the two versions are`,
+    `independently authored originals, NOT translations, so different prose is CORRECT by design.`,
+    `Do NOT evaluate nutrition numbers (deterministic gates own them).`,
+    ``,
+    `Respond with STRICT JSON only:`,
+    `{"consistent":true|false,"issues":[{"severity":"high"|"low","language":"ar"|"en"|"both","field":"...","problem":"..."}]}`,
+    `severity "high" = a reader would follow materially different instructions; "low" = minor drift.`,
+  ].join("\n");
+
+  try {
+    const { text, provider, model } = await dispatchAI("recipe:verify-narrative", prompt, {
+      systemPrompt:
+        "You are a strict JSON consistency-audit endpoint. Output ONE valid JSON object and nothing else.",
+    });
+    const advisory = parseNarrativeAdvisory(text);
+    if (!advisory) return null;
+    return { advisory, source: `${provider}:${model}` };
+  } catch {
+    // Advisory fail-open (plan §6.1 row 5): provider trouble never blocks
+    // the deterministic verdict.
+    return null;
+  }
 }
 
 /* ───────────────────────── small helpers ───────────────────────── */

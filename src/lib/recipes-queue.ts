@@ -218,6 +218,47 @@ export async function requeueRecipeRow(queueId: string): Promise<{ ok: boolean; 
   return { ok: !err, error: err };
 }
 
+/**
+ * RUNNER repair reset (the run-step.sh repair chain — the in-run sibling
+ * of requeueRecipeRow above): set the row back to the status the TARGET
+ * stage accepts, clear the failure bookkeeping, and INCREMENT
+ * repair_cycles (the honest cumulative counter — the admin requeue
+ * resets it to 0 for a fresh manual cycle, the in-run chain must not).
+ *
+ * r0-idea targets answer { reset: false }: R0 cannot be re-run against a
+ * row (its RESUME protocol only picks up open rows, never held ones), so
+ * the wrapper re-runs R0 WITHOUT a queueId — a FRESH row is created and
+ * the held row stays behind as the honest failure record.
+ *
+ * Callers that want R1's missing-refs feedback preserved (the failing
+ * step IS r1-structure) skip this reset entirely and re-run R1 on the
+ * held row directly — the route accepts "held" and reads its own
+ * error_message as the one-shot repair directive.
+ */
+export async function resetRecipeRowForRepair(
+  queueId: string,
+): Promise<{ ok: boolean; reset: boolean; error: string | null }> {
+  const { data: qi, error } = await fetchRecipeQueueItem(queueId);
+  if (error || !qi) return { ok: false, reset: false, error: error ?? "queue_item_not_found" };
+  const target = qi.rerun_target;
+  if (!target || target === "r0-idea") return { ok: true, reset: false, error: null };
+  const before: Record<string, RecipeQueueStatus> = {
+    "r1-structure": "idea",
+    "r2-nutrition": "structured",
+    "r3-authoring": "nutrition_verified",
+    "r4-image": "authored",
+  };
+  const status = before[target];
+  if (!status) return { ok: false, reset: false, error: `unknown rerun_target: ${target}` };
+  const err = await updateRecipeQueueItem(queueId, {
+    status,
+    error_message: null,
+    rerun_target: null,
+    repair_cycles: (qi.repair_cycles ?? 0) + 1,
+  });
+  return { ok: !err, reset: !err, error: err };
+}
+
 /** The publish kill-switch (plan §6.3 — env-gated, default TRUE). */
 export function recipesPublishEnabled(): boolean {
   return process.env.RECIPES_PUBLISH_ENABLED !== "false";
