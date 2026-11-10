@@ -166,8 +166,8 @@ export async function RecipeDetailView({
             </div>
             <figcaption className="bg-[var(--tint)] px-4 py-2 text-xs text-[var(--muted-foreground)] print:hidden">
               {isAr
-                ? "الصورة نفسها تُعرض في النسختين العربية والإنجليزية (اشتراط التطابق)."
-                : "The same image serves both the Arabic and English versions (the pairing law)."}
+                ? "تقديم الوصفة كما هي مصممة — عدّل عدد الحصص من الأعلى لتتناسب مع حاجتك."
+                : "The recipe as designed — scale the servings above to fit your needs."}
             </figcaption>
           </figure>
         ) : null}
@@ -204,14 +204,14 @@ export async function RecipeDetailView({
           ) : null}
 
           <p className="mt-3 text-xs text-[var(--muted-foreground)] print:hidden">
-            {isAr ? "القيم المحسوبة من:" : "Values computed from:"}{" "}
+            {isAr ? "القيم الغذائية لكل حصة مبنية على مرجع:" : "Per-serving nutrition is based on:"}{" "}
             <strong>{detail.nutritionSourceLabel}</strong>
             {" — "}
             <Link
               href={isAr ? "/ar/recipes/methodology" : "/recipes/methodology"}
               className="underline underline-offset-4"
             >
-              {isAr ? "المنهجية" : "methodology"}
+              {isAr ? "منهجية الحساب والمصادر" : "how we calculate"}
             </Link>
           </p>
         </section>
@@ -294,24 +294,34 @@ export async function RecipeDetailView({
           </section>
         ) : null}
 
-        {/* honest methodology disclosure (ق3 — auto_verified) */}
+        {/* editorial note — natural reader-facing nutrition transparency
+            (the production/verification internals stay in the repo docs;
+            visitor surfaces carry editorial copy only — the editorial-surface
+            decision 2026-11-10) */}
         <section className="mt-10 rounded-xl border border-[var(--edge)] bg-[var(--tint)] p-4 text-xs leading-relaxed text-[var(--muted-foreground)] print:hidden">
           {isAr ? (
             <>
-              <strong>منهجية الإنتاج والتحقق:</strong> يُنتج خط النشر اليومي هذه الوصفة كزوج
-              ثنائي اللغة (نسخة عربية ونسخة إنجليزية مستقلتان من التأليف — ليست ترجمة)، وتُحسب
-              كل قيمة غذائية برمجيًا من مرجع مغذيات موثق ({detail.nutritionSourceLabel}) بعد
-              اجتياز بوابات تحقق حتمية (اتساق السعرات، مطابقة الأوزان، السلامة اللغوية).
-              الحالة: {detail.verificationStatus === "passed" ? "متحققة آليًا" : detail.verificationStatus}.
+              <strong>ملاحظة تحريرية:</strong> القيم الغذائية في هذه الوصفة محسوبة لكل حصة من
+              أوزان المكونات المذكورة أعلاه، ومبنية على مرجع {detail.nutritionSourceLabel}.
+              تذكّر أن البدائل المقترحة وطرق الطهي المختلفة قد تغيّر القيم قليلًا —{" "}
+              <Link
+                href="/ar/recipes/methodology"
+                className="underline underline-offset-4"
+              >
+                صفحة المنهجية
+              </Link>{" "}
+              تفصّل المصادر وطريقة الحساب.
             </>
           ) : (
             <>
-              <strong>Production & verification methodology:</strong> the daily pipeline produces
-              this recipe as a bilingual pair (independently authored Arabic and English versions —
-              never a translation), and every nutrition value is computed programmatically from a
-              verified nutrient reference ({detail.nutritionSourceLabel}) after passing
-              deterministic gates (calorie consistency, weight integrity, language quality).
-              Status: {detail.verificationStatus === "passed" ? "auto-verified" : detail.verificationStatus}.
+              <strong>Editor&apos;s note:</strong> the nutrition values here are per serving,
+              calculated from the ingredient weights listed above and based on the{" "}
+              {detail.nutritionSourceLabel} reference. Keep in mind that suggested substitutions
+              and different cooking methods can shift the numbers slightly —{" "}
+              <Link href="/recipes/methodology" className="underline underline-offset-4">
+                the methodology page
+              </Link>{" "}
+              details our sources and how the values are calculated.
             </>
           )}
         </section>

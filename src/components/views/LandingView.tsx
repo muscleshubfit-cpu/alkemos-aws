@@ -939,12 +939,12 @@ export function LandingView({
                 {isAr ? "وصفات صحية بالجرام" : "HEALTHY RECIPES"}
               </span>
               <h2 className="mt-5 text-3xl font-semibold tracking-tight md:text-4xl">
-                {isAr ? "وصفات مختارة بقيم محسوبة" : "Featured recipes, computed to the gram"}
+                {isAr ? "وصفات صحية مختارة" : "Featured healthy recipes"}
               </h2>
               <p className="mx-auto mt-3 max-w-2xl text-base font-normal md:text-lg" style={{ color: PALETTE.textSec }}>
                 {isAr
-                  ? "زوج وصفات جديد كل يوم (عربي + إنجليزي) — القيم الغذائية لكل حصة محسوبة برمجيًا من مرجع موثق، والمكونات بأوزانها بالجرام."
-                  : "A new verified pair every day (Arabic + English) — per-serving nutrition computed programmatically from a verified reference, ingredients weighed in grams."}
+                  ? "أطباق صحية بمكونات موزونة بالجرام وقيم غذائية واضحة لكل حصة — تُضاف وصفة جديدة إلى المكتبة كل يوم."
+                  : "Wholesome dishes with ingredients weighed in grams and clear per-serving nutrition — a new recipe joins the library every day."}
               </p>
             </Reveal>
             <div className="mt-7 grid grid-cols-2 gap-4 md:grid-cols-3">

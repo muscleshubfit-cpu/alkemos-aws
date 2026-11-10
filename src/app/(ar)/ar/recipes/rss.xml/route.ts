@@ -13,7 +13,7 @@ export async function GET(): Promise<Response> {
     title: "وصفات Alkemos الصحية",
     link: `${RECIPES_RSS_SITE_URL}/ar/recipes`,
     description:
-      "وصفات صحية ثنائية اللغة بقيم محسوبة بالجرام لكل حصة من مرجع موثق — زوج جديد متحقق كل يوم.",
+      "وصفات صحية بمكونات موزونة بالجرام وقيم غذائية لكل حصة من مراجع موثوقة — وصفة جديدة كل يوم.",
     language: "ar",
     selfUrl: `${RECIPES_RSS_SITE_URL}/ar/recipes/rss.xml`,
   });

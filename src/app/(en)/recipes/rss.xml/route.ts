@@ -14,7 +14,7 @@ export async function GET(): Promise<Response> {
     title: "Alkemos Healthy Recipes",
     link: `${RECIPES_RSS_SITE_URL}/recipes`,
     description:
-      "Healthy bilingual recipes with per-serving nutrition computed in grams from a verified USDA-based reference — a new verified Arabic + English pair every day.",
+      "Healthy recipes with ingredients weighed in grams and clear per-serving nutrition from trusted references — a new recipe every day.",
     language: "en",
     selfUrl: `${RECIPES_RSS_SITE_URL}/recipes/rss.xml`,
   });

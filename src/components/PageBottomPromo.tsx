@@ -56,8 +56,8 @@ const EXPLORE_ITEMS: {
     href: "/recipes",
     nameAr: "الوصفات الصحية",
     nameEn: "Healthy Recipes",
-    descAr: "وصفات ثنائية اللغة بقيم محسوبة برمجيًا بالجرام",
-    descEn: "Bilingual recipes with computed per-gram nutrition",
+    descAr: "وصفات صحية بمكونات موزونة وقيم غذائية لكل حصة",
+    descEn: "Healthy recipes with weighed ingredients and per-serving nutrition",
     icon: "protein",
   },
   // §12.33: the ready-made diet plans join the libraries cluster under

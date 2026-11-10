@@ -97,16 +97,16 @@ function introCopy(
   switch (kind) {
     case "cuisine":
       return isAr
-        ? `وصفات ${axisLabel(kind, slug, lang)} الصحية — قيم غذائية محسوبة بالجرام لكل مكون، مع أوقات التحضير والطهي ونطاق سعرات واضح لكل حصة.`
-        : `Healthy ${axisLabel(kind, slug, "en")} recipes — nutrition computed in grams for every ingredient, with prep and cook times and a clear per-serving calorie range.`;
+        ? `وصفات ${axisLabel(kind, slug, lang)} الصحية — مكونات موزونة بالجرام وقيم غذائية واضحة لكل حصة، مع أوقات التحضير والطهي.`
+        : `Healthy ${axisLabel(kind, slug, "en")} recipes — ingredients weighed in grams with clear per-serving nutrition, plus prep and cook times.`;
     case "goal":
       return isAr
         ? `وصفات تخدم هدف «${axisLabel(kind, slug, "ar")}» — مختارة على أساس كثافة السعرات ونسبة البروتين لكل حصة، بمكونات متاحة وخطوات واضحة.`
         : `Recipes matched to the «${axisLabel(kind, slug, "en")}» goal — selected by calorie density and per-serving protein, with accessible ingredients and clear steps.`;
     case "meal":
       return isAr
-        ? `وصفات ${axisLabel(kind, slug, "ar")} — من الإفطار إلى ما بعد التمرين، بقيم محسوبة لكل حصة لتناسب يومك التدريبي.`
-        : `${axisLabel(kind, slug, "en")} recipes — from breakfast to post-workout, with computed per-serving values that fit your training day.`;
+        ? `وصفات ${axisLabel(kind, slug, "ar")} — من الإفطار إلى ما بعد التمرين، بقيم غذائية واضحة لكل حصة تناسب يومك التدريبي.`
+        : `${axisLabel(kind, slug, "en")} recipes — from breakfast to post-workout, with clear per-serving values that fit your training day.`;
   }
 }
 
@@ -253,8 +253,8 @@ export async function RecipesTaxonomyHub({
             </h2>
             <p className="mx-auto mt-2 max-w-md text-sm text-[var(--muted-foreground)]">
               {isAr
-                ? "ينشر خط الإنتاج اليومي زوج وصفات جديدًا (عربي + إنجليزي)، ويتوزع على المطابخ والأنظمة والأهداف تلقائيًا — عُد قريبًا."
-                : "The daily pipeline publishes one new verified pair a day and distributes it across cuisines, diets and goals automatically — check back soon."}
+                ? "تُضاف وصفات جديدة بانتظام وستظهر هنا قريبًا — يمكنك في الأثناء تصفح المكتبة كاملة."
+                : "New recipes are added regularly and will appear here soon — in the meantime, browse the full library."}
             </p>
             <Link
               href={base}

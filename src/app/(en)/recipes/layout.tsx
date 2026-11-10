@@ -13,7 +13,7 @@ import { Resources } from "@/components/hub-head-resources";
 export const metadata: Metadata = {
   title: "Healthy Recipes | Alkemos",
   description:
-    "Healthy bilingual recipes with nutrition computed in grams from a verified USDA-based reference — filter by cuisine, diet, goal, meal, calories, protein, and prep time. A new verified Arabic + English pair every day.",
+    "Healthy recipes with ingredients weighed in grams and clear per-serving nutrition from trusted references — filter by cuisine, diet, goal, meal, calories, protein, and prep time. A new recipe every day.",
   keywords: [
     "healthy recipes",
     "high protein recipes",
@@ -34,7 +34,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Healthy Recipes | Alkemos",
     description:
-      "Bilingual healthy recipes with per-serving nutrition computed from a verified reference — in grams, per serving, matched to your goal.",
+      "Healthy recipes with gram-weighed ingredients and clear per-serving nutrition from trusted references — matched to your training and nutrition goals.",
     type: "website",
     locale: "en_US",
     url: "https://alkemos.com/recipes",

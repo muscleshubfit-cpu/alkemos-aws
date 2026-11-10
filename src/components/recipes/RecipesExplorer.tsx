@@ -88,8 +88,8 @@ export async function RecipesExplorer({
           </h1>
           <p className="mx-auto mt-3 max-w-lg text-base font-normal text-[var(--muted-foreground)] md:text-lg">
             {isAr
-              ? "وصفات ثنائية اللغة بقيم غذائية محسوبة برمجيًا من مرجع موثق — بالجرام، لكل حصة، وبما يخدم هدفك."
-              : "Bilingual recipes with programmatically computed nutrition from a verified reference — in grams, per serving, matched to your goal."}
+              ? "وصفات صحية بمكونات موزونة بالجرام وقيم غذائية واضحة لكل حصة — صفِّها حسب مطبخك ونظامك الغذائي وهدفك ووقتك المتاح."
+              : "Healthy recipes with ingredients weighed in grams and clear per-serving nutrition — filter by cuisine, diet, goal, and the time you have."}
           </p>
           <p className="mt-2 text-sm font-normal text-[var(--muted-foreground)] opacity-80">
             {total.toLocaleString(isAr ? "ar-EG" : "en-US")}{" "}
@@ -190,8 +190,8 @@ export async function RecipesExplorer({
                   ? "جرّب تغيير الفلاتر أو إزالتها"
                   : "Try adjusting or removing the filters"
                 : isAr
-                  ? "ينشر خط الإنتاج اليومي زوج وصفات جديدًا (عربي + إنجليزي) بعد اجتياز بوابات التحقق الغذائي والتحريري كاملة."
-                  : "The daily pipeline publishes one new recipe pair (Arabic + English) after passing the full nutrition and editorial verification gates."}
+                  ? "تُضاف وصفات جديدة إلى المكتبة باستمرار — عُد قريبًا لتصفح الجديد."
+                  : "New recipes join the library regularly — check back soon to browse the latest."}
             </p>
             {hasFilters && (
               <Link
@@ -231,8 +231,8 @@ export async function RecipesExplorer({
             className="text-[var(--muted-foreground)] underline underline-offset-4 transition-opacity hover:opacity-80"
           >
             {isAr
-              ? "منهجية الوصفات — المصادر والحسابات وحقوق الصور"
-              : "Recipes methodology — sources, computation, and image licenses"}
+              ? "منهجية القيم الغذائية — المصادر وطريقة الحساب وحقوق الصور"
+              : "Nutrition methodology — sources, calculation, and image licenses"}
           </Link>
         </div>
       </main>
