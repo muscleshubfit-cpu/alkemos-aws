@@ -1,0 +1,367 @@
+{
+ "generated_utc": "2026-11-10T19:55:03.814603+00:00",
+ "base": "https://alkemos.com",
+ "ua": "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
+ "method": "5-gram shingles, containment=|A∩B|/min(|A|,|B|), tokens=[\\w\\u0600-\\u06FF']+",
+ "calibration_live": {
+  "EN balanced across levels (15)": {
+   "mean": 0.7409,
+   "range": [
+    0.7279,
+    0.749
+   ],
+   "pairs": [
+    0.7378,
+    0.7396,
+    0.7406,
+    0.7336,
+    0.7279,
+    0.7471,
+    0.7473,
+    0.7394,
+    0.7361,
+    0.749,
+    0.7437,
+    0.7404,
+    0.7473,
+    0.7423,
+    0.7419
+   ]
+  },
+  "AR balanced across levels (15)": {
+   "mean": 0.7036,
+   "range": [
+    0.6915,
+    0.7128
+   ],
+   "pairs": [
+    0.7023,
+    0.7028,
+    0.7047,
+    0.6949,
+    0.6915,
+    0.7099,
+    0.7128,
+    0.7013,
+    0.6973,
+    0.7128,
+    0.7049,
+    0.7008,
+    0.7098,
+    0.7037,
+    0.7046
+   ]
+  },
+  "EN @2500 across systems (6)": {
+   "mean": 0.7671,
+   "range": [
+    0.7552,
+    0.7837
+   ],
+   "pairs": [
+    0.7552,
+    0.7651,
+    0.7579,
+    0.7744,
+    0.7663,
+    0.7837
+   ]
+  },
+  "AR @2500 across systems (6)": {
+   "mean": 0.733,
+   "range": [
+    0.718,
+    0.7508
+   ],
+   "pairs": [
+    0.718,
+    0.7291,
+    0.7258,
+    0.7394,
+    0.735,
+    0.7508
+   ]
+  },
+  "EN tools (6)": {
+   "mean": 0.0622,
+   "range": [
+    0.0586,
+    0.0647
+   ],
+   "pairs": [
+    0.0635,
+    0.0647,
+    0.0627,
+    0.0586,
+    0.0596,
+    0.0644
+   ]
+  },
+  "AR tools (6)": {
+   "mean": 0.0789,
+   "range": [
+    0.0752,
+    0.0812
+   ],
+   "pairs": [
+    0.0812,
+    0.0809,
+    0.0812,
+    0.0752,
+    0.0771,
+    0.0776
+   ]
+  },
+  "twin 2500/balanced (1)": {
+   "mean": 0.0,
+   "range": [
+    0.0,
+    0.0
+   ],
+   "pairs": [
+    0.0
+   ]
+  }
+ },
+ "pipeline_equivalence_P1_vs_P2": {
+  "/diet-plan/2500/balanced ↔ /diet-plan/2500/keto": {
+   "P1": 0.7651,
+   "P2": 0.7651
+  },
+  "/diet-plan/2500/balanced ↔ /diet-plan/2000/balanced": {
+   "P1": 0.7473,
+   "P2": 0.7473
+  },
+  "/diet-plan/2500/balanced ↔ /ar/diet-plan/2500/balanced": {
+   "P1": 0.0,
+   "P2": 0.0
+  },
+  "/ar/diet-plan/2500/balanced ↔ /ar/diet-plan/3000/balanced": {
+   "P1": 0.7046,
+   "P2": 0.7046
+  },
+  "/tools/calorie-calculator ↔ /tools/macro-calculator": {
+   "P1": 0.0644,
+   "P2": 0.0644
+  }
+ },
+ "old_block_verification": {
+  "en-2500-balanced": {
+   "level_tokens": 64,
+   "system_tokens": 69,
+   "faq_tokens": 435,
+   "cta_tokens": 126,
+   "numbers_para_verified_against_formula": true,
+   "level_and_system_match_src_lib": true
+  },
+  "en-2500-keto": {
+   "level_tokens": 64,
+   "system_tokens": 64,
+   "faq_tokens": 435,
+   "cta_tokens": 126,
+   "numbers_para_verified_against_formula": true,
+   "level_and_system_match_src_lib": true
+  },
+  "ar-2500-balanced": {
+   "level_tokens": 50,
+   "system_tokens": 55,
+   "faq_tokens": 322,
+   "cta_tokens": 88,
+   "numbers_para_verified_against_formula": true,
+   "level_and_system_match_src_lib": true
+  },
+  "ar-3000-balanced": {
+   "level_tokens": 52,
+   "system_tokens": 55,
+   "faq_tokens": 322,
+   "cta_tokens": 88,
+   "numbers_para_verified_against_formula": true,
+   "level_and_system_match_src_lib": true
+  }
+ },
+ "gradient_S0_S5_internal_pairs": {
+  "S0": {
+   "en-bal↔en-keto": 0.7651,
+   "ar-2500↔ar-3000": 0.7046,
+   "mean_of_six": 0.245
+  },
+  "S1": {
+   "en-bal↔en-keto": 0.6924,
+   "ar-2500↔ar-3000": 0.688,
+   "mean_of_six": 0.2301
+  },
+  "S2": {
+   "en-bal↔en-keto": 0.6778,
+   "ar-2500↔ar-3000": 0.619,
+   "mean_of_six": 0.2161
+  },
+  "S3": {
+   "en-bal↔en-keto": 0.3505,
+   "ar-2500↔ar-3000": 0.3288,
+   "mean_of_six": 0.1132
+  },
+  "S4": {
+   "en-bal↔en-keto": 0.324,
+   "ar-2500↔ar-3000": 0.3056,
+   "mean_of_six": 0.1049
+  },
+  "S5": {
+   "en-bal↔en-keto": 0.1709,
+   "ar-2500↔ar-3000": 0.187,
+   "mean_of_six": 0.0597
+  }
+ },
+ "edge_pairs_sample_S5_vs_live_siblings": {
+  "en-2500-balanced ↔ /diet-plan/2500/high-protein": {
+   "S0": 0.7552,
+   "S4": 0.3284,
+   "S5": 0.1871
+  },
+  "en-2500-balanced ↔ /diet-plan/2500/vegetarian": {
+   "S0": 0.7579,
+   "S4": 0.3339,
+   "S5": 0.1895
+  },
+  "en-2500-balanced ↔ /diet-plan/2000/balanced": {
+   "S0": 0.7473,
+   "S4": 0.3264,
+   "S5": 0.1925
+  },
+  "en-2500-balanced ↔ /diet-plan/3000/balanced": {
+   "S0": 0.7419,
+   "S4": 0.3234,
+   "S5": 0.1911
+  },
+  "en-2500-keto ↔ /diet-plan/2500/high-protein": {
+   "S0": 0.7744,
+   "S4": 0.3289,
+   "S5": 0.1742
+  },
+  "en-2500-keto ↔ /diet-plan/2500/vegetarian": {
+   "S0": 0.7837,
+   "S4": 0.3364,
+   "S5": 0.1811
+  },
+  "ar-2500-balanced ↔ /ar/diet-plan/2500/high-protein": {
+   "S0": 0.718,
+   "S4": 0.3333,
+   "S5": 0.2056
+  },
+  "ar-2500-balanced ↔ /ar/diet-plan/2500/vegetarian": {
+   "S0": 0.7258,
+   "S4": 0.3394,
+   "S5": 0.209
+  },
+  "ar-2500-balanced ↔ /ar/diet-plan/2500/keto": {
+   "S0": 0.7291,
+   "S4": 0.3371,
+   "S5": 0.2048
+  },
+  "ar-2500-balanced ↔ /ar/diet-plan/2000/balanced": {
+   "S0": 0.7098,
+   "S4": 0.3279,
+   "S5": 0.2088
+  },
+  "ar-3000-balanced ↔ /ar/diet-plan/3000/high-protein": {
+   "S0": 0.7268,
+   "S4": 0.3337,
+   "S5": 0.1902
+  },
+  "ar-3000-balanced ↔ /ar/diet-plan/2000/balanced": {
+   "S0": 0.7037,
+   "S4": 0.3208,
+   "S5": 0.1874
+  }
+ },
+ "external_controls_live": {
+  "blog_EN_selection": [
+   "/blog/12-week-dumbbell-band-muscle-plan",
+   "/blog/12-week-periodized-muscle-building-plan",
+   "/blog/12-week-progressive-overload-home-workout",
+   "/blog/12-week-progressive-overload-intermediate"
+  ],
+  "blog_EN": [
+   0.142,
+   0.151,
+   0.127,
+   0.1433,
+   0.1467,
+   0.1576
+  ],
+  "blog_EN_mean_tokens": 1736,
+  "foods_EN_selection": [
+   "/foods/almonds",
+   "/foods/apple",
+   "/foods/avocado",
+   "/foods/bacon"
+  ],
+  "foods_EN": [
+   0.3764,
+   0.374,
+   0.4055,
+   0.3693,
+   0.3701,
+   0.3677
+  ],
+  "foods_EN_mean_tokens": 680,
+  "tools_mean_tokens": 3619
+ },
+ "drafts_checks": {
+  "bundles en-bal↔en-keto": 0.0307,
+  "bundles ar-2500↔ar-3000": 0.0162,
+  "bundles en-bal↔ar-2500 (cross-lang)": 0.0,
+  "bundles en-keto↔ar-3000 (cross-lang)": 0.0,
+  "faq en-bal↔en-keto": 0.0105,
+  "faq ar-2500↔ar-3000": 0.0032,
+  "S5blocks en↔en": 0.1048,
+  "S5blocks ar↔ar": 0.0662,
+  "new-level en-2500 ↔ old en-2500": 0.0,
+  "new-level ar-2500 ↔ old ar-2500": 0.0,
+  "new-level ar-3000 ↔ old ar-3000": 0.0,
+  "new-system en-bal ↔ old en-bal": 0.0,
+  "new-system en-keto ↔ old en-keto": 0.0,
+  "new-system ar-2500 ↔ old ar-bal": 0.0,
+  "new-system ar-3000 ↔ old ar-bal": 0.0,
+  "new-numbers en-bal ↔ old en-bal": 0.0,
+  "new-numbers ar-2500 ↔ old ar-bal": 0.0,
+  "new-numbers ar-3000 ↔ old ar-bal3000": 0.0,
+  "new-cta en-bal ↔ old en-bal": 0.2213,
+  "new-cta en-keto ↔ old en-keto": 0.0902,
+  "new-cta ar-2500 ↔ old ar-2500": 0.1667,
+  "new-cta ar-3000 ↔ old ar-3000": 0.0,
+  "new-macrocap en-bal ↔ old": 0.0556,
+  "new-macrocap en-keto ↔ old": 0.1667,
+  "new-macrocap ar-2500 ↔ old": 0.1786,
+  "new-macrocap ar-3000 ↔ old": 0.1923,
+  "new-daycap en-bal ↔ old": 0.0968,
+  "new-daycap en-keto ↔ old": 0.0857,
+  "new-daycap ar-2500 ↔ old": 0.0,
+  "new-daycap ar-3000 ↔ old": 0.0
+ },
+ "word_counts": {
+  "en-2500-balanced": {
+   "S0": 1367,
+   "S5": 1487,
+   "delta": 120,
+   "pct": 8.8
+  },
+  "en-2500-keto": {
+   "S0": 1338,
+   "S5": 1415,
+   "delta": 77,
+   "pct": 5.8
+  },
+  "ar-2500-balanced": {
+   "S0": 1137,
+   "S5": 1241,
+   "delta": 104,
+   "pct": 9.1
+  },
+  "ar-3000-balanced": {
+   "S0": 1141,
+   "S5": 1283,
+   "delta": 142,
+   "pct": 12.4
+  }
+ }
+}
