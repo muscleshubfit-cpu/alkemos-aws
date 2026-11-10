@@ -15673,3 +15673,26 @@ Stage Summary:
 - التنفيذ بانتظار أمر المالك لكل بند أولوية (المقترح: دمج P0-أ/P0-ب في حزمة P0 بتقرير الأداء كفريم واحد)
 - Push status: pushed — توثيقي صرف [vercel skip] (تقرير + صف فهرس docs/README.md + STATE + هذا المدخل بتدويره)
 
+
+<!-- rotated 2026-11-10 by scripts/worklog_rotate.py (Phase 288, ARCH-REMEDIATION): 1 entries moved verbatim from worklog.md -->
+---
+Task ID: PERF-VERCEL-UNIFIED-EXECUTION-2026-11-08
+Agent: Main (Z.ai)
+Task: أمر المالك — تنفيذ موحّد لتحسينات الأداء وإزالة بقايا Vercel وفق تقريرَي التدقيق (PERFORMANCE-AUDIT + VERCEL-LEFTOVERS-AUDIT 2026-11-08): بنود P0 الثمانية المتداخلة + P1-1/P1-2 (الصور المتجاوبة) + P1-4 (Brotli مسبق الضغط) بأعلى أولوية جوال أولًا، ببوابات كاملة وقياس Lighthouse قبل/بعد — ثم (أمر «اكمل») أتمتة خطوة الحافة §5 وتفعيلها والتحقق البعدي الكامل على الإنتاج (452-ب/452-ج).
+
+Work Log:
+- **P0 (كله):** إزالة `<Analytics/>` + حذف حزمة @vercel/analytics (السكربت الميت 404) · حذف va.vercel-scripts.com من CSP بvercel.json+Caddyfile+Caddyfile.test معًا (تماثل حرفي) · إنشاء layout مدونة EN (preconnectات pexels/pixabay/unsplash + preload البانر — تماثل AR) · حذف preconnect wger.de الميت من layouts التمارين EN+AR
+- **P0-4 مصححًا بالقياس:** صورتا hero الوحيدتان المشار إليهما فعلًا (coaching-1/2 — قياس rg+grep إنتاج حي) صارتا ثلاثيات WebP 640/828/أصلي (-62%/-50% جوالًا) + preload LCP بالlayouts EN/AR + fetchPriority high + حذف JPGs القديمة — السبع غير المشار إليها لم تُمس (توثيق بالتقرير §2-أ)
+- **P1-1:** 24 نسخة بنرات 640/828 (6 أقسام × ثيمين) + srcSet بPageBanner + imageSrcSet بBannerPreloads (تماثل preload/srcset) + تحديث كاناري seo-image-dimensions (مفاتيح قسمة تشمل backtick + اختبار srcset جديد)
+- **P1-2:** 3,472 نسخة صور تمارين 400w/200w (متوسط 200w: -67%) + مساعد getExerciseImageSrcSet + توسيع ImageWithFallback بمسار srcSet + المواقع العامة: بطاقات الرئيسية/فهرس التمارين/تفاصيل التمرين+المرتبطة/تفاصيل البرنامج + كاناري وجود كامل بexercise-images-selfhost
+- **P1-4:** scripts/precompress-static.mjs (zlib فقط — 146 أصلًا → 292 جانبيًا br q11/gz q9، br أخف 14.9% من gz) + خطوة بdeploy-aws.yml بعد البناء + قاعدة file_server precompressed بالCaddyfileين مع Vary صريح (caddy 2.8 لا يضيفه) وCache-Control داخل الكتلة — خامل حتى خطوة مالك موثقة (دليل مبسط بالتقرير §5)
+- **البطارية:** tsc 0 · eslint 0 (تحذيران قديمان) · vitest 5,704/5,704 (+4 كاناري) · build exit 0 ‏2,248 صفحة · دخان 15 صفحة AR/EN محليًا (كل توقيعات الإطار حاضرة + صفر wger/_vercel + كل عناوين static على القرص) · قياس «قبل» كامل: 20 جريان Lighthouse 13.6 (الجداول بالتقرير §6)
+- **(452-ب) أتمتة خطوة الحافة §5:** سير العمل الدائم `.github/workflows/caddy-edge-activate.yml` (workflow_dispatch فقط — سابقة أمر المالك 0105 «لا تتركني أمام خطوة يدوية تتطلب الدخول إلى الخادم»): مسار مزدوج بلا SSH يدوي (فحص sudo لمستخدم deploy أولًا وإلا مفاتيح SSH مؤقتة من Lightsail API كمستخدم ubuntu بسرّي AWS_LIGHTSAIL_* الجديدين) + سكربت §5 الحرفي ب4 بوابات (sha256 لإصدار current ضد كوميت التشغيل · caddy validate · idempotent · نسخة احتياطية بطابع زمني) — مختبر محليًا ب4 حالات محاكاة (عدم تطابق sha يقبل قبل أي sudo · dry-run · no-op · التسلسل الكامل) + صف CI_GATES
+- **(452-ج) التفعيل والتحقق البعدي:** النشر الآلي أخضر (كوميت bc36cafc — build-info يؤكده) · تشغيلة السير العمل 42482503826 خضراء (Path B — deploy بلا sudo مقيس): نسخة احتياطية /etc/caddy/Caddyfile.backup-20261108125553 + reload + تحقق ستيولوجي مباشر للأصل كله أخضر (br للمتصفحات السائدة كان gzip · gzip لعملاء gzip · Vary · immutable · CSP بلا va.vercel · دخان 9/9) · تنقية CF ‏72 عنوانًا · دخان 29 مسارًا AR/EN كلها 200 · مصفوفة «بعد» 20 جريانًا (نفس محاكاة PSI · حافة HKG نفسها كتدقيق الأداء الأصلي): صفر أخطاء console (كانت 3–14) · BP ‏100 خارج المدونة و73→77 بها (الباقي كوكيز Pexels بنيوية) · ديسكتوب ‏98–100 محفوظ · صفحة تمرين 64→83 وLCP ‏6.2s→1.1s · coaching ‏66→75 وLCP ‏4.1→3.5s · بطاقات التمارين تلتقط 0-400 والبنرات 828w والhero ‏90KB بدل 160KB JPG — البيئة أبطأ من §6 ووثّق الفارق بشفافية (التقاط الإعلانات 457KB+صور lazy ‏370KB) والحكم على الحتميات (الجداول §8)
+
+Stage Summary:
+- التقرير الحاكم: docs/PERF-VERCEL-UNIFIED-EXECUTION-2026-11-08.md (خطة موحدة + تصحيحان مقيسان + §5 مؤتمتة + قبل/بعد + تحقق بعدي مقيس §7/§8)
+- خارج النطاق بأمر موثق: P1-3 (جزر خادمية — فريمات مستقلة قسمًا قسمًا) · P2 كله · خيار محسّن الصور (ب) (المؤجل P2-13) · F-7 تدوير التوكنات (مالك)
+- Push status: pushed
+- Commit SHA (optional, post-push): 748756a8+3f2b9a24 (الكود 452) · bc36cafc (الأتمتة 452-ب — الإنتاج يخدمه وتحقق بعدي مقيس)
+
