@@ -89,8 +89,11 @@ describe("R6 — the route never bypasses the RPC", () => {
     expect(R6).toMatch(/[\s\S]*verified[\s\S]*unpublished|stays `verified`/);
   });
 
-  it("ISR flush runs after a successful publish (both mirrors live together)", () => {
-    expect(R6).toContain("revalidateRecipeCaches");
+  it("ISR flush runs after a successful publish — LIVE on the origin (the 2026-11-10 first-publish lesson: in-runner revalidateTag never reaches the production server's caches)", () => {
+    // R6 calls the origin's flush-cache route (inside the live server:
+    // data tags + ISR paths + CF edge), non-fatal by design.
+    expect(R6).toMatch(/\/api\/cron\/recipes\/flush-cache\?recipeId=/);
+    expect(R6).toContain("non-fatal");
   });
 });
 

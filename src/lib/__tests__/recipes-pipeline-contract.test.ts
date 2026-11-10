@@ -202,6 +202,37 @@ describe("3) the runner pair exists and carries the repair contract", () => {
   });
 });
 
+describe("6) R6's LIVE cache flush (the first-publish ISR lesson, 2026-11-10)", () => {
+  const R6 = readFileSync(
+    resolve(process.cwd(), "src/app/api/cron/recipes/r6-publish/route.ts"),
+    "utf-8",
+  );
+  const FLUSH = readFileSync(
+    resolve(process.cwd(), "src/app/api/cron/recipes/flush-cache/route.ts"),
+    "utf-8",
+  );
+
+  it("R6 calls the ORIGIN's live flush route after the atomic publish (not just in-process tags)", () => {
+    // The 2026-11-10 lesson: revalidateTag inside the GHA runner process
+    // mutates the runner's caches, not the production server's — the
+    // listings kept the pre-publish empty render until the hourly TTL.
+    expect(R6).toMatch(/\/api\/cron\/recipes\/flush-cache\?recipeId=/);
+    expect(R6).toContain("authorization: `Bearer ${process.env.CRON_SECRET");
+    // non-fatal by design: a flush failure never fails the durable publish
+    expect(R6).toContain("non-fatal");
+  });
+
+  it("the flush route runs INSIDE the live server behind cron-auth", () => {
+    expect(FLUSH).toContain("verifyCronAuth");
+    expect(FLUSH).toContain("revalidateRecipeCaches");
+    expect(FLUSH).toContain("revalidatePath");
+    expect(FLUSH).toContain("purgeCloudflareEdgeUrls");
+    // the three layers, blog law: data tags + ISR paths + CF edge
+    expect(FLUSH).toMatch(/recipes-list/);
+    expect(FLUSH).toContain("/sitemap-recipes.xml");
+  });
+});
+
 describe("5) the jsonb-wire law (the first-live-run lesson, 2026-11-10)", () => {
   const R2 = readFileSync(
     resolve(process.cwd(), "src/app/api/cron/recipes/r2-nutrition/route.ts"),

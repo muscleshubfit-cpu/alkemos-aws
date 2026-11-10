@@ -96,12 +96,32 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // ISR flush — the fresh pair is live on the next request.
+    // ISR flush — LIVE on the origin (the 2026-11-10 first-publish
+    // lesson: this handler runs inside the GHA runner process, where
+    // revalidateTag/revalidatePath mutate the RUNNER's caches, not the
+    // production server's — the listings kept the pre-publish empty
+    // render until the hourly TTL healed them). The BLOG-CONTENT-CACHE-
+    // REFRESH 2026-10-21 precedent: call the origin's live flush route
+    // (same CRON_SECRET, staged on the server) so the invalidation runs
+    // INSIDE the live Next.js server. Non-fatal by design: the publish
+    // itself is already atomic and durable; a flush failure only delays
+    // the listings by at most the hourly TTL (honestly reported).
+    let cacheFlush: Record<string, unknown> = { attempted: false };
+    const flushUrl = `${(process.env.SITE_URL || "https://alkemos.com").replace(/\/$/, "")}/api/cron/recipes/flush-cache?recipeId=${qi.recipe_id}&_=${Date.now()}`;
     try {
-      const { revalidateRecipeCaches } = await import("@/lib/recipes-server");
-      await revalidateRecipeCaches();
-    } catch {
-      /* the hourly TTL still applies — non-fatal */
+      const res = await fetch(flushUrl, {
+        headers: { authorization: `Bearer ${process.env.CRON_SECRET ?? ""}` },
+        signal: AbortSignal.timeout(20_000),
+      });
+      const body = (await res.json().catch(() => ({}))) as Record<string, unknown>;
+      cacheFlush = { attempted: true, ok: res.ok, status: res.status, ...body };
+    } catch (e) {
+      cacheFlush = {
+        attempted: true,
+        ok: false,
+        error: e instanceof Error ? e.message : "flush-cache call failed",
+        note: "non-fatal — the hourly TTL self-heals the listings",
+      };
     }
 
     const now = new Date().toISOString();
@@ -113,7 +133,14 @@ export async function GET(request: NextRequest) {
     });
     if (qErr) throw new Error(qErr);
 
-    return NextResponse.json({ ok: true, step: "r6", queueId, recipeId: qi.recipe_id, publishedAt: now });
+    return NextResponse.json({
+      ok: true,
+      step: "r6",
+      queueId,
+      recipeId: qi.recipe_id,
+      publishedAt: now,
+      cacheFlush,
+    });
   } catch (err) {
     console.error("[recipes/r6] failed:", err);
     await markRecipeQueueFailed(queueId, `R6: ${err instanceof Error ? err.message : "unknown"}`);
