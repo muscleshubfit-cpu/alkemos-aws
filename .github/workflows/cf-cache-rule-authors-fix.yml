@@ -1,0 +1,353 @@
+name: CF cache rule fix — /auth prefix swallows /authors (dispatch-only)
+
+# =====================================================================
+# SEO-RECOVERY-EXECUTION follow-up (2026-11-12) — the ONE item report
+# 14 §5-1 left unfixed because the repo's Cloudflare token
+# (CLOUDFLARE_PURGE_TOKEN, /srv/alkemos/shared/.env on the origin) had
+# Purge-only scope. The owner has now UPDATED THE KEY'S PERMISSIONS
+# (owner message 2026-11-12 «تم تحديث صلاحيات مفتاح cloud flare») —
+# this workflow performs that fix through the API instead of the
+# documented 2-minute dashboard step.
+#
+# THE MEASURED DEFECT (report 14 §5-1, re-measured live 2026-11-12):
+#   /authors            -> cf-cache-status: DYNAMIC   (defect)
+#   /authors/ahmed-zake -> cf-cache-status: DYNAMIC   (defect)
+#   /ar/authors         -> cf-cache-status: HIT       (control — does
+#                          not start with /auth)
+#   /                   -> cf-cache-status: HIT       (control)
+#   /auth               -> cf-cache-status: DYNAMIC   (CORRECT — the
+#                          private path must stay uncached: no-store)
+# The zone cache rule `alkemos-public-html-cache` excludes private
+# paths including /auth with a PREFIX match (starts_with) that also
+# swallows the PUBLIC /authors family — the two weakest-linked pages
+# of the whole sitemap (report 13 §6-pattern 5: /authors = 2 internal
+# links, the E-E-A-T center every Person serializes through) were the
+# only public pages denied edge caching.
+#
+# THE FIX (surgical, single term):
+#   starts_with(http.request.uri.path, "/auth")
+#     -> (http.request.uri.path eq "/auth"
+#         or starts_with(http.request.uri.path, "/auth/"))
+# Semantics preserved for every truly-private path (/auth, /auth/*),
+# released for /authors and /authors/ahmed-zake. NOTHING else in the
+# ruleset is touched — the update goes to the single-rule endpoint
+# (PUT /rulesets/{rs}/rules/{rule_id}), never a whole-ruleset replace.
+#
+# MODES (input `mode`):
+#   probe (default) — READ-ONLY: token verify, full dump of the
+#     http_request_cache_settings entrypoint (the backup record),
+#     rule inventory, live cf-cache-status of the 6 paths. Zero writes.
+#   apply — probe steps + the guarded surgery + single-rule PUT +
+#     re-GET diff verification (rule-id set identical, every untouched
+#     rule byte-identical modulo version/last_updated, target rule
+#     expression == intended) + live edge verification from the runner.
+#
+# GUARDRAILS (honest exit law):
+#   - Exactly ONE rule referencing "/auth" must exist, else exit 1
+#     listing the candidates (no change).
+#   - The /auth exclusion must be the documented starts_with term,
+#     else exit 1 printing the actual expression (no change).
+#   - Idempotent: if the exact-segment form is already present the
+#     apply is a clean no-op (no PUT).
+#   - Post-PUT verification re-GETs and FAILS the run if any
+#     untouched rule changed.
+#   - Live verification (from the runner, through the public edge):
+#     both author pages must serve HIT on an immediate second fetch;
+#     /ar/authors and / must stay non-DYNAMIC; /auth must STAY
+#     DYNAMIC (the private path must never become cached).
+#
+# NO PURGE anywhere: the two affected URLs are DYNAMIC (nothing cached
+# under them today), so the new rule governs their very next request.
+# A purge would only dump cached public URLs onto the origin — the CPU
+# pattern the 43200s TTL exists to guard (deploy.sh purge law).
+#
+# ROLLBACK (documented, same channel):
+#   re-run apply after reverting the term by hand, or PUT the original
+#   expression back:
+#   PUT /zones/{z}/rulesets/{rs}/rules/{rule_id}
+#     {"expression": <OLD from the run log>, "action": ...,
+#      "action_parameters": ...}
+#   The pre-change ruleset JSON is printed IN FULL by every run
+#   (probe and apply) — the run log IS the backup.
+#
+# AUTH: the CF token never leaves the origin box — the script runs ON
+# the server over SSH (deploy user, same pinned-key path as
+# seo-followup-log-probe / ops-server-env-append) and reads
+# CLOUDFLARE_ZONE_ID + CLOUDFLARE_PURGE_TOKEN from
+# /srv/alkemos/shared/.env (the file deploy.sh already reads for the
+# post-deploy entry-root purge). Only statuses/ids/expressions are
+# printed — never a secret value.
+#
+# Like every workflow here: workflow_dispatch ONLY — never fires on a
+# push or schedule. Zero GITHUB_TOKEN scopes beyond checkout read.
+# =====================================================================
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "probe = read-only dump + live status | apply = guarded fix + verify"
+        type: choice
+        options:
+          - probe
+          - apply
+        required: false
+        default: probe
+
+concurrency:
+  group: cf-cache-rule-authors-fix
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  fix:
+    name: "${{ inputs.mode }} — CF cache rule /auth exact-segment fix"
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Stage the fixed remote script (runs on the origin — the CF token never leaves the box)
+        env:
+          MODE_INPUT: ${{ inputs.mode }}
+        run: |
+          set -euo pipefail
+          cat > "$RUNNER_TEMP/cfrule.sh" <<'EOS'
+          set -euo pipefail
+          MODE="${1:-probe}"
+          ENV_FILE=/srv/alkemos/shared/.env
+          API=https://api.cloudflare.com/client/v4
+
+          command -v curl >/dev/null    || { echo "FATAL: curl not found on origin"; exit 1; }
+          command -v python3 >/dev/null || { echo "FATAL: python3 not found on origin"; exit 1; }
+
+          ZID="$(grep -m1 '^CLOUDFLARE_ZONE_ID='    "$ENV_FILE" | cut -d= -f2-)"
+          TOK="$(grep -m1 '^CLOUDFLARE_PURGE_TOKEN=' "$ENV_FILE" | cut -d= -f2-)"
+          [ -n "$ZID" ] || { echo "FATAL: CLOUDFLARE_ZONE_ID absent from $ENV_FILE"; exit 1; }
+          [ -n "$TOK" ] || { echo "FATAL: CLOUDFLARE_PURGE_TOKEN absent from $ENV_FILE"; exit 1; }
+
+          echo "== 0. token verify (status only — the value is never printed) =="
+          CODE="$(curl -sS -m 20 -w '%{http_code}' -o /tmp/cf-verify.json \
+            "$API/user/tokens/verify" -H "Authorization: Bearer $TOK")"
+          [ "$CODE" = "200" ] || { echo "FATAL: token verify -> $CODE"; cat /tmp/cf-verify.json; exit 1; }
+          python3 -c 'import json; print("token status:", json.load(open("/tmp/cf-verify.json"))["result"]["status"])'
+
+          echo
+          echo "== 1. current http_request_cache_settings entrypoint (FULL dump — the backup record) =="
+          CODE="$(curl -sS -m 20 -w '%{http_code}' -o /tmp/cf-rs-pre.json \
+            "$API/zones/$ZID/rulesets/phases/http_request_cache_settings/entrypoint" \
+            -H "Authorization: Bearer $TOK")"
+          [ "$CODE" = "200" ] || { echo "FATAL: entrypoint GET -> $CODE"; cat /tmp/cf-rs-pre.json; exit 1; }
+          python3 -m json.tool /tmp/cf-rs-pre.json
+
+          echo
+          echo "== 2. rule inventory (id | name | action | enabled) =="
+          python3 - <<'PYEOF'
+          import json
+          rs = json.load(open('/tmp/cf-rs-pre.json'))
+          print('ruleset id:', rs.get('id'), '| version:', rs.get('version'))
+          for r in (rs.get('rules') or []):
+              flag = '  <-- references "/auth"' if '"/auth"' in (r.get('expression') or '') else ''
+              print('- {} | {!r} | {} | enabled={}{}'.format(
+                  r.get('id'), r.get('name'), r.get('action'), r.get('enabled'), flag))
+          PYEOF
+
+          echo
+          echo "== 3. live cf-cache-status through the public edge (from the origin box) =="
+          for p in /authors /authors/ahmed-zake /ar/authors / /auth; do
+            s="$(curl -s -o /dev/null -D - --max-time 20 "https://alkemos.com$p" \
+              | tr -d '\r' | awk 'tolower($1)=="cf-cache-status:"{print $2}')"
+            echo "  $p -> ${s:-<none>}"
+          done
+
+          if [ "$MODE" != "apply" ]; then
+            echo
+            echo "PROBE COMPLETE — read-only, zero changes (re-run with mode=apply to fix)"
+            exit 0
+          fi
+
+          echo
+          echo "== 4. surgery: /auth exclusion prefix -> exact segment (guarded, idempotent) =="
+          python3 - <<'PYEOF'
+          import json, re, sys
+          pre = json.load(open('/tmp/cf-rs-pre.json'))
+          rules = pre.get('rules') or []
+          cands = [r for r in rules if '"/auth"' in (r.get('expression') or '')]
+          if len(cands) != 1:
+              print('FATAL: expected exactly ONE rule referencing "/auth", got {} -> {}'.format(
+                  len(cands), [r.get('name') for r in cands]))
+              sys.exit(1)
+          rule = cands[0]
+          expr = rule['expression']
+          already = (re.search(r'http\.request\.uri\.path\s+eq\s+"/auth"', expr) is not None
+                     and 'starts_with(http.request.uri.path, "/auth/")' in expr)
+          pat = re.compile(r'starts_with\s*\(\s*http\.request\.uri\.path\s*,\s*"/auth"\s*\)')
+          n = len(pat.findall(expr))
+          if already and n == 0:
+              print('ALREADY FIXED (exact-segment /auth present) — idempotent no-op, no PUT')
+              json.dump({'needs_put': False,
+                         'rule_id': rule['id'], 'ruleset_id': pre['id'],
+                         'rule_name': rule.get('name'),
+                         'expression_old': expr, 'expression_new': expr,
+                         'replacements': 0},
+                        open('/tmp/cf-fix.json', 'w'), indent=2)
+              sys.exit(0)
+          if n < 1:
+              print('FATAL: the /auth exclusion is not a starts_with prefix term — NO CHANGE.')
+              print('Expression:')
+              print(expr)
+              sys.exit(1)
+          new_expr = pat.sub('(http.request.uri.path eq "/auth" or starts_with(http.request.uri.path, "/auth/"))', expr)
+          json.dump({'needs_put': True,
+                     'ruleset_id': pre['id'],
+                     'rule_id': rule['id'],
+                     'rule_name': rule.get('name'),
+                     'action': rule['action'],
+                     'action_parameters': rule.get('action_parameters'),
+                     'expression_old': expr,
+                     'expression_new': new_expr,
+                     'replacements': n},
+                    open('/tmp/cf-fix.json', 'w'), indent=2)
+          print('target rule: {} | id: {} | replacements: {}'.format(rule.get('name'), rule['id'], n))
+          print('OLD expression:')
+          print(expr)
+          print('NEW expression:')
+          print(new_expr)
+          PYEOF
+
+          NEEDS_PUT="$(python3 -c 'import json; print(json.load(open("/tmp/cf-fix.json"))["needs_put"])')"
+
+          if [ "$NEEDS_PUT" = "True" ]; then
+            echo
+            echo "== 5. PUT the single rule (only this rule is touched — never a whole-ruleset replace) =="
+            python3 - <<'PYEOF' > /tmp/cf-put-body.json
+          import json, sys
+          f = json.load(open('/tmp/cf-fix.json'))
+          body = {'expression': f['expression_new'], 'action': f['action']}
+          if f.get('action_parameters') is not None:
+              body['action_parameters'] = f['action_parameters']
+          json.dump(body, sys.stdout)
+          PYEOF
+            RSID="$(python3 -c 'import json; print(json.load(open("/tmp/cf-fix.json"))["ruleset_id"])')"
+            RID="$(python3 -c  'import json; print(json.load(open("/tmp/cf-fix.json"))["rule_id"])')"
+            CODE="$(curl -sS -m 20 -w '%{http_code}' -o /tmp/cf-put-resp.json -X PUT \
+              "$API/zones/$ZID/rulesets/$RSID/rules/$RID" \
+              -H "Authorization: Bearer $TOK" -H "Content-Type: application/json" \
+              --data-binary @/tmp/cf-put-body.json)"
+            [ "$CODE" = "200" ] || { echo "FATAL: rule PUT -> $CODE"; cat /tmp/cf-put-resp.json; echo; \
+              echo "NOTHING outside this rule could have changed — pre-state is the §1 dump above"; exit 1; }
+            python3 -c 'import json; d = json.load(open("/tmp/cf-put-resp.json")); \
+          print("PUT ok — success:", d.get("success"), "| errors:", d.get("errors"))'
+          else
+            echo
+            echo "== 5. SKIPPED (already fixed — idempotent no-op) =="
+          fi
+
+          echo
+          echo "== 6. re-GET and verify ONLY the target rule changed =="
+          CODE="$(curl -sS -m 20 -w '%{http_code}' -o /tmp/cf-rs-post.json \
+            "$API/zones/$ZID/rulesets/phases/http_request_cache_settings/entrypoint" \
+            -H "Authorization: Bearer $TOK")"
+          [ "$CODE" = "200" ] || { echo "FATAL: post GET -> $CODE"; cat /tmp/cf-rs-post.json; exit 1; }
+          python3 - <<'PYEOF'
+          import json, sys
+          pre  = json.load(open('/tmp/cf-rs-pre.json'))
+          post = json.load(open('/tmp/cf-rs-post.json'))
+          fix  = json.load(open('/tmp/cf-fix.json'))
+          VOLATILE = {'version', 'last_updated'}
+          def strip(r):
+              return {k: v for k, v in r.items() if k not in VOLATILE}
+          prer  = {r['id']: r for r in (pre.get('rules') or [])}
+          postr = {r['id']: r for r in (post.get('rules') or [])}
+          if set(prer) != set(postr):
+              print('FATAL: rule id set changed:', set(prer) ^ set(postr)); sys.exit(1)
+          for rid, r in prer.items():
+              if rid == fix['rule_id']:
+                  if postr[rid].get('expression') != fix['expression_new']:
+                      print('FATAL: target rule expression != intended new expression'); sys.exit(1)
+              elif strip(postr[rid]) != strip(r):
+                  print('FATAL: UNTOUCHED rule changed:', rid, r.get('name')); sys.exit(1)
+          print('VERIFIED: rule set identical; ONLY the target rule changed')
+          print('post ruleset version:', post.get('version'))
+          PYEOF
+
+          echo
+          echo "== 7. final live status through the public edge (from the origin box) =="
+          for p in /authors /authors/ahmed-zake /ar/authors / /auth; do
+            s="$(curl -s -o /dev/null -D - --max-time 20 "https://alkemos.com$p" \
+              | tr -d '\r' | awk 'tolower($1)=="cf-cache-status:"{print $2}')"
+            echo "  $p -> ${s:-<none>}"
+          done
+          echo "REMOTE DONE — zone rule updated at the config level; edge caches repopulate on next request"
+          EOS
+          echo "staged $RUNNER_TEMP/cfrule.sh (mode: ${MODE_INPUT:-probe})"
+
+      - name: Write CI deploy user key
+        env:
+          DEPLOY_KEY: ${{ secrets.AWS_DEPLOY_SSH_KEY }}
+        run: |
+          set -euo pipefail
+          if [ -z "$DEPLOY_KEY" ]; then echo "FATAL: AWS_DEPLOY_SSH_KEY secret absent"; exit 1; fi
+          printf '%s\n' "$DEPLOY_KEY" > "$RUNNER_TEMP/deploy.key"
+          chmod 600 "$RUNNER_TEMP/deploy.key"
+
+      - name: Run the mode script on the origin (SSH — token stays on the box)
+        env:
+          DEPLOY_HOST: ${{ secrets.AWS_DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.AWS_DEPLOY_USER }}
+          MODE_INPUT: ${{ inputs.mode }}
+        run: |
+          set -euo pipefail
+          MODE="${MODE_INPUT:-probe}"
+          ssh -i "$RUNNER_TEMP/deploy.key" \
+            -o StrictHostKeyChecking=accept-new \
+            -o BatchMode=yes \
+            -o ConnectTimeout=15 \
+            "$DEPLOY_USER@$DEPLOY_HOST" 'bash -s' -- "$MODE" \
+            < "$RUNNER_TEMP/cfrule.sh"
+
+      - name: Verify the live edge from the runner (apply mode only — through Cloudflare)
+        if: inputs.mode == 'apply'
+        run: |
+          set -euo pipefail
+          base="https://alkemos.com"
+          status() {
+            curl -s -o /dev/null -D - --max-time 20 "$base$1" \
+              | tr -d '\r' | awk 'tolower($1)=="cf-cache-status:"{print tolower($2)}'
+          }
+
+          # CF ruleset changes take effect within seconds — poll until
+          # /authors stops being DYNAMIC (max ~60s), then hold it to the
+          # strict assertions below.
+          seen=""
+          for i in $(seq 1 12); do
+            s="$(status /authors)"
+            echo "poll $i: /authors -> ${s:-<none>}"
+            if [ -n "$s" ] && [ "$s" != "dynamic" ]; then seen="$s"; break; fi
+            sleep 5
+          done
+          [ -n "$seen" ] || { echo "FAIL: /authors still DYNAMIC after ~60s — the rule change is not effective"; exit 1; }
+          echo "OK  /authors is now cache-eligible ($seen)"
+
+          # The two released pages must serve from the edge on an
+          # immediate second fetch (s-maxage=3600 -> HIT).
+          for p in /authors /authors/ahmed-zake; do
+            s1="$(status "$p")"
+            s2="$(status "$p")"
+            echo "$p: fetch1=$s1 fetch2=$s2"
+            [ "$s2" = "hit" ] || { echo "FAIL: $p second fetch is '$s2' (expected hit)"; exit 1; }
+          done
+          echo "OK  both author pages serve from the edge (HIT)"
+
+          # Controls: the public mirror + home stay cached; the private
+          # /auth MUST stay excluded (no-store — never cached).
+          for p in /ar/authors /; do
+            s="$(status "$p")"
+            echo "control $p -> $s"
+            if [ -z "$s" ] || [ "$s" = "dynamic" ]; then echo "FAIL: control $p is DYNAMIC (regression)"; exit 1; fi
+          done
+          sa="$(status /auth)"
+          echo "control /auth -> $sa"
+          [ "$sa" = "dynamic" ] || { echo "FAIL: /auth is '$sa' — the private path MUST stay uncached (no-store)"; exit 1; }
+          echo "OK  controls green: /ar/authors + / cached, /auth still excluded"
+          echo "=== CF CACHE RULE FIX VERIFIED LIVE (report 14 §5-1 closed) ==="
