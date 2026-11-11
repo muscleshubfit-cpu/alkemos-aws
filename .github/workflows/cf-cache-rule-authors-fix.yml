@@ -31,16 +31,19 @@ name: CF cache rule fix — /auth prefix swallows /authors (dispatch-only)
 # Semantics preserved for every truly-private path (/auth, /auth/*),
 # released for /authors and /authors/ahmed-zake. NOTHING else in the
 # ruleset is touched — the update goes to the single-rule endpoint
-# (PUT /rulesets/{rs}/rules/{rule_id}), never a whole-ruleset replace.
+# (PATCH /rulesets/{rs}/rules/{rule_id} — the ONLY method that endpoint
+# accepts, per rulesets-api/update-rule; PUT there returns 405/10405,
+# measured live in run 43058806044), never a whole-ruleset replace.
 #
 # MODES (input `mode`):
 #   probe (default) — READ-ONLY: token verify, full dump of the
 #     http_request_cache_settings entrypoint (the backup record),
 #     rule inventory, live cf-cache-status of the 6 paths. Zero writes.
-#   apply — probe steps + the guarded surgery + single-rule PUT +
+#   apply — probe steps + the guarded surgery + single-rule PATCH +
 #     re-GET diff verification (rule-id set identical, every untouched
 #     rule byte-identical modulo version/last_updated, target rule
-#     expression == intended) + live edge verification from the runner.
+#     expression == intended and description/enabled/action_parameters
+#     preserved) + live edge verification from the runner.
 #
 # GUARDRAILS (honest exit law):
 #   - Exactly ONE rule referencing "/auth" must exist, else exit 1
@@ -62,9 +65,9 @@ name: CF cache rule fix — /auth prefix swallows /authors (dispatch-only)
 # pattern the 43200s TTL exists to guard (deploy.sh purge law).
 #
 # ROLLBACK (documented, same channel):
-#   re-run apply after reverting the term by hand, or PUT the original
+#   re-run apply after reverting the term by hand, or PATCH the original
 #   expression back:
-#   PUT /zones/{z}/rulesets/{rs}/rules/{rule_id}
+#   PATCH /zones/{z}/rulesets/{rs}/rules/{rule_id}
 #     {"expression": <OLD from the run log>, "action": ...,
 #      "action_parameters": ...}
 #   The pre-change ruleset JSON is printed IN FULL by every run
@@ -206,6 +209,8 @@ jobs:
                      'rule_name': rule.get('description') or rule.get('name'),
                      'action': rule['action'],
                      'action_parameters': rule.get('action_parameters'),
+                     'description': rule.get('description'),
+                     'enabled': rule.get('enabled'),
                      'expression_old': expr,
                      'expression_new': new_expr,
                      'replacements': n},
@@ -221,25 +226,31 @@ jobs:
 
           if [ "$NEEDS_PUT" = "True" ]; then
             echo
-            echo "== 5. PUT the single rule (only this rule is touched — never a whole-ruleset replace) =="
-            python3 - <<'PYEOF' > /tmp/cf-put-body.json
+            echo "== 5. PATCH the single rule (only this rule is touched — never a whole-ruleset replace) =="
+            python3 - <<'PYEOF' > /tmp/cf-patch-body.json
           import json, sys
           f = json.load(open('/tmp/cf-fix.json'))
-          body = {'expression': f['expression_new'], 'action': f['action']}
+          # PATCH semantics (rulesets-api/update-rule): include EVERY field
+          # of the rule definition to keep, even unchanged ones — description
+          # and enabled included, or they drop out of the new definition.
+          body = {'expression': f['expression_new'], 'action': f['action'],
+                  'enabled': f['enabled']}
+          if f.get('description') is not None:
+              body['description'] = f['description']
           if f.get('action_parameters') is not None:
               body['action_parameters'] = f['action_parameters']
           json.dump(body, sys.stdout)
           PYEOF
             RSID="$(python3 -c 'import json; print(json.load(open("/tmp/cf-fix.json"))["ruleset_id"])')"
             RID="$(python3 -c  'import json; print(json.load(open("/tmp/cf-fix.json"))["rule_id"])')"
-            CODE="$(curl -sS -m 20 -w '%{http_code}' -o /tmp/cf-put-resp.json -X PUT \
+            CODE="$(curl -sS -m 20 -w '%{http_code}' -o /tmp/cf-patch-resp.json -X PATCH \
               "$API/zones/$ZID/rulesets/$RSID/rules/$RID" \
               -H "Authorization: Bearer $TOK" -H "Content-Type: application/json" \
-              --data-binary @/tmp/cf-put-body.json)"
-            [ "$CODE" = "200" ] || { echo "FATAL: rule PUT -> $CODE"; cat /tmp/cf-put-resp.json; echo; \
+              --data-binary @/tmp/cf-patch-body.json)"
+            [ "$CODE" = "200" ] || { echo "FATAL: rule PATCH -> $CODE"; cat /tmp/cf-patch-resp.json; echo; \
               echo "NOTHING outside this rule could have changed — pre-state is the §1 dump above"; exit 1; }
-            python3 -c 'import json; d = json.load(open("/tmp/cf-put-resp.json")); \
-          print("PUT ok — success:", d.get("success"), "| errors:", d.get("errors"))'
+            python3 -c 'import json; d = json.load(open("/tmp/cf-patch-resp.json")); \
+          print("PATCH ok — success:", d.get("success"), "| errors:", d.get("errors"))'
           else
             echo
             echo "== 5. SKIPPED (already fixed — idempotent no-op) =="
@@ -270,9 +281,12 @@ jobs:
               if rid == fix['rule_id']:
                   if postr[rid].get('expression') != fix['expression_new']:
                       print('FATAL: target rule expression != intended new expression'); sys.exit(1)
+                  for k in ('description', 'enabled', 'action', 'action_parameters'):
+                      if postr[rid].get(k) != r.get(k):
+                          print('FATAL: target rule field LOST by the PATCH:', k); sys.exit(1)
               elif strip(postr[rid]) != strip(r):
                   print('FATAL: UNTOUCHED rule changed:', rid, r.get('description')); sys.exit(1)
-          print('VERIFIED: rule set identical; ONLY the target rule changed')
+          print('VERIFIED: rule set identical; ONLY the target rule changed (expression + all preserved fields)')
           print('post ruleset version:', post.get('version'))
           PYEOF
 
