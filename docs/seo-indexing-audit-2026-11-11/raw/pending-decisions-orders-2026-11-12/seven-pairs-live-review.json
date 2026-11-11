@@ -1,0 +1,328 @@
+{
+ "_law": "Report 19 §3/§4 — read-only live review of the seven pairs (B3-ج1→ج7) before preparing the formal execution orders. Fetch + parse only: zero writes, zero indexing requests, zero DB/GSC API calls. Records what the hreflang alternates ACTUALLY point at (the DB pairing state as rendered), the language-toggle target, the E31 in-body twin link, and both sides' datePublished.",
+ "checked_at_utc": "2026-11-11 22:12:07 UTC",
+ "pairs": [
+  {
+   "pair_id": "B3-ج1",
+   "en": {
+    "side": "en",
+    "slug": "protein-after-workout-grams-guide",
+    "url": "https://alkemos.com/blog/protein-after-workout-grams-guide",
+    "http_status": 200,
+    "live_title": "How Many Grams of Protein After a Workout? (Calculated)",
+    "canonical": "https://alkemos.com/blog/protein-after-workout-grams-guide",
+    "alternates": {
+     "en": "https://alkemos.com/blog/protein-after-workout-grams-guide",
+     "ar": "https://alkemos.com/ar/blog/protein-grams-after-workout-guide",
+     "x-default": "https://alkemos.com/blog/protein-after-workout-grams-guide"
+    },
+    "language_toggle_target": "/ar/blog/protein-grams-after-workout-guide",
+    "in_body_twin_link_anchors": [
+     "in Arabic",
+     "العربية ←"
+    ],
+    "date_published": "2026-09-03T23:48:37.353+00:00"
+   },
+   "ar": {
+    "side": "ar",
+    "slug": "protein-grams-after-workout-guide",
+    "url": "https://alkemos.com/ar/blog/protein-grams-after-workout-guide",
+    "http_status": 200,
+    "live_title": "كم غرام بروتين بعد التمرين؟ الحساب المقيس",
+    "canonical": "https://alkemos.com/ar/blog/protein-grams-after-workout-guide",
+    "alternates": {
+     "ar": "https://alkemos.com/ar/blog/protein-grams-after-workout-guide",
+     "en": "https://alkemos.com/blog/protein-after-workout-grams-guide",
+     "x-default": "https://alkemos.com/blog/protein-after-workout-grams-guide"
+    },
+    "language_toggle_target": "/blog/protein-after-workout-grams-guide",
+    "in_body_twin_link_anchors": [
+     "بالنسخة الإنجليزية",
+     "English →"
+    ],
+    "date_published": "2026-11-02T15:26:34.834+00:00"
+   },
+   "live_bidirectional_pairing": true,
+   "en_ar_alternate_points_to": "protein-grams-after-workout-guide",
+   "ar_en_alternate_points_to": "protein-after-workout-grams-guide",
+   "pairing_live_since": "2026-11-02T15:26:34.834+00:00",
+   "note": "hreflang alternates served bidirectionally at the TRUE twin (linked_post_id set both ways) — the effect Report 17 §7 ordered is ALREADY LIVE"
+  },
+  {
+   "pair_id": "B3-ج2",
+   "en": {
+    "side": "en",
+    "slug": "best-protein-timing-after-workout-guide",
+    "url": "https://alkemos.com/blog/best-protein-timing-after-workout-guide",
+    "http_status": 200,
+    "live_title": "Best Protein Timing After a Workout: Measured Guide",
+    "canonical": "https://alkemos.com/blog/best-protein-timing-after-workout-guide",
+    "alternates": {
+     "en": "https://alkemos.com/blog/best-protein-timing-after-workout-guide",
+     "ar": "https://alkemos.com/ar/blog/best-protein-timing-after-workout",
+     "x-default": "https://alkemos.com/blog/best-protein-timing-after-workout-guide"
+    },
+    "language_toggle_target": "/ar/blog/best-protein-timing-after-workout",
+    "in_body_twin_link_anchors": [
+     "in Arabic",
+     "العربية ←"
+    ],
+    "date_published": "2026-11-02T15:26:36.072+00:00"
+   },
+   "ar": {
+    "side": "ar",
+    "slug": "best-protein-timing-after-workout",
+    "url": "https://alkemos.com/ar/blog/best-protein-timing-after-workout",
+    "http_status": 200,
+    "live_title": "أفضل وقت لتناول البروتين بعد التمرين: الدليل المقيس",
+    "canonical": "https://alkemos.com/ar/blog/best-protein-timing-after-workout",
+    "alternates": {
+     "ar": "https://alkemos.com/ar/blog/best-protein-timing-after-workout",
+     "en": "https://alkemos.com/blog/best-protein-timing-after-workout-guide",
+     "x-default": "https://alkemos.com/blog/best-protein-timing-after-workout-guide"
+    },
+    "language_toggle_target": "/blog/best-protein-timing-after-workout-guide",
+    "in_body_twin_link_anchors": [
+     "بالنسخة الإنجليزية",
+     "English →"
+    ],
+    "date_published": "2026-09-11T09:32:27.594+00:00"
+   },
+   "live_bidirectional_pairing": true,
+   "en_ar_alternate_points_to": "best-protein-timing-after-workout",
+   "ar_en_alternate_points_to": "best-protein-timing-after-workout-guide",
+   "pairing_live_since": "2026-11-02T15:26:36.072+00:00",
+   "note": "hreflang alternates served bidirectionally at the TRUE twin (linked_post_id set both ways) — the effect Report 17 §7 ordered is ALREADY LIVE"
+  },
+  {
+   "pair_id": "B3-ج3",
+   "en": {
+    "side": "en",
+    "slug": "choose-whey-protein-muscle-gain",
+    "url": "https://alkemos.com/blog/choose-whey-protein-muscle-gain",
+    "http_status": 200,
+    "live_title": "How to Choose the Right Whey Protein for Muscle Gain",
+    "canonical": "https://alkemos.com/blog/choose-whey-protein-muscle-gain",
+    "alternates": {
+     "en": "https://alkemos.com/blog/choose-whey-protein-muscle-gain",
+     "ar": "https://alkemos.com/ar/blog/choose-whey-protein-muscle-gain-guide",
+     "x-default": "https://alkemos.com/blog/choose-whey-protein-muscle-gain"
+    },
+    "language_toggle_target": "/ar/blog/choose-whey-protein-muscle-gain-guide",
+    "in_body_twin_link_anchors": [
+     "in Arabic",
+     "العربية ←"
+    ],
+    "date_published": "2026-09-05T23:33:27.058+00:00"
+   },
+   "ar": {
+    "side": "ar",
+    "slug": "choose-whey-protein-muscle-gain-guide",
+    "url": "https://alkemos.com/ar/blog/choose-whey-protein-muscle-gain-guide",
+    "http_status": 200,
+    "live_title": "اختيار بروتين مصل اللبن للعضلات: الدليل المقيس",
+    "canonical": "https://alkemos.com/ar/blog/choose-whey-protein-muscle-gain-guide",
+    "alternates": {
+     "ar": "https://alkemos.com/ar/blog/choose-whey-protein-muscle-gain-guide",
+     "en": "https://alkemos.com/blog/choose-whey-protein-muscle-gain",
+     "x-default": "https://alkemos.com/blog/choose-whey-protein-muscle-gain"
+    },
+    "language_toggle_target": "/blog/choose-whey-protein-muscle-gain",
+    "in_body_twin_link_anchors": [
+     "بالنسخة الإنجليزية",
+     "English →"
+    ],
+    "date_published": "2026-11-02T13:17:19.873+00:00"
+   },
+   "live_bidirectional_pairing": true,
+   "en_ar_alternate_points_to": "choose-whey-protein-muscle-gain-guide",
+   "ar_en_alternate_points_to": "choose-whey-protein-muscle-gain",
+   "pairing_live_since": "2026-11-02T13:17:19.873+00:00",
+   "note": "hreflang alternates served bidirectionally at the TRUE twin (linked_post_id set both ways) — the effect Report 17 §7 ordered is ALREADY LIVE"
+  },
+  {
+   "pair_id": "B3-ج4",
+   "en": {
+    "side": "en",
+    "slug": "protein-myths-busted-muscle-gain",
+    "url": "https://alkemos.com/blog/protein-myths-busted-muscle-gain",
+    "http_status": 200,
+    "live_title": "Protein Myths Busted: What Science Actually Says for Gains",
+    "canonical": "https://alkemos.com/blog/protein-myths-busted-muscle-gain",
+    "alternates": {
+     "en": "https://alkemos.com/blog/protein-myths-busted-muscle-gain",
+     "ar": "https://alkemos.com/ar/blog/protein-myths-muscle-gain-guide",
+     "x-default": "https://alkemos.com/blog/protein-myths-busted-muscle-gain"
+    },
+    "language_toggle_target": "/ar/blog/protein-myths-muscle-gain-guide",
+    "in_body_twin_link_anchors": [
+     "in Arabic",
+     "العربية ←"
+    ],
+    "date_published": "2026-10-21T19:13:29.371+00:00"
+   },
+   "ar": {
+    "side": "ar",
+    "slug": "protein-myths-muscle-gain-guide",
+    "url": "https://alkemos.com/ar/blog/protein-myths-muscle-gain-guide",
+    "http_status": 200,
+    "live_title": "خرافات البروتين لبناء العضلات: 6 أخطاء وحلولها المقيسة",
+    "canonical": "https://alkemos.com/ar/blog/protein-myths-muscle-gain-guide",
+    "alternates": {
+     "ar": "https://alkemos.com/ar/blog/protein-myths-muscle-gain-guide",
+     "en": "https://alkemos.com/blog/protein-myths-busted-muscle-gain",
+     "x-default": "https://alkemos.com/blog/protein-myths-busted-muscle-gain"
+    },
+    "language_toggle_target": "/blog/protein-myths-busted-muscle-gain",
+    "in_body_twin_link_anchors": [
+     "بالنسخة الإنجليزية",
+     "English →"
+    ],
+    "date_published": "2026-11-01T22:33:33.678+00:00"
+   },
+   "live_bidirectional_pairing": true,
+   "en_ar_alternate_points_to": "protein-myths-muscle-gain-guide",
+   "ar_en_alternate_points_to": "protein-myths-busted-muscle-gain",
+   "pairing_live_since": "2026-11-01T22:33:33.678+00:00",
+   "note": "hreflang alternates served bidirectionally at the TRUE twin (linked_post_id set both ways) — the effect Report 17 §7 ordered is ALREADY LIVE"
+  },
+  {
+   "pair_id": "B3-ج5",
+   "en": {
+    "side": "en",
+    "slug": "best-plant-based-protein-powder-muscle-gain-2026",
+    "url": "https://alkemos.com/blog/best-plant-based-protein-powder-muscle-gain-2026",
+    "http_status": 200,
+    "live_title": "Best Plant-Based Protein Powder for Muscle Gain",
+    "canonical": "https://alkemos.com/blog/best-plant-based-protein-powder-muscle-gain-2026",
+    "alternates": {
+     "en": "https://alkemos.com/blog/best-plant-based-protein-powder-muscle-gain-2026",
+     "ar": "https://alkemos.com/ar/blog/best-plant-based-protein-powder-guide",
+     "x-default": "https://alkemos.com/blog/best-plant-based-protein-powder-muscle-gain-2026"
+    },
+    "language_toggle_target": "/ar/blog/best-plant-based-protein-powder-guide",
+    "in_body_twin_link_anchors": [
+     "in Arabic",
+     "العربية ←"
+    ],
+    "date_published": "2026-09-01T23:51:15.336+00:00"
+   },
+   "ar": {
+    "side": "ar",
+    "slug": "best-plant-based-protein-powder-guide",
+    "url": "https://alkemos.com/ar/blog/best-plant-based-protein-powder-guide",
+    "http_status": 200,
+    "live_title": "أفضل بروتين نباتي لبناء العضلات: دليل المقارنة",
+    "canonical": "https://alkemos.com/ar/blog/best-plant-based-protein-powder-guide",
+    "alternates": {
+     "ar": "https://alkemos.com/ar/blog/best-plant-based-protein-powder-guide",
+     "en": "https://alkemos.com/blog/best-plant-based-protein-powder-muscle-gain-2026",
+     "x-default": "https://alkemos.com/blog/best-plant-based-protein-powder-muscle-gain-2026"
+    },
+    "language_toggle_target": "/blog/best-plant-based-protein-powder-muscle-gain-2026",
+    "in_body_twin_link_anchors": [
+     "بالنسخة الإنجليزية",
+     "English →"
+    ],
+    "date_published": "2026-11-02T15:01:15.664+00:00"
+   },
+   "live_bidirectional_pairing": true,
+   "en_ar_alternate_points_to": "best-plant-based-protein-powder-guide",
+   "ar_en_alternate_points_to": "best-plant-based-protein-powder-muscle-gain-2026",
+   "pairing_live_since": "2026-11-02T15:01:15.664+00:00",
+   "note": "hreflang alternates served bidirectionally at the TRUE twin (linked_post_id set both ways) — the effect Report 17 §7 ordered is ALREADY LIVE"
+  },
+  {
+   "pair_id": "B3-ج6",
+   "en": {
+    "side": "en",
+    "slug": "build-muscle-without-supplements-guide",
+    "url": "https://alkemos.com/blog/build-muscle-without-supplements-guide",
+    "http_status": 200,
+    "live_title": "Build Muscle Without Supplements: The Food-First Guide",
+    "canonical": "https://alkemos.com/blog/build-muscle-without-supplements-guide",
+    "alternates": {
+     "en": "https://alkemos.com/blog/build-muscle-without-supplements-guide",
+     "ar": "https://alkemos.com/ar/blog/increase-muscle-mass-no-protein-supplements",
+     "x-default": "https://alkemos.com/blog/build-muscle-without-supplements-guide"
+    },
+    "language_toggle_target": "/ar/blog/increase-muscle-mass-no-protein-supplements",
+    "in_body_twin_link_anchors": [
+     "in Arabic",
+     "العربية ←"
+    ],
+    "date_published": "2026-10-31T22:53:51.219+00:00"
+   },
+   "ar": {
+    "side": "ar",
+    "slug": "increase-muscle-mass-no-protein-supplements",
+    "url": "https://alkemos.com/ar/blog/increase-muscle-mass-no-protein-supplements",
+    "http_status": 200,
+    "live_title": "كيف أزيد كتلة العضلات بدون مكملات بروتين في 8 أسابيع؟",
+    "canonical": "https://alkemos.com/ar/blog/increase-muscle-mass-no-protein-supplements",
+    "alternates": {
+     "ar": "https://alkemos.com/ar/blog/increase-muscle-mass-no-protein-supplements",
+     "en": "https://alkemos.com/blog/build-muscle-without-supplements-guide",
+     "x-default": "https://alkemos.com/blog/build-muscle-without-supplements-guide"
+    },
+    "language_toggle_target": "/blog/build-muscle-without-supplements-guide",
+    "in_body_twin_link_anchors": [
+     "بالنسخة الإنجليزية",
+     "English →"
+    ],
+    "date_published": "2026-09-14T10:39:21.878+00:00"
+   },
+   "live_bidirectional_pairing": true,
+   "en_ar_alternate_points_to": "increase-muscle-mass-no-protein-supplements",
+   "ar_en_alternate_points_to": "build-muscle-without-supplements-guide",
+   "pairing_live_since": "2026-10-31T22:53:51.219+00:00",
+   "note": "hreflang alternates served bidirectionally at the TRUE twin (linked_post_id set both ways) — the effect Report 17 §7 ordered is ALREADY LIVE"
+  },
+  {
+   "pair_id": "B3-ج7",
+   "en": {
+    "side": "en",
+    "slug": "best-protein-supplement-ramadan-guide",
+    "url": "https://alkemos.com/blog/best-protein-supplement-ramadan-guide",
+    "http_status": 200,
+    "live_title": "Best Protein Supplement for Ramadan: Evidence Guide",
+    "canonical": "https://alkemos.com/blog/best-protein-supplement-ramadan-guide",
+    "alternates": {
+     "en": "https://alkemos.com/blog/best-protein-supplement-ramadan-guide",
+     "ar": "https://alkemos.com/ar/blog/best-protein-supplement-ramadan",
+     "x-default": "https://alkemos.com/blog/best-protein-supplement-ramadan-guide"
+    },
+    "language_toggle_target": "/ar/blog/best-protein-supplement-ramadan",
+    "in_body_twin_link_anchors": [
+     "in Arabic",
+     "العربية ←"
+    ],
+    "date_published": "2026-11-02T13:17:20.641+00:00"
+   },
+   "ar": {
+    "side": "ar",
+    "slug": "best-protein-supplement-ramadan",
+    "url": "https://alkemos.com/ar/blog/best-protein-supplement-ramadan",
+    "http_status": 200,
+    "live_title": "أفضل مكمل بروتين في رمضان: دليل الاختيار والتوقيت",
+    "canonical": "https://alkemos.com/ar/blog/best-protein-supplement-ramadan",
+    "alternates": {
+     "ar": "https://alkemos.com/ar/blog/best-protein-supplement-ramadan",
+     "en": "https://alkemos.com/blog/best-protein-supplement-ramadan-guide",
+     "x-default": "https://alkemos.com/blog/best-protein-supplement-ramadan-guide"
+    },
+    "language_toggle_target": "/blog/best-protein-supplement-ramadan-guide",
+    "in_body_twin_link_anchors": [
+     "بالنسخة الإنجليزية",
+     "English →"
+    ],
+    "date_published": "2026-09-03T14:54:04.796+00:00"
+   },
+   "live_bidirectional_pairing": true,
+   "en_ar_alternate_points_to": "best-protein-supplement-ramadan",
+   "ar_en_alternate_points_to": "best-protein-supplement-ramadan-guide",
+   "pairing_live_since": "2026-11-02T13:17:20.641+00:00",
+   "note": "hreflang alternates served bidirectionally at the TRUE twin (linked_post_id set both ways) — the effect Report 17 §7 ordered is ALREADY LIVE"
+  }
+ ]
+}

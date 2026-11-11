@@ -1,0 +1,62 @@
+{
+ "_law": "Report 19 §5 — B3-ر1 keep-separate decision (owner-approved 2026-11-12): read-only live overlap evidence. Fetch + parse only.",
+ "checked_at_utc": "2026-11-11 22:12:08 UTC",
+ "articles": {
+  "general_ar_13": {
+   "slug": "protein-intake-calculator-muscle-build",
+   "url": "https://alkemos.com/ar/blog/protein-intake-calculator-muscle-build",
+   "http_status": 200,
+   "live_title": "كم كمية البروتين اليومية المثالية لبناء العضلات للرجال والنساء؟",
+   "live_meta_description": "الجواب المقيس 1.6-2.2 غ/كغ: خطوات الحساب للرجال والنساء، التوزيع على الوجبات، جدول المصادر، يوم نموذجي، وقرصا السعرات والنوم.",
+   "h2_sections": [
+    "الجواب المباشر: 1.6-2.2 غرام لكل كيلوغرام يوميًا",
+    "متى تجلس عند الطرف الأعلى ومتى عند الأدنى",
+    "التوزيع: كيف تقسم المجموع على اليوم",
+    "الطعام أولًا: جدول المصادر",
+    "يوم نموذجي كامل لمتدرب 75 كجم (هدف ~135 غ)",
+    "مثالان محلولان: رجل في تجفيف وامرأة في بناء",
+    "أخطاء شائعة تفسد حساب البروتين",
+    "قرص السعرات: البروتين يحتاج إطارًا",
+    "قرص النوم: المضاعف الذي لا يُكمَّل",
+    "الأسئلة الشائعة"
+   ],
+   "hreflang_alternates": {
+    "ar": "https://alkemos.com/ar/blog/protein-intake-calculator-muscle-build",
+    "en": "https://alkemos.com/blog/protein-per-day-muscle-build-plan",
+    "x-default": "https://alkemos.com/blog/protein-per-day-muscle-build-plan"
+   },
+   "links_to_other_article_anchors": [
+    "دليل حساب البروتين اليومي للرياضيين خطوة بخطوة"
+   ]
+  },
+  "athletes_ar_14": {
+   "slug": "how-to-calc-daily-protein-athletes",
+   "url": "https://alkemos.com/ar/blog/how-to-calc-daily-protein-athletes",
+   "http_status": 200,
+   "live_title": "كيف تحسب البروتين اليومي للرياضيين بدقة خطوة بخطوة",
+   "live_meta_description": "معادلة البروتين اليومي: الوزن × معامل النشاط، التوزيع على الوجبات، مثال حسابي كامل 75 كجم، مرجع الأطعمة، وأخطاء الحساب الخمسة.",
+   "h2_sections": [
+    "الخطوة 1: حدد معامل النشاط الخاص بك",
+    "الخطوة 2: اضرب المعامل في وزن جسمك الحقيقي",
+    "الخطوة 3: وزّع الكمية على 3-5 وجبات",
+    "الخطوة 4: عدّل حسب هدف المرحلة",
+    "الخطوة 5: مثال حسابي كامل — محمد 75 كجم متوسط",
+    "من أين تأتي الجرعات؟ مرجع سريع للبروتين بالأطعمة الشائعة",
+    "الأخطاء الخمسة الأشهر في حساب البروتين",
+    "متى يصبح مسحوق البروتين مفيدًا؟",
+    "البروتين في أيام الراحة مقابل أيام التمرين",
+    "الأسئلة الشائعة"
+   ],
+   "hreflang_alternates": {
+    "ar": "https://alkemos.com/ar/blog/how-to-calc-daily-protein-athletes",
+    "x-default": "https://alkemos.com/ar/blog/how-to-calc-daily-protein-athletes"
+   },
+   "links_to_other_article_anchors": []
+  }
+ },
+ "cross_link_state": {
+  "general_links_to_athletes": 1,
+  "athletes_links_to_general": 0,
+  "asymmetry": "general→athletes exists (1 anchor, intent-differentiating); athletes→general = 0 — basis of proposal P-ر1-أ (documented, not started)"
+ }
+}
