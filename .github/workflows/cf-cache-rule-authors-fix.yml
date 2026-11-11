@@ -144,12 +144,13 @@ jobs:
           echo "== 2. rule inventory (id | name | action | enabled) =="
           python3 - <<'PYEOF'
           import json
-          rs = json.load(open('/tmp/cf-rs-pre.json'))
+          d = json.load(open('/tmp/cf-rs-pre.json'))
+          rs = d.get('result', d)
           print('ruleset id:', rs.get('id'), '| version:', rs.get('version'))
           for r in (rs.get('rules') or []):
               flag = '  <-- references "/auth"' if '"/auth"' in (r.get('expression') or '') else ''
               print('- {} | {!r} | {} | enabled={}{}'.format(
-                  r.get('id'), r.get('name'), r.get('action'), r.get('enabled'), flag))
+                  r.get('id'), r.get('description'), r.get('action'), r.get('enabled'), flag))
           PYEOF
 
           echo
@@ -170,24 +171,25 @@ jobs:
           echo "== 4. surgery: /auth exclusion prefix -> exact segment (guarded, idempotent) =="
           python3 - <<'PYEOF'
           import json, re, sys
-          pre = json.load(open('/tmp/cf-rs-pre.json'))
+          d = json.load(open('/tmp/cf-rs-pre.json'))
+          pre = d.get('result', d)
           rules = pre.get('rules') or []
           cands = [r for r in rules if '"/auth"' in (r.get('expression') or '')]
           if len(cands) != 1:
               print('FATAL: expected exactly ONE rule referencing "/auth", got {} -> {}'.format(
-                  len(cands), [r.get('name') for r in cands]))
+                  len(cands), [r.get('description') for r in cands]))
               sys.exit(1)
           rule = cands[0]
           expr = rule['expression']
           already = (re.search(r'http\.request\.uri\.path\s+eq\s+"/auth"', expr) is not None
-                     and 'starts_with(http.request.uri.path, "/auth/")' in expr)
+                     and 'starts_with(http.request.uri.path,"/auth/")' in expr)
           pat = re.compile(r'starts_with\s*\(\s*http\.request\.uri\.path\s*,\s*"/auth"\s*\)')
           n = len(pat.findall(expr))
           if already and n == 0:
               print('ALREADY FIXED (exact-segment /auth present) — idempotent no-op, no PUT')
               json.dump({'needs_put': False,
                          'rule_id': rule['id'], 'ruleset_id': pre['id'],
-                         'rule_name': rule.get('name'),
+                         'rule_name': rule.get('description') or rule.get('name'),
                          'expression_old': expr, 'expression_new': expr,
                          'replacements': 0},
                         open('/tmp/cf-fix.json', 'w'), indent=2)
@@ -197,18 +199,18 @@ jobs:
               print('Expression:')
               print(expr)
               sys.exit(1)
-          new_expr = pat.sub('(http.request.uri.path eq "/auth" or starts_with(http.request.uri.path, "/auth/"))', expr)
+          new_expr = pat.sub('(http.request.uri.path eq "/auth" or starts_with(http.request.uri.path,"/auth/"))', expr)
           json.dump({'needs_put': True,
                      'ruleset_id': pre['id'],
                      'rule_id': rule['id'],
-                     'rule_name': rule.get('name'),
+                     'rule_name': rule.get('description') or rule.get('name'),
                      'action': rule['action'],
                      'action_parameters': rule.get('action_parameters'),
                      'expression_old': expr,
                      'expression_new': new_expr,
                      'replacements': n},
                     open('/tmp/cf-fix.json', 'w'), indent=2)
-          print('target rule: {} | id: {} | replacements: {}'.format(rule.get('name'), rule['id'], n))
+          print('target rule: {} | id: {} | replacements: {}'.format(rule.get('description') or rule.get('name'), rule['id'], n))
           print('OLD expression:')
           print(expr)
           print('NEW expression:')
@@ -251,8 +253,11 @@ jobs:
           [ "$CODE" = "200" ] || { echo "FATAL: post GET -> $CODE"; cat /tmp/cf-rs-post.json; exit 1; }
           python3 - <<'PYEOF'
           import json, sys
-          pre  = json.load(open('/tmp/cf-rs-pre.json'))
-          post = json.load(open('/tmp/cf-rs-post.json'))
+          def load_rs(p):
+              d = json.load(open(p))
+              return d.get('result', d)
+          pre  = load_rs('/tmp/cf-rs-pre.json')
+          post = load_rs('/tmp/cf-rs-post.json')
           fix  = json.load(open('/tmp/cf-fix.json'))
           VOLATILE = {'version', 'last_updated'}
           def strip(r):
@@ -266,7 +271,7 @@ jobs:
                   if postr[rid].get('expression') != fix['expression_new']:
                       print('FATAL: target rule expression != intended new expression'); sys.exit(1)
               elif strip(postr[rid]) != strip(r):
-                  print('FATAL: UNTOUCHED rule changed:', rid, r.get('name')); sys.exit(1)
+                  print('FATAL: UNTOUCHED rule changed:', rid, r.get('description')); sys.exit(1)
           print('VERIFIED: rule set identical; ONLY the target rule changed')
           print('post ruleset version:', post.get('version'))
           PYEOF
