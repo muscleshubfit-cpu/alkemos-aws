@@ -9,6 +9,10 @@ import { SiteFooter } from "@/components/SiteFooter";
 import { ShareButtons } from "@/components/ShareButtons";
 import { AdSenseAd } from "@/components/AdSenseAd";
 import { OtherTools } from "@/components/OtherTools";
+// Report 15 §5-B1 (owner order 2026-11-12): contextual guides that interpret
+// the tool result — pairs from src/lib/tool-article-links.ts (reverse leg
+// renders on the article pages from the same source).
+import { ToolArticleLinks } from "@/components/ToolArticleLinks";
 import { ReviewInviteCard } from "@/components/ReviewInviteCard";
 import { ImageWithFallback } from "@/components/ui/image-with-fallback";
 import { getFallbackSVG } from "@/lib/exercise-images";
@@ -647,6 +651,9 @@ export default function AiWorkoutPlannerPage() {
 
         {/* AdSense */}
         <AdSenseAd format="auto" />
+        {/* Report 15 §5-B1: «كيف تستخدم نتيجتك» guide strip (marble cards) */}
+        <ToolArticleLinks toolSlug="/ai-workout-planner" />
+
         <OtherTools current="/ai-workout-planner" />
 
         {/* Honest explainer */}

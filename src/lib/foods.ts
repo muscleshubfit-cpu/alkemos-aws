@@ -3320,7 +3320,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "cheese-cheddar-reduced-fat",
-    nameAr: "Cheese, cheddar, reduced fat",
+    nameAr: "جبنة شيدر قليلة الدسم",
     nameEn: "Cheese, cheddar, reduced fat",
     category: "dairy",
     per100g: { calories: 309, protein: 27.4, carbs: 4.1, fat: 20.4, fiber: 0.0, sugar: 0.3 },
@@ -8380,7 +8380,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "vegetable-oil-palm-kernel",
-    nameAr: "Vegetable oil, palm kernel",
+    nameAr: "زيت نواة النخيل",
     nameEn: "Vegetable oil, palm kernel",
     category: "fat",
     per100g: { calories: 862, protein: 0.0, carbs: 0.0, fat: 100.0, fiber: 0.0, sugar: 0.0 },
@@ -10976,7 +10976,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "chicken-broilers-or-fryers-thigh-meat-and-skin-cooked-stewed",
-    nameAr: "Chicken, broilers or fryers, thigh, meat and skin, cooked, stewed",
+    nameAr: "فخذ دجاج بالجلد — مطهو ببطء",
     nameEn: "Chicken, broilers or fryers, thigh, meat and skin, cooked, stewed",
     category: "protein",
     per100g: { calories: 232, protein: 23.3, carbs: 0.0, fat: 14.7, fiber: 0.0, sugar: 0.0 },
@@ -15640,7 +15640,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "prego-pasta-mini-meatball-italian-sauce-ready-to-serve",
-    nameAr: "PREGO Pasta, Mini Meatball Italian Sauce, ready-to-serve",
+    nameAr: "صوص باستا بريغو الإيطالي بكرات اللحم المصغرة — جاهز للتقديم",
     nameEn: "PREGO Pasta, Mini Meatball Italian Sauce, ready-to-serve",
     category: "snack",
     per100g: { calories: 77, protein: 3.1, carbs: 10.0, fat: 2.3, fiber: 2.3, sugar: 7.7 },
@@ -19589,7 +19589,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "hormel-pillow-pak-sliced-turkey-pepperoni",
-    nameAr: "HORMEL Pillow Pak Sliced Turkey Pepperoni",
+    nameAr: "بيبروني ديك رومي مقطع — هورمل",
     nameEn: "HORMEL Pillow Pak Sliced Turkey Pepperoni",
     category: "protein",
     per100g: { calories: 243, protein: 31.0, carbs: 3.8, fat: 11.5, fiber: 0.0, sugar: 0.0 },
@@ -21360,7 +21360,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "cereals-ready-to-eat-quaker-quaker-puffed-wheat",
-    nameAr: "Cereals ready-to-eat, QUAKER, QUAKER Puffed Wheat",
+    nameAr: "رقائق كويكر المنتفخة بالقمح",
     nameEn: "Cereals ready-to-eat, QUAKER, QUAKER Puffed Wheat",
     category: "carb",
     per100g: { calories: 366, protein: 16.3, carbs: 76.4, fat: 2.1, fiber: 9.4, sugar: 1.4 },
@@ -22801,7 +22801,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "cereals-ready-to-eat-general-mills-chocolate-lucky-charms",
-    nameAr: "Cereals ready-to-eat, GENERAL MILLS, CHOCOLATE LUCKY CHARMS",
+    nameAr: "رقائق جنرال ميلز لاكي تشارمز — بالشوكولاتة",
     nameEn: "Cereals ready-to-eat, GENERAL MILLS, CHOCOLATE LUCKY CHARMS",
     category: "carb",
     per100g: { calories: 381, protein: 5.6, carbs: 84.4, fat: 4.4, fiber: 5.3, sugar: 36.8 },
@@ -23087,7 +23087,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "cereals-ready-to-eat-general-mills-25-less-sugar-cinnamon-to",
-    nameAr: "Cereals ready-to-eat, GENERAL MILLS, 25% Less Sugar CINNAMON TOAST CRUNCH",
+    nameAr: "رقائق جنرال ميلز بالقرفة — سكر أقل بنسبة 25%",
     nameEn: "Cereals ready-to-eat, GENERAL MILLS, 25% Less Sugar CINNAMON TOAST CRUNCH",
     category: "carb",
     per100g: { calories: 386, protein: 5.1, carbs: 78.2, fat: 9.9, fiber: 11.2, sugar: 21.4 },
@@ -23813,7 +23813,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "cereals-ready-to-eat-kelloggs-frosted-mini-wheats-touch-of-f",
-    nameAr: "Cereals ready-to-eat, KELLOGG'S FROSTED MINI-WHEATS Touch of Fruit in the Middle, Raspberry",
+    nameAr: "رقائق كيلوغز ميني ويتس المزججة بالسكر — بطعم الفاكهة",
     nameEn: "Cereals ready-to-eat, KELLOGG'S FROSTED MINI-WHEATS Touch of Fruit in the Middle, Raspberry",
     category: "carb",
     per100g: { calories: 342, protein: 8.8, carbs: 82.1, fat: 1.8, fiber: 10.6, sugar: 17.8 },
@@ -26189,7 +26189,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "tangerines-mandarin-oranges-canned-juice-pack",
-    nameAr: "Tangerines, (mandarin oranges), canned, juice pack",
+    nameAr: "يوسفي معلب — بالعصير",
     nameEn: "Tangerines, (mandarin oranges), canned, juice pack",
     category: "fruit",
     per100g: { calories: 37, protein: 0.6, carbs: 9.6, fat: 0.0, fiber: 0.7, sugar: 8.9 },
@@ -36661,7 +36661,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "vegetables-mixed-frozen-unprepared",
-    nameAr: "Vegetables, mixed, frozen, unprepared",
+    nameAr: "خضروات مشكلة مجمدة — غير محضرة",
     nameEn: "Vegetables, mixed, frozen, unprepared",
     category: "vegetable",
     per100g: { calories: 72, protein: 3.3, carbs: 13.5, fat: 0.5, fiber: 4.0, sugar: 0 },
@@ -37299,7 +37299,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "potatoes-baked-flesh-and-skin-without-salt",
-    nameAr: "Potatoes, baked, flesh and skin, without salt",
+    nameAr: "بطاطس مشوية بالقشرة — دون ملح",
     nameEn: "Potatoes, baked, flesh and skin, without salt",
     category: "vegetable",
     per100g: { calories: 93, protein: 2.5, carbs: 21.1, fat: 0.1, fiber: 2.2, sugar: 1.2 },
@@ -39873,7 +39873,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "potatoes-mashed-home-prepared-whole-milk-and-butter-added",
-    nameAr: "Potatoes, mashed, home-prepared, whole milk and butter added",
+    nameAr: "بطاطس مهروسة منزلية — بالحليب الكامل والزبدة",
     nameEn: "Potatoes, mashed, home-prepared, whole milk and butter added",
     category: "vegetable",
     per100g: { calories: 113, protein: 1.9, carbs: 16.8, fat: 4.2, fiber: 1.5, sugar: 1.4 },
@@ -40511,7 +40511,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "fiddlehead-ferns-raw",
-    nameAr: "Fiddlehead ferns, raw",
+    nameAr: "رؤوس سراخس متفتحة — نيئة",
     nameEn: "Fiddlehead ferns, raw",
     category: "vegetable",
     per100g: { calories: 34, protein: 4.5, carbs: 5.5, fat: 0.4, fiber: 0, sugar: 0 },
@@ -44460,7 +44460,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "beef-brisket-point-half-separable-lean-and-fat-trimmed-to-18-3958",
-    nameAr: "Beef, brisket, point half, separable lean and fat, trimmed to 1/8\" fat, all grades, cooked, braised",
+    nameAr: "صدر بقري — النصف المدبب، نيء",
     nameEn: "Beef, brisket, point half, separable lean and fat, trimmed to 1/8\" fat, all grades, cooked, braised",
     category: "protein",
     per100g: { calories: 349, protein: 24.4, carbs: 0.0, fat: 27.2, fiber: 0.0, sugar: 0.0 },
@@ -46693,7 +46693,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "beverages-kelloggs-special-k-protein-shake",
-    nameAr: "Beverages, KELLOGG'S, SPECIAL K Protein Shake",
+    nameAr: "مشروب بروتين كيلوغز سبيشال ك",
     nameEn: "Beverages, KELLOGG'S, SPECIAL K Protein Shake",
     category: "drink",
     per100g: { calories: 64, protein: 3.2, carbs: 9.2, fat: 1.6, fiber: 1.7, sugar: 6.0 },
@@ -50455,7 +50455,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "fish-pout-ocean-raw",
-    nameAr: "Fish, pout, ocean, raw",
+    nameAr: "سمك باوت محيطي — نيء",
     nameEn: "Fish, pout, ocean, raw",
     category: "protein",
     per100g: { calories: 79, protein: 16.6, carbs: 0.0, fat: 0.9, fiber: 0.0, sugar: 0 },
@@ -50994,7 +50994,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "fish-sunfish-pumpkin-seed-raw",
-    nameAr: "Fish, sunfish, pumpkin seed, raw",
+    nameAr: "سمك صن فيش — نيء",
     nameEn: "Fish, sunfish, pumpkin seed, raw",
     category: "protein",
     per100g: { calories: 89, protein: 19.4, carbs: 0.0, fat: 0.7, fiber: 0.0, sugar: 0 },
@@ -53326,7 +53326,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "cowpeas-common-blackeyes-crowder-southern-mature-seeds-cooke",
-    nameAr: "Cowpeas, common (blackeyes, crowder, southern), mature seeds, cooked, boiled, without salt",
+    nameAr: "لوبيا عين سوداء — مطبوخة",
     nameEn: "Cowpeas, common (blackeyes, crowder, southern), mature seeds, cooked, boiled, without salt",
     category: "carb",
     per100g: { calories: 116, protein: 7.7, carbs: 20.8, fat: 0.5, fiber: 6.5, sugar: 3.3 },
@@ -54536,7 +54536,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "vitasoy-usa-vitasoy-light-vanilla-soymilk",
-    nameAr: "Vitasoy USA, Vitasoy Light Vanilla Soymilk",
+    nameAr: "حليب صويا فيتاسوي خفيف — بالفانيلا",
     nameEn: "Vitasoy USA, Vitasoy Light Vanilla Soymilk",
     category: "carb",
     per100g: { calories: 30, protein: 1.6, carbs: 4.1, fat: 0.8, fiber: 0.1, sugar: 2.9 },
@@ -55482,7 +55482,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "peanuts-all-types-dry-roasted-without-salt",
-    nameAr: "Peanuts, all types, dry-roasted, without salt",
+    nameAr: "فول سوداني محمص جافًا — دون ملح",
     nameEn: "Peanuts, all types, dry-roasted, without salt",
     category: "carb",
     per100g: { calories: 587, protein: 24.4, carbs: 21.3, fat: 49.7, fiber: 8.4, sugar: 4.9 },
@@ -55823,7 +55823,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "worthington-choplets-canned-unprepared",
-    nameAr: "WORTHINGTON Choplets, canned, unprepared",
+    nameAr: "شرائح بروتين نباتي ورثينغتون — معلبة",
     nameEn: "WORTHINGTON Choplets, canned, unprepared",
     category: "carb",
     per100g: { calories: 103, protein: 19.4, carbs: 4.1, fat: 1.0, fiber: 2.8, sugar: 0.4 },
@@ -58430,7 +58430,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "game-meat-elk-cooked-roasted",
-    nameAr: "Game meat, elk, cooked, roasted",
+    nameAr: "لحم أيل — مشوي",
     nameEn: "Game meat, elk, cooked, roasted",
     category: "protein",
     per100g: { calories: 146, protein: 30.2, carbs: 0.0, fat: 1.9, fiber: 0.0, sugar: 0 },
@@ -58859,7 +58859,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "lamb-variety-meats-and-by-products-lungs-cooked-braised",
-    nameAr: "Lamb, variety meats and by-products, lungs, cooked, braised",
+    nameAr: "رئة غنم — مطهوة ببطء",
     nameEn: "Lamb, variety meats and by-products, lungs, cooked, braised",
     category: "protein",
     per100g: { calories: 113, protein: 19.9, carbs: 0.0, fat: 3.1, fiber: 0.0, sugar: 0 },
@@ -60047,7 +60047,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "lamb-australian-imported-fresh-rib-chop-frenched-bone-in-sep",
-    nameAr: "Lamb, Australian, imported, fresh, rib chop, frenched, bone-in, separable lean and fat, trimmed to 1/8\" fat, cooked, grilled",
+    nameAr: "ريش غنم أسترالي مستورد — بعظمها، لحم فقط",
     nameEn: "Lamb, Australian, imported, fresh, rib chop, frenched, bone-in, separable lean and fat, trimmed to 1/8\" fat, cooked, grilled",
     category: "protein",
     per100g: { calories: 305, protein: 28.5, carbs: 0.0, fat: 21.2, fiber: 0.0, sugar: 0.0 },
@@ -64029,7 +64029,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "ice-cream-cones-cake-or-wafer-type",
-    nameAr: "Ice cream cones, cake or wafer-type",
+    nameAr: "قمع آيس كريم — نوع الكعكة أو الوافر",
     nameEn: "Ice cream cones, cake or wafer-type",
     category: "carb",
     per100g: { calories: 417, protein: 8.1, carbs: 79.0, fat: 6.9, fiber: 3.0, sugar: 6.0 },
@@ -66603,7 +66603,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "crackers-cream-gamesa-sabrosas",
-    nameAr: "Crackers, cream, GAMESA SABROSAS",
+    nameAr: "بسكويت مملح كريمي جاميسا",
     nameEn: "Crackers, cream, GAMESA SABROSAS",
     category: "carb",
     per100g: { calories: 484, protein: 7.0, carbs: 64.5, fat: 20.4, fiber: 2.4, sugar: 9.4 },
@@ -68341,7 +68341,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "toppings-strawberry",
-    nameAr: "Toppings, strawberry",
+    nameAr: "تزيين بالفراولة",
     nameEn: "Toppings, strawberry",
     category: "snack",
     per100g: { calories: 254, protein: 0.2, carbs: 66.3, fat: 0.1, fiber: 0.7, sugar: 27.4 },
@@ -70706,7 +70706,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "snacks-kelloggs-nutri-grain-cereal-bars-fruit",
-    nameAr: "Snacks, KELLOGG'S, NUTRI-GRAIN Cereal Bars, fruit",
+    nameAr: "ألواح كيلوغز نيوتري جراين — بالفاكهة",
     nameEn: "Snacks, KELLOGG'S, NUTRI-GRAIN Cereal Bars, fruit",
     category: "snack",
     per100g: { calories: 365, protein: 4.2, carbs: 67.6, fat: 8.7, fiber: 3.0, sugar: 29.0 },
@@ -70948,7 +70948,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "snacks-potato-chips-plain-unsalted",
-    nameAr: "Snacks, potato chips, plain, unsalted",
+    nameAr: "رقائق بطاطس عادية — دون ملح",
     nameEn: "Snacks, potato chips, plain, unsalted",
     category: "snack",
     per100g: { calories: 536, protein: 7.0, carbs: 52.9, fat: 34.6, fiber: 4.8, sugar: 0.2 },
@@ -72323,7 +72323,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "sorghum-grain",
-    nameAr: "Sorghum grain",
+    nameAr: "حبوب الذرة الرفيعة",
     nameEn: "Sorghum grain",
     category: "carb",
     per100g: { calories: 329, protein: 10.6, carbs: 72.1, fat: 3.5, fiber: 6.7, sugar: 2.5 },
@@ -73005,7 +73005,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "teff-cooked",
-    nameAr: "Teff, cooked",
+    nameAr: "حبوب التف — مطبوخة",
     nameEn: "Teff, cooked",
     category: "carb",
     per100g: { calories: 101, protein: 3.9, carbs: 19.9, fat: 0.7, fiber: 2.8, sugar: 0 },
@@ -74853,7 +74853,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "mcdonalds-cheeseburger",
-    nameAr: "McDONALD'S, Cheeseburger",
+    nameAr: "برجر جبنة ماكدونالدز",
     nameEn: "McDONALD'S, Cheeseburger",
     category: "snack",
     per100g: { calories: 263, protein: 13.0, carbs: 27.8, fat: 11.8, fiber: 1.1, sugar: 6.2 },
@@ -75183,7 +75183,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "taco-bell-burrito-supreme-with-beef",
-    nameAr: "TACO BELL, BURRITO SUPREME with beef",
+    nameAr: "بريتو تاكو بيل الأعلى — باللحم البقري",
     nameEn: "TACO BELL, BURRITO SUPREME with beef",
     category: "snack",
     per100g: { calories: 183, protein: 7.0, carbs: 23.4, fat: 6.8, fiber: 3.7, sugar: 2.1 },
@@ -75656,7 +75656,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "mcdonalds-chicken-mcnuggets",
-    nameAr: "McDONALD'S, Chicken McNUGGETS",
+    nameAr: "ناجتس دجاج ماكدونالدز",
     nameEn: "McDONALD'S, Chicken McNUGGETS",
     category: "snack",
     per100g: { calories: 302, protein: 15.8, carbs: 15.1, fat: 19.8, fiber: 0, sugar: 0.1 },
@@ -76173,7 +76173,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "mcdonalds-filet-o-fish-without-tartar-sauce",
-    nameAr: "McDONALD'S, FILET-O-FISH (without tartar sauce)",
+    nameAr: "فيليه سمك ماكدونالدز — دون صوص التارتار",
     nameEn: "McDONALD'S, FILET-O-FISH (without tartar sauce)",
     category: "snack",
     per100g: { calories: 243, protein: 12.5, carbs: 31.1, fat: 7.6, fiber: 1.0, sugar: 4.3 },
@@ -76481,7 +76481,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "popeyes-coleslaw",
-    nameAr: "POPEYES, Coleslaw",
+    nameAr: "سلطة كرنب بوبايز",
     nameEn: "POPEYES, Coleslaw",
     category: "snack",
     per100g: { calories: 161, protein: 1.0, carbs: 14.1, fat: 11.2, fiber: 1.7, sugar: 10.8 },
@@ -81827,7 +81827,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "beef-australian-imported-wagyu-rib-small-end-rib-steakroast--7355",
-    nameAr: "Beef, Australian, imported, Wagyu, rib, small end rib steak/roast, boneless, separable lean only, Aust. marble score 9, raw",
+    nameAr: "ستيك واغيو أسترالي مستورد — ضلع صغير",
     nameEn: "Beef, Australian, imported, Wagyu, rib, small end rib steak/roast, boneless, separable lean only, Aust. marble score 9, raw",
     category: "protein",
     per100g: { calories: 330, protein: 17.6, carbs: 0.5, fat: 28.6, fiber: 0.0, sugar: 0.0 },
@@ -83070,7 +83070,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "beef-new-zealand-imported-oyster-blade-separable-lean-only-r",
-    nameAr: "Beef, New Zealand, imported, oyster blade, separable lean only, raw",
+    nameAr: "لحم بقري نيوزيلندي مستورد — أويستر بليد، لحم فقط، نيء",
     nameEn: "Beef, New Zealand, imported, oyster blade, separable lean only, raw",
     category: "protein",
     per100g: { calories: 155, protein: 21.8, carbs: 0.0, fat: 7.6, fiber: 0.0, sugar: 0.0 },
@@ -83576,7 +83576,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "beef-ground-93-lean-meat-7-fat-loaf-cooked-baked",
-    nameAr: "Beef, ground, 93% lean meat / 7% fat, loaf, cooked, baked",
+    nameAr: "كفتة لحم بقري 93/7 — مطبوخة بالفرن",
     nameEn: "Beef, ground, 93% lean meat / 7% fat, loaf, cooked, baked",
     category: "protein",
     per100g: { calories: 192, protein: 27.0, carbs: 0.0, fat: 8.4, fiber: 0.0, sugar: 0.0 },
@@ -84522,7 +84522,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "beef-brisket-flat-half-separable-lean-only-trimmed-to-18-fat-7600",
-    nameAr: "Beef, brisket, flat half, separable lean only, trimmed to 1/8\" fat, all grades, raw",
+    nameAr: "صدر بقري — النصف المسطح، لحم فقط، نيء",
     nameEn: "Beef, brisket, flat half, separable lean only, trimmed to 1/8\" fat, all grades, raw",
     category: "protein",
     per100g: { calories: 127, protein: 21.6, carbs: 0.0, fat: 3.8, fiber: 0.0, sugar: 0.0 },
@@ -84632,7 +84632,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "beef-short-loin-top-loin-steak-separable-lean-only-trimmed-t-7610",
-    nameAr: "Beef, short loin, top loin, steak, separable lean only, trimmed to 1/8\" fat, all grades, cooked, broiled",
+    nameAr: "استيك قطنية بقري — لحم فقط، نيء",
     nameEn: "Beef, short loin, top loin, steak, separable lean only, trimmed to 1/8\" fat, all grades, cooked, broiled",
     category: "protein",
     per100g: { calories: 189, protein: 29.3, carbs: 0.0, fat: 7.1, fiber: 0.0, sugar: 0.0 },
@@ -86216,7 +86216,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "dip-tostitos-salsa-con-queso-medium",
-    nameAr: "Dip, TOSTITOS, salsa con queso, medium",
+    nameAr: "غموس توستيتوس بالجبنة المكسيكي — متوسط",
     nameEn: "Dip, TOSTITOS, salsa con queso, medium",
     category: "snack",
     per100g: { calories: 133, protein: 2.9, carbs: 11.7, fat: 8.3, fiber: 0.6, sugar: 1.4 },
@@ -86480,7 +86480,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "kelloggs-eggo-waffles-blueberry",
-    nameAr: "KELLOGG'S, EGGO, Waffles, Blueberry",
+    nameAr: "وافلز إيغو — بالتوت الأزرق",
     nameEn: "KELLOGG'S, EGGO, Waffles, Blueberry",
     category: "carb",
     per100g: { calories: 265, protein: 5.5, carbs: 41.7, fat: 8.7, fiber: 1.1, sugar: 9.1 },
@@ -86579,7 +86579,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "kelloggs-eggo-nutri-grain-waffles-blueberry",
-    nameAr: "KELLOGG'S, EGGO, NUTRI-GRAIN, Waffles, Blueberry",
+    nameAr: "وافلز إيغو نيوتري جراين — بالتوت الأزرق",
     nameEn: "KELLOGG'S, EGGO, NUTRI-GRAIN, Waffles, Blueberry",
     category: "carb",
     per100g: { calories: 257, protein: 6.2, carbs: 43.6, fat: 7.8, fiber: 3.9, sugar: 10.0 },
@@ -87492,7 +87492,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "keebler-gripz-cinnamon-grahams-bite-size",
-    nameAr: "KEEBLER, GRIPZ, Cinnamon Grahams, bite-size",
+    nameAr: "بسكويت كيبلر جراهام بالقرفة — قطع صغيرة",
     nameEn: "KEEBLER, GRIPZ, Cinnamon Grahams, bite-size",
     category: "carb",
     per100g: { calories: 415, protein: 7.4, carbs: 75.6, fat: 12.9, fiber: 10.4, sugar: 20.5 },
@@ -93487,7 +93487,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "applebees-kraft-macaroni-cheese-from-kids-menu",
-    nameAr: "APPLEBEE'S, KRAFT, Macaroni & Cheese, from kid's menu",
+    nameAr: "مكرونة بالجبنة كرافت — من قائمة أطفال أبلبيز",
     nameEn: "APPLEBEE'S, KRAFT, Macaroni & Cheese, from kid's menu",
     category: "snack",
     per100g: { calories: 143, protein: 5.0, carbs: 21.1, fat: 4.3, fiber: 1.3, sugar: 3.7 },
@@ -95093,7 +95093,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "rice-cake-cracker-include-hain-mini-rice-cakes",
-    nameAr: "Rice cake, cracker (include hain mini rice cakes)",
+    nameAr: "مقرمشات كعك الأرز المصغرة — هين",
     nameEn: "Rice cake, cracker (include hain mini rice cakes)",
     category: "snack",
     per100g: { calories: 392, protein: 7.1, carbs: 81.1, fat: 4.3, fiber: 4.2, sugar: 0.9 },
@@ -96655,7 +96655,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "tofu-yogurt",
-    nameAr: "Tofu yogurt",
+    nameAr: "زبادي توفو",
     nameEn: "Tofu yogurt",
     category: "carb",
     per100g: { calories: 94, protein: 3.5, carbs: 16.0, fat: 1.8, fiber: 0.2, sugar: 1.2 },

@@ -17,6 +17,15 @@ import "server-only";
  * bakery/dessert/candy staples, beverages incl. protein powders, vegetables,
  * fruits, legumes, flours/cereals, nuts, condiments, snacks — zero pork,
  * zero brands, zero babyfood, zero tribal/native rows) — cumulative 2409.
+ * Phase 4 (Report 15 §5-B2, owner execution order 2026-11-12 «ابدأ التنفيذ
+ * للخطة», the GSC-demand filter the report introduced): +49 slugs selected
+ * by MEASURED demand from the owner's 3-month GSC Performance export — the
+ * untranslated tail rows whose EN page already draws impressions (>=3;
+ * 58 rows/464 impressions found, minus 7 pork-containing and 2 alcoholic
+ * rows excluded per the band's own audience-fit precedent — override-able
+ * by owner order). The batch is brand-heavy by design: the demand ranking
+ * is led by branded fast-food/retail rows (McNuggets 122 impressions).
+ * Cumulative 2458.
  *
  * Architectural role (arabization plan §6): DECOUPLES three signals that
  * used to be one —
@@ -2444,6 +2453,55 @@ export const SEO_FOOD_BAND: readonly string[] = [
   "jellies-reduced-sugar-home-preserved",
   "fish-mackerel-salted",
   "mollusks-scallop-bay-and-sea-cooked-steamed",
+  "mcdonalds-chicken-mcnuggets",
+  "mcdonalds-cheeseburger",
+  "cereals-ready-to-eat-kelloggs-frosted-mini-wheats-touch-of-f",
+  "cheese-cheddar-reduced-fat",
+  "potatoes-baked-flesh-and-skin-without-salt",
+  "peanuts-all-types-dry-roasted-without-salt",
+  "chicken-broilers-or-fryers-thigh-meat-and-skin-cooked-stewed",
+  "sorghum-grain",
+  "beef-new-zealand-imported-oyster-blade-separable-lean-only-r",
+  "teff-cooked",
+  "crackers-cream-gamesa-sabrosas",
+  "mcdonalds-filet-o-fish-without-tartar-sauce",
+  "cereals-ready-to-eat-general-mills-chocolate-lucky-charms",
+  "popeyes-coleslaw",
+  "worthington-choplets-canned-unprepared",
+  "beef-australian-imported-wagyu-rib-small-end-rib-steakroast--7355",
+  "beef-brisket-flat-half-separable-lean-only-trimmed-to-18-fat-7600",
+  "rice-cake-cracker-include-hain-mini-rice-cakes",
+  "game-meat-elk-cooked-roasted",
+  "beef-brisket-point-half-separable-lean-and-fat-trimmed-to-18-3958",
+  "beef-ground-93-lean-meat-7-fat-loaf-cooked-baked",
+  "dip-tostitos-salsa-con-queso-medium",
+  "cereals-ready-to-eat-quaker-quaker-puffed-wheat",
+  "lamb-variety-meats-and-by-products-lungs-cooked-braised",
+  "potatoes-mashed-home-prepared-whole-milk-and-butter-added",
+  "cereals-ready-to-eat-general-mills-25-less-sugar-cinnamon-to",
+  "lamb-australian-imported-fresh-rib-chop-frenched-bone-in-sep",
+  "beef-short-loin-top-loin-steak-separable-lean-only-trimmed-t-7610",
+  "fiddlehead-ferns-raw",
+  "snacks-kelloggs-nutri-grain-cereal-bars-fruit",
+  "cowpeas-common-blackeyes-crowder-southern-mature-seeds-cooke",
+  "kelloggs-eggo-waffles-blueberry",
+  "keebler-gripz-cinnamon-grahams-bite-size",
+  "kelloggs-eggo-nutri-grain-waffles-blueberry",
+  "tangerines-mandarin-oranges-canned-juice-pack",
+  "fish-pout-ocean-raw",
+  "ice-cream-cones-cake-or-wafer-type",
+  "taco-bell-burrito-supreme-with-beef",
+  "hormel-pillow-pak-sliced-turkey-pepperoni",
+  "vegetable-oil-palm-kernel",
+  "vegetables-mixed-frozen-unprepared",
+  "vitasoy-usa-vitasoy-light-vanilla-soymilk",
+  "toppings-strawberry",
+  "fish-sunfish-pumpkin-seed-raw",
+  "prego-pasta-mini-meatball-italian-sauce-ready-to-serve",
+  "applebees-kraft-macaroni-cheese-from-kids-menu",
+  "beverages-kelloggs-special-k-protein-shake",
+  "snacks-potato-chips-plain-unsalted",
+  "tofu-yogurt",
 ];
 
 /** O(1) membership check — the read-side hot path for the band. */

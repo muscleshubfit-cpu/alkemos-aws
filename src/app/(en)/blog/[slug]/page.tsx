@@ -3,6 +3,11 @@ import { BlogArticlePage } from "@/components/blog/BlogArticlePage";
 import { fetchBlogForOG, fetchBlogPostFull, fetchPublishedBlogSlugPools, buildBlogHreflang } from "@/lib/blog-server";
 import { sanitizeBlogContent } from "@/lib/blog-content-sanitize";
 import { insertToolLinks } from "@/lib/blog-tool-links";
+// Report 15 §5-B1 (owner order 2026-11-12): the retro leg — entries for
+// THIS article's paired tools, computed server-side from the single pair
+// source (src/lib/tool-article-links.ts) so the tool links are crawlable
+// in the raw HTML of the article page.
+import { toolLinksForArticle } from "@/lib/tool-article-links";
 import { getArticleSchema, getBreadcrumbSchema, getFAQSchema, getSpeakableSchema, jsonLd } from "@/lib/seo";
 import { resolveAuthor } from "@/lib/authors";
 import type { Metadata } from "next";
@@ -223,6 +228,9 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
         )
       : null;
 
+  // Report 15 §5-B1: the paired-tool strip entries for this article.
+  const toolCta = toolLinksForArticle(slug, "en");
+
   return (
     <>
       {articleSchema && (
@@ -249,7 +257,7 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
           dangerouslySetInnerHTML={{ __html: jsonLd(faqPageSchema) }}
         />
       )}
-      <BlogArticlePage lang="en" slug={slug} initialPost={fullPost} publishedAt={publishedAt} updatedAt={updatedAt} lastReviewedAt={og.lastReviewedAt ?? undefined} mirrorHref={mirrorHref} />
+      <BlogArticlePage lang="en" slug={slug} initialPost={fullPost} publishedAt={publishedAt} updatedAt={updatedAt} lastReviewedAt={og.lastReviewedAt ?? undefined} mirrorHref={mirrorHref} toolCta={toolCta} />
     </>
   );
 }

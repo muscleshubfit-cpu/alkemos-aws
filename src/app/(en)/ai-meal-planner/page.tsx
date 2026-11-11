@@ -9,6 +9,10 @@ import { SiteFooter } from "@/components/SiteFooter";
 import { ShareButtons } from "@/components/ShareButtons";
 import { AdSenseAd } from "@/components/AdSenseAd";
 import { OtherTools } from "@/components/OtherTools";
+// Report 15 §5-B1 (owner order 2026-11-12): contextual guides that interpret
+// the tool result — pairs from src/lib/tool-article-links.ts (reverse leg
+// renders on the article pages from the same source).
+import { ToolArticleLinks } from "@/components/ToolArticleLinks";
 import { RecipeSuggestStrip } from "@/components/recipes/RecipeSuggestStrip";
 import { ReviewInviteCard } from "@/components/ReviewInviteCard";
 import { demoSystemOptions, type DemoPlan } from "@/lib/ai-meal-planner";
@@ -570,6 +574,9 @@ export default function AiMealPlannerPage() {
 
         {/* AdSense */}
         <AdSenseAd format="auto" />
+        {/* Report 15 §5-B1: «كيف تستخدم نتيجتك» guide strip (marble cards) */}
+        <ToolArticleLinks toolSlug="/ai-meal-planner" />
+
         <OtherTools current="/ai-meal-planner" />
 
         {/* Honest explainer */}

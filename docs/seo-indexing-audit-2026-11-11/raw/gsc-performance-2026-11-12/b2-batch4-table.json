@@ -1,0 +1,551 @@
+{
+  "_law": "Report 16 §B2 — the fourth Arabization batch: rows selected by MEASURED GSC demand (>=3 impressions on the EN page, 3-month window to 2026-11-11) minus the documented exclusions (7 pork-containing + 2 alcoholic rows — band audience-fit precedent, overridable by owner order). Band: 2,409 -> 2,458 rows; total Arabic names 2,489 -> 2,538.",
+  "applied": [
+    {
+      "slug": "mcdonalds-chicken-mcnuggets",
+      "nameEn": "McDONALD'S, Chicken McNUGGETS",
+      "nameAr": "ناجتس دجاج ماكدونالدز",
+      "impressions": 122,
+      "position": 38.7,
+      "category": "snack",
+      "kcal": "302",
+      "protein": "15.8"
+    },
+    {
+      "slug": "mcdonalds-cheeseburger",
+      "nameEn": "McDONALD'S, Cheeseburger",
+      "nameAr": "برجر جبنة ماكدونالدز",
+      "impressions": 32,
+      "position": 38.44,
+      "category": "snack",
+      "kcal": "263",
+      "protein": "13.0"
+    },
+    {
+      "slug": "cereals-ready-to-eat-kelloggs-frosted-mini-wheats-touch-of-f",
+      "nameEn": "Cereals ready-to-eat, KELLOGG'S FROSTED MINI-WHEATS Touch of Fruit in the Middle, Raspberry",
+      "nameAr": "رقائق كيلوغز ميني ويتس المزججة بالسكر — بطعم الفاكهة",
+      "impressions": 13,
+      "position": 16.0,
+      "category": "carb",
+      "kcal": "342",
+      "protein": "8.8"
+    },
+    {
+      "slug": "cheese-cheddar-reduced-fat",
+      "nameEn": "Cheese, cheddar, reduced fat",
+      "nameAr": "جبنة شيدر قليلة الدسم",
+      "impressions": 13,
+      "position": 43.77,
+      "category": "dairy",
+      "kcal": "309",
+      "protein": "27.4"
+    },
+    {
+      "slug": "potatoes-baked-flesh-and-skin-without-salt",
+      "nameEn": "Potatoes, baked, flesh and skin, without salt",
+      "nameAr": "بطاطس مشوية بالقشرة — دون ملح",
+      "impressions": 12,
+      "position": 6.08,
+      "category": "vegetable",
+      "kcal": "93",
+      "protein": "2.5"
+    },
+    {
+      "slug": "peanuts-all-types-dry-roasted-without-salt",
+      "nameEn": "Peanuts, all types, dry-roasted, without salt",
+      "nameAr": "فول سوداني محمص جافًا — دون ملح",
+      "impressions": 11,
+      "position": 7.27,
+      "category": "carb",
+      "kcal": "587",
+      "protein": "24.4"
+    },
+    {
+      "slug": "chicken-broilers-or-fryers-thigh-meat-and-skin-cooked-stewed",
+      "nameEn": "Chicken, broilers or fryers, thigh, meat and skin, cooked, stewed",
+      "nameAr": "فخذ دجاج بالجلد — مطهو ببطء",
+      "impressions": 11,
+      "position": 7.64,
+      "category": "protein",
+      "kcal": "232",
+      "protein": "23.3"
+    },
+    {
+      "slug": "sorghum-grain",
+      "nameEn": "Sorghum grain",
+      "nameAr": "حبوب الذرة الرفيعة",
+      "impressions": 10,
+      "position": 26.4,
+      "category": "carb",
+      "kcal": "329",
+      "protein": "10.6"
+    },
+    {
+      "slug": "beef-new-zealand-imported-oyster-blade-separable-lean-only-r",
+      "nameEn": "Beef, New Zealand, imported, oyster blade, separable lean only, raw",
+      "nameAr": "لحم بقري نيوزيلندي مستورد — أويستر بليد، لحم فقط، نيء",
+      "impressions": 9,
+      "position": 8.78,
+      "category": "protein",
+      "kcal": "155",
+      "protein": "21.8"
+    },
+    {
+      "slug": "teff-cooked",
+      "nameEn": "Teff, cooked",
+      "nameAr": "حبوب التف — مطبوخة",
+      "impressions": 9,
+      "position": 45.11,
+      "category": "carb",
+      "kcal": "101",
+      "protein": "3.9"
+    },
+    {
+      "slug": "crackers-cream-gamesa-sabrosas",
+      "nameEn": "Crackers, cream, GAMESA SABROSAS",
+      "nameAr": "بسكويت مملح كريمي جاميسا",
+      "impressions": 8,
+      "position": 7.62,
+      "category": "carb",
+      "kcal": "484",
+      "protein": "7.0"
+    },
+    {
+      "slug": "mcdonalds-filet-o-fish-without-tartar-sauce",
+      "nameEn": "McDONALD'S, FILET-O-FISH (without tartar sauce)",
+      "nameAr": "فيليه سمك ماكدونالدز — دون صوص التارتار",
+      "impressions": 8,
+      "position": 14.38,
+      "category": "snack",
+      "kcal": "243",
+      "protein": "12.5"
+    },
+    {
+      "slug": "cereals-ready-to-eat-general-mills-chocolate-lucky-charms",
+      "nameEn": "Cereals ready-to-eat, GENERAL MILLS, CHOCOLATE LUCKY CHARMS",
+      "nameAr": "رقائق جنرال ميلز لاكي تشارمز — بالشوكولاتة",
+      "impressions": 7,
+      "position": 17.14,
+      "category": "carb",
+      "kcal": "381",
+      "protein": "5.6"
+    },
+    {
+      "slug": "popeyes-coleslaw",
+      "nameEn": "POPEYES, Coleslaw",
+      "nameAr": "سلطة كرنب بوبايز",
+      "impressions": 7,
+      "position": 29.14,
+      "category": "snack",
+      "kcal": "161",
+      "protein": "1.0"
+    },
+    {
+      "slug": "worthington-choplets-canned-unprepared",
+      "nameEn": "WORTHINGTON Choplets, canned, unprepared",
+      "nameAr": "شرائح بروتين نباتي ورثينغتون — معلبة",
+      "impressions": 6,
+      "position": 7.67,
+      "category": "carb",
+      "kcal": "103",
+      "protein": "19.4"
+    },
+    {
+      "slug": "beef-australian-imported-wagyu-rib-small-end-rib-steakroast--7355",
+      "nameEn": "Beef, Australian, imported, Wagyu, rib, small end rib steak/roast, boneless, separable lean only, Aust. marble score 9, raw",
+      "nameAr": "ستيك واغيو أسترالي مستورد — ضلع صغير",
+      "impressions": 6,
+      "position": 9.17,
+      "category": "protein",
+      "kcal": "330",
+      "protein": "17.6"
+    },
+    {
+      "slug": "beef-brisket-flat-half-separable-lean-only-trimmed-to-18-fat-7600",
+      "nameEn": "Beef, brisket, flat half, separable lean only, trimmed to 1/8\\\" fat, all grades, raw",
+      "nameAr": "صدر بقري — النصف المسطح، لحم فقط، نيء",
+      "impressions": 6,
+      "position": 10.0,
+      "category": "protein",
+      "kcal": "127",
+      "protein": "21.6"
+    },
+    {
+      "slug": "rice-cake-cracker-include-hain-mini-rice-cakes",
+      "nameEn": "Rice cake, cracker (include hain mini rice cakes)",
+      "nameAr": "مقرمشات كعك الأرز المصغرة — هين",
+      "impressions": 6,
+      "position": 19.0,
+      "category": "snack",
+      "kcal": "392",
+      "protein": "7.1"
+    },
+    {
+      "slug": "game-meat-elk-cooked-roasted",
+      "nameEn": "Game meat, elk, cooked, roasted",
+      "nameAr": "لحم أيل — مشوي",
+      "impressions": 5,
+      "position": 6.2,
+      "category": "protein",
+      "kcal": "146",
+      "protein": "30.2"
+    },
+    {
+      "slug": "beef-brisket-point-half-separable-lean-and-fat-trimmed-to-18-3958",
+      "nameEn": "Beef, brisket, point half, separable lean and fat, trimmed to 1/8\\\" fat, all grades, cooked, braised",
+      "nameAr": "صدر بقري — النصف المدبب، نيء",
+      "impressions": 5,
+      "position": 8.6,
+      "category": "protein",
+      "kcal": "349",
+      "protein": "24.4"
+    },
+    {
+      "slug": "beef-ground-93-lean-meat-7-fat-loaf-cooked-baked",
+      "nameEn": "Beef, ground, 93% lean meat / 7% fat, loaf, cooked, baked",
+      "nameAr": "كفتة لحم بقري 93/7 — مطبوخة بالفرن",
+      "impressions": 5,
+      "position": 9.4,
+      "category": "protein",
+      "kcal": "192",
+      "protein": "27.0"
+    },
+    {
+      "slug": "dip-tostitos-salsa-con-queso-medium",
+      "nameEn": "Dip, TOSTITOS, salsa con queso, medium",
+      "nameAr": "غموس توستيتوس بالجبنة المكسيكي — متوسط",
+      "impressions": 5,
+      "position": 9.6,
+      "category": "snack",
+      "kcal": "133",
+      "protein": "2.9"
+    },
+    {
+      "slug": "cereals-ready-to-eat-quaker-quaker-puffed-wheat",
+      "nameEn": "Cereals ready-to-eat, QUAKER, QUAKER Puffed Wheat",
+      "nameAr": "رقائق كويكر المنتفخة بالقمح",
+      "impressions": 5,
+      "position": 21.4,
+      "category": "carb",
+      "kcal": "366",
+      "protein": "16.3"
+    },
+    {
+      "slug": "lamb-variety-meats-and-by-products-lungs-cooked-braised",
+      "nameEn": "Lamb, variety meats and by-products, lungs, cooked, braised",
+      "nameAr": "رئة غنم — مطهوة ببطء",
+      "impressions": 4,
+      "position": 6.25,
+      "category": "protein",
+      "kcal": "113",
+      "protein": "19.9"
+    },
+    {
+      "slug": "potatoes-mashed-home-prepared-whole-milk-and-butter-added",
+      "nameEn": "Potatoes, mashed, home-prepared, whole milk and butter added",
+      "nameAr": "بطاطس مهروسة منزلية — بالحليب الكامل والزبدة",
+      "impressions": 4,
+      "position": 6.25,
+      "category": "vegetable",
+      "kcal": "113",
+      "protein": "1.9"
+    },
+    {
+      "slug": "cereals-ready-to-eat-general-mills-25-less-sugar-cinnamon-to",
+      "nameEn": "Cereals ready-to-eat, GENERAL MILLS, 25% Less Sugar CINNAMON TOAST CRUNCH",
+      "nameAr": "رقائق جنرال ميلز بالقرفة — سكر أقل بنسبة 25%",
+      "impressions": 4,
+      "position": 6.5,
+      "category": "carb",
+      "kcal": "386",
+      "protein": "5.1"
+    },
+    {
+      "slug": "lamb-australian-imported-fresh-rib-chop-frenched-bone-in-sep",
+      "nameEn": "Lamb, Australian, imported, fresh, rib chop, frenched, bone-in, separable lean and fat, trimmed to 1/8\\\" fat, cooked, grilled",
+      "nameAr": "ريش غنم أسترالي مستورد — بعظمها، لحم فقط",
+      "impressions": 4,
+      "position": 6.5,
+      "category": "protein",
+      "kcal": "305",
+      "protein": "28.5"
+    },
+    {
+      "slug": "beef-short-loin-top-loin-steak-separable-lean-only-trimmed-t-7610",
+      "nameEn": "Beef, short loin, top loin, steak, separable lean only, trimmed to 1/8\\\" fat, all grades, cooked, broiled",
+      "nameAr": "استيك قطنية بقري — لحم فقط، نيء",
+      "impressions": 4,
+      "position": 7.25,
+      "category": "protein",
+      "kcal": "189",
+      "protein": "29.3"
+    },
+    {
+      "slug": "fiddlehead-ferns-raw",
+      "nameEn": "Fiddlehead ferns, raw",
+      "nameAr": "رؤوس سراخس متفتحة — نيئة",
+      "impressions": 4,
+      "position": 7.75,
+      "category": "vegetable",
+      "kcal": "34",
+      "protein": "4.5"
+    },
+    {
+      "slug": "snacks-kelloggs-nutri-grain-cereal-bars-fruit",
+      "nameEn": "Snacks, KELLOGG'S, NUTRI-GRAIN Cereal Bars, fruit",
+      "nameAr": "ألواح كيلوغز نيوتري جراين — بالفاكهة",
+      "impressions": 4,
+      "position": 9.0,
+      "category": "snack",
+      "kcal": "365",
+      "protein": "4.2"
+    },
+    {
+      "slug": "cowpeas-common-blackeyes-crowder-southern-mature-seeds-cooke",
+      "nameEn": "Cowpeas, common (blackeyes, crowder, southern), mature seeds, cooked, boiled, without salt",
+      "nameAr": "لوبيا عين سوداء — مطبوخة",
+      "impressions": 4,
+      "position": 9.5,
+      "category": "carb",
+      "kcal": "116",
+      "protein": "7.7"
+    },
+    {
+      "slug": "kelloggs-eggo-waffles-blueberry",
+      "nameEn": "KELLOGG'S, EGGO, Waffles, Blueberry",
+      "nameAr": "وافلز إيغو — بالتوت الأزرق",
+      "impressions": 4,
+      "position": 10.25,
+      "category": "carb",
+      "kcal": "265",
+      "protein": "5.5"
+    },
+    {
+      "slug": "keebler-gripz-cinnamon-grahams-bite-size",
+      "nameEn": "KEEBLER, GRIPZ, Cinnamon Grahams, bite-size",
+      "nameAr": "بسكويت كيبلر جراهام بالقرفة — قطع صغيرة",
+      "impressions": 4,
+      "position": 10.5,
+      "category": "carb",
+      "kcal": "415",
+      "protein": "7.4"
+    },
+    {
+      "slug": "kelloggs-eggo-nutri-grain-waffles-blueberry",
+      "nameEn": "KELLOGG'S, EGGO, NUTRI-GRAIN, Waffles, Blueberry",
+      "nameAr": "وافلز إيغو نيوتري جراين — بالتوت الأزرق",
+      "impressions": 4,
+      "position": 10.5,
+      "category": "carb",
+      "kcal": "257",
+      "protein": "6.2"
+    },
+    {
+      "slug": "tangerines-mandarin-oranges-canned-juice-pack",
+      "nameEn": "Tangerines, (mandarin oranges), canned, juice pack",
+      "nameAr": "يوسفي معلب — بالعصير",
+      "impressions": 3,
+      "position": 3.67,
+      "category": "fruit",
+      "kcal": "37",
+      "protein": "0.6"
+    },
+    {
+      "slug": "fish-pout-ocean-raw",
+      "nameEn": "Fish, pout, ocean, raw",
+      "nameAr": "سمك باوت محيطي — نيء",
+      "impressions": 3,
+      "position": 5.67,
+      "category": "protein",
+      "kcal": "79",
+      "protein": "16.6"
+    },
+    {
+      "slug": "ice-cream-cones-cake-or-wafer-type",
+      "nameEn": "Ice cream cones, cake or wafer-type",
+      "nameAr": "قمع آيس كريم — نوع الكعكة أو الوافر",
+      "impressions": 3,
+      "position": 6.33,
+      "category": "carb",
+      "kcal": "417",
+      "protein": "8.1"
+    },
+    {
+      "slug": "taco-bell-burrito-supreme-with-beef",
+      "nameEn": "TACO BELL, BURRITO SUPREME with beef",
+      "nameAr": "بريتو تاكو بيل الأعلى — باللحم البقري",
+      "impressions": 3,
+      "position": 6.33,
+      "category": "snack",
+      "kcal": "183",
+      "protein": "7.0"
+    },
+    {
+      "slug": "hormel-pillow-pak-sliced-turkey-pepperoni",
+      "nameEn": "HORMEL Pillow Pak Sliced Turkey Pepperoni",
+      "nameAr": "بيبروني ديك رومي مقطع — هورمل",
+      "impressions": 3,
+      "position": 7.0,
+      "category": "protein",
+      "kcal": "243",
+      "protein": "31.0"
+    },
+    {
+      "slug": "vegetable-oil-palm-kernel",
+      "nameEn": "Vegetable oil, palm kernel",
+      "nameAr": "زيت نواة النخيل",
+      "impressions": 3,
+      "position": 7.67,
+      "category": "fat",
+      "kcal": "862",
+      "protein": "0.0"
+    },
+    {
+      "slug": "vegetables-mixed-frozen-unprepared",
+      "nameEn": "Vegetables, mixed, frozen, unprepared",
+      "nameAr": "خضروات مشكلة مجمدة — غير محضرة",
+      "impressions": 3,
+      "position": 7.67,
+      "category": "vegetable",
+      "kcal": "72",
+      "protein": "3.3"
+    },
+    {
+      "slug": "vitasoy-usa-vitasoy-light-vanilla-soymilk",
+      "nameEn": "Vitasoy USA, Vitasoy Light Vanilla Soymilk",
+      "nameAr": "حليب صويا فيتاسوي خفيف — بالفانيلا",
+      "impressions": 3,
+      "position": 8.67,
+      "category": "carb",
+      "kcal": "30",
+      "protein": "1.6"
+    },
+    {
+      "slug": "toppings-strawberry",
+      "nameEn": "Toppings, strawberry",
+      "nameAr": "تزيين بالفراولة",
+      "impressions": 3,
+      "position": 9.0,
+      "category": "snack",
+      "kcal": "254",
+      "protein": "0.2"
+    },
+    {
+      "slug": "fish-sunfish-pumpkin-seed-raw",
+      "nameEn": "Fish, sunfish, pumpkin seed, raw",
+      "nameAr": "سمك صن فيش — نيء",
+      "impressions": 3,
+      "position": 9.33,
+      "category": "protein",
+      "kcal": "89",
+      "protein": "19.4"
+    },
+    {
+      "slug": "prego-pasta-mini-meatball-italian-sauce-ready-to-serve",
+      "nameEn": "PREGO Pasta, Mini Meatball Italian Sauce, ready-to-serve",
+      "nameAr": "صوص باستا بريغو الإيطالي بكرات اللحم المصغرة — جاهز للتقديم",
+      "impressions": 3,
+      "position": 9.67,
+      "category": "snack",
+      "kcal": "77",
+      "protein": "3.1"
+    },
+    {
+      "slug": "applebees-kraft-macaroni-cheese-from-kids-menu",
+      "nameEn": "APPLEBEE'S, KRAFT, Macaroni & Cheese, from kid's menu",
+      "nameAr": "مكرونة بالجبنة كرافت — من قائمة أطفال أبلبيز",
+      "impressions": 3,
+      "position": 14.0,
+      "category": "snack",
+      "kcal": "143",
+      "protein": "5.0"
+    },
+    {
+      "slug": "beverages-kelloggs-special-k-protein-shake",
+      "nameEn": "Beverages, KELLOGG'S, SPECIAL K Protein Shake",
+      "nameAr": "مشروب بروتين كيلوغز سبيشال ك",
+      "impressions": 3,
+      "position": 14.67,
+      "category": "drink",
+      "kcal": "64",
+      "protein": "3.2"
+    },
+    {
+      "slug": "snacks-potato-chips-plain-unsalted",
+      "nameEn": "Snacks, potato chips, plain, unsalted",
+      "nameAr": "رقائق بطاطس عادية — دون ملح",
+      "impressions": 3,
+      "position": 29.67,
+      "category": "snack",
+      "kcal": "536",
+      "protein": "7.0"
+    },
+    {
+      "slug": "tofu-yogurt",
+      "nameEn": "Tofu yogurt",
+      "nameAr": "زبادي توفو",
+      "impressions": 3,
+      "position": 35.67,
+      "category": "carb",
+      "kcal": "94",
+      "protein": "3.5"
+    }
+  ],
+  "excluded": [
+    {
+      "slug": "pork-fresh-loin-tenderloin-separable-lean-only-raw",
+      "impressions": 7,
+      "nameEn": "Pork, fresh, loin, tenderloin, separable lean only, raw",
+      "reason": "pork-containing row (band Phase-3 precedent: zero pork)"
+    },
+    {
+      "slug": "pork-ground-84-lean-16-fat-cooked-crumbles",
+      "impressions": 6,
+      "nameEn": "Pork, ground, 84% lean / 16% fat, cooked, crumbles",
+      "reason": "pork-containing row (band Phase-3 precedent: zero pork)"
+    },
+    {
+      "slug": "pork-ground-96-lean-4-fat-cooked-pan-broiled",
+      "impressions": 6,
+      "nameEn": "Pork, ground, 96% lean / 4% fat, cooked, pan-broiled",
+      "reason": "pork-containing row (band Phase-3 precedent: zero pork)"
+    },
+    {
+      "slug": "pork-fresh-variety-meats-and-by-products-stomach-cooked-simm",
+      "impressions": 4,
+      "nameEn": "Pork, fresh, variety meats and by-products, stomach, cooked, simmered",
+      "reason": "pork-containing row (band Phase-3 precedent: zero pork)"
+    },
+    {
+      "slug": "pork-ground-84-lean-16-fat-cooked-pan-broiled",
+      "impressions": 3,
+      "nameEn": "Pork, ground, 84% lean / 16% fat, cooked, pan-broiled",
+      "reason": "pork-containing row (band Phase-3 precedent: zero pork)"
+    },
+    {
+      "slug": "pork-loin-fresh-backribs-bone-in-cooked-roasted-lean-only",
+      "impressions": 3,
+      "nameEn": "Pork loin, fresh, backribs, bone-in, cooked-roasted, lean only",
+      "reason": "pork-containing row (band Phase-3 precedent: zero pork)"
+    },
+    {
+      "slug": "chorizo-pork-and-beef",
+      "impressions": 5,
+      "nameEn": "Chorizo, pork and beef",
+      "reason": "pork-containing row (band Phase-3 precedent: zero pork)"
+    },
+    {
+      "slug": "alcoholic-beverage-tequila-sunrise-canned",
+      "impressions": 17,
+      "nameEn": "Alcoholic beverage, tequila sunrise, canned",
+      "reason": "alcoholic row (same audience-fit class — no precedent in band; overridable by owner order)"
+    },
+    {
+      "slug": "alcoholic-beverage-distilled-all-gin-rum-vodka-whiskey-100-p",
+      "impressions": 3,
+      "nameEn": "Alcoholic beverage, distilled, all (gin, rum, vodka, whiskey) 100 proof",
+      "reason": "alcoholic row (same audience-fit class — no precedent in band; overridable by owner order)"
+    }
+  ]
+}

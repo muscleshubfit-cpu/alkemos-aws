@@ -34,6 +34,7 @@ export function BlogArticlePage({
   updatedAt,
   lastReviewedAt,
   mirrorHref,
+  toolCta,
 }: {
   lang: "en" | "ar";
   slug: string;
@@ -57,6 +58,13 @@ export function BlogArticlePage({
    *  precedent) and hands it down here so the link is crawlable in the
    *  raw HTML, not only after a client lookup. */
   mirrorHref?: string;
+  /** Report 15 §5-B1 (owner order 2026-11-12): server-computed «جرّب
+   *  الحاسبة / Try the calculator» entries for THIS article — derived by
+   *  the server route from src/lib/tool-article-links.ts (the single pair
+   * source; the tool pages render the forward strip from the same data).
+   *  Server-computed = crawlable in the raw HTML; empty/undefined renders
+   *  nothing (articles without a paired tool are untouched). */
+  toolCta?: { href: string; name: string; blurb: string }[];
 }) {
   const isAr = lang === "ar";
   // M28 fix: accept initialPost as a prop from the server component.
@@ -419,6 +427,36 @@ export function BlogArticlePage({
                       <h3 className="text-base font-semibold tracking-tight">{displayFaqQuestion(faq.question)}</h3>
                       <p className="mt-2 text-base font-normal leading-relaxed text-[var(--muted-foreground)]">{faq.answer}</p>
                     </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Report 15 §5-B1 (owner order 2026-11-12): the retro leg — a
+                «try the calculator» strip derived from the same pair source
+                as the tool pages' guide strip. Rendered server-side (the
+                prop is computed in the route from
+                src/lib/tool-article-links.ts) so the tool link is in the
+                crawlable HTML. */}
+            {toolCta && toolCta.length > 0 && (
+              <div className="marble-card mt-16 p-6">
+                <h3 className="text-xl font-semibold tracking-tight">
+                  {isAr ? "جرّب الحاسبة" : "Try the calculator"}
+                </h3>
+                <div className="mt-4 space-y-4">
+                  {toolCta.map((t) => (
+                    <a
+                      key={t.href}
+                      href={t.href}
+                      className="block rounded-xl border border-[var(--edge)] bg-[var(--card)] p-4 transition-opacity hover:opacity-90"
+                    >
+                      <p className="text-base font-semibold tracking-tight text-[var(--text)]">
+                        {t.name} ›
+                      </p>
+                      <p className="mt-1.5 text-sm font-normal leading-relaxed text-[var(--muted-foreground)]">
+                        {t.blurb}
+                      </p>
+                    </a>
                   ))}
                 </div>
               </div>

@@ -7,6 +7,10 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { AdSenseAd } from "@/components/AdSenseAd";
 import { OtherTools } from "@/components/OtherTools";
+// Report 15 §5-B1 (owner order 2026-11-12): contextual guides that interpret
+// the tool result — pairs from src/lib/tool-article-links.ts (reverse leg
+// renders on the article pages from the same source).
+import { ToolArticleLinks } from "@/components/ToolArticleLinks";
 import { RecipeSuggestStrip } from "@/components/recipes/RecipeSuggestStrip";
 import { LeadCaptureCard } from "@/components/LeadCaptureCard";
 import { SaveResultButton } from "@/components/SaveResultButton";
@@ -369,6 +373,9 @@ export default function CalorieCalculatorPage() {
         )}
 
         {/* DELIVERY 0050: other-tools links always visible at the bottom (owner request) */}
+        {/* Report 15 §5-B1: «كيف تستخدم نتيجتك» guide strip (marble cards) */}
+        <ToolArticleLinks toolSlug="calorie-calculator" />
+
         <OtherTools current="calorie-calculator" />
 
         {/* Deep reference content — Phase SEO-GEO-6.5 (§12.19 P1-6):

@@ -49,6 +49,10 @@ const TOOL_SURFACE_FILES = [
   "src/components/SaveResultButton.tsx",
   "src/components/ShareButtons.tsx",
   "src/components/ToolReferenceContent.tsx",
+  // Report 15 §5-B1 (owner order 2026-11-12): the guide strip + its pair
+  // data render on every tool page — same surface, same MSA law.
+  "src/components/ToolArticleLinks.tsx",
+  "src/lib/tool-article-links.ts",
   "src/lib/review-invite.ts",
   // — AR tool metadata (SERP-visible titles/descriptions/keywords) —
   "src/app/(ar)/ar/tools/layout.tsx",

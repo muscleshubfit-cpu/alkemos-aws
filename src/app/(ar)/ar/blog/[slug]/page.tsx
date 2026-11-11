@@ -3,6 +3,10 @@ import { BlogArticlePage } from "@/components/blog/BlogArticlePage";
 import { fetchBlogForOG, fetchBlogPostFull, fetchPublishedBlogSlugPools, buildBlogHreflang } from "@/lib/blog-server";
 import { sanitizeBlogContent } from "@/lib/blog-content-sanitize";
 import { insertToolLinks } from "@/lib/blog-tool-links";
+// Report 15 §5-B1 (owner order 2026-11-12): الساق الرجعية — مداخل الأدوات
+// المزدوجة لهذه المقالة تُحسب على الخادم من مصدر الأزواج الوحيد
+// (src/lib/tool-article-links.ts) فتظهر روابط الأدوات بـHTML الصفحة الخام.
+import { toolLinksForArticle } from "@/lib/tool-article-links";
 import { getArticleSchema, getBreadcrumbSchema, getFAQSchema, getSpeakableSchema, jsonLd } from "@/lib/seo";
 import { resolveAuthor } from "@/lib/authors";
 import type { Metadata } from "next";
@@ -184,6 +188,9 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
         )
       : null;
 
+  // Report 15 §5-B1: the paired-tool strip entries for this article.
+  const toolCta = toolLinksForArticle(slug, "ar");
+
   return (
     <>
       {articleSchema && (
@@ -210,7 +217,7 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
           dangerouslySetInnerHTML={{ __html: jsonLd(faqPageSchema) }}
         />
       )}
-      <BlogArticlePage lang="ar" slug={slug} initialPost={fullPost} publishedAt={publishedAt} updatedAt={updatedAt} lastReviewedAt={og.lastReviewedAt ?? undefined} mirrorHref={mirrorHref} />
+      <BlogArticlePage lang="ar" slug={slug} initialPost={fullPost} publishedAt={publishedAt} updatedAt={updatedAt} lastReviewedAt={og.lastReviewedAt ?? undefined} mirrorHref={mirrorHref} toolCta={toolCta} />
     </>
   );
 }

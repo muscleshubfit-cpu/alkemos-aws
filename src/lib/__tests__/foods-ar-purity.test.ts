@@ -30,6 +30,12 @@ import { SEO_FOOD_BAND, SEO_FOOD_BAND_SET } from "@/lib/seo-food-band";
  * — cumulative 2,409 = pilot + two 500-1,000 batches (plan §8 Phase 2
  * law; the size range below encodes exactly that).
  *
+ * Phase 4 (Report 15 §5-B2, owner execution order 2026-11-12 «ابدأ
+ * التنفيذ للخطة»): +49 GSC-demand-filtered slugs (measured >=3 impressions
+ * on the EN mirror in the owner's 3-month export; pork/alcoholic rows
+ * excluded per band precedent — the report's §B2 table documents every
+ * applied and excluded row). Cumulative 2,458.
+ *
  * Outside the band: exempt (foods-sitemap-policy.test.ts pins the fact
  * that the rest of the tail is still English-only).
  */
@@ -42,7 +48,7 @@ const sha256 = (s: string) => createHash("sha256").update(s, "utf8").digest("hex
 
 const bandFoods = FOODS.filter((f) => SEO_FOOD_BAND_SET.has(f.slug));
 
-describe("foods-ar-purity (FOOD-ARABIZATION Phase 1+2+3 — the 2,409-slug band)", () => {
+describe("foods-ar-purity (FOOD-ARABIZATION Phase 1+2+3+4 — the 2,458-slug band)", () => {
   it("band integrity: every manifest slug exists, is a USDA-tail row (tags empty), band size = pilot + two 500-1,000 batches (1482-3481)", () => {
     expect(bandFoods.length).toBe(SEO_FOOD_BAND.length);
     for (const slug of SEO_FOOD_BAND) {
@@ -125,10 +131,11 @@ describe("foods-ar-purity (FOOD-ARABIZATION Phase 1+2+3 — the 2,409-slug band)
 
   it("FREEZE — the band's English twins (nameEn immutable across batches)", () => {
     const payload = bandFoods.map((f) => `${f.slug}|${f.nameEn}`).join("\n");
-    // Pinned 2026-09-19 after the Phase-3 expansion (481 pilot + 975 + 953
-    // rows; every nameEn still the verbatim USDA English name).
+    // Pinned 2026-09-19 after the Phase-3 expansion; re-pinned 2026-11-12
+    // after the Phase-4 demand-filtered batch (+49 rows — Report 15 §5-B2;
+    // every nameEn still the verbatim USDA English name).
     expect(sha256(payload)).toBe(
-      "d0b5b15d5d5c121b427168c3d4d2ef0c7e69eef52bfced094d3664cf9138d9ea",
+      "5385e80f2374d29be362a943d6d366b3a673917492a6d1b41e7d5c180855f727",
     );
   });
 
@@ -184,6 +191,24 @@ describe("foods-ar-purity (FOOD-ARABIZATION Phase 1+2+3 — the 2,409-slug band)
     expect(getFoodBySlug("yogurt-greek-strawberry-nonfat")?.nameAr).toBe("زبادي يوناني بالفراولة — خالي الدسم");
     expect(getFoodBySlug("orange-juice-raw")?.nameAr).toBe("عصير برتقال — طازج معصور");
     expect(getFoodBySlug("arugula-raw")?.nameAr).toBe("أروغولا (جرجير بري) — نيئة");
+  });
+
+  it("Phase-4 canaries — GSC-demand-filtered batch 4 (branded fast-food/retail rows led by McNuggets' 122 impressions)", () => {
+    // The batch's #1 demand row + one cut + one cereal + one censored row
+    // (pork excluded per band precedent — its slug must NOT be in the band).
+    expect(getFoodBySlug("mcdonalds-chicken-mcnuggets")?.nameAr).toBe("ناجتس دجاج ماكدونالدز");
+    expect(getFoodBySlug("mcdonalds-cheeseburger")?.nameAr).toBe("برجر جبنة ماكدونالدز");
+    expect(getFoodBySlug("potatoes-baked-flesh-and-skin-without-salt")?.nameAr).toBe("بطاطس مشوية بالقشرة — دون ملح");
+    expect(getFoodBySlug("sorghum-grain")?.nameAr).toBe("حبوب الذرة الرفيعة");
+    expect(getFoodBySlug("teff-cooked")?.nameAr).toBe("حبوب التف — مطبوخة");
+    expect(getFoodBySlug("snacks-potato-chips-plain-unsalted")?.nameAr).toBe("رقائق بطاطس عادية — دون ملح");
+    // Band boundary pins: the batch's excluded classes stay OUTSIDE the band.
+    expect(SEO_FOOD_BAND_SET.has("pork-fresh-loin-tenderloin-separable-lean-only-raw")).toBe(false);
+    expect(SEO_FOOD_BAND_SET.has("alcoholic-beverage-tequila-sunrise-canned")).toBe(false);
+    // …while their English twins keep the verbatim USDA name (no other edit).
+    expect(getFoodBySlug("pork-fresh-loin-tenderloin-separable-lean-only-raw")?.nameEn).toBe(
+      "Pork, fresh, loin, tenderloin, separable lean only, raw",
+    );
   });
 
   it("EN twins untouched — nameEn remains the USDA English name for the band", () => {

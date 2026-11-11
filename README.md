@@ -41,7 +41,11 @@ is **proprietary and confidential** (see [License](#-license)).
   (`src/lib/workout-programs.ts`)
 - **Free tools** — calorie calculator, BMI, macros, body-fat %, water tracker,
   and an interactive meal planner, each with optional email delivery of
-  results (`src/lib/tools-shared.ts` is the single source of the tools list)
+  results (`src/lib/tools-shared.ts` is the single source of the tools list).
+  Every tool page ends with a "how to use your result" guide strip linking
+  the published articles that interpret that tool's number, and each of
+  those articles links back to its tool ("try the calculator") from the
+  same pair source (`src/lib/tool-article-links.ts`)
 - **AI planners** — AI meal planner and AI workout planner with a free trial,
   no signup required (a plan generated without an account stays on that device
   until you create one, then syncs to the account)
@@ -291,7 +295,11 @@ sitemaps (pages, blog, foods, exercises, collections, comparisons) with
 truthful `lastmod` anchors, a `robots.txt` that welcomes AI crawlers,
 `llms.txt` + `llms-full.txt` for generative engines, bilingual RSS feeds,
 IndexNow + Bing submission, and dedicated Open Graph cards per surface
-family. Citations in generated articles are allowed only as links to
+family. The internal-linking net is deliberate: generated articles get
+deterministic tool links (`src/lib/blog-tool-links.ts`), the eight tool
+pages carry contextual article links and every paired article carries the
+reverse tool link — one pair source, both directions
+(`src/lib/tool-article-links.ts`). Citations in generated articles are allowed only as links to
 whitelisted health authorities, and every external link is verified live at
 publish. A scheduled GEO probe measures how often Alkemos appears in AI
 answers (`.github/workflows/geo-answer-visibility.yml`).

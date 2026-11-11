@@ -1,0 +1,306 @@
+[
+  {
+    "url": "/foods/salmon",
+    "impressions": 289,
+    "clicks": 0,
+    "ctr_pct": 0.0,
+    "position": 11.5,
+    "expected_ctr_pct": 4.0
+  },
+  {
+    "url": "/foods/white-rice",
+    "impressions": 131,
+    "clicks": 0,
+    "ctr_pct": 0.0,
+    "position": 7.35,
+    "expected_ctr_pct": 10.0
+  },
+  {
+    "url": "/ar/foods/olive-oil",
+    "impressions": 106,
+    "clicks": 0,
+    "ctr_pct": 0.0,
+    "position": 9.25,
+    "expected_ctr_pct": 10.0
+  },
+  {
+    "url": "/tools/macro-calculator",
+    "impressions": 68,
+    "clicks": 0,
+    "ctr_pct": 0.0,
+    "position": 20.16,
+    "expected_ctr_pct": 2.0
+  },
+  {
+    "url": "/ar/foods/tuna",
+    "impressions": 63,
+    "clicks": 0,
+    "ctr_pct": 0.0,
+    "position": 12.41,
+    "expected_ctr_pct": 4.0
+  },
+  {
+    "url": "/ar/foods/potato",
+    "impressions": 40,
+    "clicks": 0,
+    "ctr_pct": 0.0,
+    "position": 7.92,
+    "expected_ctr_pct": 10.0
+  },
+  {
+    "url": "/foods/tofu",
+    "impressions": 28,
+    "clicks": 0,
+    "ctr_pct": 0.0,
+    "position": 24.39,
+    "expected_ctr_pct": 2.0
+  },
+  {
+    "url": "/exercises/crunches",
+    "impressions": 24,
+    "clicks": 0,
+    "ctr_pct": 0.0,
+    "position": 18.17,
+    "expected_ctr_pct": 2.0
+  },
+  {
+    "url": "/foods/granola",
+    "impressions": 23,
+    "clicks": 0,
+    "ctr_pct": 0.0,
+    "position": 14.96,
+    "expected_ctr_pct": 4.0
+  },
+  {
+    "url": "/foods/chicken-roasting-meat-and-skin-cooked-roasted",
+    "impressions": 22,
+    "clicks": 0,
+    "ctr_pct": 0.0,
+    "position": 5.27,
+    "expected_ctr_pct": 10.0
+  },
+  {
+    "url": "/foods/chicken-breast",
+    "impressions": 22,
+    "clicks": 0,
+    "ctr_pct": 0.0,
+    "position": 19.59,
+    "expected_ctr_pct": 2.0
+  },
+  {
+    "url": "/foods/seeds-chia-seeds-dried",
+    "impressions": 19,
+    "clicks": 0,
+    "ctr_pct": 0.0,
+    "position": 10.0,
+    "expected_ctr_pct": 10.0
+  },
+  {
+    "url": "/ar/foods/chicken-breast",
+    "impressions": 16,
+    "clicks": 0,
+    "ctr_pct": 0.0,
+    "position": 8.62,
+    "expected_ctr_pct": 10.0
+  },
+  {
+    "url": "/exercises/full-range-of-motion-lat-pulldown",
+    "impressions": 16,
+    "clicks": 0,
+    "ctr_pct": 0.0,
+    "position": 8.94,
+    "expected_ctr_pct": 10.0
+  },
+  {
+    "url": "/ar/exercises/alternate-incline-dumbbell-curl",
+    "impressions": 15,
+    "clicks": 0,
+    "ctr_pct": 0.0,
+    "position": 6.93,
+    "expected_ctr_pct": 10.0
+  },
+  {
+    "url": "/ar/foods/green-tea",
+    "impressions": 13,
+    "clicks": 0,
+    "ctr_pct": 0.0,
+    "position": 5.23,
+    "expected_ctr_pct": 10.0
+  },
+  {
+    "url": "/ar/foods/salmon",
+    "impressions": 13,
+    "clicks": 0,
+    "ctr_pct": 0.0,
+    "position": 6.31,
+    "expected_ctr_pct": 10.0
+  },
+  {
+    "url": "/foods/cereals-ready-to-eat-kelloggs-frosted-mini-wheats-touch-of-f",
+    "impressions": 13,
+    "clicks": 0,
+    "ctr_pct": 0.0,
+    "position": 16.0,
+    "expected_ctr_pct": 2.0
+  },
+  {
+    "url": "/foods/lean-beef",
+    "impressions": 13,
+    "clicks": 0,
+    "ctr_pct": 0.0,
+    "position": 16.08,
+    "expected_ctr_pct": 2.0
+  },
+  {
+    "url": "/foods/potatoes-baked-flesh-and-skin-without-salt",
+    "impressions": 12,
+    "clicks": 0,
+    "ctr_pct": 0.0,
+    "position": 6.08,
+    "expected_ctr_pct": 10.0
+  },
+  {
+    "url": "/foods/chicken-broilers-or-fryers-thigh-meat-only-cooked-stewed",
+    "impressions": 12,
+    "clicks": 0,
+    "ctr_pct": 0.0,
+    "position": 7.33,
+    "expected_ctr_pct": 10.0
+  },
+  {
+    "url": "/foods/spices-pepper-red-or-cayenne",
+    "impressions": 12,
+    "clicks": 0,
+    "ctr_pct": 0.0,
+    "position": 9.42,
+    "expected_ctr_pct": 10.0
+  },
+  {
+    "url": "/foods/dark-chocolate",
+    "impressions": 12,
+    "clicks": 0,
+    "ctr_pct": 0.0,
+    "position": 13.25,
+    "expected_ctr_pct": 4.0
+  },
+  {
+    "url": "/blog/category/wellness",
+    "impressions": 11,
+    "clicks": 0,
+    "ctr_pct": 0.0,
+    "position": 2.82,
+    "expected_ctr_pct": 25.0
+  },
+  {
+    "url": "/about",
+    "impressions": 11,
+    "clicks": 0,
+    "ctr_pct": 0.0,
+    "position": 3.82,
+    "expected_ctr_pct": 25.0
+  },
+  {
+    "url": "/foods/rice-brown-medium-grain-cooked",
+    "impressions": 11,
+    "clicks": 0,
+    "ctr_pct": 0.0,
+    "position": 7.09,
+    "expected_ctr_pct": 10.0
+  },
+  {
+    "url": "/foods/peanuts-all-types-dry-roasted-without-salt",
+    "impressions": 11,
+    "clicks": 0,
+    "ctr_pct": 0.0,
+    "position": 7.27,
+    "expected_ctr_pct": 10.0
+  },
+  {
+    "url": "/foods/chicken-liver-all-classes-raw",
+    "impressions": 11,
+    "clicks": 0,
+    "ctr_pct": 0.0,
+    "position": 7.36,
+    "expected_ctr_pct": 10.0
+  },
+  {
+    "url": "/foods/chicken-broilers-or-fryers-thigh-meat-and-skin-cooked-stewed",
+    "impressions": 11,
+    "clicks": 0,
+    "ctr_pct": 0.0,
+    "position": 7.64,
+    "expected_ctr_pct": 10.0
+  },
+  {
+    "url": "/foods/quinoa",
+    "impressions": 11,
+    "clicks": 0,
+    "ctr_pct": 0.0,
+    "position": 9.0,
+    "expected_ctr_pct": 10.0
+  },
+  {
+    "url": "/foods/pistachios",
+    "impressions": 11,
+    "clicks": 0,
+    "ctr_pct": 0.0,
+    "position": 9.45,
+    "expected_ctr_pct": 10.0
+  },
+  {
+    "url": "/foods/grapes",
+    "impressions": 11,
+    "clicks": 0,
+    "ctr_pct": 0.0,
+    "position": 15.36,
+    "expected_ctr_pct": 2.0
+  },
+  {
+    "url": "/exercises/barbell-bench-press-medium-grip",
+    "impressions": 11,
+    "clicks": 0,
+    "ctr_pct": 0.0,
+    "position": 16.09,
+    "expected_ctr_pct": 2.0
+  },
+  {
+    "url": "/foods/sweet-potato",
+    "impressions": 11,
+    "clicks": 0,
+    "ctr_pct": 0.0,
+    "position": 20.27,
+    "expected_ctr_pct": 2.0
+  },
+  {
+    "url": "/ar/memberships",
+    "impressions": 10,
+    "clicks": 0,
+    "ctr_pct": 0.0,
+    "position": 5.0,
+    "expected_ctr_pct": 25.0
+  },
+  {
+    "url": "/ar/exercises/hyperextensions-back-extensions",
+    "impressions": 10,
+    "clicks": 0,
+    "ctr_pct": 0.0,
+    "position": 6.3,
+    "expected_ctr_pct": 10.0
+  },
+  {
+    "url": "/foods/spinach",
+    "impressions": 10,
+    "clicks": 0,
+    "ctr_pct": 0.0,
+    "position": 7.3,
+    "expected_ctr_pct": 10.0
+  },
+  {
+    "url": "/foods/milk-skim",
+    "impressions": 10,
+    "clicks": 0,
+    "ctr_pct": 0.0,
+    "position": 22.8,
+    "expected_ctr_pct": 2.0
+  }
+]

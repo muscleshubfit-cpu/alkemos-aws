@@ -8,6 +8,10 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { AdSenseAd } from "@/components/AdSenseAd";
 import { OtherTools } from "@/components/OtherTools";
+// Report 15 §5-B1 (owner order 2026-11-12): contextual guides that interpret
+// the tool result — pairs from src/lib/tool-article-links.ts (reverse leg
+// renders on the article pages from the same source).
+import { ToolArticleLinks } from "@/components/ToolArticleLinks";
 import { RecipeSuggestStrip } from "@/components/recipes/RecipeSuggestStrip";
 import { ShareButtons } from "@/components/ShareButtons";
 import { ReviewInviteCard } from "@/components/ReviewInviteCard";
@@ -500,6 +504,9 @@ export default function MealPlannerPage() {
 
         {/* AdSense */}
         <AdSenseAd format="auto" />
+        {/* Report 15 §5-B1: «كيف تستخدم نتيجتك» guide strip (marble cards) */}
+        <ToolArticleLinks toolSlug="/meal-planner" />
+
         <OtherTools current="meal-planner" />
 
         {/* §12.33: ready-made plans cross-link — the diet-plan library is
