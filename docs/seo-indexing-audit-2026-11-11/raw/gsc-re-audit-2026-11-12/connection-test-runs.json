@@ -1,0 +1,51 @@
+{
+  "_provenance": {
+    "what": "Dispatch-only GSC connection-test workflow runs, as visible on the PUBLIC GitHub Actions page (read-only, unauthenticated fetch — repo is public by documented owner decision). Fetched twice with consistent results within the same session.",
+    "fetched_at_utc": "2026-11-11T21:00Z (session date 2026-11-12)",
+    "source_url": "https://github.com/muscleshubfit-cpu/alkemos-aws/actions/workflows/gsc-connection-test.yml",
+    "workflow": "GSC connection test v2 (read-only — dispatch only) — .github/workflows/gsc-connection-test.yml",
+    "repo_head_at_fetch": "3a6e9fdf (origin/main, clean tree)",
+    "limitations": [
+      "Run database IDs are not exposed in the unauthenticated HTML view (only run numbers).",
+      "GitHub REST API (api.github.com) was rate-limited for this IP at fetch time, so the run list could not be re-pulled as structured JSON; the HTML page was fetched twice instead and matched.",
+      "Run summaries/logs were not fetched (not needed for the re-audit purpose: existence + dates + success status of fresh runs inside the re-audit window)."
+    ]
+  },
+  "total_runs_visible": 23,
+  "all_triggered_by": "muscleshubfit-cpu (manual workflow_dispatch, branch main)",
+  "runs": [
+    {"run_number": 23, "date": "2026-11-10", "status": "completed", "conclusion": "success"},
+    {"run_number": 22, "date": "2026-11-10", "status": "completed", "conclusion": "success"},
+    {"run_number": 21, "date": "2026-11-10", "status": "completed", "conclusion": "success"},
+    {"run_number": 20, "date": "2026-11-10", "status": "completed", "conclusion": "success"},
+    {"run_number": 19, "date": "2026-11-10", "status": "completed", "conclusion": "success"},
+    {"run_number": 18, "date": "2026-11-10", "status": "cancelled", "conclusion": "cancelled"},
+    {"run_number": 17, "date": "2026-11-10", "status": "completed", "conclusion": "success"},
+    {"run_number": 16, "date": "2026-11-10", "status": "cancelled", "conclusion": "cancelled"},
+    {"run_number": 15, "date": "2026-11-10", "status": "cancelled", "conclusion": "cancelled"},
+    {"run_number": 14, "date": "2026-11-10", "status": "completed", "conclusion": "success"},
+    {"run_number": 13, "date": "2026-11-10", "status": "completed", "conclusion": "success"},
+    {"run_number": 12, "date": "2026-11-10", "status": "completed", "conclusion": "success"},
+    {"run_number": 11, "date": "2026-11-05", "status": "completed", "conclusion": "success"},
+    {"run_number": 10, "date": "2026-11-05", "status": "completed", "conclusion": "success"},
+    {"run_number": 9, "date": "2026-11-03", "status": "completed", "conclusion": "success"},
+    {"run_number": 8, "date": "2026-10-31", "status": "completed", "conclusion": "success"},
+    {"run_number": 7, "date": "2026-10-18", "status": "completed", "conclusion": "success"},
+    {"run_number": 6, "date": "2026-10-18", "status": "completed", "conclusion": "success"},
+    {"run_number": 5, "date": "2026-10-18", "status": "completed", "conclusion": "success"},
+    {"run_number": 4, "date": "2026-10-18", "status": "completed", "conclusion": "success"},
+    {"run_number": 3, "date": "2026-10-18", "status": "completed", "conclusion": "success"},
+    {"run_number": 2, "date": "2026-10-18", "status": "completed", "conclusion": "success"},
+    {"run_number": 1, "date": "2026-10-10", "status": "completed", "conclusion": "success"}
+  ],
+  "runs_inside_reaudit_window_2026_10_30_to_11_29": {
+    "dates": ["2026-10-31", "2026-11-03", "2026-11-05", "2026-11-10"],
+    "total_runs_in_window": 16,
+    "successful_runs": 13,
+    "cancelled_runs": 3,
+    "note": "16 runs fall inside the window: 13 success (Oct 31 x1, Nov 3 x1, Nov 5 x2, Nov 10 x9) + 3 cancelled (Nov 10: #15/#16/#18 — consistent with re-dispatches of the same dispatch-only job, e.g. changing the `days` input; not failures). Zero failed conclusions across all 23 runs. Overall: 20 success + 3 cancelled.",
+    "latest_successful_run": "2026-11-10 (~1.5 days before this audit's fetch)"
+  },
+  "pre_window_runs": {"dates": ["2026-10-10", "2026-10-18"], "count": 7, "all_success": true},
+  "evidence_for": "The GSC connection is live and REPEATEDLY owner-verified, with fresh successful dispatches INSIDE the mandatory re-audit window (2026-10-30→2026-11-29) — most recently 2026-11-10. This satisfies the re-audit's connection-liveness evidence requirement without any new dispatch by the auditor."
+}
