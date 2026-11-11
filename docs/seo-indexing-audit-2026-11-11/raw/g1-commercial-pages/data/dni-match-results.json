@@ -1,0 +1,622 @@
+{
+ "generated": "2026-11-11",
+ "source": "GSC UI copy-paste from owner message (execution round 2026-11-11) — closes report 13 §1 constraint (a) / §10 item 1",
+ "dni_count": 25,
+ "overlap_with_cni_sample_1000": [],
+ "overlap_with_commercial_surface_100": [],
+ "overlap_with_anchor_26": [],
+ "families": {
+  "ar_article": 24,
+  "ar_category": 1,
+  "other": 0
+ },
+ "sitemap_blog_live_count": 143,
+ "live_check": [
+  {
+   "url": "https://alkemos.com/ar/blog/12-week-progressive-overload-intermediate-guide",
+   "status": 200,
+   "redirected_to": "https://alkemos.com/ar/blog/12-week-progressive-overload-intermediate-guide",
+   "canonical": "https://alkemos.com/ar/blog/12-week-progressive-overload-intermediate-guide",
+   "canonical_self": true,
+   "robots": "index, follow",
+   "x_robots_tag": null,
+   "hreflang_pairs": [
+    [
+     "ar",
+     "https://alkemos.com/ar/blog/12-week-progressive-overload-intermediate-guide"
+    ],
+    [
+     "en",
+     "https://alkemos.com/blog/12-week-progressive-overload-intermediate"
+    ],
+    [
+     "x-default",
+     "https://alkemos.com/blog/12-week-progressive-overload-intermediate"
+    ]
+   ],
+   "in_sitemap": true,
+   "cf_cache": "HIT"
+  },
+  {
+   "url": "https://alkemos.com/ar/blog/4-day-split-muscle-fat-loss-guide",
+   "status": 200,
+   "redirected_to": "https://alkemos.com/ar/blog/4-day-split-muscle-fat-loss-guide",
+   "canonical": "https://alkemos.com/ar/blog/4-day-split-muscle-fat-loss-guide",
+   "canonical_self": true,
+   "robots": "index, follow",
+   "x_robots_tag": null,
+   "hreflang_pairs": [
+    [
+     "ar",
+     "https://alkemos.com/ar/blog/4-day-split-muscle-fat-loss-guide"
+    ],
+    [
+     "en",
+     "https://alkemos.com/blog/4-day-split-hypertrophy-fat-loss"
+    ],
+    [
+     "x-default",
+     "https://alkemos.com/blog/4-day-split-hypertrophy-fat-loss"
+    ]
+   ],
+   "in_sitemap": true,
+   "cf_cache": "HIT"
+  },
+  {
+   "url": "https://alkemos.com/ar/blog/4-week-beginner-muscle-building-plan-guide",
+   "status": 200,
+   "redirected_to": "https://alkemos.com/ar/blog/4-week-beginner-muscle-building-plan-guide",
+   "canonical": "https://alkemos.com/ar/blog/4-week-beginner-muscle-building-plan-guide",
+   "canonical_self": true,
+   "robots": "index, follow",
+   "x_robots_tag": null,
+   "hreflang_pairs": [
+    [
+     "ar",
+     "https://alkemos.com/ar/blog/4-week-beginner-muscle-building-plan-guide"
+    ],
+    [
+     "en",
+     "https://alkemos.com/blog/4-week-beginner-muscle-building-plan"
+    ],
+    [
+     "x-default",
+     "https://alkemos.com/blog/4-week-beginner-muscle-building-plan"
+    ]
+   ],
+   "in_sitemap": true,
+   "cf_cache": "HIT"
+  },
+  {
+   "url": "https://alkemos.com/ar/blog/belly-fat-loss-8-weeks-guide",
+   "status": 200,
+   "redirected_to": "https://alkemos.com/ar/blog/belly-fat-loss-8-weeks-guide",
+   "canonical": "https://alkemos.com/ar/blog/belly-fat-loss-8-weeks-guide",
+   "canonical_self": true,
+   "robots": "index, follow",
+   "x_robots_tag": null,
+   "hreflang_pairs": [
+    [
+     "ar",
+     "https://alkemos.com/ar/blog/belly-fat-loss-8-weeks-guide"
+    ],
+    [
+     "en",
+     "https://alkemos.com/blog/science-backed-belly-fat-loss-8-weeks"
+    ],
+    [
+     "x-default",
+     "https://alkemos.com/blog/science-backed-belly-fat-loss-8-weeks"
+    ]
+   ],
+   "in_sitemap": true,
+   "cf_cache": "HIT"
+  },
+  {
+   "url": "https://alkemos.com/ar/blog/best-creatine-men-guide",
+   "status": 200,
+   "redirected_to": "https://alkemos.com/ar/blog/best-creatine-men-guide",
+   "canonical": "https://alkemos.com/ar/blog/best-creatine-men-guide",
+   "canonical_self": true,
+   "robots": "index, follow",
+   "x_robots_tag": null,
+   "hreflang_pairs": [
+    [
+     "ar",
+     "https://alkemos.com/ar/blog/best-creatine-men-guide"
+    ],
+    [
+     "x-default",
+     "https://alkemos.com/ar/blog/best-creatine-men-guide"
+    ]
+   ],
+   "in_sitemap": true,
+   "cf_cache": "HIT"
+  },
+  {
+   "url": "https://alkemos.com/ar/blog/best-creatine-supplement-for-women-guide",
+   "status": 200,
+   "redirected_to": "https://alkemos.com/ar/blog/best-creatine-supplement-for-women-guide",
+   "canonical": "https://alkemos.com/ar/blog/best-creatine-supplement-for-women-guide",
+   "canonical_self": true,
+   "robots": "index, follow",
+   "x_robots_tag": null,
+   "hreflang_pairs": [
+    [
+     "ar",
+     "https://alkemos.com/ar/blog/best-creatine-supplement-for-women-guide"
+    ],
+    [
+     "x-default",
+     "https://alkemos.com/ar/blog/best-creatine-supplement-for-women-guide"
+    ]
+   ],
+   "in_sitemap": true,
+   "cf_cache": "HIT"
+  },
+  {
+   "url": "https://alkemos.com/ar/blog/best-plant-based-protein-powder-guide",
+   "status": 200,
+   "redirected_to": "https://alkemos.com/ar/blog/best-plant-based-protein-powder-guide",
+   "canonical": "https://alkemos.com/ar/blog/best-plant-based-protein-powder-guide",
+   "canonical_self": true,
+   "robots": "index, follow",
+   "x_robots_tag": null,
+   "hreflang_pairs": [
+    [
+     "ar",
+     "https://alkemos.com/ar/blog/best-plant-based-protein-powder-guide"
+    ],
+    [
+     "en",
+     "https://alkemos.com/blog/best-plant-based-protein-powder-muscle-gain-2026"
+    ],
+    [
+     "x-default",
+     "https://alkemos.com/blog/best-plant-based-protein-powder-muscle-gain-2026"
+    ]
+   ],
+   "in_sitemap": true,
+   "cf_cache": "HIT"
+  },
+  {
+   "url": "https://alkemos.com/ar/blog/bfr-training-guide",
+   "status": 200,
+   "redirected_to": "https://alkemos.com/ar/blog/bfr-training-guide",
+   "canonical": "https://alkemos.com/ar/blog/bfr-training-guide",
+   "canonical_self": true,
+   "robots": "index, follow",
+   "x_robots_tag": null,
+   "hreflang_pairs": [
+    [
+     "ar",
+     "https://alkemos.com/ar/blog/bfr-training-guide"
+    ],
+    [
+     "en",
+     "https://alkemos.com/blog/bfr-training-checklist"
+    ],
+    [
+     "x-default",
+     "https://alkemos.com/blog/bfr-training-checklist"
+    ]
+   ],
+   "in_sitemap": true,
+   "cf_cache": "HIT"
+  },
+  {
+   "url": "https://alkemos.com/ar/blog/calculate-daily-calories-muscle-gain-beginners-guide",
+   "status": 200,
+   "redirected_to": "https://alkemos.com/ar/blog/calculate-daily-calories-muscle-gain-beginners-guide",
+   "canonical": "https://alkemos.com/ar/blog/calculate-daily-calories-muscle-gain-beginners-guide",
+   "canonical_self": true,
+   "robots": "index, follow",
+   "x_robots_tag": null,
+   "hreflang_pairs": [
+    [
+     "ar",
+     "https://alkemos.com/ar/blog/calculate-daily-calories-muscle-gain-beginners-guide"
+    ],
+    [
+     "x-default",
+     "https://alkemos.com/ar/blog/calculate-daily-calories-muscle-gain-beginners-guide"
+    ]
+   ],
+   "in_sitemap": true,
+   "cf_cache": "HIT"
+  },
+  {
+   "url": "https://alkemos.com/ar/blog/calorie-cycling-fat-loss-guide",
+   "status": 200,
+   "redirected_to": "https://alkemos.com/ar/blog/calorie-cycling-fat-loss-guide",
+   "canonical": "https://alkemos.com/ar/blog/calorie-cycling-fat-loss-guide",
+   "canonical_self": true,
+   "robots": "index, follow",
+   "x_robots_tag": null,
+   "hreflang_pairs": [
+    [
+     "ar",
+     "https://alkemos.com/ar/blog/calorie-cycling-fat-loss-guide"
+    ],
+    [
+     "en",
+     "https://alkemos.com/blog/calorie-cycling-fat-loss-diet"
+    ],
+    [
+     "x-default",
+     "https://alkemos.com/blog/calorie-cycling-fat-loss-diet"
+    ]
+   ],
+   "in_sitemap": true,
+   "cf_cache": "HIT"
+  },
+  {
+   "url": "https://alkemos.com/ar/blog/calorie-macro-guide-muscle-fat",
+   "status": 200,
+   "redirected_to": "https://alkemos.com/ar/blog/calorie-macro-guide-muscle-fat",
+   "canonical": "https://alkemos.com/ar/blog/calorie-macro-guide-muscle-fat",
+   "canonical_self": true,
+   "robots": "index, follow",
+   "x_robots_tag": null,
+   "hreflang_pairs": [
+    [
+     "ar",
+     "https://alkemos.com/ar/blog/calorie-macro-guide-muscle-fat"
+    ],
+    [
+     "x-default",
+     "https://alkemos.com/ar/blog/calorie-macro-guide-muscle-fat"
+    ]
+   ],
+   "in_sitemap": true,
+   "cf_cache": "HIT"
+  },
+  {
+   "url": "https://alkemos.com/ar/blog/cardio-scheduling-muscle-gain-guide",
+   "status": 200,
+   "redirected_to": "https://alkemos.com/ar/blog/cardio-scheduling-muscle-gain-guide",
+   "canonical": "https://alkemos.com/ar/blog/cardio-scheduling-muscle-gain-guide",
+   "canonical_self": true,
+   "robots": "index, follow",
+   "x_robots_tag": null,
+   "hreflang_pairs": [
+    [
+     "ar",
+     "https://alkemos.com/ar/blog/cardio-scheduling-muscle-gain-guide"
+    ],
+    [
+     "en",
+     "https://alkemos.com/blog/schedule-cardio-muscle-gain-guide"
+    ],
+    [
+     "x-default",
+     "https://alkemos.com/blog/schedule-cardio-muscle-gain-guide"
+    ]
+   ],
+   "in_sitemap": true,
+   "cf_cache": "HIT"
+  },
+  {
+   "url": "https://alkemos.com/ar/blog/category/workout",
+   "status": 200,
+   "redirected_to": "https://alkemos.com/ar/blog/category/workout",
+   "canonical": "https://alkemos.com/ar/blog/category/workout",
+   "canonical_self": true,
+   "robots": "index, follow",
+   "x_robots_tag": null,
+   "hreflang_pairs": [
+    [
+     "en",
+     "https://alkemos.com/blog/category/workout"
+    ],
+    [
+     "ar",
+     "https://alkemos.com/ar/blog/category/workout"
+    ],
+    [
+     "x-default",
+     "https://alkemos.com/blog/category/workout"
+    ]
+   ],
+   "in_sitemap": false,
+   "cf_cache": "HIT"
+  },
+  {
+   "url": "https://alkemos.com/ar/blog/chest-muscle-home-workout-guide",
+   "status": 200,
+   "redirected_to": "https://alkemos.com/ar/blog/chest-muscle-home-workout-guide",
+   "canonical": "https://alkemos.com/ar/blog/chest-muscle-home-workout-guide",
+   "canonical_self": true,
+   "robots": "index, follow",
+   "x_robots_tag": null,
+   "hreflang_pairs": [
+    [
+     "ar",
+     "https://alkemos.com/ar/blog/chest-muscle-home-workout-guide"
+    ],
+    [
+     "x-default",
+     "https://alkemos.com/ar/blog/chest-muscle-home-workout-guide"
+    ]
+   ],
+   "in_sitemap": true,
+   "cf_cache": "HIT"
+  },
+  {
+   "url": "https://alkemos.com/ar/blog/choose-whey-protein-muscle-gain-guide",
+   "status": 200,
+   "redirected_to": "https://alkemos.com/ar/blog/choose-whey-protein-muscle-gain-guide",
+   "canonical": "https://alkemos.com/ar/blog/choose-whey-protein-muscle-gain-guide",
+   "canonical_self": true,
+   "robots": "index, follow",
+   "x_robots_tag": null,
+   "hreflang_pairs": [
+    [
+     "ar",
+     "https://alkemos.com/ar/blog/choose-whey-protein-muscle-gain-guide"
+    ],
+    [
+     "en",
+     "https://alkemos.com/blog/choose-whey-protein-muscle-gain"
+    ],
+    [
+     "x-default",
+     "https://alkemos.com/blog/choose-whey-protein-muscle-gain"
+    ]
+   ],
+   "in_sitemap": true,
+   "cf_cache": "HIT"
+  },
+  {
+   "url": "https://alkemos.com/ar/blog/creatine-water-retention-scientific-analysis-beginners-guide",
+   "status": 200,
+   "redirected_to": "https://alkemos.com/ar/blog/creatine-water-retention-scientific-analysis-beginners-guide",
+   "canonical": "https://alkemos.com/ar/blog/creatine-water-retention-scientific-analysis-beginners-guide",
+   "canonical_self": true,
+   "robots": "index, follow",
+   "x_robots_tag": null,
+   "hreflang_pairs": [
+    [
+     "ar",
+     "https://alkemos.com/ar/blog/creatine-water-retention-scientific-analysis-beginners-guide"
+    ],
+    [
+     "en",
+     "https://alkemos.com/blog/does-creatine-make-you-gain-weight-water-retention-vs-muscle"
+    ],
+    [
+     "x-default",
+     "https://alkemos.com/blog/does-creatine-make-you-gain-weight-water-retention-vs-muscle"
+    ]
+   ],
+   "in_sitemap": true,
+   "cf_cache": "HIT"
+  },
+  {
+   "url": "https://alkemos.com/ar/blog/hiit-strength-training-fat-loss-guide",
+   "status": 200,
+   "redirected_to": "https://alkemos.com/ar/blog/hiit-strength-training-fat-loss-guide",
+   "canonical": "https://alkemos.com/ar/blog/hiit-strength-training-fat-loss-guide",
+   "canonical_self": true,
+   "robots": "index, follow",
+   "x_robots_tag": null,
+   "hreflang_pairs": [
+    [
+     "ar",
+     "https://alkemos.com/ar/blog/hiit-strength-training-fat-loss-guide"
+    ],
+    [
+     "en",
+     "https://alkemos.com/blog/combine-hiit-strength-fat-loss-guide"
+    ],
+    [
+     "x-default",
+     "https://alkemos.com/blog/combine-hiit-strength-fat-loss-guide"
+    ]
+   ],
+   "in_sitemap": true,
+   "cf_cache": "HIT"
+  },
+  {
+   "url": "https://alkemos.com/ar/blog/home-muscle-building-guide-simple-weights",
+   "status": 200,
+   "redirected_to": "https://alkemos.com/ar/blog/home-muscle-building-guide-simple-weights",
+   "canonical": "https://alkemos.com/ar/blog/home-muscle-building-guide-simple-weights",
+   "canonical_self": true,
+   "robots": "index, follow",
+   "x_robots_tag": null,
+   "hreflang_pairs": [
+    [
+     "ar",
+     "https://alkemos.com/ar/blog/home-muscle-building-guide-simple-weights"
+    ],
+    [
+     "en",
+     "https://alkemos.com/blog/12-week-dumbbell-band-muscle-plan"
+    ],
+    [
+     "x-default",
+     "https://alkemos.com/blog/12-week-dumbbell-band-muscle-plan"
+    ]
+   ],
+   "in_sitemap": true,
+   "cf_cache": "HIT"
+  },
+  {
+   "url": "https://alkemos.com/ar/blog/how-to-calc-daily-protein-athletes",
+   "status": 200,
+   "redirected_to": "https://alkemos.com/ar/blog/how-to-calc-daily-protein-athletes",
+   "canonical": "https://alkemos.com/ar/blog/how-to-calc-daily-protein-athletes",
+   "canonical_self": true,
+   "robots": "index, follow",
+   "x_robots_tag": null,
+   "hreflang_pairs": [
+    [
+     "ar",
+     "https://alkemos.com/ar/blog/how-to-calc-daily-protein-athletes"
+    ],
+    [
+     "x-default",
+     "https://alkemos.com/ar/blog/how-to-calc-daily-protein-athletes"
+    ]
+   ],
+   "in_sitemap": true,
+   "cf_cache": "HIT"
+  },
+  {
+   "url": "https://alkemos.com/ar/blog/how-to-start-muscle-building-beginners",
+   "status": 200,
+   "redirected_to": "https://alkemos.com/ar/blog/how-to-start-muscle-building-beginners",
+   "canonical": "https://alkemos.com/ar/blog/how-to-start-muscle-building-beginners",
+   "canonical_self": true,
+   "robots": "index, follow",
+   "x_robots_tag": null,
+   "hreflang_pairs": [
+    [
+     "ar",
+     "https://alkemos.com/ar/blog/how-to-start-muscle-building-beginners"
+    ],
+    [
+     "x-default",
+     "https://alkemos.com/ar/blog/how-to-start-muscle-building-beginners"
+    ]
+   ],
+   "in_sitemap": true,
+   "cf_cache": "HIT"
+  },
+  {
+   "url": "https://alkemos.com/ar/blog/intermittent-fasting-muscle-gain-guide",
+   "status": 200,
+   "redirected_to": "https://alkemos.com/ar/blog/intermittent-fasting-muscle-gain-guide",
+   "canonical": "https://alkemos.com/ar/blog/intermittent-fasting-muscle-gain-guide",
+   "canonical_self": true,
+   "robots": "index, follow",
+   "x_robots_tag": null,
+   "hreflang_pairs": [
+    [
+     "ar",
+     "https://alkemos.com/ar/blog/intermittent-fasting-muscle-gain-guide"
+    ],
+    [
+     "en",
+     "https://alkemos.com/blog/intermittent-fasting-muscle-gain-workout-plan"
+    ],
+    [
+     "x-default",
+     "https://alkemos.com/blog/intermittent-fasting-muscle-gain-workout-plan"
+    ]
+   ],
+   "in_sitemap": true,
+   "cf_cache": "HIT"
+  },
+  {
+   "url": "https://alkemos.com/ar/blog/nutrition-before-workout-guide",
+   "status": 200,
+   "redirected_to": "https://alkemos.com/ar/blog/nutrition-before-workout-guide",
+   "canonical": "https://alkemos.com/ar/blog/nutrition-before-workout-guide",
+   "canonical_self": true,
+   "robots": "index, follow",
+   "x_robots_tag": null,
+   "hreflang_pairs": [
+    [
+     "ar",
+     "https://alkemos.com/ar/blog/nutrition-before-workout-guide"
+    ],
+    [
+     "en",
+     "https://alkemos.com/blog/pre-workout-nutrition-guide"
+    ],
+    [
+     "x-default",
+     "https://alkemos.com/blog/pre-workout-nutrition-guide"
+    ]
+   ],
+   "in_sitemap": true,
+   "cf_cache": "HIT"
+  },
+  {
+   "url": "https://alkemos.com/ar/blog/nutrition-periodization-body-recomposition-guide",
+   "status": 200,
+   "redirected_to": "https://alkemos.com/ar/blog/nutrition-periodization-body-recomposition-guide",
+   "canonical": "https://alkemos.com/ar/blog/nutrition-periodization-body-recomposition-guide",
+   "canonical_self": true,
+   "robots": "index, follow",
+   "x_robots_tag": null,
+   "hreflang_pairs": [
+    [
+     "ar",
+     "https://alkemos.com/ar/blog/nutrition-periodization-body-recomposition-guide"
+    ],
+    [
+     "en",
+     "https://alkemos.com/blog/how-to-periodize-nutrition-body-recomposition"
+    ],
+    [
+     "x-default",
+     "https://alkemos.com/blog/how-to-periodize-nutrition-body-recomposition"
+    ]
+   ],
+   "in_sitemap": true,
+   "cf_cache": "HIT"
+  },
+  {
+   "url": "https://alkemos.com/ar/blog/post-workout-recovery-meal-plan-guide",
+   "status": 200,
+   "redirected_to": "https://alkemos.com/ar/blog/post-workout-recovery-meal-plan-guide",
+   "canonical": "https://alkemos.com/ar/blog/post-workout-recovery-meal-plan-guide",
+   "canonical_self": true,
+   "robots": "index, follow",
+   "x_robots_tag": null,
+   "hreflang_pairs": [
+    [
+     "ar",
+     "https://alkemos.com/ar/blog/post-workout-recovery-meal-plan-guide"
+    ],
+    [
+     "en",
+     "https://alkemos.com/blog/post-workout-recovery-meal-plan-7-recipes"
+    ],
+    [
+     "x-default",
+     "https://alkemos.com/blog/post-workout-recovery-meal-plan-7-recipes"
+    ]
+   ],
+   "in_sitemap": true,
+   "cf_cache": "HIT"
+  },
+  {
+   "url": "https://alkemos.com/ar/blog/progressive-overload-without-weights-guide",
+   "status": 200,
+   "redirected_to": "https://alkemos.com/ar/blog/progressive-overload-without-weights-guide",
+   "canonical": "https://alkemos.com/ar/blog/progressive-overload-without-weights-guide",
+   "canonical_self": true,
+   "robots": "index, follow",
+   "x_robots_tag": null,
+   "hreflang_pairs": [
+    [
+     "ar",
+     "https://alkemos.com/ar/blog/progressive-overload-without-weights-guide"
+    ],
+    [
+     "en",
+     "https://alkemos.com/blog/progressive-overload-no-weight"
+    ],
+    [
+     "x-default",
+     "https://alkemos.com/blog/progressive-overload-no-weight"
+    ]
+   ],
+   "in_sitemap": true,
+   "cf_cache": "HIT"
+  }
+ ],
+ "summary": {
+  "cni_overlap": 0,
+  "commercial_overlap": 0,
+  "in_sitemap_blog": 24,
+  "http_200": 25,
+  "self_canonical": 25,
+  "index_follow": 25,
+  "no_x_robots": 25
+ }
+}
