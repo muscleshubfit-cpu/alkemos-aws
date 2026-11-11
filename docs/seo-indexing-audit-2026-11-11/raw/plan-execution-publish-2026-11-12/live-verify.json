@@ -1,0 +1,86 @@
+{
+  "_purpose": "خام التحقق من نشر كوميت التقرير 16 (B1+B2) — SEO-PLAN-PUBLISH-VERIFY-B1-B2-2026-11-12 — أفعال قراءة-فقط لا تعدّل شيئًا",
+  "published_commit": {
+    "sha": "eb84350b20588ce4c448a4ffbf22db507517b2b6",
+    "range": "5d7fb347..eb84350b on main",
+    "pushed_at_utc": "2026-11-12 ~19:04",
+    "local_gates_rerun_before_push": {
+      "tsc": "0 errors",
+      "docs_parity": "exit 0",
+      "docs_audit": "exit 0",
+      "note": "البطارية الكاملة (tsc/eslint/vitest 5,892/build) جُرّت على الشجرة نفسها بكوميت eb84350b قبل الدفع — التفصيل بمدخل worklog SEO-PLAN-EXECUTION-B1-B2-2026-11-12"
+    }
+  },
+  "ci_runs": [
+    {"workflow": "Quality gate (tsc • eslint • vitest)", "id": 43084229829, "conclusion": "success", "url": "https://github.com/muscleshubfit-cpu/alkemos-aws/actions/runs/43084229829"},
+    {"workflow": "Migration state audit (latest migration applied on prod?)", "id": 43084230076, "conclusion": "success", "url": "https://github.com/muscleshubfit-cpu/alkemos-aws/actions/runs/43084230076"},
+    {"workflow": "Deploy to AWS origin (alkemos)", "id": 43084229971, "conclusion": "success", "url": "https://github.com/muscleshubfit-cpu/alkemos-aws/actions/runs/43084229971"},
+    {"workflow": "Docs & schema parity gate", "id": 43084229761, "conclusion": "success", "url": "https://github.com/muscleshubfit-cpu/alkemos-aws/actions/runs/43084229761"},
+    {"workflow": "Anti-regression guard (stale refs)", "id": 43084229812, "conclusion": "success", "url": "https://github.com/muscleshubfit-cpu/alkemos-aws/actions/runs/43084229812"}
+  ],
+  "ci_summary": "5/5 خضراء (جميعها اكتملت بنجاح بحلول ~19:16 UTC)",
+  "live_checks_read_only": {
+    "cache_buster": "?cb=20261112a",
+    "cache_note": "الطلبات بالمسار العاري تصطدم بكاش حافة Cloudflare (قاعدة alkemos-public-html-cache بedge_ttl 43,200 ثانية — 12 ساعة) فتستقبل نسخة ما قبل النشر حتى انتهاء صلاحيتها؛ سير deploy-aws لا يطهّر الكاش. مُعطِّل الكاش أعلاه يجبر الجلب من الأصل (زمن الاستجابة 41ms كاش مقابل ~0.33-0.55s أصل) — والأصل هو ما سيخدمه الحافة تلقائيًا خلال ≤12 ساعة",
+    "checks": [
+      {
+        "n": 1,
+        "expectation": "/tools/calorie-calculator يحوي 3 روابط /blog/* بخادمي HTML",
+        "request": "GET https://alkemos.com/tools/calorie-calculator?cb=20261112a",
+        "result": {
+          "http": 200, "bytes": 156517, "time_s": 0.330,
+          "blog_hrefs": [
+            "/blog/calculate-daily-calories-fuel-fat-loss-bulking",
+            "/blog/calculate-maintenance-calories-muscle-gain",
+            "/blog/calorie-cycling-fat-loss-diet"
+          ],
+          "distinct_blog_href_count": 3,
+          "verdict": "PASS"
+        }
+      },
+      {
+        "n": 2,
+        "expectation": "/ar/tools/calorie-calculator يحوي 3 روابط /ar/blog/* بخادمي HTML",
+        "request": "GET https://alkemos.com/ar/tools/calorie-calculator?cb=20261112a",
+        "result": {
+          "http": 200, "bytes": 173245, "time_s": 0.519,
+          "ar_blog_hrefs": [
+            "/ar/blog/calculate-daily-calories-muscle-gain-beginners-guide",
+            "/ar/blog/calculate-daily-calories-weight-loss",
+            "/ar/blog/calorie-cycling-fat-loss-guide"
+          ],
+          "distinct_ar_blog_href_count": 3,
+          "verdict": "PASS"
+        }
+      },
+      {
+        "n": 3,
+        "expectation": "المقالة EN تربط عائدة لأداتها (قسم «Try the calculator» + ≥1 رابط /tools/calorie-calculator)",
+        "request": "GET https://alkemos.com/blog/calculate-daily-calories-fuel-fat-loss-bulking?cb=20261112a",
+        "result": {
+          "http": 200, "bytes": 155156, "time_s": 0.549,
+          "tool_hrefs_count": 4,
+          "tool_hrefs_distinct": ["/tools/calorie-calculator"],
+          "try_the_calculator_occurrences": 1,
+          "verdict": "PASS"
+        }
+      },
+      {
+        "n": 4,
+        "expectation": "مرآة /ar/foods/mcdonalds-chicken-mcnuggets خارج noindex (البند B2 — الانقلاب آليًا بقاعدة arabiclessName) والاسم العربي حاضر",
+        "request": "GET https://alkemos.com/ar/foods/mcdonalds-chicken-mcnuggets?cb=20261112a",
+        "result": {
+          "http": 200, "bytes": 120755, "time_s": 0.455,
+          "noindex_occurrences": 0,
+          "robots_meta": "index, follow",
+          "canonical": "https://alkemos.com/ar/foods/mcdonalds-chicken-mcnuggets (ذاتي)",
+          "arabic_name_occurrences": 21,
+          "arabic_name": "ناجتس دجاج ماكدونالدز",
+          "verdict": "PASS"
+        }
+      }
+    ],
+    "verdict": "4/4 PASS على الأصل (الأصل هو مصدر الحافة خلال ≤12 ساعة)"
+  },
+  "honesty_note": "لا ادعاء أثر فهرسة/CTR من هذه الجولة — الأثر يُقاس بنوافذ GSC القائمة (+7/+14/+28 من 2026-11-11) وحدها (قيد التقريرين 14/15)"
+}
