@@ -62,7 +62,9 @@ const HUB_FILE = "src/app/(ar)/ar/diet-plan/page.tsx";
 const LEAF_FILE_EN =
   "src/app/(en)/diet-plan/[level]/[system]/page.tsx";
 const HUB_FILE_EN = "src/app/(en)/diet-plan/page.tsx";
-const SITEMAP_FILE = "src/app/sitemap-pages.xml/route.ts";
+// SEO-RECOVERY (2026-11-11): the diet-plan matrix moved to the
+// commercial child (sitemap split — audit 13 §3). The pin follows.
+const SITEMAP_FILE = "src/app/sitemap-commercial.xml/route.ts";
 
 describe("diet-plan matrix (SEO-GEO-6.6 §12.19 P1-8)", () => {
   it("MATRIX SHAPE: 6 levels × 4 systems, with known slugs", () => {

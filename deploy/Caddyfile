@@ -44,6 +44,29 @@
 alkemos.com {
         encode zstd gzip
 
+        # ---- access logging (D-3 / P3-1 — SEO-RECOVERY 2026-11-11) ------
+        # The indexing audits (docs/seo-indexing-audit-2026-11-11/ reports
+        # 09 §ب-4, 10 §الجزء الثاني, 12) could not settle the crawl-budget
+        # hypothesis because the origin runs with NO access logs: "لا سجلات
+        # وصول على الأصل أصلًا — Caddy بلا log". This directive turns on
+        # structured JSON access logs (default stderr → journald, so zero
+        # new filesystem dependencies and journald's rotation applies):
+        #
+        #   journalctl -u caddy -o cat | jq 'select(.request.user_agent
+        #     | test("Googlebot"))' | jq -r .request.uri
+        #
+        # gives the per-path Googlebot request distribution the D-2 family
+        # decision needs (measured, not hypothesized). Journald's default
+        # caps bound disk usage; volume at the measured crawl rate
+        # (~18K requests/day) is a few MB/day of JSON.
+        #
+        # INERT until caddy-edge-activate.yml installs this file to
+        # /etc/caddy and reloads (the same activation law as every
+        # Caddyfile change since the 2026-10-10 cutover).
+        log {
+                format json
+        }
+
         # ---- security headers (VERBATIM values from vercel.json) ---------
         header {
                 defer

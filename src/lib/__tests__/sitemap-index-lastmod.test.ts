@@ -125,15 +125,17 @@ describe("sitemap.xml route — honest index under a faked clock (P-3)", () => {
     vi.useRealTimers();
   });
 
-  it("emits all six children with the five family anchors and NO fabricated date", async () => {
+  it("emits all seven children with the six family anchors and NO fabricated date", async () => {
     const res = await sitemapIndexRoute();
     expect(res.status).toBe(200);
     expect(res.headers.get("content-type")).toContain("application/xml");
     const xml = await res.text();
 
-    // All six children present.
+    // All seven children present (SEO-RECOVERY 2026-11-11: the
+    // commercial child joined the index — the audit-13 §3 split).
     for (const child of [
       "sitemap-pages.xml",
+      "sitemap-commercial.xml",
       "sitemap-collections.xml",
       "sitemap-comparisons.xml",
       "sitemap-exercises.xml",
@@ -143,10 +145,11 @@ describe("sitemap.xml route — honest index under a faked clock (P-3)", () => {
       expect(xml).toContain(`<loc>https://alkemos.com/${child}</loc>`);
     }
 
-    // The five static families carry their CENTRAL anchors (same
+    // The six static families carry their CENTRAL anchors (same
     // values their child sitemaps emit — index can never drift).
     for (const family of [
       "pages",
+      "commercial",
       "collections",
       "comparisons",
       "exercises",
@@ -163,7 +166,7 @@ describe("sitemap.xml route — honest index under a faked clock (P-3)", () => {
     const lastmods = [...xml.matchAll(/<lastmod>([^<]+)<\/lastmod>/g)].map(
       (m) => m[1],
     );
-    expect(lastmods.length).toBe(5); // blog omitted (no env → no date)
+    expect(lastmods.length).toBe(6); // blog omitted (no env → no date)
     for (const value of lastmods) expect(value).toMatch(W3C_DAY);
   });
 

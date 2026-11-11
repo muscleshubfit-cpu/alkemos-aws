@@ -108,6 +108,11 @@ scripts/qa/**/__pycache__/
 !/scripts/worklog_rotate.py
 #   scripts/repro/ → REGEN-ROOTCAUSE-2 (2026-10-26) committed evidence instruments: regen-repro.mts replays the EXACT production ai_jobs payloads through the real engine (the plan-regeneration job-killer reproduction) + fetch-ai-job-fixtures.py (READ-ONLY payload fetcher). Hit the same /scripts/* blanket trap as geo/ — exception added in the same frame. The fixtures themselves (scripts/repro/repro-fixtures/) stay IGNORED — real client data, never committed.
 !/scripts/repro/
+#   scripts/seo-recovery/ → SEO-RECOVERY (2026-11-11, owner execution
+#   order): the sitemap-split one-shot verifier (verify-sitemap-split.mts
+#   — pages ∪ commercial == the old 212, exact partition). Hit the same
+#   /scripts/* blanket trap as repro/ — exception added in the same frame.
+!/scripts/seo-recovery/
 !/scripts/geo/
 !/scripts/external-mirror/
 !/scripts/gdrive/

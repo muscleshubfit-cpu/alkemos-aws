@@ -1,7 +1,11 @@
 import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
+// SEO-RECOVERY (2026-11-11): /evo + /coaching moved to the commercial
+// child (sitemap split — audit 13 §3); the affiliate pair (asserted
+// below) stays in the pages child. Both imports carried over.
 import { GET as pagesSitemapGET } from "@/app/sitemap-pages.xml/route";
+import { GET as commercialSitemapGET } from "@/app/sitemap-commercial.xml/route";
 import { metadata as arEvoMetadata } from "@/app/(ar)/ar/evo/layout";
 import { metadata as arCoachingMetadata } from "@/app/(ar)/ar/coaching/layout";
 import { metadata as enEvoMetadata } from "@/app/(en)/evo/layout";
@@ -21,8 +25,8 @@ import { metadata as enAffiliateMetadata } from "@/app/(en)/affiliate/layout";
  */
 
 describe("AR mirrors for /evo + /coaching (SEO-GEO-6.4 §12.23)", () => {
-  it("sitemap-pages exposes all four URLs with hreflang alternates", async () => {
-    const res = await pagesSitemapGET();
+  it("sitemap-commercial exposes all four URLs with hreflang alternates", async () => {
+    const res = await commercialSitemapGET();
     expect(res.status).toBe(200);
     const xml = await res.text();
 

@@ -127,6 +127,37 @@ const PATCHES: Patch[] = [
   // -- 4. EN double spaces (outside code fences) --
   { slug: "smart-water-bottle-hydration-tracking-during-workouts", language: "en", edits: [{ desc: "double-space", re: "  +", replace: " ", expect: 11 }] },
   { slug: "protein-calculator-women-muscle-gain", language: "en", edits: [{ desc: "double-space", re: "  +", replace: " ", expect: 3 }] },
+  // -- 5. SEO-RECOVERY (2026-11-11, audit 13 / T-1 / P0-2أ): the two
+  //      measured broken INTERNAL links — each article linked a blog
+  //      page that does not exist (404, measured by the SiteOne crawl
+  //      2026-11-10/11 and re-verified live 11-11). Both retarget to the
+  //      closest REAL article on the same topic, anchor text adjusted to
+  //      stay honest to the target's content. URL count per row is
+  //      unchanged (relative links), word delta ≤ +3 (within tolerance).
+  {
+    slug: "hiit-home-fat-burning-workout",
+    language: "en",
+    edits: [
+      {
+        desc: "404 /blog/how-to-calc-daily-protein-athletes → the real protein-per-day guide",
+        find: "[daily protein calculation](/blog/how-to-calc-daily-protein-athletes)",
+        replace: "[daily protein calculation](/blog/protein-per-day-muscle-build-plan)",
+        expect: 1,
+      },
+    ],
+  },
+  {
+    slug: "choose-vitamin-d-supplement-athletes",
+    language: "ar",
+    edits: [
+      {
+        desc: "404 /ar/blog/magnesium-forms-sleep-recovery → دليل النوم والاستشفاء الحقيقي",
+        find: "للمهتمين بالموضوع تفصيل أكبر في [دليل أشكال المغنيسيوم للنوم والتعافي](/ar/blog/magnesium-forms-sleep-recovery)",
+        replace: "ولعلاقة النوم بالتعافي تفصيل أوسع: [دليل النوم والاستشفاء لنتائج الجيم](/ar/blog/sleep-recovery-gym-results)",
+        expect: 1,
+      },
+    ],
+  },
 ];
 
 // ---------- engine ----------

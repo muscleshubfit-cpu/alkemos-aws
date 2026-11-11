@@ -42,7 +42,9 @@ const ROUTE_FILE = "src/app/api/ai/meal-plan-demo/route.ts";
 const PAGE_FILE = "src/app/(en)/ai-meal-planner/page.tsx";
 const LAYOUT_EN = "src/app/(en)/ai-meal-planner/layout.tsx";
 const LAYOUT_AR = "src/app/(ar)/ar/ai-meal-planner/layout.tsx";
-const SITEMAP_FILE = "src/app/sitemap-pages.xml/route.ts";
+// SEO-RECOVERY (2026-11-11): the planner pair moved to the commercial
+// child (sitemap split — audit 13 §3). The pin follows.
+const SITEMAP_FILE = "src/app/sitemap-commercial.xml/route.ts";
 const LEAF_AR = "src/app/(ar)/ar/diet-plan/[level]/[system]/page.tsx";
 const LEAF_EN = "src/app/(en)/diet-plan/[level]/[system]/page.tsx";
 const HUB_AR = "src/app/(ar)/ar/diet-plan/page.tsx";

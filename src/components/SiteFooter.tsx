@@ -224,6 +224,14 @@ export function SiteFooter({
               <li><a href={isAr ? "/ar/tools" : "/tools"} className="block py-1 hover:underline">{isAr ? "كل الأدوات المجانية" : "All Free Tools"}</a></li>
               <li><a href={isAr ? "/ar/ai-meal-planner" : "/ai-meal-planner"} className="block py-1 hover:underline">{isAr ? "مخطط الوجبات بالذكاء الاصطناعي" : "AI Meal Planner"}</a></li>
               <li><a href={isAr ? "/ar/ai-workout-planner" : "/ai-workout-planner"} className="block py-1 hover:underline">{isAr ? "مخطط التمارين بالذكاء الاصطناعي" : "AI Workout Planner"}</a></li>
+              {/* SEO-RECOVERY (2026-11-11, audit 13 §6-نمط 5 — measured weak
+                  internal linking): the two search-intent tracker landing
+                  pages had 9 and 40 measured inlinks (the weakest commercial
+                  surface after /authors). Footer = the site's strongest
+                  sitewide link channel (the same channel that gives
+                  /coaching its 27,085 measured inlinks). */}
+              <li><a href={isAr ? "/ar/macro-tracker" : "/macro-tracker"} className="block py-1 hover:underline">{isAr ? "تتبع الماكروز" : "Macro Tracker"}</a></li>
+              <li><a href={isAr ? "/ar/workout-tracker" : "/workout-tracker"} className="block py-1 hover:underline">{isAr ? "تتبع التمارين" : "Workout Tracker"}</a></li>
             </ul>
           </div>
 
@@ -252,6 +260,12 @@ export function SiteFooter({
               <li><a href={isAr ? "/ar/blog" : "/blog"} className="block py-1 hover:underline">{isAr ? "المدونة" : "Blog"}</a></li>
               <li><a href={isAr ? "/ar/compare" : "/compare"} className="block py-1 hover:underline">{isAr ? "المقارنات" : "Comparisons"}</a></li>
               <li><a href={isAr ? "/ar/about" : "/about"} className="block py-1 hover:underline">{isAr ? "من نحن" : "About"}</a></li>
+              {/* SEO-RECOVERY (2026-11-11, audit 13 §5-7/§6-نمط 5): the
+                  authors index had 2 measured inlinks — the weakest page on
+                  the sitemap — while being the E-E-A-T hub every Article
+                  Person @id chains through. Sitewide footer link = the
+                  measured strongest discovery channel. */}
+              <li><a href={isAr ? "/ar/authors" : "/authors"} className="block py-1 hover:underline">{isAr ? "فريق التحرير والمراجعة" : "Authors & Reviewers"}</a></li>
               <li><a href={isAr ? "/ar/contact" : "/contact"} className="block py-1 hover:underline">{isAr ? "تواصل معنا" : "Contact"}</a></li>
               <li><a href={isAr ? "/ar/faq" : "/faq"} className="block py-1 hover:underline">{isAr ? "أسئلة شائعة" : "FAQ"}</a></li>
               <li><a href={isAr ? "/ar/privacy" : "/privacy"} className="block py-1 hover:underline">{isAr ? "الخصوصية" : "Privacy"}</a></li>

@@ -68,6 +68,7 @@ Disallow: /preview
 # also lists them (Google dedupes).
 Sitemap: https://alkemos.com/sitemap.xml
 Sitemap: https://alkemos.com/sitemap-pages.xml
+Sitemap: https://alkemos.com/sitemap-commercial.xml
 Sitemap: https://alkemos.com/sitemap-collections.xml
 Sitemap: https://alkemos.com/sitemap-comparisons.xml
 Sitemap: https://alkemos.com/sitemap-exercises.xml

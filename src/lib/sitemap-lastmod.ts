@@ -12,9 +12,13 @@
  * family's date to the ship date. The value must stay truthful: it is
  * the date the pages last meaningfully changed, in W3C day precision.
  *
- *   pages        — static pages + tools + programs + diet-plan matrix
- *                  (batch 1-b: og:image on the AR evo/coaching/diet-plan
- *                  mirrors; batch 2: homepage exercise-sample images)
+ *   pages        — the informational static surface (homepage · library
+ *                  hubs · recipes taxonomy · blog hubs/categories ·
+ *                  guides · methodology · affiliate · about · authors ·
+ *                  faq · contact · legal). SEO-RECOVERY 2026-11-11: the
+ *                  commercial surface (tools · planners/trackers ·
+ *                  programs · diet-plan matrix · paid services · compare)
+ *                  SPLIT into its own `commercial` family below.
  *   exercises    — exercise detail pages: pinned to 2026-09-16 (batch 2
  *                  of §12.53 — image self-hosting changed every page's
  *                  served HTML; decoupled from CONTENT_LAST_REVIEWED,
@@ -48,7 +52,15 @@ export const SITEMAP_LASTMOD = {
   // family (the daily published pairs) is DYNAMIC like the blog — its
   // index lastmod is computed live in sitemap.xml/route.ts and it is
   // deliberately NOT listed here (one source of truth per family).
-  pages: "2026-11-10",
+  // SEO-RECOVERY (2026-11-11, owner execution order): (1) the pages
+  // family anchor moves to the ship date — the internal-linking fixes
+  // (footer macro/workout-tracker + authors links on EVERY page) are a
+  // material served-HTML change for the family (the UPDATE PROTOCOL);
+  // (2) the commercial child was SPLIT OUT of this family with its own
+  // anchor, born at the same ship date (its URLs moved containers;
+  // their last content/link change is this date).
+  pages: "2026-11-11",
+  commercial: "2026-11-11",
   // Same audit: 53 EN exercise titles left the over-75 set (worst
   // 97 → 63 via the three-tier template) — family template change.
   // P1-2 (2026-11-04, SEO-ADSENSE-RECOVERY-PLAN · owner order «ابدأ

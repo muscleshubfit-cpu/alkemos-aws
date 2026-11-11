@@ -663,11 +663,16 @@ describe("HOME-PLATFORM-284 — header/footer contract", () => {
   //      href appears EXACTLY ONCE (single copy — no mobile/desktop
   //      duplication anymore). 271 F4: the trimmed map carries 18
   //      primary links (was 27 — the header nav absorbed the rest).
+  //      SEO-RECOVERY (2026-11-11, audit 13 §6-نمط 5): +3 deliberate
+  //      links — Macro Tracker + Workout Tracker (Tools column; the
+  //      two weakest commercial landing pages at 9/40 measured inlinks)
+  //      and the Authors index (Company column; 2 inlinks, the E-E-A-T
+  //      hub). The upper bound moves 20 → 22 with them.
   it("href-once: every footer link href appears exactly once", () => {
     const src = readFileSync(FOOTER, "utf8");
     const hrefs = src.match(/href=\{isAr \? "[^"]+" : "[^"]+"\}/g) ?? [];
     expect(hrefs.length).toBeGreaterThanOrEqual(18);
-    expect(hrefs.length).toBeLessThanOrEqual(20);
+    expect(hrefs.length).toBeLessThanOrEqual(22);
     const counts = new Map<string, number>();
     for (const h of hrefs) counts.set(h, (counts.get(h) ?? 0) + 1);
     const offenders = [...counts.entries()].filter(([, n]) => n !== 1);

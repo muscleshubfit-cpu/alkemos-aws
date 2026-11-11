@@ -58,6 +58,7 @@ const KEY_LOCATION = `${SITE_URL}/528c4a22973f45cd3c1af4e4e218035b.txt`;
 
 const SITEMAPS = [
   "sitemap-pages.xml",
+  "sitemap-commercial.xml",
   "sitemap-collections.xml",
   "sitemap-comparisons.xml",
   "sitemap-exercises.xml",

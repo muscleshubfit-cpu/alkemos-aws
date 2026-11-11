@@ -44,7 +44,9 @@ const ROUTE_FILE = "src/app/api/ai/workout-plan-demo/route.ts";
 const PAGE_FILE = "src/app/(en)/ai-workout-planner/page.tsx";
 const LAYOUT_EN = "src/app/(en)/ai-workout-planner/layout.tsx";
 const LAYOUT_AR = "src/app/(ar)/ar/ai-workout-planner/layout.tsx";
-const SITEMAP_FILE = "src/app/sitemap-pages.xml/route.ts";
+// SEO-RECOVERY (2026-11-11): the planner pair moved to the commercial
+// child (sitemap split — audit 13 §3). The pin follows.
+const SITEMAP_FILE = "src/app/sitemap-commercial.xml/route.ts";
 const LLMS = "public/llms.txt";
 const LLMS_FULL = "src/app/llms-full.txt/route.ts";
 

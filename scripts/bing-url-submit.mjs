@@ -70,6 +70,7 @@ const SITEMAPS = [
   // most-recently-changed URLs (blog) get the slots before the static
   // families (whose lastmod rarely enters the --days window anyway).
   "sitemap-pages.xml",
+  "sitemap-commercial.xml",
   "sitemap-collections.xml",
   "sitemap-comparisons.xml",
   "sitemap-exercises.xml",

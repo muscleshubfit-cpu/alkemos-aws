@@ -649,6 +649,41 @@ export default function CoachingPage() {
                   EVO is part of the subscription, not a destination CTA. */}
             </div>
           </Reveal>
+          <Reveal delay={300}>
+            {/* SEO-RECOVERY (2026-11-11, audit 13 §6-نمط 5): the coach
+                recruitment funnel (/for-coaches/register) had 3 measured
+                inlinks — the weakest conversion page. A contextual link
+                from the coaching page (the natural reading context for a
+                coach visiting the site) more than doubles its discovery
+                without any sitewide noise. */}
+            <p className="mx-auto mt-8 max-w-xl text-sm text-[var(--muted-foreground)]">
+              {isAr ? (
+                <>
+                  أنت مدرب معتمد وتريد الانضمام لمنصة Alkemos؟{" "}
+                  <a href="/ar/for-coaches/register" className="font-medium underline underline-offset-4 hover:text-[var(--text)]">
+                    سجّل كمدرب على المنصة
+                  </a>
+                  {" "}— أو{" "}
+                  <a href="/ar/for-coaches" className="underline underline-offset-4 hover:text-[var(--text)]">
+                    اطّلع على برنامج المدربين
+                  </a>
+                  .
+                </>
+              ) : (
+                <>
+                  Are you a certified coach?{" "}
+                  <a href="/for-coaches/register" className="font-medium underline underline-offset-4 hover:text-[var(--text)]">
+                    Register as an Alkemos coach
+                  </a>{" "}
+                  — or{" "}
+                  <a href="/for-coaches" className="underline underline-offset-4 hover:text-[var(--text)]">
+                    read the coach program
+                  </a>
+                  .
+                </>
+              )}
+            </p>
+          </Reveal>
         </section>
 
         {/* ===================== SHARE ===================== */}

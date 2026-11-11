@@ -186,7 +186,9 @@ describe("the indexing chain (§10-3 — the audit §11 trap)", () => {
   });
 
   it("the pages family anchor moved to the ship date (the UPDATE PROTOCOL)", () => {
-    expect(LASTMOD).toMatch(/pages: "2026-11-10"/);
+    // SEO-RECOVERY 2026-11-11: the anchor moved again with the
+    // internal-linking fixes + the commercial split (same protocol).
+    expect(LASTMOD).toMatch(/pages: "2026-11-11"/);
   });
 });
 

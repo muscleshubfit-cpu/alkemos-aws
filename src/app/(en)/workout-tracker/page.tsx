@@ -10,6 +10,11 @@ import { WORKOUT_TRACKER_FAQ_AR, WORKOUT_TRACKER_FAQ_EN } from "./content";
 /**
  * /workout-tracker — search-intent landing page (EN canonical).
  *
+ * SEO-RECOVERY fix (2026-11-11, audit 13 / T-1 / P0-2ب): the AR steps
+ * and CTAs linked /ar/auth — a 404 (the auth route has NO Arabic
+ * mirror; /auth is the only real route — measured by the SiteOne
+ * crawl and live). All auth CTAs now point to /auth in both languages.
+ *
  * P0 SEO audit (2026-09-30, finding #1): the tracking features live
  * behind login (ProgressView + the AI planners) and the site had ZERO
  * pages answering "workout tracker" / "workout tracking app" queries —
@@ -57,19 +62,19 @@ export default function WorkoutTrackerPage() {
         {
           title: "تسجيل الوزن وخمسة قياسات",
           desc: "الوزن والخصر والصدر والأرداف والذراع والرقبة بتواريخها — مع مخطط وزن تفاعلي يريك الاتجاه لا الأرقام المتناثرة.",
-          href: "/ar/auth",
+          href: "/auth",
           cta: "ابدأ التسجيل مجانًا",
         },
         {
           title: "صور تقدّم بتاريخها",
           desc: "ارفع صورك بضغطة، محفوظة بخصوصية في حسابك وبتاريخ كل صورة — الدليل البصري الذي لا يكذب.",
-          href: "/ar/auth",
+          href: "/auth",
           cta: "أنشئ حسابك",
         },
         {
           title: "تسجيل أسبوعي بتذكير",
           desc: "قيّم طاقتك والتزامك بالخطة (1–10) مع ملاحظاتك، وتذكير أسبوعي يصلك إن مرّ أسبوع بلا تسجيل.",
-          href: "/ar/auth",
+          href: "/auth",
           cta: "جرّب التسجيل الأسبوعي",
         },
       ]
@@ -181,7 +186,7 @@ export default function WorkoutTrackerPage() {
               {isAr ? "ولّد خطة مجانية" : "Generate a free plan"}
             </Link>
             <Link
-              href={isAr ? "/ar/auth" : "/auth"}
+              href="/auth"
               className="btn-outline px-6 py-2.5 text-sm"
             >
               {isAr ? "سجّل مجانًا" : "Sign up free"}
@@ -327,7 +332,7 @@ export default function WorkoutTrackerPage() {
               : "The full exercise library, food database, 8 free tools, and limited EVO AI access — no credit card required."}
           </p>
           <div className="mt-6 flex flex-wrap justify-center gap-2">
-            <Link href={isAr ? "/ar/auth" : "/auth"} className="btn-chrome px-6 py-2.5 text-sm">
+            <Link href="/auth" className="btn-chrome px-6 py-2.5 text-sm">
               {isAr ? "سجّل مجانًا" : "Sign up free"}
             </Link>
             <Link href={isAr ? "/ar/memberships" : "/memberships"} className="btn-outline px-6 py-2.5 text-sm">

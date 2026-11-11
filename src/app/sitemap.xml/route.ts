@@ -53,6 +53,12 @@ export async function GET() {
   const base = siteUrl();
   const entries: SitemapIndexEntry[] = [
     { loc: `${base}/sitemap-pages.xml`, lastModified: familyLastmod("pages") },
+    // SEO-RECOVERY SPLIT (2026-11-11): the commercial surface child —
+    // same URLs that rode sitemap-pages until now (exact partition);
+    // split out so GSC's per-sitemap report tracks the revenue
+    // surface's recovery as one readable number (audit 13 §3 + report
+    // 11 §11 recovery dashboard).
+    { loc: `${base}/sitemap-commercial.xml`, lastModified: familyLastmod("commercial") },
     {
       loc: `${base}/sitemap-collections.xml`,
       lastModified: familyLastmod("collections"),

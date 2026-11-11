@@ -14,6 +14,11 @@ import { MACRO_TRACKER_FAQ_AR, MACRO_TRACKER_FAQ_EN } from "./content";
  * tracking app" queries had ZERO matching pages. This page targets that
  * intent and routes it to the REAL product surface.
  *
+ * SEO-RECOVERY fix (2026-11-11, audit 13 / T-1 / P0-2ب — same defect
+ * class as workout-tracker): the AR step 4 and the closing CTA linked
+ * /ar/auth — a 404 (auth has no Arabic mirror). Both now point to
+ * /auth, the only real route.
+ *
  * HONESTY LAW (capability inventory 2026-09-30): every claim below maps
  * to a shipped feature —
  *   - Macro calculator: free targets in protein/carbs/fat.
@@ -61,7 +66,7 @@ export default function MacroTrackerPage() {
           n: "٤",
           title: "تابع النتيجة",
           desc: "تسجيلات أسبوعية للوزن وخمسة قياسات وصور تقدّم ومخطط وزن تفاعلي — ماكروزك ونتائجك في لوحة واحدة.",
-          href: "/ar/auth",
+          href: "/auth",
           cta: "ابدأ مجانًا",
         },
       ]
@@ -278,7 +283,7 @@ export default function MacroTrackerPage() {
               : "The calculators, the food database, and the meal planner with live totals — all free, plus limited EVO AI access with no credit card."}
           </p>
           <div className="mt-6 flex flex-wrap justify-center gap-2">
-            <Link href={isAr ? "/ar/auth" : "/auth"} className="btn-chrome px-6 py-2.5 text-sm">
+            <Link href="/auth" className="btn-chrome px-6 py-2.5 text-sm">
               {isAr ? "سجّل مجانًا" : "Sign up free"}
             </Link>
             <Link href={isAr ? "/ar/memberships" : "/memberships"} className="btn-outline px-6 py-2.5 text-sm">

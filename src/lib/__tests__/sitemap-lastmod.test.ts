@@ -48,7 +48,10 @@ describe("sitemap lastmod anchors (#14)", () => {
     // mirrors) joined the pages family via sitemap-pages — a material
     // family change, so the anchor moved to the ship date (the UPDATE
     // PROTOCOL; the comparisons-family precedent).
-    expect(SITEMAP_LASTMOD.pages).toBe("2026-11-10");
+    // SEO-RECOVERY (2026-11-11): the anchor moved to the internal-linking
+    // + commercial-split ship date (same protocol — footer links change
+    // every page's served HTML).
+    expect(SITEMAP_LASTMOD.pages).toBe("2026-11-11");
     // SEO-GROWTH-P4 (2026-11-05): the food-vs-food comparison pilot (8
     // new URLs — audit 03 §4.2) is a material family change, so the
     // comparisons anchor moved to the ship date (the UPDATE PROTOCOL).
