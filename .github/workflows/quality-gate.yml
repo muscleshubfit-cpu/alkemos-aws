@@ -21,8 +21,8 @@ name: Quality gate (tsc • eslint • vitest)
 # docs gates. workflow_dispatch stays for manual runs of any commit.
 #
 # PHASE 141 (A-12) install discipline: dependencies come from
-# `bun install --frozen-lockfile` — the SAME bun.lock Vercel and
-# local dev use. The previous CI pattern (fresh `npm install` from
+# `bun install --frozen-lockfile` — the SAME bun.lock the deploy
+# pipeline and local dev use. The previous CI pattern (fresh `npm install` from
 # registry metadata, no lockfile) could resolve a DIFFERENT tree
 # than production; frozen Bun kills that drift class.
 #

@@ -137,7 +137,7 @@ jobs:
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0 — pinned 2026-10-10 audit
 
-      # Same frozen environment as quality-gate + Vercel: bun 1.3.14
+      # Same frozen environment as quality-gate: bun 1.3.14
       # from bun.lock, runtime Node 22.
       - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0 — pinned 2026-10-10 audit
         with:
@@ -277,15 +277,16 @@ jobs:
       # "use client" components (CheckoutView/CoachWalletView/root-shell)
       # inline NEXT_PUBLIC_* at BUILD time — runtime .env staging alone
       # never reaches the shipped bundle. Absent secret -> "" -> previous
-      # behavior (feature off); set the secret -> feature on (Vercel parity:
-      # GA + AdSense active, PayPal once the owner adds its 5 values).
+      # behavior (feature off); set the secret -> feature on (same
+      # public-feature posture the old Vercel env provided: GA + AdSense
+      # active, PayPal once the owner adds its 5 values).
       NEXT_PUBLIC_GA_ID: ${{ secrets.NEXT_PUBLIC_GA_ID }}
       NEXT_PUBLIC_ADSENSE_CLIENT: ${{ secrets.NEXT_PUBLIC_ADSENSE_CLIENT }}
       NEXT_PUBLIC_PAYPAL_CLIENT_ID: ${{ secrets.NEXT_PUBLIC_PAYPAL_CLIENT_ID }}
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0 — pinned 2026-10-10 audit
 
-      # Same frozen environment as quality-gate + Vercel: bun 1.3.14
+      # Same frozen environment as quality-gate: bun 1.3.14
       # from bun.lock, runtime Node 22.
       - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0 — pinned 2026-10-10 audit
         with:
@@ -398,7 +399,9 @@ jobs:
       - name: Precompress static assets (brotli + gzip sidecars)
         run: node scripts/precompress-static.mjs
 
-      # output: standalone stays FORBIDDEN (Vercel law in next.config.ts)
+      # output: standalone stays FORBIDDEN (law in next.config.ts —
+      # the release ships the full .next tree and runs `next start`
+      # under PM2; the standalone layout would break that contract).
       # — the release ships the full .next + bun install on the server.
       - name: Package release
         run: >-
@@ -562,14 +565,14 @@ jobs:
             [ "$code" = "200" ] && ok "$p -> 200" || bad "$p -> $code"
           done
 
-          echo "== security headers on / (the 7 from vercel.json) =="
+          echo "== security headers on / (the 7 — Caddyfile, verbatim from vercel.json) =="
           R -I "$BASE/" > /tmp/hdrs
           for h in X-Content-Type-Options X-Frame-Options Referrer-Policy Strict-Transport-Security Permissions-Policy Content-Security-Policy Content-Security-Policy-Report-Only; do
             grep -qi "^$h:" /tmp/hdrs && ok "header $h present" || bad "header $h MISSING"
           done
           if grep -qi '^server:' /tmp/hdrs; then bad "Server header exposed"; else ok "Server header hidden"; fi
 
-          echo "== Cache-Control parity with the Vercel edge =="
+          echo "== Cache-Control parity with the documented edge policy =="
           cc() { R -I "$BASE$1" | tr -d '\r' | awk -F': ' 'tolower($1)=="cache-control"{print $2}'; }
           got=$(cc /images/og/og-home-en.png)
           [ "$got" = "public, max-age=86400" ] && ok "CC /images/* = 86400" || bad "CC /images/* : '$got'"

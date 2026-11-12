@@ -21,7 +21,8 @@
  *   OPENROUTER_API (or OPENROUTER_API_KEY), GROQ_API_KEY, NVIDIA_API_KEY
  * OPTIONAL ENV: UNSPLASH_ACCESS_KEY / PEXELS_API_KEY / PIXABAY_API_KEY
  *   (IMAGE SOURCE LAW v3: Pexels primary — PEXELS_API_KEY required in
- *   GHA secrets AND Vercel Production; Unsplash/Pixabay failover),
+ *   GHA secrets AND the origin's staged runtime env (shared/.env,
+ *   synced from the same GitHub Secrets); Unsplash/Pixabay failover),
  *   AI_CHAIN_TOTAL_BUDGET_MS, PIPELINE_LANG (en|ar — threaded by
  *   run-step.sh; required for p0-research, logged for all steps),
  *   PIPELINE_TOPIC (Phase 162: coach topic override — p0-research only;

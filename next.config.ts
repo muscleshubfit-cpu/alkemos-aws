@@ -1,10 +1,13 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // NOTE: Do NOT set output: "standalone" — Vercel handles the build
-  // output natively and expects the standard .next/ structure. Setting
-  // standalone mode breaks Vercel's onBuildComplete step which looks
-  // for .next/next-server.js.nft.json at its standard location.
+  // NOTE: Do NOT set output: "standalone" — the AWS deploy pipeline
+  // (deploy-aws.yml → deploy/deploy.sh) ships the FULL standard .next/
+  // tree and runs `next start` under PM2 (ecosystem.config.js); the
+  // standalone layout would break that contract. (Historical note: the
+  // original prohibition was written for Vercel's build pipeline — the
+  // justification retired with the 2026-10-10 cutover, the prohibition
+  // itself stays, per migration plan §8.)
   // TypeScript strict checks enabled — all @ts-nocheck removed, 0 errors
   typescript: {
   },

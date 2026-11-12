@@ -25,7 +25,9 @@
  *     now throw with the command + message instead of poisoning the cursor.
  *
  * This script NEVER commits by itself — the workflow step commits with the
- * owner identity (GIT-IDENTITY law: muscleshubfit@gmail.com, [vercel skip]).
+ * owner identity (GIT-IDENTITY law: muscleshubfit@gmail.com; the push is a
+ * docs-only change that skips the deploy pipeline via paths-ignore — no
+ * skip marker since the [vercel skip] retirement, 2026-11-12).
  * Fails honestly (exit 1) when the Upstash secrets are missing.
  */
 

@@ -4,8 +4,10 @@ name: Gemini weekly usage report
 # مراقبة استهلاك Gemini لمدة أسبوع، وإنشاء تقرير المراقبة الأسبوعية»).
 # Reads the per-tag daily counters written by src/lib/ai-usage-gemini.ts
 # (Upstash) and updates docs/ai/gemini-weekly-usage-report.md — newest week
-# on top, 8-week retention. Commit uses the GIT-IDENTITY law email and
-# [vercel skip] (docs-only change). Push rides REPO_ACCESS_TOKEN (branch
+# on top, 8-week retention. Commit uses the GIT-IDENTITY law email
+# (docs-only change — the push skips the deploy pipeline automatically
+# via paths-ignore; the old [vercel skip] marker is retired 2026-11-12).
+# Push rides REPO_ACCESS_TOKEN (branch
 # protection bypass = owner PAT); when that token is missing/unauthorized
 # the run stays GREEN but clearly reports that the row needs a manual land —
 # the report body is ALWAYS in $GITHUB_STEP_SUMMARY.
@@ -82,7 +84,7 @@ jobs:
             exit 0
           fi
           git add docs/ai/gemini-weekly-usage-report.md
-          git commit -m "docs: [vercel skip] Gemini weekly usage report $(date -u +%F) (Phase 343 monitoring — worklog GEMINI-PROVIDER-ROLLOUT-2026-10-06)" --quiet
+          git commit -m "docs: Gemini weekly usage report $(date -u +%F) (Phase 343 monitoring — worklog GEMINI-PROVIDER-ROLLOUT-2026-10-06)" --quiet
           # 343-FIXUP-3: actions/checkout persists the default GITHUB_TOKEN as an
           # http extraheader which HIJACKS the URL-embedded PAT (run 37395060896
           # pushed as github-actions[bot] → 403). Drop it so REPO_ACCESS_TOKEN

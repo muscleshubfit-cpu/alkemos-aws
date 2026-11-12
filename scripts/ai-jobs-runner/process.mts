@@ -3,8 +3,10 @@
  *
  * Native GitHub Actions worker for the WHOLE AI system (owner directive
  * 2026-08-27): claims queued `ai_jobs` rows and runs their processors
- * IN-PROCESS — no Vercel hop, no serverless time cap. EVO chat is the
- * ONLY AI that never touches this file (stays Vercel streaming).
+ * IN-PROCESS — no API-route hop, no time cap (the design was born
+ * against the retired Vercel 60s serverless cap). EVO chat is the
+ * ONLY AI that never touches this file (it streams in the app on the
+ * AWS origin — the sole direct-model exception).
  *
  * USAGE:
  *   npx --no-install tsx scripts/ai-jobs-runner/process.mts [--max 10]

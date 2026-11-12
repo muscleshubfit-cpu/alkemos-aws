@@ -207,7 +207,7 @@ jobs:
           node-version: 22
 
       # PHASE 141 (A-12) — production-locked install: bun reads the SAME
-      # bun.lock Vercel and local dev build from, killing the npm
+      # bun.lock the deploy pipeline and local dev build from, killing the npm
       # fresh-re-resolution drift class (and the 2026-09-03 npm-10
       # arborist crash + npm-11 workaround that fought it). Node stays
       # the RUNTIME — the tsx/npx steps below are unchanged.

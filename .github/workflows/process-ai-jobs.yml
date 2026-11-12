@@ -14,9 +14,11 @@ name: Process AI jobs (plans • tools • social — queue worker)
 #   article_generate      → coach full-article draft (title+markdown+meta+tags)
 #   social_post           → facebook | instagram | x | linkedin × tone
 #
-# EVO chat NEVER runs here — it stays on Vercel streaming by directive.
-# In-process execution via tsx (no Vercel hop, no 60s serverless cap);
-# AI_CHAIN_TOTAL_BUDGET_MS=180000 funds long completions.
+# EVO chat NEVER runs here — it streams in the app on the AWS origin
+# (the ONLY direct-model exception, by directive). In-process execution
+# via tsx (no API-route hop, no time cap — a design born against the
+# retired Vercel 60s serverless cap); AI_CHAIN_TOTAL_BUDGET_MS=180000
+# funds long completions.
 #
 # EVENT-DRIVEN DISPATCH LAW (2026-08-28, AGENTS.md §8): enqueue routes
 # PUSH-trigger this workflow via the GitHub API the moment a job lands —
@@ -140,7 +142,7 @@ jobs:
           node-version: 22
 
       # PHASE 141 (A-12) — production-locked install: bun reads the SAME
-      # bun.lock Vercel and local dev build from, killing the npm
+      # bun.lock the deploy pipeline and local dev build from, killing the npm
       # fresh-re-resolution drift class (and the 2026-09-03 npm-10
       # arborist crash + npm-11 workaround that fought it). Node stays
       # the RUNTIME — the tsx/npx steps below are unchanged.
