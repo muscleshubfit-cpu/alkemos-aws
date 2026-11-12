@@ -64,13 +64,13 @@ describe("ingredient lines — grams + weight state in the version's language (i
     expect(line).toContain("rinsed");
   });
 
-  it("AR line carries the same grams in Arabic-Indic and the نيئ state", () => {
+  it("AR line carries the same grams (Western digits — site convention) and the نيئ state", () => {
     const line = recipeIngredientLine(ING, "ar");
     expect(line).toContain("أرز أبيض");
     expect(line).toContain("جم");
     expect(line).toContain("نيئ");
     // the numeric truth is IDENTICAL across the two versions
-    expect(line).toContain("٢٥٠");
+    expect(line).toContain("250");
   });
 
   it("cooked state and optional marker render in both languages", () => {

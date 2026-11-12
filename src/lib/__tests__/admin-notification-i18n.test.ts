@@ -30,12 +30,12 @@ describe("new_client — variant law", () => {
   const row = {
     type: "new_client",
     title: "عميل جديد سجّل! ",
-    body: "أحمد (a@b.com) انضم للمنصة. اطمئن على استبياناته وجهّز خططه.",
+    body: "أحمد (a@b.com) انضم للمنصة. راجع استبياناته وجهّز خططه.",
     payload: { name: "أحمد", email: "a@b.com", variant: "standard" },
   };
   it("standard renders both languages", () => {
     expect(ar(row).title).toBe("عميل جديد سجّل!");
-    expect(ar(row).body).toBe("أحمد (a@b.com) انضم للمنصة. اطمئن على استبياناته وجهّز خططه.");
+    expect(ar(row).body).toBe("أحمد (a@b.com) انضم للمنصة. راجع استبياناته وجهّز خططه.");
     expect(en(row).title).toBe("New client signed up!");
     expect(en(row).body).toBe(
       "أحمد (a@b.com) joined the platform. Check their questionnaires and prepare their plans.",
@@ -117,7 +117,7 @@ describe("suffix types — base-type matching", () => {
       body: "x",
       payload: { coach_name: "كريم" },
     };
-    expect(ar(row).body).toBe("«كريم» حدّث صفحته العامة — محتاجة موافقة قبل ظهورها للجميع.");
+    expect(ar(row).body).toBe("«كريم» حدّث صفحته العامة — تحتاج إلى موافقة قبل ظهورها للجميع.");
     expect(en(row).body).toBe(
       "“كريم” updated their public page — it needs approval before going public.",
     );
@@ -325,7 +325,7 @@ describe("member sweep — affiliate money rows", () => {
       payload: { amount_usd: 7.5, reason: "PayPal refund (capture 8XN)" },
     };
     expect(men(row).body).toContain("A $7.5 commission was reversed (refund/payment cancellation). Reason: PayPal refund (capture 8XN).");
-    expect(mar(row).body).toContain("لو عندك استفسار تواصل مع الدعم.");
+    expect(mar(row).body).toContain("إن كان لديك استفسار فتواصل مع الدعم.");
   });
   it("payout_paid + payout_rejected", () => {
     const paid = {
@@ -399,7 +399,7 @@ describe("member sweep — wallet rows", () => {
       type: "wallet_topup_approved", title: "t", body: "b",
       payload: { amount: 10, balance: 45, provider: "manual" },
     };
-    expect(mar(manual).body).toBe("اتقبل طلب شحن المحفظة بمبلغ ١٠$ — الرصيد الجديد ٤٥.");
+    expect(mar(manual).body).toBe("تم قبول طلب شحن المحفظة بمبلغ ١٠$ — الرصيد الجديد ٤٥.");
     const paypal = { ...manual, payload: { ...manual.payload, provider: "paypal" } };
     expect(men(paypal).title).toBe("Wallet topped up via PayPal ✅");
     expect(men(paypal).body).toBe("$10 was added to your wallet — new balance 45.");
@@ -410,7 +410,7 @@ describe("member sweep — wallet rows", () => {
       payload: { amount: 10, note: "الإيصال غير واضح" },
     };
     expect(men(row).body).toContain("Your $10 top-up request wasn't approved. Reason: الإيصال غير واضح");
-    expect(mar(row).body).toContain("راجع إيصال الدفع وحاول تاني.");
+    expect(mar(row).body).toContain("راجع إيصال الدفع وحاول مرة أخرى.");
   });
 });
 

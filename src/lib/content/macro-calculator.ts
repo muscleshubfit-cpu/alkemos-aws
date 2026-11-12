@@ -57,7 +57,7 @@ export const MACRO_CALCULATOR_CONTENT: ToolReference = {
           kind: "p",
           text: {
             en: "You enter your daily calorie budget (from the calorie calculator or your own tracking data) and pick a diet pattern; the calculator converts each percentage into calories and then into grams — protein and carbohydrate calories divided by 4, fat calories divided by 9. The five presets are fixed, named patterns with defined logic rather than arbitrary sliders, which keeps the result reproducible and explainable.",
-            ar: "تُدخل ميزانية سعراتك اليومية (من حاسبة السعرات أو من بيانات تسجيلك) وتختار نمطًا غذائيًا؛ فتحوّل الحاسبة كل نسبة إلى سعرات ثم إلى غرامات — سعرات البروتين والكربوهيدرات تُقسم على 4، وسعرات الدهون على 9. الأنماط الخمسة أنماط مسماة ثابتة بمنطق محدد لا منزلقات اعتباطية، وهذا ما يجعل النتيجة قابلة للتكاثر والتفسير.",
+            ar: "تُدخل ميزانية سعراتك اليومية (من حاسبة السعرات أو من بيانات تسجيلك) وتختار نمطًا غذائيًا؛ فتحوّل الحاسبة كل نسبة إلى سعرات ثم إلى غرامات — سعرات البروتين والكربوهيدرات تُقسم على 4، وسعرات الدهون على 9. الأنماط الخمسة أنماط مسماة ثابتة بمنطق محدد لا منزلقات اعتباطية، وهذا ما يجعل النتيجة قابلة للتكرار والشرح.",
           },
         },
         {
@@ -116,7 +116,7 @@ export const MACRO_CALCULATOR_CONTENT: ToolReference = {
           kind: "p",
           text: {
             en: "Protein quality varies with leucine content and digestibility, but over a full day of mixed eating, variety handles quality for you: animal proteins (meat, fish, eggs, dairy) are complete, and complementary plant pairs — legumes with grains, such as the fava beans and bread of a traditional Middle Eastern breakfast — together cover the essential amino acids. The table below gives honest per-100 g reference values for the proteins that actually appear in everyday kitchens.",
-            ar: "تتفاوت جودة البروتين بمحتوى الليوسين وقابلية الهضم، لكن على مدى يوم كامل من أكل مختلط تتكفل التنوعُ بالجودة نيابةً عنك: فبروتينات الحيوان (اللحم والسمك والبيت واللبن) كاملة، والأزواج النباتية المتكاملة — البقول مع الحبوب، مثل فول الخبز في فطور شرقي تقليدي — تغطي معًا الأحماض الأمينية الأساسية. يقدم الجدول أدناه قيمًا مرجعية صادقة لكل 100 غرام من البروتينات التي تحضر فعلًا في المطابخ اليومية.",
+            ar: "تتفاوت جودة البروتين بمحتوى الليوسين وقابلية الهضم، لكن على مدى يوم كامل من أكل مختلط يتكفل التنوعُ بالجودة نيابةً عنك: فبروتينات الحيوان (اللحم والسمك والبيض واللبن) كاملة، والأزواج النباتية المتكاملة — البقول مع الحبوب، مثل الفول مع الخبز في فطور شرقي تقليدي — تغطي معًا الأحماض الأمينية الأساسية. يقدم الجدول أدناه قيمًا مرجعية صادقة لكل 100 غرام من البروتينات التي تحضر فعلًا في المطابخ اليومية.",
           },
         },
         {
@@ -166,7 +166,7 @@ export const MACRO_CALCULATOR_CONTENT: ToolReference = {
           kind: "p",
           text: {
             en: "All carbohydrates end up as glucose, but the packaging differs: sugars hit the bloodstream quickly, starches arrive in chains that digest at various speeds, and fiber — technically a carbohydrate — mostly feeds gut bacteria and slows everything else down. The quality question is not \"how many grams\" but \"in what wrapper\": 100 g of carbohydrate from oats, lentils, fruit, and vegetables comes packaged with fiber, water, vitamins, and slow digestion; the same 100 g from soft drinks and candy arrives naked and fast.",
-            ar: "تنتهي كل الكربوهيدرات غلوكوز، لكن الغلاف يختلف: فالسكريات تصل الدم سريعًا، والنشويات تصل في سلاسل تُهضم بسرعات متنوعة، والألياف — كربوهيدرات تقنيًا — تُطعم بكتيريا الأمعاء بالدرجة الأولى وتبطئ كل ما عداها. سؤال الجودة ليس «كم غرامًا» بل «في أي غلاف»: فـ100 غرام كربوهيدرات من الشوفان والعدس والفاكهة والخضروات تأتي مغلّفة بألياف وماء وفيتامينات وهضم بطيء؛ والمئة غرام نفسها من المشروبات الغازية والحلويات تصل عارية وسريعة.",
+            ar: "تنتهي كل الكربوهيدرات إلى غلوكوز، لكن الغلاف يختلف: فالسكريات تصل الدم سريعًا، والنشويات تصل في سلاسل تُهضم بسرعات متنوعة، والألياف — كربوهيدرات تقنيًا — تُطعم بكتيريا الأمعاء بالدرجة الأولى وتبطئ كل ما عداها. سؤال الجودة ليس «كم غرامًا» بل «في أي غلاف»: فـ100 غرام كربوهيدرات من الشوفان والعدس والفاكهة والخضروات تأتي مغلّفة بألياف وماء وفيتامينات وهضم بطيء؛ والـ100 غرام نفسها من المشروبات الغازية والحلويات تصل عارية وسريعة.",
           },
         },
         {
@@ -225,8 +225,8 @@ export const MACRO_CALCULATOR_CONTENT: ToolReference = {
         {
           kind: "p",
           text: {
-            en: "For muscle gain, the balanced preset (30/40/30) with a modest calorie surplus is the workhorse: carbohydrates fuel the training that builds the stimulus, and the extra insulin environment supports recovery. Skin-and-bones beginners can push carbs higher; anyone gaining fat faster than muscle should trim the surplus, not the protein. For general health and long-term maintenance, the honest answer is that several splits work: the Mediterranean-style balanced pattern wins adherence studies not through magic ratios but through food quality, fiber, and enjoyable meals — the split you can live with beats the split you can only survive for two weeks.",
-            ar: "لبناء العضلات، النمط المتوازن (30/40/30) مع فائض سعري معتدل هو حصان العمل: فالكربوهيدرات تزود التدريب الذي يبني التحفيز، والبيئة الأنسولينية المضافة تدعم الاستشفاء. يمكن للنحافين المبتدئين دفع الكربوهيدرات أعلى؛ ومن يتكسب دهنًا أسرع من العضلات يقلّص الفائض لا البروتين. وللصحة العامة والتثبيت طويل الأمد، الإجابة الصادقة أن عدة توزيعات تصلح: فالنمط المتوازن على طريقة المتوسط يفوز في دراسات الالتزام لا بنسب سحرية بل بجودة الطعام والألياف والوجبات الممتعة — التوزيع الذي تستطيع العيش معه يتفوق على التوزيع الذي تنجو منه أسبوعين فقط.",
+            en: "For muscle gain, the balanced preset (30/40/30) with a modest calorie surplus is the workhorse: carbohydrates fuel the training that builds the stimulus, and the extra insulin environment supports recovery. Skinny beginners can push carbs higher; anyone gaining fat faster than muscle should trim the surplus, not the protein. For general health and long-term maintenance, the honest answer is that several splits work: the Mediterranean-style balanced pattern wins adherence studies not through magic ratios but through food quality, fiber, and enjoyable meals — the split you can live with beats the split you can only survive for two weeks.",
+            ar: "لبناء العضلات، النمط المتوازن (30/40/30) مع فائض سعري معتدل هو حصان العمل: فالكربوهيدرات تزود التدريب الذي يبني التحفيز، والبيئة الأنسولينية المضافة تدعم الاستشفاء. يمكن للنحافين المبتدئين دفع الكربوهيدرات أعلى؛ ومن يتكسب دهنًا أسرع من العضلات يقلّص الفائض لا البروتين. وللصحة العامة والتثبيت طويل الأمد، الإجابة الصادقة أن عدة توزيعات تصلح: فالنمط المتوازن على الطراز المتوسطي يفوز في دراسات الالتزام لا بنسب سحرية بل بجودة الطعام والألياف والوجبات الممتعة — التوزيع الذي تستطيع العيش معه يتفوق على التوزيع الذي تنجو منه أسبوعين فقط.",
           },
         },
         {
@@ -263,7 +263,7 @@ export const MACRO_CALCULATOR_CONTENT: ToolReference = {
           kind: "p",
           text: {
             en: "Macros for holding weight («ماكروز الثبات») are the quietest and most underrated job: eat at maintenance with protein still high, and let training plus time do the slow work of recomposition — trading a little fat for a little muscle at a stable scale number. This suits beginners, returners, and anyone whose weight goal is already met; the body-fat calculator's own page documents that recomposition moves both numbers slowly and works best from those starting points. Maintenance is also the season's rest stop between cutting and building blocks — visiting it deliberately beats falling into it exhausted.",
-            ar: "ماكروز الثبات أهدأ الوظائف وأكثرها إهمالًا: كُل عند الثبات وبروتينك ما زال مرتفعًا، ودع التدريب والزمن ينجزا عمل إعادة التكوين البطيء — مبادلة قليل من الدهون بقليل من العضل عند رقم ثابت على الميزان. هذا يناسب المبتدئين والعودين ومن حقق هدف وزنه أصلًا؛ وصفحة حاسبة دهون الجسم نفسها توثق أن إعادة التكوين تحرك الرقمين ببطء وتعمل أفضل من نقاط البداية تلك. والثبات أيضًا محطة راحة الموسم بين كتل التنشيف والبناء — زيارته عمدًا أفضل من السقوط فيه منهكًا.",
+            ar: "ماكروز الثبات أهدأ الوظائف وأكثرها إهمالًا: كُل عند الثبات وبروتينك ما زال مرتفعًا، ودع التدريب والزمن ينجزا عمل إعادة التكوين البطيء — مبادلة قليل من الدهون بقليل من العضل عند رقم ثابت على الميزان. هذا يناسب المبتدئين والعائدين ومن حقق هدف وزنه أصلًا؛ وصفحة حاسبة دهون الجسم نفسها توثق أن إعادة التكوين تحرك الرقمين ببطء وتعمل أفضل من نقاط البداية تلك. والثبات أيضًا محطة راحة الموسم بين كتل التنشيف والبناء — زيارته عمدًا أفضل من السقوط فيه منهكًا.",
           },
         },
       ],
@@ -286,7 +286,7 @@ export const MACRO_CALCULATOR_CONTENT: ToolReference = {
           kind: "p",
           text: {
             en: "Two habits carry most of the value. First, build repeatable meal templates — the same breakfast on weekdays, two rotating lunches — so logging becomes effortless and intake variance collapses; variety lives in dinner and seasonings. Second, think in \"portion units\" you can eyeball: a palm of protein, a fist of carbohydrate, a thumb of fat, unlimited watery vegetables. Eyeballing is less precise than a scale, but a plan you can execute at a restaurant with your eyes is worth more than a perfect plan that only works at home with a food scale. The dedicated meal planner tool turns these templates into a full day with per-item macros and a running total.",
-            ar: "عادتان تحملان معظم القيمة. الأولى: ابنِ قوالب وجبات قابلة للتكرار — الفطور نفسه أيام العمل، غذاءان متناوبان — فيصبح التسجيل بلا جهد وينهار تباين الاستهلاك؛ والتنوع يسكن العشاء والتوابل. الثانية: فكر «بوحدات حصص» تقدّرها بعينك: كفّ بروتين، قبضة كربوهيدرات، إبهام دهون، وخضروات مائية بلا حدود. التقدير البصري أدق أقل من الميزان، لكن الخطة التي تنفذها في مطعم بعينك أفضل من خطة مثالية تعمل في البيت فقط بميزان طعام. أداة مخطط الوجبات المخصصة تحوّل هذه القوالب إلى يوم كامل بماكروز لكل صنف وإجمالي متراكم.",
+            ar: "عادتان تحملان معظم القيمة. الأولى: ابنِ قوالب وجبات قابلة للتكرار — الفطور نفسه أيام العمل، غذاءان متناوبان — فيصبح التسجيل بلا جهد وينهار تباين الاستهلاك؛ والتنوع يسكن العشاء والتوابل. الثانية: فكر «بوحدات حصص» تقدّرها بعينك: كفّ بروتين، قبضة كربوهيدرات، إبهام دهون، وخضروات مائية بلا حدود. التقدير البصري أقل دقة من الميزان، لكن الخطة التي تنفذها في مطعم بعينك أفضل من خطة مثالية تعمل في البيت فقط بميزان طعام. أداة مخطط الوجبات المخصصة تحوّل هذه القوالب إلى يوم كامل بماكروز لكل صنف وإجمالي متراكم.",
           },
         },
       ],
@@ -373,7 +373,7 @@ export const MACRO_CALCULATOR_CONTENT: ToolReference = {
       },
       a: {
         en: "For most healthy adults, nutritional ketosis at 25/5/70 is tolerable for months and shows respectable outcomes in weight-loss trials. The honest caveats: the first one to two weeks carry the \"keto flu\" adaptation; fiber often runs low unless vegetables are deliberate; athletic top-end intensity can suffer; and anyone with kidney disease, liver disease, or on glucose-lowering medication needs medical clearance first. It is one legitimate pattern among five — not a superiority claim.",
-        ar: "عند معظم البالغين الأصحاء، الكيتوزس الغذائي بتوزيع 25/5/70 محتمل لأشهر ويظهر نتائج محترمة في تجارب خسارة الوزن. التحفظات الصادقة: الأسابيع الأولى إلى الثانية تحمل «إنفلونزا الكيتو» التكيفية؛ والألياف تجري منخفضة غالبًا ما لم تُتعمد الخضروات؛ وشدة القمة الرياضية قد تتأثر؛ وأي شخص بأمراض الكلى أو الكبد أو على أدوية خافضة للغلوكوز يحتاج تصريحًا طبيًا أولًا. هو نمط مشروع واحد بين خمسة — لا ادعاء تفوق.",
+        ar: "عند معظم البالغين الأصحاء، الكيتوزس الغذائي بتوزيع 25/5/70 محتمل لأشهر ويظهر نتائج محترمة في تجارب خسارة الوزن. التحفظات الصادقة: الأسبوع الأول إلى الثاني يحمل «إنفلونزا الكيتو» التكيفية؛ والألياف تبقى منخفضة غالبًا ما لم تُدرَج الخضروات عمدًا؛ وشدة القمة الرياضية قد تتأثر؛ وأي شخص بأمراض الكلى أو الكبد أو على أدوية خافضة للغلوكوز يحتاج تصريحًا طبيًا أولًا. هو نمط مشروع واحد بين خمسة — لا ادعاء تفوق.",
       },
     },
     {
@@ -383,7 +383,7 @@ export const MACRO_CALCULATOR_CONTENT: ToolReference = {
       },
       a: {
         en: "Yes, within reason. Healthy kidneys handle substantially more protein than sedentary guidelines recommend, and slightly overshooting your target costs little — excess protein is mostly oxidized for energy, which does displace carbohydrate calories if your calorie budget is fixed. The practical ceiling is where protein crowds out so much fat and carbohydrate that meals become monotonous, fiber drops, and training fuel suffers. People with diagnosed kidney disease are the population that should treat protein as a prescribed number, not a floor.",
-        ar: "نعم، في حدود المعقول. فالكلى السليمة تتعامل مع بروتين يفوق كثيرًا توصيات الخاملين، وتجاوز هدفك قليلًا يكلف قليلًا — فالبروتين الفائض يُؤكسد للطاقة بالدرجة الأولى، وهذا يزاحم سعرات الكربوهيدرات فعلًا إن كانت ميزانيتك السعرة ثابتة. السقف العملي هو حيث يزاحم البروتين من الدهون والكربوهيدرات ما يجعل الوجبات رتيبة والألياف تهبط ووقود التدريب يتضرر. ومرضى الكلى المشخّصون هم من يجب أن يتعاملوا مع البروتين كرقم موصوف لا كأرضية.",
+        ar: "نعم، في حدود المعقول. فالكلى السليمة تتعامل مع بروتين يفوق كثيرًا توصيات الخاملين، وتجاوز هدفك قليلًا يكلف قليلًا — فالبروتين الفائض يُؤكسد للطاقة بالدرجة الأولى، وهذا يزاحم سعرات الكربوهيدرات فعلًا إن كانت ميزانية سعراتك ثابتة. السقف العملي هو حيث يزاحم البروتين من الدهون والكربوهيدرات ما يجعل الوجبات رتيبة والألياف تهبط ووقود التدريب يتضرر. ومرضى الكلى المشخّصون هم من يجب أن يتعاملوا مع البروتين كرقم موصوف لا كأرضية.",
       },
     },
     {
@@ -413,7 +413,7 @@ export const MACRO_CALCULATOR_CONTENT: ToolReference = {
       },
       a: {
         en: "Decompose the dish into its components and log each: a piece of mahshi, a stew, or a koshari bowl is still rice + protein source + fat + vegetables in known proportions. For home cooking, log the raw ingredients you actually used divided by portions served — that is more accurate than any database entry for \"one plate\". Restaurant meals: pick the nearest decomposed equivalent, accept ±20% error, and keep such meals a minority of the week.",
-        ar: "فكك الطبق إلى مكوناته وسجّل كل واحد: فالملوخية أو الطاجن أو طبق كشري ما يزال أرزًا + مصدر بروتين + دهون + خضروات بنسب معلومة. وللطبخ المنزلي: سجّل المكونات النيئة التي استخدمتها فعلًا مقسومة على الحصص المقدمة — أدق من أي مدخلة قاعدة بيانات لـ«طبق واحد». ووجبات المطاعم: اختر المكافئ المفكك الأقرب، واقبل خطأ ±20%، وأبقِ مثل هذه الوجبات أقلية في أسبوعك.",
+        ar: "فكك الطبق إلى مكوناته وسجّل كل واحد: فالمحشي أو الطاجن أو طبق كشري ما يزال أرزًا + مصدر بروتين + دهون + خضروات بنسب معلومة. وللطبخ المنزلي: سجّل المكونات النيئة التي استخدمتها فعلًا مقسومة على الحصص المقدمة — أدق من أي مدخلة قاعدة بيانات لـ«طبق واحد». ووجبات المطاعم: اختر المكافئ المفكك الأقرب، واقبل خطأ ±20%، وأبقِ مثل هذه الوجبات أقلية في أسبوعك.",
       },
     },
     {
@@ -423,7 +423,7 @@ export const MACRO_CALCULATOR_CONTENT: ToolReference = {
       },
       a: {
         en: "For people with healthy kidneys, no — years of higher-protein diets in athletic populations show no adverse renal outcomes in the research. The 30% figure on a 2,000-kcal budget is 150 g, squarely inside the evidence-supported range for a training adult. The caution belongs to diagnosed kidney disease and to combined extremes (very high protein plus very low hydration for long periods). If you have a kidney diagnosis, set protein targets with your physician.",
-        ar: "لمن كلاهما سليمان، لا — فسنوات من الحميات الأعلى بروتينًا في المجتمعات الرياضية لا تظهر مآل كلوية سيئًا في الأبحاث. والرقم 30% على ميزانية 2000 سعرة يعادل 150 غرامًا، داخل النطاق المدعوم بالأدلة لبالغ متدرب. والتحذير يخص مرضى الكلى المشخّصين والتركيبات المتطرفة (بروتين عالٍ جدًا مع إماهة منخفضة جدًا لفترات طويلة). إن كان لديك تشخيص كلوي فضبط أهداف البروتين مع طبيبك.",
+        ar: "لمن كليتاه سليمتان، لا — فسنوات من الحميات الأعلى بروتينًا في المجتمعات الرياضية لا تُظهر مآلًا كلويًّا سيئًا في الأبحاث. والرقم 30% على ميزانية 2000 سعرة يعادل 150 غرامًا، داخل النطاق المدعوم بالأدلة لبالغ متدرب. والتحذير يخص مرضى الكلى المشخّصين والتركيبات المتطرفة (بروتين عالٍ جدًا مع إماهة منخفضة جدًا لفترات طويلة). إن كان لديك تشخيص كلوي فضبط أهداف البروتين مع طبيبك.",
       },
     },
     {
@@ -433,7 +433,7 @@ export const MACRO_CALCULATOR_CONTENT: ToolReference = {
       },
       a: {
         en: "No — hit weekly averages instead. Protein behaves best as a daily anchor (within about ±20 g), but carbohydrate and fat can swing meaningfully day to day as long as the week totals land near plan. This is what makes social life compatible with a macro diet: a heavier Saturday and a lighter Tuesday average out. Precision is a tool for plateau-breaking, not a forever lifestyle.",
-        ar: "لا — التزم بالمتوسطات الأسبوعية. فالبروتين يعمل أفضل كمرتكز يومي (ضمن نحو ±20 غرامًا)، أما الكربوهيدرات والدهون فيمكن أن تتأرجح يومًا بيوم ما دامت إجماليات الأسبوع تهبط قرب الخطة. هذا ما يجعل الحياة الاجتماعية متوافقة مع حمية الماكروز: سبتٌ أثقل وثلاثاءٌ أخف يتوسطان. الدقة أداة لكسر الثبات، لا أسلوب حياة أبدي.",
+        ar: "لا — التزم بالمتوسطات الأسبوعية. فالبروتين يعمل أفضل كمرتكز يومي (ضمن نحو ±20 غرامًا)، أما الكربوهيدرات والدهون فيمكن أن تتأرجح يومًا بيوم ما دامت إجماليات الأسبوع تهبط قرب الخطة. هذا ما يجعل الحياة الاجتماعية متوافقة مع حمية الماكروز: سبت أثقل وثلاثاء أخف يعتدل المتوسط بينهما. الدقة أداة لكسر الثبات، لا أسلوب حياة أبدي.",
       },
     },
     {

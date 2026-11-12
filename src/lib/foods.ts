@@ -7163,7 +7163,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "infant-formula-pbm-products-store-brand-ready-to-feed",
-    nameAr: "حليب أطفال بي بي إم برودكتس — متجر علامة، جاهز للتقديم",
+    nameAr: "حليب أطفال بي بي إم برودكتس — علامة المتجر، جاهز للتقديم",
     nameEn: "Infant formula, PBM PRODUCTS, store brand, ready-to-feed",
     category: "snack",
     per100g: { calories: 63, protein: 1.4, carbs: 6.4, fat: 3.5, fiber: 0.0, sugar: 6.4 },
@@ -7174,7 +7174,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "infant-formula-pbm-products-store-brand-liquid-concentrate-n",
-    nameAr: "حليب أطفال بي بي إم برودكتس — متجر علامة، مركز سائل، غير مخفف",
+    nameAr: "حليب أطفال بي بي إم برودكتس — علامة المتجر، مركز سائل، غير مخفف",
     nameEn: "Infant formula, PBM PRODUCTS, store brand, liquid concentrate, not reconstituted",
     category: "snack",
     per100g: { calories: 130, protein: 2.9, carbs: 13.9, fat: 7.0, fiber: 0.0, sugar: 13.9 },
@@ -7185,7 +7185,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "infant-formula-pbm-products-store-brand-powder",
-    nameAr: "حليب أطفال بي بي إم برودكتس — متجر علامة، بودرة",
+    nameAr: "حليب أطفال بي بي إم برودكتس — علامة المتجر، بودرة",
     nameEn: "Infant formula, PBM PRODUCTS, store brand, powder",
     category: "snack",
     per100g: { calories: 524, protein: 12.0, carbs: 56.0, fat: 28.0, fiber: 0.0, sugar: 56.0 },
@@ -7196,7 +7196,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "infant-formula-pbm-products-store-brand-soy-ready-to-feed",
-    nameAr: "حليب أطفال بي بي إم برودكتس — متجر علامة، صويا، جاهز للتقديم",
+    nameAr: "حليب أطفال بي بي إم برودكتس — علامة المتجر، صويا، جاهز للتقديم",
     nameEn: "Infant formula, PBM PRODUCTS, store brand, soy, ready-to-feed",
     category: "snack",
     per100g: { calories: 63, protein: 1.8, carbs: 6.1, fat: 3.5, fiber: 0.0, sugar: 6.1 },
@@ -7207,7 +7207,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "infant-formula-pbm-products-store-brand-soy-liquid-concentra",
-    nameAr: "حليب أطفال بي بي إم برودكتس — متجر علامة، صويا، مركز سائل، غير مخفف",
+    nameAr: "حليب أطفال بي بي إم برودكتس — علامة المتجر، صويا، مركز سائل، غير مخفف",
     nameEn: "Infant formula, PBM PRODUCTS, store brand, soy, liquid concentrate, not reconstituted",
     category: "snack",
     per100g: { calories: 126, protein: 3.6, carbs: 12.2, fat: 7.0, fiber: 0.0, sugar: 12.2 },
@@ -7218,7 +7218,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "infant-formula-pbm-products-store-brand-soy-powder",
-    nameAr: "حليب أطفال بي بي إم برودكتس — متجر علامة، صويا، بودرة",
+    nameAr: "حليب أطفال بي بي إم برودكتس — علامة المتجر، صويا، بودرة",
     nameEn: "Infant formula, PBM PRODUCTS, store brand, soy, powder",
     category: "snack",
     per100g: { calories: 508, protein: 13.6, carbs: 52.2, fat: 27.2, fiber: 0.0, sugar: 52.2 },
@@ -10701,7 +10701,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "chicken-broilers-or-fryers-neck-meat-and-skin-cooked-simmere",
-    nameAr: "رقبة مطهو مطهو على نار هادئة دجاج — لحم وجلد",
+    nameAr: "رقبة دجاج — لحم وجلد، مطهوة على نار هادئة",
     nameEn: "Chicken, broilers or fryers, neck, meat and skin, cooked simmered",
     category: "protein",
     per100g: { calories: 247, protein: 19.6, carbs: 0.0, fat: 18.1, fiber: 0.0, sugar: 0.0 },
@@ -14405,7 +14405,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "campbells-red-and-white-chicken-noodle-soup-condensed",
-    nameAr: "شوربة نودلز بالدجاج كامبل (الأحمر وأبيض، مركز)",
+    nameAr: "شوربة نودلز بالدجاج كامبل (الأحمر والأبيض، مركز)",
     nameEn: "CAMPBELL'S, Red and White, Chicken Noodle Soup, condensed",
     category: "snack",
     per100g: { calories: 47, protein: 2.4, carbs: 6.0, fat: 1.5, fiber: 0, sugar: 0.0 },
@@ -14854,7 +14854,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "soup-tomato-bisque-canned-condensed",
-    nameAr: "شوربة شوربة طماطم كريمية (معلب، مركز)",
+    nameAr: "شوربة طماطم كريمية (معلبة، مركزة)",
     nameEn: "Soup, tomato bisque, canned, condensed",
     category: "snack",
     per100g: { calories: 96, protein: 1.8, carbs: 18.5, fat: 1.9, fiber: 0.8, sugar: 0 },
@@ -16037,7 +16037,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "soup-tomato-bisque-canned-prepared-with-equal-volume-milk",
-    nameAr: "شوربة شوربة طماطم كريمية محضر بـمثل حجم حليب (معلب)",
+    nameAr: "شوربة طماطم كريمية (معلبة، محضرة بمثل حجمها حليبًا)",
     nameEn: "Soup, tomato bisque, canned, prepared with equal volume milk",
     category: "snack",
     per100g: { calories: 79, protein: 2.5, carbs: 11.7, fat: 2.6, fiber: 0.2, sugar: 0 },
@@ -16484,7 +16484,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "soup-clam-chowder-manhattan-canned-prepared-with-equal-volum",
-    nameAr: "شوربة شوربة بطلينوس مانهاتن (معلب، محضرة بمثل حجمها ماءً)",
+    nameAr: "شوربة بطلينوس على طريقة مانهاتن (معلبة، محضرة بمثل حجمها ماءً)",
     nameEn: "Soup, clam chowder, manhattan, canned, prepared with equal volume water",
     category: "snack",
     per100g: { calories: 30, protein: 0.8, carbs: 4.8, fat: 0.9, fiber: 0.6, sugar: 1.3 },
@@ -16506,7 +16506,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "soup-clam-chowder-new-england-canned-prepared-with-equal-vol-1453",
-    nameAr: "شوربة شوربة بطلينوس نيو إنجلاند (معلب، محضرة بمثل حجمها ماءً)",
+    nameAr: "شوربة بطلينوس على طريقة نيو إنجلاند (معلبة، محضرة بمثل حجمها ماءً)",
     nameEn: "Soup, clam chowder, new england, canned, prepared with equal volume water",
     category: "snack",
     per100g: { calories: 35, protein: 1.6, carbs: 5.0, fat: 1.0, fiber: 0.3, sugar: 0.2 },
@@ -16691,7 +16691,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "campbells-chunky-soups-grilled-steak-steak-chili-with-beans",
-    nameAr: "تشيلي مشوي استيك استيك بالفاصوليا شوربات كامبل تشانكي",
+    nameAr: "شوربة كامبل تشانكي — تشيلي بالستيك المشوي والفاصوليا",
     nameEn: "CAMPBELL'S CHUNKY Soups, Grilled Steak- Steak Chili with Beans",
     category: "snack",
     per100g: { calories: 81, protein: 6.5, carbs: 11.0, fat: 1.2, fiber: 2.9, sugar: 3.7 },
@@ -17108,7 +17108,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "soup-tomato-bisque-canned-prepared-with-equal-volume-water",
-    nameAr: "شوربة شوربة طماطم كريمية (معلب، محضرة بمثل حجمها ماءً)",
+    nameAr: "شوربة طماطم كريمية (معلبة، محضرة بمثل حجمها ماءً)",
     nameEn: "Soup, tomato bisque, canned, prepared with equal volume water",
     category: "snack",
     per100g: { calories: 50, protein: 0.9, carbs: 9.6, fat: 1.0, fiber: 0.2, sugar: 0 },
@@ -17163,7 +17163,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "campbells-soup-on-the-go-vegetable-with-mini-round-noodles-s",
-    nameAr: "خضار بـميني فخذ خلفي نودلز شوربة شوربة كامبل أون ذا جو",
+    nameAr: "شوربة كامبل أون ذا جو — خضار بمعكرون حبيبات صغير",
     nameEn: "CAMPBELL'S Soup on the Go, Vegetable with Mini Round Noodles Soup",
     category: "snack",
     per100g: { calories: 33, protein: 0.7, carbs: 6.9, fat: 0.2, fiber: 0.3, sugar: 4.6 },
@@ -17185,7 +17185,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "campbells-soup-on-the-go-chicken-with-mini-noodles-soup",
-    nameAr: "دجاج بـميني نودلز شوربة شوربة كامبل أون ذا جو",
+    nameAr: "شوربة كامبل أون ذا جو — دجاج بمعكرون صغير",
     nameEn: "CAMPBELL'S Soup on the Go, Chicken with Mini Noodles Soup",
     category: "snack",
     per100g: { calories: 26, protein: 1.3, carbs: 3.6, fat: 0.7, fiber: 0.7, sugar: 0.7 },
@@ -17885,7 +17885,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "soup-vegetable-soup-condensed-low-sodium-prepared-with-equal",
-    nameAr: "شوربة شوربة خضار (مركز، قليل الصوديوم، محضرة بمثل حجمها ماءً)",
+    nameAr: "شوربة خضار (مركزة، قليلة الصوديوم، محضرة بمثل حجمها ماءً)",
     nameEn: "Soup, vegetable soup, condensed, low sodium, prepared with equal volume water",
     category: "snack",
     per100g: { calories: 33, protein: 1.1, carbs: 6.1, fat: 0.5, fiber: 1.1, sugar: 2.1 },
@@ -19405,7 +19405,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "cereals-ready-to-eat-sun-country-kretschmer-honey-crunch-whe",
-    nameAr: "حبوب إفطار جاهزة — صن كانتري، كريتشمر كريتشمر كرانش بالعسل (جنين القمح)",
+    nameAr: "حبوب إفطار جاهزة — صن كانتري، كريتشمر كرانش بالعسل (جنين القمح)",
     nameEn: "Cereals ready-to-eat, SUN COUNTRY, KRETSCHMER Honey Crunch Wheat Germ",
     category: "carb",
     per100g: { calories: 372, protein: 26.6, carbs: 58.1, fat: 7.8, fiber: 10.2, sugar: 21.4 },
@@ -22845,7 +22845,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "apricots-canned-extra-light-syrup-pack-with-skin-solids-and-",
-    nameAr: "مشمش معلب بشيرة خفيفة جدًا",
+    nameAr: "مشمش معلب بشراب خفيف جدًا",
     nameEn: "Apricots, canned, extra light syrup pack, with skin, solids and liquids",
     category: "fruit",
     per100g: { calories: 49, protein: 0.6, carbs: 12.5, fat: 0.1, fiber: 1.6, sugar: 0 },
@@ -22856,7 +22856,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "apricots-canned-light-syrup-pack-with-skin-solids-and-liquid",
-    nameAr: "مشمش معلب بشيرة خفيفة",
+    nameAr: "مشمش معلب بشراب خفيف",
     nameEn: "Apricots, canned, light syrup pack, with skin, solids and liquids",
     category: "fruit",
     per100g: { calories: 63, protein: 0.5, carbs: 16.5, fat: 0.1, fiber: 1.6, sugar: 14.9 },
@@ -22867,7 +22867,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "apricots-canned-heavy-syrup-pack-with-skin-solids-and-liquid",
-    nameAr: "مشمش معلب بشيرة ثقيلة",
+    nameAr: "مشمش معلب بشراب ثقيل",
     nameEn: "Apricots, canned, heavy syrup pack, with skin, solids and liquids",
     category: "fruit",
     per100g: { calories: 83, protein: 0.5, carbs: 21.5, fat: 0.1, fiber: 1.6, sugar: 19.9 },
@@ -22878,7 +22878,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "apricots-canned-heavy-syrup-pack-without-skin-solids-and-liq",
-    nameAr: "مشمش معلب بشيرة ثقيلة — مقشرًا",
+    nameAr: "مشمش معلب بشراب ثقيل — مقشرًا",
     nameEn: "Apricots, canned, heavy syrup pack, without skin, solids and liquids",
     category: "fruit",
     per100g: { calories: 83, protein: 0.5, carbs: 21.4, fat: 0.1, fiber: 1.6, sugar: 0 },
@@ -22889,7 +22889,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "apricots-canned-extra-heavy-syrup-pack-without-skin-solids-a",
-    nameAr: "مشمش معلب بشيرة كثيفة جدًا — مقشرًا",
+    nameAr: "مشمش معلب بشراب كثيف جدًا — مقشرًا",
     nameEn: "Apricots, canned, extra heavy syrup pack, without skin, solids and liquids",
     category: "fruit",
     per100g: { calories: 96, protein: 0.6, carbs: 24.9, fat: 0.0, fiber: 1.6, sugar: 0 },
@@ -23065,7 +23065,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "blackberries-canned-heavy-syrup-solids-and-liquids",
-    nameAr: "توت أسود معلب بشيرة ثقيلة",
+    nameAr: "توت أسود معلب بشراب ثقيل",
     nameEn: "Blackberries, canned, heavy syrup, solids and liquids",
     category: "fruit",
     per100g: { calories: 92, protein: 1.3, carbs: 23.1, fat: 0.1, fiber: 3.4, sugar: 19.7 },
@@ -23098,7 +23098,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "blueberries-canned-heavy-syrup-solids-and-liquids",
-    nameAr: "بلوبيري معلب بشيرة ثقيلة",
+    nameAr: "بلوبيري معلب بشراب ثقيل",
     nameEn: "Blueberries, canned, heavy syrup, solids and liquids",
     category: "fruit",
     per100g: { calories: 88, protein: 0.7, carbs: 22.1, fat: 0.3, fiber: 1.6, sugar: 20.5 },
@@ -23142,7 +23142,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "boysenberries-canned-heavy-syrup",
-    nameAr: "بويزنبري معلب بشيرة ثقيلة",
+    nameAr: "بويزنبري معلب بشراب ثقيل",
     nameEn: "Boysenberries, canned, heavy syrup",
     category: "fruit",
     per100g: { calories: 88, protein: 1.0, carbs: 22.3, fat: 0.1, fiber: 2.6, sugar: 0 },
@@ -23230,7 +23230,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "cherries-sour-red-canned-light-syrup-pack-solids-and-liquids",
-    nameAr: "كرز أحمر حامض معلب بشيرة خفيفة",
+    nameAr: "كرز أحمر حامض معلب بشراب خفيف",
     nameEn: "Cherries, sour, red, canned, light syrup pack, solids and liquids",
     category: "fruit",
     per100g: { calories: 75, protein: 0.7, carbs: 19.3, fat: 0.1, fiber: 0.8, sugar: 0 },
@@ -23241,7 +23241,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "cherries-sour-red-canned-heavy-syrup-pack-solids-and-liquids",
-    nameAr: "كرز أحمر حامض معلب بشيرة ثقيلة",
+    nameAr: "كرز أحمر حامض معلب بشراب ثقيل",
     nameEn: "Cherries, sour, red, canned, heavy syrup pack, solids and liquids",
     category: "fruit",
     per100g: { calories: 91, protein: 0.7, carbs: 23.3, fat: 0.1, fiber: 1.1, sugar: 22.2 },
@@ -23252,7 +23252,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "cherries-sour-red-canned-extra-heavy-syrup-pack-solids-and-l",
-    nameAr: "كرز أحمر حامض معلب بشيرة كثيفة جدًا",
+    nameAr: "كرز أحمر حامض معلب بشراب كثيف جدًا",
     nameEn: "Cherries, sour, red, canned, extra heavy syrup pack, solids and liquids",
     category: "fruit",
     per100g: { calories: 114, protein: 0.7, carbs: 29.2, fat: 0.1, fiber: 0.8, sugar: 0 },
@@ -23307,7 +23307,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "cherries-sweet-canned-light-syrup-pack-solids-and-liquids",
-    nameAr: "كرز — حلو (معلب، بشيرة خفيفة، الصلب والسائل)",
+    nameAr: "كرز — حلو (معلب، بشراب خفيف، الصلب والسائل)",
     nameEn: "Cherries, sweet, canned, light syrup pack, solids and liquids",
     category: "fruit",
     per100g: { calories: 67, protein: 0.6, carbs: 17.3, fat: 0.1, fiber: 1.5, sugar: 15.8 },
@@ -23318,7 +23318,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "cherries-sweet-canned-pitted-heavy-syrup-pack-solids-and-liq",
-    nameAr: "كرز — حلو، منزوع النوى (معلب، بشيرة ثقيلة، الصلب والسائل)",
+    nameAr: "كرز — حلو، منزوع النوى (معلب، بشراب ثقيل، الصلب والسائل)",
     nameEn: "Cherries, sweet, canned, pitted, heavy syrup pack, solids and liquids",
     category: "fruit",
     per100g: { calories: 83, protein: 0.6, carbs: 21.3, fat: 0.1, fiber: 1.4, sugar: 16.2 },
@@ -23329,7 +23329,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "cherries-sweet-canned-extra-heavy-syrup-pack-solids-and-liqu",
-    nameAr: "كرز — حلو، بشيرة ثقيلة جدًا (معلب، الصلب والسائل)",
+    nameAr: "كرز — حلو، بشراب ثقيل جدًا (معلب، الصلب والسائل)",
     nameEn: "Cherries, sweet, canned, extra heavy syrup pack, solids and liquids",
     category: "fruit",
     per100g: { calories: 102, protein: 0.6, carbs: 26.2, fat: 0.1, fiber: 1.5, sugar: 0 },
@@ -23494,7 +23494,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "figs-canned-light-syrup-pack-solids-and-liquids",
-    nameAr: "تين معلب بشيرة خفيفة",
+    nameAr: "تين معلب بشراب خفيف",
     nameEn: "Figs, canned, light syrup pack, solids and liquids",
     category: "fruit",
     per100g: { calories: 69, protein: 0.4, carbs: 17.9, fat: 0.1, fiber: 1.8, sugar: 16.1 },
@@ -23505,7 +23505,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "figs-canned-heavy-syrup-pack-solids-and-liquids",
-    nameAr: "تين معلب بشيرة ثقيلة",
+    nameAr: "تين معلب بشراب ثقيل",
     nameEn: "Figs, canned, heavy syrup pack, solids and liquids",
     category: "fruit",
     per100g: { calories: 88, protein: 0.4, carbs: 22.9, fat: 0.1, fiber: 2.2, sugar: 20.7 },
@@ -23516,7 +23516,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "figs-canned-extra-heavy-syrup-pack-solids-and-liquids",
-    nameAr: "تين معلب بشيرة كثيفة جدًا",
+    nameAr: "تين معلب بشراب كثيف جدًا",
     nameEn: "Figs, canned, extra heavy syrup pack, solids and liquids",
     category: "fruit",
     per100g: { calories: 107, protein: 0.4, carbs: 27.9, fat: 0.1, fiber: 0, sugar: 0 },
@@ -23571,7 +23571,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "fruit-cocktail-peach-and-pineapple-and-pear-and-grape-and-ch-2206",
-    nameAr: "كمبوت فواكه معلب بشيرة خفيفة جدًا",
+    nameAr: "كمبوت فواكه معلب بشراب خفيف جدًا",
     nameEn: "Fruit cocktail, (peach and pineapple and pear and grape and cherry), canned, extra light syrup, solids and liquids",
     category: "fruit",
     per100g: { calories: 45, protein: 0.4, carbs: 11.6, fat: 0.1, fiber: 1.1, sugar: 0 },
@@ -23582,7 +23582,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "fruit-cocktail-peach-and-pineapple-and-pear-and-grape-and-ch-2207",
-    nameAr: "كمبوت فواكه معلب بشيرة خفيفة",
+    nameAr: "كمبوت فواكه معلب بشراب خفيف",
     nameEn: "Fruit cocktail, (peach and pineapple and pear and grape and cherry), canned, light syrup, solids and liquids",
     category: "fruit",
     per100g: { calories: 57, protein: 0.4, carbs: 14.9, fat: 0.1, fiber: 1.0, sugar: 13.9 },
@@ -23593,7 +23593,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "fruit-cocktail-peach-and-pineapple-and-pear-and-grape-and-ch-2208",
-    nameAr: "كمبوت فواكه معلب بشيرة ثقيلة",
+    nameAr: "كمبوت فواكه معلب بشراب ثقيل",
     nameEn: "Fruit cocktail, (peach and pineapple and pear and grape and cherry), canned, heavy syrup, solids and liquids",
     category: "fruit",
     per100g: { calories: 73, protein: 0.4, carbs: 18.9, fat: 0.1, fiber: 1.0, sugar: 17.9 },
@@ -23604,7 +23604,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "fruit-cocktail-peach-and-pineapple-and-pear-and-grape-and-ch-2209",
-    nameAr: "كمبوت فواكه معلب بشيرة كثيفة جدًا",
+    nameAr: "كمبوت فواكه معلب بشراب كثيف جدًا",
     nameEn: "Fruit cocktail, (peach and pineapple and pear and grape and cherry), canned, extra heavy syrup, solids and liquids",
     category: "fruit",
     per100g: { calories: 88, protein: 0.4, carbs: 22.9, fat: 0.1, fiber: 1.1, sugar: 0 },
@@ -23637,7 +23637,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "fruit-salad-peach-and-pear-and-apricot-and-pineapple-and-che-2212",
-    nameAr: "سلطة فواكه معلبة بشيرة خفيفة",
+    nameAr: "سلطة فواكه معلبة بشراب خفيف",
     nameEn: "Fruit salad, (peach and pear and apricot and pineapple and cherry), canned, light syrup, solids and liquids",
     category: "fruit",
     per100g: { calories: 58, protein: 0.3, carbs: 15.1, fat: 0.1, fiber: 1.0, sugar: 0 },
@@ -23648,7 +23648,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "fruit-salad-peach-and-pear-and-apricot-and-pineapple-and-che-2213",
-    nameAr: "سلطة فواكه معلبة بشيرة ثقيلة",
+    nameAr: "سلطة فواكه معلبة بشراب ثقيل",
     nameEn: "Fruit salad, (peach and pear and apricot and pineapple and cherry), canned, heavy syrup, solids and liquids",
     category: "fruit",
     per100g: { calories: 73, protein: 0.3, carbs: 19.1, fat: 0.1, fiber: 1.0, sugar: 18.1 },
@@ -23659,7 +23659,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "fruit-salad-peach-and-pear-and-apricot-and-pineapple-and-che-2214",
-    nameAr: "سلطة فواكه (خوخ وكمثرى وممشش وأناناس وكرز) معلبة — بشيرة ثقيلة جدًا",
+    nameAr: "سلطة فواكه (خوخ وكمثرى وممشش وأناناس وكرز) معلبة — بشراب ثقيل جدًا",
     nameEn: "Fruit salad, (peach and pear and apricot and pineapple and cherry), canned, extra heavy syrup, solids and liquids",
     category: "fruit",
     per100g: { calories: 88, protein: 0.3, carbs: 22.8, fat: 0.1, fiber: 1.0, sugar: 0 },
@@ -23681,7 +23681,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "gooseberries-canned-light-syrup-pack-solids-and-liquids",
-    nameAr: "عنب الثعلب (معلب، بشيرة خفيفة، الصلب والسائل)",
+    nameAr: "عنب الثعلب (معلب، بشراب خفيف، الصلب والسائل)",
     nameEn: "Gooseberries, canned, light syrup pack, solids and liquids",
     category: "fruit",
     per100g: { calories: 73, protein: 0.7, carbs: 18.8, fat: 0.2, fiber: 2.4, sugar: 0 },
@@ -23802,7 +23802,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "grapefruit-sections-canned-light-syrup-pack-solids-and-liqui",
-    nameAr: "فصوص جريب فروت معلبة بشيرة خفيفة",
+    nameAr: "فصوص جريب فروت معلبة بشراب خفيف",
     nameEn: "Grapefruit, sections, canned, light syrup pack, solids and liquids",
     category: "fruit",
     per100g: { calories: 60, protein: 0.6, carbs: 15.4, fat: 0.1, fiber: 0.4, sugar: 15.0 },
@@ -23934,7 +23934,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "grapes-canned-thompson-seedless-heavy-syrup-pack-solids-and-",
-    nameAr: "عنب طومسون بدون بذر معلب — بشيرة ثقيلة، الصلب والسائل",
+    nameAr: "عنب طومسون بدون بذر معلب — بشراب ثقيل، الصلب والسائل",
     nameEn: "Grapes, canned, thompson seedless, heavy syrup pack, solids and liquids",
     category: "fruit",
     per100g: { calories: 76, protein: 0.5, carbs: 19.6, fat: 0.1, fiber: 0.6, sugar: 19.1 },
@@ -24583,7 +24583,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "tangerines-mandarin-oranges-canned-light-syrup-pack",
-    nameAr: "يوسفي (مندرين) معلب — بشيرة خفيفة",
+    nameAr: "يوسفي (مندرين) معلب — بشراب خفيف",
     nameEn: "Tangerines, (mandarin oranges), canned, light syrup pack",
     category: "fruit",
     per100g: { calories: 61, protein: 0.5, carbs: 16.2, fat: 0.1, fiber: 0.7, sugar: 15.5 },
@@ -24627,7 +24627,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "papaya-canned-heavy-syrup-drained",
-    nameAr: "بباظة معلبة بشيرة ثقيلة — مصفاة",
+    nameAr: "بباظة معلبة بشراب ثقيل — مصفاة",
     nameEn: "Papaya, canned, heavy syrup, drained",
     category: "fruit",
     per100g: { calories: 206, protein: 0.1, carbs: 55.8, fat: 0.6, fiber: 1.5, sugar: 52.2 },
@@ -24715,7 +24715,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "peaches-canned-extra-light-syrup-solids-and-liquids",
-    nameAr: "خوخ — بشيرة خفيفة جدًا (معلب، الصلب والسائل)",
+    nameAr: "خوخ — بشراب خفيف جدًا (معلب، الصلب والسائل)",
     nameEn: "Peaches, canned, extra light syrup, solids and liquids",
     category: "fruit",
     per100g: { calories: 42, protein: 0.4, carbs: 11.1, fat: 0.1, fiber: 1.0, sugar: 0 },
@@ -24726,7 +24726,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "peaches-canned-light-syrup-pack-solids-and-liquids",
-    nameAr: "خوخ (معلب، بشيرة خفيفة، الصلب والسائل)",
+    nameAr: "خوخ (معلب، بشراب خفيف، الصلب والسائل)",
     nameEn: "Peaches, canned, light syrup pack, solids and liquids",
     category: "fruit",
     per100g: { calories: 54, protein: 0.5, carbs: 14.6, fat: 0.0, fiber: 1.3, sugar: 13.2 },
@@ -24737,7 +24737,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "peaches-canned-heavy-syrup-pack-solids-and-liquids",
-    nameAr: "خوخ (معلب، بشيرة ثقيلة، الصلب والسائل)",
+    nameAr: "خوخ (معلب، بشراب ثقيل، الصلب والسائل)",
     nameEn: "Peaches, canned, heavy syrup pack, solids and liquids",
     category: "fruit",
     per100g: { calories: 74, protein: 0.5, carbs: 19.9, fat: 0.1, fiber: 1.3, sugar: 18.6 },
@@ -24748,7 +24748,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "peaches-canned-extra-heavy-syrup-pack-solids-and-liquids",
-    nameAr: "خوخ — بشيرة ثقيلة جدًا (معلب، الصلب والسائل)",
+    nameAr: "خوخ — بشراب ثقيل جدًا (معلب، الصلب والسائل)",
     nameEn: "Peaches, canned, extra heavy syrup pack, solids and liquids",
     category: "fruit",
     per100g: { calories: 96, protein: 0.5, carbs: 26.1, fat: 0.0, fiber: 1.0, sugar: 0 },
@@ -24759,7 +24759,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "peaches-spiced-canned-heavy-syrup-pack-solids-and-liquids",
-    nameAr: "خوخ بالتوابل معلب — بشيرة ثقيلة، الصلب والسائل",
+    nameAr: "خوخ بالتوابل معلب — بشراب ثقيل، الصلب والسائل",
     nameEn: "Peaches, spiced, canned, heavy syrup pack, solids and liquids",
     category: "fruit",
     per100g: { calories: 75, protein: 0.4, carbs: 20.1, fat: 0.1, fiber: 1.3, sugar: 18.8 },
@@ -24880,7 +24880,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "pears-canned-extra-light-syrup-pack-solids-and-liquids",
-    nameAr: "كمثرى — بشيرة خفيفة جدًا (معلب، الصلب والسائل)",
+    nameAr: "كمثرى — بشراب خفيف جدًا (معلب، الصلب والسائل)",
     nameEn: "Pears, canned, extra light syrup pack, solids and liquids",
     category: "fruit",
     per100g: { calories: 47, protein: 0.3, carbs: 12.2, fat: 0.1, fiber: 1.6, sugar: 0 },
@@ -24891,7 +24891,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "pears-canned-light-syrup-pack-solids-and-liquids",
-    nameAr: "كمثرى (معلب، بشيرة خفيفة، الصلب والسائل)",
+    nameAr: "كمثرى (معلب، بشراب خفيف، الصلب والسائل)",
     nameEn: "Pears, canned, light syrup pack, solids and liquids",
     category: "fruit",
     per100g: { calories: 57, protein: 0.2, carbs: 15.2, fat: 0.0, fiber: 1.6, sugar: 12.1 },
@@ -24902,7 +24902,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "pears-canned-heavy-syrup-pack-solids-and-liquids",
-    nameAr: "كمثرى (معلب، بشيرة ثقيلة، الصلب والسائل)",
+    nameAr: "كمثرى (معلب، بشراب ثقيل، الصلب والسائل)",
     nameEn: "Pears, canned, heavy syrup pack, solids and liquids",
     category: "fruit",
     per100g: { calories: 74, protein: 0.2, carbs: 19.2, fat: 0.1, fiber: 1.6, sugar: 15.2 },
@@ -24913,7 +24913,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "pears-canned-extra-heavy-syrup-pack-solids-and-liquids",
-    nameAr: "كمثرى — بشيرة ثقيلة جدًا (معلب، الصلب والسائل)",
+    nameAr: "كمثرى — بشراب ثقيل جدًا (معلب، الصلب والسائل)",
     nameEn: "Pears, canned, extra heavy syrup pack, solids and liquids",
     category: "fruit",
     per100g: { calories: 97, protein: 0.2, carbs: 25.2, fat: 0.1, fiber: 1.6, sugar: 0 },
@@ -25034,7 +25034,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "pineapple-canned-light-syrup-pack-solids-and-liquids",
-    nameAr: "أناناس (معلب، بشيرة خفيفة، الصلب والسائل)",
+    nameAr: "أناناس (معلب، بشراب خفيف، الصلب والسائل)",
     nameEn: "Pineapple, canned, light syrup pack, solids and liquids",
     category: "fruit",
     per100g: { calories: 52, protein: 0.4, carbs: 13.4, fat: 0.1, fiber: 0.8, sugar: 12.7 },
@@ -25045,7 +25045,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "pineapple-canned-heavy-syrup-pack-solids-and-liquids",
-    nameAr: "أناناس (معلب، بشيرة ثقيلة، الصلب والسائل)",
+    nameAr: "أناناس (معلب، بشراب ثقيل، الصلب والسائل)",
     nameEn: "Pineapple, canned, heavy syrup pack, solids and liquids",
     category: "fruit",
     per100g: { calories: 78, protein: 0.3, carbs: 20.2, fat: 0.1, fiber: 0.8, sugar: 16.9 },
@@ -25056,7 +25056,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "pineapple-canned-extra-heavy-syrup-pack-solids-and-liquids",
-    nameAr: "أناناس — بشيرة ثقيلة جدًا (معلب، الصلب والسائل)",
+    nameAr: "أناناس — بشراب ثقيل جدًا (معلب، الصلب والسائل)",
     nameEn: "Pineapple, canned, extra heavy syrup pack, solids and liquids",
     category: "fruit",
     per100g: { calories: 83, protein: 0.3, carbs: 21.5, fat: 0.1, fiber: 0.8, sugar: 0 },
@@ -25177,7 +25177,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "plums-canned-purple-light-syrup-pack-solids-and-liquids",
-    nameAr: "برقوق بنفسجي (معلب، بشيرة خفيفة، الصلب والسائل)",
+    nameAr: "برقوق بنفسجي (معلب، بشراب خفيف، الصلب والسائل)",
     nameEn: "Plums, canned, purple, light syrup pack, solids and liquids",
     category: "fruit",
     per100g: { calories: 63, protein: 0.4, carbs: 16.3, fat: 0.1, fiber: 0.9, sugar: 15.3 },
@@ -25188,7 +25188,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "plums-canned-purple-heavy-syrup-pack-solids-and-liquids",
-    nameAr: "برقوق بنفسجي (معلب، بشيرة ثقيلة، الصلب والسائل)",
+    nameAr: "برقوق بنفسجي (معلب، بشراب ثقيل، الصلب والسائل)",
     nameEn: "Plums, canned, purple, heavy syrup pack, solids and liquids",
     category: "fruit",
     per100g: { calories: 89, protein: 0.4, carbs: 23.2, fat: 0.1, fiber: 0.9, sugar: 22.3 },
@@ -25199,7 +25199,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "plums-canned-purple-extra-heavy-syrup-pack-solids-and-liquid",
-    nameAr: "برقوق بنفسجي — بشيرة ثقيلة جدًا (معلب، الصلب والسائل)",
+    nameAr: "برقوق بنفسجي — بشراب ثقيل جدًا (معلب، الصلب والسائل)",
     nameEn: "Plums, canned, purple, extra heavy syrup pack, solids and liquids",
     category: "fruit",
     per100g: { calories: 101, protein: 0.4, carbs: 26.3, fat: 0.1, fiber: 1.0, sugar: 0 },
@@ -25232,7 +25232,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "prunes-canned-heavy-syrup-pack-solids-and-liquids",
-    nameAr: "قراصيا (معلب، بشيرة ثقيلة، الصلب والسائل)",
+    nameAr: "قراصيا (معلب، بشراب ثقيل، الصلب والسائل)",
     nameEn: "Prunes, canned, heavy syrup pack, solids and liquids",
     category: "fruit",
     per100g: { calories: 105, protein: 0.9, carbs: 27.8, fat: 0.2, fiber: 3.8, sugar: 0 },
@@ -25386,7 +25386,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "raspberries-canned-red-heavy-syrup-pack-solids-and-liquids",
-    nameAr: "توت أحمر (راسبيري) (معلب، بشيرة ثقيلة، الصلب والسائل)",
+    nameAr: "توت أحمر (راسبيري) (معلب، بشراب ثقيل، الصلب والسائل)",
     nameEn: "Raspberries, canned, red, heavy syrup pack, solids and liquids",
     category: "fruit",
     per100g: { calories: 91, protein: 0.8, carbs: 23.4, fat: 0.1, fiber: 3.3, sugar: 20.1 },
@@ -25507,7 +25507,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "strawberries-canned-heavy-syrup-pack-solids-and-liquids",
-    nameAr: "فراولة معلبة بشيرة ثقيلة — بصلصتها",
+    nameAr: "فراولة معلبة بشراب ثقيل — بصلصتها",
     nameEn: "Strawberries, canned, heavy syrup pack, solids and liquids",
     category: "fruit",
     per100g: { calories: 92, protein: 0.6, carbs: 23.5, fat: 0.3, fiber: 1.7, sugar: 21.8 },
@@ -25573,7 +25573,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "fruit-salad-pineapple-and-papaya-and-banana-and-guava-tropic",
-    nameAr: "سلطة فواكه استوائية (أناناس وبابايا وموز وجوافة) معلبة — بشيرة ثقيلة",
+    nameAr: "سلطة فواكه استوائية (أناناس وبابايا وموز وجوافة) معلبة — بشراب ثقيل",
     nameEn: "Fruit salad, (pineapple and papaya and banana and guava), tropical, canned, heavy syrup, solids and liquids",
     category: "fruit",
     per100g: { calories: 86, protein: 0.4, carbs: 22.4, fat: 0.1, fiber: 1.3, sugar: 0 },
@@ -25628,7 +25628,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "fruit-cocktail-canned-heavy-syrup-drained",
-    nameAr: "كوكتيل فواكه (معلب، بشيرة ثقيلة، مصفى)",
+    nameAr: "كوكتيل فواكه (معلب، بشراب ثقيل، مصفى)",
     nameEn: "Fruit cocktail, canned, heavy syrup, drained",
     category: "fruit",
     per100g: { calories: 70, protein: 0.5, carbs: 18.8, fat: 0.1, fiber: 1.7, sugar: 17.1 },
@@ -25639,7 +25639,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "blueberries-canned-light-syrup-drained",
-    nameAr: "بلوبيري معلب بشيرة خفيفة — مصفى",
+    nameAr: "بلوبيري معلب بشراب خفيف — مصفى",
     nameEn: "Blueberries, canned, light syrup, drained",
     category: "fruit",
     per100g: { calories: 88, protein: 1.0, carbs: 22.7, fat: 0.4, fiber: 2.6, sugar: 17.4 },
@@ -25650,7 +25650,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "blueberries-wild-canned-heavy-syrup-drained",
-    nameAr: "بلوبيري بري معلب بشيرة ثقيلة — مصفى",
+    nameAr: "بلوبيري بري معلب بشراب ثقيل — مصفى",
     nameEn: "Blueberries, wild, canned, heavy syrup, drained",
     category: "fruit",
     per100g: { calories: 107, protein: 0.6, carbs: 28.3, fat: 0.3, fiber: 4.9, sugar: 19.3 },
@@ -25672,7 +25672,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "apricots-canned-heavy-syrup-drained",
-    nameAr: "مشمش معلب بشيرة ثقيلة — مصفى",
+    nameAr: "مشمش معلب بشراب ثقيل — مصفى",
     nameEn: "Apricots, canned, heavy syrup, drained",
     category: "fruit",
     per100g: { calories: 83, protein: 0.6, carbs: 21.3, fat: 0.1, fiber: 2.7, sugar: 18.6 },
@@ -25694,7 +25694,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "cherries-sweet-canned-pitted-heavy-syrup-drained",
-    nameAr: "كرز — حلو، منزوع النوى (معلب، بشيرة ثقيلة، مصفى)",
+    nameAr: "كرز — حلو، منزوع النوى (معلب، بشراب ثقيل، مصفى)",
     nameEn: "Cherries, sweet, canned, pitted, heavy syrup, drained",
     category: "fruit",
     per100g: { calories: 83, protein: 0.7, carbs: 21.1, fat: 0.2, fiber: 2.3, sugar: 16.2 },
@@ -25705,7 +25705,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "peaches-canned-heavy-syrup-drained",
-    nameAr: "خوخ (معلب، بشيرة ثقيلة، مصفى)",
+    nameAr: "خوخ (معلب، بشراب ثقيل، مصفى)",
     nameEn: "Peaches, canned, heavy syrup, drained",
     category: "fruit",
     per100g: { calories: 72, protein: 0.5, carbs: 18.4, fat: 0.2, fiber: 1.2, sugar: 14.7 },
@@ -25716,7 +25716,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "pears-canned-heavy-syrup-drained",
-    nameAr: "كمثرى (معلب، بشيرة ثقيلة، مصفى)",
+    nameAr: "كمثرى (معلب، بشراب ثقيل، مصفى)",
     nameEn: "Pears, canned, heavy syrup, drained",
     category: "fruit",
     per100g: { calories: 74, protein: 0.2, carbs: 19.1, fat: 0.2, fiber: 2.7, sugar: 16.4 },
@@ -25727,7 +25727,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "plums-canned-heavy-syrup-drained",
-    nameAr: "برقوق (معلب، بشيرة ثقيلة، مصفى)",
+    nameAr: "برقوق (معلب، بشراب ثقيل، مصفى)",
     nameEn: "Plums, canned, heavy syrup, drained",
     category: "fruit",
     per100g: { calories: 89, protein: 0.4, carbs: 23.1, fat: 0.1, fiber: 1.5, sugar: 21.6 },
@@ -26013,7 +26013,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "usda-commodity-mixed-fruit-peaches-pears-grapes-canned-light",
-    nameAr: "فواكه مشكلة خوخ كمثرى عنب — تموين حكومي (معلب، بشيرة خفيفة، مصفى)",
+    nameAr: "فواكه مشكلة خوخ كمثرى عنب — تموين حكومي (معلب، بشراب خفيف، مصفى)",
     nameEn: "USDA Commodity, mixed fruit (peaches, pears, grapes), canned, light syrup, drained",
     category: "fruit",
     per100g: { calories: 57, protein: 0.5, carbs: 14.7, fat: 0.1, fiber: 1.6, sugar: 11.2 },
@@ -26024,7 +26024,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "usda-commodity-mixed-fruit-peaches-pears-grapes-canned-light-2429",
-    nameAr: "فواكه مشكلة خوخ كمثرى عنب — تموين حكومي (معلب، بشيرة خفيفة، الصلب والسائل)",
+    nameAr: "فواكه مشكلة خوخ كمثرى عنب — تموين حكومي (معلب، بشراب خفيف، الصلب والسائل)",
     nameEn: "USDA Commodity, mixed fruit (peaches, pears, grapes), canned, light syrup, solids and liquids",
     category: "fruit",
     per100g: { calories: 55, protein: 0.4, carbs: 14.3, fat: 0.1, fiber: 1.2, sugar: 11.5 },
@@ -26090,7 +26090,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "usda-commodity-peaches-canned-light-syrup-drained",
-    nameAr: "تموين حكومي خوخ (معلب، بشيرة خفيفة، مصفى)",
+    nameAr: "تموين حكومي خوخ (معلب، بشراب خفيف، مصفى)",
     nameEn: "USDA Commodity peaches, canned, light syrup, drained",
     category: "fruit",
     per100g: { calories: 61, protein: 0.6, carbs: 15.7, fat: 0.1, fiber: 0.7, sugar: 10.6 },
@@ -26112,7 +26112,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "usda-commodity-pears-canned-light-syrup-drained",
-    nameAr: "تموين حكومي كمثرى (معلب، بشيرة خفيفة، مصفى)",
+    nameAr: "تموين حكومي كمثرى (معلب، بشراب خفيف، مصفى)",
     nameEn: "USDA Commodity pears, canned, light syrup, drained",
     category: "fruit",
     per100g: { calories: 62, protein: 0.3, carbs: 16.2, fat: 0.1, fiber: 1.6, sugar: 11.2 },
@@ -31402,7 +31402,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "waterchestnuts-chinese-canned-solids-and-liquids",
-    nameAr: "كستناء الماء معلبة — بالسائل",
+    nameAr: "كستناء الماء المعلبة — بالسائل",
     nameEn: "Waterchestnuts, chinese, canned, solids and liquids",
     category: "vegetable",
     per100g: { calories: 50, protein: 0.9, carbs: 12.3, fat: 0.1, fiber: 2.5, sugar: 2.5 },
@@ -35615,7 +35615,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "nuts-brazilnuts-dried-unblanched",
-    nameAr: "كستنا برازيلية مجففة",
+    nameAr: "بندق برازيلي مجفف (غير مقشر بالسلق)",
     nameEn: "Nuts, brazilnuts, dried, unblanched",
     category: "nuts",
     per100g: { calories: 659, protein: 14.3, carbs: 11.7, fat: 67.1, fiber: 7.5, sugar: 2.3 },
@@ -38992,7 +38992,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "beef-chuck-eye-roast-boneless-americas-beef-roast-separable-",
-    nameAr: "أمريكا بقري روست روست عين الكتف بقري — لحم ودهن، منزوع العظم، نيء",
+    nameAr: "روست عين الكتف بقري — لحم ودهن، منزوع العظم، نيء",
     nameEn: "Beef, chuck eye roast, boneless, America's Beef Roast, separable lean and fat, trimmed to 0\" fat, all grades, raw",
     category: "protein",
     per100g: { calories: 180, protein: 19.2, carbs: 0.0, fat: 11.5, fiber: 0.0, sugar: 0.0 },
@@ -39003,7 +39003,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "beef-chuck-eye-roast-boneless-americas-beef-roast-separable--3945",
-    nameAr: "أمريكا بقري روست روست عين الكتف بقري — لحم ودهن، منزوع العظم، نيء (تشويس)",
+    nameAr: "روست عين الكتف بقري — لحم ودهن، منزوع العظم، نيء (تشويس)",
     nameEn: "Beef, chuck eye roast, boneless, America's Beef Roast, separable lean and fat, trimmed to 0\" fat, choice, raw",
     category: "protein",
     per100g: { calories: 185, protein: 19.1, carbs: 0.0, fat: 12.0, fiber: 0.0, sugar: 0.0 },
@@ -39014,7 +39014,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "beef-chuck-eye-roast-boneless-americas-beef-roast-separable--3946",
-    nameAr: "أمريكا بقري روست روست عين الكتف بقري — لحم ودهن، منزوع العظم، نيء (سيلكت)",
+    nameAr: "روست عين الكتف بقري — لحم ودهن، منزوع العظم، نيء (سيلكت)",
     nameEn: "Beef, chuck eye roast, boneless, America's Beef Roast, separable lean and fat, trimmed to 0\" fat, select, raw",
     category: "protein",
     per100g: { calories: 173, protein: 19.2, carbs: 0.0, fat: 10.7, fiber: 0.0, sugar: 0.0 },
@@ -39289,7 +39289,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "beef-chuck-eye-roast-boneless-americas-beef-roast-separable--3971",
-    nameAr: "أمريكا بقري روست روست عين الكتف بقري — لحم فقط، منزوع العظم، مطهو، مشوي",
+    nameAr: "روست عين الكتف بقري — لحم فقط، منزوع العظم، مطهو، مشوي",
     nameEn: "Beef, chuck eye roast, boneless, America's Beef Roast, separable lean only, trimmed to 0\" fat, all grades, cooked, roasted",
     category: "protein",
     per100g: { calories: 183, protein: 26.6, carbs: 0.0, fat: 8.5, fiber: 0.0, sugar: 0.0 },
@@ -39300,7 +39300,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "beef-chuck-eye-roast-boneless-americas-beef-roast-separable--3972",
-    nameAr: "أمريكا بقري روست روست عين الكتف بقري — لحم فقط، منزوع العظم، مطهو، مشوي (تشويس)",
+    nameAr: "روست عين الكتف بقري — لحم فقط، منزوع العظم، مطهو، مشوي (تشويس)",
     nameEn: "Beef, chuck eye roast, boneless, America's Beef Roast, separable lean only, trimmed to 0\" fat, choice, cooked, roasted",
     category: "protein",
     per100g: { calories: 190, protein: 26.4, carbs: 0.0, fat: 9.4, fiber: 0.0, sugar: 0.0 },
@@ -39311,7 +39311,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "beef-chuck-eye-roast-boneless-americas-beef-roast-separable--3973",
-    nameAr: "أمريكا بقري روست روست عين الكتف بقري — لحم فقط، منزوع العظم، مطهو، مشوي (سيلكت)",
+    nameAr: "روست عين الكتف بقري — لحم فقط، منزوع العظم، مطهو، مشوي (سيلكت)",
     nameEn: "Beef, chuck eye roast, boneless, America's Beef Roast, separable lean only, trimmed to 0\" fat, select, cooked, roasted",
     category: "protein",
     per100g: { calories: 172, protein: 27.0, carbs: 0.0, fat: 7.1, fiber: 0.0, sugar: 0.0 },
@@ -40796,7 +40796,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "beef-chuck-eye-roast-boneless-americas-beef-roast-separable--4108",
-    nameAr: "أمريكا بقري روست روست عين الكتف بقري — لحم فقط، منزوع العظم، نيء",
+    nameAr: "روست عين الكتف بقري — لحم فقط، منزوع العظم، نيء",
     nameEn: "Beef, chuck eye roast, boneless, America's Beef Roast, separable lean only, trimmed to 0\" fat, all grades, raw",
     category: "protein",
     per100g: { calories: 137, protein: 20.6, carbs: 0.0, fat: 6.0, fiber: 0.0, sugar: 0.0 },
@@ -40807,7 +40807,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "beef-chuck-eye-roast-boneless-americas-beef-roast-separable--4109",
-    nameAr: "أمريكا بقري روست روست عين الكتف بقري — لحم فقط، منزوع العظم، نيء (تشويس)",
+    nameAr: "روست عين الكتف بقري — لحم فقط، منزوع العظم، نيء (تشويس)",
     nameEn: "Beef, chuck eye roast, boneless, America's Beef Roast, separable lean only, trimmed to 0\" fat, choice, raw",
     category: "protein",
     per100g: { calories: 139, protein: 20.7, carbs: 0.0, fat: 6.2, fiber: 0.0, sugar: 0.0 },
@@ -40818,7 +40818,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "beef-chuck-eye-roast-boneless-americas-beef-roast-separable--4110",
-    nameAr: "أمريكا بقري روست روست عين الكتف بقري — لحم فقط، منزوع العظم، نيء (سيلكت)",
+    nameAr: "روست عين الكتف بقري — لحم فقط، منزوع العظم، نيء (سيلكت)",
     nameEn: "Beef, chuck eye roast, boneless, America's Beef Roast, separable lean only, trimmed to 0\" fat, select, raw",
     category: "protein",
     per100g: { calories: 133, protein: 20.5, carbs: 0.0, fat: 5.7, fiber: 0.0, sugar: 0.0 },
@@ -46494,7 +46494,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "fish-cod-pacific-raw-not-previously-frozen",
-    nameAr: "قدَّاك محيط هادئ طازج — نيء",
+    nameAr: "سمك القدّ (المحيط الهادئ، طازج) — نيء",
     nameEn: "Fish, cod, Pacific, raw (not previously frozen)",
     category: "protein",
     per100g: { calories: 72, protein: 17.5, carbs: 0.0, fat: 0.2, fiber: 0, sugar: 0 },
@@ -46505,7 +46505,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "fish-cod-pacific-cooked-not-previously-frozen",
-    nameAr: "قدَّاك محيط هادئ طازج — مطهو",
+    nameAr: "سمك القدّ (المحيط الهادئ، طازج) — مطهو",
     nameEn: "Fish, cod, Pacific, cooked (not previously frozen)",
     category: "protein",
     per100g: { calories: 84, protein: 20.4, carbs: 0.0, fat: 0.2, fiber: 0, sugar: 0 },
@@ -49791,7 +49791,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "worthington-meatless-corned-beef-roll-frozen-unprepared",
-    nameAr: "وورثينجتون بدون لحم لحم مقدد (كورند بيف) رول (مجمد، غير محضر)",
+    nameAr: "رول «لحم مقدد» نباتي وورثينجتون (مجمد، غير محضر)",
     nameEn: "WORTHINGTON Meatless Corned Beef Roll, frozen, unprepared",
     category: "carb",
     per100g: { calories: 245, protein: 18.6, carbs: 9.9, fat: 14.5, fiber: 0.0, sugar: 2.1 },
@@ -54014,7 +54014,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "game-meat-bison-top-sirloin-separable-lean-only-1-steak-cook",
-    nameAr: "استيك سيرلوين علوي بيسون (صيد) — لحم فقط، سماكة بوصة، مطهو، مشوي",
+    nameAr: "استيك سيرلوين علوي بيسون (صيد) — لحم فقط، سماكة 1 بوصة، مطهو، مشوي",
     nameEn: "Game meat , bison, top sirloin, separable lean only, 1\" steak, cooked, broiled",
     category: "protein",
     per100g: { calories: 171, protein: 28.1, carbs: 0.0, fat: 5.7, fiber: 0.0, sugar: 0.0 },
@@ -54047,7 +54047,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "game-meat-bison-ribeye-separable-lean-only-1-steak-cooked-br",
-    nameAr: "استيك ريب آي بيسون (صيد) — لحم فقط، سماكة بوصة، مطهو، مشوي",
+    nameAr: "استيك ريب آي بيسون (صيد) — لحم فقط، سماكة 1 بوصة، مطهو، مشوي",
     nameEn: "Game meat, bison, ribeye, separable lean only, 1\" steak, cooked, broiled",
     category: "protein",
     per100g: { calories: 177, protein: 29.4, carbs: 0.0, fat: 5.7, fiber: 0.0, sugar: 0.0 },
@@ -54058,7 +54058,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "game-meat-bison-top-round-separable-lean-only-1-steak-cooked",
-    nameAr: "استيك الفخذ العلوي بيسون (صيد) — لحم فقط، سماكة بوصة، مطهو، مشوي",
+    nameAr: "استيك الفخذ العلوي بيسون (صيد) — لحم فقط، سماكة 1 بوصة، مطهو، مشوي",
     nameEn: "Game meat, bison, top round, separable lean only, 1\" steak, cooked, broiled",
     category: "protein",
     per100g: { calories: 174, protein: 30.2, carbs: 0.0, fat: 5.0, fiber: 0.0, sugar: 0.0 },
@@ -54069,7 +54069,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "game-meat-bison-top-round-separable-lean-only-1-steak-raw",
-    nameAr: "استيك الفخذ العلوي بيسون (صيد) — لحم فقط، سماكة بوصة، نيء",
+    nameAr: "استيك الفخذ العلوي بيسون (صيد) — لحم فقط، سماكة 1 بوصة، نيء",
     nameEn: "Game meat, bison, top round, separable lean only, 1\" steak, raw",
     category: "protein",
     per100g: { calories: 122, protein: 23.3, carbs: 0.0, fat: 2.4, fiber: 0.0, sugar: 0.0 },
@@ -54157,7 +54157,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "game-meat-deer-loin-separable-lean-only-1-steak-cooked-broil",
-    nameAr: "استيك لحم غزال (صيد) — لحم فقط، سماكة بوصة، مطهو، مشوي",
+    nameAr: "استيك لحم غزال (صيد) — لحم فقط، سماكة 1 بوصة، مطهو، مشوي",
     nameEn: "Game meat, deer, loin, separable lean only, 1\" steak, cooked, broiled",
     category: "protein",
     per100g: { calories: 150, protein: 30.2, carbs: 0.0, fat: 2.4, fiber: 0.0, sugar: 0.0 },
@@ -54190,7 +54190,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "game-meat-deer-top-round-separable-lean-only-1-steak-cooked-",
-    nameAr: "استيك الفخذ العلوي غزال (صيد) — لحم فقط، سماكة بوصة، مطهو، مشوي",
+    nameAr: "استيك الفخذ العلوي غزال (صيد) — لحم فقط، سماكة 1 بوصة، مطهو، مشوي",
     nameEn: "Game meat, deer, top round, separable lean only, 1\" steak, cooked, broiled",
     category: "protein",
     per100g: { calories: 152, protein: 31.5, carbs: 0.0, fat: 1.9, fiber: 0.0, sugar: 0.0 },
@@ -54432,7 +54432,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "lamb-new-zealand-imported-ground-lamb-cooked-braised",
-    nameAr: "مفروم غنم غنم — مطهو، مطهو ببطء (نيوزيلندي مستورد)",
+    nameAr: "لحم غنم مفروم — مطهو ببطء (نيوزيلندي مستورد)",
     nameEn: "Lamb, New Zealand, imported, ground lamb, cooked, braised",
     category: "protein",
     per100g: { calories: 192, protein: 22.6, carbs: 0.0, fat: 11.3, fiber: 0.0, sugar: 0.0 },
@@ -54443,7 +54443,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "lamb-new-zealand-imported-ground-lamb-raw",
-    nameAr: "مفروم غنم غنم — نيء (نيوزيلندي مستورد)",
+    nameAr: "لحم غنم مفروم — نيء (نيوزيلندي مستورد)",
     nameEn: "Lamb, New Zealand, imported, ground lamb, raw",
     category: "protein",
     per100g: { calories: 193, protein: 20.3, carbs: 0.0, fat: 12.4, fiber: 0.0, sugar: 0.0 },
@@ -66605,7 +66605,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "barley-malt-flour",
-    nameAr: "شعير شعير بالدقيق",
+    nameAr: "دقيق شعير بالملت",
     nameEn: "Barley malt flour",
     category: "carb",
     per100g: { calories: 361, protein: 10.3, carbs: 78.3, fat: 1.8, fiber: 7.1, sugar: 0.8 },
@@ -67470,7 +67470,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "fast-foods-potatoes-hash-browns-round-pieces-or-patty",
-    nameAr: "بطاطس هاش براون فخذ خلفي قطع أو قرص",
+    nameAr: "بطاطس هاش براون — قطع دائرية أو أقراص",
     nameEn: "Fast foods, potatoes, hash browns, round pieces or patty",
     category: "snack",
     per100g: { calories: 272, protein: 2.6, carbs: 28.9, fat: 17.0, fiber: 2.7, sugar: 0.6 },
@@ -68694,7 +68694,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "taco-bell-taco-salad",
-    nameAr: "سلطة تاكو تاكو بيل",
+    nameAr: "سلطة تاكو — تاكو بيل",
     nameEn: "TACO BELL, Taco Salad",
     category: "snack",
     per100g: { calories: 170, protein: 6.7, carbs: 15.1, fat: 9.2, fiber: 3.0, sugar: 0 },
@@ -69439,7 +69439,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "fast-foods-cheeseburger-single-large-patty-with-condiments",
-    nameAr: "برجر جبنة ;   قطعة واحدة قرص كبير ;   بالتتبيلات",
+    nameAr: "برجر جبنة؛ قطعة واحدة قرص كبير؛ بالتتبيلات",
     nameEn: "Fast foods, cheeseburger; single, large patty; with condiments",
     category: "snack",
     per100g: { calories: 269, protein: 15.2, carbs: 19.7, fat: 14.4, fiber: 1.2, sugar: 3.6 },
@@ -72493,7 +72493,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "beef-chuck-eye-roast-boneless-americas-beef-roast-separable--7164",
-    nameAr: "أمريكا بقري روست روست عين الكتف بقري — لحم ودهن، منزوع العظم، مطهو، مشوي",
+    nameAr: "روست عين الكتف بقري — لحم ودهن، منزوع العظم، مطهو، مشوي",
     nameEn: "Beef, chuck eye roast, boneless, America's Beef Roast, separable lean and fat, trimmed to 0\" fat, all grades, cooked, roasted",
     category: "protein",
     per100g: { calories: 236, protein: 24.6, carbs: 0.0, fat: 15.3, fiber: 0.0, sugar: 0.0 },
@@ -72504,7 +72504,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "beef-chuck-eye-roast-boneless-americas-beef-roast-separable--7165",
-    nameAr: "أمريكا بقري روست روست عين الكتف بقري — لحم ودهن، منزوع العظم، مطهو، مشوي (تشويس)",
+    nameAr: "روست عين الكتف بقري — لحم ودهن، منزوع العظم، مطهو، مشوي (تشويس)",
     nameEn: "Beef, chuck eye roast, boneless, America's Beef Roast, separable lean and fat, trimmed to 0\" fat, choice, cooked, roasted",
     category: "protein",
     per100g: { calories: 241, protein: 24.5, carbs: 0.0, fat: 15.9, fiber: 0.0, sugar: 0.0 },
@@ -72515,7 +72515,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "beef-chuck-eye-roast-boneless-americas-beef-roast-separable--7166",
-    nameAr: "أمريكا بقري روست روست عين الكتف بقري — لحم ودهن، منزوع العظم، مطهو، مشوي (سيلكت)",
+    nameAr: "روست عين الكتف بقري — لحم ودهن، منزوع العظم، مطهو، مشوي (سيلكت)",
     nameEn: "Beef, chuck eye roast, boneless, America's Beef Roast, separable lean and fat, trimmed to 0\" fat, select, cooked, roasted",
     category: "protein",
     per100g: { calories: 229, protein: 24.9, carbs: 0.0, fat: 14.4, fiber: 0.0, sugar: 0.0 },
@@ -76376,7 +76376,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "beef-ground-97-lean-meat-3-fat-patty-cooked-broiled",
-    nameAr: "قرص 97% لحم لحم 3% دهن بقري — مفروم، مطهو، مشوي",
+    nameAr: "قرص بقري مفروم (97% لحم، 3% دهن) — مطهو، مشوي",
     nameEn: "Beef, ground, 97% lean meat / 3% fat, patty, cooked, broiled",
     category: "protein",
     per100g: { calories: 153, protein: 26.4, carbs: 0.0, fat: 4.5, fiber: 0.0, sugar: 0.0 },
@@ -76387,7 +76387,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "beef-ground-97-lean-meat-3-fat-patty-cooked-pan-broiled",
-    nameAr: "قرص 97% لحم لحم 3% دهن بقري — مفروم، مطهو، مشوي بالمقلاة",
+    nameAr: "قرص بقري مفروم (97% لحم، 3% دهن) — مطهو، مشوي بالمقلاة",
     nameEn: "Beef, ground, 97% lean meat /3% fat, patty, cooked, pan-broiled",
     category: "protein",
     per100g: { calories: 144, protein: 26.0, carbs: 0.0, fat: 3.6, fiber: 0.0, sugar: 0.0 },
@@ -76398,7 +76398,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "beef-ground-97-lean-meat-3-fat-loaf-cooked-baked",
-    nameAr: "رغيف 97% لحم لحم 3% دهن بقري — مفروم، مطهو، مشوي بالفرن",
+    nameAr: "رغيف بقري مفروم (97% لحم، 3% دهن) — مطهو، مشوي بالفرن",
     nameEn: "Beef, ground, 97% lean meat / 3% fat, loaf, cooked, baked",
     category: "protein",
     per100g: { calories: 154, protein: 27.6, carbs: 0.0, fat: 4.1, fiber: 0.0, sugar: 0.0 },
@@ -76871,7 +76871,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "beef-ground-95-lean-meat-5-fat-patty-cooked-broiled",
-    nameAr: "قرص 95% لحم لحم 5% دهن بقري — مفروم، مطهو، مشوي",
+    nameAr: "قرص بقري مفروم (95% لحم، 5% دهن) — مطهو، مشوي",
     nameEn: "Beef, ground, 95% lean meat / 5% fat, patty, cooked, broiled",
     category: "protein",
     per100g: { calories: 174, protein: 26.3, carbs: 0.0, fat: 6.8, fiber: 0.0, sugar: 0.0 },
@@ -76882,7 +76882,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "beef-ground-95-lean-meat-5-fat-patty-cooked-pan-broiled",
-    nameAr: "قرص 95% لحم لحم 5% دهن بقري — مفروم، مطهو، مشوي بالمقلاة",
+    nameAr: "قرص بقري مفروم (95% لحم، 5% دهن) — مطهو، مشوي بالمقلاة",
     nameEn: "Beef, ground, 95% lean meat / 5% fat, patty, cooked, pan-broiled",
     category: "protein",
     per100g: { calories: 164, protein: 25.8, carbs: 0.0, fat: 5.9, fiber: 0.0, sugar: 0.0 },
@@ -76904,7 +76904,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "beef-ground-95-lean-meat-5-fat-loaf-cooked-baked",
-    nameAr: "رغيف 95% لحم لحم 5% دهن بقري — مفروم، مطهو، مشوي بالفرن",
+    nameAr: "رغيف بقري مفروم (95% لحم، 5% دهن) — مطهو، مشوي بالفرن",
     nameEn: "Beef, ground, 95% lean meat / 5% fat, loaf, cooked, baked",
     category: "protein",
     per100g: { calories: 174, protein: 27.3, carbs: 0.0, fat: 6.4, fiber: 0.0, sugar: 0.0 },
@@ -76926,7 +76926,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "beef-ground-90-lean-meat-10-fat-patty-cooked-broiled",
-    nameAr: "قرص 90% لحم لحم 10% دهن بقري — مفروم، مطهو، مشوي",
+    nameAr: "قرص بقري مفروم (90% لحم، 10% دهن) — مطهو، مشوي",
     nameEn: "Beef, ground, 90% lean meat / 10% fat, patty, cooked, broiled",
     category: "protein",
     per100g: { calories: 217, protein: 26.1, carbs: 0.0, fat: 11.8, fiber: 0.0, sugar: 0.0 },
@@ -76937,7 +76937,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "beef-ground-90-lean-meat-10-fat-patty-cooked-pan-broiled",
-    nameAr: "قرص 90% لحم لحم 10% دهن بقري — مفروم، مطهو، مشوي بالمقلاة",
+    nameAr: "قرص بقري مفروم (90% لحم، 10% دهن) — مطهو، مشوي بالمقلاة",
     nameEn: "Beef, ground, 90% lean meat / 10% fat, patty, cooked, pan-broiled",
     category: "protein",
     per100g: { calories: 204, protein: 25.2, carbs: 0.0, fat: 10.7, fiber: 0.0, sugar: 0.0 },
@@ -76959,7 +76959,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "beef-ground-90-lean-meat-10-fat-loaf-cooked-baked",
-    nameAr: "رغيف 90% لحم لحم 10% دهن بقري — مفروم، مطهو، مشوي بالفرن",
+    nameAr: "رغيف بقري مفروم (90% لحم، 10% دهن) — مطهو، مشوي بالفرن",
     nameEn: "Beef, ground, 90% lean meat / 10% fat, loaf, cooked, baked",
     category: "protein",
     per100g: { calories: 214, protein: 26.6, carbs: 0.0, fat: 11.1, fiber: 0.0, sugar: 0.0 },
@@ -76992,7 +76992,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "beef-ground-85-lean-meat-15-fat-patty-cooked-pan-broiled",
-    nameAr: "قرص 85% لحم لحم 15% دهن بقري — مفروم، مطهو، مشوي بالمقلاة",
+    nameAr: "قرص بقري مفروم (85% لحم، 15% دهن) — مطهو، مشوي بالمقلاة",
     nameEn: "Beef, ground, 85% lean meat / 15% fat, patty, cooked, pan-broiled",
     category: "protein",
     per100g: { calories: 232, protein: 24.6, carbs: 0.0, fat: 14.0, fiber: 0.0, sugar: 0.0 },
@@ -77014,7 +77014,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "beef-ground-85-lean-meat-15-fat-loaf-cooked-baked",
-    nameAr: "رغيف 85% لحم لحم 15% دهن بقري — مفروم، مطهو، مشوي بالفرن",
+    nameAr: "رغيف بقري مفروم (85% لحم، 15% دهن) — مطهو، مشوي بالفرن",
     nameEn: "Beef, ground, 85% lean meat / 15% fat, loaf, cooked, baked",
     category: "protein",
     per100g: { calories: 240, protein: 25.9, carbs: 0.0, fat: 14.4, fiber: 0.0, sugar: 0.0 },
@@ -77036,7 +77036,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "beef-ground-80-lean-meat-20-fat-patty-cooked-broiled",
-    nameAr: "قرص 80% لحم لحم 20% دهن بقري — مفروم، مطهو، مشوي",
+    nameAr: "قرص بقري مفروم (80% لحم، 20% دهن) — مطهو، مشوي",
     nameEn: "Beef, ground, 80% lean meat / 20% fat, patty, cooked, broiled",
     category: "protein",
     per100g: { calories: 270, protein: 25.8, carbs: 0.0, fat: 17.8, fiber: 0.0, sugar: 0.0 },
@@ -77047,7 +77047,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "beef-ground-80-lean-meat-20-fat-patty-cooked-pan-broiled",
-    nameAr: "قرص 80% لحم لحم 20% دهن بقري — مفروم، مطهو، مشوي بالمقلاة",
+    nameAr: "قرص بقري مفروم (80% لحم، 20% دهن) — مطهو، مشوي بالمقلاة",
     nameEn: "Beef, ground, 80% lean meat / 20% fat, patty, cooked, pan-broiled",
     category: "protein",
     per100g: { calories: 246, protein: 24.0, carbs: 0.0, fat: 15.9, fiber: 0.0, sugar: 0.0 },
@@ -77069,7 +77069,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "beef-ground-80-lean-meat-20-fat-loaf-cooked-baked",
-    nameAr: "رغيف 80% لحم لحم 20% دهن بقري — مفروم، مطهو، مشوي بالفرن",
+    nameAr: "رغيف بقري مفروم (80% لحم، 20% دهن) — مطهو، مشوي بالفرن",
     nameEn: "Beef, ground, 80% lean meat / 20% fat, loaf, cooked, baked",
     category: "protein",
     per100g: { calories: 254, protein: 25.2, carbs: 0.0, fat: 16.2, fiber: 0.0, sugar: 0.0 },
@@ -77091,7 +77091,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "beef-ground-75-lean-meat-25-fat-patty-cooked-broiled",
-    nameAr: "قرص 75% لحم لحم 25% دهن بقري — مفروم، مطهو، مشوي",
+    nameAr: "قرص بقري مفروم (75% لحم، 25% دهن) — مطهو، مشوي",
     nameEn: "Beef, ground, 75% lean meat / 25% fat, patty, cooked, broiled",
     category: "protein",
     per100g: { calories: 279, protein: 25.6, carbs: 0.0, fat: 18.9, fiber: 0.0, sugar: 0.0 },
@@ -77102,7 +77102,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "beef-ground-75-lean-meat-25-fat-patty-cooked-pan-broiled",
-    nameAr: "قرص 75% لحم لحم 25% دهن بقري — مفروم، مطهو، مشوي بالمقلاة",
+    nameAr: "قرص بقري مفروم (75% لحم، 25% دهن) — مطهو، مشوي بالمقلاة",
     nameEn: "Beef, ground, 75% lean meat / 25% fat, patty, cooked, pan-broiled",
     category: "protein",
     per100g: { calories: 248, protein: 23.4, carbs: 0.0, fat: 16.4, fiber: 0.0, sugar: 0.0 },
@@ -77124,7 +77124,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "beef-ground-75-lean-meat-25-fat-loaf-cooked-baked",
-    nameAr: "رغيف 75% لحم لحم 25% دهن بقري — مفروم، مطهو، مشوي بالفرن",
+    nameAr: "رغيف بقري مفروم (75% لحم، 25% دهن) — مطهو، مشوي بالفرن",
     nameEn: "Beef, ground, 75% lean meat / 25% fat, loaf, cooked, baked",
     category: "protein",
     per100g: { calories: 254, protein: 24.6, carbs: 0.0, fat: 16.5, fiber: 0.0, sugar: 0.0 },
@@ -78839,7 +78839,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "soup-clam-chowder-new-england-canned-ready-to-serve",
-    nameAr: "شوربة شوربة بطلينوس نيو إنجلاند (معلب، جاهز للتقديم)",
+    nameAr: "شوربة بطلينوس على طريقة نيو إنجلاند (معلبة، جاهزة للتقديم)",
     nameEn: "Soup, clam chowder, new england, canned, ready-to-serve",
     category: "snack",
     per100g: { calories: 79, protein: 2.6, carbs: 8.3, fat: 3.9, fiber: 1.0, sugar: 0.2 },
@@ -78850,7 +78850,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "soup-clam-chowder-new-england-reduced-sodium-canned-ready-to",
-    nameAr: "شوربة شوربة بطلينوس نيو إنجلاند (صوديوم مخفض، معلب، جاهز للتقديم)",
+    nameAr: "شوربة بطلينوس على طريقة نيو إنجلاند (صوديوم مخفص، معلبة، جاهزة للتقديم)",
     nameEn: "Soup, clam chowder, new england, reduced sodium, canned, ready-to-serve",
     category: "snack",
     per100g: { calories: 70, protein: 2.3, carbs: 5.7, fat: 4.2, fiber: 0.8, sugar: 0.0 },
@@ -81743,7 +81743,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "sunshine-cheez-it-hot-spicy-crackers",
-    nameAr: "كراكرز حار حار صن شاين (تشيز-إت)",
+    nameAr: "كراكرز تشيز-يت الحارة — صن شاين",
     nameEn: "SUNSHINE, CHEEZ-IT, Hot & Spicy Crackers",
     category: "carb",
     per100g: { calories: 513, protein: 8.3, carbs: 61.2, fat: 26.1, fiber: 2.9, sugar: 1.0 },

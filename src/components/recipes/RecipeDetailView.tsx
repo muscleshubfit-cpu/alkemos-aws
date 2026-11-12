@@ -127,18 +127,18 @@ export async function RecipeDetailView({
             <span className="inline-flex items-center gap-1.5">
               <Clock className="h-4 w-4" aria-hidden="true" />
               {isAr
-                ? `${totalMinutes.toLocaleString("ar-EG")} دقيقة (تحضير ${detail.prepMinutes} + طهي ${detail.cookMinutes})`
+                ? `${totalMinutes.toLocaleString("en-US")} دقيقة (تحضير ${detail.prepMinutes} + طهي ${detail.cookMinutes})`
                 : `${totalMinutes} min (prep ${detail.prepMinutes} + cook ${detail.cookMinutes})`}
             </span>
             <span className="inline-flex items-center gap-1.5">
               <Flame className="h-4 w-4" aria-hidden="true" />
               {isAr
-                ? `${detail.caloriesPerServing.toLocaleString("ar-EG")} سعرة/حصة`
+                ? `${detail.caloriesPerServing.toLocaleString("en-US")} سعرة/حصة`
                 : `${detail.caloriesPerServing} kcal/serving`}
             </span>
             <span>
               {isAr
-                ? `${detail.servings.toLocaleString("ar-EG")} حصص · وزن الحصة ≈ ${detail.servingWeightG.toLocaleString("ar-EG")} جم`
+                ? `${detail.servings.toLocaleString("en-US")} حصص · وزن الحصة ≈ ${detail.servingWeightG.toLocaleString("en-US")} جم`
                 : `${detail.servings} servings · serving ≈ ${detail.servingWeightG} g`}
             </span>
           </div>
@@ -225,7 +225,7 @@ export async function RecipeDetailView({
             {detail.steps.map((s) => (
               <li key={s.position} className="flex gap-3">
                 <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--text)] text-xs font-bold text-[var(--bg)] print:border print:border-black">
-                  {isAr ? s.position.toLocaleString("ar-EG") : s.position}
+                  {isAr ? s.position.toLocaleString("en-US") : s.position}
                 </span>
                 <p className="pt-0.5 text-sm leading-relaxed">{s.text}</p>
               </li>

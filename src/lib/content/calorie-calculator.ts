@@ -115,7 +115,7 @@ export const CALORIE_CALCULATOR_CONTENT: ToolReference = {
           kind: "p",
           text: {
             en: "The original Harris-Benedict equations were published in 1919 from laboratory measurements on a few hundred subjects; Roza and Shizgal revised the constants in 1984. The revised version for men reads: BMR = 88.362 + 13.397 × weight(kg) + 4.799 × height(cm) − 5.677 × age; for women: BMR = 447.593 + 9.247 × weight(kg) + 3.098 × height(cm) − 4.330 × age. The problem is drift: the populations measured a century ago were smaller and leaner per kilogram than today's, so Harris-Benedict systematically overestimates energy needs in modern adults — often by 5% or more. Many popular websites still use it, which is one reason their numbers run higher than ours for the same inputs.",
-            ar: "نُشرت معادلتا Harris-Benedict الأصليتان عام 1919 من قياسات مخبرية على بضع مئات من الأشخاص؛ ثم نقّح Roza و Shizgal ثوابتَها عام 1984. النسخة المنقحة للذكور: BMR = 88.362 + 13.397 × الوزن(كجم) + 4.799 × الطول(سم) − 5.677 × العمر؛ وللإناث: BMR = 447.593 + 9.247 × الوزن(كجم) + 3.098 × الطول(سم) − 4.330 × العمر. المشكلة هي الانحراف: فالأشخاص الذين قياسوا قبل قرن كانوا أنحف لكل كيلوغرام من الناس اليوم، لذا تبالغ Harris-Benedict منهجيًا في تقدير احتياجات الطاقة للبالغين المعاصرين — غالبًا بنسبة 5% أو أكثر. ما تزال مواقع شائعة كثيرة تستخدمها، وهذا أحد أسباب كون أرقامها أعلى من أرقامنا للمدخلات نفسها.",
+            ar: "نُشرت معادلتا Harris-Benedict الأصليتان عام 1919 من قياسات مخبرية على بضع مئات من الأشخاص؛ ثم نقّح Roza و Shizgal ثوابتَها عام 1984. النسخة المنقحة للذكور: BMR = 88.362 + 13.397 × الوزن(كجم) + 4.799 × الطول(سم) − 5.677 × العمر؛ وللإناث: BMR = 447.593 + 9.247 × الوزن(كجم) + 3.098 × الطول(سم) − 4.330 × العمر. المشكلة هي الانحراف: فالأشخاص الذين قِيسوا قبل قرن كانوا أنحف لكل كيلوغرام من الناس اليوم، لذا تبالغ Harris-Benedict منهجيًا في تقدير احتياجات الطاقة للبالغين المعاصرين — غالبًا بنسبة 5% أو أكثر. ما تزال مواقع شائعة كثيرة تستخدمها، وهذا أحد أسباب كون أرقامها أعلى من أرقامنا للمدخلات نفسها.",
           },
         },
         {
@@ -211,13 +211,13 @@ export const CALORIE_CALCULATOR_CONTENT: ToolReference = {
           kind: "p",
           text: {
             en: "Total Daily Energy Expenditure has four components. The largest is your BMR — typically 60–70% of the total — which pays for heartbeat, breathing, brain function, cell repair, and body temperature. The second is NEAT (non-exercise activity thermogenesis): all unconscious movement like walking, posture, gestures, and fidgeting, which can quietly range from 100 to 700 kcal a day between two people of identical size. The third is TEF (thermic effect of food): the energy cost of digesting and processing what you eat, about 10% of intake, with protein costing the most to process. The fourth is deliberate exercise — usually the smallest slice for the average office worker, and the most variable for an athlete in season.",
-            ar: "يتألف الإنفاق اليومي الكلي من الطاقة من أربعة مكونات. الأكبر هو معدل الأيض الأساسي — نحو 60–70% من الإجمالي — الذي يدفع نبض القلب والتنفس ووظائف الدماغ وإصلاح الخلايا وحرارة الجسم. والثاني هو NEAT (التوليد الحراري للنشاط غير الرياضي): كل حركة لا واعية كالمشي والوقفة والإيماءات والتململ، ويمكن أن يتراوح بصمت بين 100 و700 سعرة يوميًا بين شخصين متطابقين في الحجم. والثالث هو TEF (التأثير الحراري للطعام): كلفة هضم ما تأكله ومعالجته، وهي نحو 10% من الاستهلاك، والبروتين أغلاها في المعالجة. والرابع التمارين المقصودة — عادةً أصغر حصة لموظف مكتبي، وأكثرها تقلبًا لرياضي في موسم المنافسة.",
+            ar: "يتألف الإنفاق اليومي الكلي من الطاقة من أربعة مكونات. الأكبر هو معدل الأيض الأساسي — نحو 60–70% من الإجمالي — الذي يدفع نبض القلب والتنفس ووظائف الدماغ وإصلاح الخلايا وحرارة الجسم. والثاني هو التوليد الحراري للنشاط غير الرياضي (NEAT): كل حركة لاواعية كالمشي والوقفة والإيماءات والتململ، ويمكن أن يتراوح بصمت بين 100 و700 سعرة يوميًا بين شخصين متطابقين في الحجم. والثالث هو TEF (التأثير الحراري للطعام): كلفة هضم ما تأكله ومعالجته، وهي نحو 10% من الاستهلاك، والبروتين أغلاها في المعالجة. والرابع التمارين المقصودة — عادةً أصغر حصة لموظف مكتبي، وأكثرها تقلبًا لرياضي في موسم المنافسة.",
           },
         },
         {
           kind: "p",
           text: {
-            en: "The practical consequences of this breakdown are worth remembering. Exercise burns fewer calories than most people assume, which is why adding a workout rarely out-runs a poor diet; NEAT differences explain why your friend eats like you but stays leaner; and a high-protein diet quietly spends more calories on digestion than a high-fat one. When your calculator says \"TDEE 2,400\", that single number is the sum of all four components for an ordinary day — not just your gym hour.",
+            en: "The practical consequences of this breakdown are worth remembering. Exercise burns fewer calories than most people assume, which is why adding a workout rarely outruns a poor diet; NEAT differences explain why your friend eats like you but stays leaner; and a high-protein diet quietly spends more calories on digestion than a high-fat one. When your calculator says \"TDEE 2,400\", that single number is the sum of all four components for an ordinary day — not just your gym hour.",
             ar: "عواقب هذا التفصيل جديرة بالتذكر. التمارين تحرق سعرات أقل مما يفترض معظم الناس، ولهذا نادرًا ما تتفوق جلسةُ تمرين على تغذية سيئة؛ وفروق الـ NEAT تفسّر كيف يأكل صديقك مثلك ويظل أنحف منك؛ والحمية الغنية بالبروتين تنفق بهدوء سعرات أكثر على الهضم من الحمية الغنية بالدهون. عندما تقول الحاسبة «TDEE 2400» فذلك الرقم الواحد هو مجموع المكونات الأربعة ليوم عادي — لا ساعة ناديك وحدها.",
           },
         },
@@ -233,8 +233,8 @@ export const CALORIE_CALCULATOR_CONTENT: ToolReference = {
         {
           kind: "p",
           text: {
-            en: "For fat loss, the calculator subtracts 500 kcal from your TDEE. Body fat stores roughly 7,700 kcal per kilogram, so a 500-kcal daily deficit drains about 0.45–0.5 kg per week — the rate almost every clinical guideline considers sustainable, because it preserves muscle, adapts to slowly, and leaves room for social life. Faster is possible but costs you: crash deficits strip muscle, crash energy, and crash adherence. If you have a lot of weight to lose (a starting BMI above 30), a slightly larger deficit is medically reasonable under supervision; otherwise treat 500 as the ceiling of comfort.",
-            ar: "لخسارة الدهون تطرح الحاسبة 500 سعرة من الـ TDEE. فكل كيلوغرام من دهون الجسم يخزّن نحو 7700 سعرة، لذا فإن عجزًا يوميًا قدره 500 سعرة يستنزف نحو 0.45–0.5 كجم أسبوعيًا — وهي السرعة التي تعتبرها الإرشادات الإكلينيكية بإجماعٍ شبه تام مستدامة، لأنها تحافظ على العضلات وتتكيف ببطء وتترك مساحة للحياة الاجتماعية. الزيادة في السرعة ممكنة لكن ثمنها باهظ: العجوزات القاسية تسلخ العضلات والطاقة والالتزام معًا. إن كان لديك وزن كبير يجب خسارته (مؤشر كتلة بداية أعلى من 30) فعجز أكبر قليلًا مبرر طبيًا بإشراف متخصص؛ وإلا فاعتبر 500 سقفَ الراحة.",
+            en: "For fat loss, the calculator subtracts 500 kcal from your TDEE. Body fat stores roughly 7,700 kcal per kilogram, so a 500-kcal daily deficit drains about 0.45–0.5 kg per week — the rate almost every clinical guideline considers sustainable, because it preserves muscle, adapts slowly, and leaves room for social life. Faster is possible but costs you: crash deficits strip muscle, crash energy, and crash adherence. If you have a lot of weight to lose (a starting BMI above 30), a slightly larger deficit is medically reasonable under supervision; otherwise treat 500 as the ceiling of comfort.",
+            ar: "لخسارة الدهون تطرح الحاسبة 500 سعرة من الـ TDEE. فكل كيلوغرام من دهون الجسم يخزّن نحو 7700 سعرة، لذا فإن عجزًا يوميًا قدره 500 سعرة يستنزف نحو 0.45–0.5 كجم أسبوعيًا — وهي السرعة التي تعتبرها الإرشادات الإكلينيكية بإجماعٍ شبه تام مستدامة، لأنها تحافظ على العضلات وتتكيف ببطء وتترك مساحة للحياة الاجتماعية. الزيادة في السرعة ممكنة لكن ثمنها باهظ: الحُميات القاسية المتسرعة تُفقدك العضلات والطاقة والالتزام معًا. إن كان لديك وزن كبير يجب خسارته (مؤشر كتلة بداية أعلى من 30) فعجز أكبر قليلًا مبرر طبيًا بإشراف متخصص؛ وإلا فاعتبر 500 سقفَ الراحة.",
           },
         },
         {
@@ -248,7 +248,7 @@ export const CALORIE_CALCULATOR_CONTENT: ToolReference = {
           kind: "p",
           text: {
             en: "Maintenance deserves respect too. Extended periods eating at your calculated TDEE — deliberately, after a cut or a gaining phase — let hormones related to hunger and metabolism recover, give you a truthful reference point for future adjustments, and break the psychological pattern of permanent dieting. Plan maintenance phases, not just deficits.",
-            ar: "والتثبيت يستحق احترامًا كذلك. فترات طويلة من الأكل عند الـ TDEE المحسوب — عمدًا، بعد مرحلة خسارة أو زيادة — تتيح للهرمونات المرتبطة بالجوع والأيض أن تتعافى، وتمنحك نقطة مرجعية صادقة لتعديلات المستقبل، وتكسر النمط النفسي للدايت الدائم. خطط لمراحل تثبيت، لا لعجزٍ فقط.",
+            ar: "والتثبيت يستحق احترامًا كذلك. فترات طويلة من الأكل عند الـ TDEE المحسوب — عمدًا، بعد مرحلة خسارة أو زيادة — تتيح للهرمونات المرتبطة بالجوع والأيض أن تتعافى، وتمنحك نقطة مرجعية صادقة لتعديلات المستقبل، وتكسر النمط النفسي للحمية الدائمة. خطط لمراحل تثبيت، لا لعجزٍ فقط.",
           },
         },
       ],
@@ -264,14 +264,14 @@ export const CALORIE_CALCULATOR_CONTENT: ToolReference = {
           kind: "p",
           text: {
             en: "Alongside your calorie target, this calculator shows a starter macro split of 40% carbohydrates, 30% protein, and 30% fat — a balanced default that supports training, recovery, and satiety for most people. Translated to grams: protein and carbohydrates each carry 4 kcal per gram and fat 9 kcal per gram, so the calculator divides your protein and carb calories by 4 and your fat calories by 9.",
-            ar: "إلى جانب هدف السعرات تعرض الحاسبة توزيع ماكروز افتتاحيًا من 40% كربوهيدرات و30% بروتين و30% دهون — افتراض متوازن يدعم التدريب والاستشفاء والشبع لدى معظم الناس. وترجمةً إلى غرامات: البروتين والكربوهيدرات يحمل كل منهما 4 سعرة للغرام والدهون 9 سعرة للغرام، لذا تقسم الحاسبة سعرات البروتين والكربوهيدرات على 4 وسعرات الدهون على 9.",
+            ar: "إلى جانب هدف السعرات تعرض الحاسبة توزيع ماكروز افتتاحيًا من 40% كربوهيدرات و30% بروتين و30% دهون — والخيار الافتراضي المتوازن يدعم التدريب والاستشفاء والشبع لدى معظم الناس. وترجمةً إلى غرامات: البروتين والكربوهيدرات يحمل كل منهما 4 سعرة للغرام والدهون 9 سعرة للغرام، لذا تقسم الحاسبة سعرات البروتين والكربوهيدرات على 4 وسعرات الدهون على 9.",
           },
         },
         {
           kind: "p",
           text: {
             en: "The starter split is a floor, not a verdict. If you train hard, prefer low-carb eating, follow a ketogenic diet, or need higher protein while cutting, the dedicated macro calculator redistributes the same calorie budget across five preset patterns (balanced, low-carb, high-protein, keto, low-fat) with full gram breakdowns and the reasoning behind each split. Calories decide whether your weight moves; macros decide what the weight consists of and how the diet feels.",
-            ar: "هذا التوزيع الافتتاحي أرضية لا حكمًا نهائيًا. إن كنت تتدرب بقوة، أو تفضل الأكل قليل الكربوهيدرات، أو تتبع حمية الكيتو، أو تحتاج بروتينًا أعلى أثناء الخسارة، فحاسبة الماكروز المخصصة تعيد توزيع ميزانية السعرات نفسها عبر خمسة أنماط جاهزة (متوازن، قليل الكربوهيدرات، عالي البروتين، كيتو، قليل الدهون) بتفصيل الغرامات الكامل ومسوّغات كل توزيع. السعرات تحدد هل يتحرك وزنك؛ والماكروز تحدد مما يتكون هذا الوزن وكيف تشعر الحمية.",
+            ar: "هذا التوزيع الافتتاحي أرضية لا حكمًا نهائيًا. إن كنت تتدرب بقوة، أو تفضل الأكل قليل الكربوهيدرات، أو تتبع حمية الكيتو، أو تحتاج بروتينًا أعلى أثناء الخسارة، فحاسبة الماكروز المخصصة تعيد توزيع ميزانية السعرات نفسها عبر خمسة أنماط جاهزة (متوازن، قليل الكربوهيدرات، عالي البروتين، كيتو، قليل الدهون) بتفصيل الغرامات الكامل ومسوّغات كل توزيع. السعرات تحدد هل يتحرك وزنك؛ والماكروز تحدد مما يتكون هذا الوزن وكيف تبدو تجربة الحمية.",
           },
         },
       ],
@@ -301,7 +301,7 @@ export const CALORIE_CALCULATOR_CONTENT: ToolReference = {
           kind: "p",
           text: {
             en: "One final scope note: a calculator is a planning tool for generally healthy adults, not a medical device. If you live with a chronic condition — diabetes, thyroid disorders, kidney or liver disease — or you are pregnant, breastfeeding, or taking medications that affect appetite or weight, the numbers here are still a useful starting point for the conversation, but the final targets should be set with a physician or a registered dietitian who can see your full picture. The same applies to adolescents, whose energy needs change with growth spurts and who should never run aggressive deficits without supervision.",
-            ar: "ملاحظة نطاق أخيرة: الحاسبة أداة تخطيط لبالغين أصحاء عمومًا، وليست جهازًا طبيًا. إن كنت تعيش مع حالة مزمنة — السكري أو اضطرابات الغدة الدرقية أو أمراض الكلى أو الكبد — أو كنتِ حاملًا أو مرضعًا، أو تتناول أدوية تؤثر في الشهية أو الوزن، فتبقى الأرقام هنا نقطة انطلاق مفيدة للحوار، لكن ينبغي أن تُضبط الأهداف النهائية مع طبيب أو أخصائي تغذية مسجل يرى صورتك الكاملة. وينطبق الأمر نفسه على المراهقين، الذين تتغير احتياجاتهم من الطاقة مع طفرات النمو ولا يجوز أن يخوضوا عجزًا عدوانيًا بلا إشراف.",
+            ar: "ملاحظة نطاق أخيرة: الحاسبة أداة تخطيط لبالغين أصحاء عمومًا، وليست جهازًا طبيًا. إن كنت تعيش مع حالة مزمنة — السكري أو اضطرابات الغدة الدرقية أو أمراض الكلى أو الكبد — أو كنتِ حاملةً أو مرضعةً، أو تتناول أدوية تؤثر في الشهية أو الوزن، فتبقى الأرقام هنا نقطة انطلاق مفيدة للحوار، لكن ينبغي أن تُضبط الأهداف النهائية مع طبيب أو أخصائي تغذية مسجل يرى صورتك الكاملة. وينطبق الأمر نفسه على المراهقين، الذين تتغير احتياجاتهم من الطاقة مع طفرات النمو ولا يجوز أن يخوضوا عجزًا قاسيًا بلا إشراف.",
           },
         },
       ],
@@ -317,14 +317,14 @@ export const CALORIE_CALCULATOR_CONTENT: ToolReference = {
           kind: "p",
           text: {
             en: "A calorie target only works if your intake reporting is honest, and honesty has a technique. Weigh food raw where possible (rice and pasta more than double in weight when cooked, and cooked-weight entries are inconsistently labeled); use grams rather than \"one serving\" or \"one spoon\" — a heaped tablespoon of peanut butter can hold double the flat one; scan barcodes for packaged goods instead of guessing from photos; and log drinks, cooking oils, and \"bites while cooking\", which are the three most universally forgotten sources. People who adopt gram-level tracking for just two weeks typically report being off by 300–500 kcal a day before they started — enough to erase an entire planned deficit.",
-            ar: "لا يعمل هدف السعرات إلا إذا كان تسجيلك لاستهلاكك صادقًا، وللصدقة تقنية. زِن الطعام نيئًا ما أمكن (فالأرز والمكرونة يتضاعف وزنها أكثر من مرتين بعد الطهي، ومدخلات الوزن المطهو مسجلة بلا اتساق)؛ واستخدم الغرامات بدل «حصة واحدة» أو «ملعقة» — فملعقة ممتلئة من زبدة الفول السوداني قد تحمل ضعف الملعقة المسطحة؛ وامسح الباركود للأغلفة بدل التخمين من الصور؛ وسجّل المشروبات وزيوت الطهي و«لقمات أثناء الطبخ» — فهي أكثر ثلاثة مصادر تُنسى عالميًا. من يتبنى التسجيل بالغرام أسبوعين فقط يذكر عادة أنه كان مخطئًا بـ 300–500 سعرة يوميًا قبل أن يبدأ — أي ما يكفي لمحو عجزٍ كامل مخطط له.",
+            ar: "لا يعمل هدف السعرات إلا إذا كان تسجيلك لاستهلاكك صادقًا، وللصدق تقنيته. زِن الطعام نيئًا ما أمكن (فالأرز والمكرونة يتضاعف وزنها أكثر من مرتين بعد الطهي، ومدخلات الوزن المطهو مسجلة بلا اتساق)؛ واستخدم الغرامات بدل «حصة واحدة» أو «ملعقة» — فملعقة ممتلئة من زبدة الفول السوداني قد تحمل ضعف الملعقة المسطحة؛ وامسح الباركود للأغلفة بدل التخمين من الصور؛ وسجّل المشروبات وزيوت الطهي و«لقمات أثناء الطبخ» — فهي أكثر ثلاثة مصادر تُنسى عالميًا. من يتبنى التسجيل بالغرام أسبوعين فقط يذكر عادة أنه كان مخطئًا بـ 300–500 سعرة يوميًا قبل أن يبدأ — أي ما يكفي لمحو عجزٍ كامل مخطط له.",
           },
         },
         {
           kind: "p",
           text: {
             en: "Structure your day around anchor meals: two or three fixed, repeatable meals that cover 80% of your calories make the budget predictable and the logging light. Reserve a planned, logged treat inside the budget rather than moralizing food into forbidden categories — unexplained forbidden foods are the engine of binge-restrict cycles. And when eating out, choose the dish you can estimate: grilled protein with rice and salad decomposes cleanly into numbers, while a mixed casserole does not.",
-            ar: "نظّم يومك حول وجبات مرتكزة: وجبتان أو ثلاث ثابتة قابلة للتكرار تغطيان 80% من سعراتك تجعلان الميزانية متوقعة والتسجيل خفيفًا. واحتفظ بمكافأة مخططة ومسجلة داخل الميزانية بدل تحويل الطعام إلى فئات محرمة أخلاقيًا — فالأطعمة المحرمة بلا تفسير هي محرك دورات الانهيار والحرمان. وعند الأكل خارج البيت اختر الطبق الذي تستطيع تقديره: بروتين مشوي مع أرز وسلطة يتحلل نظيفًا إلى أرقام، بخلاف طاجن مختلط.",
+            ar: "نظّم يومك حول وجبات مرتكزة: وجبتان أو ثلاث ثابتة قابلة للتكرار تغطيان 80% من سعراتك تجعلان الميزانية متوقعة والتسجيل خفيفًا. واحتفظ بمكافأة مخططة ومسجلة داخل الميزانية بدل تحويل الطعام إلى فئات محرمة أخلاقيًا — فالأطعمة المحرمة بلا تفسير هي محرك دورات النَّهَم والحرمان. وعند الأكل خارج البيت اختر الطبق الذي تستطيع تقديره: بروتين مشوي مع أرز وسلطة يتحلل نظيفًا إلى أرقام، بخلاف طاجن مختلط.",
           },
         },
       ],
@@ -396,7 +396,7 @@ export const CALORIE_CALCULATOR_CONTENT: ToolReference = {
               { en: ["Lentils, cooked", "116", "9"], ar: ["عدس مطبوخ", "116", "9"] },
               { en: ["Fava beans, cooked", "110", "7.6"], ar: ["فول مدمس", "110", "7.6"] },
               { en: ["Chickpeas, cooked", "164", "8.9"], ar: ["حمص مطبوخ", "164", "8.9"] },
-              { en: ["Pita bread", "275", "9"], ar: ["خبز شعير/بلدي", "275", "9"] },
+              { en: ["Pita bread", "275", "9"], ar: ["خبز عربي (بيتا)", "275", "9"] },
               { en: ["Greek yogurt, nonfat", "59", "10"], ar: ["زبادي يوناني خالي الدسم", "59", "10"] },
               { en: ["Dates, Medjool", "277", "1.8"], ar: ["تمر مجدول", "277", "1.8"] },
               { en: ["Banana", "89", "1.1"], ar: ["موزة", "89", "1.1"] },
@@ -443,7 +443,7 @@ export const CALORIE_CALCULATOR_CONTENT: ToolReference = {
               { en: ["Cycling, moderate (16–19 km/h)", "240"], ar: ["دراجة معتدلة (16–19 كم/س)", "240"] },
               { en: ["Swimming, freestyle moderate", "220"], ar: ["سباحة حرة معتدلة", "220"] },
               { en: ["Weight training, moderate", "110"], ar: ["تدريب أثقال معتدل", "110"] },
-              { en: ["HIIT circuit", "300"], ar: ["دائرة هيت عالية الشدة", "300"] },
+              { en: ["HIIT circuit", "300"], ar: ["دائرة HIIT", "300"] },
               { en: ["Jump rope", "350"], ar: ["نط الحبل", "350"] },
               { en: ["Yoga, general", "100"], ar: ["يوغا عامة", "100"] },
             ],
@@ -477,7 +477,7 @@ export const CALORIE_CALCULATOR_CONTENT: ToolReference = {
       },
       a: {
         en: "For a small, sedentary woman, 1,200 kcal can be a legitimate calculated target; for most adults it is an aggressive deficit that risks muscle loss, micronutrient gaps, low energy, and rebound eating. It should not be a default anyone copies from the internet. If your calculated target comes out near or below 1,200, prefer adding activity or accepting a slower loss rate, and if you have any medical condition, discuss the plan with a clinician first.",
-        ar: "لأنثى صغيرة الحجم خاملة يمكن أن تكون 1200 سعرة هدفًا محسوبًا مشروعًا؛ أما لمعظم البالغين فهي عجز عدواني يهدد العضلات ويفتح ثغرات المغذيات الدقيقة والطاقة ويدفع لأكل ارتدادي. لا يصح أن تكون رقمًا افتراضيًا ينسخه الناس من الإنترنت. إن خرج هدفك المحسوب قرب 1200 أو دونها ففضّل زيادة النشاط أو قبول خسارة أبطأ، وإن كان لديك أي وضع صحي فناقش الخطة مع طبيب أولًا.",
+        ar: "لأنثى صغيرة الحجم خاملة يمكن أن تكون 1200 سعرة هدفًا محسوبًا مشروعًا؛ أما لمعظم البالغين فهي عجز قاسٍ يهدد العضلات ويفتح ثغرات المغذيات الدقيقة والطاقة ويدفع لأكل ارتدادي. لا يصح أن تكون رقمًا افتراضيًا ينسخه الناس من الإنترنت. إن خرج هدفك المحسوب قرب 1200 أو دونها ففضّل زيادة النشاط أو قبول خسارة أبطأ، وإن كان لديك أي وضع صحي فناقش الخطة مع طبيب أولًا.",
       },
     },
     {
@@ -487,7 +487,7 @@ export const CALORIE_CALCULATOR_CONTENT: ToolReference = {
       },
       a: {
         en: "In order of likelihood: your intake is under-reported (oils, drinks, weekends — studies show average self-reports miss 300+ kcal/day), your activity is over-estimated (choosing \"moderate\" for a desk-job week), water is masking fat loss (salt, carbohydrate refills, menstrual cycle, new training soreness all hold water for days), or enough time has not passed (weigh trends over 2–3 weeks, not single days). Fix the first two, judge by the trend, and only then adjust the number by 100–200 kcal.",
-        ar: "بحسب الاحتمال: استهلاكك مقيَّد بأقل من الحقيقة (الزيوت والمشروبات وعطلات نهاية الأسبوع — تُظهر الدراسات أن التقارير الذاتية تفوّت أكثر من 300 سعرة يوميًا في المتوسط)، أو نشاطك مُقدَّر بأكثر من الحقيقة (اختيار «متوسط» لأسبوع مكتبي)، أو الماء يحجب خسارة الدهون (الملء والكربوهيدرات المعاد تخزينها والدورة الشهرية ووجع التمرين الجديد كلها تحبس الماء أيامًا)، أو لم يمر وقت كافٍ (زِن الاتجاه عبر 2–3 أسابيع لا الأيام المفردة). أصلح الأولين واحكم بالاتجاه، وعندها فقط عدّل الرقم بمقدار 100–200 سعرة.",
+        ar: "بحسب الاحتمال: استهلاكك مقيَّد بأقل من الحقيقة (الزيوت والمشروبات وعطلات نهاية الأسبوع — تُظهر الدراسات أن التقارير الذاتية تفوّت أكثر من 300 سعرة يوميًا في المتوسط)، أو نشاطك مُقدَّر بأكثر من الحقيقة (اختيار «متوسط» لأسبوع مكتبي)، أو الماء يحجب خسارة الدهون (الملح والكربوهيدرات المعاد تخزينها والدورة الشهرية ووجع التمرين الجديد كلها تحبس الماء أيامًا)، أو لم يمر وقت كافٍ (زِن الاتجاه عبر 2–3 أسابيع لا الأيام المفردة). أصلح الأولين واحكم بالاتجاه، وعندها فقط عدّل الرقم بمقدار 100–200 سعرة.",
       },
     },
     {
@@ -537,7 +537,7 @@ export const CALORIE_CALCULATOR_CONTENT: ToolReference = {
       },
       a: {
         en: "Yes. In nutrition labeling, \"Calorie\" (capital C) is the kilocalorie — the energy to warm one liter of water by one degree Celsius. A 200-Calorie snack provides 200 kcal. Some countries print \"kcal\" or \"kJ\" (1 kcal = 4.184 kJ) instead, but they are all the same energy in different costumes; this calculator and every serious nutrition source speak kcal.",
-        ar: "نعم. في ملصقات التغذية، «السعرة» بحرف كبير هي الكيلو سعرة — الطاقة اللازمة لتسخين لتر ماء درجة مئوية واحدة. سناك بـ 200 سعرة يوفر 200 كيلو سعرة. بعض الدول تطبع «kcal» أو «kJ» (1 كيلو سعرة = 4.184 كيلوجول) بدلًا منها، لكنها كلها الطاقة نفسها بأزياء مختلفة؛ وهذه الحاسبة وكل مصدر تغذية جدي يتحدث بالكيلو سعرة.",
+        ar: "نعم. في ملصقات التغذية، «السعرة» بحرف كبير (Calorie) هي الكيلو سعرة — الطاقة اللازمة لتسخين لتر ماء درجة مئوية واحدة. سناك بـ 200 سعرة يوفر 200 كيلو سعرة. بعض الدول تطبع «kcal» أو «kJ» (1 كيلو سعرة = 4.184 كيلوجول) بدلًا منها، لكنها كلها الطاقة نفسها بأزياء مختلفة؛ وهذه الحاسبة وكل مصدر تغذية جادّ يتحدث بالكيلو سعرة.",
       },
     },
     {
@@ -547,7 +547,7 @@ export const CALORIE_CALCULATOR_CONTENT: ToolReference = {
       },
       a: {
         en: "Less than folklore claims, and mostly for fixable reasons. A large 2021 study across 29 countries found energy expenditure per kilogram is remarkably stable from roughly age 20 to 60, then declines. What actually drops for most adults is muscle mass and daily movement — both trainable. Keeping resistance training and daily steps high through your forties and beyond keeps the calculator's age penalty small.",
-        ar: "أقل مما تدّعي الخرافة، وأغلبه لأسباب قابلة للإصلاح. دراسة كبيرة عام 2021 عبر 29 دولة وجدت أن الإنفاق لكل كيلوغرام مستقر بدهشة من نحو العشرين حتى الستين ثم ينخفض. ما يتراجع فعلًا عند معظم البالغين هو الكتلة العضلية والحركة اليومية — وكلاهما قابل للتدريب. المحافظة على تدريب المقاومة والخطوات اليومية في الأربعينيات وما بعدها يبقي غرامة العمر في الحاسبة صغيرة.",
+        ar: "أقل مما تدّعي الخرافة، وأغلبه لأسباب قابلة للإصلاح. دراسة كبيرة عام 2021 عبر 29 دولة وجدت أن الإنفاق لكل كيلوغرام مستقر بشكل مدهش من نحو عمر 20 حتى 60 ثم ينخفض. ما يتراجع فعلًا عند معظم البالغين هو الكتلة العضلية والحركة اليومية — وكلاهما قابل للتدريب. المحافظة على تدريب المقاومة والخطوات اليومية في الأربعينيات وما بعدها يبقي غرامة العمر في الحاسبة صغيرة.",
       },
     },
     {
@@ -557,7 +557,7 @@ export const CALORIE_CALCULATOR_CONTENT: ToolReference = {
       },
       a: {
         en: "Possibly — but first audit the two silent saboteurs: weekend intake (a 2,000-kcal Saturday erases four disciplined 500-kcal-deficit days) and measurement conditions (weigh naked, after the bathroom, before breakfast, on the same scale, and compare weekly averages rather than single mornings). If both are clean for three full weeks and the trend is still flat, your true TDEE is simply lower than the prediction — subtract another 150–200 kcal and re-test. The calculator gives you the hypothesis; your data runs the experiment.",
-        ar: "ربما — لكن دقق أولًا في مخربّين صامتين: استهلاك نهاية الأسبوع (سبت بـ 2000 سعرة يمحو أربعة أيام منضبطة بعجز 500 سعرة) وظروف القياس (زِن بلا ملابس، بعد قضاء الحاجة، قبل الفطور، على الميزان نفسه، وقارن المتوسطات الأسبوعية لا الصباحات المفردة). إن كان الاثنان نظيفين ثلاثة أسابيع كاملة والاتجاه ما يزال مستويًا فإن إنفاقك الحقيقي أدنى من التنبؤ ببساطة — اطرح 150–200 سعرة أخرى وأعد الاختبار. الحاسبة تعطيك الفرضية؛ وبياناتك تدير التجربة.",
+        ar: "ربما — لكن دقق أولًا في مخرِّبين صامتين: استهلاك نهاية الأسبوع (سبت بـ 2000 سعرة يمحو أربعة أيام منضبطة بعجز 500 سعرة) وظروف القياس (زِن بلا ملابس، بعد قضاء الحاجة، قبل الفطور، على الميزان نفسه، وقارن المتوسطات الأسبوعية لا الصباحات المفردة). إن كان الاثنان نظيفين ثلاثة أسابيع كاملة والاتجاه ما يزال مستويًا فإن إنفاقك الحقيقي أدنى من التنبؤ ببساطة — اطرح 150–200 سعرة أخرى وأعد الاختبار. الحاسبة تعطيك الفرضية؛ وبياناتك تدير التجربة.",
       },
     },
     {

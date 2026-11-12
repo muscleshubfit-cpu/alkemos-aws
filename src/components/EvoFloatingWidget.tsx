@@ -653,7 +653,7 @@ export function EvoFloatingWidget() {
                   <div className="mt-6 w-full space-y-2">
                     {[
                       isAr
-                        ? "كم سعرة صدور دجاج؟"
+                        ? "كم سعرة في صدور الدجاج؟"
                         : "How many calories in chicken breast?",
                       isAr
                         ? "كيف أقوم بتمرين بنش بريس؟"
@@ -879,8 +879,12 @@ export function EvoFloatingWidget() {
               {!isSubscriber && dailyLimit !== null && (
                 <div className="mb-2 text-center text-[10px] font-normal text-[#6e6e73]">
                   {isAr
-                    ? `${dailyLimit - dailyCount} رسائل متبقية اليوم`
-                    : `${dailyLimit - dailyCount} messages left today`}
+                    ? dailyLimit - dailyCount === 1
+                      ? "رسالة متبقية اليوم"
+                      : `${dailyLimit - dailyCount} رسائل متبقية اليوم`
+                    : dailyLimit - dailyCount === 1
+                      ? "1 message left today"
+                      : `${dailyLimit - dailyCount} messages left today`}
                 </div>
               )}
               <form onSubmit={handleSubmit} className="flex items-center gap-1.5">

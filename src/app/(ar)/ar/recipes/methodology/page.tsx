@@ -121,7 +121,7 @@ export default function RecipesMethodologyPageAr() {
         </p>
 
         <section className="mt-10">
-          <h2 className="text-xl font-semibold">١. المرجع الغذائي</h2>
+          <h2 className="text-xl font-semibold">1. المرجع الغذائي</h2>
           <p className="mt-3 text-sm leading-relaxed text-[var(--muted-foreground)]">
             نستند إلى بيانات وزارة الزراعة الأمريكية المنشورة (USDA FoodData Central)
             للمكونات المتاحة فيها، مع جداول التركيب المصرية والعربية للمكونات
@@ -134,7 +134,7 @@ export default function RecipesMethodologyPageAr() {
         </section>
 
         <section className="mt-8">
-          <h2 className="text-xl font-semibold">٢. كيف تُحسب القيم لكل حصة</h2>
+          <h2 className="text-xl font-semibold">2. كيف تُحسب القيم لكل حصة</h2>
           <p className="mt-3 text-sm leading-relaxed text-[var(--muted-foreground)]">
             الحساب مباشر وبسيط: لكل مكون تُضرب قيمه المرجعية لكل 100 جرام
             في وزنه المصرَّح بالجرام (الكمية ÷ 100)، ثم تُجمع قيم الوصفة كلها وتُقسم
@@ -153,7 +153,7 @@ export default function RecipesMethodologyPageAr() {
         </section>
 
         <section className="mt-8">
-          <h2 className="text-xl font-semibold">٣. القيم الاختيارية ولماذا تغيب أحيانًا</h2>
+          <h2 className="text-xl font-semibold">3. القيم الاختيارية ولماذا تغيب أحيانًا</h2>
           <p className="mt-3 text-sm leading-relaxed text-[var(--muted-foreground)]">
             السبعة الأساسية — المكونات بأوزانها بالجرام، والسعرات، والبروتين،
             والكربوهيدرات، والدهون، والألياف، وعدد الحصص ووزنها — موجودة في كل وصفة.
@@ -165,7 +165,7 @@ export default function RecipesMethodologyPageAr() {
         </section>
 
         <section className="mt-8">
-          <h2 className="text-xl font-semibold">٤. البدائل وأثرها على القيم</h2>
+          <h2 className="text-xl font-semibold">4. البدائل وأثرها على القيم</h2>
           <p className="mt-3 text-sm leading-relaxed text-[var(--muted-foreground)]">
             كثير من الوصفات تقترح بدائل لمكوناتها، وكل بديل يغيّر القيم الغذائية
             بدرجة تختلف حسب البديل نفسه: استبدال اللبن الزبادي بالقشدة مثلًا يرفع
@@ -177,7 +177,7 @@ export default function RecipesMethodologyPageAr() {
         </section>
 
         <section className="mt-8">
-          <h2 className="text-xl font-semibold">٥. حقوق الصور</h2>
+          <h2 className="text-xl font-semibold">5. حقوق الصور</h2>
           <p className="mt-3 text-sm leading-relaxed text-[var(--muted-foreground)]">
             صور الوصفات مصدرها أسواق Pexels وUnsplash وPixabay، وتراخيصها تجيز
             الاستخدام التجاري بلا إسناد. نختار الصور لتطابق الطبق ومكوناته
@@ -187,7 +187,7 @@ export default function RecipesMethodologyPageAr() {
         </section>
 
         <section className="mt-8">
-          <h2 className="text-xl font-semibold">٦. أسئلة شائعة</h2>
+          <h2 className="text-xl font-semibold">6. أسئلة شائعة</h2>
           <div className="mt-3 divide-y divide-[var(--edge)] rounded-xl border border-[var(--edge)]">
             {FAQ.map((f) => (
               <details key={f.q} className="px-4 py-3">

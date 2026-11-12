@@ -56,7 +56,7 @@ export const MEAL_PLANNER_CONTENT: ToolReference = {
           kind: "p",
           text: {
             en: "The draft saves itself as you work — your plan survives a closed tab and is waiting when you return, with the essentials free by design. Members unlock convenience at scale (more saved plans, deeper history), but planning a full day with live macro totals stays free, deliberately: the barrier between a visitor and a working plan should be zero.",
-            ar: "تحفظ المسودة نفسها أثناء عملك — فخطتك تنجو من تبويب مغلق وتنتظر عند عودتك، والأساسيات مجانية دائمًا. ويفتح الأعضاء اليسرَ على نطاق أوسع (خطط محفوظة أكثر، تاريخًا أعمق)، لكن تخطيط يوم كامل بإجماليات ماكروز حية يبقى حرًا بتعمد: فالحاجز بين زائر وخطة عاملة ينبغي أن يكون صفرًا.",
+            ar: "تحفظ المسودة نفسها أثناء عملك — فخطتك تنجو من تبويب مغلق وتنتظر عند عودتك، والأساسيات مجانية دائمًا. ويفتح الأعضاء اليسرَ على نطاق أوسع (خطط محفوظة أكثر، تاريخًا أعمق)، لكن تخطيط يوم كامل بإجماليات ماكروز حية يبقى مجانيًا عمدًا: فالحاجز بين زائر وخطة عاملة ينبغي أن يكون صفرًا.",
           },
         },
       ],
@@ -72,7 +72,7 @@ export const MEAL_PLANNER_CONTENT: ToolReference = {
           kind: "p",
           text: {
             en: "Two rules produce good structure. Rule one — anchor protein: distribute your daily protein target across three to five meals at roughly 0.3–0.4 g per kg each (a 75 kg person: about 25–30 g per meal), because muscle protein synthesis responds to per-meal availability, not only to the daily total. Rule two — place carbohydrate where it works: around training for performance and recovery, or at the meal you socially enjoy most; fat fills the remainder as the cooking medium and satiety carrier.",
-            ar: "قاعدان تنتجان بنية جيدة. القاعدة الأولى — ركّز البروتين: وزّع هدفك اليومي من البروتين على ثلاث إلى خمس وجبات بنحو 0.3–0.4 غ لكل كجم لكل وجبة (شخص 75 كجم: نحو 25–30 غ للوجبة)، لأن بناء بروتين العضلة يستجيب لتوافر الوجبة لا للإجمالي اليومي وحده. والقاعدة الثانية — ضع الكربوهيدرات حيث تعمل: حول التدريب للأداء والاستشفاء، أو عند الوجبة التي تستمتع بها اجتماعيًا أكثر؛ وتملأ الدهون الباقيَ وسيطَ طهي وحاملَ شبع.",
+            ar: "قاعدتان تنتجان بنية جيدة. القاعدة الأولى — ركّز البروتين: وزّع هدفك اليومي من البروتين على ثلاث إلى خمس وجبات بنحو 0.3–0.4 غ لكل كجم لكل وجبة (شخص 75 كجم: نحو 25–30 غ للوجبة)، لأن بناء بروتين العضلة يستجيب لتوافر الوجبة لا للإجمالي اليومي وحده. والقاعدة الثانية — ضع الكربوهيدرات حيث تعمل: حول التدريب للأداء والاستشفاء، أو عند الوجبة التي تستمتع بها اجتماعيًا أكثر؛ وتملأ الدهون الباقيَ وسيطَ طهي وحاملَ شبع.",
           },
         },
         {
@@ -86,7 +86,7 @@ export const MEAL_PLANNER_CONTENT: ToolReference = {
           kind: "p",
           text: {
             en: "A word on breakfast skipping: despite the folklore on both sides, controlled trials show breakfast's role is mostly caloric accounting — if skipping it makes your day easier to control, skip it; if it sends you into a 4 p.m. vending-machine spiral, eat it. The planner is agnostic: two meals or five, what counts is the day's total and its protein distribution.",
-            ar: "كلمة عن تخطي الفطور: رغم الحكايات على الجانبين، تُظهر التجارب المضبوطة أن دور الفطور غالبًا محاسبيٌ سعري — فإن كان تخطيه يجعل يومك أسهل ضبطًا فتخطَّه؛ وإن كان يرسلك في دوامة آلة البيع الرابعة عصرًا فكُله. المخطط محايد: وجبتان أو خمس، ما يُحسب هو إجمالي اليوم وتوزيع بروتينه.",
+            ar: "كلمة عن تخطي الفطور: رغم الحكايات على الجانبين، تُظهر التجارب المضبوطة أن دور الفطور غالبًا محاسبيٌ سعري — فإن كان تخطيه يجعل يومك أسهل ضبطًا فتخطَّه؛ وإن كان يرسلك في دوامة آلة البيع عند الرابعة عصرًا فكُله. المخطط محايد: وجبتان أو خمس، ما يُحسب هو إجمالي اليوم وتوزيع بروتينه.",
           },
         },
       ],
@@ -147,14 +147,14 @@ export const MEAL_PLANNER_CONTENT: ToolReference = {
           kind: "p",
           text: {
             en: "The plan-to-cart conversion is mechanical and worth doing weekly: sum each food's grams across the week's plans, add about 20% buffer for waste and appetite, and shop once for the staples (rice, lentils, oil, spices, frozen protein) while buying fresh produce twice weekly. This single habit attacks two failure modes at once — the \"nothing in the house\" takeaway spiral and the guilt-driven overbuying of vegetables that rot in the drawer. A household of two can plan five dinners from one protein bulk-buy and rotate the leftovers deliberately into lunches. The planner below does the arithmetic for you: the shopping-list tool right under your plan totals aggregates every item across your meals, scales it by your chosen horizon, adds the buffer, and hands you a copyable list.",
-            ar: "تحويل الخطة إلى سلة ميكانيكيٌّ وجدير بالأداء أسبوعيًا: اجمع غرامات كل صنف عبر خطط الأسبوع، وأضف نحو 20% احتياطًا للهدر والشهية، وتسوّق مرة للأساسيات (الأرز والعدس والزيت والتوابل والبروتين المجمد) واشترِ المنتجات الطازجة مرتين أسبوعيًا. هذه العادة الواحدة تهاجم نمطي فشل معًا — دوامة طلبات الطعام «لا شيء في البيت»، وشراء الخضروات بدافع الذنب فتتعفن في الدرج. وبيت من شخصين يمكنه تخطيط خمس عشاءات من شراء بروتين واحد بالجملة وتدوير البقايا عمدًا إلى الغداء. والمخطط في هذه الصفحة يقوم بالحساب عنك: أداة قائمة التسوق تحت الإجمالي الكلي مباشرةً تجمع كل صنف عبر وجباتك، وتضربه في المدة التي تختارها، وتضيف الاحتياط، وتمنحك قائمة قابلة للنسخ.",
+            ar: "تحويل الخطة إلى سلة ميكانيكيٌّ ويستحق أن يُنفَّذ أسبوعيًّا: اجمع غرامات كل صنف عبر خطط الأسبوع، وأضف نحو 20% احتياطًا للهدر والشهية، وتسوّق مرة للأساسيات (الأرز والعدس والزيت والتوابل والبروتين المجمد) واشترِ الخضروات والفواكه الطازجة مرتين أسبوعيًا. هذه العادة الواحدة تهاجم نمطي فشل معًا — دوامة طلبات الطعام «لا شيء في البيت»، وشراء الخضروات بدافع الذنب فتتعفن في الدرج. وبيت من شخصين يمكنه تخطيط خمس عشاءات من شراء بروتين واحد بالجملة وتدوير البقايا عمدًا إلى الغداء. والمخطط في هذه الصفحة يقوم بالحساب عنك: أداة قائمة التسوق تحت الإجمالي الكلي مباشرةً تجمع كل صنف عبر وجباتك، وتضربه في المدة التي تختارها، وتضيف الاحتياط، وتمنحك قائمة قابلة للنسخ.",
           },
         },
         {
           kind: "p",
           text: {
             en: "Two shopping rules keep the plan honest at the store: shop from a list (unlisted items are decisions made by a marketing department, not by your plan) and read the per-100-gram column on labels rather than the per-serving figure — the per-100 g column is the planner's native currency and the only one comparable across products.",
-            ar: "قاعدتا تسوق تحفظان صدق الخطة في المتجر: تسوّق من قائمة (الأصناف غير المدرجة قرارات اتخذها قسم تسويق لا خطتك)، واقرأ عمود «لكل 100 غرام» على الملصقات بدل رقم «الحصة» — فعمود المئة غرام عملة المخطط الأصلية والوحيد القابل للمقارنة عبر المنتجات.",
+            ar: "قاعدتا تسوق تحفظان صدق الخطة في المتجر: تسوّق من قائمة (الأصناف غير المدرجة قرارات اتخذها قسم تسويق لا خطتك)، واقرأ عمود «لكل 100 غرام» على الملصقات بدل رقم «الحصة» — فعمود المئة غرام عملة المخطط الأصلية والوحيدة القابلة للمقارنة عبر المنتجات.",
           },
         },
       ],
@@ -177,7 +177,7 @@ export const MEAL_PLANNER_CONTENT: ToolReference = {
           kind: "p",
           text: {
             en: "Ramadan deserves its own paragraph for the region this site serves: the fasting day inverts the structure — protein and fluids compress into the iftar-to-suhoor window. A workable frame: break the fast with dates and water (traditional and metabolically sensible — quick carbohydrate and rehydration), a balanced main iftar plate built like any dinner, and a suhoor emphasizing slow carbohydrates (oats, whole grains), protein, and fluids, since hydration and fullness are the fast's limiting factors. Training slots best after iftar or before suhoor, and the planner's day simply becomes an evening-weighted container — the arithmetic, again, does not change.",
-            ar: "ويستحق رمضان فقرته الخاصة للمنطقة التي يخدمها هذا الموقع: يومُ الصيام يقلب البنية — فالبروتين والسوائل تنضغط في نافذة الإفطار إلى السحور. وإطار قابل للعمل: افطر بالتمر والماء (تقليدي وسليم أيضيًا — كربوهيدرات سريعة وإعادة ترطيب)، وطبق إفطار رئيس متوازن مبني كأي عشاء، وسحور يؤكد الكربوهيدرات البطيئة (الشوفان والحبوب الكاملة) والبروتين والسوائل، فالإماهة والامتلاء عاملان محددا الصوم. ومواعيد التدريب أفضل بعد الإفطار أو قبل السحور، ويوم المخطط يصير ببساطة وعاءً مسائيَّ الوزن — والحسبة مرة أخرى لا تتغير.",
+            ar: "ويستحق رمضان فقرته الخاصة للمنطقة التي يخدمها هذا الموقع: يومُ الصيام يقلب البنية — فالبروتين والسوائل تنضغط في نافذة الإفطار إلى السحور. وإطار قابل للتطبيق: افطر بالتمر والماء (تقليدي وسليم أيضيًا — كربوهيدرات سريعة وإعادة ترطيب)، وطبق إفطار رئيس متوازن مبني كأي عشاء، وسحور يؤكد الكربوهيدرات البطيئة (الشوفان والحبوب الكاملة) والبروتين والسوائل، فالإماهة والامتلاء عاملان محددا الصوم. ومواعيد التدريب أفضل بعد الإفطار أو قبل السحور، ويوم المخطط يصير ببساطة وعاءً مسائيَّ الوزن — والحسبة مرة أخرى لا تتغير.",
           },
         },
       ],
@@ -193,7 +193,7 @@ export const MEAL_PLANNER_CONTENT: ToolReference = {
           kind: "p",
           text: {
             en: "The plan is a hypothesis your body grades. One day a week, compare the week's weight trend with the week's planned intake: trending as intended with energy to train — change nothing; drifting up or down against intention — adjust portion sizes by 100–200 kcal in the direction the data points, then hold another week. The common beginner error is adjusting daily, which reacts to water noise; the common intermediate error is never adjusting, which turns a good plan into a slowly wrong one. Weekly is the rhythm that separates signal from noise.",
-            ar: "الخطة فرضية يصحّحها جسمك. يومًا في الأسبوع، قارن اتجاه وزن الأسبوع باستخدام الأسبوع المخطط: الاتجاه كما قُصد مع طاقة للتدريب — لا تغيّر شيئًا؛ الانحراف صعودًا أو هبوطًا خلاف القصد — عدّل أحجام الحصص بمقدار 100–200 سعرة في الاتجاه الذي تشير إليه البيانات ثم اثبت أسبوعًا آخر. الخطأ الشائع للمبتدئ التعديلُ اليومي الذي يتفاعل مع ضجيج الماء؛ والخطأ الشائع للمتوسط ألا يعدّل أبدًا، فيتحول الخطة الجيدة إلى خطة تخطئ ببطء. الأسبوعي هو الإيقاع الذي يفصل الإشارة عن الضجيج.",
+            ar: "الخطة فرضية يصحّحها جسمك. يومًا في الأسبوع، قارن اتجاه وزن الأسبوع باستهلاك الأسبوع المخطط: الاتجاه كما قُصد مع طاقة للتدريب — لا تغيّر شيئًا؛ الانحراف صعودًا أو هبوطًا خلاف القصد — عدّل أحجام الحصص بمقدار 100–200 سعرة في الاتجاه الذي تشير إليه البيانات ثم اثبت أسبوعًا آخر. الخطأ الشائع للمبتدئ التعديلُ اليومي الذي يتفاعل مع ضجيج الماء؛ والخطأ الشائع للمتوسط ألا يعدّل أبدًا، فتتحول الخطة الجيدة إلى خطة تخطئ ببطء. الأسبوعي هو الإيقاع الذي يفصل الإشارة عن الضجيج.",
           },
         },
         {
@@ -249,7 +249,7 @@ export const MEAL_PLANNER_CONTENT: ToolReference = {
           kind: "p",
           text: {
             en: "Adapt the basket, not the principle: swap chicken for fish or beef by price and preference, rotate the legume between ful, lentils, and chickpeas, and let the produce row follow the season — the structure of protein-anchor-plus-starch-plus-produce survives every cuisine and every budget on earth.",
-            ar: "كيّف السلة لا المبدأ: بدّل الدجاج بسمك أو لحم بحسب السعر والتفضيل، ودوّر البقول بين الفول والعدس والحمص، ودع صف المنتجات يتبع الموسم — فبنية «مرتكز بروتين زائد نشوية زائد منتجات» تنجو من كل مطبخ وكل ميزانية على الأرض.",
+            ar: "كيّف السلة لا المبدأ: بدّل الدجاج بسمك أو لحم بحسب السعر والتفضيل، ودوّر البقول بين الفول والعدس والحمص، ودع اختيار الخضروات والفواكه يتبع الموسم — فبنية «مرتكز بروتين زائد نشوية زائد خضروات» تنجو من كل مطبخ وكل ميزانية على الأرض.",
           },
         },
       ],
@@ -318,7 +318,7 @@ export const MEAL_PLANNER_CONTENT: ToolReference = {
       },
       a: {
         en: "No — weighing is an apprenticeship, not a lifestyle. Six to eight weeks of gram-level logging builds calibrated eyes and hands; after that, spot-check a meal per week to keep the calibration, and rely on the planner for totals on the days that matter. The skill persists long after the scale goes back in the drawer.",
-        ar: "لا — الوزنُ تدريبُ مهنة لا أسلوبُ حياة. فستة إلى ثمانية أسابيع من التسجيل بالغرام تبني عيونًا وأيديًا معايَرة؛ وبعدها راجع بفحصٍ وجبةً في الأسبوع لحفظ المعايرة، واعتمد على المخطط للإجماليات في الأيام المهمة. فالمهارة تبقى طويلًا بعد أن يعود الميزان إلى الدرج.",
+        ar: "لا — الوزنُ تدريبُ مهنة لا أسلوبُ حياة. فستة إلى ثمانية أسابيع من التسجيل بالغرام تبني عيونًا وأيديًا معايَرة؛ وبعدها افحص وجبةً واحدة في الأسبوع لحفظ المعايرة، واعتمد على المخطط للإجماليات في الأيام المهمة. فالمهارة تبقى طويلًا بعد أن يعود الميزان إلى الدرج.",
       },
     },
     {
@@ -338,7 +338,7 @@ export const MEAL_PLANNER_CONTENT: ToolReference = {
       },
       a: {
         en: "Yes, and the weekly view is where planning pays its best rent. Build two or three rotating day-templates (a weekday, a training day, a lighter day), repeat them through the week with deliberate variety in dinner, and the plan becomes both stable enough to shop for and varied enough to live with. Weekly totals also absorb social meals gracefully — a heavy Friday averages into a lighter Sunday without any day feeling like punishment.",
-        ar: "نعم، والمنظور الأسبوعي هو حيث يدفع التخطيط أفضل إيجاره. ابنِ قالبَي أو ثلاثة من قوالب اليوم (يوم عمل، يوم تدريب، يوم أخف)، وكررها عبر الأسبوع بتنوع متعمد في العشاء، فتصبح الخطة مستقرة بما يكفي للتسوق ومتنوعة بما يكفي للعيش. والإجماليات الأسبوعية أيضًا تستوعب الوجبات الاجتماعية برشاقة — جمعة ثقيلة تتوسط مع أحد أخف بلا أن يشعر أي يومٍ بالعقاب.",
+        ar: "نعم، والمنظور الأسبوعي هو حيث يدفع التخطيط أفضل إيجاره. ابنِ قالبين أو ثلاثة من قوالب اليوم (يوم عمل، يوم تدريب، يوم أخف)، وكررها عبر الأسبوع بتنوع متعمد في العشاء، فتصبح الخطة مستقرة بما يكفي للتسوق ومتنوعة بما يكفي للعيش. والإجماليات الأسبوعية أيضًا تستوعب الوجبات الاجتماعية برشاقة — جمعة ثقيلة تتوسط مع أحد أخف بلا أن يشعر أي يومٍ بالعقاب.",
       },
     },
     {
@@ -368,7 +368,7 @@ export const MEAL_PLANNER_CONTENT: ToolReference = {
       },
       a: {
         en: "A diet is a set of restrictions; a meal plan is a schedule of what you will actually eat inside whatever philosophy you follow — balanced, low-carb, vegetarian, or none in particular. The planner is philosophy-agnostic: it computes grams and totals, and the macro calculator's presets tell you which totals to aim for within your chosen philosophy.",
-        ar: "الحمية مجموعة قيود؛ وخطة الوجبات جدولٌ بما ستأكله فعلًا داخل أي فلسفة تتبعها — متوازنة، أو قليلة الكربوهيدرات، أو نباتية، أو لا شيء بذات. المخطط لافلسفي: يحسب الغرامات والإجماليات، وأنماط حاسبة الماكروز تخبرك بأي إجماليات تستهدف داخل فلسفتك المختارة.",
+        ar: "الحمية مجموعة قيود؛ وخطة الوجبات جدولٌ بما ستأكله فعلًا داخل أي فلسفة تتبعها — متوازنة، أو قليلة الكربوهيدرات، أو نباتية، أو لا شيء بذات. المخطط محايد فلسفيًّا: يحسب الغرامات والإجماليات، وأنماط حاسبة الماكروز تخبرك بأي إجماليات تستهدف داخل فلسفتك المختارة.",
       },
     },
     {
@@ -378,7 +378,7 @@ export const MEAL_PLANNER_CONTENT: ToolReference = {
       },
       a: {
         en: "Model the fasting day as two meals plus a snack window: iftar as a full dinner-structured meal, a light mid-evening snack, and suhoor as the strategic meal — oats or whole grains, a protein source, and generous fluids. Keep the day's calorie and protein targets the same as a normal day; only their container changes. Training lands best between iftar and suhoor, and the week of Ramadan rewards lowering expectations of variety in exchange for consistency.",
-        ar: "مثّل يوم الصيام وجبتين زائد نافذة سناك: الإفطار وجبة كاملة بهيكل عشاء، وسناك خفيف منتصف الليل، والسحور الوجبة الاستراتيجية — شوفان أو حبوب كاملة، ومصدر بروتين، وسوائل سخية. أبقِ أهداف اليوم من السعرات والبروتين كما في اليوم العادي؛ يتغير وعاؤها فقط. والتدريب يهبط أفضل بين الإفطار والسحور، وأسبوع رمضان يكافئ خفض توقعات التنوع مقابل الاتساق.",
+        ar: "مثّل يوم الصيام وجبتين زائد نافذة سناك: الإفطار وجبة كاملة بهيكل عشاء، وسناك خفيف منتصف المساء، والسحور الوجبة الاستراتيجية — شوفان أو حبوب كاملة، ومصدر بروتين، وسوائل سخية. أبقِ أهداف اليوم من السعرات والبروتين كما في اليوم العادي؛ يتغير وعاؤها فقط. والتدريب يهبط أفضل بين الإفطار والسحور، وأسبوع رمضان يكافئ خفض توقعات التنوع مقابل الاتساق.",
       },
     },
     {
@@ -388,7 +388,7 @@ export const MEAL_PLANNER_CONTENT: ToolReference = {
       },
       a: {
         en: "Rounding and real food: per-item values round to whole numbers, and gram adjustments move in steps, so a plan landing within about ±2% of target (40 kcal on 2,000) is finished — chasing the last ten calories costs more attention than it buys physiology. Land close, hold the week, and let the weekly weight trend make the final call on whether the number needs moving.",
-        ar: "التقريب والطعام الحقيقي: فقيم الأصناف تُقرب لأرقام صحيحة، وتعديلات الغرام تتحرك بخطوات، فخطة تهبط ضمن نحو ±2% من الهدف (40 سعرة على 2000) منتهيةٌ — فمطاردة آخر عشر سعرات تكلف انتباهًا أعلى مما تشتري به فسيولوجيا. اهبط قريبًا، اثبت الأسبوع، ودع اتجاه الوزن الأسبوعي يصدر الحكم الأخير على تحرك الرقم.",
+        ar: "التقريب والطعام الحقيقي: فقيم الأصناف تُقرب لأرقام صحيحة، وتعديلات الغرام تتحرك بخطوات، فخطة تهبط ضمن نحو ±2% من الهدف (40 سعرة على 2000) منتهيةٌ — فمطاردة آخر عشر سعرات تكلف انتباهًا أعلى مما تشتري به فسيولوجيا. استقر قريبًا من الهدف، وثبِّت أسبوعًا، ودع اتجاه الوزن الأسبوعي يصدر الحكم الأخير على تحرك الرقم.",
       },
     },
     {
@@ -398,7 +398,7 @@ export const MEAL_PLANNER_CONTENT: ToolReference = {
       },
       a: {
         en: "Even more so — a repeated day is a plan already; writing it once into the planner verifies it meets your targets before you institutionalize it. The quiet risk of food monotony is nutritional drift: the same seven foods can undersupply fiber, minerals, or variety of protein sources without you noticing. One planner session either certifies your routine or shows you the two items to swap in.",
-        ar: "بدرجة أعلى — فاليوم المكرر خطةٌ جاهزة؛ وكتابته مرة في المخطط تتحقق من مطابقته أهدافك قبل أن تؤسِّسه. وخطر الرتابة الصامت انجرافٌ غذائي: فالأطعمة السبعة نفسها قد تقصّر في الألياف أو المعادن أو تنوع مصادر البروتين دون أن تلاحظ. جلسة مخطط واحدة إما تصدّق روتينك أو تريك الصنفين اللذين تستبدلهما.",
+        ar: "بدرجة أعلى — فاليوم المكرر خطةٌ جاهزة؛ وكتابته مرة في المخطط تتحقق من مطابقته أهدافك قبل أن تؤسِّسه. وخطر الرتابة الصامت انجرافٌ غذائي: فالأطعمة السبعة نفسها قد تقصّر في الألياف أو المعادن أو تنوع مصادر البروتين دون أن تلاحظ. جلسة مخطط واحدة إما أن تؤكد سلامة روتينك أو تريك الصنفين اللذين ينبغي استبدالهما.",
       },
     },
     {
@@ -408,7 +408,7 @@ export const MEAL_PLANNER_CONTENT: ToolReference = {
       },
       a: {
         en: "The honest framing is budgeted flexibility, not scheduled collapse. A planned, logged, enjoyed restaurant meal inside your weekly budget is just a meal; an unlogged \"day off\" averaging +2,000 kcal erases four disciplined days and, more importantly, trains the habit that food morality resets weekly. Log everything, budget the pleasures, and the concept of cheating quietly disappears — there is nothing to cheat on a plan that includes what you love.",
-        ar: "التأطير الصادق مرونةٌ مُدرجة في الميزانية لا انهيارٌ مجدول. فوجبة مطعم مخططة مسجلة ممتعة داخل ميزانيتك الأسبوعية مجردُ وجبة؛ أما «يوم الراحة» غير المسجل بمتوسط +2000 سعرة فيمحو أربعة أيام منضبطة، والأهم أنه يدرب عادةَ أن أخلاق الطعام تُصفَّر أسبوعيًا. سجّل كل شيء، ودرج الملذات، فيختفي مفهوم الغش بهدوء — فلا شيء ليغش عليه خطةً تتضمن ما تحب.",
+        ar: "التأطير الصادق مرونةٌ مُدرجة في الميزانية لا انهيارٌ مجدول. فوجبة مطعم مخططة مسجلة ممتعة داخل ميزانيتك الأسبوعية مجردُ وجبة؛ أما «يوم الراحة» غير المسجل بمتوسط +2000 سعرة فيمحو أربعة أيام منضبطة، والأهم أنه يدرب عادةَ أن أخلاق الطعام تُصفَّر أسبوعيًا. سجّل كل شيء، وضَع الملذات في الميزانية، فيختفي مفهوم الغش بهدوء — فلا شيء ليغش عليه خطةً تتضمن ما تحب.",
       },
     },
     {
@@ -438,7 +438,7 @@ export const MEAL_PLANNER_CONTENT: ToolReference = {
       },
       a: {
         en: "No — at the gram scale of a teaspoon, spices are nutritionally invisible: a tablespoon of mixed spices carries single-digit calories. The flavor budget that actually matters is its carriers: the oil you toast them in, the tahini or yogurt of the sauce, the sugar in a marinade — those are the amounts to log. Season generously; measure the vehicles, not the passengers.",
-        ar: "لا — فعلى مقياس غرام الملعقة الصغيرة التوابل غير مرئية تغذويًا: فملعقة كبيرة من بهارات مختلطة تحمل سعراتٍ أحادية. وميزانية النكهة التي تهم فعلًا هي نواقلها: الزيت الذي تحمّصها فيه، والطحينة أو الزبادي في الصلصة، والسكر في التتبيلة — هذه هي الكميات للتسجيل. تبّل بسخاء؛ وقِس المركبات لا الركاب.",
+        ar: "لا — فعلى مستوى غرامات الملعقة الصغيرة التوابل غير مرئية تغذويًا: فملعقة كبيرة من بهارات مختلطة تحمل سعراتٍ من خانة واحدة. وميزانية النكهة التي تهم فعلًا هي نواقلها: الزيت الذي تحمّصها فيه، والطحينة أو الزبادي في الصلصة، والسكر في التتبيلة — هذه هي الكميات للتسجيل. تبّل بسخاء؛ وقِس المركبات لا الركاب.",
       },
     },
     {
@@ -448,7 +448,7 @@ export const MEAL_PLANNER_CONTENT: ToolReference = {
       },
       a: {
         en: "Yes — the same tool, pointed the other direction. Set a surplus target with the calorie calculator, then let the planner solve the real problem of gaining: volume. A 3,200-kcal day of chicken-and-rice austerity is miserable, but the same budget enriched with caloric density — olive oil poured rather than sprinkled, granola and nuts as snack pillars, a glass of milk with meals instead of water — goes down comfortably. Track weekly weight, add 200 kcal whenever the scale stalls for two weeks, and let the planner show you where those calories hide.",
-        ar: "نعم — الأداة نفسها موجَّهة في الاتجاه الآخر. اضبط هدفًا فائضًا بحاسبة السعرات، ثم دع المخطط يحل مشكلة الزيادة الحقيقية: الحجم. فيوم بـ3200 سعرة من زهد الدجاج والأرز بائس، لكن الميزانية نفسها مثراةً بكثافة سعرية — زيت زيتون يُسكب لا يُرش، وغرانولا ومكسرات أعمدةَ سناك، وكأس لبن مع الوجبات بدل الماء — ينزل بارتياح. تتبّع الوزن الأسبوعي، وأضف 200 سعرة كلما ثبت الميزان أسبوعين، ودع المخطط يريك أين تختبئ تلك السعرات.",
+        ar: "نعم — الأداة نفسها موجَّهة في الاتجاه الآخر. اضبط هدفًا فائضًا بحاسبة السعرات، ثم دع المخطط يحل مشكلة الزيادة الحقيقية: الحجم. فيوم بـ3200 سعرة من زهد الدجاج والأرز بائس، لكن الميزانية نفسها مثراةً بكثافة سعرية — زيت زيتون يُسكب لا يُرش، وغرانولا ومكسرات أعمدةَ سناك، وكأس لبن مع الوجبات بدل الماء — تنزل بارتياح. تتبّع الوزن الأسبوعي، وأضف 200 سعرة كلما ثبت الميزان أسبوعين، ودع المخطط يريك أين تختبئ تلك السعرات.",
       },
     },
     {
@@ -458,7 +458,7 @@ export const MEAL_PLANNER_CONTENT: ToolReference = {
       },
       a: {
         en: "Planning a stranger's food. The plans that survive are built from the meals you already eat and enjoy, trimmed and rebalanced — not from a screenshot of someone else's perfect day. Audit what your week actually looks like, find the two or three meals you could happily eat forever, and plan from there; the planner's job is arithmetic, and the arithmetic only works on ingredients your life already contains.",
-        ar: "تخطيط طعام الغرباء. فالخطط التي تنجو مبنية من الوجبات التي تأكلها أصلًا وتستمتع بها، منقّحةً وموازَنةً — لا من لقطة شاشة ليوم شخص آخر المثالي. دقّق كيف يبدو أسبوعك فعلًا، واعثر على الوجبتين أو الثلاث التي يمكنك أكلها بسعادة للأبد، وخطّط من هناك؛ وظيفة المخطط الحساب، والحساب لا يعمل إلا على مكونات تحتويها حياتك أصلًا.",
+        ar: "تخطيط طعام الغرباء. فالخطط التي تنجو مبنية من الوجبات التي تأكلها أصلًا وتستمتع بها، منقّحةً وموازَنةً — لا من لقطة شاشة اليوم المثالي لشخص آخر. دقّق كيف يبدو أسبوعك فعلًا، واعثر على الوجبتين أو الثلاث التي يمكنك أكلها بسعادة للأبد، وخطّط من هناك؛ وظيفة المخطط الحساب، والحساب لا يعمل إلا على مكونات تحتويها حياتك أصلًا.",
       },
     },
     {

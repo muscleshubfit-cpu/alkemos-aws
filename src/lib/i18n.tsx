@@ -85,7 +85,7 @@ const en: Dict = {
  "auth.signUp": "Sign up",
  "auth.google": "Continue with Google",
  "auth.or": "or",
- "auth.googleError": "Google login failed. Make sure it is configured in Supabase.",
+ "auth.googleError": "Google login failed. Please try again or continue with email.",
  "auth.haveAccount": "Already have an account?",
  "auth.noAccount": "Don't have an account?",
  "auth.toLogin": "Log in",
@@ -249,6 +249,7 @@ const en: Dict = {
  "plans.swaps.mealLimitReached": "You've reached the weekly meal swap limit.",
  "plans.swaps.exerciseLimitReached": "You've reached the weekly exercise swap limit.",
  "plans.swaps.mealSwapped": "Meal swapped!",
+ "plans.swaps.exerciseSwapped": "Exercise swapped!",
  "plans.swaps.notIncluded": "Weekly meal & exercise swaps are a Premium feature — your current plan doesn't include them yet.",
  "plans.swaps.upgradeCta": "See memberships",
 
@@ -453,7 +454,7 @@ const ar: Dict = {
  "auth.signUp": "إنشاء حساب",
  "auth.google": "المتابعة عبر Google",
  "auth.or": "أو",
- "auth.googleError": "فشل تسجيل الدخول عبر Google. تأكد من إعداده في Supabase.",
+ "auth.googleError": "فشل تسجيل الدخول عبر Google. يرجى المحاولة مرة أخرى أو المتابعة بالبريد الإلكتروني.",
  "auth.haveAccount": "لديك حساب بالفعل؟",
  "auth.noAccount": "ليس لديك حساب؟",
  "auth.toLogin": "تسجيل الدخول",
@@ -704,7 +705,7 @@ const ar: Dict = {
  "pricing.title": "الأسعار",
  "pricing.heading": "اختر مستوى التدريب الذي يطابق طموحك.",
  "pricing.intro":
- "كل اشتراك يتضمن استراتيجية تغذية مخصصة، برنامج تمارين مخصص، تتبع مستمر للتقدم، وتدريبًا احترافيًا لمساعدتك في تحقيق تحولك.",
+ "كل اشتراك يتضمن استراتيجية تغذية مخصصة، برنامج تمارين مخصص، تتبع مستمر للتقدم، وتدريبًا احترافيًا لمساعدتك في تحقيق تحوّلك.",
  "pricing.months": "أشهر",
  "pricing.mostPopular": "الأكثر شيوعًا",
  "pricing.bestExperience": "أفضل تجربة",
@@ -720,16 +721,16 @@ const ar: Dict = {
  "tier.starter.cta": "ابدأ الآن",
  "tier.elite": "إيليت",
  "tier.elite.sub": "وصول غير محدود + تدريب VIP.",
- "tier.elite.cta": "اذهب لإيليت",
+ "tier.elite.cta": "اشترك في إيليت",
 
  "feat.nutritionPlan": "خطة تغذية مخصصة",
  "feat.workoutProgram": "برنامج تمارين مخصص",
  "feat.weeklyReview": "مراجعة أسبوعية للخطة",
- "feat.progressTracking": "تتبع التقدم والرسوم",
+ "feat.progressTracking": "تتبع التقدم والرسوم البيانية",
  "feat.coachSupport": "دعم مباشر من المدرب",
  // §12.50-أ-12 (Phase 193): حذف مفتاحين ميتين كانا يحملان ادعاءات تبديل
  // خاطئة (يومية بدل الأسبوعية الفعلية في memberships.ts وصفحة الشروط).
- "feat.aiCoach": "مساعد ذكي (EVO)",
+ "feat.aiCoach": "المدرب الذكي (EVO)",
  "feat.fasterAdjust": "تعديلات أسرع للخطة",
  "feat.prioritySupport": "دعم بأولوية",
  "feat.vipCoaching": "تجربة تدريب VIP",
@@ -739,7 +740,7 @@ const ar: Dict = {
  "rt.weekly": "أسبوعي",
  "rt.48": "48 ساعة",
  "rt.24": "24 ساعة",
- "rt.instant": "فوري تقريبًا",
+ "rt.instant": "شبه فوري",
 
  "cmp.title": "قارن الخطط",
  "cmp.feature": "الميزة",

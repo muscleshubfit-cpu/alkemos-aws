@@ -249,7 +249,7 @@ export const PROMO_TEMPLATES: PromoTemplate[] = [
     label_en: "Instagram / Facebook Post",
     label_ar: "منشور إنستجرام / فيسبوك",
     recommendedPlatform_en: "Instagram feed, Facebook page or group.",
-    recommendedPlatform_ar: "فيد إنستجرام، صفحة فيسبوك أو مجموعة.",
+    recommendedPlatform_ar: "منشورات إنستجرام، أو صفحة/مجموعة فيسبوك.",
     charLimit: 2200,
   },
   {
@@ -257,7 +257,7 @@ export const PROMO_TEMPLATES: PromoTemplate[] = [
     label_en: "WhatsApp Message",
     label_ar: "رسالة واتساب",
     recommendedPlatform_en: "WhatsApp broadcast lists and direct messages.",
-    recommendedPlatform_ar: "قوائم البرودكاست والرسائل المباشرة على واتساب.",
+    recommendedPlatform_ar: "قوائم البث والرسائل المباشرة على واتساب.",
     charLimit: 1000,
   },
   {
@@ -426,14 +426,14 @@ export function buildPromoCopy(
 
     case "long_social":
       return [
-        "Building real healthy habits isn't about an hour in the gym. It's about consistency, sane eating, and honest progress tracking.",
+        "Building real healthy habits isn't about an hour in the gym. It's about consistency, sensible eating, and honest progress tracking.",
         "",
         "I discovered Alkemos a while ago and decided to give it a try. Here's why it felt different:",
         "",
         "1️⃣ Truly personalized plans: not a generic PDF. Plans are built around your weight, your goal, your equipment, and the foods you actually like.",
         "2️⃣ A 24/7 AI coach: no waiting for a reply. Ask anytime about food swaps, exercise form, or plan adjustments.",
         "3️⃣ Honest weekly tracking: photos, measurements, weight, and charts that show your progress visually — that's what keeps you going.",
-        "4️⃣ Science-backed content: not random tips. Studied information, with references, and clear explanations.",
+        "4️⃣ Science-backed content: not random tips. Well-researched information with references and clear explanations.",
         "",
         "No guaranteed results — that depends on your commitment. But the tools are there, and the experience is genuinely comfortable.",
         "",

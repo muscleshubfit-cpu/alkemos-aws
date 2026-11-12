@@ -134,7 +134,7 @@ const CATALOG: Record<string, CatalogEntry> = {
       const endIso = asString(p.end);
       const end = endIso ? formatDateFor(endIso, lang) : "";
       return lang === "ar"
-        ? `مدربك قام بتفعيل اشتراكك لمدة ${arMonthsPhrase(months)}${end ? ` — ساري حتى ${end}` : ""}.`
+        ? `مدربك قام بتفعيل اشتراكك لمدة ${arMonthsPhrase(months)}${end ? ` — سارٍ حتى ${end}` : ""}.`
         : `Your coach activated your subscription for ${enMonthsPhrase(months)}${end ? ` — valid until ${end}` : ""}.`;
     },
   },
@@ -200,7 +200,7 @@ const CATALOG: Record<string, CatalogEntry> = {
       const reason = asString(p.reason).trim();
       if (amount === null || !reason) return "";
       return lang === "ar"
-        ? `تم عكس عمولة بمبلغ ${usd(amount, lang)} (استرجاع/إلغاء الدفع). السبب: ${reason}. لو عندك استفسار تواصل مع الدعم.`
+        ? `تم عكس عمولة بمبلغ ${usd(amount, lang)} (استرداد/إلغاء الدفع). السبب: ${reason}. إن كان لديك استفسار فتواصل مع الدعم.`
         : `A ${usd(amount, lang)} commission was reversed (refund/payment cancellation). Reason: ${reason}. Contact support if you have questions.`;
     },
   },
@@ -262,8 +262,8 @@ const CATALOG: Record<string, CatalogEntry> = {
             ? " (لم نتمكن من إيقاف الاشتراك تلقائيًا — سيتم إنهاؤه يدويًا.)"
             : " (We couldn't stop the subscription automatically — it will be terminated manually.)";
       return lang === "ar"
-        ? `تم قبول استرداد اشتراكك${amountPart} وإيقافه من الآن. سيتم تحويل المبلغ بنفس طريقة الدفع خلال أيام العمل.${warning}`
-        : `Your subscription refund${amountPart} was approved and stopped as of now. The amount will be transferred via the same payment method within business days.${warning}`;
+        ? `تم قبول استرداد اشتراكك${amountPart} وإيقافه اعتبارًا من الآن. سيتم تحويل المبلغ بنفس طريقة الدفع خلال أيام العمل.${warning}`
+        : `Your subscription refund${amountPart} was approved and stopped as of now. The amount will be transferred via the same payment method within a few business days.${warning}`;
     },
   },
   refund_rejected: {
@@ -312,8 +312,8 @@ const CATALOG: Record<string, CatalogEntry> = {
       const provider = asString(p.provider) || "manual";
       return lang === "ar"
         ? provider === "paypal"
-          ? `اتشحن ${formatNumberFor(amount, "ar")}$ في محفظتك — الرصيد الجديد ${formatNumberFor(balance, "ar")}.`
-          : `اتقبل طلب شحن المحفظة بمبلغ ${formatNumberFor(amount, "ar")}$ — الرصيد الجديد ${formatNumberFor(balance, "ar")}.`
+          ? `تم شحن ${formatNumberFor(amount, "ar")}$ في محفظتك — الرصيد الجديد ${formatNumberFor(balance, "ar")}.`
+          : `تم قبول طلب شحن المحفظة بمبلغ ${formatNumberFor(amount, "ar")}$ — الرصيد الجديد ${formatNumberFor(balance, "ar")}.`
         : provider === "paypal"
           ? `${usd(amount, lang)} was added to your wallet — new balance ${formatNumberFor(balance, "en")}.`
           : `Your ${usd(amount, lang)} top-up request was approved — new balance ${formatNumberFor(balance, "en")}.`;
@@ -330,12 +330,12 @@ const CATALOG: Record<string, CatalogEntry> = {
         ? lang === "ar" ? ` السبب: ${note}` : ` Reason: ${note}`
         : "";
       return lang === "ar"
-        ? `لم يتم قبول طلب الشحن بمبلغ ${formatNumberFor(amount, "ar")}$.${notePart} راجع إيصال الدفع وحاول تاني.`
+        ? `لم يتم قبول طلب الشحن بمبلغ ${formatNumberFor(amount, "ar")}$.${notePart} راجع إيصال الدفع وحاول مرة أخرى.`
         : `Your ${usd(amount, lang)} top-up request wasn't approved.${notePart} Check your payment receipt and try again.`;
     },
   },
   coach_ad_started: {
-    title: (_p, lang) => (lang === "ar" ? "إعلانك اشتغل 🎉" : "Your ad is live 🎉"),
+    title: (_p, lang) => (lang === "ar" ? "إعلانك أصبح نشطًا 🎉" : "Your ad is live 🎉"),
     body: (p, lang) => {
       const endsIso = asString(p.ends_iso);
       const pkgAr = asString(p.pkg_ar).trim();
@@ -463,7 +463,7 @@ const ADMIN_CATALOG: Record<string, CatalogEntry> = {
       const variant = asString(p.variant) || "standard";
       if (variant === "invited") {
         return lang === "ar"
-          ? `عميلك المدعو ${who} أكمل التسجيل — اطمئن على استبياناته وجهّز خططه.`
+          ? `عميلك المدعو ${who} أكمل التسجيل — راجع استبياناته وجهّز خططه.`
           : `Your invited client ${who} completed registration — check their questionnaires and prepare their plans.`;
       }
       if (variant === "pending") {
@@ -472,7 +472,7 @@ const ADMIN_CATALOG: Record<string, CatalogEntry> = {
           : `${who} joined the platform — awaiting email confirmation.`;
       }
       return lang === "ar"
-        ? `${who} انضم للمنصة. اطمئن على استبياناته وجهّز خططه.`
+        ? `${who} انضم للمنصة. راجع استبياناته وجهّز خططه.`
         : `${who} joined the platform. Check their questionnaires and prepare their plans.`;
     },
   },
@@ -570,7 +570,7 @@ const ADMIN_CATALOG: Record<string, CatalogEntry> = {
       lang === "ar" ? "أكمل إعداد صفحتك العامة" : "Complete your public page setup",
     body: (_p, lang) =>
       lang === "ar"
-        ? "صفحتك العامة هى واجهتك أمام العملاء — اكتب نبذتك وتخصصاتك واضبط رابطك، وبتتنشر بعد مراجعة الإدارة."
+        ? "صفحتك العامة هي واجهتك أمام العملاء — اكتب نبذتك وتخصصاتك واضبط رابطك، وتُنشر بعد مراجعة الإدارة."
         : "Your public page is your storefront — write your bio and specialties and set your link; it goes live after admin review.",
   },
   coach_page_reminder: {
@@ -607,7 +607,7 @@ const ADMIN_CATALOG: Record<string, CatalogEntry> = {
       const coachName = asString(p.coach_name).trim();
       if (!coachName) return "";
       return lang === "ar"
-        ? `«${coachName}» حدّث صفحته العامة — محتاجة موافقة قبل ظهورها للجميع.`
+        ? `«${coachName}» حدّث صفحته العامة — تحتاج إلى موافقة قبل ظهورها للجميع.`
         : `“${coachName}” updated their public page — it needs approval before going public.`;
     },
   },
@@ -652,7 +652,7 @@ const ADMIN_CATALOG: Record<string, CatalogEntry> = {
       if (!email || !tier || !endIso) return "";
       const end = formatDateFor(endIso, lang);
       return lang === "ar"
-        ? `${email} طلب إلغاء اشتراكه (${tierLabel(tier, lang)}) — يستمر الاشتراك حتى نهاية آخر مدة مدفوعة (${end}). راجع صفحة المدفوعات لو محتاج تعمل استرداد.`
+        ? `${email} طلب إلغاء اشتراكه (${tierLabel(tier, lang)}) — يستمر الاشتراك حتى نهاية آخر مدة مدفوعة (${end}). راجع صفحة المدفوعات إن احتجت إلى إجراء استرداد.`
         : `${email} requested to cancel their ${tierLabel(tier, lang)} subscription — it stays active until the end of the last paid term (${end}). See the payments page if a refund is needed.`;
     },
   },

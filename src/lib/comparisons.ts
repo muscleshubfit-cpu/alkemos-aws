@@ -156,7 +156,7 @@ export const COMPARISONS: Comparison[] = [
         // tracker (tools-shared.ts) — the old cell counted the water
         // tracker as a fifth calculator.
         alkemosValue: "8 free tools (4 calculators, water tracker, meal planner, 2 AI planners)",
-        alkemosValueAr: "8 أدوات مجانية (4 حاسبات، متتبع ماء، مخطط وجبات، ومخططا AI)",
+        alkemosValueAr: "8 أدوات مجانية (4 حاسبات، متتبع ماء، مخطط وجبات، ومخططَي ذكاء اصطناعي)",
         competitorValue: "Premium-only calculators",
         competitorValueAr: "حاسبات مدفوعة فقط",
         outcome: "win",
@@ -192,7 +192,7 @@ export const COMPARISONS: Comparison[] = [
         labelEn: "Personal coaching",
         labelAr: "التدريب الخاص",
         alkemosValue: "Available — $39.99/mo with a personal coach",
-        alkemosValueAr: "متوفر — 39.99$ شهريًا مع مدرب خاص",
+        alkemosValueAr: "متوفر — $39.99 شهريًا مع مدرب خاص",
         competitorValue: "Not available",
         competitorValueAr: "غير متوفر",
         outcome: "win",
@@ -242,7 +242,7 @@ export const COMPARISONS: Comparison[] = [
         heading: "أين يتفوّق MyFitnessPal",
         paragraphs: [
           "MyFitnessPal يملك أكبر قاعدة أطعمة على الإنترنت — ملايين المدخلات المُساهمة من المستخدمين، بما في ذلك وجبات المطاعم، الأطعمة المُعلّبة، والعلامات الإقليمية. إذا كان هدفك الأساسي تتبّع السعرات وتتناول الكثير من الأطعمة المُعلّبة، ماسح الباركود في MyFitnessPal (ميزة مدفوعة) وقاعدة الـ14 مليون طعام لا تُضاهى. قاعدة الـ8,162+ صنفًا غذائيًا في Alkemos مُختارة ومستندة لـ USDA للدقّة، لكنها لا تنافس في حجم القاعدة الخام.",
-          "لدى MyFitnessPal أيضًا نحو عشرين عامًا من السبق في تجربة الاستخدام على الجوال. التطبيق مصقول، يتزامن مع كل ساعة ذكية (Apple Watch، Garmin، Fitbit)، وله ميزات اجتماعية لا يملكها Alkemos (تغذية الأصدقاء، التحدّيات). إذا كنت تريد متتبّعًا خالصًا يتكامل مع نظام لياقتك الحالي، MyFitnessPal يبقى الخيار الأكثر أمانًا.",
+          "لدى MyFitnessPal أيضًا نحو عشرين عامًا من السبق في تجربة الاستخدام على الجوال. التطبيق مصقول، يتزامن مع كل ساعة ذكية (Apple Watch، Garmin، Fitbit)، وله ميزات اجتماعية لا يملكها Alkemos (موجز منشورات الأصدقاء، التحدّيات). إذا كنت تريد متتبّعًا خالصًا يتكامل مع نظام لياقتك الحالي، MyFitnessPal يبقى الخيار الأكثر أمانًا.",
         ],
       },
       {
@@ -250,7 +250,7 @@ export const COMPARISONS: Comparison[] = [
         paragraphs: [
           "Alkemos يتفوّق بوضوح في اتساع المنصة. MyFitnessPal متتبّع سعرات — Alkemos منصة لياقة كاملة. مكتبة الـ868+ تمرينًا مع شرح خطوة بخطوة، برامج التدريب الجاهزة لكل هدف وتجهيز، ثماني أدوات مجانية (أربع حاسبات: سعرات، BMI، ماكروز، نسبة دهون — إضافة إلى متتبع الماء ومخطط الوجبات ومولدا خطط الذكاء الاصطناعي)، ومدرب الذكاء الاصطناعي EVO مجتمعةً تغطّي ما كلّفك 3–4 اشتراكات منفصلة في نموذج MyFitnessPal.",
           "مدرب EVO الذكي هو الفارق الأكبر. النسخة المدفوعة من MyFitnessPal تُقدّم «رؤى» — رسوم بيانية واتجاهات أساسية. EVO في Alkemos يقرأ بياناتك الصحية، يبني لك خطة تغذية وتمارين مخصصة، يقترح تبديلات للوجبات والتمارين حسب تفضيلاتك، ويُجيب على أسئلة اللياقة على مدار الساعة. هذا أقرب لامتلاك مدرب خاص من امتلاك متتبّع.",
-          "الناطقون بالعربية ليس لديهم خيار حقيقي: MyFitnessPal يدعم لغات عديدة لكنه لا يوفر واجهة عربية. Alkemos ثنائي اللغة بالكامل مع دعم RTL أصلي، بما في ذلك أسماء التمارين بالعربية، أسماء الأطعمة بالعربية، ومدرب ذكاء اصطناعي عربي. ولأكثر من 400 مليون ناطق بالعربية لا تخدمهم تطبيقات اللياقة الغربية، فهذه وحدها كفيلة بحسم القرار.",
+          "الناطقون بالعربية ليس لديهم خيار حقيقي: MyFitnessPal يدعم لغات عديدة لكنه لا يوفر واجهة عربية. Alkemos ثنائي اللغة بالكامل مع دعم RTL أصلي، بما في ذلك أسماء التمارين بالعربية، أسماء الأطعمة بالعربية، ومدرب ذكاء اصطناعي عربي. وبما أن تطبيقات اللياقة الغربية لا تخدم أكثر من 400 مليون ناطق بالعربية، فهذه الميزة وحدها كفيلة بحسم القرار.",
         ],
       },
       {
@@ -301,14 +301,14 @@ export const COMPARISONS: Comparison[] = [
     verdictEn:
       "Pick Freeletics if you want pure bodyweight HIIT with a focus on quick, intense sessions. Pick Alkemos if you train at a gym, want nutrition + training in one platform, or read Arabic.",
     verdictAr:
-      "اختر Freeletics إذا كنت تريد HIIT بوزن الجسم بتركيز على جلسات سريعة مكثّفة. اختر Alkemos إذا كنت تتدرّب في جيم، تريد التغذية + التدريب في منصة واحدة، أو تقرأ بالعربية.",
+      "اختر Freeletics إذا كنت تريد HIIT بوزن الجسم بتركيز على جلسات سريعة مكثّفة. اختر Alkemos إذا كنت تتدرّب في نادٍ رياضي، تريد التغذية + التدريب في منصة واحدة، أو تقرأ بالعربية.",
 
     rows: [
       {
         labelEn: "Training focus",
         labelAr: "تركيز التدريب",
         alkemosValue: "Full-spectrum (gym, home, bodyweight, equipment-based)",
-        alkemosValueAr: "تدريب شامل (جيم، منزل، وزن الجسم، بالمعدات)",
+        alkemosValueAr: "تدريب شامل (نادٍ رياضي، منزل، وزن الجسم، بالمعدات)",
         competitorValue: "Bodyweight HIIT only",
         competitorValueAr: "تمارين HIIT بوزن الجسم فقط",
         outcome: "win",
@@ -356,7 +356,7 @@ export const COMPARISONS: Comparison[] = [
         // no free tools/calculators hub (subscription app) — absence-based
         // cell, same pattern as the MFP "no exercise library" cells.
         alkemosValue: "8 free tools (4 calculators, water tracker, meal planner, 2 AI planners)",
-        alkemosValueAr: "8 أدوات مجانية (4 حاسبات، متتبع ماء، مخطط وجبات، ومخططا AI)",
+        alkemosValueAr: "8 أدوات مجانية (4 حاسبات، متتبع ماء، مخطط وجبات، ومخططَي ذكاء اصطناعي)",
         competitorValue: "No free tools or calculators (subscription app)",
         competitorValueAr: "لا أدوات أو حاسبات مجانية (تطبيق باشتراك)",
         outcome: "win",
@@ -383,7 +383,7 @@ export const COMPARISONS: Comparison[] = [
         labelEn: "Personal coaching",
         labelAr: "التدريب الخاص",
         alkemosValue: "Available — $39.99/mo with a personal coach",
-        alkemosValueAr: "متوفر — 39.99$ شهريًا مع مدرب خاص",
+        alkemosValueAr: "متوفر — $39.99 شهريًا مع مدرب خاص",
         competitorValue: "AI coaching only — no personal coaches",
         competitorValueAr: "تدريب ذكي فقط — لا مدربين خاصين",
         outcome: "win",
@@ -450,7 +450,7 @@ export const COMPARISONS: Comparison[] = [
         paragraphs: [
           "Alkemos يتفوّق في اتساع المنصة. Freeletics تطبيق بوزن الجسم فقط — إذا أردت يومًا رفع بار، استخدام ماكينة كابل، أو اتباع تقسيم 4 أيام جيم منظّم، Freeletics لا يستطيع مساعدتك. Alkemos يغطّي كل أنواع المعدات: بار، دمبل، كابل، ماكينة، كيتل بيل، مطاط، ووزن الجسم. مكتبة الـ868+ تمرين عبر كل أنواع المعدات لا نظير لها في كتالوج Freeletics المحدود بوزن الجسم.",
           "التغذية هي الفجوة الكبرى الأخرى. Freeletics يُقدّم مدرب تغذية ذكي بخطط وجبات ووصفات لكن بلا تتبّع للطعام — ستحتاج تطبيقًا منفصلًا (عادة MyFitnessPal) لذلك. Alkemos يُقدّم قاعدة 8,162+ صنف غذائي، وثماني أدوات مجانية (أربع حاسبات، ومتتبع ماء، ومخطط وجبات، ومولدا خطط بالذكاء الاصطناعي)، وتتبّع ماكروز كامل داخل نفس الاشتراك. دفع Freeletics + MyFitnessPal Premium يكلّف أكثر من Alkemos Premium ويمنحك تكاملًا أقل.",
-          "صورة التسعير دقيقة. مدرب تدريب Freeletics حوالي $80/سنة في الخطة السنوية، وحزمة التغذية تكلف إضافيًا. Alkemos Premium بـ$119/سنة ويجمع برامج التدريب وقاعدة 8,162+ صنف غذائي والأدوات المجانية وEVO في اشتراك واحد. لنفس حالة الاستخدام تدريب + تغذية، Alkemos قيمة أفضل.",
+          "صورة التسعير فيها تفاصيل تستحق الانتباه. مدرب تدريب Freeletics حوالي $80/سنة في الخطة السنوية، وحزمة التغذية تكلف إضافيًا. Alkemos Premium بـ$119/سنة ويجمع برامج التدريب وقاعدة 8,162+ صنف غذائي والأدوات المجانية وEVO في اشتراك واحد. لنفس حالة الاستخدام تدريب + تغذية، Alkemos قيمة أفضل.",
         ],
       },
     ],
@@ -548,7 +548,7 @@ export const COMPARISONS: Comparison[] = [
         labelEn: "Personal coaching",
         labelAr: "التدريب الخاص",
         alkemosValue: "Available — $39.99/mo with a personal coach",
-        alkemosValueAr: "متوفر — 39.99$ شهريًا مع مدرب خاص",
+        alkemosValueAr: "متوفر — $39.99 شهريًا مع مدرب خاص",
         competitorValue: "Not available",
         competitorValueAr: "غير متوفر",
         outcome: "win",
@@ -578,7 +578,7 @@ export const COMPARISONS: Comparison[] = [
         labelEn: "Free tools & calculators",
         labelAr: "الأدوات والحاسبات المجانية",
         alkemosValue: "8 free tools (4 calculators, water tracker, meal planner, 2 AI planners)",
-        alkemosValueAr: "8 أدوات مجانية (4 حاسبات، متتبع ماء، مخطط وجبات، ومخططا AI)",
+        alkemosValueAr: "8 أدوات مجانية (4 حاسبات، متتبع ماء، مخطط وجبات، ومخططَي ذكاء اصطناعي)",
         competitorValue: "Extensive free calculators (1RM, body fat, TDEE, and more)",
         competitorValueAr: "حاسبات مجانية واسعة (1RM، نسبة الدهون، TDEE، وأكثر)",
         outcome: "tie",
@@ -617,7 +617,7 @@ export const COMPARISONS: Comparison[] = [
       {
         heading: "أين يتفوّق ExRx.net",
         paragraphs: [
-          "ExRx.net لا يُضاهى كمرجع لعلم الحركة. كل صفحة تمرين توثّق مفاصل العظام، تأثيرات العضلات الأساسية والثانوية، والبيوميكانيك خلف الحركة. لأخصائيي العلاج الطبيعي، طلاب علم الحركة، ومدربي القوة الذين يحتاجون فهم لماذا التمرين يعمل (وليس فقط كيف يؤدّى)، ExRx.net هو المعيار الذهبي وسيبقى كذلك للمستقبل المنظور.",
+          "ExRx.net لا يُضاهى كمرجع لعلم الحركة. كل صفحة تمرين توثّق مفاصل العظام، تأثيرات العضلات الأساسية والثانوية، والبيوميكانيك خلف الحركة. لأخصائيي العلاج الطبيعي، طلاب علم الحركة، ومدربي القوة الذين يحتاجون إلى فهم لماذا يعمل التمرين (وليس فقط كيف يؤدّى)، ExRx.net هو المعيار الذهبي وسيبقى كذلك للمستقبل المنظور.",
           "ExRx.net أيضًا مجاني ومدعوم بالإعلانات. إذا كنت تحتاج فقط مرجعًا تبحث فيه عن التمارين أحيانًا، عدم الدفع يتفوّق على أي اشتراك Alkemos. كما يفوز عدد التمارين 2,200+ بحجم القاعدة الخام — Alkemos لا يضاهيه اليوم.",
         ],
       },
@@ -662,7 +662,7 @@ export const COMPARISONS: Comparison[] = [
     introEn:
       "Alkemos and Cronometer overlap on food data and macro planning but serve different core jobs. Cronometer is a nutrition tracker built for data depth — a curated NCCDB/USDA database and 80+ tracked micronutrients in a daily food diary. Alkemos is a complete training-and-nutrition platform — exercise instruction, workout programs, an AI coach, and meal planning with live macro totals, fully bilingual in English and Arabic. This page breaks down where each one wins so you can pick by your actual goal.",
     introAr:
-      "Alkemos و Cronometer يتقاطعان في بيانات الأطعمة وتخطيط الماكروز لكنهما يخدمان هدفين مختلفين. Cronometer متتبّع تغذية مبني لعمق البيانات — قاعدة منسّقة بمصادر NCCDB/USDA وأكثر من 80 مغذيًا دقيقًا في يوميات طعام يومية. Alkemos منصة كاملة للتدريب والتغذية — شرح تمارين، برامج تدريب، مدرب ذكاء اصطناعي، وتخطيط وجبات بمجاميع ماكروز حيّة، وثنائية اللغة بالكامل بالعربية والإنجليزية. هذه الصفحة تُفصّل أين يتفوّق كل منهما لتختار حسب هدفك الفعلي.",
+      "Alkemos و Cronometer يتقاطعان في بيانات الأطعمة وتخطيط الماكروز لكنهما يخدمان هدفين مختلفين. Cronometer متتبّع تغذية مبني لعمق البيانات — قاعدة منسّقة من مصادر NCCDB وUSDA وأكثر من 80 مغذيًا دقيقًا في يوميات طعام يومية. Alkemos منصة كاملة للتدريب والتغذية — شرح تمارين، برامج تدريب، مدرب ذكاء اصطناعي، وتخطيط وجبات بمجاميع ماكروز حيّة، وثنائية اللغة بالكامل بالعربية والإنجليزية. هذه الصفحة تُفصّل أين يتفوّق كل منهما لتختار حسب هدفك الفعلي.",
     descriptionEn:
       "Alkemos vs Cronometer 2026: micronutrient tracking, food diary, exercise library, AI coach, pricing, Arabic support, and which fits your goal.",
     descriptionAr:
@@ -682,7 +682,7 @@ export const COMPARISONS: Comparison[] = [
         alkemosValue: "8,162+ foods (USDA-backed + curated)",
         alkemosValueAr: "8,162+ صنف غذائي (بمعايير USDA ومنسّقة بدقة)",
         competitorValue: "Curated NCCDB/USDA database — the accuracy benchmark",
-        competitorValueAr: "قاعدة منسّقة بمصادر NCCDB/USDA — معيار الدقّة",
+        competitorValueAr: "قاعدة منسّقة من مصادر NCCDB وUSDA — معيار الدقّة",
         outcome: "loss",
       },
       {
@@ -703,7 +703,7 @@ export const COMPARISONS: Comparison[] = [
         alkemosValue: "Meal planning with live macro totals (no intake diary)",
         alkemosValueAr: "تخطيط وجبات بمجاميع ماكروز حيّة (بلا يوميات طعام)",
         competitorValue: "Full daily food diary with barcode + photo logging",
-        competitorValueAr: "يوميات طعام يومية كاملة بمسح باركود وتسجيل بالصور",
+        competitorValueAr: "يوميات طعام كاملة بمسح باركود وتسجيل بالصور",
         outcome: "loss",
       },
       {
@@ -749,9 +749,9 @@ export const COMPARISONS: Comparison[] = [
         labelEn: "Free tools & calculators",
         labelAr: "الأدوات والحاسبات المجانية",
         alkemosValue: "8 free tools (4 calculators, water tracker, meal planner, 2 AI planners)",
-        alkemosValueAr: "8 أدوات مجانية (4 حاسبات، متتبع ماء، مخطط وجبات، ومخططا AI)",
+        alkemosValueAr: "8 أدوات مجانية (4 حاسبات، متتبع ماء، مخطط وجبات، ومخططَي ذكاء اصطناعي)",
         competitorValue: "Free tier covers calorie/macro/micronutrient tracking (no tools hub)",
-        competitorValueAr: "الفئة المجانية تغطي تتبّع السعرات والماكروز والمغذيات (بلا مركز أدوات)",
+        competitorValueAr: "الفئة المجانية تغطي تتبّع السعرات والماكروز والمغذيات الدقيقة (بلا مركز أدوات)",
         outcome: "tie",
       },
       {
@@ -767,7 +767,7 @@ export const COMPARISONS: Comparison[] = [
         labelEn: "Personal coaching",
         labelAr: "التدريب الخاص",
         alkemosValue: "Available — $39.99/mo with a personal coach",
-        alkemosValueAr: "متوفر — 39.99$ شهريًا مع مدرب خاص",
+        alkemosValueAr: "متوفر — $39.99 شهريًا مع مدرب خاص",
         competitorValue: "Not available",
         competitorValueAr: "غير متوفر",
         outcome: "win",
@@ -791,7 +791,7 @@ export const COMPARISONS: Comparison[] = [
         alkemosValue: "Weight + 5 body measurements, progress photos, weight chart, weekly check-in reminders",
         alkemosValueAr: "الوزن + 5 قياسات جسم، صور تقدّم، مخطط وزن، وتذكيرات تسجيل أسبوعية",
         competitorValue: "Weight, measurements & biometrics + blood-test import (Gold)",
-        competitorValueAr: "الوزن والقياسات والحيويات + استيراد تحاليل الدم (Gold)",
+        competitorValueAr: "الوزن والقياسات والقياسات الحيوية + استيراد تحاليل الدم (Gold)",
         outcome: "tie",
       },
       {
@@ -843,15 +843,15 @@ export const COMPARISONS: Comparison[] = [
         heading: "أين يتفوّق Alkemos",
         paragraphs: [
           "Alkemos يتفوّق في كل ما يحدث خارج يوميات الطعام. Cronometer بلا مكتبة تمارين ولا برامج تدريب ولا مدرب ذكاء اصطناعي — التمرين يظهر لديه كقياس حرق سعرات فقط. Alkemos يُقدّم 868+ تمرينًا بشرح خطوة بخطوة، برامج جاهزة للمنزل والنادي، ومدرب EVO الذكي الذي يبني خطط تغذية وتمارين مخصّصة، ويقترح تبديلات للوجبات والتمارين، ويُجيب على أسئلتك على مدار الساعة. إذا كان هدفك خطة تدريب وخطة تغذية في مكان واحد، Alkemos يغطّي جانبي المعادلة.",
-          "جانب التغذية لدينا مخطَّط لا مسجَّل. مخطط الوجبات المجاني يتيح بناء وجباتك من قاعدة 8,162+ صنفًا غذائيًا بمجاميع سعرات وماكروز حيّة لكل وجبة ولكل يوم، ومخطط الوجبات بالذكاء الاصطناعي يولّد يومًا كاملًا بالغرامات من رقم سعراتك، وحاسبة الماكروز تضبط توزيع البروتين والكربوهيدرات والدهون قبل التخطيط. Alkemos لا يدّعي أنه يوميات مغذيات دقيقة — إنه منصة تخطيط ببيانات أطعمة حقيقية، والفصل الصادق موضّح بالجدول أعلاه.",
-          "الناطقون بالعربية مرة أخرى بلا خيار حقيقي: Cronometer لا يُصدر واجهة عربية، بينما Alkemos ثنائي اللغة بالكامل بدعم RTL أصلي — أسماء تمارين بالعربية، أسماء أطعمة بالعربية، ومدرب ذكاء اصطناعي عربي. التدريب الخاص بـ$39.99 شهريًا مع مدرب حقيقي أيضًا مما لا يُقدّمه Cronometer بأي سعر.",
+          "جانب التغذية لدينا مخطَّط لا مسجَّل. مخطط الوجبات المجاني يتيح بناء وجباتك من قاعدة 8,162+ صنفًا غذائيًا بمجاميع سعرات وماكروز حيّة لكل وجبة ولكل يوم، ومخطط الوجبات بالذكاء الاصطناعي يولّد يومًا كاملًا بالغرامات من رقم سعراتك، وحاسبة الماكروز تضبط توزيع البروتين والكربوهيدرات والدهون قبل التخطيط. Alkemos ليس يوميات مغذيات دقيقة — بل منصة تخطيط ببيانات أطعمة حقيقية، والفصل الصادق موضّح بالجدول أعلاه.",
+          "الناطقون بالعربية مرة أخرى بلا خيار حقيقي: Cronometer لا يُصدر واجهة عربية، بينما Alkemos ثنائي اللغة بالكامل بدعم RTL أصلي — أسماء تمارين بالعربية، أسماء أطعمة بالعربية، ومدرب ذكاء اصطناعي عربي. والتدريب الخاص ($39.99 شهريًا) مع مدرب حقيقي خدمة أيضًا لا يُقدّمها Cronometer بأي سعر.",
         ],
       },
       {
         heading: "مقارنة الأسعار",
         paragraphs: [
-          "الفئة المجانية في Cronometer قابلة للاستخدام فعلًا — تتبّع السعرات والماكروز والمغذيات الدقيقة بلا دفع — وGold تكلف $10.99 شهريًا أو $59.99 سنويًا (موثّق سبتمبر 2026؛ بعض المصادر الأقدم ما تزال تذكر $8.99/$49.99 قبل تغيير السعر). Alkemos المجاني يشمل مكتبة التمارين الكاملة، قاعدة الأطعمة الكاملة، كل الأدوات الثماني، ووصولًا محدودًا لـ EVO. Alkemos Premium بـ$14.99 شهريًا أو $119 سنويًا، وPro ($29.99 شهريًا) يرفع الرصيد الموحد لتوليد الخطط بالذكاء الاصطناعي، والتدريب الأونلاين ($39.99 شهريًا) يضيف مدربًا خاصًا.",
-          "حساب القيمة يعتمد على ما تدفع مقابله. إن احتجت تسجيل تغذية فقط، Cronometer Gold أرخص وأعمق. إن احتجت التدريب والتغذية معًا، فالمقارنة الصادقة هي Cronometer Gold زائد تطبيق تمارين منفصل مقابل اشتراك Alkemos واحد — وهذا المزج يكلّف أكثر عادةً بتكامل أقل. وللمستخدم الثنائي اللغة تنتهي الحسابة فورًا.",
+          "الفئة المجانية في Cronometer قابلة للاستخدام فعلًا — تتبّع السعرات والماكروز والمغذيات الدقيقة الدقيقة بلا دفع — وGold تكلف $10.99 شهريًا أو $59.99 سنويًا (موثّق سبتمبر 2026؛ بعض المصادر الأقدم ما تزال تذكر $8.99/$49.99 قبل تغيير السعر). Alkemos المجاني يشمل مكتبة التمارين الكاملة، قاعدة الأطعمة الكاملة، كل الأدوات الثماني، ووصولًا محدودًا لـ EVO. Alkemos Premium بـ$14.99 شهريًا أو $119 سنويًا، وPro ($29.99 شهريًا) يرفع الرصيد الموحد لتوليد الخطط بالذكاء الاصطناعي، والتدريب الأونلاين ($39.99 شهريًا) يضيف مدربًا خاصًا.",
+          "حساب القيمة يعتمد على ما تدفع مقابله. إن احتجت إلى تسجيل تغذية فقط، Cronometer Gold أرخص وأعمق. إن احتجت إلى التدريب والتغذية معًا، فالمقارنة الصادقة هي Cronometer Gold زائد تطبيق تمارين منفصل مقابل اشتراك Alkemos واحد — وهذا المزيج يكلّف أكثر عادةً مع تكامل أقل. وللمستخدم الثنائي اللغة ينتهي الحساب فورًا.",
         ],
       },
     ],

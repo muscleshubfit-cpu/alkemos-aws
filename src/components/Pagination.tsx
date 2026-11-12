@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
  */
 
 function fmt(n: number, isAr: boolean) {
-  return n.toLocaleString(isAr ? "ar-EG" : "en-US");
+  return n.toLocaleString("en-US");
 }
 
 export function Pagination({

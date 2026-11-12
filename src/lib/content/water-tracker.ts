@@ -25,7 +25,7 @@ export const WATER_TRACKER_CONTENT: ToolReference = {
           kind: "p",
           text: {
             en: "An adult body is roughly 50–65% water by weight — muscle holds about 75% water, fat tissue about 10–30% — totaling about 35–40 liters for a 70 kg man and slightly less for women, whose average composition carries more fat. That water divides into intracellular (about two-thirds, the working medium of every cell) and extracellular (about one-third: blood plasma, the fluid between cells, and the connective tissue matrix). You lose roughly 2–3 liters per day through urine, breath, and skin evaporation before lifting a finger; exercise in heat multiplies skin losses several-fold.",
-            ar: "جسم البالغ ماءٌ بنحو 50–65% من وزنه — فالعضلة تحمل نحو 75% ماء والنسيج الدهني نحو 10–30% — بإجمالي يقارب 35–40 لترًا لرجل بوزن 70 كجم، وأقل قليلًا عند الإناث اللائي يحمل متوسطُهنّ تركيبيّ دهونًا أكثر. وينقسم ذلك الماء إلى داخل خلوي (نحو الثلثين، وسط عمل كل خلية) وخارج خلوي (نحو الثلث: بلازما الدم، والسائل بين الخلايا، ومصفوفة النسيج الضام). وتفقد نحو 2–3 لترات يوميًا عبر البول والنفس وتبخر الجلد قبل أن ترفع إصبعًا؛ والتمرين في الحر يضاعف خسائر الجلد مرات.",
+            ar: "جسم البالغ ماءٌ بنحو 50–65% من وزنه — فالعضلة تحمل نحو 75% ماء والنسيج الدهني نحو 10–30% — بإجمالي يقارب 35–40 لترًا لرجل بوزن 70 كجم، وأقل قليلًا عند الإناث اللائي يحمل متوسطُ تركيبهن دهونًا أكثر. وينقسم ذلك الماء إلى داخل خلوي (نحو الثلثين، وسط عمل كل خلية) وخارج خلوي (نحو الثلث: بلازما الدم، والسائل بين الخلايا، ومصفوفة النسيج الضام). وتفقد نحو 2–3 لترات يوميًا عبر البول والنفس وتبخر الجلد قبل أن ترفع إصبعًا؛ والتمرين في الحر يضاعف خسائر الجلد مرات.",
           },
         },
         {
@@ -91,7 +91,7 @@ export const WATER_TRACKER_CONTENT: ToolReference = {
           kind: "p",
           text: {
             en: "Heat and sweat: add roughly 400–800 ml per hour of sweaty exercise — more in genuine heat or with heavy sweating. A practical field rule from sports medicine: weigh yourself before and after a hard session; each kilogram lost is about a liter of sweat, and the classic replacement guidance is to drink about 1.5 liters per kilogram lost over the hours that follow. Altitude above roughly 2,500 m increases respiratory and urinary water losses. Fever, vomiting, and diarrhea all add losses that need deliberate replacement, and air-conditioned dry air evaporates skin water silently all day.",
-            ar: "الحرارة والعرق: أضف نحو 400–800 مل لكل ساعة تمرين مُعرِق — وأكثر في حر حقيقية أو عرق غزير. وقاعدة ميدانية عملية من طب الرياضة: زِن نفسك قبل جلسة شاقة وبعدها؛ فكل كيلوغرام مفقود نحو لتر عرق، والإرشاد الكلاسيكي للتعويض شرب نحو 1.5 لتر لكل كيلوغرام مفقود على الساعات التالية. والارتفاع فوق نحو 2500 متر يزيد خسائر الماء التنفسية والبولية. والحمى والقيء والإسهال كلها تضيف خسائر تحتاج تعويضًا متعمدًا، وهواء التكييف الجاف يبخّر ماء الجلد بصمت طوال اليوم.",
+            ar: "الحرارة والعرق: أضف نحو 400–800 مل لكل ساعة تمرين مُعرِق — وأكثر في حرّ حقيقي أو عرق غزير. وقاعدة ميدانية عملية من طب الرياضة: زِن نفسك قبل جلسة شاقة وبعدها؛ فكل كيلوغرام مفقود نحو لتر عرق، والإرشاد الكلاسيكي للتعويض شرب نحو 1.5 لتر لكل كيلوغرام مفقود على الساعات التالية. والارتفاع فوق نحو 2500 متر يزيد خسائر الماء التنفسية والبولية. والحمى والقيء والإسهال كلها تضيف خسائر تحتاج تعويضًا متعمدًا، وهواء التكييف الجاف يبخّر ماء الجلد بصمت طوال اليوم.",
           },
         },
         {
@@ -121,7 +121,7 @@ export const WATER_TRACKER_CONTENT: ToolReference = {
           kind: "p",
           text: {
             en: "The two situations where mild dehydration turns urgent: heavy exercise in heat, where sweat losses can reach 1–2 liters per hour and thirst lags far behind the deficit; and illness in infants and the elderly, whose thirst signals and kidney concentration ability are weaker. Dizziness on standing, confusion, cessation of sweating in heat, or urine output falling to near zero are stop-and-seek-care signs, not hydration-app territory.",
-            ar: "موقفان يحول فيهما الجفاف الخفيف إلى إلحاح: التمرين الشاق في الحر، حيث تبلغ خسائر العرق 1–2 لتر في الساعة ويتخلف العطش كثيرًا عن العجز؛ والمرض عند الرُضّع وكبار السن، الذين إشاراتُ عطشهم وقدرةُ تركيز كلاهم أضعف. والدوخة عند الوقوف، والتشوش، وتوقف التعرق في الحر، وهبوط إفراز البول إلى قرب الصفر — علامات توقفٍ وطلبِ رعاية، لا أرض أداة ترطيب.",
+            ar: "موقفان يحول فيهما الجفاف الخفيف إلى إلحاح: التمرين الشاق في الحر، حيث تبلغ خسائر العرق 1–2 لتر في الساعة ويتخلف العطش كثيرًا عن العجز؛ والمرض عند الرُضّع وكبار السن، الذين إشاراتُ عطشهم وقدرةُ كُلاهم على تركيز البول أضعف. والدوخة عند الوقوف، والتشوش، وتوقف التعرق في الحر، وهبوط إفراز البول إلى قرب الصفر — علامات توقفٍ وطلبِ رعاية، لا أرض أداة ترطيب.",
           },
         },
       ],
@@ -137,14 +137,14 @@ export const WATER_TRACKER_CONTENT: ToolReference = {
           kind: "p",
           text: {
             en: "Drinking far beyond need dilutes blood sodium — hyponatremia — and it is a real, occasionally fatal emergency seen in marathon and ultramarathon runners who over-drink plain water for hours, and in people persuaded that heroic gallon-per-day targets are health. Symptoms (nausea, headache, confusion, swelling) echo dehydration's, which leads sufferers to drink more — the wrong turn. The defense is built into this tracker's design: the 35 ml/kg rule with its 4.5-liter ceiling is nowhere near the danger zone for healthy kidneys, and during very long sweaty events, replace a meaningful share of losses with electrolyte-containing drinks rather than plain water alone.",
-            ar: "الشرب بعيدًا جدًا عن الحاجة يخفف صوديوم الدم — نقص الصوديوم — وهو إسعاف حقيقي، قاتل أحيانًا، يُرى في عدّائي الماراثون وفوقه ممن يفرطون في شرب الماء الصافي ساعات، وفي من أُقنعوا بأن أهداف الغالون البطولية يوميًا صحة. والأعراض (غثيان، صداع، تشوش، تورم) تحاكي أعراض الجفاف، فيشرب المتألم أكثر — الانعطافة الخطأ. والدفاع مدمج في تصميم هذه الأداة: فقاعدة 35 مل/كجم بسقفها 4.5 لتر لا تقترب من منطقة الخطر لكلى سليمة، وأثناء الأحداث الطويلة المعرقة جدًا عوّض حصة ذات معنى من الخسائر بمشروبات محتوية على إلكتروليتات لا بالماء الصافي وحده.",
+            ar: "الشرب بعيدًا جدًا عن الحاجة يخفف صوديوم الدم — نقص الصوديوم — وهو إسعاف حقيقي، قاتل أحيانًا، يُرى في عدّائي الماراثون وما فوقه ممن يفرطون في شرب الماء الصافي ساعات، وفي من أُقنعوا بأن أهداف الغالون البطولية يوميًا صحة. والأعراض (غثيان، صداع، تشوش، تورم) تحاكي أعراض الجفاف، فيشرب المتألم أكثر — الانعطافة الخطأ. والدفاع مدمج في تصميم هذه الأداة: فقاعدة 35 مل/كجم بسقفها 4.5 لتر لا تقترب من منطقة الخطر لكلى سليمة، وأثناء الأحداث الطويلة المعرقة جدًا عوّض حصة ذات معنى من الخسائر بمشروبات محتوية على إلكتروليتات لا بالماء الصافي وحده.",
           },
         },
         {
           kind: "p",
           text: {
             en: "Healthy kidneys can excrete about 0.8–1.0 liter per hour, so steady sipping across the day is effectively risk-free; the danger pattern is rapid, forced intake of several liters in a short window. Medical conditions that retain water — heart failure, cirrhosis, SIADH — follow fluid limits prescribed by physicians, not weight-scaled rules; if any of those apply to you, this tool's number is a conversation piece, not a prescription.",
-            ar: "تستطيع الكلى السليمة إطراح نحو 0.8–1.0 لتر في الساعة، فالرشف الثابت عبر اليوم فعالُ الأمان بلا خطر عمليًا؛ ونمط الخطر هو الاستهلاك السريع المُكرَه لعدة لترات في نافذة قصيرة. والحالات الطبية الحابسة للماء — قصور القلب، والتليف الكبدي، ومتلازمة إفراز الهرمون المضاد للإدرار غير الملائم — تتبع حدود سوائل يصفها الأطباء لا قواعد مقيسة بالوزن؛ فإن انطبق عليك شيء منها فرقم هذه الأداة مادة حوار لا وصفة.",
+            ar: "تستطيع الكلى السليمة إطراح نحو 0.8–1.0 لتر في الساعة، فالرشف الثابت عبر اليوم فعالُ الأمان بلا خطر عمليًا؛ ونمط الخطر هو التناول السريع القسري لعدة لترات في نافذة قصيرة. والحالات الطبية الحابسة للماء — قصور القلب، والتليف الكبدي، ومتلازمة إفراز الهرمون المضاد للإدرار غير الملائم — تتبع حدود سوائل يصفها الأطباء لا قواعد مقيسة بالوزن؛ فإن انطبق عليك شيء منها فرقم هذه الأداة مادة حوار لا وصفة.",
           },
         },
       ],
@@ -160,7 +160,7 @@ export const WATER_TRACKER_CONTENT: ToolReference = {
           kind: "p",
           text: {
             en: "On a typical mixed diet, roughly 20% of total water arrives inside food — more on a produce-heavy one. Logging drinks alone therefore undercounts your true intake, which is fine for a drinking target (the tracker's number is water to drink, matching how EFSA and IOM separate their figures) but worth understanding. The table shows why a cucumber-and-watermelon summer day is almost a hydration strategy by itself.",
-            ar: "على غذاء مختلط نموذجي يصل نحو 20% من الماء الكلي داخل الطعام — وأكثر على غالبية المنتجات. لذا فإن تسجيل المشروبات وحدها يقلّ من استهلاكك الحقيقي، وهذا مقبول لهدف شرب (رقم الأداة ماءٌ للشرب، موافقًا لطريقة الهيئة الأوروبية ومعهد الطب في فصل أرقامهما) لكنه جدير بالفهم. ويظهر الجدول لماذا يكون يوم الخيار والبطيخ الصيفي استراتيجية ترطيب بحد ذاته تقريبًا.",
+            ar: "على غذاء مختلط نموذجي يصل نحو 20% من الماء الكلي داخل الطعام — وأكثر على غالبية الخضروات والفواكه. لذا فإن تسجيل المشروبات وحدها يقلّ من استهلاكك الحقيقي، وهذا مقبول لهدف شرب (رقم الأداة ماءٌ للشرب، موافقًا لطريقة الهيئة الأوروبية ومعهد الطب في فصل أرقامهما) لكنه جدير بالفهم. ويظهر الجدول لماذا يكون يوم الخيار والبطيخ الصيفي استراتيجية ترطيب بحد ذاته تقريبًا.",
           },
         },
         {
@@ -194,7 +194,7 @@ export const WATER_TRACKER_CONTENT: ToolReference = {
           kind: "p",
           text: {
             en: "A 300 g portion of watermelon alone is about 275 ml of water — more than a small glass — plus electrolytes. Soup, stew, and porridge traditions across every cuisine exist partly because boiling water into food is a culturally durable way to hydrate; the salty-sweaty cuisines of hot regions pair them with pickles and teas for the electrolyte half of the equation.",
-            ar: "حصة 300 غرام من البطيخ وحدها نحو 275 مل ماء — أكثر من كوب صغير — زائد إلكتروليتات. وتقاليد الشوربة والطاجن والعصيدة في كل مطبخ موجودة جزئيًا لأن غلي الماء داخل الطعام طريقة ثقافية الديمومة للترطيب؛ ومطابخ المناطق الحارة المالحة العرقة تقترن بها المخللات والشاي لنصف المعادلة الإلكتروليتي.",
+            ar: "حصة 300 غرام من البطيخ وحدها نحو 275 مل ماء — أكثر من كوب صغير — زائد إلكتروليتات. وتقاليد الشوربة والطاجن والعصيدة في كل مطبخ موجودة جزئيًا لأن غلي الماء داخل الطعام طريقة متجذرة ثقافيًّا للترطيب؛ ومطابخ المناطق الحارة المالحة العرقة تقترن بها المخللات والشاي لنصف المعادلة الإلكتروليتي.",
           },
         },
       ],
@@ -210,7 +210,7 @@ export const WATER_TRACKER_CONTENT: ToolReference = {
           kind: "p",
           text: {
             en: "The workflow takes three seconds a day: enter your weight once and the goal computes at 35 ml/kg within the safe clamps; then tap the cup button through the day (a standard 250 ml glass per tap) or log a custom amount — a bottle, a kettle, a restaurant glass. The progress ring fills toward your goal, the remaining number tells you exactly what is left, and a seven-day bar history reveals your real weekly rhythm — the pattern matters more than any single day, and a Thursday at 60% is a nudge, not a failure. Reset any day, undo a mis-tap, and adjust the goal manually whenever judgment says the rule is wrong for you.",
-            ar: "يسير العمل في ثلاث ثوانٍ يوميًا: أدخل وزنك مرة فيُحسب الهدف بـ35 مل/كجم داخل الحصرين الآمنين؛ ثم انقر زر الكوب على مدار اليوم (كوب قياسي 250 مل للنقرة الواحدة) أو سجّل مقدارًا مخصصًا — قارورة، غلاية، كوب مطعم. يمتلئ حلقة التقدم نحو هدفك، ويخبرك الرقم المتبقي بما تبقى بالضبط، ويكشف تاريخ سبعة أيام إيقاعك الأسبوعي الحقيقي — فالنمط أهم من أي يوم مفرد، والخميس عند 60% نبهةٌ لا فشل. صفّر أي يوم، وتراجع عن نقرة خاطئة، وعدّل الهدف يدويًا كلما قال حكمك إن القاعدة تخطئ في حقك.",
+            ar: "يسير العمل في ثلاث ثوانٍ يوميًا: أدخل وزنك مرة فيُحسب الهدف بـ35 مل/كجم داخل الحصرين الآمنين؛ ثم انقر زر الكوب على مدار اليوم (كوب قياسي 250 مل للنقرة الواحدة) أو سجّل مقدارًا مخصصًا — قارورة، غلاية، كوب مطعم. تمتلئ حلقة التقدم نحو هدفك، ويخبرك الرقم المتبقي بما تبقى بالضبط، ويكشف تاريخ سبعة أيام إيقاعك الأسبوعي الحقيقي — فالنمط أهم من أي يوم مفرد، والخميس عند 60% تذكيرٌ لا فشل. صفّر أي يوم، وتراجع عن نقرة خاطئة، وعدّل الهدف يدويًا كلما قال حكمك إن القاعدة تخطئ في حقك.",
           },
         },
         {
@@ -240,14 +240,14 @@ export const WATER_TRACKER_CONTENT: ToolReference = {
           kind: "p",
           text: {
             en: "Water never travels alone: sodium, potassium, magnesium, and chloride ride with it and hold the electrical gradients that nerves, muscles, and kidneys run on. Hydration trouble is usually a pair problem — too little water, or too much water without enough electrolytes (the hyponatremia mechanism above). Ordinary days and ordinary meals handle the pairing automatically: salt in food covers sodium, and produce covers potassium. The situations that deliberately break the pairing are the ones that need deliberate repair: heavy sweating (salt leaves in sweat), long endurance events, illness with vomiting or diarrhea, very low-carbohydrate diets (which flush sodium faster in the first weeks), and scorching climates.",
-            ar: "الماء لا يسافر وحده أبدًا: فالصوديوم والبوتاسيوم والمغنيسيوم والكلوريد تمتطيه وتحمل التدرجات الكهربائية التي تعمل عليها الأعصاب والعضلات والكلى. ومشكلات الترطيب غالبًا مشكلة زوج — ماء أقل من اللازم، أو ماء أكثر من اللازم بإلكتروليتات لا تكفي (آلية نقص الصوديوم أعلاه). والأيام العادية والوجبات العادية تتكفل بالاقتران تلقائيًا: فملح الطعام يغطي الصوديوم، والمنتجات تغطي البوتاسيوم. والمواقف التي تكسر الاقتران عمدًا هي التي تحتاج إصلاحًا متعمدًا: العرق الغزير (يغادر الملح مع العرق)، وأحداث التحمّل الطويلة، والمرض بقيء أو إسهال، والحميات منخفضة الكربوهيدرات جدًا (تطرد الصوديوم أسرع في الأسابيع الأولى)، والمناخات اللاهبة.",
+            ar: "الماء لا يسافر وحده أبدًا: فالصوديوم والبوتاسيوم والمغنيسيوم والكلوريد تمتطيه وتحمل التدرجات الكهربائية التي تعمل عليها الأعصاب والعضلات والكلى. ومشكلات الترطيب غالبًا مشكلة زوج — ماء أقل من اللازم، أو ماء أكثر من اللازم بإلكتروليتات لا تكفي (آلية نقص الصوديوم أعلاه). والأيام العادية والوجبات العادية تتكفل بالاقتران تلقائيًا: فملح الطعام يغطي الصوديوم، والخضروات والفواكه تغطي البوتاسيوم. والمواقف التي تكسر الاقتران عمدًا هي التي تحتاج إصلاحًا متعمدًا: العرق الغزير (يغادر الملح مع العرق)، وأحداث التحمّل الطويلة، والمرض بقيء أو إسهال، والحميات منخفضة الكربوهيدرات جدًا (تطرد الصوديوم أسرع في الأسابيع الأولى)، والمناخات اللاهبة.",
           },
         },
         {
           kind: "p",
           text: {
             en: "The practical repair menu, from kitchen to pharmacy shelf: for training sessions, water with a pinch of salt plus a splash of citrus makes a functioning sports drink at home; for long events, commercial electrolyte mixes matter mainly for their sodium content (check the label for sodium, not for the marketing words around it); and for illness, the world's most evidence-backed rehydration recipe is the humble oral rehydration solution — water, salt, and a carbohydrate source in the ratios medicine has used for decades to save lives. On ordinary days, none of this is necessary: eat food, drink water, and let kidneys do the arithmetic they were designed for.",
-            ar: "قائمة الإصلاح العملية، من المطبخ إلى رف الصيدلية: لجلسات التدريب، ماء بقبضة ملح ورشقة حمضيات يصنع مشروبًا رياضيًا عاملًا في البيت؛ وللأحداث الطويلة، تهم خلطات الإلكتروليت التجارية أساسًا لمحتواها الصوديومي (تفقد الملصق بحثًا عن الصوديوم لا عن كلمات التسويق حوله)؛ وللمرض، وصفة إعادة الإماهة الأكثر دعمًا بالأدلة في العالم هي محلول الإماهة الفموي المتواضع — ماء وملح ومصدر كربوهيدرات بالنسب التي استخدمها الطب عقودًا لإنقاذ الأرواح. وفي الأيام العادية لا شيء من هذا ضروري: كُل الطعام، واشرب الماء، ودع الكلى تؤدي الحساب الذي صُممت له.",
+            ar: "قائمة الإصلاح العملية، من المطبخ إلى رف الصيدلية: لجلسات التدريب، ماء برشّة ملح ورشقة حمضيات يصنع مشروبًا رياضيًا عاملًا في البيت؛ وللأحداث الطويلة، تهم خلطات الإلكتروليت التجارية أساسًا لمحتواها الصوديومي (تفقّد الملصق بحثًا عن الصوديوم لا عن كلمات التسويق حوله)؛ وللمرض، وصفة إعادة الإماهة الأكثر دعمًا بالأدلة في العالم هي محلول الإماهة الفموي المتواضع — ماء وملح ومصدر كربوهيدرات بالنسب التي استخدمها الطب عقودًا لإنقاذ الأرواح. وفي الأيام العادية لا شيء من هذا ضروري: كُل الطعام، واشرب الماء، ودع الكلى تؤدي الحساب الذي صُممت له.",
           },
         },
         {
@@ -300,7 +300,7 @@ export const WATER_TRACKER_CONTENT: ToolReference = {
       },
       a: {
         en: "The healthy-kidney ceiling for steady sipping is far above any sane target, so routine over-drinking mostly manifests as constant clear urination and frequent night trips — an annoyance, not a danger. The genuinely dangerous pattern is rapid forced intake of multiple liters in a short window (diluting blood sodium — hyponatremia), seen in long endurance events. This tracker's ceiling of 4.5 L and its gradual daily rhythm keep you far from that territory; if you ever feel nauseated, headachy, or confused while aggressively drinking, stop and seek medical advice rather than drinking more.",
-        ar: "سقف الكلى السليمة للرشف الثابت أعلى بكثير من أي هدف معقول، فالإفراط الروتيني يظهر غالبًا كتبول صافٍ متواصل وجولات ليلية متكررة — إزعاجٌ لا خطر. والنمط الخطير فعلًا هو الاستهلاك السريع المُكرَه لعدة لترات في نافذة قصيرة (تخفيف صوديوم الدم — نقص الصوديوم)، كما في أحداث التحمّل الطويلة. سقف هذه الأداة 4.5 لتر وإيقاعها اليومي التدريجي يبقيانك بعيدًا عن تلك المنطقة؛ وإن شعرت يومًا بغثيان أو صداع أو تشوش وأنت تشرب بحدّة فتوقف واطلب مشورة طبية بدل أن تشرب أكثر.",
+        ar: "سقف الكلى السليمة للرشف الثابت أعلى بكثير من أي هدف معقول، فالإفراط الروتيني يظهر غالبًا كتبول صافٍ متواصل وجولات ليلية متكررة — إزعاجٌ لا خطر. والنمط الخطير فعلًا هو التناول السريع القسري لعدة لترات في نافذة قصيرة (تخفيف صوديوم الدم — نقص الصوديوم)، كما في أحداث التحمّل الطويلة. سقف هذه الأداة 4.5 لتر وإيقاعها اليومي التدريجي يبقيانك بعيدًا عن تلك المنطقة؛ وإن شعرت يومًا بغثيان أو صداع أو تشوش وأنت تشرب بحدّة فتوقف واطلب مشورة طبية بدل أن تشرب أكثر.",
       },
     },
     {
@@ -320,13 +320,13 @@ export const WATER_TRACKER_CONTENT: ToolReference = {
       },
       a: {
         en: "The \"8×8\" rule (eight 8-oz glasses) is a durable piece of folklore whose exact origin no one can pin down — it was never an evidence-based recommendation, and it ignores body size entirely: it prescribes 1.9 liters to a 50 kg woman and a 110 kg man alike. Your water need scales with your mass, your climate, and your training, which is precisely why this tracker anchors to body weight instead of a fixed glass count. If you are 60 kg and sedentary in a cool office, eight glasses overshoots; if you are 95 kg and training in summer, it undershoots by a lot.",
-        ar: "قاعدة «8×8» (ثمانية أكواب بثمانية أونصات) قطعة فولكلور دامغة لا يستطيع أحد تثبيت أصلها الدقيق — فلم توصيةً قائمة على الأدلة يومًا، وتتجاهل حجم الجسم كليًا: فتصف 1.9 لتر لامرأة 50 كجم ورجل 110 كجم على السواء. واحتياجك من الماء يتناسب مع كتلتك ومناخك وتدريبك، وهذا بالضبط لماذا ترتكز هذه الأداة على وزن الجسم بدل عدد أكواب ثابت. فإن كنت 60 كجم خاملًا في مكتب بارد فالثمانية تجاوز؛ وإن كنت 95 كجم متدربًا في الصيف فتقصر كثيرًا.",
+        ar: "قاعدة «8×8» (ثمانية أكواب بثمانية أونصات) قطعة فولكلور دامغة لا يستطيع أحد تثبيت أصلها الدقيق — فلم توصيةً قائمة على الأدلة يومًا، وتتجاهل حجم الجسم كليًا: فتصف 1.9 لتر لامرأة 50 كجم ورجل 110 كجم على السواء. واحتياجك من الماء يتناسب مع كتلتك ومناخك وتدريبك، وهذا بالضبط لماذا ترتكز هذه الأداة على وزن الجسم بدل عدد أكواب ثابت. فإن كنت 60 كجم خاملًا في مكتب بارد فالثمانية تتجاوز حاجتك؛ وإن كنت 95 كجم متدربًا في الصيف فتقصر كثيرًا.",
       },
     },
     {
       q: {
         en: "Does drinking more water help weight loss?",
-        ar: "هل شرب ماء أكثر يساعد خسارة الوزن؟",
+        ar: "هل شرب ماء أكثر يساعد على خسارة الوزن؟",
       },
       a: {
         en: "A little, through honest mechanisms rather than magic. Water drunk before meals adds gastric fullness and slightly reduces intake in some studies — the effect is real but modest. Replacing caloric drinks with water removes liquid calories, which for a soda habit is the single largest easy win available. Water also supports training quality, and dehydration is routinely mistaken for hunger or cravings. What water does not do: burn fat, \"flush toxins\" as popularly imagined, or substitute for an energy deficit. Drink enough to perform and think; create the deficit at the table.",
@@ -340,7 +340,7 @@ export const WATER_TRACKER_CONTENT: ToolReference = {
       },
       a: {
         en: "Yes, matched to sweat rate. Practical guidance for sessions up to about an hour: 400–800 ml per hour of activity, sipped in portions — enough to finish having lost no more than about 2% of body mass. For long, very sweaty sessions (over 90 minutes, heat, heavy sweaters), include electrolytes — sodium especially — because replacing liters of sweat with plain water alone is exactly the dilution path toward hyponatremia. The weigh-before-and-after method gives your personal sweat rate in one session.",
-        ar: "نعم، موازنًا لمعدل العرق. والإرشاد العملي للجلسات حتى ساعة تقريبًا: 400–800 مل لكل ساعة نشاط، مرشوفةً على دفعات — بما يكفي لتنهي الجلسة وقد فقدت أكثر من نحو 2% من كتلة جسمك قليلًا أو لا شيء. وللجلسات الطويلة المعرقة جدًا (فوق 90 دقيقة، حرارة، عرق غزير) أدخل الإلكتروليتات — الصوديوم خصوصًا — لأن تعويض لترات العرق بالماء الصافي وحده هو بالضبط مسار التخفيف نحو نقص الصوديوم. وطريقة الوزن قبل وبعد تعطيك معدل عرقك الشخصي في جلسة واحدة.",
+        ar: "نعم، موازنًا لمعدل العرق. والإرشاد العملي للجلسات حتى ساعة تقريبًا: 400–800 مل لكل ساعة نشاط، مرشوفةً على دفعات — بما يكفي أن تنهي الجلسة وقد فقدت ما لا يزيد على نحو 2% من كتلة جسمك. وللجلسات الطويلة المعرقة جدًا (فوق 90 دقيقة، حرارة، عرق غزير) أدخل الإلكتروليتات — الصوديوم خصوصًا — لأن تعويض لترات العرق بالماء الصافي وحده هو بالضبط مسار التخفيف نحو نقص الصوديوم. وطريقة الوزن قبل وبعد تعطيك معدل عرقك الشخصي في جلسة واحدة.",
       },
     },
     {
@@ -350,7 +350,7 @@ export const WATER_TRACKER_CONTENT: ToolReference = {
       },
       a: {
         en: "Hydration supports normal skin function and severe dehydration makes skin look duller, but the leap from \"drink more\" to \"clear skin\" outruns the evidence: acne is driven by hormones, genetics, follicular biology, and specific dietary triggers, and no controlled trial shows extra water clearing it. Drink enough for systemic health and let topical and dermatological care do the skin-specific work — the water salesman's promises are the least hydrated claims in wellness.",
-        ar: "يدعم الترطيبُ وظيفة الجلد الطبيعية والجفاف الشديد يجعل البشرة باهتة أكثر، لكن القفزة من «اشرب أكثر» إلى «بشرة صافية» تسبق الأدلة: فحب الشباب تقوده الهرمونات والوراثة وبيولوجيا الجُريبات ومحفزات غذائية محددة، ولا تجربة مضبوطة تظهر ماءً إضافيًا يصفّيه. اشرب ما يكفي لصحة الجملة ودع العناية الموضعية والجلدية تقوم بعمل البشرة الخاص — فوعود بائع الماء أقل الوعود ترطيبًا في صناعة العافية.",
+        ar: "يدعم الترطيبُ وظيفة الجلد الطبيعية والجفاف الشديد يجعل البشرة أكثر بهتانًا، لكن القفزة من «اشرب أكثر» إلى «بشرة صافية» تسبق الأدلة: فحب الشباب تقوده الهرمونات والوراثة وبيولوجيا الجُريبات ومحفزات غذائية محددة، ولا تجربة مضبوطة تظهر ماءً إضافيًا يصفّيه. اشرب ما يكفي لصحة الجسم ودع العناية الموضعية والجلدية تقوم بعمل البشرة الخاص — فوعود بائع الماء أقل الوعود ترطيبًا في صناعة العافية.",
       },
     },
     {
@@ -360,7 +360,7 @@ export const WATER_TRACKER_CONTENT: ToolReference = {
       },
       a: {
         en: "The common engine is the day before: dinner heavy in salt, alcohol in the evening (its rebound diuresis leaves you dry at 3 a.m.), afternoon caffeine, mouth breathing or nasal congestion drying the airway, and winter heating drying the bedroom air. Fix those levers first — earlier fluid front-loading (most of your water before 6 p.m.), a salt-lighter dinner, and a humidifier in dry rooms — before deciding you are pathologically thirsty. Persistent excessive thirst with excessive urination, however, is a classic early diabetes signal and deserves a medical check, not a bigger bottle.",
-        ar: "المحرك الشائع هو اليوم الذي قبله: عشاء ثقيل الملح، وكحول في المساء (إدراره الارتدي يتركك جافًا في الثالثة فجرًا)، وكافيين بعد الظهر، وتنفس فموي أو احتقان أنفي يجفف المجرى، وتدفئة الشتاء تجفف هواء الغرفة. أصلح هذه الروافع أولًا — تحميل مبكر للسوائل (معظم مائك قبل السادسة مساءً)، وعشاء أخف ملحًا، ومرطب في الغرف الجافة — قبل أن تحكم أنك عطشان مرضيًا. لكن العطش المفرط المستمر مع تبول مفرط إشارة سكري مبكرة كلاسيكية تستحق فحصًا طبيًا لا قارورة أكبر.",
+        ar: "المحرك الشائع هو اليوم الذي قبله: عشاء ثقيل الملح، وكحول في المساء (إدراره الارتدادي يتركك جافًا في الثالثة فجرًا)، وكافيين بعد الظهر، وتنفس فموي أو احتقان أنفي يجفف المجرى، وتدفئة الشتاء تجفف هواء الغرفة. أصلح هذه الروافع أولًا — تحميل مبكر للسوائل (معظم مائك قبل السادسة مساءً)، وعشاء أخف ملحًا، ومرطب في الغرف الجافة — قبل أن تحكم أنك عطشان مرضيًا. لكن العطش المفرط المستمر مع تبول مفرط إشارة سكري مبكرة كلاسيكية تستحق فحصًا طبيًا لا قارورة أكبر.",
       },
     },
     {
@@ -370,7 +370,7 @@ export const WATER_TRACKER_CONTENT: ToolReference = {
       },
       a: {
         en: "Yes — carbonation does not change hydration: the water is absorbed the same way, and controlled comparisons show flat and sparkling hydrate equivalently. The bubbles only matter for comfort (some people feel full faster, which for a hydration goal is a minor behavioral note) and for teeth if the water carries citric acid or sugar — plain carbonated water's mild acidity is negligible for dental health in normal consumption. Choose flat or sparkling by preference; drink whichever you will actually finish.",
-        ar: "نعم — الكربنة لا تغير الترطيب: فالماء يُمتص الطريقة نفسها، والمقارنات المضبوطة تظهر العادي والفوار يرطبان بشكل مكافئ. لا تهم الفقاعات إلا للراحة (يشعر بعضهم بالامتلاء أسرع، وهي لهدف الترطيب ملاحظة سلوكية صغرى) وللأسنان إن حمل الماء حمض الستريك أو السكر — حموضة الماء الفوار الصافي الخفيفة مهملة لصحة الأسنان في الاستهلاك الطبيعي. اختر العادي أو الفوار بالتفضيل؛ واشرب ما ستكمله فعلًا.",
+        ar: "نعم — الكربنة لا تغير الترطيب: فالماء يُمتص بالطريقة نفسها، والمقارنات المضبوطة تظهر العادي والفوار يرطبان بشكل مكافئ. لا تهم الفقاعات إلا للراحة (يشعر بعضهم بالامتلاء أسرع، وهي لهدف الترطيب ملاحظة سلوكية صغرى) وللأسنان إن حمل الماء حمض الستريك أو السكر — حموضة الماء الفوار الصافي الخفيفة مهملة لصحة الأسنان في الاستهلاك الطبيعي. اختر العادي أو الفوار بالتفضيل؛ واشرب ما ستكمله فعلًا.",
       },
     },
     {
@@ -390,7 +390,7 @@ export const WATER_TRACKER_CONTENT: ToolReference = {
       },
       a: {
         en: "For hydration, all of them are simply water. The minerals in mineral water are real but trivial next to food — a banana outperforms most bottles for potassium — and regulated tap water in cities with sound standards hydrates identically. Choose by taste, safety of your local supply, and convenience: the bottle you enjoy drinking from beats the bottle with the best marketing chemistry, because the best water on earth is the one you actually finish.",
-        ar: "لأغراض الترطيب كلها ماءٌ ببساطة. فمعادن الماء المعدني حقيقية لكنها تافهة بجانب الطعام — فموزة تتفوق على أغلب القوارير بوتاسيومها — وماء الصنبور المنظم في مدن ذات معايير سليمة يرطب تطابقًا. اختر بالطعام المحلي وسلامة إمدادك واليسر: فالقارورة التي تستمتع بالشرب منها تتفوق على القارورة بأفضل كيمياء تسويقية، لأن أفضل ماء على الأرض هو ما تُكمله فعلًا.",
+        ar: "لأغراض الترطيب كلها ماءٌ ببساطة. فمعادن الماء المعدني حقيقية لكنها تافهة بجانب الطعام — فموزة تتفوق على أغلب القوارير بوتاسيومها — وماء الصنبور المنظم في مدن ذات معايير سليمة يرطب تطابقًا. اختر حسب المذاق وسلامة إمدادك المحلي واليسر: فالقارورة التي تستمتع بالشرب منها تتفوق على القارورة بأفضل كيمياء تسويقية، لأن أفضل ماء على الأرض هو ما تُكمله فعلًا.",
       },
     },
     {

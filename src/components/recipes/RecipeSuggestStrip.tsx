@@ -86,7 +86,7 @@ export function RecipeSuggestStrip({
             <p className="line-clamp-2 text-sm font-medium leading-snug">{r.title}</p>
             <p className="mt-1.5 text-xs text-[var(--muted-foreground)]">
               {isAr
-                ? `${r.calories.toLocaleString("ar-EG")} سعرة/حصة · بروتين ${r.protein.toLocaleString("ar-EG")} جم · ${r.minutes.toLocaleString("ar-EG")} دقيقة`
+                ? `${r.calories.toLocaleString("en-US")} سعرة/حصة · بروتين ${r.protein.toLocaleString("en-US")} جم · ${r.minutes.toLocaleString("en-US")} دقيقة`
                 : `${r.calories} kcal/serving · protein ${r.protein}g · ${r.minutes} min`}
             </p>
             <p className="mt-1.5 text-xs font-medium text-[var(--muted-foreground)] group-hover:text-[var(--text)]">

@@ -272,7 +272,7 @@ export function recipeIngredientLine(
   const note = lang === "ar" ? ing.noteAr : ing.noteEn;
   const grams =
     lang === "ar"
-      ? `${ing.amountG.toLocaleString("ar-EG")} جم`
+      ? `${ing.amountG.toLocaleString("en-US")} جم`
       : `${ing.amountG} g`;
   const state =
     ing.weightState === "raw"

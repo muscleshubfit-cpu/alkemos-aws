@@ -143,7 +143,7 @@ export const MEMBERSHIPS: MembershipInfo[] = [
       // and every other surface states it without "+" — the Free-tier card
       // must not imply more tools than exist.
       `${TOOLS_COUNT} free fitness & nutrition tools`,
-      "AI plans: 2 generations/month (nutrition or workout) — a free allowance for every visitor; no account keeps your plan on this device",
+      "AI plans: 2 generations/month (nutrition or workout) — a free allowance for every visitor; without an account, your plan stays on this device",
       "With a free account: plans saved permanently & synced across your devices",
       "EVO: 10 messages a day",
       "Meal Planner (3 meals, save 1 plan)",
@@ -182,7 +182,7 @@ export const MEMBERSHIPS: MembershipInfo[] = [
       adsEnabled: true,
     },
     features: [
-      "كل مميزات Free",
+      "كل مميزات الباقة المجانية",
       "EVO: محادثة غير محدودة",
       "توليد 4 خطط بالذكاء الاصطناعي شهريًا (تغذية أو تمرين)",
       "إدارة أوسع لخططك ومحفوظاتك: سعة أكبر وتصدير كامل",
@@ -232,7 +232,7 @@ export const MEMBERSHIPS: MembershipInfo[] = [
       adsEnabled: false,
     },
     features: [
-      "كل مميزات Premium",
+      "كل مميزات بريميوم",
       "توليد 8 خطط بالذكاء الاصطناعي شهريًا (تغذية أو تمرين)",
       "EVO: 6 تبديلات للوجبات أو التمارين أسبوعيًا لتكييف خططك",
       "مخطط الوجبات (8 وجبات، 50 جدول)",
@@ -279,7 +279,7 @@ export const MEMBERSHIPS: MembershipInfo[] = [
       adsEnabled: false,
     },
     features: [
-      "كل مميزات Pro",
+      "كل مميزات برو",
       "توليد 8 خطط بالذكاء الاصطناعي شهريًا (تغذية أو تمرين)",
       "خطط تغذية وتمرين من مدرب خاص",
       "EVO: محادثة غير محدودة وذاكرة دائمة",

@@ -97,7 +97,7 @@ export function RecipeServingsScaler({
               −
             </button>
             <span className="min-w-16 text-center text-lg font-semibold tabular-nums">
-              {isAr ? servings.toLocaleString("ar-EG") : servings}
+              {isAr ? servings.toLocaleString("en-US") : servings}
             </span>
             <button
               type="button"
@@ -137,7 +137,7 @@ export function RecipeServingsScaler({
               </span>
               <span className="whitespace-nowrap text-sm font-semibold tabular-nums">
                 {isAr
-                  ? `${round(g).toLocaleString("ar-EG")} جم`
+                  ? `${round(g).toLocaleString("en-US")} جم`
                   : `${round(g).toLocaleString("en-US")} g`}
                 <span className="ml-1 text-[11px] font-normal text-[var(--muted-foreground)]">
                   ({isAr ? (ing.weightState === "raw" ? "نيئ" : "مطبوخ") : ing.weightState})
@@ -158,7 +158,7 @@ export function RecipeServingsScaler({
             <tr className="bg-[var(--tint)] text-left text-xs uppercase tracking-wide text-[var(--muted-foreground)]">
               <th className="px-4 py-2.5 font-medium">{isAr ? "المغذّي" : "Nutrient"}</th>
               <th className="px-4 py-2.5 text-right font-medium">
-                {isAr ? `لكل حصة (من ${servings.toLocaleString("ar-EG")})` : `Per serving (of ${servings})`}
+                {isAr ? `لكل حصة (من ${servings.toLocaleString("en-US")})` : `Per serving (of ${servings})`}
               </th>
               <th className="px-4 py-2.5 text-right font-medium">
                 {isAr ? "للوصفة كاملة" : "Whole recipe"}
@@ -206,13 +206,13 @@ export function RecipeServingsScaler({
       </div>
       <p className="mt-2 text-xs text-[var(--muted-foreground)]">
         {isAr
-          ? "القيم المحسوبة من بيانات المكونات أعلاه — تقريبًا لأقرب ٠٫١ جم."
+          ? "القيم المحسوبة من بيانات المكونات أعلاه — تقريبًا لأقرب 0.1 جم."
           : "Computed from the ingredient data above — rounded to the nearest 0.1 g."}
       </p>
       {baseServings !== servings ? (
         <p className="mt-1 text-xs text-[var(--muted-foreground)] print:hidden">
           {isAr
-            ? `القيم المرجعية المنشورة محسوبة على ${baseServings.toLocaleString("ar-EG")} حصص.`
+            ? `القيم المرجعية المنشورة محسوبة على ${baseServings.toLocaleString("en-US")} حصص.`
             : `The published reference values are computed for ${baseServings} servings.`}
         </p>
       ) : null}
@@ -239,7 +239,7 @@ function NutritionRow({
   total: number;
   isAr: boolean;
 }) {
-  const fmt = (n: number) => (isAr ? n.toLocaleString("ar-EG") : n.toLocaleString("en-US"));
+  const fmt = (n: number) => (isAr ? n.toLocaleString("en-US") : n.toLocaleString("en-US"));
   const unitAr = unit === "g" ? "جم" : unit === "kcal" ? "سعرة" : unit;
   return (
     <tr>

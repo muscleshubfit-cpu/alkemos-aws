@@ -104,7 +104,7 @@ export function FoodsExplorer({
               : "Search foods, see calories and macros, and calculate the grams you need."}
           </p>
           <p className="mt-2 text-sm font-normal text-[var(--muted-foreground)] opacity-80">
-            {FOODS_COUNT.toLocaleString(isAr ? "ar-EG" : "en-US")}{" "}
+            {FOODS_COUNT.toLocaleString("en-US")}{" "}
             {isAr ? "صنف غذائي" : "foods"}
           </p>
         </div>
@@ -202,7 +202,7 @@ export function FoodsExplorer({
 
         {/* Results count — anchor for scroll-back on page change */}
         <p id="results-top" className="mt-6 scroll-mt-24 text-sm font-normal text-[var(--muted-foreground)]">
-          {filtered.length.toLocaleString(isAr ? "ar-EG" : "en-US")}{" "}
+          {filtered.length.toLocaleString("en-US")}{" "}
           {isAr ? "صنف غذائي" : "foods"}
         </p>
 

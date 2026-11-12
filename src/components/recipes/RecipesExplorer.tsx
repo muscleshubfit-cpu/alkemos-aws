@@ -92,7 +92,7 @@ export async function RecipesExplorer({
               : "Healthy recipes with ingredients weighed in grams and clear per-serving nutrition — filter by cuisine, diet, goal, and the time you have."}
           </p>
           <p className="mt-2 text-sm font-normal text-[var(--muted-foreground)] opacity-80">
-            {total.toLocaleString(isAr ? "ar-EG" : "en-US")}{" "}
+            {total.toLocaleString("en-US")}{" "}
             {isAr ? "وصفة منشورة" : "published recipes"}
           </p>
         </div>
@@ -161,7 +161,7 @@ export async function RecipesExplorer({
 
         {/* Results count */}
         <p id="results-top" className="mt-6 scroll-mt-24 text-sm font-normal text-[var(--muted-foreground)]">
-          {total.toLocaleString(isAr ? "ar-EG" : "en-US")}{" "}
+          {total.toLocaleString("en-US")}{" "}
           {isAr ? "وصفة" : "recipes"}
         </p>
 
@@ -295,7 +295,7 @@ function NumericFilterRow({
             aria-pressed={active}
             className={pillClass(active)}
           >
-            {isAr ? c.toLocaleString("ar-EG") : v}
+            {isAr ? c.toLocaleString("en-US") : v}
           </Link>
         );
       })}

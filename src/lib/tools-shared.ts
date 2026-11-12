@@ -107,7 +107,7 @@ export const TOOL_LIBRARIES: ToolEntry[] = [
     slug: "/exercises",
     nameAr: "مكتبة التمارين",
     nameEn: "Exercise Library",
-    descAr: "868+ تمرين بالصور والشرح والمستويات",
+    descAr: "868+ تمرينًا بالصور والشرح والمستويات",
     descEn: "868+ exercises with images and guides",
     icon: "dumbbell",
   },

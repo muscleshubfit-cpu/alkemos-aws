@@ -55,7 +55,7 @@ export function RecipeCard({
         <div className="mt-2 grid grid-cols-2 gap-1">
           <div className="rounded bg-white px-1.5 py-1 text-center">
             <p className="text-xs font-semibold leading-tight text-[#0071e3]">
-              {recipe.caloriesPerServing.toLocaleString(isAr ? "ar-EG" : "en-US")}
+              {recipe.caloriesPerServing.toLocaleString("en-US")}
             </p>
             <p className="text-[9px] font-normal leading-tight text-[var(--muted-foreground)]">
               {isAr ? "سعرة/حصة" : "kcal/serving"}

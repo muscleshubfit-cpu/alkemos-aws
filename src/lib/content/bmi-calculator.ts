@@ -26,14 +26,14 @@ export const BMI_CALCULATOR_CONTENT: ToolReference = {
           kind: "p",
           text: {
             en: "BMI = weight (kg) / height (m)². A person weighing 75 kg at 1.75 m has a BMI of 75 ÷ 3.0625 ≈ 24.5. The index was devised in the 1830s by the Belgian astronomer and statistician Adolphe Quetelet — not by a physician, and not for individual diagnosis, but as a population-level descriptor of \"average man\" in social statistics. Almost two centuries later, Ancel Keys's 1972 paper renamed it \"body mass index\" and it entered clinical screening, precisely because weight alone is meaningless without a height to scale it against: 85 kg tells you nothing until you know whether it stands on a 1.60 m frame or a 1.95 m one.",
-            ar: "المؤشر = الوزن (كجم) ÷ مربع الطول (م)². فشخص وزنه 75 كجم وطوله 1.75 متر له مؤشر 75 ÷ 3.0625 ≈ 24.5. ابتُكر المؤشر في ثلاثينيات القرن التاسع عشر على يد الفلكي والإحصائي البلجيكي Adolphe Quetelet — لا على يد طبيب، وليس لتشخيص الأفراد، بل كواصفٍ سكّي لمستوى المجتمعات لـ«الإنسان المتوسط» في الإحصاء الاجتماعي. وبعد قرنين تقريبًا، أعادت ورقة Ancel Keys عام 1972 تسميته «مؤشر كتلة الجسم» فدخل الفحص الإكلينيكي، وتحديدًا لأن الوزن وحده بلا معنى دون طولٍ يُنسب إليه: 85 كجم لا تخبرك شيئًا حتى تعرف إن كانت تقف على هيكل 1.60 متر أم 1.95 متر.",
+            ar: "المؤشر = الوزن (كجم) ÷ مربع الطول (م)². فشخص وزنه 75 كجم وطوله 1.75 متر له مؤشر 75 ÷ 3.0625 ≈ 24.5. ابتُكر المؤشر في ثلاثينيات القرن التاسع عشر على يد الفلكي والإحصائي البلجيكي Adolphe Quetelet — لا على يد طبيب، وليس لتشخيص الأفراد، بل كواصفٍ سكّاني على مستوى المجتمعات لـ«الإنسان المتوسط» في الإحصاء الاجتماعي. وبعد قرنين تقريبًا، أعادت ورقة Ancel Keys عام 1972 تسميته «مؤشر كتلة الجسم» فدخل الفحص الإكلينيكي، وتحديدًا لأن الوزن وحده بلا معنى دون طولٍ يُنسب إليه: 85 كجم لا تخبرك شيئًا حتى تعرف إن كانت تقف على هيكل 1.60 متر أم 1.95 متر.",
           },
         },
         {
           kind: "p",
           text: {
             en: "The division by height squared — rather than height cubed, which would scale like a solid object — comes from empirical observation that body weight across adults scales roughly with height to the power of two. That choice is exactly why BMI is a screening index and not a body-composition measurement: it deliberately ignores what the weight consists of, trading precision for the ability to be computed anywhere, instantly, with a scale and a tape.",
-            ar: "القسمة على مربع الطول — بدل مكعبه الذي كان سيقيس مثل جسم صلب — جاءت من ملاحظة تجريبية مفادها أن وزن الجسم عبر البالغين يتناسب تقريبًا مع الطول مرفوعًا لقوة اثنين. وهذا الاختيار تحديدًا هو سبب كون المؤشر فهرسَ فحص لا قياسَ تكوين جسم: فهو يتجاهل عمدًا مما يتكون الوزن، مقابل قابلية حسابه في أي مكان وفورًا بميزان وشريط قياس.",
+            ar: "القسمة على مربع الطول — بدل مكعبه الذي كان سيقيس مثل جسم صلب — جاءت من ملاحظة تجريبية مفادها أن وزن الجسم عبر البالغين يتناسب تقريبًا مع الطول مرفوعًا لقوة اثنين. وهذا الاختيار تحديدًا هو سبب كون المؤشر فهرسَ فحص لا قياسَ تكوين جسم: فهو يتجاهل عمدًا ممّ يتكون منه الوزن، مقابل قابلية حسابه في أي مكان وفورًا بميزان وشريط قياس.",
           },
         },
       ],
@@ -48,8 +48,8 @@ export const BMI_CALCULATOR_CONTENT: ToolReference = {
         {
           kind: "p",
           text: {
-            en: "The World Health Organization classifies adult BMI into the bands below. The thresholds are statistical compromises chosen for their association with health risk across enormous populations — a BMI above 25 is where average metabolic risk begins climbing measurably, and above 30 where it climbs steeply. Within overweight, the medical literature often subdivides class I (30–34.9), class II (35–39.9), and class III (40+) obesity for treatment decisions.",
-            ar: "تصنف منظمة الصحة العالمية مؤشر البالغين في النطاقات أدناه. والعتبات تسويات إحصائية اختيرت لاقترانها بالخطر الصحي عبر مجتمعات هائلة — فعند المؤشر فوق 25 يبدأ متوسط الخطر الأيضي صعودًا قابلًا للقياس، وفوق 30 يصعد بحدّة. وداخل السمنة يقسّم الأدبي الطبي غالبًا إلى الصنف الأول (30–34.9) والثاني (35–39.9) والثالث (40+) لقرارات العلاج.",
+            en: "The World Health Organization classifies adult BMI into the bands below. The thresholds are statistical compromises chosen for their association with health risk across enormous populations — a BMI above 25 is where average metabolic risk begins climbing measurably, and above 30 where it climbs steeply. Within obesity, the medical literature often subdivides class I (30–34.9), class II (35–39.9), and class III (40+) obesity for treatment decisions.",
+            ar: "تصنف منظمة الصحة العالمية مؤشر البالغين في النطاقات أدناه. والعتبات تسويات إحصائية اختيرت لاقترانها بالخطر الصحي عبر مجتمعات هائلة — فعند المؤشر فوق 25 يبدأ متوسط الخطر الأيضي صعودًا قابلًا للقياس، وفوق 30 يصعد بحدّة. وداخل السمنة تقسّم الأدبيات الطبية السمنةَ غالبًا إلى الصنف الأول (30–34.9) والثاني (35–39.9) والثالث (40+) لقرارات العلاج.",
           },
         },
         {
@@ -159,14 +159,14 @@ export const BMI_CALCULATOR_CONTENT: ToolReference = {
           kind: "p",
           text: {
             en: "Other known distortions: BMI overestimates fatness in tall people slightly and underestimates it in short people (an artifact of the height-squared scaling); it is invalid in pregnancy, after bariatric surgery in the first year, in limb amputation without adjustment, and in childhood (use BMI-for-age percentiles); and it says nothing about fat distribution, which matters — visceral fat around the organs carries more metabolic risk than the same fat volume under the skin. This is why the waist-based companions exist.",
-            ar: "تشوهات أخرى معروفة: يبالغ المؤشر قليلًا في تقدير بدانة طوال القامص ويقللها عند قصارهم (أثر قياس مربع الطول)؛ وهو غير صالح في الحمل، وفي السنة الأولى بعد جراحات السمنة، وبعد بتر الأطراف دون تعديل، وفي الطفولة (استخدم منحنيات المئين حسب العمر)؛ ولا يقول شيئًا عن توزيع الدهون، وهو مهم — فالدهون الحشوية حول الأعضاء تحمل خطرًا أيضيًا أكبر من الحجم نفسه تحت الجلد. لهذا وُجدت رفيقات الخصر.",
+            ar: "تشوهات أخرى معروفة: يبالغ المؤشر قليلًا في تقدير بدانة طوال القامة ويقللها عند قصارهم (أثر قياس مربع الطول)؛ وهو غير صالح في الحمل، وفي السنة الأولى بعد جراحات السمنة، وبعد بتر الأطراف دون تعديل، وفي الطفولة (استخدم منحنيات المئين حسب العمر)؛ ولا يقول شيئًا عن توزيع الدهون، وهو مهم — فالدهون الحشوية حول الأعضاء تحمل خطرًا أيضيًا أكبر من الحجم نفسه تحت الجلد. لهذا وُجدت رفيقات الخصر.",
           },
         },
         {
           kind: "p",
           text: {
-            en: "The single best complement costs nothing: waist circumference, measured at the midpoint between the bottom rib and the top of the hip bone, relaxed, at the end of a normal exhale. The consensus risk thresholds sit near 94 cm for men and 80 cm for women (with substantially increased risk above 102 and 88). An even simpler screen growing in research use is waist-to-height ratio: keep your waist less than half your height. BMI plus waist-together catch most of what either misses alone; this site's body fat calculator adds the composition dimension on top.",
-            ar: "أفضل مكمّل وحده بلا كلفة: محيط الخصر، مقاسًا عند منتصف المسافة بين أسفل الضلع وأعلى عظم الورك، مسترخيًا، في نهاية زفير طبيعي. عتبات الخطر التوافقية تقبع قرب 94 سم للذكور و80 سم للإناث (مع خطر متزايد جوهريًا فوق 102 و88). وشاشة أبسط تنمو في الاستخدام البحثي: نسبة الخصر إلى الطول — حافظ على خصرك أقل من نصف طولك. المؤشر والخصر معًا يلتقطان معظم ما يفوّته كلٌّ وحده؛ وحاسبة دهون الجسم في هذا الموقع تضيف بعد التكوين فوقهما.",
+            en: "The single best complement costs nothing: waist circumference, measured at the midpoint between the bottom rib and the top of the hip bone, relaxed, at the end of a normal exhale. The consensus risk thresholds sit near 94 cm for men and 80 cm for women (with substantially increased risk above 102 and 88). An even simpler screen growing in research use is waist-to-height ratio: keep your waist less than half your height. BMI and waist together catch most of what either misses alone; this site's body fat calculator adds the composition dimension on top.",
+            ar: "أفضل مكمّل وحده بلا كلفة: محيط الخصر، مقاسًا عند منتصف المسافة بين أسفل الضلع وأعلى عظم الورك، مسترخيًا، في نهاية زفير طبيعي. عتبات الخطر التوافقية تقبع قرب 94 سم للذكور و80 سم للإناث (مع خطر متزايد جوهريًا فوق 102 و88). وأداة فرز أبسط آخذة في الانتشار في الاستخدام البحثي: نسبة الخصر إلى الطول — حافظ على خصرك أقل من نصف طولك. المؤشر والخصر معًا يلتقطان معظم ما يفوّته كلٌّ وحده؛ وحاسبة دهون الجسم في هذا الموقع تضيف بعد التكوين فوقهما.",
           },
         },
       ],
@@ -261,7 +261,7 @@ export const BMI_CALCULATOR_CONTENT: ToolReference = {
           kind: "p",
           text: {
             en: "Three reading notes for the table. First, the band is wide on purpose — a 1.75 m person has a 19.6-kilogram-wide healthy corridor, and where you settle inside it is a matter of where you feel strongest and most energetic, not a number to converge on. Second, muscular trainees may legitimately sit above the maximum while being metabolically healthy — the table inherits BMI's blind spot, and the body fat calculator covers what it cannot see. Third, the boundaries are statistical conveniences as explained in the categories section: approach them as a map, not as walls, and let trend, waist, and bloodwork vote alongside the number.",
-            ar: "ثلاث ملاحظات قراءة للجدول. أولًا، الحزام عريض بقصد — فشخص بطول 1.75 متر لديه ممر صحي عرضه 19.6 كيلوغرامًا، وأين تستقر داخله مسألةُ أين تشعر بالقوة والطاقة أكثر، لا رقمٌ يجب التقارب عليه. ثانيًا، قد يجلس المتدربون العضليون فوق الحد الأقصى وهم صحيحون أيضيًا مشروعًا — فالجدول يرث نقطة عمى المؤشر، وحاسبة دهون الجسم تغطي ما لا يراه. ثالثًا، الحدود تسويات إحصائية كما فُسر في قسم الفئات: قرّبها كخريطة لا كجدران، ودع الاتجاه والخصر والتحاليل تصوّت مع الرقم.",
+            ar: "ثلاث ملاحظات قراءة للجدول. أولًا، الحزام عريض بقصد — فشخص بطول 1.75 متر لديه ممر صحي عرضه 19.6 كيلوغرامًا، وأين تستقر داخله مسألةُ أين تشعر بالقوة والطاقة أكثر، لا رقمٌ يجب التقارب عليه. ثانيًا، قد يتجاوز المتدربون العضليون الحد الأقصى بشكل مشروع مع تمتعهم بصحة أيضية — فالجدول يرث نقطة عمى المؤشر، وحاسبة دهون الجسم تغطي ما لا يراه. ثالثًا، الحدود تسويات إحصائية كما فُسر في قسم الفئات: قرّبها كخريطة لا كجدران، ودع الاتجاه والخصر والتحاليل تصوّت مع الرقم.",
           },
         },
       ],
@@ -308,7 +308,7 @@ export const BMI_CALCULATOR_CONTENT: ToolReference = {
       },
       a: {
         en: "If you resistance-train seriously, quite possibly not. BMI cannot distinguish 85 kg of mostly muscle from 85 kg of mostly fat at the same height. The tie-breakers are waist circumference (near or above 94 cm for men, 80 cm for women suggests the weight is not all muscle), body fat percentage from the tape method, and basic bloodwork. If those are clean, treat the BMI label as a known artifact of muscularity rather than a health verdict.",
-        ar: "إن كنت تتدرب بالمقاومة بجدية، فالأرجح لا. فالمؤشر لا يميز 85 كجم معظمها عضلة عن 85 كجم معظمها دهون عند الطول نفسه. والحكّات الفاصلة: محيط الخصر (قرب 94 سم للذكور أو فوقها، و80 للإناث يوحي بأن الوزن ليس كله عضلًا)، ونسبة دهون الجسم بطريقة الشريط، وتحاليل أساسية. فإن كانت نظيفة فتعامل مع وسم المؤشر كأثر معروف للعضلية لا كحكم صحي.",
+        ar: "إن كنت تتدرب بالمقاومة بجدية، فالأرجح لا. فالمؤشر لا يميز 85 كجم معظمها عضلة عن 85 كجم معظمها دهون عند الطول نفسه. والمرجِّحات الفاصلة: محيط الخصر (قرب 94 سم للذكور أو فوقها، و80 للإناث يوحي بأن الوزن ليس كله عضلًا)، ونسبة دهون الجسم بطريقة الشريط، وتحاليل أساسية. فإن كانت نظيفة فتعامل مع وسم المؤشر كأثر معروف للعضلية لا كحكم صحي.",
       },
     },
     {
@@ -318,7 +318,7 @@ export const BMI_CALCULATOR_CONTENT: ToolReference = {
       },
       a: {
         en: "One BMI point equals height-squared in kilograms: at 1.70 m that is about 2.9 kg; at 1.80 m about 3.24 kg. Notice the unfairness physics hands tall people — they must move more kilograms per point. The healthy-band math follows directly: to fall from 29 to 24.9 at 1.75 m you need to lose about (29 − 24.9) × 3.06 ≈ 12.5 kg.",
-        ar: "النقطة الواحدة تعادل مربع طولك بالكيلوغرامات: عند 1.70 متر نحو 2.9 كجم؛ وعند 1.80 متر نحو 3.24 كجم. ولاحظ الظلم الذي تفرضه الفيزياء على طوال القامص — عليهم تحريك كيلوغرامات أكثر لكل نقطة. وحساب حزام الصحة يتبع مباشرة: للهبوط من 29 إلى 24.9 عند 1.75 متر تحتاج خسارة نحو (29 − 24.9) × 3.06 ≈ 12.5 كجم.",
+        ar: "النقطة الواحدة تعادل مربع طولك بالكيلوغرامات: عند 1.70 متر نحو 2.9 كجم؛ وعند 1.80 متر نحو 3.24 كجم. ولاحظ الظلم الذي تفرضه الفيزياء على طوال القامة — عليهم تحريك كيلوغرامات أكثر لكل نقطة. وحساب حزام الصحة يتبع مباشرة: للهبوط من 29 إلى 24.9 عند 1.75 متر تحتاج خسارة نحو (29 − 24.9) × 3.06 ≈ 12.5 كجم.",
       },
     },
     // PRIORITY-PAGES Implementation (2026-10-19, audit §A-4 + §3.3): the
@@ -355,7 +355,7 @@ export const BMI_CALCULATOR_CONTENT: ToolReference = {
       },
       a: {
         en: "Three usual suspects: imperial-to-metric conversion rounding, category boundaries that differ by authority (some countries use 23 for Asian populations), or — most commonly — a site using a different rounding of your inputs. The formula itself is universal; enter identical units and the result is identical everywhere. What legitimately varies is the interpretation bands, not the arithmetic.",
-        ar: "ثلاثة مشتبهون معتادون: تقريب تحويل الوحدات، وحدود فئات تختلف باختلاف الجهة (بعض الدول تستخدم 23 لمجتمعات آسيوية)، أو — الأشيع — موقع يقرب مدخلاتك بشكل مختلف. الصيغة نفسها كونية؛ أدخل وحدات متطابقة تحصل على النتيجة نفسها في كل مكان. ما يختلف بشكل مشروع هو نطاقات التفسير لا الحساب.",
+        ar: "ثلاثة مشتبه بهم معتادين: تقريب تحويل الوحدات، وحدود فئات تختلف باختلاف الجهة (بعض الدول تستخدم 23 لمجتمعات آسيوية)، أو — الأشيع — موقع يقرب مدخلاتك بشكل مختلف. الصيغة نفسها كونية؛ أدخل وحدات متطابقة تحصل على النتيجة نفسها في كل مكان. ما يختلف بشكل مشروع هو نطاقات التفسير لا الحساب.",
       },
     },
     {
@@ -435,7 +435,7 @@ export const BMI_CALCULATOR_CONTENT: ToolReference = {
       },
       a: {
         en: "The bands are identical for both sexes — 18.5–24.9 is the healthy band for everyone — but the bodies behind the same number differ: at an identical BMI, women on average carry a higher body fat percentage and a more subcutaneous (hip-thigh) distribution, while men carry more visceral (abdominal) fat, which is the riskier depot. That is why the waist thresholds differ by sex (94/102 cm for men, 80/88 cm for women) even though the BMI bands do not. Use the same scale, read it with the sex-specific waist companion.",
-        ar: "الأحزمة متطابقة للجنسين — 18.5–24.9 حزام الصحة للجميع — لكن الأجساد خلف الرقم نفسه تختلف: فبنفس المؤشر تحمل النساء في المتوسط نسبة دهون أعلى وتوزيعًا أكثر تحت الجلد (الورك والفخذ)، بينما يحمل الرجال دهونًا حشوية (بطنية) أكثر وهي المستودع الأخطر. لهذا تختلف عتبات الخصر بين الجنسين (94/102 سم للذكور، و80/88 للإناث) مع أن أحزمة المؤشر لا تختلف. استعمل السلم نفسه، واقرأه برفيق الخصر المختص بالجنس.",
+        ar: "الأحزمة متطابقة للجنسين — 18.5–24.9 حزام الصحة للجميع — لكن الأجساد خلف الرقم نفسه تختلف: فبالمؤشر نفسه تحمل النساء في المتوسط نسبة دهون أعلى وتوزيعًا أكثر تحت الجلد (الورك والفخذ)، بينما يحمل الرجال دهونًا حشوية (بطنية) أكثر وهي المستودع الأخطر. لهذا تختلف عتبات الخصر بين الجنسين (94/102 سم للذكور، و80/88 للإناث) مع أن أحزمة المؤشر لا تختلف. استعمل السلم نفسه، واقرأه برفيق الخصر المختص بالجنس.",
       },
     },
   ],

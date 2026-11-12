@@ -127,7 +127,7 @@ export const STATIC_PAGE_DEFAULTS: Record<
           heading: "Founder: Ahmed Zake",
           paragraphs: [
             "Ahmed Zake is the founder of Alkemos and a fitness and nutrition coach with about twenty years of training experience, around ten of them coaching clients online. He built the platform to close the gap between generic fitness apps and expensive 1-on-1 coaching — combining computed precision with real accountability.",
-            "Ahmed personally oversees the published content: from the {exercises}-exercise library, to the {foods}-food nutrition database, to the blog — every piece goes through his review for accuracy before publication. That is how the platform works: AI capabilities, human oversight, evidence-aware content.",
+            "Ahmed personally oversees the published content: from the {exercises}-exercise library, to the {foods}-food nutrition database, to the blog — every piece goes through his review for accuracy before publication. That is how the platform works: AI capabilities, human oversight, evidence-based content.",
           ],
         },
         {
