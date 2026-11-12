@@ -40,6 +40,8 @@ vi.mock("@/lib/blog-queue", () => ({
   markQueueItemFailed: vi.fn(async () => null),
   findRecentPairRows: vi.fn(async () => []),
   countAutomatedPublishedToday: vi.fn(async () => 0),
+  countAutomatedPublishedThisWeek: vi.fn(async () => 0),
+  BLOG_WEEKLY_QUOTA_PER_LANG: 2,
   bundleMarksCoachRequest: vi.fn(() => false),
   // R5 (Execution-Path Audit §10 Phase R5): the repair-directive stamp
   // the P5 route now calls on every deterministic gate failure.

@@ -29,10 +29,10 @@ export const maxDuration = 60;
  * language (topic + shared angle only — never translation).
  *
  * P0 PROTOCOL (in order), with a FULL degradation ladder:
- *   1. ADOPT (≤48h) — my language already has a researched pair row with
+ *   1. ADOPT (≤144h) — my language already has a researched pair row with
  *      a valid sealed brief (created by the twin's earlier window) →
  *      return it; nothing is inserted.
- *   2. JOIN (≤30h) — the OTHER language's pair row exists but MY side
+ *   2. JOIN (≤144h) — the OTHER language's pair row exists but MY side
  *      never materialized (my twin insert failed best-effort) → research
  *      MY language + insert MY row only, reusing the twin's pair_id +
  *      sharedBrief.
@@ -150,7 +150,7 @@ function asResearch(raw: unknown): LanguageResearch | null {
  * PHASE 5-E / stage هـ (Phase-4 §10-هـ-1 / Phase-1 §8-6(أ) — «جعل مسار
  * الاستئناف يقرن (JOIN عند RESUME)»): the RESUME-PAIR attempt for an
  * UNPAIRED resumable row. Finds the other language's unpaired researched
- * row (≤48h), runs the CONSTRAINED pairing call (each side's candidate
+ * row (≤144h), runs the CONSTRAINED pairing call (each side's candidate
  * set is its OWN row's topic — the anti-blind law holds by construction,
  * the call only picks the shared angle), then attaches pair_id + merged
  * brief to BOTH rows. Returns the pairId or null on ANY failure (the
@@ -363,7 +363,7 @@ export async function GET(request: NextRequest) {
       const resumable = await findResumableRow(lang);
       if (resumable) {
         console.log(
-          `[blog/p0-research] RESUME: my ${lang} row ${resumable.id} is "${resumable.status}" (≤48h, unpublished) — continuing it instead of creating a new row (completed stages skip idempotently)`,
+          `[blog/p0-research] RESUME: my ${lang} row ${resumable.id} is "${resumable.status}" (≤144h, unpublished) — continuing it instead of creating a new row (completed stages skip idempotently)`,
         );
         // PHASE 5-E / stage هـ (§10-هـ-1 — «جعل RESUME يقرن»): an UNPAIRED
         // resumable row now gets its own pairing attempt BEFORE the resume
@@ -387,7 +387,7 @@ export async function GET(request: NextRequest) {
       console.warn(`[blog/p0-research] resume degraded: ${e instanceof Error ? e.message : e}`);
     }
 
-    // ── 1) ADOPT (≤48h) — my side was pre-created by the twin's window.
+    // ── 1) ADOPT (≤144h) — my side was pre-created by the twin's window.
     try {
       const candidate = await findAdoptablePairRow(lang);
       if (candidate && isAdoptablePairRow(candidate, lang)) {
@@ -412,7 +412,7 @@ export async function GET(request: NextRequest) {
       console.warn(`[blog/p0-research] adopt degraded: ${e instanceof Error ? e.message : e}`);
     }
 
-    // ── 2) JOIN (≤30h) — the twin's row exists but MY side never landed.
+    // ── 2) JOIN (≤144h) — the twin's row exists but MY side never landed.
     // (Happens only when CREATE's best-effort twin insert failed. JOIN is
     // executed by the TWIN's own P0 run: it finds MY row as "the other
     // language's pair row" and creates its own row with the same pair.)
@@ -613,7 +613,7 @@ export async function GET(request: NextRequest) {
 }
 
 /**
- * JOIN lookup: the OTHER language has a researched pair row (≤30h) with a
+ * JOIN lookup: the OTHER language has a researched pair row (≤144h) with a
  * valid sealed brief whose pair has NO my-language sibling → insert MY row
  * only (MY fresh research + the twin's pair_id + sharedBrief). Returns the
  * inserted row, or null when no joinable state exists. Any hard failure

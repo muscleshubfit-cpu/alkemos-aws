@@ -21,16 +21,56 @@
  *   5. Performing UPDATEs with explicit error checking
  *      (see MH-QUEUE-HANDOFF-007 root cause).
  *   6. PHASE 157 pairing lookups: findAdoptablePairRow (my-language
- *      researched twin row, ≤48h) + findRecentPairRows (both sides of a
- *      pair_id for the JOIN path and the P5 handshake). Both DEGRADE to
- *      null/[] on any error — including migration 0076 not applied — so
- *      the pipeline falls back to the exact legacy V3 behavior.
+ *      researched twin row, ≤144h — WEEKLY CADENCE 2026-11-13) +
+ *      findRecentPairRows (both sides of a pair_id for the JOIN path
+ *      and the P5 handshake). Both DEGRADE to null/[] on any error —
+ *      including migration 0076 not applied — so the pipeline falls
+ *      back to the exact legacy V3 behavior.
+ *   7. WEEKLY CADENCE quota attribution (owner order 2026-11-13 «4
+ *      مقالات إجمالًا أسبوعيًا: 2 عربية و2 إنجليزية»): pure ISO-week
+ *      helpers + countAutomatedPublishedThisWeek — the publish-layer
+ *      weekly guard's source of truth (creation-week attribution,
+ *      mirroring the daily counter's creation-day law).
  */
 
 import type { NextRequest } from "next/server";
 import { supabaseAdmin, isSupabaseAdminConfigured } from "@/lib/supabase/admin";
 
 export type PipelineLang = "en" | "ar";
+
+// ═══════════════════════════════════════════════════════════════
+// WEEKLY CADENCE (owner order 2026-11-13) — pure week attribution
+// helpers shared by the P5 weekly quota guard (this module) and the
+// weekly backstop model (blog-pipeline-dispatch.ts). ISO week starts
+// MONDAY 00:00 UTC — matching the scheduled days AR Mon+Thu · EN
+// Tue+Fri, so each week's quota window opens exactly when its first
+// slot's day begins.
+// ═══════════════════════════════════════════════════════════════
+
+/** ISO weekday index: 0 = Monday … 6 = Sunday. */
+export function isoDayOfWeek(d: Date): number {
+  return (d.getUTCDay() + 6) % 7;
+}
+
+/** Monday 00:00 UTC of the given instant's ISO week (pure, UTC-only). */
+export function isoWeekStartUTC(now: Date = new Date()): Date {
+  const dayStart = new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()),
+  );
+  return new Date(dayStart.getTime() - isoDayOfWeek(now) * 86_400_000);
+}
+
+/** WEEKLY CADENCE law (2026-11-13): max automated published articles
+ *  per language per creation-week — 2 Arabic + 2 English = 4 total. */
+export const BLOG_WEEKLY_QUOTA_PER_LANG = 2;
+
+/** RESUME freshness window (WEEKLY CADENCE 2026-11-13): a MY-language
+ *  row stuck mid-pipeline stays resumable for 144h — the worst
+ *  same-language slot gap under the weekly schedule is 96h (Thu 05:00
+ *  → next Mon 05:00 / Fri 22:00 → next Tue 22:00), and failed-slot
+ *  top-ups may extend the wait by a day; evergreen fitness research
+ *  stays valid across it (the 2026-09-29 widening rationale). */
+export const RESUME_MAX_AGE_HOURS = 144;
 
 export type QueueItem = {
   id: string;
@@ -440,29 +480,78 @@ export async function countAutomatedPublishedToday(
   }
 }
 
+/**
+ * How many AUTOMATIC (non-coach) queue rows for this language were
+ * created this ISO WEEK (Monday 00:00 UTC) and reached status
+ * "published" — i.e. the week's automated quota already consumed.
+ * Attribution mirrors the daily counter's law: the row's CREATION week
+ * (the run's week), NOT the publish timestamp — a late-week top-up that
+ * publishes just after midnight Monday still counts against the week it
+ * was dispatched for, so the new week's slots stay clean. Returns null
+ * when the DB is unavailable (caller degrades open — the dispatch layer
+ * still bounds the week to its scheduled slots).
+ *
+ * WEEKLY CADENCE (owner order 2026-11-13): the publish-layer guard
+ * refuses a THIRD automated article per language per week
+ * (BLOG_WEEKLY_QUOTA_PER_LANG) — the hard cap behind «4 مقالات إجمالًا
+ * أسبوعيًا: 2 عربية و2 إنجليزية», holding against retries and manual
+ * workflow re-runs alike (coach-marked rows stay exempt, Phase 162).
+ */
+export async function countAutomatedPublishedThisWeek(
+  lang: "en" | "ar",
+  now: Date = new Date(),
+): Promise<number | null> {
+  if (!isSupabaseAdminConfigured || !supabaseAdmin) return null;
+  try {
+    const weekStart = isoWeekStartUTC(now).toISOString();
+    const { data, error } = await supabaseAdmin
+      .from("blog_generation_queue")
+      .select("article_bundle")
+      .eq("language", lang)
+      .eq("status", "published")
+      .gte("created_at", weekStart)
+      .limit(50);
+    if (error) {
+      console.warn(`[blog-queue] countAutomatedPublishedThisWeek degraded: ${error.message}`);
+      return null;
+    }
+    const rows = (data as Array<{ article_bundle: string | null }> | null) ?? [];
+    return rows.filter((r) => !bundleMarksCoachRequest(r.article_bundle)).length;
+  } catch (e) {
+    console.warn(
+      `[blog-queue] countAutomatedPublishedThisWeek degraded: ${e instanceof Error ? e.message : e}`,
+    );
+    return null;
+  }
+}
+
 // ═══════════════════════════════════════════════════════════════
 // PHASE 157 — pairing lookups (degrade to legacy on ANY failure)
 // ═══════════════════════════════════════════════════════════════
 
 /**
  * RESUME path (BLOG-RECOVERY-3, owner order 2026-10-21 «استكمال دون
- * فقدان العمل»): the newest MY-language row within 48h that sits in a
- * mid-pipeline state — researched/outlined/writing/written/images_done/
- * reviewed — or was honestly marked failed AFTER some stages completed
- * (markQueueItemFailed keeps the row's bundle with every completed
- * artifact). NEVER returns a published row. The P0 route returns this
- * row's id instead of creating a new one; the per-stage idempotency and
- * artifact gates then skip completed work and re-run only from the first
- * incomplete stage — a stuck P5 (e.g. a quality-gate rejection) costs a
- * pure-code re-evaluation, not a full regeneration. Any error → null
- * (the route degrades to the legacy ADOPT/JOIN/CREATE walk).
+ * فقدان العمل»): the newest MY-language row within RESUME_MAX_AGE_HOURS
+ * (144h — WEEKLY CADENCE 2026-11-13, was 48h under the daily schedule)
+ * that sits in a mid-pipeline state — researched/outlined/writing/
+ * written/images_done/reviewed — or was honestly marked failed AFTER
+ * some stages completed (markQueueItemFailed keeps the row's bundle with
+ * every completed artifact). NEVER returns a published row. The P0 route
+ * returns this row's id instead of creating a new one; the per-stage
+ * idempotency and artifact gates then skip completed work and re-run only
+ * from the first incomplete stage — a stuck P5 (e.g. a quality-gate
+ * rejection) costs a pure-code re-evaluation, not a full regeneration.
+ * Any error → null (the route degrades to the legacy ADOPT/JOIN/CREATE
+ * walk).
  */
 export async function findResumableRow(
   lang: "en" | "ar",
 ): Promise<QueueItem | null> {
   if (!isSupabaseAdminConfigured || !supabaseAdmin) return null;
   try {
-    const since = new Date(Date.now() - 48 * 3_600_000).toISOString();
+    const since = new Date(
+      Date.now() - RESUME_MAX_AGE_HOURS * 3_600_000,
+    ).toISOString();
     const { data, error } = await supabaseAdmin
       .from("blog_generation_queue")
       .select("*")
@@ -568,7 +657,8 @@ export async function findRecentPairRows(
  * المتبقية» approving Phase-4 §12-6 — the Phase-1 §8-6(أ)
  * recommendation): the RESUME-PAIR candidate lookup.
  *
- * The freshest OTHER-language row within 48h that (a) sits in the
+ * The freshest OTHER-language row within RESUME_MAX_AGE_HOURS (144h —
+ * WEEKLY CADENCE 2026-11-13, was 48h) that (a) sits in the
  * research-bearing `researched` state, (b) carries NO pair_id (the
  * measured 0/6 root: BOTH languages' pairing calls failed at CREATE),
  * and (c) has a non-empty topic column. Such a row + MY unpaired
@@ -585,7 +675,9 @@ export async function findResumePairCandidate(
 ): Promise<QueueItem | null> {
   if (!isSupabaseAdminConfigured || !supabaseAdmin) return null;
   try {
-    const since = new Date(Date.now() - 48 * 3_600_000).toISOString();
+    const since = new Date(
+      Date.now() - RESUME_MAX_AGE_HOURS * 3_600_000,
+    ).toISOString();
     const { data, error } = await supabaseAdmin
       .from("blog_generation_queue")
       .select("*")

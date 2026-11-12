@@ -126,9 +126,9 @@ describe("runPairingSelection — the retry law (AUDIT §9-2.5)", () => {
 });
 
 describe("the widened windows (resilience for failed language days)", () => {
-  it("carries the widened freshness law (adopt 72h · join 48h · attempts 3 — Phase 5-E/§10-هـ-2 raised 2→3)", () => {
-    expect(ADOPT_MAX_AGE_HOURS).toBe(72);
-    expect(JOIN_MAX_AGE_HOURS).toBe(48);
+  it("carries the widened freshness law (adopt 144h · join 144h · attempts 3 — WEEKLY CADENCE 2026-11-13 widened 72h/48h for the four-day rhythm; attempts 3 per Phase 5-E/§10-هـ-2)", () => {
+    expect(ADOPT_MAX_AGE_HOURS).toBe(144);
+    expect(JOIN_MAX_AGE_HOURS).toBe(144);
     expect(PAIRING_MAX_ATTEMPTS).toBe(3);
   });
 });

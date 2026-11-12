@@ -19,6 +19,8 @@ import {
   markQueueItemFailed,
   findRecentPairRows,
   countAutomatedPublishedToday,
+  countAutomatedPublishedThisWeek,
+  BLOG_WEEKLY_QUOTA_PER_LANG,
   bundleMarksCoachRequest,
   stampQueueRowRepairDirective,
   type QueueItem,
@@ -215,6 +217,23 @@ export async function GET(request: NextRequest) {
           `[blog/p5-publish] daily quota already met for ${lang} (${publishedAutomated} automated row(s) created today published) — skipping ${qi.id}`,
         );
         return quotaSkip(qi.id, lang, publishedAutomated);
+      }
+      // WEEKLY CADENCE (owner order 2026-11-13 «4 مقالات إجمالًا أسبوعيًا:
+      // 2 عربية و2 إنجليزية»): automated rows also refuse to publish a
+      // THIRD article of the same ISO week (Monday 00:00 UTC) for their
+      // language — the hard cap that holds against retries, manual
+      // workflow re-runs AND backstop dispatches alike (a scheduled week
+      // has exactly 2 slots/language, so a healthy week never reaches
+      // this guard; it only bites off-schedule paths). Attribution =
+      // queue-row CREATION week, mirroring the daily guard's law. Coach
+      // rows are exempt (Phase 162). DB unavailable → degrades OPEN (the
+      // dispatch layer still bounds the week to its scheduled slots).
+      const publishedThisWeek = await countAutomatedPublishedThisWeek(lang);
+      if (publishedThisWeek !== null && publishedThisWeek >= BLOG_WEEKLY_QUOTA_PER_LANG) {
+        console.warn(
+          `[blog/p5-publish] weekly quota already met for ${lang} (${publishedThisWeek} automated row(s) created this week published) — skipping ${qi.id}`,
+        );
+        return quotaSkipWeekly(qi.id, lang, publishedThisWeek);
       }
     }
 
@@ -639,5 +658,31 @@ async function quotaSkip(queueId: string, lang: "en" | "ar", alreadyPublished: n
     skipped: true,
     reason: "daily-quota-met",
     alreadyPublished,
+  });
+}
+
+/** WEEKLY CADENCE (owner order 2026-11-13): automated row refused — the
+ *  ISO week's automated quota (2 per language) already consumed. Same
+ *  honest-skip shape as the daily guard (Phase 171): the row is marked
+ *  skipped so the queue stays inspectable; a coach-triggered run (exempt
+ *  by law) or the next week's slots are the legitimate ways forward. */
+async function quotaSkipWeekly(
+  queueId: string,
+  lang: "en" | "ar",
+  alreadyPublishedThisWeek: number,
+) {
+  const err = await updateQueueItem(queueId, {
+    status: "skipped_weekly_quota",
+    error_message: `p5: weekly-quota-${lang} — ${alreadyPublishedThisWeek} automated article(s) created this week already published (WEEKLY CADENCE law 2026-11-13: max 2/language/week)`,
+  });
+  if (err) console.error(`[blog/p5-publish] Failed to mark skipped_weekly_quota: ${err}`);
+  return NextResponse.json({
+    ok: true,
+    step: "p5",
+    queueId,
+    lang,
+    skipped: true,
+    reason: "weekly-quota-met",
+    alreadyPublishedThisWeek,
   });
 }

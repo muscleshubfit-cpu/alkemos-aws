@@ -21,9 +21,28 @@ name: Auto-publish EN article (pipeline v3 — language-split)
 #   former EN windows the EVENING one is kept: max spread from the
 #   AR morning slot (05:00 UTC vs 22:00 UTC = 17h apart).
 #
-# ENGLISH DAILY SLOT:
+# WEEKLY CADENCE (owner order 2026-11-13 «خفض النشر … 4 مقالات
+#   إجمالًا أسبوعيًا فقط»): the daily law above is REDUCED to TWO EN
+#   articles per week — Tuesday + Friday, still at the SAME 22:00 UTC
+#   slot (18:00 US Eastern — the Phase-119 time and timezone anchors
+#   are untouched; no documented technical necessity to change them).
+#   The week's law: 2 AR + 2 EN = 4 articles total on FOUR distinct
+#   days (AR Mon+Thu · EN Tue+Fri), never more than one article per
+#   day. Pair completion keeps the current direction — Monday's AR run
+#   CREATEs pair 1 (this EN twin row included); THIS Tuesday run
+#   ADOPTs/resumes that twin (~41h later, inside the 144h pairing
+#   windows widened for the weekly cadence) and the P5 handshake fills
+#   linked_post_id BOTH ways → hreflang + LanguageToggle light up.
+#   Friday's run does the same for Thursday's pair 2. The p5-publish
+#   weekly guard (skipped_weekly_quota) enforces the 2/language/week
+#   cap against retries, manual re-runs and backstop dispatches alike,
+#   and the 23:40 UTC dispatch-pipelines backstop is week-aware (it
+#   only tops up a genuinely missed slot, within the week's cap).
+#
+# ENGLISH WEEKLY SLOTS:
 #   cron (UTC)     US Eastern (EDT, UTC-4)   Rationale
-#   22:00    →     18:00 ET                  after-work / evening peak
+#   Tue 22:00 →   18:00 ET                  after-work / evening peak
+#   Fri 22:00 →   18:00 ET                  after-work / evening peak
 #   NOTE: when the US drops DST in winter (EST, UTC-5), the local time
 #   shifts one hour EARLIER (17:00) — still the evening peak.
 #
@@ -34,7 +53,11 @@ name: Auto-publish EN article (pipeline v3 — language-split)
 
 on:
   schedule:
-    - cron: "0 22 * * *"  # 18:00 ET (EDT) — the single daily EN slot (Phase 119)
+    # WEEKLY CADENCE (owner order 2026-11-13): Tuesday + Friday 22:00
+    # UTC — the two weekly EN slots (Phase-119 evening time untouched;
+    # was `0 22 * * *` daily). Kept in sync with EN_WEEKLY_SLOTS in
+    # src/lib/blog-pipeline-dispatch.ts (pinned by blog-weekly-cadence.test.ts).
+    - cron: "0 22 * * 2,5"  # Tue+Fri 18:00 ET (EDT) — the two weekly EN slots
   workflow_dispatch:
     inputs:
       topic:

@@ -1,7 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyCronAuth } from "@/lib/cron-auth";
-import { computeTopUp } from "@/lib/blog-pipeline-dispatch";
+import {
+  computeTopUp,
+  computeWeeklyTopUp,
+  AR_WEEKLY_SLOTS,
+  EN_WEEKLY_SLOTS,
+  type WeeklySlot,
+} from "@/lib/blog-pipeline-dispatch";
 import { supabaseAdmin, isSupabaseAdminConfigured } from "@/lib/supabase/admin";
+import { isoWeekStartUTC } from "@/lib/blog-queue";
 
 export const maxDuration = 60;
 
@@ -14,22 +21,34 @@ export const maxDuration = 60;
  * did NOT restore firing within 90 min across 9+ cron slots. This endpoint
  * makes blog production independent of GitHub's scheduler:
  *
- *   Vercel cron (or an external cron service) hits this endpoint and it
- *   TOPS UP each language pipeline to its daily quota (Phase 119 —
- *   owner directive 2026-09-04: exactly ONE article per language per
- *   day, at different geography-anchored times):
- *     EN slot 22 UTC (18:00 US Eastern) · AR slot 05 UTC (08:00 Cairo, EEST)
- *   A workflow is dispatched only when the slot is genuinely UNserved:
- *   coverage = max(non-failed runs today, posts published today) — any
- *   event counts, because every run publishes exactly one article.
+ * WEEKLY CADENCE (owner order 2026-11-13 «4 مقالات إجمالًا أسبوعيًا فقط"):
+ *   the blog language pipelines run TWO slots per language per WEEK on
+ *   four distinct days (AR Mon+Thu 05:00 UTC · EN Tue+Fri 22:00 UTC —
+ *   Phase-119 geography-anchored times untouched). The backstop keeps
+ *   firing daily at 23:40 UTC but now judges each language over the ISO
+ *   WEEK (Monday 00:00 UTC): a slot is expected only on its scheduled
+ *   weekday after the 90-minute grace, coverage = max(non-failed runs
+ *   this week, posts published this week), and at most ONE top-up per
+ *   language per fire (a still-missing slot waits for the next daily
+ *   fire — the 1-automated-article/day/lang publish guard would refuse
+ *   a same-day second publish anyway). A missed slot in EITHER language
+ *   is therefore topped up on the same day or a later day of the SAME
+ *   week, and the week's total can never exceed its two scheduled
+ *   slots per language (the p5-publish weekly guard enforces the hard
+ *   cap against every path — retries, manual runs and backstops).
+ *   The daily fire time (23:40 UTC, Vercel cron + /etc/cron.d/alkemos)
+ *   is UNTOUCHED — the weekly logic lives here, so both fire channels
+ *   follow it automatically.
  *
- *   The Vercel cron fires at 23:40 UTC (Phase 171: was 23:00) so the EN
- *   slot's 90-minute grace window (22:00 + 90 = 23:30) has FULLY elapsed
- *   before the backstop looks — GitHub's documented 30–90 min scheduler
- *   delay can no longer masquerade as a missed slot (the double-publish
- *   race of 09-04/09-05: backstop dispatch + delayed scheduled run BOTH
- *   published). A missed slot in EITHER language can still be topped up
- *   on the same day.
+ *   The 23:40 fire is after BOTH slot hours' grace windows (AR 05:00+90
+ *   = 06:30 · EN 22:00+90 = 23:30 UTC), so a merely-late scheduled run
+ *   is never mistaken for a missed one (the 09-04/09-05 double-publish
+ *   race law, Phase 171, preserved verbatim).
+ *
+ *   HEALTHY-RECIPES-PLATFORM (2026-11-10): the recipes pair keeps its
+ *   own DAILY backstop law (one pair per day; coverage = max(non-failed
+ *   runs today, published pairs today)) — recipes are NOT part of the
+ *   weekly blog cadence change.
  *
  * It also rescues the every-10-minutes ai-jobs worker when its last run is
  * stale (>15 min) — meaningful when an external cron calls this endpoint
@@ -53,18 +72,24 @@ const AI_JOBS_WORKFLOW = "process-ai-jobs.yml";
 // HEALTHY-RECIPES-PLATFORM (2026-11-10, plan §6.3): the daily pair's
 // backstop — same top-up law (one pair per day; coverage = max(non-failed
 // runs today, published pairs today); a published pair by ANY path covers
-// the slot). Slot 06:30 UTC → hour 6.
+// the slot). Slot 06:30 UTC → hour 6. UNTOUCHED by the 2026-11-13 weekly
+// blog cadence change (recipes are a separate content type).
 const RECIPES_WORKFLOW = "recipe-post.yml";
-// Phase 119 (owner directive 2026-09-04): ONE slot per language per day,
-// different times per audience geography — EN 22:00 UTC (18:00 US Eastern,
-// evening peak) · AR 05:00 UTC (08:00 Cairo EEST, morning window).
-// Matches the GHA cron schedules exactly (the backstop never exceeds quota).
-const EN_SLOTS = [22];
-const AR_SLOTS = [5];
+// WEEKLY CADENCE (owner order 2026-11-13): TWO slots per language per
+// WEEK on four distinct days — AR Mon+Thu 05:00 UTC · EN Tue+Fri 22:00
+// UTC (Phase-119 times untouched; crons `0 5 * * 1,4` / `0 22 * * 2,5`).
+const BLOG_WEEKLY_PLANS: Array<{ workflow: string; slots: readonly WeeklySlot[] }> = [
+  { workflow: EN_WORKFLOW, slots: EN_WEEKLY_SLOTS },
+  { workflow: AR_WORKFLOW, slots: AR_WEEKLY_SLOTS },
+];
 const AI_JOBS_STALE_MS = 15 * 60 * 1000;
 
 type DispatchCheck = {
   workflow: string;
+  /** Counting scope of runs/posts/expected: the ISO week (blog —
+   *  WEEKLY CADENCE 2026-11-13) or the UTC day (recipes). Absent on
+   *  the ai-jobs worker rescue (no quota semantics). */
+  scope?: "iso-week" | "utc-day";
   runsToday: number;
   postsToday: number | null;
   expectedThroughNow: number;
@@ -81,15 +106,19 @@ function ghHeaders(token: string): HeadersInit {
   };
 }
 
-async function runsTodayFor(
+/** Non-failed workflow runs created in [since, now] — a started run
+ *  owns its slot; failure/cancelled runs consumed a slot WITHOUT
+ *  producing an article (2026-08-27 AR 08:35 failure) and must not mask
+ *  a missing publish. WEEKLY CADENCE 2026-11-13: `since` is the ISO
+ *  week start for the blog language pipelines, the UTC day start for
+ *  the recipes pair (unchanged daily law). */
+async function runsSinceFor(
   token: string,
   workflow: string,
+  since: Date,
   utcNow: Date,
 ): Promise<number> {
-  const dayStart = new Date(
-    Date.UTC(utcNow.getUTCFullYear(), utcNow.getUTCMonth(), utcNow.getUTCDate()),
-  ).toISOString();
-  const created = encodeURIComponent(`${dayStart}..${utcNow.toISOString()}`);
+  const created = encodeURIComponent(`${since.toISOString()}..${utcNow.toISOString()}`);
   const res = await fetch(
     `https://api.github.com/repos/${REPO}/actions/workflows/${workflow}/runs?per_page=100&created=${created}`,
     { headers: ghHeaders(token), signal: AbortSignal.timeout(20_000) },
@@ -98,13 +127,17 @@ async function runsTodayFor(
   const data = (await res.json()) as {
     workflow_runs?: Array<{ conclusion?: string | null }>;
   };
-  // Count only runs that published (or are on their way to publishing):
-  // failure/cancelled runs consumed a slot WITHOUT producing an article
-  // (2026-08-27 AR 08:35 failure) and must not mask a missing publish.
   const counted = (data.workflow_runs ?? []).filter(
     (r) => !["failure", "cancelled"].includes(r.conclusion ?? ""),
   );
   return counted.length;
+}
+
+/** The UTC day start of `utcNow` (the recipes daily scope). */
+function utcDayStart(utcNow: Date): Date {
+  return new Date(
+    Date.UTC(utcNow.getUTCFullYear(), utcNow.getUTCMonth(), utcNow.getUTCDate()),
+  );
 }
 
 async function lastRunAt(token: string, workflow: string): Promise<Date | null> {
@@ -119,35 +152,37 @@ async function lastRunAt(token: string, workflow: string): Promise<Date | null> 
 }
 
 /**
- * PHASE 171 (blog-audit proposal ج): ACTUAL posts published today for the
- * language — the daily-quota law's source of truth (a post that landed by
- * ANY path means the slot was served). Read-only SELECT, server-side.
+ * PHASE 171 (blog-audit proposal ج): ACTUAL posts published in [since, now]
+ * for the language — the quota law's source of truth (a post that landed by
+ * ANY path means a slot was served). Read-only SELECT, server-side.
+ * WEEKLY CADENCE 2026-11-13: `since` is the ISO week start for the blog
+ * backstop (published_at basis — the max(runs, posts) coverage never
+ * under-covers); the UTC day start for the recipes pair (unchanged).
  * Returns null when the DB is unavailable (decision falls back to
  * run-counting, the pre-171 behavior) — never throws.
  */
-async function postsTodayFor(
+async function postsSinceFor(
   lang: "en" | "ar",
+  since: Date,
   utcNow: Date,
 ): Promise<number | null> {
   if (!isSupabaseAdminConfigured || !supabaseAdmin) return null;
   try {
-    const dayStart = new Date(
-      Date.UTC(utcNow.getUTCFullYear(), utcNow.getUTCMonth(), utcNow.getUTCDate()),
-    ).toISOString();
     const { count, error } = await supabaseAdmin
       .from("blog_posts")
       .select("id", { count: "exact", head: true })
       .eq("language", lang)
       .eq("is_published", true)
-      .gte("published_at", dayStart);
+      .gte("published_at", since.toISOString())
+      .lte("published_at", utcNow.toISOString());
     if (error) {
-      console.warn(`[dispatch-pipelines] postsToday degraded (${lang}): ${error.message}`);
+      console.warn(`[dispatch-pipelines] postsSince degraded (${lang}): ${error.message}`);
       return null;
     }
     return count ?? 0;
   } catch (e) {
     console.warn(
-      `[dispatch-pipelines] postsToday degraded (${lang}): ${e instanceof Error ? e.message : e}`,
+      `[dispatch-pipelines] postsSince degraded (${lang}): ${e instanceof Error ? e.message : e}`,
     );
     return null;
   }
@@ -155,7 +190,7 @@ async function postsTodayFor(
 
 /**
  * HEALTHY-RECIPES-PLATFORM (2026-11-10): pairs PUBLISHED today (UTC) —
- * the recipes daily-quota law's source of truth (the postsTodayFor
+ * the recipes daily-quota law's source of truth (the postsSinceFor
  * precedent; read-only SELECT, null on DB trouble — never throws).
  */
 async function pairsTodayFor(utcNow: Date): Promise<number | null> {
@@ -216,44 +251,38 @@ export async function GET(request: NextRequest) {
   const utcNow = new Date();
   const results: DispatchCheck[] = [];
 
-  // ── Language pipelines: top up to daily quota ───────────────────────
-  const plans: Array<{ workflow: string; slots: number[] }> = [
-    { workflow: EN_WORKFLOW, slots: EN_SLOTS },
-    { workflow: AR_WORKFLOW, slots: AR_SLOTS },
-    // HEALTHY-RECIPES-PLATFORM: the pair's backstop (plan §6.3).
-    { workflow: RECIPES_WORKFLOW, slots: [6] },
-  ];
-
-  for (const plan of plans) {
+  // ── Blog language pipelines: top up to the WEEKLY quota ─────────────
+  // WEEKLY CADENCE (owner order 2026-11-13): each language has TWO
+  // slots per ISO week (AR Mon+Thu 05:00 UTC · EN Tue+Fri 22:00 UTC).
+  // Coverage is week-scoped: max(non-failed runs since Monday 00:00
+  // UTC, posts published since Monday 00:00 UTC) — a slot missed on
+  // its day can be topped up on a LATER day of the same week (pair
+  // completion first: the resumed twin row is consumed before any new
+  // pair), while at most ONE top-up per language per fire keeps the
+  // 1-automated-article/day/lang publish guard meaningful. The week's
+  // dispatches can never exceed the two scheduled slots per language.
+  const weekStart = isoWeekStartUTC(utcNow);
+  for (const plan of BLOG_WEEKLY_PLANS) {
     try {
-      const isRecipes = plan.workflow === RECIPES_WORKFLOW;
       const lang = plan.workflow === EN_WORKFLOW ? "en" : "ar";
-      const runsToday = await runsTodayFor(token, plan.workflow, utcNow);
-      // Recipes coverage counts PAIRS (language-agnostic by design —
-      // one atomic publish serves both languages).
-      const postsToday = isRecipes
-        ? await pairsTodayFor(utcNow)
-        : await postsTodayFor(lang, utcNow);
-      // PHASE 171: grace-aware expectation + coverage = max(runs, posts).
-      // A slot is "expected" only 90 min after its hour (GitHub's
-      // documented scheduler delay); a post that landed by ANY path
-      // covers the slot even if no run was counted.
-      const decision = computeTopUp({
+      const runsThisWeek = await runsSinceFor(token, plan.workflow, weekStart, utcNow);
+      const postsThisWeek = await postsSinceFor(lang, weekStart, utcNow);
+      const decision = computeWeeklyTopUp({
         slots: plan.slots,
-        utcHour: utcNow.getUTCHours(),
-        utcMinute: utcNow.getUTCMinutes(),
-        runsToday,
-        postsToday,
+        now: utcNow,
+        runsThisWeek,
+        postsThisWeek,
       });
       let dispatched = 0;
-      for (let i = 0; i < decision.missing; i++) {
+      for (let i = 0; i < decision.topUpNow; i++) {
         await dispatchWorkflow(token, plan.workflow);
         dispatched += 1;
       }
       results.push({
         workflow: plan.workflow,
-        runsToday,
-        postsToday,
+        scope: "iso-week",
+        runsToday: runsThisWeek,
+        postsToday: postsThisWeek,
         expectedThroughNow: decision.expected,
         dispatched,
         status: dispatched > 0 ? "dispatched" : "up-to-date",
@@ -263,6 +292,7 @@ export async function GET(request: NextRequest) {
       const msg = e instanceof Error ? e.message : String(e);
       results.push({
         workflow: plan.workflow,
+        scope: "iso-week",
         runsToday: -1,
         postsToday: -1,
         expectedThroughNow: -1,
@@ -271,6 +301,54 @@ export async function GET(request: NextRequest) {
         detail: msg,
       });
     }
+  }
+
+  // ── Recipes pair: top up to the DAILY quota (unchanged law) ────────
+  // HEALTHY-RECIPES-PLATFORM (2026-11-10, plan §6.3): one pair per day;
+  // recipes are a separate content type, untouched by the weekly blog
+  // cadence change. Coverage counts PAIRS (language-agnostic by design
+  // — one atomic publish serves both languages).
+  try {
+    const runsToday = await runsSinceFor(token, RECIPES_WORKFLOW, utcDayStart(utcNow), utcNow);
+    const postsToday = await pairsTodayFor(utcNow);
+    // PHASE 171: grace-aware expectation + coverage = max(runs, posts).
+    // A slot is "expected" only 90 min after its hour (GitHub's
+    // documented scheduler delay); a post that landed by ANY path
+    // covers the slot even if no run was counted.
+    const decision = computeTopUp({
+      slots: [6],
+      utcHour: utcNow.getUTCHours(),
+      utcMinute: utcNow.getUTCMinutes(),
+      runsToday,
+      postsToday,
+    });
+    let dispatched = 0;
+    for (let i = 0; i < decision.missing; i++) {
+      await dispatchWorkflow(token, RECIPES_WORKFLOW);
+      dispatched += 1;
+    }
+    results.push({
+      workflow: RECIPES_WORKFLOW,
+      scope: "utc-day",
+      runsToday,
+      postsToday,
+      expectedThroughNow: decision.expected,
+      dispatched,
+      status: dispatched > 0 ? "dispatched" : "up-to-date",
+      detail: decision.postsCountUnknown ? "posts count unavailable — runs-only decision" : undefined,
+    });
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : String(e);
+    results.push({
+      workflow: RECIPES_WORKFLOW,
+      scope: "utc-day",
+      runsToday: -1,
+      postsToday: -1,
+      expectedThroughNow: -1,
+      dispatched: 0,
+      status: "error",
+      detail: msg,
+    });
   }
 
   // ── ai-jobs worker: rescue when stale ───────────────────────────────

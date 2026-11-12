@@ -21,9 +21,26 @@ name: Auto-publish AR article (pipeline v3 — language-split)
 #   former AR windows the MORNING one is kept: first slot of the
 #   day (morning phone scroll + a full day of indexing ahead).
 #
-# ARABIC DAILY SLOT:
+# WEEKLY CADENCE (owner order 2026-11-13 «خفض النشر … 4 مقالات
+#   إجمالًا أسبوعيًا فقط»): the daily law above is REDUCED to TWO AR
+#   articles per week — Monday + Thursday, still at the SAME 05:00 UTC
+#   slot (08:00 Cairo — the Phase-119 time and timezone anchors are
+#   untouched; no documented technical necessity to change them). The
+#   week's law: 2 AR + 2 EN = 4 articles total on FOUR distinct days,
+#   never more than one article per day. Pair completion keeps the
+#   current direction — the Monday AR run CREATEs pair 1 (its EN twin
+#   row included); Tuesday's EN run adopts it (~41h, inside the 144h
+#   pairing windows widened for the weekly cadence); Thursday AR
+#   creates pair 2 → Friday EN adopts it. The p5-publish weekly guard
+#   (skipped_weekly_quota) enforces the 2/language/week cap against
+#   retries, manual re-runs and backstop dispatches alike, and the
+#   23:40 UTC dispatch-pipelines backstop is week-aware (it only tops
+#   up a genuinely missed slot, within the week's cap).
+#
+# ARABIC WEEKLY SLOTS:
 #   cron (UTC)     Cairo (EEST, UTC+3, current DST)
-#   05:00    →     08:00 صباحًا   (morning phone scroll / commute)
+#   Mon 05:00  →   08:00 صباحًا   (morning phone scroll / commute)
+#   Thu 05:00  →   08:00 صباحًا
 #   NOTE: when Egypt drops DST in winter (+2), the local time shifts
 #   one hour EARLIER (07:00) — still the morning window; adjust then if needed.
 #
@@ -34,7 +51,11 @@ name: Auto-publish AR article (pipeline v3 — language-split)
 
 on:
   schedule:
-    - cron: "0 5 * * *"   # 08:00 Cairo (EEST) — the single daily AR slot (Phase 119)
+    # WEEKLY CADENCE (owner order 2026-11-13): Monday + Thursday 05:00
+    # UTC — the two weekly AR slots (Phase-119 morning time untouched;
+    # was `0 5 * * *` daily). Kept in sync with AR_WEEKLY_SLOTS in
+    # src/lib/blog-pipeline-dispatch.ts (pinned by blog-weekly-cadence.test.ts).
+    - cron: "0 5 * * 1,4"   # Mon+Thu 08:00 Cairo (EEST) — the two weekly AR slots
   workflow_dispatch:
     inputs:
       topic:

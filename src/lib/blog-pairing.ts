@@ -11,11 +11,12 @@
  * meta/keywords/FAQs per language, latin slugs (M15 law), per-language
  * dedup — the V3 per-language quality bar is untouched.
  *
- * PROTOCOL (P0): adopt → join → create, with a FULL degradation ladder.
+ * PROTOCOL (P0): adopt → join → create, with a FULL degradation ladder
+ *   (freshness windows — WEEKLY CADENCE 2026-11-13: adopt/join ≤144h):
  *   • ADOPT   : my language already has a researched row with pair_id +
- *               valid sharedBrief (≤48h) → reuse it (the other language's
+ *               valid sharedBrief (≤144h) → reuse it (the other language's
  *               earlier window created my row for me).
- *   • JOIN    : the OTHER language's pair row exists (≤30h) but my side
+ *   • JOIN    : the OTHER language's pair row exists (≤144h) but my side
  *               was never created (best-effort insert failed) → create MY
  *               row only, copying pair_id + sharedBrief from the twin.
  *   • CREATE  : I'm first → research BOTH languages + a small pairing
@@ -97,10 +98,25 @@ export function isValidAngleId(id: unknown): id is string {
 // twin row unadopted — at 48h it expired forever; at 72h a second-day
 // run still adopts it (evergreen fitness content — a 3-day-old research
 // brief is still fresh; news it is not).
+//
+// WEEKLY CADENCE (owner order 2026-11-13 «خفض النشر … 4 مقالات إجمالًا
+// أسبوعيًا فقط»): the blog moved from one slot/language/DAY to TWO
+// slots/language/WEEK on four distinct days (AR Mon+Thu 05:00 UTC ·
+// EN Tue+Fri 22:00 UTC — Phase-119 times untouched). The measured
+// worst-case twin wait is now 137h (a twin created Thursday 05:00 by
+// the AR CREATE, whose EN adoption slot Friday 22:00 failed entirely,
+// is consumed by the NEXT EN slot — Tuesday 22:00); a same-language
+// RESUME across the Thu→Mon gap waits 96h. Both windows therefore
+// widen to 144h (6 days) — the SAME evergreen-freshness rationale as
+// 2026-09-29 (fitness evergreen, not news), the anti-blind laws
+// UNTOUCHED (every parse/validation/sealed-brief law holds verbatim),
+// and the P0/P5 quality gates are unchanged: an older brief only
+// reuses RESEARCH (topics + angle); the article itself is still
+// written, reviewed and gated from scratch in P1→P5.
 // ─────────────────────────────────────────────────────────────────
 
-export const ADOPT_MAX_AGE_HOURS = 72;
-export const JOIN_MAX_AGE_HOURS = 48;
+export const ADOPT_MAX_AGE_HOURS = 144;
+export const JOIN_MAX_AGE_HOURS = 144;
 
 function ageHours(iso: string | null | undefined, now: Date): number | null {
   if (!iso) return null;
@@ -158,7 +174,7 @@ export function extractSharedBrief(
 
 /**
  * TRUE iff the row is MY language, still `researched`, carries a pair_id,
- * is well-formed, and was created within the freshness window (≤48h by
+ * is well-formed, and was created within the freshness window (≤144h by
  * default — injectable `now`/`maxAgeHours` keep this deterministic in
  * tests). The brief itself is validated separately (extractSharedBrief).
  */

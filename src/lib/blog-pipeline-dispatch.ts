@@ -33,6 +33,12 @@
  * processes it as the fallback, so generation never silently dies.
  */
 
+// WEEKLY CADENCE (2026-11-13): the pure ISO-week attribution helpers
+// (isoWeekStartUTC) live in blog-queue.ts next to the weekly quota
+// counter that shares them — single source, no cycle (queue never
+// imports this module).
+import { isoWeekStartUTC } from "./blog-queue";
+
 const REPO = "muscleshubfit-cpu/alkemos-aws"; // OPS-TRANSITION 2026-10-10: coach pipeline dispatch targets the new repo
 const DISPATCH_TIMEOUT_MS = 8_000;
 
@@ -129,6 +135,121 @@ export function computeTopUp(opts: {
 }
 
 export type PipelineDispatchLang = "ar" | "en";
+
+// ═════════════════════════════════════════════════════════════════
+// WEEKLY CADENCE (owner order 2026-11-13 «خفض النشر من مقالين يوميًا
+// إلى 4 مقالات إجمالًا أسبوعيًا فقط»): the blog pipelines moved from
+// ONE slot per language PER DAY (Phase 119) to TWO slots per language
+// PER WEEK on FOUR distinct days — no day carries more than one
+// article:
+//
+//   AR   Monday + Thursday  05:00 UTC  (08:00 Cairo — morning window)
+//   EN   Tuesday + Friday   22:00 UTC  (18:00 US Eastern — evening)
+//
+// The Phase-119 geography-anchored TIMES and timezone anchors are
+// UNTOUCHED (owner law: no publishing-time change without a documented
+// technical necessity) — only the DAYS were reduced. Pair completion
+// keeps today's direction: the AR slot CREATEs the pair and its EN
+// twin row; the EN slot on the NEXT day ADOPTs/resumes the twin
+// (41h apart, well inside the 144h pairing windows widened for the
+// weekly cadence in blog-pairing.ts).
+//
+// The backstop model below follows the same weekly law: a language's
+// slot is "expected" only on its scheduled weekday after the 90-minute
+// grace, and coverage is counted over the ISO WEEK (Monday 00:00 UTC)
+// as max(non-failed runs this week, posts published this week) — so a
+// genuinely missed slot can be topped up on a LATER day of the SAME
+// week (pair-completion first: the twin row is consumed before a new
+// pair is created), while the week's dispatches can never exceed the
+// two scheduled slots (expected ≤ 2) and the publish-layer weekly
+// guard (p5-publish + countAutomatedPublishedThisWeek) refuses any
+// THIRD automated article per language per creation-week regardless
+// of path — retries, manual re-runs and backstop dispatches alike.
+// ═════════════════════════════════════════════════════════════════
+
+/** One weekly publishing slot. `day`: 0 = Monday … 6 = Sunday (ISO). */
+export type WeeklySlot = { day: number; hour: number };
+
+/** AR weekly slots — Mon + Thu 05:00 UTC (cron `0 5 * * 1,4`). */
+export const AR_WEEKLY_SLOTS: readonly WeeklySlot[] = [
+  { day: 0, hour: 5 },
+  { day: 3, hour: 5 },
+];
+
+/** EN weekly slots — Tue + Fri 22:00 UTC (cron `0 22 * * 2,5`). */
+export const EN_WEEKLY_SLOTS: readonly WeeklySlot[] = [
+  { day: 1, hour: 22 },
+  { day: 4, hour: 22 },
+];
+
+/**
+ * How many of the language's weekly slots count as "expected" through
+ * the given instant: a slot enters the expectation only AFTER its
+ * slot-time + grace window elapsed (GitHub's documented worst-case
+ * scheduler delay — the Phase-171 grace law, now applied per weekday
+ * inside the ISO week that starts Monday 00:00 UTC). Pure: injected
+ * clock, unit-testable.
+ */
+export function expectedWeeklySlotsThrough(
+  slots: readonly WeeklySlot[],
+  now: Date,
+  graceMinutes: number = SLOT_GRACE_MINUTES,
+): number {
+  const weekStart = isoWeekStartUTC(now).getTime();
+  const nowMs = now.getTime();
+  let expected = 0;
+  for (const slot of slots) {
+    const slotAt = weekStart + slot.day * 86_400_000 + slot.hour * 3_600_000;
+    if (nowMs - slotAt >= graceMinutes * 60_000) expected += 1;
+  }
+  return expected;
+}
+
+export type WeeklyTopUpDecision = TopUpDecision & {
+  /** How many top-up dispatches this backstop fire may issue (≤1 — see
+   *  computeWeeklyTopUp; a second missed slot waits for the next fire). */
+  topUpNow: number;
+};
+
+/**
+ * The weekly backstop's dispatch decision (pure). Coverage semantics
+ * mirror the Phase-171 daily law, week-scoped:
+ *   - runsThisWeek: non-failed workflow runs created since Monday
+ *     00:00 UTC (IN-FLIGHT runs count — a started run owns its slot).
+ *   - postsThisWeek: blog_posts published since Monday 00:00 UTC for
+ *     the language (nullable — DB unavailable → run-counting fallback).
+ * `topUpNow` is clamped to ONE dispatch per language per backstop fire:
+ * the publish-layer 1-automated-article/day/language guard would
+ * refuse a same-day second publish anyway, so a second simultaneous
+ * dispatch would only burn a full generation run to end
+ * skipped_daily_quota. A still-missing slot is served by the next
+ * daily 23:40 UTC fire.
+ */
+export function computeWeeklyTopUp(opts: {
+  slots: readonly WeeklySlot[];
+  now: Date;
+  runsThisWeek: number;
+  postsThisWeek: number | null;
+  graceMinutes?: number;
+}): WeeklyTopUpDecision {
+  const expected = expectedWeeklySlotsThrough(
+    opts.slots,
+    opts.now,
+    opts.graceMinutes,
+  );
+  const covered = Math.max(
+    opts.runsThisWeek,
+    opts.postsThisWeek ?? opts.runsThisWeek,
+  );
+  const missing = Math.max(0, expected - covered);
+  return {
+    expected,
+    covered,
+    missing,
+    postsCountUnknown: opts.postsThisWeek === null,
+    topUpNow: Math.min(missing, 1),
+  };
+}
 
 /**
  * Sanitize a raw coach topic into an override-usable string (or null):

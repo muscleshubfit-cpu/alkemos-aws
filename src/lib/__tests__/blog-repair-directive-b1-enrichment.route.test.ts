@@ -49,6 +49,8 @@ vi.mock("@/lib/blog-queue", () => ({
   markQueueItemFailed: vi.fn(async () => null),
   findRecentPairRows: vi.fn(async () => []),
   countAutomatedPublishedToday: vi.fn(async () => 0),
+  countAutomatedPublishedThisWeek: vi.fn(async () => 0),
+  BLOG_WEEKLY_QUOTA_PER_LANG: 2,
   bundleMarksCoachRequest: vi.fn(() => false),
   stampQueueRowRepairDirective: vi.fn(async () => undefined),
 }));
