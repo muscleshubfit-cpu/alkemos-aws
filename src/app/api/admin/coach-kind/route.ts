@@ -74,7 +74,7 @@ export async function PATCH(request: NextRequest) {
   }
   if ((target as { role: string }).role !== "coach") {
     return NextResponse.json(
-      { error: "bad_request", message: "الحساب المطلوب مش مدرب" },
+      { error: "bad_request", message: "الحساب المطلوب ليس مدربًا" },
       { status: 400 },
     );
   }

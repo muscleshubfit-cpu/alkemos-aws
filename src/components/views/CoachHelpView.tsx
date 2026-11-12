@@ -131,13 +131,13 @@ export function CoachHelpView() {
             </p>
             <p className="mt-1 text-xs font-normal leading-relaxed text-[#6e6e73]">
               {isAr
-                ? "مشاكل المحفظة والتفعيل والإعلانات وصفحتك العامة ولوحة التحكم — كل ده عندنا هنا."
+                ? "مشاكل المحفظة والتفعيل والإعلانات وصفحتك العامة ولوحة التحكم — كلها هنا."
                 : "Wallet, activation, ads, your public page, dashboard issues — all handled here."}
             </p>
           </div>
           <div className="rounded-xl bg-white p-4">
             <p className="text-sm font-semibold">
-              {isAr ? "وأنت بتساعد عملاءك" : "YOU support your own clients"}
+              {isAr ? "وأنت تساعد عملاءك" : "YOU support your own clients"}
             </p>
             <p className="mt-1 text-xs font-normal leading-relaxed text-[#6e6e73]">
               {isAr
@@ -166,7 +166,7 @@ export function CoachHelpView() {
             onChange={(e) => setBody(e.target.value)}
             rows={5}
             maxLength={4000}
-            placeholder={isAr ? "اشرح المشكلة بالتفصيل — وهنرد عليك هنا في نفس الصفحة." : "Describe the issue in detail — we'll reply right here."}
+            placeholder={isAr ? "اشرح المشكلة بالتفصيل — وسنرد عليك هنا في الصفحة نفسها." : "Describe the issue in detail — we'll reply right here."}
             className="w-full rounded-xl border border-[#d2d2d7] bg-white px-4 py-2.5 text-sm outline-none focus:border-[#0071e3]"
           />
           <button
@@ -186,7 +186,7 @@ export function CoachHelpView() {
         </div>
       ) : threads.length === 0 ? (
         <div className="rounded-2xl bg-[#f5f5f7] p-12 text-center text-base font-normal text-[#6e6e73]">
-          {isAr ? "لا توجد رسايل بعد" : "No messages yet"}
+          {isAr ? "لا توجد رسائل بعد" : "No messages yet"}
         </div>
       ) : (
         <div className="space-y-4">

@@ -348,7 +348,7 @@ async function handleWalletTopupCapture(
           user_id: userId,
           type: "wallet_topup_approved",
           title: "تم شحن محفظتك عبر PayPal ✅",
-          body: `اتشحن ${usd}$ في محفظتك — الرصيد الجديد ${newBalance}.`,
+          body: `تم شحن ${usd}$ في محفظتك — الرصيد الجديد ${newBalance}.`,
           link: "/coach/wallet",
           payload: { amount: usd, balance: newBalance, provider: "paypal", order_id: orderId },
         });
@@ -362,7 +362,7 @@ async function handleWalletTopupCapture(
           .insert({
             type: "wallet_topup_approved",
             title: "تم شحن محفظتك عبر PayPal ✅",
-            body: `اتشحن ${usd}$ في محفظتك — الرصيد الجديد ${newBalance}.`,
+            body: `تم شحن ${usd}$ في محفظتك — الرصيد الجديد ${newBalance}.`,
             link: "/coach/wallet",
             target_coach_id: userId,
             payload: { amount: usd, balance: newBalance, provider: "paypal", order_id: orderId },

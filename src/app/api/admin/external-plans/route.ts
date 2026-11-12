@@ -426,7 +426,7 @@ async function handleRegenerationAction(
         plan: content.plan ?? null,
       },
     ].slice(-HISTORY_CAP);
-    if (!version.text && !version.plan) return bad("النسخة المحفوظة فاضية — مش قادر أسترجعها");
+    if (!version.text && !version.plan) return bad("النسخة المحفوظة فارغة — لا يمكن استرجاعها");
     return save(
       {
         text: String(version.text ?? ""),
@@ -458,7 +458,7 @@ async function handleRegenerationAction(
   /* 2) ONE meal — regenerateMeal with other meals' foods as avoid-list */
   if (action === "regenerate_meal") {
     if (planType !== "meal" || !structured || !Array.isArray((structured as ExternalMealPlan).meals)) {
-      return bad("الخطة دي مش خطة تغذية مولدة بالذكاء الاصطناعي");
+      return bad("هذه الخطة ليست خطة تغذية مولدة بالذكاء الاصطناعي");
     }
     const mp = structured as ExternalMealPlan;
     const mealIndex = Math.round(numOr(body.meal_index, -1));
@@ -533,7 +533,7 @@ async function handleRegenerationAction(
   /* 3) ONE food item — focused single-item swap, same calories ±15% */
   if (action === "regenerate_item") {
     if (planType !== "meal" || !structured || !Array.isArray((structured as ExternalMealPlan).meals)) {
-      return bad("الخطة دي مش خطة تغذية مولدة بالذكاء الاصطناعي");
+      return bad("هذه الخطة ليست خطة تغذية مولدة بالذكاء الاصطناعي");
     }
     const mp = structured as ExternalMealPlan;
     const mealIndex = Math.round(numOr(body.meal_index, -1));
@@ -578,7 +578,7 @@ async function handleRegenerationAction(
   /* 4) ONE workout day — same focus, avoid other days' exercises */
   if (action === "regenerate_day") {
     if (planType !== "workout" || !structured || !Array.isArray((structured as ExternalWorkoutPlan).days)) {
-      return bad("الخطة دي مش خطة تمارين مولدة بالذكاء الاصطناعي");
+      return bad("هذه الخطة ليست خطة تمارين مولدة بالذكاء الاصطناعي");
     }
     const wp = structured as ExternalWorkoutPlan;
     const dayIndex = Math.round(numOr(body.day_index, -1));
@@ -612,7 +612,7 @@ async function handleRegenerationAction(
   /* 5) ONE exercise — library-ranked substitute (existing engine) */
   if (action === "regenerate_exercise") {
     if (planType !== "workout" || !structured || !Array.isArray((structured as ExternalWorkoutPlan).days)) {
-      return bad("الخطة دي مش خطة تمارين مولدة بالذكاء الاصطناعي");
+      return bad("هذه الخطة ليست خطة تمارين مولدة بالذكاء الاصطناعي");
     }
     const wp = structured as ExternalWorkoutPlan;
     const dayIndex = Math.round(numOr(body.day_index, -1));

@@ -1236,7 +1236,7 @@ descriptionAr: `الزبدة تقود جدول دهون الأطعمة الكا�
         heading: { en: "Where the famous greens actually sit", ar: "أين تجلس الورقيات المشهورة فعلًا" },
         body: {
           en: `Spinach's celebrated protein lives around 3g per 100g — a tenth of the podium — because a leaf is mostly water and air. This table does not diminish greens; it prices them honestly: eat them for micronutrients and volume, and let the soy and pod rows carry the protein load.`,
-          ar: `بروتين السبانخ المحتفى به يعيش قرب 3 جرامات لكل 100 جرام — عُشر المنصة — لأن الورقة ماء وهواء في معظمها. وهذا الجدول لا ينتقص من الورقيات؛ بل يسعّرها بصدق: كُلها من أجل المغذيات الدقيقة والحجم، ودع صفوف الصويا والقرون تحمل حمل البروتين.`,
+          ar: `بروتين السبانخ المحتفى به يعيش قرب 3 جرامات لكل 100 جرام — عُشر المنصة — لأن الورقة ماء وهواء في معظمها. وهذا الجدول لا ينتقص من الورقيات؛ بل يسعّرها بصدق: كُلها من أجل المغذيات الدقيقة والحجم، ودع صفوف الصويا والقرون تحمل عبء البروتين.`,
         },
       },
     ],

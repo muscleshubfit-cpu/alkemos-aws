@@ -87,7 +87,7 @@ export function AdminWalletsView() {
       if (!res.ok) throw new Error(json.message || "error");
       toast.success(
         action === "approve"
-          ? isAr ? "اتشحن رصيد المدرب ✅" : "Wallet credited ✅"
+          ? isAr ? "تم شحن رصيد المدرب ✅" : "Wallet credited ✅"
           : isAr ? "الطلب مرفوض" : "Request rejected",
       );
       await load();
@@ -113,7 +113,7 @@ export function AdminWalletsView() {
       return;
     }
     if (!adjustCoach) {
-      toast.error(isAr ? "اختار المدرب" : "Pick a coach");
+      toast.error(isAr ? "اختر المدرب" : "Pick a coach");
       return;
     }
     if (!adjustNote.trim()) {
@@ -129,7 +129,7 @@ export function AdminWalletsView() {
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.message || "error");
-      toast.success(isAr ? "اتعدل الرصيد ✅" : "Balance adjusted ✅");
+      toast.success(isAr ? "تم تعديل الرصيد ✅" : "Balance adjusted ✅");
       setAdjustAmount("");
       setAdjustNote("");
       await load();
@@ -168,7 +168,7 @@ export function AdminWalletsView() {
           {/* ─── PENDING QUEUE ─── */}
           <div>
             <h2 className="text-xl font-semibold tracking-tight">
-              {isAr ? "طلبات الشحن الواقفة" : "Pending top-ups"}
+              {isAr ? "طلبات الشحن المعلقة" : "Pending top-ups"}
               {pending.length > 0 && (
                 <span className="ms-2 rounded-full bg-[#ff9500] px-2 py-0.5 text-xs font-bold text-white">
                   {pending.length}
@@ -258,7 +258,7 @@ export function AdminWalletsView() {
                         <span className="ms-2 text-xs text-[#6e6e73]">{w.email}</span>
                         {w.role === "admin" && (
                           <span className="ms-2 rounded-full bg-[#8b5cf6]/10 px-2 py-0.5 text-[10px] font-bold text-[#8b5cf6]">
-                            {isAr ? "أدمن" : "ADMIN"}
+                            {isAr ? "مشرف" : "ADMIN"}
                           </span>
                         )}
                       </td>
@@ -283,7 +283,7 @@ export function AdminWalletsView() {
             </h2>
             <p className="mt-1 text-sm font-normal text-[#6e6e73]">
               {isAr
-                ? "شحن يدوي (+) أو خصم (−) بسببه في سجل المحفظة."
+                ? "شحن يدوي (+) أو خصم (−) — يُسجَّل في سجل المحفظة."
                 : "Manual credit (+) or debit (−) — logged in the coach's ledger."}
             </p>
             <div className="mt-4 grid gap-4 sm:grid-cols-3">
@@ -292,7 +292,7 @@ export function AdminWalletsView() {
                 onChange={(e) => setAdjustCoach(e.target.value)}
                 className="w-full rounded-xl border border-[#d2d2d7] px-4 py-2.5 text-sm outline-none focus:border-[#0071e3]"
               >
-                <option value="">{isAr ? "اختار المدرب…" : "Pick a coach…"}</option>
+                <option value="">{isAr ? "اختر المدرب…" : "Pick a coach…"}</option>
                 {wallets.map((w) => (
                   <option key={w.coach_id} value={w.coach_id}>
                     {w.full_name} ({fmt(w.balance)})
@@ -328,7 +328,7 @@ export function AdminWalletsView() {
           {/* ─── REVIEWED HISTORY ─── */}
           <div>
             <h2 className="text-xl font-semibold tracking-tight">
-              {isAr ? "طلعات اتراجعت" : "Reviewed requests"}
+              {isAr ? "الطلبات المراجَعة" : "Reviewed requests"}
             </h2>
             {reviewed.length === 0 ? (
               <div className="mt-3 rounded-2xl bg-[#f5f5f7] p-8 text-center text-sm text-[#6e6e73]">

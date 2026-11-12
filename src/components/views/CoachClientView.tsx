@@ -121,9 +121,9 @@ const REVIEW_FLAG_LABELS_AR: Record<string, string> = {
  missing_or_implausible_weight: "الوزن مفقود أو غير منطقي — استُخدمت قيمة افتراضية",
  missing_or_implausible_height: "الطول مفقود أو غير منطقي — استُخدمت قيمة افتراضية",
  missing_or_implausible_age: "العمر مفقود أو غير منطقي — استُخدمت قيمة افتراضية",
- calorie_floor_applied: "السعرات الناتجة تحت الحد الأدنى (١٢٠٠) — تم تقييدها",
- deficit_beyond_25pct: "عجز حراري أعمق من ٢٥٪ من TDEE — قيمة متطرفة",
- surplus_beyond_15pct: "فائض حراري يتجاوز ١٥٪ من TDEE — قيمة متطرفة",
+ calorie_floor_applied: "السعرات الناتجة تحت الحد الأدنى (1200) — تم تقييدها",
+ deficit_beyond_25pct: "عجز حراري أعمق من 25% من TDEE — قيمة متطرفة",
+ surplus_beyond_15pct: "فائض حراري يتجاوز 15% من TDEE — قيمة متطرفة",
 };
 
 /** Narrow questionnaire `data: Json` into a plain editable record. */
@@ -237,7 +237,7 @@ export function CoachClientView({ clientId }: { clientId: string }) {
  ? "توليد الخطط مغلق — هذا عضو متابعة موقع: اشتراك التدريب الأونلاين يُفعَّل من لوحة الإدارة وهو الذي يفتح التوليد هنا."
  : "Plan generation is locked — this is a site follow-up member: the coaching subscription is activated from the admin console and that unlocks generation here."
  : isAr
- ? "توليد الخطط مقفول لحد ما تفعّل اشتراك العميل — من تبويب الاشتراك (شهر 6$ — ٣ شهور 16$ بتخصم من محفظتك)."
+ ? "توليد الخطط مغلق حتى تفعّل اشتراك العميل — من تبويب الاشتراك (شهر 6$ — 3 شهور 16$ تُخصم من محفظتك)."
  : "Plan generation is locked until you activate this client's subscription — from the Subscription tab (1 month $6 — 3 months $16 debited from your wallet).";
 
  // T-4PILLAR-COMPLETE (2026-08-28): plan jobs are queued on GitHub Actions
@@ -521,8 +521,8 @@ export function CoachClientView({ clientId }: { clientId: string }) {
  void watchPlanJob(entry);
  toast.info(
  planType === "workout"
- ? (isAr ? "تم إرسال طلب التوليد 🚀 البرنامج هيوصل خلال ~10 دقائق ويتم حفظه كمسودة تلقائيًا حتى لو قفلت الصفحة." : "Generation request sent 🚀 The program will arrive within ~10 minutes and is saved as a draft automatically — even if you close the page.")
- : (isAr ? "تم إرسال طلب التوليد 🚀 الخطة هتوصل خلال ~10 دقائق ويتم حفظها كمسودة تلقائيًا حتى لو قفلت الصفحة." : "Generation request sent 🚀 The plan will arrive within ~10 minutes and is saved as a draft automatically — even if you close the page."),
+ ? (isAr ? "تم إرسال طلب التوليد 🚀 سيصل البرنامج خلال ~10 دقائق ويُحفظ كمسودة تلقائيًا حتى لو أغلقت الصفحة." : "Generation request sent 🚀 The program will arrive within ~10 minutes and is saved as a draft automatically — even if you close the page.")
+ : (isAr ? "تم إرسال طلب التوليد 🚀 ستصل الخطة خلال ~10 دقائق وتُحفظ كمسودة تلقائيًا حتى لو أغلقت الصفحة." : "Generation request sent 🚀 The plan will arrive within ~10 minutes and is saved as a draft automatically — even if you close the page."),
  );
  } catch (e) {
  toast.error((e instanceof Error ? e.message : "") || t("coach.genFailed"));
@@ -558,7 +558,7 @@ export function CoachClientView({ clientId }: { clientId: string }) {
  setPayNote("");
  toast.success(
  isAr
- ? `تم تفعيل الاشتراك ✅ العميل وصل إشعار — والدفع اتسجل في سجل تفعيلات المدربين.`
+ ? `تم تفعيل الاشتراك ✅ وصل العميلَ إشعار — وسُجّل الدفع في سجل تفعيلات المدربين.`
  : `Subscription activated ✅ — the client was notified and the payment was logged.`,
  );
  } else {
@@ -1017,12 +1017,12 @@ export function CoachClientView({ clientId }: { clientId: string }) {
  <h2 className="text-lg font-semibold">{t("coach.subscriptionMgmt")}</h2>
  <p className="mt-1 text-sm font-normal text-[#6e6e73]">
  {lang === "ar"
- ? "حصّل من العميل بره الموقع (كاش / فودافون كاش / انستاباي) ثم فعّل اشتراكه من هنا — التفعيل هيخصم رسوم العميل من محفظتك (شهر 6$ — ٣ شهور 16$، اشحنها من صفحة محفظتي)، والعميل هيوصل إشعار فورًا."
+ ? "حصّل من العميل خارج الموقع (كاش / فودافون كاش / انستاباي) ثم فعّل اشتراكه من هنا — سيخصم التفعيل رسوم العميل من محفظتك (شهر 6$ — 3 شهور 16$؛ اشحنها من صفحة محفظتي)، وسيصل العميل إشعار فورًا."
  : "Collect from the client outside the site (cash / Vodafone Cash / InstaPay), then activate here — activation debits the per-client fee from your wallet (1 month $6 — 3 months $16; top up from My Wallet), and the client is notified instantly."}
  </p>
  <p className="mt-1 text-sm font-normal text-[#6e6e73]">
  {lang === "ar"
- ? "لو العميل عنده اشتراك بنفس النوع، المدة هتتجمع على المتبقي. لو نوع مختلف، هيتضاف كاشتراك جديد."
+ ? "إذا كان لدى العميل اشتراك من النوع نفسه، تُضاف المدة إلى المتبقي. وإذا كان نوعًا مختلفًا، يُضاف كاشتراك جديد."
  : "Same tier extends the remaining days; a different tier is added as a new subscription."}
  </p>
  <div className="mt-4 grid gap-4 sm:grid-cols-2">
@@ -1097,7 +1097,7 @@ export function CoachClientView({ clientId }: { clientId: string }) {
  ? `اشتراك فعّال بنفس النوع — تتجمع المدة على المتبقي، والجديد ينتهي: ${endStr}`
  : `Same-tier subscription active — months stack on the remaining time; new end: ${endStr}`)
  : (isAr
- ? `هيبدأ: اليوم → هينتهي: ${endStr}`
+ ? `يبدأ: اليوم → ينتهي: ${endStr}`
  : `Starts today → ends: ${endStr}`);
  })()}
  </p>
@@ -1107,7 +1107,7 @@ export function CoachClientView({ clientId }: { clientId: string }) {
  </div>
  </div>
  <div>
- <Label htmlFor="pay-amount">{isAr ? "المبلغ اللي اتاخد من العميل (اختياري)" : "Amount collected (optional)"}</Label>
+ <Label htmlFor="pay-amount">{isAr ? "المبلغ المحصّل من العميل (اختياري)" : "Amount collected (optional)"}</Label>
  <Input
  id="pay-amount"
  type="number"
@@ -1143,7 +1143,7 @@ export function CoachClientView({ clientId }: { clientId: string }) {
  onChange={(e) => setPayNote(e.target.value)}
  maxLength={500}
  className="mt-1.5"
- placeholder={isAr ? "مثال: دفعة أولى — باقي ٥٠٠" : "e.g. first installment — 500 remaining"}
+ placeholder={isAr ? "مثال: دفعة أولى — متبقٍ 500" : "e.g. first installment — 500 remaining"}
  />
  </div>
  </div>
@@ -1219,7 +1219,7 @@ export function CoachClientView({ clientId }: { clientId: string }) {
  className="gap-2 border-primary/30 text-primary"
  onClick={normalizeAndUpload}
  disabled={normalizing || uploading || !planTitle.trim() || !planNotes.trim()}
- title="حوّل النص اللي كتبته/لصقته في حقل الملاحظات إلى خطة منظمة قابلة للتعديل وإعادة توليد الوجبات"
+ title="حوّل النص الذي كتبته/لصقته في حقل الملاحظات إلى خطة منظمة قابلة للتعديل وإعادة توليد الوجبات"
  >
  {normalizing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
  {normalizing ? "جارٍ التنسيق..." : "تنسيق وترتيب تلقائي"}
@@ -1250,7 +1250,7 @@ export function CoachClientView({ clientId }: { clientId: string }) {
  <Eye className="h-3.5 w-3.5" />
  عرض
  </Button>
- <Button size="sm" variant="ghost" onClick={() => setDeleteTarget(p)} className="text-destructive hover:text-destructive" title={isAr ? "حذف الخطة (بتأكيد)" : "Delete plan (with confirmation)"}>
+ <Button size="sm" variant="ghost" onClick={() => setDeleteTarget(p)} className="text-destructive hover:text-destructive" title={isAr ? "حذف الخطة (مع تأكيد)" : "Delete plan (with confirmation)"}>
  <Trash2 className="h-4 w-4" />
  </Button>
  </div>
@@ -1431,7 +1431,7 @@ export function CoachClientView({ clientId }: { clientId: string }) {
  موافقة وإرسال
  </Button>
  )}
- <Button size="sm" variant="ghost" onClick={() => setDeleteTarget(p)} className="text-destructive hover:text-destructive" title={isAr ? "حذف الخطة (بتأكيد)" : "Delete plan (with confirmation)"}>
+ <Button size="sm" variant="ghost" onClick={() => setDeleteTarget(p)} className="text-destructive hover:text-destructive" title={isAr ? "حذف الخطة (مع تأكيد)" : "Delete plan (with confirmation)"}>
  <Trash2 className="h-4 w-4" />
  </Button>
  </div>
@@ -2321,7 +2321,7 @@ function PlanViewerModal({
  planId: plan.id,
  clientId,
  mealIdx,
- }, { onQueued: () => toast.info(isAr ? "دخل الطابور — الوجبة البديلة تتولد في الخلفية وتُحفظ في الخطة تلقائيًا عند جهوزها" : "Queued — the replacement generates in the background and saves into the plan when ready") });
+ }, { onQueued: () => toast.info(isAr ? "أُضيف الطلب إلى الطابور — الوجبة البديلة تتولد في الخلفية وتُحفظ في الخطة تلقائيًا عند جهوزها" : "Queued — the replacement generates in the background and saves into the plan when ready") });
  // Job results are job-type-specific JSON — the engine’s "done" result always carries
  // a replacement meal with this exact shape (same runtime semantics as before).
  // The server gate already validated + coerced it; the double-check below
@@ -2399,7 +2399,7 @@ function PlanViewerModal({
  const item = meal?.items?.[itemIdx];
  if (!meal || !item) return;
  if (!String(item.food || "").trim()) {
- toast.error(isAr ? "الصنف فاضي — اكتب اسم الصنف الأول أو احذفه." : "The item is empty — write the item name first or delete it.");
+ toast.error(isAr ? "حقل الصنف فارغ — اكتب اسم الصنف أولًا أو احذفه." : "The item is empty — write the item name first or delete it.");
  return;
  }
  const key = `item:${mealIdx}:${itemIdx}`;
@@ -2429,7 +2429,7 @@ function PlanViewerModal({
  clientId,
  mealIdx,
  itemIdx,
- }, { onQueued: () => toast.info(isAr ? "دخل الطابور — البديل يتولد في الخلفية ويُحفظ في الخطة تلقائيًا عند جهوزه" : "Queued — the replacement generates in the background and saves into the plan when ready") });
+ }, { onQueued: () => toast.info(isAr ? "أُضيف الطلب إلى الطابور — البديل يتولد في الخلفية ويُحفظ في الخطة تلقائيًا عند جهوزه" : "Queued — the replacement generates in the background and saves into the plan when ready") });
  // Job results are job-type-specific JSON — narrow to the item contract the engine honors.
  const rep = (result.replacement ?? null) as NutritionPlanContent["meals"][number]["items"][number] | null;
  if (!rep?.food) throw new Error(isAr ? "لم يتم إرجاع بديل صالح من الذكاء الاصطناعي" : "The AI did not return a valid replacement");
@@ -3384,7 +3384,7 @@ function PlanViewerModal({
  <Input
  value={ex.image || ""}
  onChange={(e) => updateExercise(dayIdx, exIdx, "image", e.target.value)}
- placeholder="رابط صورة (اختياري — هتتولّد تلقائيًا من اسم التمرين)"
+ placeholder="رابط صورة (اختياري — تُولَّد تلقائيًا من اسم التمرين)"
  className="mt-1 h-7 text-xs font-mono"
  dir="ltr"
  />
@@ -3866,7 +3866,7 @@ function CoachAIPlanGenerator({
  <div className="mt-0.5 text-[11px] font-medium text-muted-foreground">
  <span>
  {isAr
- ? `رصيد خطط العميل الموحد (توليدك + ايفو، تغذية وتمارين): ${pool.used}/${pool.limit} شهريًا`
+ ? `رصيد خطط العميل الموحد (توليدك + إيفو، تغذية وتمارين): ${pool.used}/${pool.limit} شهريًا`
  : `Client's unified plan balance (yours + EVO, nutrition + workout): ${pool.used}/${pool.limit} monthly`}
  </span>
  </div>
@@ -3880,7 +3880,7 @@ function CoachAIPlanGenerator({
  <div className="mt-0.5 text-[11px] font-medium text-muted-foreground">
  <span>
  {isAr
- ? `رصيد ${kindAr} العميل (توليدك + ايفو): ${cb.used}/${cb.limit} شهريًا`
+ ? `رصيد ${kindAr} العميل (توليدك + إيفو): ${cb.used}/${cb.limit} شهريًا`
  : `Client's ${kindEn} balance (your + EVO generations): ${cb.used}/${cb.limit} monthly`}
  </span>
  </div>
@@ -4038,7 +4038,7 @@ function CoachAIPlanGenerator({
  {(atCap("nutrition") || atCap("workout")) && (
  <p className="mt-3 rounded-xl border border-amber-500/30 bg-amber-500/5 px-3 py-2 text-xs font-medium text-amber-600">
  {isAr
- ? "وصلت حدود التوليد بالذكاء الاصطناعي عند العميل ده — التوليد منك أو من ايفو بيخصم من نفس رصيده الشهري. التعديل على الخطط والرفع اليدوي متاح بدون حدود."
+ ? "بلغت حدود التوليد بالذكاء الاصطناعي لهذا العميل — التوليد منك أو من إيفو يُخصم من رصيده الشهري نفسه. تعديل الخطط والرفع اليدوي متاحان دون حدود."
  : "AI generation caps reached for this client — your generations and the member's EVO ones draw from the same monthly balance. Editing plans and manual uploads stay unlimited."}
  </p>
  )}

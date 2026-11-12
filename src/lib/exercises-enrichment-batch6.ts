@@ -214,7 +214,7 @@ export const BATCH_6: Record<string, ExerciseEnrichment> = {
     },
     links: [
       { hrefEn: "/exercises/side-laterals-to-front-raise", hrefAr: "/ar/exercises/side-laterals-to-front-raise", labelEn: "Side laterals — the other delt heads", labelAr: "الرفع الجانبي — رؤوس الدالية الأخرى" },
-      { hrefEn: "/blog/warm-up-before-lifting-5min-routine", hrefAr: "/ar/blog/best-dynamic-stretching-before-gym", labelEn: "5-minute warm-up before lifting", labelAr: "الإحماء الديناميكي قبل الجيم" },
+      { hrefEn: "/blog/warm-up-before-lifting-5min-routine", hrefAr: "/ar/blog/best-dynamic-stretching-before-gym", labelEn: "5-minute warm-up before lifting", labelAr: "الإحماء الديناميكي قبل رفع الأثقال" },
       { hrefEn: "/blog/deload-week-structure-strength-gains", hrefAr: "/ar/blog/deload-week-guide", labelEn: "Deload weeks — when shoulders rest", labelAr: "أسبوع التفريغ — حين ترتاح الأكتاف" },
     ],
   },
@@ -318,7 +318,7 @@ export const BATCH_6: Record<string, ExerciseEnrichment> = {
     },
     links: [
       { hrefEn: "/exercises/barbell-squat", hrefAr: "/ar/exercises/barbell-squat", labelEn: "Barbell back squat — the heavier sibling", labelAr: "سكوات الظهر بالبار — الشقيق الأثقل" },
-      { hrefEn: "/blog/warm-up-before-lifting-5min-routine", hrefAr: "/ar/blog/best-dynamic-stretching-before-gym", labelEn: "5-minute warm-up for the front rack", labelAr: "الإحماء الديناميكي قبل الجيم" },
+      { hrefEn: "/blog/warm-up-before-lifting-5min-routine", hrefAr: "/ar/blog/best-dynamic-stretching-before-gym", labelEn: "5-minute warm-up for the front rack", labelAr: "الإحماء الديناميكي قبل رفع الأثقال" },
       { hrefEn: "/programs/gym-ppl-intermediate", hrefAr: "/ar/programs/gym-ppl-intermediate", labelEn: "Intermediate gym program", labelAr: "برنامج الصالة للمتوسطين" },
     ],
   },

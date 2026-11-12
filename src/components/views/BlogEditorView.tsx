@@ -118,7 +118,7 @@ export function BlogEditorView({ mode, postId }: { mode: "new" | "edit"; postId?
      .join(" ")
      .trim();
    if (query.length < 3) {
-     toast.error(isAr ? "اكتب العنوان الأول علشان نقترح صورة مناسبة" : "Add a title first so we can suggest a matching photo");
+     toast.error(isAr ? "اكتب العنوان أولًا حتى نقترح صورة مناسبة" : "Add a title first so we can suggest a matching photo");
      return;
    }
    setImgBusy(true);
@@ -164,7 +164,7 @@ export function BlogEditorView({ mode, postId }: { mode: "new" | "edit"; postId?
        .filter(Boolean)
        .join(" ")}`.trim();
      if (query.length < 3) {
-       toast.error(isAr ? "اكتب العنوان الأول علشان نقترح بديل مناسب" : "Add a title first so we can suggest a replacement");
+       toast.error(isAr ? "اكتب العنوان أولًا حتى نقترح بديلًا مناسبًا" : "Add a title first so we can suggest a replacement");
        return;
      }
      const res = await fetch("/api/blog/suggest-image", {
@@ -187,7 +187,7 @@ export function BlogEditorView({ mode, postId }: { mode: "new" | "edit"; postId?
        ...p,
        content: (p.content || "").slice(0, b.start) + replacement + (p.content || "").slice(b.end),
      }));
-     toast.success(isAr ? "اتبدلت الصورة في مكانها ✅" : "Image swapped in place ✅");
+     toast.success(isAr ? "تم تبديل الصورة في مكانها ✅" : "Image swapped in place ✅");
    } catch (e) {
      toast.error(e instanceof Error ? e.message : (isAr ? "فشل تبديل الصورة" : "Image swap failed"));
    } finally {
@@ -630,7 +630,7 @@ const scanRecentToolJobs = useCallback(async () => {
  const entry = j.job_type === "social_post" ? formatSocialResult(r) : formatToolResult(r);
  if (!entry.copy.trim()) continue;
  const at = new Date(String(j.finished_at || j.created_at)).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
- const display = `♻️ نتيجة سابقة (اتكملت ${at})\n\n${entry.display}`;
+ const display = `♻️ نتيجة سابقة (اكتملت ${at})\n\n${entry.display}`;
  recovered.push({ ...entry, display, key, label: aiResultLabel(key), at, recovered: true });
  }
  // newest-first (the API returns newest first) — recovered results sit
@@ -762,7 +762,7 @@ useEffect(() => {
  {hasBodyImages && (
  <p className="mb-3 text-[11px] text-muted-foreground">
  💡 {isAr
- ? "كل صورة في المعاينة ليها زر «🔄 بدّل الصورة» — سيجلب بديلًا آمنًا ويستبدلها في مكانها داخل المحتوى."
+ ? "كل صورة في المعاينة لها زر «🔄 بدّل الصورة» — سيجلب بديلًا آمنًا ويستبدلها في مكانها داخل المحتوى."
  : "Every preview photo has a swap button — pick a safe replacement right where it stands."}
  </p>
  )}
@@ -859,7 +859,7 @@ useEffect(() => {
  />
  <p className="mt-1.5 text-[11px] leading-relaxed text-muted-foreground">
  {isAr
- ? "الصور المقترحة من Pexels بنفس منظومة الأمان الآلية (فحص المحتوى غير اللائق قبل العرض). مش مناسبة؟ اضغط «صورة مختلفة» وهتجيب صورة جديدة غيرها."
+ ? "الصور المقترحة من Pexels بنفس منظومة الأمان الآلية (فحص المحتوى غير اللائق قبل العرض). هل لا تناسبك؟ اضغط «صورة مختلفة» وستُجلب صورة جديدة غيرها."
  : "Suggested photos come from Pexels through the same automated safety pipeline (modesty-screened before display). Not a fit? Hit «Different photo» for a fresh one."}
  </p>
  </div>
@@ -1007,7 +1007,7 @@ useEffect(() => {
  <div className="mt-2 flex items-center justify-between gap-2">
  <span className="text-[10px] leading-4 text-muted-foreground">
  {isAr
- ? "⏱ النتيجة وظيفة خلفية تحتاج عادة ٢–٥ دقائق — إن غادرت الصفحة ستجد النتيجة محفوظة هنا (أو اضغط تحديث)."
+ ? "⏱ النتيجة وظيفة خلفية تحتاج عادة 2–5 دقائق — إن غادرت الصفحة ستجد النتيجة محفوظة هنا (أو اضغط تحديث)."
  : "⏱ Results are background jobs (~2–5 min). If you leave the page, finished results are restored here (or press refresh)."}
  </span>
  <button
@@ -1033,7 +1033,7 @@ useEffect(() => {
  onClick={() => {
  for (const it of aiResults) if (it.jobId) dismissToolJob(it.jobId);
  setAiResults([]);
- toast.success(isAr ? "اتمسحت كل النتائج — مش هترجع تاني ✅" : "All results cleared — they stay cleared ✅");
+ toast.success(isAr ? "مُسحت كل النتائج — ولن تعود ✅" : "All results cleared — they stay cleared ✅");
  }}
  className="text-xs text-destructive hover:underline"
  >

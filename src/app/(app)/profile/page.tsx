@@ -170,7 +170,7 @@ export default function ProfilePage() {
   const requestRefund = async () => {
     const confirmed = confirm(
       isAr
-        ? "تأكيد طلب استرداد المبلغ؟ هيتابع الدعم الاشتراك ويتم إيقافه عند الموافقة، بشرط إنك مستخدمتش أي مميزة مدفوعة."
+        ? "تأكيد طلب استرداد المبلغ؟ سيتابع الدعم الطلب ويُوقف الاشتراك عند الموافقة، بشرط ألا تكون قد استخدمت أي ميزة مدفوعة."
         : "Confirm refund request? The subscription will be reviewed and stopped upon approval, provided you haven't used any paid features.",
     );
     if (!confirmed) return;

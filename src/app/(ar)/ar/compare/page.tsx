@@ -17,7 +17,7 @@ export const metadata: Metadata = {
   title: "Alkemos مقابل المنافسين — مقارنات صادقة بالأرقام",
   description:
     // P0 SEO audit (2026-09-30): Cronometer joined the comparison set.
-    "مقارنات تفصيلية بين Alkemos وMyFitnessPal وFreeletics وExRx.net وCronometer: الميزات والأسعار وعمق المحتوى والمدرب الذكي واللغات — مع حكم صريح لكل مقارنة.",
+    "مقارنات تفصيلية بين Alkemos و MyFitnessPal و Freeletics و ExRx.net و Cronometer: الميزات والأسعار وعمق المحتوى والمدرب الذكي واللغات — مع حكم صريح لكل مقارنة.",
   alternates: {
     canonical: "https://alkemos.com/ar/compare",
     languages: {
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Alkemos مقابل المنافسين — مقارنات صادقة | Alkemos",
     description:
-      "جداول الميزات والأسعار وعمق المحتوى: Alkemos مقابل MyFitnessPal وFreeletics وExRx.net وCronometer.",
+      "جداول الميزات والأسعار وعمق المحتوى: Alkemos مقابل MyFitnessPal و Freeletics و ExRx.net و Cronometer.",
     type: "website",
     locale: "ar_EG",
     url: "https://alkemos.com/ar/compare",

@@ -95,7 +95,7 @@ const EXPLORE_ITEMS: {
     href: "/tools",
     nameAr: "الحاسبات المجانية",
     nameEn: "Free Tools",
-    descAr: "حاسبات سعرات وBMI ودهون وماكروز",
+    descAr: "حاسبات السعرات ومؤشر كتلة الجسم ودهون الجسم والماكروز",
     descEn: "Calorie, BMI, body fat and macro calculators",
     icon: "bmi",
   },

@@ -200,7 +200,7 @@ export default function SiteAssignmentsPage() {
         title={isAr ? "مدربو الموقع والتعيينات" : "Site coaches & roster"}
         sub={
           isAr
-            ? "عيّن مدربين كـ«مدربي موقع» من صفحة المدربين، وخصص لكل مدرب أعضاء الموقع اللي هيتابعهم (B2C). عضو واحد ↔ مدرب موقع واحد — وإعادة التعيين بتنتقل به. الجدول ده منفصل تمامًا عن حسابات مدربي B2B والفلوس."
+            ? "عيّن مدربين كـ«مدربي موقع» من صفحة المدربين، وخصص لكل مدرب أعضاء الموقع الذين سيتابعهم (B2C). عضو واحد ↔ مدرب موقع واحد — وإعادة التعيين تنقله. هذا الجدول منفصل تمامًا عن حسابات مدربي B2B والأموال."
             : "Designate site coaches from the coaches page, then assign site members to each coach for B2C follow-up. One member ↔ one site coach — re-assigning moves him. This roster is fully separate from B2B billing."
         }
       />

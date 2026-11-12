@@ -190,7 +190,7 @@ export async function POST(request: NextRequest) {
   }
   if (target.role !== "client") {
     return NextResponse.json(
-      { error: "not_a_client", message: "ده مش عميل — أعضاء الفريق لا تُفعَّل لهم اشتراكات" },
+      { error: "not_a_client", message: "هذا ليس عميلًا — لا تُفعَّل اشتراكات لأعضاء الفريق" },
       { status: 409 },
     );
   }
@@ -243,7 +243,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json(
           {
             error: "insufficient_wallet",
-            message: `رصيد محفظتك (${balance}$) مش كفاية لتفعيل ${months} ${months === 1 ? "شهر" : "شهور"} — المطلوب ${walletCost}$. اشحن المحفظة الأول (PayPal / انستاباي / فودافون كاش) وهيتم التفعيل فورًا.`,
+            message: `رصيد محفظتك (${balance}$) لا يكفي لتفعيل ${months} ${months === 1 ? "شهر" : "شهور"} — المطلوب ${walletCost}$. اشحن محفظتك أولًا (PayPal / انستاباي / فودافون كاش) وسيتم التفعيل فورًا.`,
             balance,
             cost: walletCost,
           },
@@ -270,8 +270,8 @@ export async function POST(request: NextRequest) {
         {
           error: "insufficient_wallet",
           message: insufficient
-            ? "رصيد محفظتك مش كفاية — اشحن المحفظة الأول (انستاباي / فودافون كاش / PayPal)."
-            : "فشل خصم رسوم التفعيل من المحفظة — حاول تاني.",
+            ? "رصيد محفظتك لا يكفي — اشحن محفظتك أولًا (انستاباي / فودافون كاش / PayPal)."
+            : "فشل خصم رسوم التفعيل من المحفظة — حاول مرة أخرى.",
         },
         { status: 402 },
       );

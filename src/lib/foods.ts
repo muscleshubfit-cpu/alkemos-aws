@@ -59415,7 +59415,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "toaster-pastries-kellogg-kelloggs-pop-tarts-frosted-brown-su",
-    nameAr: "معجنات توستر — كيلوغ، كيلوغز بوب تارتس، مزين بالسكر سكر بني قرفة",
+    nameAr: "معجنات توستر — كيلوغ، كيلوغز بوب تارتس، مزينة بسكر بني وقرفة",
     nameEn: "Toaster Pastries, KELLOGG, KELLOGG'S POP TARTS, Frosted brown sugar cinnamon",
     category: "carb",
     per100g: { calories: 417, protein: 4.6, carbs: 69.0, fat: 13.8, fiber: 1.4, sugar: 32.3 },
@@ -59503,7 +59503,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "toaster-pastries-kellogg-kelloggs-low-fat-pop-tarts-frosted-",
-    nameAr: "معجنات توستر — كيلوغ، كيلوغز بوب تارتز قليل الدسم، مزين بالسكر سكر بني قرفة",
+    nameAr: "معجنات توستر — كيلوغ، كيلوغز بوب تارتز قليل الدسم، مزينة بسكر بني وقرفة",
     nameEn: "Toaster Pastries, KELLOGG, KELLOGG'S LOW FAT POP TARTS, Frosted brown sugar cinnamon",
     category: "carb",
     per100g: { calories: 366, protein: 4.7, carbs: 73.7, fat: 5.9, fiber: 5.5, sugar: 30.5 },
@@ -69439,7 +69439,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "fast-foods-cheeseburger-single-large-patty-with-condiments",
-    nameAr: "برجر جبنة؛ قطعة واحدة قرص كبير؛ بالتتبيلات",
+    nameAr: "برجر جبنة — قرص واحد كبير، بالتتبيلات",
     nameEn: "Fast foods, cheeseburger; single, large patty; with condiments",
     category: "snack",
     per100g: { calories: 269, protein: 15.2, carbs: 19.7, fat: 14.4, fiber: 1.2, sugar: 3.6 },
@@ -80984,7 +80984,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "kelloggs-pop-tarts-frosted-sugar-cookie-toaster-pastries",
-    nameAr: "بوب تارتس مزين بالسكر سكر كوكيز معجنات توستر كيلوغز",
+    nameAr: "بوب تارتس كوكيز مزينة بالسكر — معجنات توستر كيلوغز",
     nameEn: "KELLOGG'S, POP-TARTS, Frosted Sugar Cookie Toaster Pastries",
     category: "carb",
     per100g: { calories: 393, protein: 4.5, carbs: 70.2, fat: 10.6, fiber: 1.3, sugar: 27.5 },
@@ -83547,7 +83547,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "campbells-v8-vegetable-juice-spicy-hot-v8",
-    nameAr: "عصير في 8 خضار كامبل (حار حار في 8)",
+    nameAr: "عصير في 8 خضار كامبل (الحار في 8)",
     nameEn: "CAMPBELL'S, V8 Vegetable Juice, Spicy Hot V8",
     category: "vegetable",
     per100g: { calories: 21, protein: 0.8, carbs: 4.1, fat: 0.0, fiber: 0.8, sugar: 3.3 },
@@ -83591,7 +83591,7 @@ export const FOODS: Food[] = [
   },
   {
     slug: "campbells-v8-vegetable-juice-low-sodium-spicy-hot",
-    nameAr: "عصير في 8 خضار كامبل (قليل الصوديوم حار حار)",
+    nameAr: "عصير في 8 خضار كامبل (قليل الصوديوم، الحار)",
     nameEn: "CAMPBELL'S, V8 Vegetable Juice, Low Sodium Spicy Hot",
     category: "vegetable",
     per100g: { calories: 21, protein: 0.8, carbs: 4.5, fat: 0.0, fiber: 0.8, sugar: 3.3 },

@@ -162,7 +162,7 @@ export const BATCH_4: Record<string, ExerciseEnrichment> = {
     },
     links: [
       { hrefEn: "/exercises/dumbbell-shoulder-press", hrefAr: "/ar/exercises/dumbbell-shoulder-press", labelEn: "Dumbbell shoulder press — the seated variation", labelAr: "برس الكتف بالدمبل — التنويع الجالس" },
-      { hrefEn: "/blog/warm-up-before-lifting-5min-routine", hrefAr: "/ar/blog/best-dynamic-stretching-before-gym", labelEn: "5-minute warm-up before lifting", labelAr: "الإحماء الديناميكي قبل الجيم" },
+      { hrefEn: "/blog/warm-up-before-lifting-5min-routine", hrefAr: "/ar/blog/best-dynamic-stretching-before-gym", labelEn: "5-minute warm-up before lifting", labelAr: "الإحماء الديناميكي قبل رفع الأثقال" },
       { hrefEn: "/programs/gym-strength-5x5", hrefAr: "/ar/programs/gym-strength-5x5", labelEn: "5×5 strength program", labelAr: "برنامج القوة 5×5" },
     ],
   },

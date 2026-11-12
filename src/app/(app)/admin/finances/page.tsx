@@ -352,7 +352,7 @@ export default function AdminFinancesPage() {
         title={isAr ? "أموال المدربين — النظام B2B" : "Coach money — the B2B system"}
         sub={
           isAr
-            ? "المحفوظ هنا فلوس المدربين للموقع: رصيد المحافظ المُسبق، طلبات الشحن، وسجل التفعيل اليدوي. رصيد المحفظة رصيد استخدام مش إيراد ليك."
+            ? "المحفوظ هنا أموال المدربين لدى الموقع: رصيد المحافظ المُسبق، طلبات الشحن، وسجل التفعيل اليدوي. رصيد المحفظة رصيد استخدام وليس إيرادًا لك."
             : "This tracks what COACHES owe/hold with the site: prepaid wallet balances, top-up requests, and the offline activation ledger. A wallet balance is prepaid credit, NOT your revenue."
         }
       >

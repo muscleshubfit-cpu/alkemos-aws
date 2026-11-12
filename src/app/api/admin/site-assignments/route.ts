@@ -154,13 +154,13 @@ export async function POST(request: NextRequest) {
   const client = list.find((p) => p.id === clientId);
   if (!coach || coach.role !== "coach") {
     return NextResponse.json(
-      { error: "bad_request", message: "المعيَّن المطلوب مش مدرب" },
+      { error: "bad_request", message: "المعيَّن المطلوب ليس مدربًا" },
       { status: 400 },
     );
   }
   if (!client || client.role !== "client") {
     return NextResponse.json(
-      { error: "bad_request", message: "العضو المطلوب مش عميل" },
+      { error: "bad_request", message: "العضو المطلوب ليس عميلًا" },
       { status: 400 },
     );
   }

@@ -165,7 +165,7 @@ export default async function ArabicAuthorProfilePage({
           <figure className="mt-8 overflow-hidden rounded-xl border border-[var(--edge)] bg-[var(--tint)] p-2 sm:p-3">
             <Image
               src="/images/founder-certificates.webp"
-              alt="الشهادات المهنية الثماني لأحمد زكي — شهادات ACSM وACE وISSA وNASM كما صدرت"
+              alt="الشهادات المهنية الثماني لأحمد زكي — شهادات ACSM و ACE و ISSA و NASM كما صدرت"
               width={1252}
               height={1884}
               sizes="(max-width: 768px) 100vw, 700px"

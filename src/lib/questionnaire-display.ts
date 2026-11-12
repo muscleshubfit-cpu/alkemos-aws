@@ -41,7 +41,7 @@ const TOKEN_LABELS: Record<string, Record<string, Bilingual>> = {
   },
   location: {
     home: { ar: "المنزل", en: "Home" },
-    gym: { ar: "الجيم", en: "Gym" },
+    gym: { ar: "النادي الرياضي", en: "Gym" },
     outdoor: { ar: "في الخارج", en: "Outdoors" },
   },
   experience: {
@@ -62,8 +62,8 @@ const TOKEN_LABELS: Record<string, Record<string, Bilingual>> = {
     dumbbells: { ar: "دمبل", en: "Dumbbells" },
     barbell: { ar: "بار أولمبي", en: "Barbell" },
     bands: { ar: "أشرطة مقاومة", en: "Resistance bands" },
-    full_gym: { ar: "جيم كامل", en: "Full gym" },
-    machines: { ar: "أجهزة الجيم", en: "Machines" },
+    full_gym: { ar: "نادٍ رياضي كامل", en: "Full gym" },
+    machines: { ar: "الأجهزة", en: "Machines" },
   },
   diet: {
     balanced: { ar: "متوازن", en: "Balanced" },

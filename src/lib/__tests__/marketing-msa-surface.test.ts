@@ -844,4 +844,67 @@ describe("marketing-surface MSA (Phase 178 — §12.42)", () => {
     expect(arForCoaches).toContain("العمل كمدرب أونلاين");
     expect(arForCoaches).toContain("مدرب نادي رياضي");
   });
+
+  // BILINGUAL-LANGUAGE-AUDIT-R2 (2026-11-13): the second comprehensive
+  // AR/EN sweep completed what Phases 204/205 started — the coach/admin/
+  // member surfaces those frames did not enumerate (client detail, blog
+  // editor, external plans, landing editor, wallets, admin pages, the
+  // coach/member API messages, email validation) carried the same banned
+  // dialect class. Every phrase removed stays dead; the unified MSA
+  // replacements are pinned present.
+  it("BILINGUAL-LANGUAGE-AUDIT-R2 2026-11-13: the swept dialect stays dead on the coach/admin/member surfaces", () => {
+    const surfaces: Record<string, string[]> = {
+      "src/app/api/paypal/capture-order/route.ts": ["اتشحن"],
+      "src/app/api/admin/wallets/topups/route.ts": ["اتقبل طلب"],
+      "src/app/api/coach/ads/route.ts": ["مش كفاية", "حاول تاني", "اشحن المحفظة الأول"],
+      "src/app/api/coach/subscriptions/activate/route.ts": ["مش كفاية", "حاول تاني", "ده مش عميل", "وهيتم التفعيل"],
+      "src/app/api/coach/register/route.ts": ["البريد ده", "كلمة السر دي", "بريدًا تاني"],
+      "src/app/api/ai/jobs/route.ts": ["مش ضمن", "لخلص", "بيخصم", "بيتصفّر", "من غير حدود"],
+      "src/app/api/plans/normalize/route.ts": ["اشتراكه الأول من صفحته", "٣ شهور"],
+      "src/app/api/admin/coach-kind/route.ts": ["مش مدرب"],
+      "src/app/api/admin/site-assignments/route.ts": ["مش مدرب", "مش عميل"],
+      "src/app/api/admin/wallets/adjust/route.ts": ["مش كفاية", "للخصم ده"],
+      "src/app/api/admin/external-plans/route.ts": ["الخطة دي", "مش قادر", "فاضية"],
+      "src/app/api/ai/queue-health/route.ts": ["الطابور فيه", "اضغطي", "راجعي"],
+      "src/lib/email-validation.ts": ["الشكل ده", "أكتر من اللازم", "لازم يحتوي", "زي: name"],
+      "src/components/views/CoachClientView.tsx": ["لحد ما", "بتخصم", "هتوصل", "هيوصل", "هتتجمع", "هيتضاف", "هيبدأ", "هينتهي", "اتاخد", "بره الموقع", "هتتولّد", "دخل الطابور", "الصنف فاضي", "العميل ده", "+ ايفو", "بتأكيد"],
+      "src/components/views/BlogEditorView.tsx": ["علشان نقترح", "اتبديلت", "اتبدلت الصورة", "اتمسحت", "هترجع", "وهتجيب", "ليها زر", "اتكملت", "٢–٥"],
+      "src/components/views/AdminExternalPlansView.tsx": ["بتاعة", "سيبها فاضية", "زي نموذج", "ابعتها", "بيحب", "مش بيأكل", "ممكن ياخد", "منخفض الكارب", "الكارب الحاد", "الركبة اليمين", "مش محتاج", "ومفيش", "اسم الشخص الأول"],
+      "src/components/views/CoachLandingEditor.tsx": ["تاني قبل رفع", "مش ظاهرة", "بتقدر", "براحتك", "مش بتظهر", "سيبت القسم فاضي", "اتسيبها فاضية", "مش عايزها", "هتضيفها", "هتعرض", "الأدمن", "السوشيال", "٥ ميجا", "ابعته"],
+      "src/components/views/CoachHelpView.tsx": ["كل ده", "بتساعد", "وهنرد", "رسايل"],
+      "src/components/views/QuestionnairesView.tsx": ["دي قيم", "تقدر تعدّل", "5 ميجا)"],
+      "src/components/views/AdminWalletsView.tsx": ["اتشحن", "اتعدل", "الواقفة", "طلعات", "اختار", "بسببه"],
+      "src/app/(app)/admin/coaches/page.tsx": ["بيتابع", "ليه عملاءه"],
+      "src/app/(app)/admin/finances/page.tsx": ["فلوس المدربين", "مش إيراد ليك"],
+      "src/app/(app)/admin/site-assignments/page.tsx": ["اللي هيتابعهم", "بتنتقل", "الجدول ده", "والفلوس"],
+      "src/app/(app)/admin/clients/page.tsx": ["حاول تاني"],
+      "src/app/(app)/profile/page.tsx": ["هيتابع الدعم", "مستخدمتش"],
+    };
+    for (const [rel, bannedList] of Object.entries(surfaces)) {
+      const src = readFileSync(rel, "utf8");
+      for (const banned of bannedList) {
+        expect(src, `${rel}: R2 dialect phrase returned: "${banned}"`).not.toContain(banned);
+      }
+    }
+    // The unified MSA replacements are present:
+    const capture = readFileSync("src/app/api/paypal/capture-order/route.ts", "utf8");
+    expect(capture).toContain("تم شحن ${usd}$ في محفظتك");
+    const activate = readFileSync("src/app/api/coach/subscriptions/activate/route.ts", "utf8");
+    expect(activate).toContain("لا يكفي لتفعيل");
+    expect(activate).toContain("حاول مرة أخرى");
+    const register = readFileSync("src/app/api/coach/register/route.ts", "utf8");
+    expect(register).toContain("هذا البريد الإلكتروني مسجَّل بالفعل");
+    const ccv = readFileSync("src/components/views/CoachClientView.tsx", "utf8");
+    expect(ccv).toContain("مغلق حتى تفعّل اشتراك العميل");
+    expect(ccv).toContain("ستصل الخطة خلال ~10 دقائق");
+    expect(ccv).toContain("خارج الموقع (كاش / فودافون كاش / انستاباي)");
+    expect(ccv).toContain("توليدك + إيفو");
+    const landing = readFileSync("src/components/views/CoachLandingEditor.tsx", "utf8");
+    expect(landing).toContain("مراجعة الإدارة");
+    expect(landing).toContain("روابط التواصل الاجتماعي");
+    const profile = readFileSync("src/app/(app)/profile/page.tsx", "utf8");
+    expect(profile).toContain("سيتابع الدعم الطلب");
+    const email = readFileSync("src/lib/email-validation.ts", "utf8");
+    expect(email).toContain("يجب أن يحتوي على @ ونقطة، مثل: name@example.com");
+  });
 });

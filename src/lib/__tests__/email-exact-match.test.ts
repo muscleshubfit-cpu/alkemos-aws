@@ -90,7 +90,7 @@ const S04_ROUTES = [
 
 /** The ONE 409 answer of coach/register (both already_registered paths). */
 const UNIFIED_409 =
-  "البريد ده مسجل بالفعل — سجّل دخول من صفحة الدخول أو استخدم بريدًا تاني";
+  "هذا البريد الإلكتروني مسجَّل بالفعل — سجّل دخولك من صفحة تسجيل الدخول أو استخدم بريدًا آخر";
 
 // ══════════════════════════════════════════════════════════════════════
 // A. SOURCE PINS — the sweep law (S-04 fix direction, verbatim)

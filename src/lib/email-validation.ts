@@ -45,19 +45,19 @@ export function validateEmailStrict(
 export function emailErrorMessage(issue: EmailIssue, isAr: boolean): string {
   switch (issue) {
     case "empty":
-      return isAr ? "اكتب بريدك الإلكتروني الأول" : "Enter your email";
+      return isAr ? "أدخل بريدك الإلكتروني أولًا" : "Enter your email";
     case "weird_chars":
       return isAr
-        ? "البريد فيه رموز غير مسموحة — اكتبه بالحروف الإنجليزية بالشكل ده: name@example.com"
+        ? "يحتوي البريد على رموز غير مسموح بها — اكتبه بالحروف الإنجليزية بهذه الصيغة: name@example.com"
         : "Your email has unsupported characters — write it in English, like name@example.com";
     case "too_long":
       return isAr
-        ? "البريد الإلكتروني طويل أكتر من اللازم"
+        ? "البريد الإلكتروني أطول من اللازم"
         : "This email address is too long";
     case "bad_format":
     default:
       return isAr
-        ? "البريد الإلكتروني غير مكتمل — لازم يحتوي على @ ونقطة، زي: name@example.com"
+        ? "البريد الإلكتروني غير مكتمل — يجب أن يحتوي على @ ونقطة، مثل: name@example.com"
         : "Incomplete email — it needs an @ and a dot, like name@example.com";
   }
 }
@@ -77,7 +77,7 @@ export function validateNameStrict(raw: string, isAr: boolean): string | null {
     return isAr ? "الاسم قصير جدًا" : "The name is too short";
   }
   if (name.length > 80) {
-    return isAr ? "الاسم طويل أكتر من اللازم" : "The name is too long";
+    return isAr ? "الاسم أطول من اللازم" : "The name is too long";
   }
   if (!NAME_ALLOWED_RE.test(name)) {
     return isAr

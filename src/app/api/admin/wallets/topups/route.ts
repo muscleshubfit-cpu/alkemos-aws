@@ -140,7 +140,7 @@ export async function PATCH(request: NextRequest) {
       user_id: coachId,
       type: "wallet_topup_approved",
       title: "تم شحن محفظتك ✅",
-      body: `اتقبل طلب شحن المحفظة بمبلغ ${amount}$ — الرصيد الجديد ${newBalance}.`,
+      body: `تم قبول طلب شحن المحفظة بمبلغ ${amount}$ — الرصيد الجديد ${newBalance}.`,
       link: "/coach/wallet",
       payload: { amount, balance: newBalance, provider: "manual" },
     });

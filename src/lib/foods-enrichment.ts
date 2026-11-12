@@ -467,7 +467,7 @@ export const FOODS_ENRICHMENT: Record<string, FoodEnrichment> = {
   banana: {
     intro: {
       en: "The banana is portable carbohydrate at its most practical: 89 kcal per 100 g, and one medium fruit (120 g) is 107 kcal of 27 g carbs with 2.6 g fiber, sealed in its own wrapper, needing nothing — no fridge, no spoon, no prep. That is why it owns the gym-bag slot worldwide: it digests fast enough to fuel a session, gentle enough to sit on a nervous pre-competition stomach, and sweet enough to end a meal without a dessert. It is the fruit you buy weekly and actually finish.",
-      ar: "الموز كربوهيدرات متنقلة في أكثر صورها عملية: 89 سعرة لكل 100 جم، وحبة متوسطة (120 جم) تساوي 107 سعرة من 27 جم كربوهيدرات مع 2.6 جم ألياف، مغلفة بغلافها الخاص، لا تحتاج شيئًا — لا ثلاجة ولا ملعقة ولا تحضير. لهذا تملك حصة حقيبة الجيم عالميًا: يُهضم بسرعة تكفي لتوقيد جلسة، ولطيف بما يكفي ليستقر على معدة متوترة قبل المنافسة، وحلو بما يكفي ليختم الوجبة بلا حلوى. إنها الفاكهة التي تشتريها أسبوعيًا وتنهيها فعلًا.",
+      ar: "الموز كربوهيدرات متنقلة في أكثر صورها عملية: 89 سعرة لكل 100 جم، وحبة متوسطة (120 جم) تساوي 107 سعرة من 27 جم كربوهيدرات مع 2.6 جم ألياف، مغلفة بغلافها الخاص، لا تحتاج شيئًا — لا ثلاجة ولا ملعقة ولا تحضير. لهذا تملك حصة حقيبة التدريب عالميًا: يُهضم بسرعة تكفي لتوقيد جلسة، ولطيف بما يكفي ليستقر على معدة متوترة قبل المنافسة، وحلو بما يكفي ليختم الوجبة بلا حلوى. إنها الفاكهة التي تشتريها أسبوعيًا وتنهيها فعلًا.",
     },
     context: {
       en: {
@@ -1141,7 +1141,7 @@ export const FOODS_ENRICHMENT: Record<string, FoodEnrichment> = {
       ],
       ar: [
         { q: "كم بروتين في كوب حمص؟", a: "حوالي 15 جم لكل كوب 164 جم مع 12 جم ألياف عند 270 سعرة — أرقام نباتية متينة تجلس مع ذلك دون حصة الدجاج جرامًا بجرام." },
-        { q: "هل الحمص جيد لخسارة الوزن؟", a: "ثنائية أليافه وبروتينه تُبقي الحصص مُشبعة؛ والفخ في التحضير — مسلوقًا في السلطات ينفع للتنشيف، ومخفوقًا بزيت الطحينة يتسلل لأعلى." },
+        { q: "هل الحمص جيد لخسارة الوزن؟", a: "ثنائية أليافه وبروتينه تُبقي الحصص مُشبعة؛ والفخ في التحضير — مسلوقًا في السلطات يصلح للتنشيف، ومخفوقًا بزيت الطحينة يتسلل لأعلى." },
         { q: "حمص معلب أم مجفف؟", a: "المعلب يفوز بالسهولة بكلفة صوديوم صغيرة تشطفها؛ والمجفف يفوز بالسعر إن كنت ستسلقه بنفسك في عطلة أسبوع." },
       ],
     },
@@ -1461,7 +1461,7 @@ export const FOODS_ENRICHMENT: Record<string, FoodEnrichment> = {
   "carrot": {
     intro: {
       en: "A carrot is the sweetest vegetable most diets allow freely: 41 kcal and 10 g of carbs per 100 g, of which 4.7 g is natural sugar — still fewer calories per bite than an apple carries. The medium root (61 g) is 25 kcal, two of them make a snack bag that survives a gym bag, and their crunch does real psychological work replacing chip habits during a cut. The orange beta-carotene is a free bonus; the honest job is volume, fiber and sweetness at a price of nearly nothing.",
-      ar: "الجزر أحلى خضار تسمح به أغلب الحميات بحرية: 41 سعرة و10 جم كربوهيدرات لكل 100 جم، منها 4.7 جم سكر طبيعي — وما زال أقل سعرات للقمة مما تحمله تفاحة. والجذرة المتوسطة (61 جم) 25 سعرة، واثنتان منها تصنعان كيس سناك يصمد في حقيبة الجيم، ومقرشيتهما يقوم بعمل نفسي حقيقي باستبدال عادة الشيبسي في التنشيف. والبيتا كاروتين البرتقالي مكافأة مجانية؛ والوظيفة الصادقة هي الحجم والألياف والحلاوة بثمن شبه معدوم.",
+      ar: "الجزر أحلى خضار تسمح به أغلب الحميات بحرية: 41 سعرة و10 جم كربوهيدرات لكل 100 جم، منها 4.7 جم سكر طبيعي — وما زال أقل سعرات للقمة مما تحمله تفاحة. والجذرة المتوسطة (61 جم) 25 سعرة، واثنتان منها تصنعان كيس سناك يصمد في حقيبة التدريب، ومقرشيتهما يقوم بعمل نفسي حقيقي باستبدال عادة الشيبسي في التنشيف. والبيتا كاروتين البرتقالي مكافأة مجانية؛ والوظيفة الصادقة هي الحجم والألياف والحلاوة بثمن شبه معدوم.",
     },
     context: {
       en: {
@@ -1647,7 +1647,7 @@ export const FOODS_ENRICHMENT: Record<string, FoodEnrichment> = {
   "orange": {
     intro: {
       en: "An orange is the original vitamin-C delivery: 47 kcal and 12 g of carbs per 100 g, with the medium whole fruit (130 g) at 61 kcal and 2.4 g of fiber that juice strips away. That fiber is the difference between a snack and a blood-sugar blip — the fruit forces your jaw and gut to slow what a glass delivers in ten seconds. As the portable post-workout companion it has no rival: it survives a gym bag, needs no washing, and splits into segments that seem designed for shaking hands.",
-      ar: "البرتقالة توصيل فيتامين سي الأصلي: 47 سعرة و12 جم كربوهيدرات لكل 100 جم، والثمرة الكاملة المتوسطة (130 جم) عند 61 سعرة و2.4 جم ألياف تجردها العصارة. تلك الألياف هي الفرق بين سناك وقفزة سكر دم — الثمرة تجبر فكك وأمعاءك على إبطاء ما يوصله كوب في عشر ثوان. وكنديب ما بعد التمرين المحمول لا منافس له: يصمد في حقيبة الجيم، ولا يحتاج غسلًا، وينشق فصوصًا تبدو مصممة للأيدي المرتجفة.",
+      ar: "البرتقالة توصيل فيتامين سي الأصلي: 47 سعرة و12 جم كربوهيدرات لكل 100 جم، والثمرة الكاملة المتوسطة (130 جم) عند 61 سعرة و2.4 جم ألياف تجردها العصارة. تلك الألياف هي الفرق بين سناك وقفزة سكر دم — الثمرة تجبر فكك وأمعاءك على إبطاء ما يوصله كوب في عشر ثوان. وكنديب ما بعد التمرين المحمول لا منافس له: يصمد في حقيبة التدريب، ولا يحتاج غسلًا، وينشق فصوصًا تبدو مصممة للأيدي المرتجفة.",
     },
     context: {
       en: {

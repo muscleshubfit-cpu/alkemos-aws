@@ -16,7 +16,7 @@ import {
 
 describe("localizeApiError — /api/coach/subscriptions/activate errors", () => {
   const arabicWallet =
-    "رصيد محفظتك (0$) مش كفاية لتفعيل 1 شهر — المطلوب 6$. اشحن المحفظة الأول (PayPal / انستاباي / فودافون كاش) وهيتم التفعيل فورًا.";
+    "رصيد محفظتك (0$) لا يكفي لتفعيل 1 شهر — المطلوب 6$. اشحن محفظتك أولًا (PayPal / انستاباي / فودافون كاش) وسيتم التفعيل فورًا.";
 
   it("AR UI keeps the server's canonical Arabic message verbatim", () => {
     const json = { error: "insufficient_wallet", message: arabicWallet, balance: 0, cost: 6 };
@@ -41,7 +41,7 @@ describe("localizeApiError — /api/coach/subscriptions/activate errors", () => 
   });
 
   it("EN UI handles the debit-failure variant (no numeric payload)", () => {
-    const json = { error: "insufficient_wallet", message: "رصيد محفظتك مش كفاية" };
+    const json = { error: "insufficient_wallet", message: "رصيد محفظتك لا يكفي" };
     const out = localizeApiError(json, { isAr: false });
     expect(out).toBe(
       "Your wallet balance is not enough — top up your wallet first (InstaPay / Vodafone Cash / PayPal).",

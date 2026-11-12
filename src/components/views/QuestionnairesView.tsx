@@ -173,7 +173,7 @@ export function QuestionnairesView() {
     // and returns the original whenever compression is impossible.
     file = await compressImageFile(file, { maxDim: 1600, quality: 0.82 });
     if (file.size > 5 * 1024 * 1024) {
-      toast.error(isAr ? "الصورة كبيرة جدًا (الحد 5 ميجا)." : "Image too large (max 5MB).");
+      toast.error(isAr ? "الصورة كبيرة جدًا (الحد 5 ميجابايت)." : "Image too large (max 5MB).");
       return;
     }
     setUploadingPhoto(true);
@@ -619,7 +619,7 @@ export function QuestionnairesView() {
               <p className="mt-1 text-sm font-normal text-[#6e6e73]">
                 {bothSubmitted
                   ? isAr
-                    ? "بياناتك وصلت لمدربك — دي قيم ما أرسلته بالضبط. تقدر تعدّل أي قسم في أي وقت."
+                    ? "بياناتك وصلت إلى مدربك — وفيما يلي القيم التي أرسلتها بالضبط. يمكنك تعديل أي قسم في أي وقت."
                     : "Your coach has your data — below is exactly what you submitted. Edit any section anytime."
                   : t("q.reviewDesc")}
               </p>

@@ -86,7 +86,7 @@ export async function GET(request: NextRequest) {
     );
   }
   if (counts.failed > 0) {
-    issues.push(`${counts.failed} مهمة فشلت نهائيًا — راجعي سبب الفشل في سجل التشغيل`);
+    issues.push(`${counts.failed} مهمة فشلت نهائيًا — راجع سبب الفشل في سجل التشغيل`);
   }
 
   // ── AUDIT_REPORT §9-المرحلة 1, item 3 (2026-09-29): blog research
@@ -157,7 +157,7 @@ export async function GET(request: NextRequest) {
           const sinceMin = (now - new Date(ranAt).getTime()) / 60_000;
           if (counts.queued > 0 && sinceMin > STUCK_QUEUE_MINUTES && !issues.length) {
             issues.push(
-              `الطابور فيه مهام وآخر تشغيل ناجح كان قبل ${Math.round(sinceMin)} دقيقة — اضغطي يدويًا على Run workflow أو راجعي GITHUB_DISPATCH_TOKEN`,
+              `توجد مهام في الطابور وآخر تشغيل ناجح كان قبل ${Math.round(sinceMin)} دقيقة — شغّل سير العمل يدويًا أو راجع GITHUB_DISPATCH_TOKEN`,
             );
           }
         }

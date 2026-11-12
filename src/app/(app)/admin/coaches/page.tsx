@@ -146,7 +146,7 @@ export default function CoachesPage() {
         title={isAr ? "المدربون" : "Coaches"}
         sub={
           isAr
-            ? "قائمة بكل المدربين مع تفرقة واضحة: «مدرب موقع» بيتابع أعضاء الموقع (B2C)، و«مدرب B2B» شريك خارجي ليه عملاءه ومحفظته وفاتورته — وكل أدوات المدربين في القائمة الجانبية."
+            ? "قائمة بكل المدربين مع تفرقة واضحة: «مدرب الموقع» يتابع أعضاء الموقع (B2C)، و«مدرب B2B» شريك خارجي له عملاؤه ومحفظته وفاتورته — وكل أدوات المدربين في القائمة الجانبية."
             : "The full coach roster with a clear split: a «site coach» follows up site members (B2C), a «B2B coach» is an external partner with his own clients, wallet and billing — every coach tool lives in the sidebar."
         }
       />

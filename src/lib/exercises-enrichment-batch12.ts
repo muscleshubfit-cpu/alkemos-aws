@@ -163,7 +163,7 @@ export const BATCH_12: Record<string, ExerciseEnrichment> = {
     },
     links: [
       { hrefEn: "/programs/home-core-specialization", hrefAr: "/ar/programs/home-core-specialization", labelEn: "Home core specialization program", labelAr: "برنامج تخصص الجذع المنزلي" },
-      { hrefEn: "/blog/warm-up-before-lifting-5min-routine", hrefAr: "/ar/blog/best-dynamic-stretching-before-gym", labelEn: "Five-minute warm-up before lifting", labelAr: "الإحماء الديناميكي قبل الجيم" },
+      { hrefEn: "/blog/warm-up-before-lifting-5min-routine", hrefAr: "/ar/blog/best-dynamic-stretching-before-gym", labelEn: "Five-minute warm-up before lifting", labelAr: "الإحماء الديناميكي قبل رفع الأثقال" },
       { hrefEn: "/workout-tracker", hrefAr: "/ar/workout-tracker", labelEn: "Workout tracker", labelAr: "متتبع التمارين" },
     ],
   },

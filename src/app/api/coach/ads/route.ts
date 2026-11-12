@@ -147,7 +147,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           error: "insufficient_wallet",
-          message: `رصيد محفظتك (${balance}$) مش كفاية لاشتراك الإعلان — المطلوب ${price}$. اشحن المحفظة الأول (PayPal / انستاباي / فودافون كاش).`,
+          message: `رصيد محفظتك (${balance}$) لا يكفي لاشتراك الإعلان — المطلوب ${price}$. اشحن محفظتك أولًا (PayPal / انستاباي / فودافون كاش).`,
           balance,
           cost: price,
         },
@@ -172,8 +172,8 @@ export async function POST(request: NextRequest) {
         {
           error: "insufficient_wallet",
           message: insufficient
-            ? "رصيد محفظتك مش كفاية — اشحن المحفظة الأول (انستاباي / فودافون كاش / PayPal)."
-            : "فشل خصم رسوم الإعلان من المحفظة — حاول تاني.",
+            ? "رصيد محفظتك لا يكفي — اشحن محفظتك أولًا (انستاباي / فودافون كاش / PayPal)."
+            : "فشل خصم رسوم الإعلان من المحفظة — حاول مرة أخرى.",
         },
         { status: 402 },
       );

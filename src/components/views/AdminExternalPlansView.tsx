@@ -64,8 +64,8 @@ const DIET_TYPES: { value: string; en: string }[] = [
   { value: "تنشيف (خسارة دهون)", en: "Cut (fat loss)" },
   { value: "تضخيم (بناء عضلات)", en: "Bulk (muscle gain)" },
   { value: "نباتي", en: "Vegetarian" },
-  { value: "كيتو (منخفض الكارب الحاد)", en: "Keto" },
-  { value: "منخفض الكارب", en: "Low carb" },
+  { value: "كيتو (كربوهيدرات منخفضة جدًا)", en: "Keto" },
+  { value: "منخفض الكربوهيدرات", en: "Low carb" },
   { value: "متوسطي", en: "Mediterranean" },
   { value: "بحري (تركيز على الأسماك)", en: "Seafood-based" },
 ];
@@ -197,7 +197,7 @@ export function AdminExternalPlansView() {
   const generate = async () => {
     if (generating) return;
     if (aiForm.person_name.trim().length < 2) {
-      toast.error(isAr ? "اكتب اسم الشخص الأول" : "Write the person's name first");
+      toast.error(isAr ? "اكتب اسم الشخص أولًا" : "Write the person's name first");
       return;
     }
     setGenerating(true);
@@ -291,7 +291,7 @@ export function AdminExternalPlansView() {
   };
 
   const remove = async (plan: ExternalPlan) => {
-    if (!confirm(isAr ? `حذف خطة «${plan.title}» بتاعة ${plan.person_name}؟` : `Delete "${plan.title}" for ${plan.person_name}?`)) return;
+    if (!confirm(isAr ? `حذف خطة «${plan.title}» الخاصة بـ${plan.person_name}؟` : `Delete "${plan.title}" for ${plan.person_name}?`)) return;
     try {
       const res = await fetch(`/api/admin/external-plans?id=${plan.id}`, { method: "DELETE" });
       if (!res.ok) {
@@ -408,7 +408,7 @@ export function AdminExternalPlansView() {
   const copyPlan = async (plan: ExternalPlan) => {
     try {
       await navigator.clipboard.writeText(composeText(plan));
-      toast.success(isAr ? "تم النسخ — ابعتها للشخص" : "Copied — send it to the person");
+      toast.success(isAr ? "تم النسخ — أرسلها للشخص" : "Copied — send it to the person");
     } catch {
       toast.error(isAr ? "فشل النسخ" : "Copy failed");
     }
@@ -445,7 +445,7 @@ export function AdminExternalPlansView() {
           </h1>
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#6e6e73] md:text-base">
             {isAr
-              ? "ولّد خطط تدريب وتغذية بالذكاء الاصطناعي لأشخاص من خارج أعضاء الموقع — نفس محرك توليد الخطط للعملاء: حدد عدد الوجبات والسعرات ونوع النظام الغذائي وأضف تفاصيلك، أو حدد أيام التدريب والهدف والمستوى لخطط التمرين. الخطة تتولد كاملة، تنسخها أو تحمّلها وتبعتها للشخص — مش محتاج يكون عنده حساب، ومفيش أي حد."
+              ? "ولّد خطط تدريب وتغذية بالذكاء الاصطناعي لأشخاص من خارج أعضاء الموقع — نفس محرك توليد الخطط للعملاء: حدد عدد الوجبات والسعرات ونوع النظام الغذائي وأضف تفاصيلك، أو حدد أيام التدريب والهدف والمستوى لخطط التمرين. الخطة تتولد كاملة، تنسخها أو تحمّلها وترسلها للشخص — لا يلزم أن يكون لديه حساب، وبلا أي حد."
               : "Generate AI-powered training and nutrition plans for people who are NOT members — the same engine used for client plans: set meal count, calories, diet type and extra details, or set training days, goal and level for workout plans. Copy or download and send — no account needed, no cap."}
           </p>
         </div>
@@ -556,7 +556,7 @@ export function AdminExternalPlansView() {
                     max={6000}
                     value={aiForm.calories}
                     onChange={(e) => setAIForm({ ...aiForm, calories: e.target.value })}
-                    placeholder={isAr ? "سيبها فاضية ليحسبها النظام" : "Leave empty to auto-compute"}
+                    placeholder={isAr ? "اتركها فارغة ليحسبها النظام" : "Leave empty to auto-compute"}
                     className={inputCls}
                   />
                 </div>
@@ -578,7 +578,7 @@ export function AdminExternalPlansView() {
 
               <p className="mt-4 text-xs font-semibold text-[#6e6e73]">
                 {isAr
-                  ? "بيانات الشخص (اختياري — لدقة حساب السعرات والماكروز زي نموذج العملاء):"
+                  ? "بيانات الشخص (اختياري — لدقة حساب السعرات والماكروز كما في نموذج العملاء):"
                   : "Person data (optional — accurate calorie/macro math, same as client plans):"}
               </p>
               <div className="mt-2 grid gap-4 sm:grid-cols-4">
@@ -707,10 +707,10 @@ export function AdminExternalPlansView() {
               placeholder={
                 aiForm.plan_type === "meal"
                   ? isAr
-                    ? "مثال: حساسية من المكسرات، بيحب الدجاج والسمك، مش بيأكل البيض..."
+                    ? "مثال: حساسية من المكسرات، يفضّل الدجاج والسمك، لا يأكل البيض..."
                     : "e.g. nut allergy, likes chicken and fish, no eggs..."
                   : isAr
-                    ? "مثال: مشكلة بسيطة في الركبة اليمين، متاح بار ودمبل..."
+                    ? "مثال: مشكلة بسيطة في الركبة اليمنى، متاح بار ودمبل..."
                     : "e.g. mild right knee issue, barbell and dumbbells available..."
               }
               className={`${inputCls} leading-relaxed`}
@@ -766,7 +766,7 @@ export function AdminExternalPlansView() {
             </button>
             <span className="text-xs text-[#86868b]">
               {isAr
-                ? "التوليد بنفس محرك خطط العملاء — ممكن ياخد حتى دقيقة."
+                ? "التوليد بنفس محرك خطط العملاء — قد يستغرق حتى دقيقة."
                 : "Same engine as client plans — may take up to a minute."}
             </span>
           </div>

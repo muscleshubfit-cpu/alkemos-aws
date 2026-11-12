@@ -109,7 +109,7 @@ export async function POST(request: NextRequest) {
     const hint = rpcErr.message.includes("coach_adjust_wallet")
       ? "شغّل هجرة 0035 أولًا (RUN_ON_SUPABASE_0035_COACH_WALLET.sql)"
       : rpcErr.message.includes("insufficient")
-        ? "الرصيد الحالي مش كفاية للخصم ده"
+        ? "الرصيد الحالي لا يكفي لهذا الخصم"
         : rpcErr.message;
     return NextResponse.json({ error: "adjust_failed", message: hint }, { status: 502 });
   }

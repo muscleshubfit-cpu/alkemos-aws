@@ -275,7 +275,7 @@ export default function AdminClientsPage() {
       if (failed.length > 0) {
         toast.error(
           isAr
-            ? `فشل مسح ${failed.length} ${failed.length === 1 ? "حساب" : "حسابات"} — حاول تاني`
+            ? `فشل مسح ${failed.length} ${failed.length === 1 ? "حساب" : "حسابات"} — حاول مرة أخرى`
             : `Failed to delete ${failed.length} account(s) — try again`,
         );
       }

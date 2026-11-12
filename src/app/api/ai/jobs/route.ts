@@ -191,7 +191,7 @@ export async function POST(request: NextRequest) {
           .maybeSingle();
         if (!rostered) {
           return NextResponse.json(
-            { error: "هذا العميل مش ضمن أعضاء متابعتك — كل مدرب موقع يولّد لأعضائه هو فقط." },
+            { error: "هذا العميل ليس ضمن أعضاء متابعتك — كل مدرب موقع يولّد الخطط لأعضائه هو فقط." },
             { status: 403 },
           );
         }
@@ -229,7 +229,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json(
           {
             error:
-              "هذا العميل لم يُفعّل اشتراكه بعد — فعّل اشتراكه الأول من صفحته (شهر 6$ — ٣ شهور 16$ يُخصم من محفظتك) وبعدها يمكنك توليد الخطط له.",
+              "هذا العميل لم يُفعّل اشتراكه بعد — فعّل اشتراكه أولًا من صفحته (شهر 6$ — 3 شهور 16$ تُخصم من محفظتك) وبعدها يمكنك توليد الخطط له.",
             code: "client_not_activated",
           },
           { status: 402 },
@@ -251,7 +251,7 @@ export async function POST(request: NextRequest) {
       // the weekly swaps).
       const clientQuota = await checkUnifiedPlanQuota({ userId: clientId });
       if (!clientQuota.unlimited && !clientQuota.allowed) {
-        const message = `رصيد توليد الخطط الموحد للعميل خلص (${clientQuota.used}/${clientQuota.limit} — تغذية وتمارين من نفس الرصيد). التوليد — منك أو من ايفو عند العميل — بيخصم من نفس الرصيد، وبيتصفّر أول الشهر. تقدر تعدّل الخطة الحالية أو ترفع خطة يدوي من غير حدود.`;
+        const message = `رصيد توليد الخطط الموحد للعميل انتهى (${clientQuota.used}/${clientQuota.limit} — تغذية وتمارين من الرصيد نفسه). التوليد — منك أو من إيفو لدى العميل — يُخصم من الرصيد نفسه ويُصفَّر في أول الشهر. يمكنك تعديل الخطة الحالية أو رفع خطة يدويًا دون حدود.`;
         return NextResponse.json(
           {
             error: message,

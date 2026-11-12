@@ -167,7 +167,7 @@ export async function POST(request: NextRequest) {
       {
         error: "breached_password",
         message:
-          "كلمة السر دي ظهرت في تسريبات معروفة — اختر كلمة سر أقوى",
+          "كلمة المرور هذه ظهرت في تسريبات معروفة — اختر كلمة مرور أقوى",
       },
       { status: 400 },
     );
@@ -190,7 +190,7 @@ export async function POST(request: NextRequest) {
       {
         error: "already_registered",
         message:
-          "البريد ده مسجل بالفعل — سجّل دخول من صفحة الدخول أو استخدم بريدًا تاني",
+          "هذا البريد الإلكتروني مسجَّل بالفعل — سجّل دخولك من صفحة تسجيل الدخول أو استخدم بريدًا آخر",
       },
       { status: 409 },
     );
@@ -232,7 +232,7 @@ export async function POST(request: NextRequest) {
         {
           error: "already_registered",
           message:
-            "البريد ده مسجل بالفعل — سجّل دخول من صفحة الدخول أو استخدم بريدًا تاني",
+            "هذا البريد الإلكتروني مسجَّل بالفعل — سجّل دخولك من صفحة تسجيل الدخول أو استخدم بريدًا آخر",
         },
         { status: 409 },
       );

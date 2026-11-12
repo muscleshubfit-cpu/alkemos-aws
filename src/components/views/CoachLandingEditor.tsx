@@ -242,13 +242,13 @@ export function CoachLandingEditor() {
 
   function guardImage(file: File): string | null {
     if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
-      return isAr ? "الصورة لازم تكون JPG أو PNG أو WEBP" : "Image must be JPG, PNG or WEBP";
+      return isAr ? "يجب أن تكون الصورة بصيغة JPG أو PNG أو WEBP" : "Image must be JPG, PNG or WEBP";
     }
     if (file.size > MAX_IMAGE_BYTES) {
-      return isAr ? "أقصى حجم للصورة ٥ ميجابايت" : "Max image size is 5 MB";
+      return isAr ? "أقصى حجم للصورة 5 ميجابايت" : "Max image size is 5 MB";
     }
     if (!coachId) {
-      return isAr ? "سجّل دخولك تاني قبل رفع الصور" : "Sign in again before uploading";
+      return isAr ? "سجّل دخولك مرة أخرى قبل رفع الصور" : "Sign in again before uploading";
     }
     return null;
   }
@@ -414,7 +414,7 @@ export function CoachLandingEditor() {
         {reviewStatus === "rejected" && (
           <div className="rounded-2xl border border-[#ff3b30]/30 bg-[#ff3b30]/5 p-4">
             <p className="text-sm font-bold text-[#ff3b30]">
-              {isAr ? "الأدمن رفض الصفحة — عدّل المحتوى وابعته تاني" : "The admin rejected your page — edit it and resubmit"}
+              {isAr ? "رفضت الإدارة الصفحة — عدّل المحتوى وأرسله مرة أخرى" : "The admin rejected your page — edit it and resubmit"}
             </p>
             {reviewNote && (
               <p className="mt-1.5 text-sm leading-relaxed text-[#ff3b30]/90">
@@ -424,7 +424,7 @@ export function CoachLandingEditor() {
             )}
             <p className="mt-1 text-xs text-[#6e6e73]">
               {isAr
-                ? "صفحتك مش ظاهرة للزوار حاليًا — أول ما تعدّل وتضغط نشر بترجع للمراجعة."
+                ? "صفحتك غير ظاهرة للزوار حاليًا — بمجرد أن تعدّل وتضغط نشر تعود للمراجعة."
                 : "Your page is hidden from visitors — edit and press publish to send it back to review."}
             </p>
           </div>
@@ -432,11 +432,11 @@ export function CoachLandingEditor() {
         {reviewStatus === "pending" && (
           <div className="rounded-2xl border border-[#ff9500]/30 bg-[#ff9500]/5 p-4">
             <p className="text-sm font-bold text-[#ff9500]">
-              {isAr ? "صفحتك في انتظار مراجعة الأدمن" : "Your page is pending admin review"}
+              {isAr ? "صفحتك في انتظار مراجعة الإدارة" : "Your page is pending admin review"}
             </p>
             <p className="mt-1 text-xs text-[#6e6e73]">
               {isAr
-                ? "بتقدر تعدّل براحتك — لكن التعديلات مش بتظهر للزوار غير بعد موافقة الأدمن."
+                ? "يمكنك التعديل بحرية — لكن التعديلات لا تظهر للزوار إلا بعد موافقة الإدارة."
                 : "You can keep editing — changes go live only after the admin approves."}
             </p>
           </div>
@@ -454,7 +454,7 @@ export function CoachLandingEditor() {
             reviewStatus === "rejected" ? "bg-[#ff3b30]" : published && reviewStatus === "approved" ? "bg-[#34c759]" : "bg-[#ff9500]"
           }`} />
           {reviewStatus === "pending"
-            ? isAr ? "في انتظار موافقة الأدمن — غير ظاهرة للعامة" : "Pending admin approval — not public"
+            ? isAr ? "في انتظار موافقة الإدارة — غير ظاهرة للعامة" : "Pending admin approval — not public"
             : reviewStatus === "rejected"
               ? isAr ? "مرفوضة — محتاجة تعديل" : "Rejected — needs edits"
               : published
@@ -566,7 +566,7 @@ export function CoachLandingEditor() {
           </div>
           <p className="mt-3 text-xs font-normal text-[#6e6e73]">
             {isAr
-              ? "JPG / PNG / WEBP — حتى ٥ ميجا. بتظهر دائرة في أعلى صفحتك العامة."
+              ? "JPG / PNG / WEBP — حتى 5 ميجابايت. تظهر دائرية الشكل في أعلى صفحتك العامة."
               : "JPG / PNG / WEBP — up to 5 MB. Shown as a circle at the top of your public page."}
           </p>
         </div>
@@ -578,7 +578,7 @@ export function CoachLandingEditor() {
           </label>
           <p className="mb-4 text-xs font-normal text-[#6e6e73]">
             {isAr
-              ? `حتى ${MAX_RESULTS_PHOTOS} صور — اكتب وصفًا قصيرًا تحت كل صورة (اختياري). لازم يكون العميل موافق على نشر صورته.`
+              ? `حتى ${MAX_RESULTS_PHOTOS} صور — اكتب وصفًا قصيرًا تحت كل صورة (اختياري). بشرط موافقة العميل على نشر صورته.`
               : `Up to ${MAX_RESULTS_PHOTOS} photos — add a short caption under each (optional). Make sure the client consented to publishing his photo.`}
           </p>
           {resultsPhotos.length > 0 && (
@@ -633,7 +633,7 @@ export function CoachLandingEditor() {
           </label>
           <p className="mb-4 text-xs font-normal text-[#6e6e73]">
             {isAr
-              ? `ارفع صور شهاداتك واعتماداتك (حتى ${MAX_CERTIFICATES} شهادة) واكتب اسم كل شهادة. لو سيبت القسم فاضي مش هيظهر على صفحتك العامة.`
+              ? `ارفع صور شهاداتك واعتماداتك (حتى ${MAX_CERTIFICATES} شهادة) واكتب اسم كل شهادة. لو تركت القسم فارغًا فلن يظهر على صفحتك العامة.`
               : `Upload photos of your certificates (up to ${MAX_CERTIFICATES}) and type each name. Leave empty to skip — the section stays hidden on your public page.`}
           </p>
           {certificates.length > 0 && (
@@ -684,11 +684,11 @@ export function CoachLandingEditor() {
         {/* 0037 — social links */}
         <div className="rounded-2xl border border-[#d2d2d7] bg-white p-5">
           <label className="mb-1 block text-sm font-medium">
-            {isAr ? "روابط السوشيال ميديا" : "Social media links"}
+            {isAr ? "روابط التواصل الاجتماعي" : "Social media links"}
           </label>
           <p className="mb-4 text-xs font-normal text-[#6e6e73]">
             {isAr
-              ? "اتسيبها فاضية لو مش عايزها — اللنكات اللي هتضيفها بتظهر كأزرار على صفحتك العامة."
+              ? "اتركها فارغة إن لم ترغب فيها — الروابط التي تضيفها تظهر كأزرار على صفحتك العامة."
               : "Leave empty to skip — added links render as buttons on your public page."}
           </p>
           <div className="grid gap-3 sm:grid-cols-2" dir="ltr">
@@ -802,7 +802,7 @@ export function CoachLandingEditor() {
           </div>
           <p className="mt-3 text-xs font-normal text-[#6e6e73]">
             {isAr
-              ? "لو سيبتها فاضية، الصفحة الإنجليزية هتعرض المحتوى العربي تلقائيًا — والعكس صحيح."
+              ? "إن تركتها فارغة، ستعرض الصفحة الإنجليزية المحتوى العربي تلقائيًا — والعكس صحيح."
               : "Left empty, the English page automatically shows the Arabic content — and vice versa."}
           </p>
         </div>
