@@ -1,0 +1,85 @@
+1|keebler-zesta-saltines-original|KEEBLER, ZESTA, Saltines, Original
+2|keebler-zesta-saltines-with-whole-wheat|KEEBLER, ZESTA, Saltines with Whole Wheat
+3|bread-roll-mexican-bollilo|Bread, roll, Mexican, bollilo
+4|rolls-hamburger-or-hot-dog-wheatcracked-wheat|Rolls, hamburger or hot dog, wheat/cracked wheat
+5|crackers-flavored-fish-shaped|Crackers, flavored, fish-shaped
+6|rolls-gluten-free-white-made-with-brown-rice-flour-tapioca-s|Rolls, gluten-free, white, made with brown rice flour, tapioca starch, and potato starch
+7|rolls-gluten-free-white-made-with-brown-rice-flour-tapioca-s-8105|Rolls, gluten-free, white, made with brown rice flour, tapioca starch, and sorghum flour
+8|crackers-gluten-free-multi-seeded-and-multigrain|Crackers, gluten-free, multi-seeded and multigrain
+9|cookies-marie-biscuit|Cookies, Marie biscuit
+10|andreas-gluten-free-soft-dinner-roll|ANDREA'S, Gluten Free Soft Dinner Roll
+11|crunchmaster-multi-grain-crisps-snack-crackers-gluten-free|CRUNCHMASTER, Multi-Grain Crisps, Snack Crackers, Gluten-Free
+12|marys-gone-crackers-original-crackers-organic-gluten-free|MARY'S GONE CRACKERS, Original Crackers, Organic Gluten Free
+13|pepperidge-farm-goldfish-baked-snack-crackers-explosive-pizz|PEPPERIDGE FARM, Goldfish, Baked Snack Crackers, Explosive Pizza
+14|rudis-gluten-free-bakery-original-sandwich-bread|RUDI'S, Gluten-Free Bakery, Original Sandwich Bread
+15|sage-valley-gluten-free-vanilla-sandwich-cookies|SAGE VALLEY, Gluten Free Vanilla Sandwich Cookies
+16|udis-gluten-free-soft-delicious-white-sandwich-bread|UDI'S, Gluten Free, Soft & Delicious White Sandwich Bread
+17|vans-the-perfect-10-crispy-six-whole-grain-four-seed-baked-c|VAN'S, The Perfect 10, Crispy Six Whole Grain + Four Seed Baked Crackers, Gluten Free
+18|pepperidge-farm-jewish-rye-bread-seedless|PEPPERIDGE FARM, Jewish Rye Bread (Seedless)
+19|pepperidge-farm-hamburger-buns-wsesame|PEPPERIDGE FARM, Hamburger Buns w/Sesame
+20|pepperidge-farm-seeded-jewish-rye-bread|PEPPERIDGE FARM, Seeded Jewish Rye Bread
+21|pepperidge-farm-white-hoagie-roll|PEPPERIDGE FARM, White Hoagie Roll
+22|campbells-v8-vegetable-juice-essential-antioxidants-v8|CAMPBELL'S, V8 Vegetable Juice, Essential Antioxidants V8
+23|pace-jalapenos-nacho-sliced-peppers|PACE, Jalapenos Nacho Sliced Peppers
+24|campbells-v8-60-vegetable-juice-v8-v-lite|CAMPBELL'S, V8 60% Vegetable Juice, V8 V-Lite
+25|seaweed-canadian-cultivated-emi-tsunomata-dry|Seaweed, Canadian Cultivated EMI-TSUNOMATA, dry
+26|seaweed-canadian-cultivated-emi-tsunomata-rehydrated|Seaweed, Canadian Cultivated EMI-TSUNOMATA, rehydrated
+27|sweet-potatoes-french-fried-crosscut-frozen-unprepared|Sweet Potatoes, french fried, crosscut, frozen, unprepared
+28|potatoes-french-fried-wedge-cut-frozen-unprepared|Potatoes, french fried, wedge cut, frozen, unprepared
+29|potatoes-french-fried-cross-cut-frozen-unprepared|Potatoes, french fried, cross cut, frozen, unprepared
+30|vegetable-smoothie-naked-juice-kale-blazer|Vegetable smoothie, NAKED JUICE, KALE BLAZER
+31|ginger-root-pickled-canned-with-artificial-sweetener|Ginger root, pickled, canned, with artificial sweetener
+32|vegetable-juice-bolthouse-farms-daily-greens|Vegetable juice, BOLTHOUSE FARMS, DAILY GREENS
+33|taquitos-frozen-chicken-and-cheese-oven-heated|Taquitos, frozen, chicken and cheese, oven-heated
+34|taquitos-frozen-beef-and-cheese-oven-heated|Taquitos, frozen, beef and cheese, oven-heated
+35|yellow-rice-with-seasoning-dry-packet-mix-unprepared|Yellow rice with seasoning, dry packet mix, unprepared
+36|spanish-rice-mix-dry-mix-prepared-with-canolavegetable-oil-b|Spanish rice mix, dry mix, prepared (with canola/vegetable oil blend or diced tomatoes and margarine)
+37|hungry-man-salisbury-steak-with-gravy-frozen-unprepared|HUNGRY MAN, Salisbury Steak With Gravy, frozen, unprepared
+38|infant-formula-mead-johnson-enfamil-premium-newborn-powder|Infant Formula, MEAD JOHNSON, ENFAMIL, Premium, Newborn, powder
+39|infant-formula-mead-johnson-enfamil-nutramigen-aa-lipil-powd|Infant formula, MEAD JOHNSON, ENFAMIL, NUTRAMIGEN, AA LIPIL, powder, not reconstituted
+40|ascidians-tunughnak-alaska-native|Ascidians (tunughnak) (Alaska Native)
+41|bear-polar-meat-raw-alaska-native|Bear, polar, meat, raw (Alaska Native)
+42|whale-beluga-eyes-alaska-native|Whale, beluga, eyes (Alaska Native)
+43|whale-beluga-flipper-raw-alaska-native|Whale, beluga, flipper, raw (Alaska Native)
+44|fish-blackfish-whole-alaska-native|Fish, blackfish, whole (Alaska Native)
+45|caribou-bone-marrow-raw-alaska-native|Caribou, bone marrow, raw (Alaska Native)
+46|chiton-leathery-gumboots-alaska-native|Chiton, leathery, gumboots (Alaska Native)
+47|cloudberries-raw-alaska-native|Cloudberries, raw (Alaska Native)
+48|cockles-raw-alaska-native|Cockles, raw (Alaska Native)
+49|cranberries-wild-bush-raw-alaska-native|Cranberries, wild, bush, raw (Alaska Native)
+50|cranberry-low-bush-or-lingenberry-raw-alaska-native|Cranberry, low bush or lingenberry, raw (Alaska Native)
+51|fish-devilfish-meat-alaska-native|Fish, devilfish, meat (Alaska Native)
+52|fireweed-young-leaves-raw-alaska-native|Fireweed, young leaves, raw (Alaska Native)
+53|fish-herring-eggs-on-giant-kelp-pacific-alaska-native|Fish, herring eggs on giant kelp, Pacific (Alaska Native)
+54|fish-herring-pacific-flesh-air-dried-packed-in-oil-alaska-na|Fish, herring, Pacific, flesh, air-dried, packed in oil (Alaska Native)
+55|huckleberries-raw-alaska-native|Huckleberries, raw (Alaska Native)
+56|mashu-roots-raw-alaska-native|Mashu roots, raw (Alaska Native)
+57|mouse-nuts-roots-alaska-native|Mouse nuts, roots (Alaska Native)
+58|mouse-nuts-seedlings-alaska-native|Mouse nuts, seedlings (Alaska Native)
+59|oopah-tunicate-whole-animal-alaska-native|Oopah (tunicate), whole animal (Alaska Native)
+60|owl-horned-flesh-raw-alaska-native|Owl, horned, flesh, raw (Alaska Native)
+61|rhubarb-wild-leaves-alaska-native|Rhubarb, wild, leaves (Alaska Native)
+62|fish-salmon-tipnuk-fermented-alaska-native|Fish, salmon, tipnuk, fermented (Alaska Native)
+63|fish-salmon-king-chinook-smoked-brined-alaska-native|Fish, salmon, king, chinook, smoked, brined (Alaska Native)
+64|duck-scoter-white-winged-meat-alaska-native|Duck, scoter, white-winged, meat (Alaska Native)
+65|sea-cucumber-yane-alaska-native|Sea cucumber, yane (Alaska Native)
+66|sourdock-young-leaves-alaska-native|Sourdock, young leaves (Alaska Native)
+67|tea-tundra-herb-and-laborador-combination-alaska-native|Tea, tundra, herb and laborador combination (Alaska Native)
+68|deer-venison-sitka-raw-alaska-native|Deer (venison), sitka, raw (Alaska Native)
+69|whale-bowhead-subcutaneous-fat-blubber-alaska-native|Whale, bowhead, subcutaneous fat (blubber) (Alaska Native)
+70|whale-bowhead-skin-and-subcutaneous-fat-muktuk-alaska-native|Whale, bowhead, skin and subcutaneous fat (muktuk) (Alaska Native)
+71|fish-whitefish-broad-liver-alaska-native|Fish, whitefish, broad, liver (Alaska Native)
+72|fish-whitefish-broad-head-eyes-cheeks-and-soft-bones-alaska-|Fish, whitefish, broad, head, eyes, cheeks and soft bones (Alaska Native)
+73|willow-leaves-in-oil-alaska-native|Willow, leaves in oil (Alaska Native)
+74|willow-young-leaves-chopped-alaska-native|Willow, young leaves, chopped (Alaska Native)
+75|mush-blue-corn-with-ash-navajo|Mush, blue corn with ash (Navajo)
+76|melon-banana-navajo|Melon, banana (Navajo)
+77|chilchen-red-berry-beverage-navajo|Chilchen (Red Berry Beverage) (Navajo)
+78|bread-kneel-down-navajo|Bread, kneel down (Navajo)
+79|fish-salmon-coho-silver-raw-alaska-native|Fish, salmon, coho (silver), raw (Alaska Native)
+80|fish-salmon-chum-raw-alaska-native|Fish, Salmon, Chum, raw (Alaska Native)
+81|fish-salmon-red-sockeye-canned-smoked-alaska-native|Fish, salmon, red, (sockeye), canned, smoked (Alaska Native)
+82|fish-salmon-red-sockeye-kippered-alaska-native|Fish, salmon, red, (sockeye), kippered (Alaska Native)
+83|seal-bearded-oogruk-meat-low-quadrant-raw-alaska-native|Seal, bearded (Oogruk), meat, low quadrant, raw (Alaska Native)
+84|fish-salmon-chum-dried-alaska-native|Fish, salmon, chum, dried (Alaska Native)
+85|chokecherries-raw-pitted-shoshone-bannock|Chokecherries, raw, pitted (Shoshone Bannock)

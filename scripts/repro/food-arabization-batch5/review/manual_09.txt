@@ -1,0 +1,85 @@
+1|beef-new-zealand-imported-brisket-navel-end-separable-lean-o|Beef, New Zealand, imported, brisket navel end, separable lean only, cooked, braised
+2|beef-new-zealand-imported-manufacturing-beef-cooked-boiled|Beef, New Zealand, imported, manufacturing beef, cooked, boiled
+3|beef-new-zealand-imported-manufacturing-beef-raw|Beef, New Zealand, imported, manufacturing beef, raw
+4|beef-new-zealand-imported-brisket-navel-end-separable-lean-a|Beef, New Zealand, imported, brisket navel end, separable lean and fat, cooked, braised
+5|usda-commodity-beef-patties-with-vpp-frozen-cooked|USDA Commodity, beef patties with VPP, frozen, cooked
+6|usda-commodity-beef-ground-bulkcoarse-ground-frozen-cooked|USDA Commodity, beef, ground bulk/coarse ground, frozen, cooked
+7|usda-commodity-beef-patties-100-frozen-cooked|USDA Commodity, beef, patties (100%), frozen, cooked
+8|usda-commodity-beef-patties-with-vpp-frozen-raw|USDA Commodity, beef patties with VPP, frozen, raw
+9|usda-commodity-beef-patties-100-frozen-raw|USDA Commodity, beef, patties (100%), frozen, raw
+10|usda-commodity-beef-ground-bulkcoarse-ground-frozen-raw|USDA Commodity, beef, ground, bulk/coarse ground, frozen, raw
+11|beef-chuck-clod-steak-separable-lean-only-trimmed-to-14-fat-|Beef, chuck, clod steak, separable lean only, trimmed to 1/4\" fat, all grades, cooked, braised
+12|beef-loin-bottom-sirloin-butt-tri-tip-steak-separable-lean-a|Beef, loin, bottom sirloin butt, tri-tip steak, separable lean and fat, trimmed to 0\" fat, all grades, cooked, broiled
+13|beef-ground-95-lean-meat-5-fat-crumbles-cooked-pan-browned|Beef, ground, 95% lean meat / 5% fat, crumbles, cooked, pan-browned
+14|beef-ground-90-lean-meat-10-fat-crumbles-cooked-pan-browned|Beef, ground, 90% lean meat / 10% fat, crumbles, cooked, pan-browned
+15|beef-ground-85-lean-meat-15-fat-crumbles-cooked-pan-browned|Beef, ground, 85% lean meat / 15% fat, crumbles, cooked, pan-browned
+16|beef-ground-80-lean-meat-20-fat-crumbles-cooked-pan-browned|Beef, ground, 80% lean meat / 20% fat, crumbles, cooked, pan-browned
+17|formulated-bar-mars-snackfood-us-snickers-marathon-protein-p|Formulated bar, MARS SNACKFOOD US, SNICKERS MARATHON Protein Performance Bar, Caramel Nut Rush
+18|formulated-bar-power-bar-chocolate|Formulated bar, POWER BAR, chocolate
+19|formulated-bar-slim-fast-optima-meal-bar-milk-chocolate-pean|Formulated bar, SLIM-FAST OPTIMA meal bar, milk chocolate peanut
+20|formulated-bar-luna-bar-nutz-over-chocolate|Formulated bar, LUNA BAR, NUTZ OVER CHOCOLATE
+21|snacks-vegetable-chips-hain-celestial-group-terra-chips|Snacks, vegetable chips, HAIN CELESTIAL GROUP, TERRA CHIPS
+22|formulated-bar-zone-perfect-classic-crunch-bar-mixed-flavors|Formulated bar, ZONE PERFECT CLASSIC CRUNCH BAR, mixed flavors
+23|snacks-bagel-chips-plain|Snacks, bagel chips, plain
+24|snacks-clif-bar-mixed-flavors|Snacks, CLIF BAR, mixed flavors
+25|snacks-granola-bar-quaker-dipps-all-flavors|Snacks, granola bar, QUAKER, DIPPS, all flavors
+26|snacks-potato-chips-made-from-dried-potatoes-preformed-multi|Snacks, potato chips, made from dried potatoes (preformed), multigrain
+27|snacks-pretzels-gluten-free-made-with-cornstarch-and-potato-|Snacks, Pretzels, gluten- free made with cornstarch and potato flour
+28|formulated-bar-south-beach-protein-bar|Formulated Bar, SOUTH BEACH protein bar
+29|snack-balance-original-bar|Snack, BALANCE, original bar
+30|campbells-red-and-white-phineas-and-ferb-soup-condensed|CAMPBELL'S Red and White, PHINEAS and FERB Soup, condensed
+31|pace-salsa-verde|PACE, Salsa Verde
+32|sauce-salsa-verde-ready-to-serve|Sauce, salsa, verde, ready-to-serve
+33|sauce-barbecue-sweet-baby-rays-original|Sauce, barbecue, SWEET BABY RAY'S, original
+34|sauce-barbecue-bulls-eye-original|Sauce, barbecue, BULL'S-EYE, original
+35|sauce-barbecue-kc-masterpiece-original|Sauce, barbecue, KC MASTERPIECE, original
+36|dip-fritos-bean-original-flavor|Dip, FRITO'S, bean, original flavor
+37|kelloggs-eggo-wafflers-brown-sugar-cinnamon-roll|KELLOGG'S, EGGO, Wafflers, Brown Sugar Cinnamon Roll
+38|kelloggs-eggo-wafflers-strawberry-strudel|KELLOGG'S, EGGO, Wafflers, Strawberry Strudel
+39|kelloggs-eggo-fiberplus-waffles-buttermilk|KELLOGG'S, EGGO, FIBERPLUS Waffles, Buttermilk
+40|kelloggs-eggo-fiberplus-waffles-chocolate-chip|KELLOGG'S, EGGO, FIBERPLUS Waffles, Chocolate Chip
+41|kelloggs-eggo-seasons-waffles-pumpkin-spice|KELLOGG'S, EGGO Seasons, Waffles, Pumpkin Spice
+42|girl-scouts-chalet-cookies|GIRL SCOUTS, Chalet Cookies
+43|girl-scouts-do-si-dos-cookies|GIRL SCOUTS, Do-si-dos Cookies
+44|girl-scouts-samoas-cookies|GIRL SCOUTS, Samoas Cookies
+45|girl-scouts-tagalongs-cookies|GIRL SCOUTS, Tagalongs Cookies
+46|girl-scouts-thank-u-berry-munch-cookies|GIRL SCOUTS, Thank U Berry Munch Cookies
+47|girl-scouts-trefoils-cookies|GIRL SCOUTS, Trefoils Cookies
+48|jacksons-old-fashioned-lemon-jumble-cookies|JACKSON'S, Old Fashioned Lemon Jumble Cookies
+49|kashi-tlc-happy-trail-mix-cookies|KASHI, TLC, Happy Trail Mix Cookies
+50|keebler-chips-deluxe-chocolate-lovers-cookies|KEEBLER, CHIPS DELUXE, Chocolate Lovers Cookies
+51|keebler-chips-deluxe-chocolate-malt-chunk-cookies|KEEBLER, CHIPS DELUXE, Chocolate Malt Chunk Cookies
+52|keebler-chips-deluxe-dark-chocolate-chunk-cookies|KEEBLER, CHIPS DELUXE, Dark Chocolate Chunk Cookies
+53|keebler-club-dash-of-salt-crackers|KEEBLER, CLUB, Dash of Salt Crackers
+54|keebler-fudge-shoppe-coconut-dreams-cookies|KEEBLER, FUDGE SHOPPE, Coconut Dreams Cookies
+55|keebler-fudge-shoppe-fudge-stripes-holidayspiderman|KEEBLER, FUDGE SHOPPE, Fudge Stripes, Holiday/Spiderman
+56|keebler-fudge-shoppe-grasshopper-cookies-fudge-mint|KEEBLER, FUDGE SHOPPE, Grasshopper Cookies, Fudge Mint
+57|keebler-fudge-shoppe-merry-mint-patties-holiday|KEEBLER, FUDGE SHOPPE, Merry Mint Patties, Holiday
+58|keebler-almond-crescents-cookies-holiday|KEEBLER, Almond Crescents Cookies, Holiday
+59|keebler-gingerbread-men-cookies-holiday|KEEBLER, Gingerbread Men Cookies, Holiday
+60|keebler-holiday-jingles-cookies|KEEBLER, Holiday Jingles Cookies
+61|keebler-100-calorie-right-bites-fudge-shoppe-mini-mints-gras|KEEBLER, 100 Calorie RIGHT BITES, FUDGE SHOPPE, Mini Mints Grasshopper Cookies
+62|keebler-soft-batch-chocolate-chip-cookies|KEEBLER, SOFT BATCH, Chocolate Chip Cookies
+63|keebler-sweet-cremes-cookies|KEEBLER, Sweet Cremes Cookies
+64|keebler-toasteds-buttercrisps-crackers|KEEBLER, TOASTEDS, Buttercrisps Crackers
+65|keebler-toasteds-party-pack-cracker-assortment|KEEBLER, TOASTEDS, Party Pack Cracker Assortment
+66|kelloggs-pop-tarts-frosted-confetti-cake-toaster-pastries|KELLOGG'S, POP-TARTS, Frosted Confetti Cake Toaster Pastries
+67|kelloggs-pop-tarts-frosted-wild-fruit-fusion-toaster-pastrie|KELLOGG'S, POP-TARTS, Frosted Wild Fruit Fusion Toaster Pastries
+68|kelloggs-pop-tarts-gingerbread-toaster-pastries|KELLOGG'S, POP-TARTS, Gingerbread Toaster Pastries
+69|kelloggs-pop-tarts-yum-azing-vanilla-milkshake-toaster-pastr|KELLOGG'S, POP-TARTS, Yum-azing Vanilla Milkshake Toaster Pastries
+70|mothers-4th-of-july-circus-animal-cookies|MOTHER'S, 4th of July Circus Animal Cookies
+71|mothers-coconut-cocadas-cookies|MOTHER'S, Coconut Cocadas Cookies
+72|mothers-halloween-circus-animals-cookies|MOTHER'S, Halloween Circus Animals Cookies
+73|mothers-jungle-animal-cookies|MOTHER'S, Jungle Animal Cookies
+74|mothers-peanut-butter-gauchos-cookies|MOTHER'S, Peanut Butter Gauchos Cookies
+75|murray-duplex-creme-sandwich-cookies|MURRAY, Duplex Creme Sandwich Cookies
+76|murray-jacks-vanilla-wafers|MURRAY, JACKS Vanilla Wafers
+77|sunshine-cheez-it-asiago-crackers|SUNSHINE, CHEEZ-IT, Asiago Crackers
+78|sunshine-cheez-it-duoz-sharp-cheddar-parmesan-crackers|SUNSHINE, CHEEZ-IT, Duoz Sharp Cheddar Parmesan Crackers
+79|sunshine-cheez-it-duoz-smoked-cheddar-monterey-jack-crackers|SUNSHINE, CHEEZ-IT, Duoz Smoked Cheddar Monterey Jack Crackers
+80|sunshine-gripz-cheez-it-mixx-and-cheesy-pizza-crackers|SUNSHINE, GRIPZ, Cheez-It Mixx and Cheesy Pizza Crackers
+81|sunshine-cheez-it-scrabble-jr-crackers|SUNSHINE, CHEEZ-IT, Scrabble Jr. Crackers
+82|keebler-zesta-export-sodas-crackers|KEEBLER, ZESTA, Export Sodas Crackers
+83|keebler-ready-crust-graham-pie-crust-10-reduced-fat|KEEBLER, READY CRUST, Graham Pie Crust (10\"), Reduced Fat
+84|murray-old-fashioned-gingersnaps-cookies|MURRAY, Old Fashioned Gingersnaps Cookies
+85|sunshine-krispy-soup-oyster-crackers-large|SUNSHINE, KRISPY, Soup & Oyster Crackers (large)

@@ -1,0 +1,85 @@
+1|candies-twizzlers-nibs-cherry-bits|Candies, TWIZZLERS NIBS CHERRY BITS
+2|candies-symphony-milk-chocolate-bar|Candies, SYMPHONY Milk Chocolate Bar
+3|candies-nestle-goobers-chocolate-covered-peanuts|Candies, NESTLE, GOOBERS Chocolate Covered Peanuts
+4|candies-krackel-chocolate-bar|Candies, KRACKEL Chocolate Bar
+5|candies-twizzlers-strawberry-twists-candy|Candies, TWIZZLERS Strawberry Twists Candy
+6|candies-mars-snackfood-us-mars-almond-bar|Candies, MARS SNACKFOOD US, MARS Almond Bar
+7|candies-nestle-oh-henry-bar|Candies, NESTLE, OH HENRY! Bar
+8|candies-hersheys-pot-of-gold-almond-bar|Candies, HERSHEY'S POT OF GOLD Almond Bar
+9|candies-hersheys-skor-toffee-bar|Candies, HERSHEY'S SKOR Toffee Bar
+10|candies-truffles-prepared-from-recipe|Candies, truffles, prepared-from-recipe
+11|baking-chocolate-mars-snackfood-us-mms-semisweet-chocolate-m|Baking chocolate, MARS SNACKFOOD US, M&M's Semisweet Chocolate Mini Baking Bits
+12|candies-mr-goodbar-chocolate-bar|Candies, MR. GOODBAR Chocolate Bar
+13|candies-nestle-raisinets-chocolate-covered-raisins|Candies, NESTLE, RAISINETS Chocolate Covered Raisins
+14|candies-rolo-caramels-in-milk-chocolate|Candies, ROLO Caramels in Milk Chocolate
+15|candies-nestle-after-eight-mints|Candies, NESTLE, AFTER EIGHT Mints
+16|candies-whatchamacallit-candy-bar|Candies, WHATCHAMACALLIT Candy Bar
+17|cocoa-dry-powder-unsweetened-processed-with-alkali|Cocoa, dry powder, unsweetened, processed with alkali
+18|cocoa-dry-powder-unsweetened-hersheys-european-style-cocoa|Cocoa, dry powder, unsweetened, HERSHEY'S European Style Cocoa
+19|gelatins-dry-powder-unsweetened|Gelatins, dry powder, unsweetened
+20|egg-custards-dry-mix-prepared-with-2-milk|Egg custards, dry mix, prepared with 2% milk
+21|desserts-rennin-tablets-unsweetened|Desserts, rennin, tablets, unsweetened
+22|candies-reeses-nutrageous-candy-bar|Candies, REESE'S NUTRAGEOUS Candy Bar
+23|candies-heath-bites|Candies, HEATH BITES
+24|candies-hershey-reesesticks-crispy-wafers-peanut-butter-milk|Candies, HERSHEY, REESESTICKS crispy wafers, peanut butter, milk chocolate
+25|candies-hershey-kit-kat-big-kat-bar|Candies, HERSHEY, KIT KAT BIG KAT Bar
+26|candies-reeses-fast-break-milk-chocolate-peanut-butter-and-s|Candies, REESE'S, FAST BREAK, milk chocolate peanut butter and soft nougats
+27|snacks-general-mills-betty-crocker-fruit-roll-ups-berry-flav|Snacks, GENERAL MILLS, BETTY CROCKER Fruit Roll Ups, berry flavored, with vitamin C
+28|snacks-farley-candy-farley-fruit-snacks-with-vitamins-a-c-an|Snacks, FARLEY CANDY, FARLEY Fruit Snacks, with vitamins A, C, and E
+29|snacks-sunkist-sunkist-fruit-roll-strawberry-with-vitamins-a|Snacks, SUNKIST, SUNKIST Fruit Roll, strawberry, with vitamins A, C, and E
+30|candies-mars-snackfood-us-snickers-munch-bar|Candies, MARS SNACKFOOD US, SNICKERS MUNCH bar
+31|sweeteners-tabletop-aspartame-equal-packets|Sweeteners, tabletop, aspartame, EQUAL, packets
+32|syrups-chocolate-hersheys-genuine-chocolate-flavored-lite-sy|Syrups, chocolate, HERSHEY'S Genuine Chocolate Flavored Lite Syrup
+33|syrups-table-blends-cane-and-15-maple|Syrups, table blends, cane and 15% maple
+34|syrups-table-blends-corn-refiner-and-sugar|Syrups, table blends, corn, refiner, and sugar
+35|candies-mars-snackfood-us-skittles-sours-original|Candies, MARS SNACKFOOD US, SKITTLES Sours Original
+36|frostings-glaze-prepared-from-recipe|Frostings, glaze, prepared-from-recipe
+37|candies-divinity-prepared-from-recipe|Candies, divinity, prepared-from-recipe
+38|snacks-cornnuts-barbecue-flavor|Snacks, cornnuts, barbecue-flavor
+39|snacks-crisped-rice-bar-almond|Snacks, crisped rice bar, almond
+40|snacks-granola-bars-soft-uncoated-chocolate-chip-graham-and-|Snacks, granola bars, soft, uncoated, chocolate chip, graham and marshmallow
+41|frostings-glaze-chocolate-prepared-from-recipe-with-butter-n|Frostings, glaze, chocolate, prepared-from-recipe, with butter, NFSMI Recipe No. C-32
+42|cheese-puffs-and-twists-corn-based-baked-low-fat|Cheese puffs and twists, corn based, baked, low fat
+43|gelatin-desserts-dry-mix-with-added-ascorbic-acid-sodium-cit|Gelatin desserts, dry mix, with added ascorbic acid, sodium-citrate and salt
+44|gelatin-desserts-dry-mix-reduced-calorie-with-aspartame-adde|Gelatin desserts, dry mix, reduced calorie, with aspartame, added phosphorus, potassium, sodium, vitamin C
+45|snacks-corn-cakes-very-low-sodium|Snacks, corn cakes, very low sodium
+46|snacks-popcorn-oil-popped-white-popcorn-salt-added|Snacks, popcorn, oil-popped, white popcorn, salt added
+47|frozen-novelties-juice-type-popsicle-scribblers|Frozen novelties, juice type, POPSICLE SCRIBBLERS
+48|cocoa-dry-powder-hi-fat-or-breakfast-plain|Cocoa, dry powder, hi-fat or breakfast, plain
+49|cocoa-dry-powder-hi-fat-or-breakfast-processed-with-alkali|Cocoa, dry powder, hi-fat or breakfast, processed with alkali
+50|sweeteners-tabletop-sucralose-splenda-packets|Sweeteners, tabletop, sucralose, SPLENDA packets
+51|frozen-novelties-no-sugar-added-fudgsicle-pops|Frozen novelties, No Sugar Added, FUDGSICLE pops
+52|frozen-novelties-ice-type-sugar-free-orange-cherry-and-grape|Frozen novelties, ice type, sugar free, orange, cherry, and grape POPSICLE pops
+53|ice-creams-breyers-no-sugar-added-vanilla-fudge-twirl|Ice creams, BREYERS, No Sugar Added, Vanilla Fudge Twirl
+54|frozen-novelties-klondike-slim-a-bear-no-sugar-added-stickle|Frozen novelties, KLONDIKE, SLIM-A-BEAR, No Sugar Added, Stickless Bar
+55|candies-reeses-fast-break-milk-chocolate-peanut-butter-soft-|Candies, REESE's Fast Break, milk chocolate, peanut butter, soft nougats, candy bar
+56|ice-creams-regular-low-carbohydrate-vanilla|Ice creams, regular, low carbohydrate, vanilla
+57|ice-creams-regular-low-carbohydrate-chocolate|Ice creams, regular, low carbohydrate, chocolate
+58|candies-chocolate-dark-nfs-45-59-cacao-solids-90-60-69-cacao|Candies, chocolate, dark, NFS (45-59% cacao solids 90%; 60-69% cacao solids 5%; 70-85% cacao solids 5%)
+59|sugar-turbinado|Sugar, turbinado
+60|syrups-chocolate-hersheys-sugar-free-genuine-chocolate-flavo|Syrups, chocolate, HERSHEY'S Sugar free, Genuine Chocolate Flavored, Lite Syrup
+61|candies-tamarind|Candies, Tamarind
+62|candies-hersheys-payday-bar|Candies, HERSHEYS, PAYDAY Bar
+63|barley-hulled|Barley, hulled
+64|buckwheat-groats-roasted-dry|Buckwheat groats, roasted, dry
+65|buckwheat-groats-roasted-cooked|Buckwheat groats, roasted, cooked
+66|rice-brown-parboiled-dry-uncle-bens|Rice, brown, parboiled, dry, UNCLE BEN'S
+67|triticale|Triticale
+68|triticale-flour-whole-grain|Triticale flour, whole-grain
+69|noodles-japanese-somen-dry|Noodles, japanese, somen, dry
+70|noodles-japanese-somen-cooked|Noodles, japanese, somen, cooked
+71|wheat-kamut-khorasan-uncooked|Wheat, KAMUT khorasan, uncooked
+72|wheat-kamut-khorasan-cooked|Wheat, KAMUT khorasan, cooked
+73|spelt-uncooked|Spelt, uncooked
+74|spelt-cooked|Spelt, cooked
+75|rice-brown-parboiled-cooked-uncle-bens|Rice, brown, parboiled, cooked, UNCLE BENS
+76|pasta-gluten-free-brown-rice-flour-cooked-tinkyada|Pasta, gluten-free, brown rice flour, cooked, TINKYADA
+77|pasta-gluten-free-corn-flour-and-quinoa-flour-cooked-ancient|Pasta, gluten-free, corn flour and quinoa flour, cooked, ANCIENT HARVEST
+78|pasta-gluten-free-rice-flour-and-rice-bran-extract-cooked-de|Pasta, gluten-free, rice flour and rice bran extract, cooked, DE BOLES
+79|fast-foods-shrimp-breaded-and-fried|Fast foods, shrimp, breaded and fried
+80|fast-foods-hush-puppies|Fast foods, hush puppies
+81|side-dishes-potato-salad|Side dishes, potato salad
+82|chick-fil-a-chick-n-strips|CHICK-FIL-A, Chick-n-Strips
+83|school-lunch-pizza-big-daddys-ls-16-51-whole-grain-rolled-ed|School Lunch, pizza, BIG DADDY'S LS 16\" 51% Whole Grain Rolled Edge Cheese Pizza, frozen
+84|school-lunch-pizza-tonys-smartpizza-whole-grain-4x6-cheese-p|School Lunch, pizza, TONY'S SMARTPIZZA Whole Grain 4x6 Cheese Pizza 50/50 Cheese, frozen
+85|subway-sweet-onion-chicken-teriyaki-sub-on-white-bread-with-|SUBWAY, sweet onion chicken teriyaki sub on white bread with lettuce, tomato and sweet onion sauce

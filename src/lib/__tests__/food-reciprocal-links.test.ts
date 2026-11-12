@@ -65,11 +65,16 @@ describe("reciprocal food links (growth-plan batch 11 law)", () => {
   it("the derivation helpers return only real rows (every href target exists)", () => {
     const compareSlugs = new Set(FOOD_COMPARISONS.map((c) => c.slug));
     const listSlugs = new Set(NUTRIENT_LISTS.map((l) => l.slug));
-    // Tuna is ranked in the fish list AND featured in a comparison — the
-    // audit's own measured sample. Chicken breast is honestly featured in
-    // TWO comparisons while appearing in no ranked list (scope rules) —
-    // the section must render comparisons-only for it, never fabricate.
-    const lists = getListsContainingFood("tuna");
+    // A tuna row is ranked in the fish list AND tuna is featured in a
+    // comparison — the audit's measured sample. Sample updated with the
+    // Phase-5 arabization batch (owner order 2026-11-12): the newly
+    // arabized tuna variants (light/white canned in oil, 29.1/26.5g) now
+    // lead the fish list while the curated canned-water "tuna" row (26.0g)
+    // sits just below the top-20 cut — the ranking is per-row and honest.
+    // Chicken breast is honestly featured in TWO comparisons while
+    // appearing in no ranked list (scope rules) — the section must render
+    // comparisons-only for it, never fabricate.
+    const lists = getListsContainingFood("fish-tuna-light-canned-in-oil-drained-solids");
     const comps = getComparisonsFeaturingFood("tuna");
     expect(lists.length).toBeGreaterThan(0);
     expect(comps.length).toBeGreaterThan(0);

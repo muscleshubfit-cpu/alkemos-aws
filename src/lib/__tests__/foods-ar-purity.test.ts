@@ -36,8 +36,20 @@ import { SEO_FOOD_BAND, SEO_FOOD_BAND_SET } from "@/lib/seo-food-band";
  * excluded per band precedent — the report's §B2 table documents every
  * applied and excluded row). Cumulative 2,458.
  *
- * Outside the band: exempt (foods-sitemap-policy.test.ts pins the fact
- * that the rest of the tail is still English-only).
+ * Phase 5 (owner order 2026-11-12 «استكمال تعريب الأغذية المتبقية وفق خطة
+ * التعريب المعتمدة والقرارات المسجلة»): the FINAL completion batch —
+ * +5,618 slugs covering the ENTIRE remaining translatable USDA tail.
+ * Reproducible pipeline in scripts/repro/food-arabization-batch5/
+ * (compositional engine + curated lexicons + 1,009 hand-translated rows
+ * + fail-closed validator mirroring this test's law exactly). The 4
+ * late-excluded rows (2 wild-boar pork + hard cider + malt liquor) moved
+ * to the standing audience-fit exclusions — batch-4 precedent, override
+ * only by an owner order naming the rows. Cumulative 8,076. The
+ * untranslated remainder is EXACTLY the documented exclusions: 597
+ * pork-family + 77 alcohol rows = 674 English-nameAr rows.
+ *
+ * Outside the band: the 674 documented audience-fit exclusions only
+ * (foods-sitemap-policy.test.ts pins the new tail fact).
  */
 
 const ARABIC = /[\u0600-\u06FF]/;
@@ -48,8 +60,8 @@ const sha256 = (s: string) => createHash("sha256").update(s, "utf8").digest("hex
 
 const bandFoods = FOODS.filter((f) => SEO_FOOD_BAND_SET.has(f.slug));
 
-describe("foods-ar-purity (FOOD-ARABIZATION Phase 1+2+3+4 — the 2,458-slug band)", () => {
-  it("band integrity: every manifest slug exists, is a USDA-tail row (tags empty), band size = pilot + two 500-1,000 batches (1482-3481)", () => {
+describe("foods-ar-purity (FOOD-ARABIZATION Phase 1–5 — the 8,076-slug band)", () => {
+  it("band integrity: every manifest slug exists, is a USDA-tail row (tags empty), band size = final completion batch (8076)", () => {
     expect(bandFoods.length).toBe(SEO_FOOD_BAND.length);
     for (const slug of SEO_FOOD_BAND) {
       const f = getFoodBySlug(slug);
@@ -59,9 +71,9 @@ describe("foods-ar-purity (FOOD-ARABIZATION Phase 1+2+3+4 — the 2,458-slug ban
         `${slug}: band rows must keep tags EMPTY (no auto-curation)`,
       ).toBe(0);
     }
-    // Phase 1 (481) + Phase 2 & 3 batch law (500-1,000 each per plan §8).
-    expect(SEO_FOOD_BAND.length).toBeGreaterThanOrEqual(1482);
-    expect(SEO_FOOD_BAND.length).toBeLessThanOrEqual(3481);
+    // Phase 5 (final completion batch, owner order 2026-11-12): the band
+    // now covers the whole translatable tail — 481 + 975 + 953 + 49 + 5,618.
+    expect(SEO_FOOD_BAND.length).toBe(8076);
   });
 
   it("band law: nameAr is non-empty, Arabic, ZERO Latin, differs from nameEn", () => {
@@ -132,10 +144,11 @@ describe("foods-ar-purity (FOOD-ARABIZATION Phase 1+2+3+4 — the 2,458-slug ban
   it("FREEZE — the band's English twins (nameEn immutable across batches)", () => {
     const payload = bandFoods.map((f) => `${f.slug}|${f.nameEn}`).join("\n");
     // Pinned 2026-09-19 after the Phase-3 expansion; re-pinned 2026-11-12
-    // after the Phase-4 demand-filtered batch (+49 rows — Report 15 §5-B2;
+    // after the Phase-4 demand-filtered batch (+49 rows — Report 15 §5-B2);
+    // re-pinned 2026-11-12 after Phase 5 (final completion batch +5,618 —
     // every nameEn still the verbatim USDA English name).
     expect(sha256(payload)).toBe(
-      "5385e80f2374d29be362a943d6d366b3a673917492a6d1b41e7d5c180855f727",
+      "e5d94a848288a458ee06c2199cfc97c0a93e98c16aba20504f1a71f6bc677198",
     );
   });
 
@@ -193,6 +206,11 @@ describe("foods-ar-purity (FOOD-ARABIZATION Phase 1+2+3+4 — the 2,458-slug ban
     expect(getFoodBySlug("arugula-raw")?.nameAr).toBe("أروغولا (جرجير بري) — نيئة");
   });
 
+  it("EN twins untouched — nameEn remains the USDA English name for the band", () => {
+    expect(getFoodBySlug("butter-salted")?.nameEn).toBe("Butter, salted");
+    expect(getFoodBySlug("falafel-home-prepared")?.nameEn).toBe("Falafel, home-prepared");
+  });
+
   it("Phase-4 canaries — GSC-demand-filtered batch 4 (branded fast-food/retail rows led by McNuggets' 122 impressions)", () => {
     // The batch's #1 demand row + one cut + one cereal + one censored row
     // (pork excluded per band precedent — its slug must NOT be in the band).
@@ -202,17 +220,31 @@ describe("foods-ar-purity (FOOD-ARABIZATION Phase 1+2+3+4 — the 2,458-slug ban
     expect(getFoodBySlug("sorghum-grain")?.nameAr).toBe("حبوب الذرة الرفيعة");
     expect(getFoodBySlug("teff-cooked")?.nameAr).toBe("حبوب التف — مطبوخة");
     expect(getFoodBySlug("snacks-potato-chips-plain-unsalted")?.nameAr).toBe("رقائق بطاطس عادية — دون ملح");
-    // Band boundary pins: the batch's excluded classes stay OUTSIDE the band.
-    expect(SEO_FOOD_BAND_SET.has("pork-fresh-loin-tenderloin-separable-lean-only-raw")).toBe(false);
-    expect(SEO_FOOD_BAND_SET.has("alcoholic-beverage-tequila-sunrise-canned")).toBe(false);
-    // …while their English twins keep the verbatim USDA name (no other edit).
-    expect(getFoodBySlug("pork-fresh-loin-tenderloin-separable-lean-only-raw")?.nameEn).toBe(
-      "Pork, fresh, loin, tenderloin, separable lean only, raw",
-    );
   });
 
-  it("EN twins untouched — nameEn remains the USDA English name for the band", () => {
-    expect(getFoodBySlug("butter-salted")?.nameEn).toBe("Butter, salted");
-    expect(getFoodBySlug("falafel-home-prepared")?.nameEn).toBe("Falafel, home-prepared");
+  it("Phase-5 canaries — the final completion batch (deep-tail families the plan left for the owner decision)", () => {
+    // Meat-cut deep tail (trim/grade variants the earlier dedupe batches skipped)
+    expect(getFoodBySlug("beef-chuck-arm-pot-roast-separable-lean-and-fat-trimmed-to-0-3830")?.nameAr).toBe("بوت روست العضد بقري — لحم ودهن، مطهو، مطهو ببطء");
+    // RTE cereal brands (the owner order opened the branded tail batch-4 style)
+    expect(getFoodBySlug("cereals-ready-to-eat-kellogg-kelloggs-cocoa-krispies")?.nameAr).toBe("حبوب إفطار كيلوغز كوكوا كريسبيز");
+    // Babyfood + infant formula
+    expect(getFoodBySlug("babyfood-gerber-3rd-foods-apple-mango-and-kiwi")?.nameAr).toBe("طعام أطفال جيربر — تفاح ومانجو وكيوي");
+    expect(getFoodBySlug("infant-formula-abbott-nutrition-similac-sensitive-lactose-fr")?.nameAr).toBe("حليب أطفال سيميلاك سينسيتيف — خالٍ من اللاكتوز، جاهز للتقديم بعنصري أرا ودها");
+    // Tribal rows (translated factually)
+    expect(getFoodBySlug("fish-whitefish-dried-alaska-native")?.nameAr).toBe("سمك أبيض — مجفف (قبائل ألاسكا)");
+    // Restaurant + fast-food branded dishes
+    expect(getFoodBySlug("mcdonalds-filet-o-fish")?.nameAr).toBe("فيليه-أو-فيش ماكدونالدز");
+    // The pizza-chain inch families (quote chars must NEVER leak into nameAr)
+    expect(getFoodBySlug("pizza-hut-14-cheese-pizza-stuffed-crust")?.nameAr).toBe("بيتزا جبنة بيتزا هت 14 بوصة — بقشرة محشوة");
+    // Boundary pins: the standing audience-fit exclusions stay OUTSIDE the
+    // band (pork + alcohol + the 4 late-excluded rows — override only by a
+    // named owner order; the batch-4 precedent, re-affirmed by report 19).
+    expect(SEO_FOOD_BAND_SET.has("pork-fresh-loin-tenderloin-separable-lean-only-raw")).toBe(false);
+    expect(SEO_FOOD_BAND_SET.has("alcoholic-beverage-tequila-sunrise-canned")).toBe(false);
+    expect(SEO_FOOD_BAND_SET.has("game-meat-boar-wild-raw")).toBe(false);
+    expect(SEO_FOOD_BAND_SET.has("beverages-malt-liquor-beverage")).toBe(false);
+    // …and their English twins keep the verbatim USDA name (no other edit).
+    expect(getFoodBySlug("game-meat-boar-wild-raw")?.nameEn).toBe("Game meat, boar, wild, raw");
+    expect(getFoodBySlug("beverages-malt-liquor-beverage")?.nameEn).toBe("Beverages, Malt liquor beverage");
   });
 });

@@ -207,6 +207,18 @@ const VEG_ROWS = VEG_PROTEIN_TOP.map((f) => row(f, r1(proteinOf(f))));
 const LEAN_ROWS = LEAN_LOWEST_FAT_TOP.map((f) => row(f, r1(fatOf(f))));
 const CARBS_ROWS = CARBS_TOP.map((f) => row(f, r1(carbOf(f))));
 
+// Composition-safe lookups for the editorial copy (Phase-5 arabization
+// changed the ranked compositions — the DATA TRUTH law now resolves the
+// named foods by SLUG from the full database, never by table index):
+const bySlug = (slug: string) => FOODS.find((x) => x.slug === slug)!;
+const LUPINS_RAW = bySlug("lupins-mature-seeds-raw");
+const SOYBEANS_RAW = bySlug("soybeans-mature-seeds-raw");
+const PROTEIN_BRAISED_ROW =
+  PROTEIN_ROWS.find((r) => r.nameAr.includes("مطهو ببطء")) ?? PROTEIN_ROWS[5];
+const CHICKEN_FRIED_ROW = PROTEIN_ROWS.find((r) =>
+  r.slug.includes("chicken") && r.nameAr.includes("مقلي"),
+);
+
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
@@ -301,8 +313,8 @@ export const NUTRIENT_LISTS: NutrientList[] = [
     h1Ar: "ما أعلى الأطعمة في البروتين؟",
     descriptionEn: `Ranked from the Alkemos database: ${PROTEIN_TOP[0].nameEn} leads at ${PROTEIN_ROWS[0].value}g protein per 100g, ahead of hard cheeses and slow-cooked lean meats — all values verified.`,
     descriptionAr: `ترتيب حقيقي من قاعدة بيانات Alkemos: ${PROTEIN_TOP[0].nameAr} في الصدارة بـ${PROTEIN_ROWS[0].value} جرام بروتين لكل 100 جرام، ثم الأجبان الصلبة واللحوم الخالية المطهوة ببطء.`,
-    introEn: `Numbers first: the protein shake tops this ranking at ${PROTEIN_ROWS[0].value}g of protein per 100g, followed by hard cheeses (${PROTEIN_TOP[1].nameEn} at ${PROTEIN_ROWS[1].value}g) and slow-braised lean cuts (up to ${PROTEIN_ROWS[5].value}g). A skinless fried chicken breast sits at ${PROTEIN_ROWS[14].value}g — still excellent, just below the dehydrated and cured forms that concentrate protein. That is the honest story of any per-100g table: removing water and fat pushes a food up the chart. The table below ranks all twenty leaders, and the sections after it translate the raw numbers into what you actually put on a plate.`,
-    introAr: `بالأرقام قبل أي شيء: يتصدر المشروب البروتيني هذا الترتيب بـ${PROTEIN_ROWS[0].value} جرام بروتين لكل 100 جرام، تليه الأجبان الصلبة (${PROTEIN_TOP[1].nameAr} بـ${PROTEIN_ROWS[1].value} جرام) وقطع اللحم الخالية المطهوة ببطء (حتى ${PROTEIN_ROWS[5].value} جرامًا). صدر الدجاج بلا جلد يقف عند ${PROTEIN_ROWS[14].value} جرامًا — رقم ممتاز أيضًا، لكنه أسفل الأشكال المعالجة والمجففة التي ركّزت بروتينها. هذه هي الحكاية الصادقة لأي جدول يقيس لكل 100 جرام: نزع الماء والدهون يرفع الصنف للأعلى. الجدول أدناه يعرض العشرين الأوائل، والفقرات بعده تحوّل الأرقام الخام إلى ما تضعه فعلًا في الطبق.`,
+    introEn: `Numbers first: ${PROTEIN_TOP[0].nameEn} tops this ranking at ${PROTEIN_ROWS[0].value}g of protein per 100g, followed by ${PROTEIN_TOP[1].nameEn} (${PROTEIN_ROWS[1].value}g) and the strongest slow-braised lean cuts (up to ${PROTEIN_BRAISED_ROW.value}g).${CHICKEN_FRIED_ROW ? ` A fried chicken breast sits at ${CHICKEN_FRIED_ROW.value}g — still excellent, just below the concentrated and cured forms above it.` : ""} That is the honest story of any per-100g table: removing water and fat pushes a food up the chart. The table below ranks all twenty leaders, and the sections after it translate the raw numbers into what you actually put on a plate.`,
+    introAr: `بالأرقام قبل أي شيء: يتصدر ${PROTEIN_TOP[0].nameAr} هذا الترتيب بـ${PROTEIN_ROWS[0].value} جرام بروتين لكل 100 جرام، يليه ${PROTEIN_TOP[1].nameAr} (بـ${PROTEIN_ROWS[1].value} جرام) وأقوى قطع اللحم الخالية المطهوة ببطء (حتى ${PROTEIN_BRAISED_ROW.value} جرامًا).${CHICKEN_FRIED_ROW ? ` صدر دجاج مقلي يقف عند ${CHICKEN_FRIED_ROW.value} جرامًا — رقم ممتاز أيضًا، لكنه أسفل الأشكال المركزة والمعالجة التي فوقه.` : ""} هذه هي الحكاية الصادقة لأي جدول يقيس لكل 100 جرام: نزع الماء والدهون يرفع الصنف للأعلى. الجدول أدناه يعرض العشرين الأوائل، والفقرات بعده تحوّل الأرقام الخام إلى ما تضعه فعلًا في الطبق.`,
     criterionEn: `Every value is the protein-gram column of the Alkemos food database (the same rows each food's own page shows), sorted high-to-low per 100g. Three scope rules keep the table honest: only foods with a real Arabic-market name enter; spices are left out because nobody eats 100g of them; and dried/powder/flour forms are excluded since their 100g serving is never actually eaten. One food can appear in more than one form (raw, cooked) because each database row is its own measurement.`,
     criterionAr: `كل قيمة هي عمود البروتين في قاعدة بيانات أطعمة Alkemos (نفس الصفوف التي تعرضها صفحة كل صنف)، مرتبة تنازليًا لكل 100 جرام. تحرس الجدول ثلاث قواعد معلنة: لا يدخل القائمة إلا صنف باسم عربي حقيقي في القاعدة؛ والتوابل مستبعدة لأن أحدًا لا يأكل 100 جرام منها؛ والأشكال المجففة والمساحيق والدقيق خارج الترتيب لأن حصة الـ100 جرام منها لا تُؤكل فعلًا. وقد يظهر الصنف الواحد بأكثر من صورة (نيء ومطهو) لأن كل صف في القاعدة قياس مستقل بذاته.`,
     metricEn: "Protein (g / 100g)",
@@ -311,22 +323,22 @@ export const NUTRIENT_LISTS: NutrientList[] = [
       {
         heading: { en: "The practical daily winners", ar: "الفائزون العمليون للاستخدام اليومي" },
         body: {
-          en: `Strip away the concentrates and the chart belongs to hard cheese and lean braised meat: ${PROTEIN_TOP[1].nameEn} carries ${PROTEIN_ROWS[1].value}g per 100g while a slow-cooked veal leg delivers ${PROTEIN_ROWS[5].value}g at roughly half the calories of the cured options. A 150g portion of that veal is about ${Math.round((PROTEIN_ROWS[5].value * 150) / 100)}g of protein — most of what a training day needs.`,
-          ar: `أنزل المساحيق من الحساب وسيتملك الصدارةَ الجبنُ الصلب واللحمُ الخالي المطهو ببطء: ${PROTEIN_TOP[1].nameAr} يحمل ${PROTEIN_ROWS[1].value} جرامًا لكل 100 جرام، وفخذ العجل المطهو يمنح ${PROTEIN_ROWS[5].value} جرامًا بنحو نصف سعرات الخيارات المعالجة. حصة 150 جرامًا من فخذ العجل تعادل ${Math.round((PROTEIN_ROWS[5].value * 150) / 100)} جرام بروتين تقريبًا — معظم ما يحتاجه يوم تدريبي.`,
+          en: `Strip away the concentrates and the chart belongs to hard cheese and lean braised meat: ${PROTEIN_TOP[1].nameEn} carries ${PROTEIN_ROWS[1].value}g per 100g while the strongest slow-braised lean cut delivers ${PROTEIN_BRAISED_ROW.value}g at roughly half the calories of the cured options. A 150g portion of that braised cut is about ${Math.round((PROTEIN_BRAISED_ROW.value * 150) / 100)}g of protein — most of what a training day needs.`,
+          ar: `أنزل المساحيق من الحساب وسيتملك الصدارةَ الجبنُ الصلب واللحمُ الخالي المطهو ببطء: ${PROTEIN_TOP[1].nameAr} يحمل ${PROTEIN_ROWS[1].value} جرامًا لكل 100 جرام، وأقوى قطعة خالية مطهوة ببطء تمنح ${PROTEIN_BRAISED_ROW.value} جرامًا بنحو نصف سعرات الخيارات المعالجة. حصة 150 جرامًا منها تعادل ${Math.round((PROTEIN_BRAISED_ROW.value * 150) / 100)} جرام بروتين تقريبًا — معظم ما يحتاجه يوم تدريبي.`,
         },
       },
       {
-        heading: { en: "Why the shake leads", ar: "لماذا يتقدم المشروب البروتيني" },
+        heading: { en: "Why the leader leads", ar: "لماذا يتقدم المتصدر" },
         body: {
-          en: `A ${PROTEIN_ROWS[0].value}g-per-100g figure for a shake is real, but the scoop you actually use is 30g — about ${Math.round((PROTEIN_ROWS[0].value * 30) / 100)}g of protein per serving. The table measures density, not convenience; read both columns before crowning a champion.`,
-          ar: `رقم ${PROTEIN_ROWS[0].value} جرامًا لكل 100 جرام في المشروب البروتيني حقيقي، لكن المغرفة التي تستخدمها فعلًا وزنها 30 جرامًا — أي ${Math.round((PROTEIN_ROWS[0].value * 30) / 100)} جرام بروتين للحصة. الجدول يقيس الكثافة لا سهولة الاستخدام؛ اقرأ العمودين معًا قبل تتويج البطل.`,
+          en: `A ${PROTEIN_ROWS[0].value}g-per-100g figure for the leader is real, but the scoop you actually use is 30g — about ${Math.round((PROTEIN_ROWS[0].value * 30) / 100)}g of protein per serving. The table measures density, not convenience; read both columns before crowning a champion.`,
+          ar: `رقم ${PROTEIN_ROWS[0].value} جرامًا لكل 100 جرام للمتصدر حقيقي، لكن المغرفة التي تستخدمها فعلًا وزنها 30 جرامًا — أي ${Math.round((PROTEIN_ROWS[0].value * 30) / 100)} جرام بروتين للحصة. الجدول يقيس الكثافة لا سهولة الاستخدام؛ اقرأ العمودين معًا قبل تتويج البطل.`,
         },
       },
       {
         heading: { en: "Plant options on the board", ar: "الخيارات النباتية على الطاولة" },
         body: {
-          en: `Lupins land in the top ten at ${PROTEIN_ROWS.find((r) => r.slug.startsWith("lupins"))!.value}g per 100g raw — the strongest plant row in this table — with soy and seed items close behind in the fuller database. Vegetarians can absolutely compete at this table; they simply arrive through the legume aisle.`,
-          ar: `الترمس يدخل العشرة الأوائل بـ${PROTEIN_ROWS.find((r) => r.slug.startsWith("lupins"))!.value} جرامًا لكل 100 جرام نيئًا — أقوى صف نباتي في هذا الجدول — وتحذو صنوف الصويا والبذور حذوه في القاعدة الأكمل. النباتيون قادرون على المنافسة هنا فعلًا؛ يدخلون ببساطة من باب البقوليات.`,
+          en: `The plant aisle now owns the podium: ${PROTEIN_TOP[0].nameEn} — the current #1 — is itself plant-based, and mature soybeans carry ${r1(proteinOf(SOYBEANS_RAW))}g per 100g raw. Lupins, the strongest whole legume in the fuller database, sit at ${r1(proteinOf(LUPINS_RAW))}g per 100g raw with soy and seed items close behind. Vegetarians can absolutely compete at this table; they simply arrive through the legume aisle.`,
+          ar: `قسم البقوليات يملك المنصة الآن: ${PROTEIN_TOP[0].nameAr} — المتصدر الحالي — نباتيّ الأصل بذاته، وحبوب الصويا الناضجة تحمل ${r1(proteinOf(SOYBEANS_RAW))} جرامًا لكل 100 جرام نيئة. أما الترمس، أقوى بقوليات كاملة في القاعدة الأكمل، فيقف عند ${r1(proteinOf(LUPINS_RAW))} جرامًا لكل 100 جرام نيئة وتحذو صنوف الصويا والبذور حذوه. النباتيون قادرون على المنافسة هنا فعلًا؛ يدخلون ببساطة من باب البقوليات.`,
         },
       },
     ],
@@ -337,8 +349,8 @@ export const NUTRIENT_LISTS: NutrientList[] = [
           ar: "لماذا تتصدر المساحيق والمشروبات البروتينية القائمة؟",
         },
         a: {
-          en: `Because the ranking is per 100g, and removing water concentrates everything. A shake powder measures ${PROTEIN_ROWS[0].value}g per 100g precisely because there is no water left in it — the same reason dried foods dominate any per-100g chart. We kept the shake (it is a real daily food) but excluded raw powders and flours from the scope, and that rule is written on the page itself.`,
-          ar: `لأن الترتيب يقيس لكل 100 جرام، ونزع الماء يركّز كل شيء. المسحوق البروتيني يسجل ${PROTEIN_ROWS[0].value} جرامًا لكل 100 جرام تحديدًا لأن لم يبقَ فيه ماء أصلًا — وهو نفس سبب تصدر الأغذية المجففة لأي جدول يقيس لكل 100 جرام. أبقينا المشروب البروتيني (لأنه طعام يومي حقيقي) واستبعدنا المساحيق والدقيق الخام، والقاعدة مكتوبة على الصفحة نفسها.`,
+          en: `Because the ranking is per 100g, and removing water concentrates everything. The leader measures ${PROTEIN_ROWS[0].value}g per 100g precisely because there is no water left in it — the same reason dried and cured foods dominate any per-100g chart. We kept everyday concentrate products and excluded raw powders and flours by name from the scope, and that rule is written on the page itself.`,
+          ar: `لأن الترتيب يقيس لكل 100 جرام، ونزع الماء يركّز كل شيء. المتصدر يسجل ${PROTEIN_ROWS[0].value} جرامًا لكل 100 جرام تحديدًا لأن لم يبقَ فيه ماء أصلًا — وهو نفس سبب تصدر الأغذية المجففة والمعالجة لأي جدول يقيس لكل 100 جرام. أبقينا منتجات التركيز اليومية واستبعدنا المساحيق والدقيق الخام بالاسم، والقاعدة مكتوبة على الصفحة نفسها.`,
         },
       },
       {

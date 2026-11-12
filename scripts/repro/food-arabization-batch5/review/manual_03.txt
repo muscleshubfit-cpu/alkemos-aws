@@ -1,0 +1,85 @@
+1|prune-puree|Prune puree
+2|abiyuch-raw|Abiyuch, raw
+3|rowal-raw|Rowal, raw
+4|guanabana-nectar-canned|Guanabana nectar, canned
+5|naranjilla-lulo-pulp-frozen-unsweetened|Naranjilla (lulo) pulp, frozen, unsweetened
+6|horned-melon-kiwano|Horned melon (Kiwano)
+7|fruit-juice-smoothie-naked-juice-mighty-mango|Fruit juice smoothie, NAKED JUICE, MIGHTY MANGO
+8|fruit-juice-smoothie-odwalla-original-superfood|Fruit juice smoothie, ODWALLA, ORIGINAL SUPERFOOD
+9|fruit-juice-smoothie-bolthouse-farms-berry-boost|Fruit juice smoothie, BOLTHOUSE FARMS, BERRY BOOST
+10|fruit-juice-smoothie-bolthouse-farms-green-goodness|Fruit juice smoothie, BOLTHOUSE FARMS, GREEN GOODNESS
+11|kiwifruit-zespri-sungold-raw|Kiwifruit, ZESPRI SunGold, raw
+12|lemon-juice-from-concentrate-bottled-concord|Lemon juice from concentrate, bottled, CONCORD
+13|cranberry-sauce-jellied-canned-ocean-spray|Cranberry sauce, jellied, canned, OCEAN SPRAY
+14|ruby-red-grapefruit-juice-blend-grapefruit-grape-apple-ocean|Ruby Red grapefruit juice blend (grapefruit, grape, apple), OCEAN SPRAY, bottled, with added vitamin C
+15|alfalfa-seeds-sprouted-raw|Alfalfa seeds, sprouted, raw
+16|beans-shellie-canned-solids-and-liquids|Beans, shellie, canned, solids and liquids
+17|butterbur-fuki-raw|Butterbur, (fuki), raw
+18|jews-ear-pepeao-raw|Jew's ear, (pepeao), raw
+19|pepeao-dried|Pepeao, dried
+20|kanpyo-dried-gourd-strips|Kanpyo, (dried gourd strips)
+21|mustard-spinach-tendergreen-raw|Mustard spinach, (tendergreen), raw
+22|mustard-spinach-tendergreen-cooked-boiled-drained-without-sa|Mustard spinach, (tendergreen), cooked, boiled, drained, without salt
+23|poi|Poi
+24|pokeberry-shoots-poke-raw|Pokeberry shoots, (poke), raw
+25|pokeberry-shoots-poke-cooked-boiled-drained-without-salt|Pokeberry shoots, (poke), cooked, boiled, drained, without salt
+26|potatoes-au-gratin-home-prepared-from-recipe-using-butter|Potatoes, au gratin, home-prepared from recipe using butter
+27|potatoes-french-fried-shoestring-salt-added-in-processing-fr|Potatoes, french fried, shoestring, salt added in processing, frozen, as purchased
+28|potatoes-french-fried-shoestring-salt-added-in-processing-fr-3115|Potatoes, french fried, shoestring, salt added in processing, frozen, oven-heated
+29|potatoes-french-fried-cottage-cut-salt-not-added-in-processi-3125|Potatoes, french fried, cottage-cut, salt not added in processing, frozen, oven-heated
+30|potatoes-frozen-french-fried-par-fried-extruded-unprepared|Potatoes, frozen, french fried, par fried, extruded, unprepared
+31|potatoes-frozen-french-fried-par-fried-extruded-prepared-hea|Potatoes, frozen, french fried, par fried, extruded, prepared, heated in oven, without salt
+32|salsify-vegetable-oyster-raw|Salsify, (vegetable oyster), raw
+33|swamp-cabbage-skunk-cabbage-raw|Swamp cabbage, (skunk cabbage), raw
+34|swamp-cabbage-skunk-cabbage-cooked-boiled-drained-without-sa|Swamp cabbage (skunk  cabbage), cooked, boiled, drained, without salt
+35|tomato-products-canned-sauce-with-tomato-tidbits|Tomato products, canned, sauce, with tomato tidbits
+36|vinespinach-basella-raw|Vinespinach, (basella), raw
+37|winged-bean-tuber-raw|Winged bean tuber, raw
+38|beets-harvard-canned-solids-and-liquids|Beets, harvard, canned, solids and liquids
+39|eppaw-raw|Eppaw, raw
+40|leeks-bulb-and-lower-leaf-portion-freeze-dried|Leeks, (bulb and lower-leaf portion), freeze-dried
+41|radishes-white-icicle-raw|Radishes, white icicle, raw
+42|spinach-souffle|Spinach souffle
+43|radish-seeds-sprouted-raw|Radish seeds, sprouted, raw
+44|balsam-pear-bitter-gourd-leafy-tips-cooked-boiled-drained-wi-3324|Balsam-pear (bitter gourd), leafy tips, cooked, boiled, drained, with salt
+45|balsam-pear-bitter-gourd-pods-cooked-boiled-drained-with-sal|Balsam-pear (bitter gourd), pods, cooked, boiled, drained, with salt
+46|lima-beans-immature-seeds-frozen-fordhook-cooked-boiled-drai-3331|Lima beans, immature seeds, frozen, fordhook, cooked, boiled, drained, with salt
+47|broadbeans-immature-seeds-cooked-boiled-drained-with-salt|Broadbeans, immature seeds, cooked, boiled, drained, with salt
+48|burdock-root-cooked-boiled-drained-with-salt|Burdock root, cooked, boiled, drained, with salt
+49|cardoon-cooked-boiled-drained-with-salt|Cardoon, cooked, boiled, drained, with salt
+50|celeriac-cooked-boiled-drained-with-salt|Celeriac, cooked, boiled, drained, with salt
+51|chayote-fruit-cooked-boiled-drained-with-salt|Chayote, fruit, cooked, boiled, drained, with salt
+52|cowpeas-leafy-tips-cooked-boiled-drained-with-salt|Cowpeas, leafy tips, cooked, boiled, drained, with salt
+53|jute-potherb-cooked-boiled-drained-with-salt|Jute, potherb, cooked, boiled, drained, with salt
+54|mustard-spinach-tendergreen-cooked-boiled-drained-with-salt|Mustard spinach, (tendergreen), cooked, boiled, drained, with salt
+55|pokeberry-shoots-poke-cooked-boiled-drained-with-salt|Pokeberry shoots, (poke), cooked, boiled, drained, with salt
+56|potatoes-frozen-french-fried-par-fried-cottage-cut-prepared-|Potatoes, frozen, french fried, par fried, cottage-cut, prepared, heated in oven, with salt
+57|potatoes-au-gratin-home-prepared-from-recipe-using-margarine|Potatoes, au gratin, home-prepared from recipe using margarine
+58|pumpkin-flowers-cooked-boiled-drained-with-salt|Pumpkin, flowers, cooked, boiled, drained, with salt
+59|squash-summer-crookneck-and-straightneck-cooked-boiled-drain-3469|Squash, summer, crookneck and straightneck, cooked, boiled, drained, with salt
+60|squash-summer-crookneck-and-straightneck-frozen-cooked-boile-3470|Squash, summer, crookneck and straightneck, frozen, cooked, boiled, drained, with salt
+61|squash-winter-hubbard-baked-with-salt|Squash, winter, hubbard, baked, with salt
+62|squash-winter-hubbard-cooked-boiled-mashed-with-salt|Squash, winter, hubbard, cooked, boiled, mashed, with salt
+63|succotash-corn-and-limas-cooked-boiled-drained-with-salt|Succotash, (corn and limas), cooked, boiled, drained, with salt
+64|succotash-corn-and-limas-frozen-cooked-boiled-drained-with-s|Succotash, (corn and limas), frozen, cooked, boiled, drained, with salt
+65|swamp-cabbage-skunk-cabbage-cooked-boiled-drained-with-salt|Swamp cabbage (skunk cabbage), cooked, boiled, drained, with salt
+66|tomato-products-canned-puree-with-salt-added|Tomato products, canned, puree, with salt added
+67|waxgourd-chinese-preserving-melon-cooked-boiled-drained-with-3503|Waxgourd, (chinese preserving melon), cooked, boiled, drained, with salt
+68|peppers-sweet-red-sauteed|Peppers, sweet, red, sauteed
+69|mushroom-white-exposed-to-ultraviolet-light-raw|Mushroom, white, exposed to ultraviolet light, raw
+70|catsup-low-sodium|Catsup, low sodium
+71|fennel-bulb-raw|Fennel, bulb, raw
+72|lemon-grass-citronella-raw|Lemon grass (citronella), raw
+73|peppers-ancho-dried|Peppers, ancho, dried
+74|peppers-pasilla-dried|Peppers, pasilla, dried
+75|epazote-raw|Epazote, raw
+76|fireweed-leaves-raw|Fireweed, leaves, raw
+77|malabar-spinach-cooked|Malabar spinach, cooked
+78|fungi-cloud-ears-dried|Fungi, Cloud ears, dried
+79|yautia-tannier-raw|Yautia (tannier), raw
+80|fiddlehead-ferns-frozen-unprepared|Fiddlehead ferns, frozen, unprepared
+81|seeds-breadnut-tree-seeds-raw|Seeds, breadnut tree seeds, raw
+82|seeds-breadnut-tree-seeds-dried|Seeds, breadnut tree seeds, dried
+83|nuts-beechnuts-dried|Nuts, beechnuts, dried
+84|nuts-hazelnuts-or-filberts-blanched|Nuts, hazelnuts or filberts, blanched
+85|nuts-hazelnuts-or-filberts-dry-roasted-without-salt-added|Nuts, hazelnuts or filberts, dry roasted, without salt added

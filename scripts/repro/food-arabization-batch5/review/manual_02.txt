@@ -1,0 +1,85 @@
+1|cereals-ready-to-eat-kellogg-kelloggs-crispix|Cereals ready-to-eat, KELLOGG, KELLOGG'S CRISPIX
+2|cereals-ready-to-eat-general-mills-frankenberry|Cereals ready-to-eat, GENERAL MILLS, FRANKENBERRY
+3|cereals-ready-to-eat-general-mills-count-chocula|Cereals ready-to-eat, GENERAL MILLS, COUNT CHOCULA
+4|cereals-ready-to-eat-general-mills-boo-berry|Cereals ready-to-eat, GENERAL MILLS, BOO BERRY
+5|cereals-ready-to-eat-kellogg-kelloggs-smart-start-strong-hea|Cereals ready-to-eat, KELLOGG, KELLOGG'S SMART START Strong Heart Antioxidants Cereal
+6|cereals-ready-to-eat-malt-o-meal-colossal-crunch|Cereals ready-to-eat, MALT-O-MEAL, COLOSSAL CRUNCH
+7|cereals-ready-to-eat-malt-o-meal-berry-colossal-crunch|Cereals ready-to-eat, MALT-O-MEAL, BERRY COLOSSAL CRUNCH
+8|cereals-ready-to-eat-malt-o-meal-tootie-fruities|Cereals ready-to-eat, MALT-O-MEAL, TOOTIE FRUITIES
+9|cereals-ready-to-eat-quaker-shredded-wheat-bagged-cereal|Cereals ready-to-eat, QUAKER, Shredded Wheat, bagged cereal
+10|cereals-ready-to-eat-general-mills-rice-crunchins|Cereals ready-to-eat, GENERAL MILLS, RICE CRUNCHINS
+11|cereals-ready-to-eat-kellogg-kelloggs-mini-wheats-unfrosted-|Cereals ready-to-eat, KELLOGG, KELLOGG'S MINI-WHEATS, unfrosted bite size
+12|cereals-ready-to-eat-kashi-good-friends|Cereals ready-to-eat, KASHI GOOD FRIENDS
+13|cereals-quaker-instant-oatmeal-dinosaur-eggs-brown-sugar-dry|Cereals, QUAKER, Instant Oatmeal, DINOSAUR EGGS, Brown Sugar, dry
+14|cereals-ready-to-eat-uncle-sam-cereal|Cereals ready-to-eat, UNCLE SAM CEREAL
+15|cereals-ready-to-eat-kashi-organic-promise-autumn-wheat|Cereals ready-to-eat, KASHI, ORGANIC PROMISE Autumn Wheat
+16|cereals-ready-to-eat-kashi-organic-promise-strawberry-fields|Cereals ready-to-eat, KASHI ORGANIC PROMISE, STRAWBERRY FIELDS
+17|cereals-ready-to-eat-malt-o-meal-honey-buzzers|Cereals ready-to-eat, MALT-O-MEAL, Honey BUZZERS
+18|cereals-ready-to-eat-moms-best-honey-nut-toasty-os|Cereals ready-to-eat, MOM'S BEST, Honey Nut TOASTY O'S
+19|cereals-ready-to-eat-malt-o-meal-apple-zings|Cereals ready-to-eat, MALT-O-MEAL, Apple ZINGS
+20|cereals-ready-to-eat-malt-o-meal-cinnamon-toasters|Cereals ready-to-eat, MALT-O-MEAL, CINNAMON TOASTERS
+21|cereals-ready-to-eat-malt-o-meal-frosted-mini-spooners|Cereals ready-to-eat, MALT-O-MEAL, Frosted Mini SPOONERS
+22|cereals-ready-to-eat-ralston-crispy-hexagons|Cereals ready-to-eat, RALSTON Crispy Hexagons
+23|cereals-ready-to-eat-usda-commodity-corn-and-rice-includes-a|Cereals ready-to-eat, USDA Commodity Corn and Rice (includes all commodity brands)
+24|cereals-ready-to-eat-usda-commodity-rice-crisps-includes-all|Cereals ready-to-eat, USDA Commodity Rice Crisps (includes all commodity brands)
+25|cereals-ready-to-eat-quaker-christmas-crunch|Cereals ready-to-eat, QUAKER, Christmas Crunch
+26|cereals-kashi-go-lean-hot-cereal-creamy-truly-vanilla-dry|Cereals, KASHI GO LEAN Hot Cereal, Creamy TRULY VANILLA, dry
+27|cereals-cream-of-wheat-2-12-minute-cook-time-cooked-with-wat|Cereals, CREAM OF WHEAT, 2 1/2 minute cook time, cooked with water, stove-top, without salt
+28|cereals-cream-of-wheat-2-12-minute-cook-time-cooked-with-wat-2011|Cereals, CREAM OF WHEAT, 2 1/2 minute cook time, cooked with water, microwaved, without salt
+29|cereals-cream-of-wheat-1-minute-cook-time-cooked-with-water-|Cereals, CREAM OF WHEAT, 1 minute cook time, cooked with water, stove-top, without salt
+30|incaparina-dry-mix-corn-and-soy-flours-unprepared|Incaparina, dry mix (corn and soy flours), unprepared
+31|cereals-ready-to-eat-general-mills-dora-the-explorer|Cereals ready-to-eat, GENERAL MILLS, DORA THE EXPLORER
+32|cereals-ready-to-eat-kashi-golean-crisp-toasted-berry-crumbl|Cereals ready-to-eat, KASHI GOLEAN CRISP Toasted Berry Crumble
+33|cereals-ready-to-eat-kashi-heart-to-heart-warm-cinnamon|Cereals ready-to-eat, KASHI HEART TO HEART, Warm Cinnamon
+34|cereals-ready-to-eat-kashi-organic-promise-island-vanilla|Cereals ready-to-eat, KASHI ORGANIC PROMISE, ISLAND VANILLA
+35|cereals-ready-to-eat-kashi-berry-blossom|Cereals ready-to-eat, KASHI Berry Blossom
+36|cereals-ready-to-eat-quaker-capn-crunchs-halloween-crunch|Cereals ready-to-eat, QUAKER, CAP'N CRUNCH'S Halloween Crunch
+37|cereals-ready-to-eat-quaker-capn-crunchs-oops-all-berries-ce|Cereals ready-to-eat, QUAKER, Cap'n Crunch's OOPS! All Berries Cereal
+38|cereals-ready-to-eat-general-mills-oat-cluster-cheerios-crun|Cereals ready-to-eat, GENERAL MILLS, Oat Cluster CHEERIOS Crunch
+39|cereals-ready-to-eat-kashi-indigo-morning|Cereals ready-to-eat, KASHI INDIGO MORNING
+40|cereals-ready-to-eat-kashi-simply-maize|Cereals ready-to-eat, KASHI Simply Maize
+41|cereals-ready-to-eat-kashi-golean-crisp-cinnamon-crumble|Cereals ready-to-eat, KASHI GOLEAN CRISP Cinnamon Crumble
+42|cereals-ready-to-eat-barbaras-puffins-original|Cereals ready-to-eat, BARBARA'S PUFFINS, original
+43|cereals-ready-to-eat-kelloggs-frosted-flakes-choco-zucaritas|Cereals ready-to-eat, KELLOGG'S FROSTED FLAKES, CHOCO ZUCARITAS
+44|cereals-ready-to-eat-kelloggs-cinnamon-jacks|Cereals ready-to-eat, KELLOGG'S CINNAMON JACKS
+45|cereals-ready-to-eat-kashi-organic-promise-berry-fruitful|Cereals ready-to-eat, KASHI ORGANIC PROMISE, Berry Fruitful
+46|cereals-ready-to-eat-general-mills-fiber-one-nutty-clusters-|Cereals ready-to-eat, GENERAL MILLS, FIBER ONE, Nutty Clusters & Almonds
+47|cereals-ready-to-eat-malt-o-meal-chocolate-marshmallow-matey|Cereals ready-to-eat, MALT-O-MEAL, CHOCOLATE MARSHMALLOW MATEYS
+48|cereals-ready-to-eat-malt-o-meal-blueberry-mini-spooners|Cereals, ready-to-eat, MALT-O-MEAL, Blueberry Mini SPOONERS
+49|cereals-ready-to-eat-malt-o-meal-oat-blenders-with-honey|Cereals ready-to-eat, MALT-O-MEAL, OAT BLENDERS with honey
+50|cereals-ready-to-eat-malt-o-meal-oat-blenders-with-honey-alm|Cereals ready-to-eat, MALT-O-MEAL, OAT BLENDERS with honey & almonds
+51|cereals-ready-to-eat-malt-o-meal-honey-nut-scooters|Cereals ready-to-eat, MALT-O-MEAL, Honey Nut SCOOTERS
+52|cereals-ready-to-eat-general-mills-multi-grain-cheerios-pean|Cereals ready-to-eat, GENERAL MILLS, Multi Grain CHEERIOS, Peanut Butter
+53|cereals-ready-to-eat-cascadian-farm-honey-nut-os|Cereals ready-to-eat, CASCADIAN FARM, Honey Nut O's
+54|cereals-ready-to-eat-kashi-organic-promise-raisin-vineyard|Cereals ready-to-eat, KASHI ORGANIC PROMISE, RAISIN VINEYARD
+55|cereals-ready-to-eat-kellogg-scooby-doo-cereal|Cereals ready-to-eat, KELLOGG SCOOBY-DOO! cereal
+56|cereals-ready-to-eat-kelloggs-frosted-mini-wheats-touch-of-f-2111|Cereals ready-to-eat, KELLOGG's FROSTED MINI-WHEATS Touch of Fruit in the Middle, raisin
+57|cereals-ready-to-eat-moms-best-sweetened-wheat-fuls|Cereals ready-to-eat, MOM'S BEST, Sweetened WHEAT-FULS
+58|cereals-ready-to-eat-kelloggs-special-k-gluten-free-touch-of|Cereals ready-to-eat, KELLOGG'S, SPECIAL K gluten free, touch of brown sugar
+59|blackberry-juice-canned|Blackberry juice, canned
+60|carissa-natal-plum-raw|Carissa, (natal-plum), raw
+61|cherries-sour-red-canned-water-pack-solids-and-liquids-inclu|Cherries, sour, red, canned, water pack, solids and liquids (includes USDA commodity red tart cherries, canned)
+62|crabapples-raw|Crabapples, raw
+63|fruit-salad-peach-and-pear-and-apricot-and-pineapple-and-che-2214|Fruit salad, (peach and pear and apricot and pineapple and cherry), canned, extra heavy syrup, solids and liquids
+64|grapes-canned-thompson-seedless-heavy-syrup-pack-solids-and-|Grapes, canned, thompson seedless, heavy syrup pack, solids and liquids
+65|groundcherries-cape-gooseberries-or-poha-raw|Groundcherries, (cape-gooseberries or poha), raw
+66|java-plum-jambolan-raw|Java-plum, (jambolan), raw
+67|lemon-juice-frozen-unsweetened-single-strength|Lemon juice, frozen, unsweetened, single strength
+68|lemon-peel-raw|Lemon peel, raw
+69|loganberries-frozen|Loganberries, frozen
+70|mammy-apple-mamey-raw|Mammy-apple, (mamey), raw
+71|oheloberries-raw|Oheloberries, raw
+72|orange-peel-raw|Orange peel, raw
+73|tangerines-mandarin-oranges-canned-light-syrup-pack|Tangerines, (mandarin oranges), canned, light syrup pack
+74|passion-fruit-juice-purple-raw|Passion-fruit juice, purple, raw
+75|passion-fruit-juice-yellow-raw|Passion-fruit juice, yellow, raw
+76|peaches-spiced-canned-heavy-syrup-pack-solids-and-liquids|Peaches, spiced, canned, heavy syrup pack, solids and liquids
+77|peaches-dehydrated-low-moisture-sulfured-uncooked|Peaches, dehydrated (low-moisture), sulfured, uncooked
+78|peaches-dehydrated-low-moisture-sulfured-stewed|Peaches, dehydrated (low-moisture), sulfured, stewed
+79|pitanga-surinam-cherry-raw|Pitanga, (surinam-cherry), raw
+80|rose-apples-raw|Rose-apples, raw
+81|sapote-mamey-raw|Sapote, mamey, raw
+82|sugar-apples-sweetsop-raw|Sugar-apples, (sweetsop), raw
+83|fruit-salad-pineapple-and-papaya-and-banana-and-guava-tropic|Fruit salad, (pineapple and papaya and banana and guava), tropical, canned, heavy syrup, solids and liquids
+84|maraschino-cherries-canned-drained|Maraschino cherries, canned, drained
+85|tangerines-mandarin-oranges-canned-juice-pack-drained|Tangerines, (mandarin oranges), canned, juice pack, drained

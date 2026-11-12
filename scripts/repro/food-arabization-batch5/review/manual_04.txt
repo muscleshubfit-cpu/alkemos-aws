@@ -1,0 +1,85 @@
+1|nuts-hickorynuts-dried|Nuts, hickorynuts, dried
+2|nuts-mixed-nuts-dry-roasted-with-peanuts-salt-added-planters|Nuts, mixed nuts, dry roasted, with peanuts, salt added, PLANTERS pistachio blend
+3|nuts-formulated-wheat-based-unflavored-with-salt-added|Nuts, formulated, wheat-based, unflavored, with salt added
+4|nuts-mixed-nuts-dry-roasted-with-peanuts-salt-added-chosen-r|Nuts, mixed nuts, dry roasted, with peanuts, salt added, CHOSEN ROASTER
+5|nuts-pilinuts-dried|Nuts, pilinuts, dried
+6|seeds-sesame-butter-tahini-from-unroasted-kernels-non-chemic|Seeds, sesame butter, tahini, from unroasted kernels (non-chemically removed seed coat)
+7|seeds-sisymbrium-sp-seeds-whole-dried|Seeds, sisymbrium sp. seeds, whole, dried
+8|seeds-sesame-butter-tahini-from-raw-and-stone-ground-kernels|Seeds, sesame butter, tahini, from raw and stone ground kernels
+9|seeds-sesame-seed-kernels-dried-decorticated|Seeds, sesame seed kernels, dried (decorticated)
+10|seeds-sesame-seed-kernels-toasted-with-salt-added-decorticat|Seeds, sesame seed kernels, toasted, with salt added (decorticated)
+11|beef-rib-eye-small-end-ribs-10-12-separable-lean-only-trimme-3920|Beef, rib, eye, small end (ribs 10- 12) separable lean only, trimmed to 0\" fat, select, cooked, broiled
+12|beef-loin-bottom-sirloin-butt-tri-tip-roast-separable-lean-o|Beef, loin, bottom sirloin butt, tri-tip roast, separable lean only, trimmed to 0\" fat, all grades, cooked, roasted
+13|beverages-the-coca-cola-company-nos-zero-energy-drink-sugar-|Beverages, THE COCA-COLA COMPANY, NOS Zero, energy drink, sugar-free with guarana, fortified with vitamins B6 and B12
+14|beverages-the-coca-cola-company-nos-energy-drink-original-gr|Beverages, THE COCA-COLA COMPANY, NOS energy drink, Original, grape, loaded cherry, charged citrus, fortified with vitamins B6 and B12
+15|beverages-water-bottled-yumberry-pomegranate-with-anti-oxida|Beverages, water, bottled, yumberry, pomegranate with anti-oxidants, zero calories
+16|beverages-abbott-eas-whey-protein-powder|Beverages, ABBOTT, EAS whey protein powder
+17|beverages-abbott-eas-soy-protein-powder|Beverages, ABBOTT, EAS soy protein powder
+18|beverages-cytosport-muscle-milk-ready-to-drink|Beverages, CYTOSPORT, Muscle Milk, ready-to-drink
+19|beverages-nestle-boost-plus-nutritional-drink-ready-to-drink|Beverages, NESTLE, Boost plus, nutritional drink, ready-to-drink
+20|beverages-slimfast-meal-replacement-high-protein-shake-ready|Beverages, SLIMFAST, Meal replacement,  High Protein Shake, Ready-To-Drink, 3-2-1 plan
+21|beverages-unilever-slimfast-meal-replacement-regular-ready-t|Beverages, UNILEVER, SLIMFAST, meal replacement, regular, ready-to-drink,  3-2-1 Plan
+22|beverages-unilever-slimfast-shake-mix-powder-3-2-1-plan|Beverages, UNILEVER, SLIMFAST Shake Mix, powder, 3-2-1 Plan
+23|beverages-fuze-orange-mango-fortified-with-vitamins-a-c-e-b6|Beverages, FUZE, orange mango, fortified with vitamins A, C, E, B6
+24|beverages-unilever-slimfast-shake-mix-high-protein-whey-powd|Beverages, UNILEVER, SLIMFAST Shake Mix, high protein, whey powder, 3-2-1 Plan,
+25|beverages-acai-berry-drink-fortified|Beverages, Acai berry drink, fortified
+26|beverages-abbott-ensure-nutritional-shake-ready-to-drink|Beverages, ABBOTT, ENSURE, Nutritional Shake, Ready-to-Drink
+27|beverages-the-coca-cola-company-hi-c-flashin-fruit-punch|Beverages, The COCA-COLA company, Hi-C Flashin' Fruit Punch
+28|beverages-kelloggs-special-k20-protein-powder|Beverages, KELLOGG'S SPECIAL K20 protein powder
+29|beverages-v8-splash-smoothies-tropical-colada|Beverages, V8 SPLASH Smoothies, Tropical Colada
+30|beverages-minute-maid-lemonada-limeade|Beverages, MINUTE MAID, Lemonada, Limeade
+31|beverages-nestea-tea-black-ready-to-drink-lemon|Beverages, NESTEA, tea, black, ready-to-drink, lemon
+32|beverages-carbonated-sprite-lemon-lime-without-caffeine|Beverages, carbonated, SPRITE, lemon-lime, without caffeine
+33|beverages-energy-drink-red-bull-sugar-free-with-added-caffei|Beverages, Energy drink, RED BULL, sugar free, with added caffeine, niacin, pantothenic acid, vitamins B6 and B12
+34|beverages-kraft-coffee-instant-french-vanilla-cafe|Beverages, KRAFT, coffee, instant, French Vanilla Cafe
+35|beverages-amber-hard-cider|Beverages, AMBER, hard cider
+36|beverages-malt-liquor-beverage|Beverages, Malt liquor beverage
+37|beverages-ocean-spray-cran-pomegranate|Beverages, OCEAN SPRAY, Cran Pomegranate
+38|beverages-ocean-spray-light-cranberry-concord-grape|Beverages, OCEAN SPRAY, Light Cranberry, Concord Grape
+39|beverages-ocean-spray-ruby-red-cranberry|Beverages, OCEAN SPRAY, Ruby Red cranberry
+40|beverages-motts-apple-juice-light-fortified-with-vitamin-c|Beverages, MOTTS, Apple juice light, fortified with vitamin C
+41|beverages-tea-black-brewed-prepared-with-tap-water-decaffein|Beverages, tea, black, brewed, prepared with tap water, decaffeinated
+42|beverages-tea-herb-other-than-chamomile-brewed|Beverages, tea, herb, other than chamomile, brewed
+43|beverages-dairy-drink-mix-chocolate-reduced-calorie-with-asp|Beverages, dairy drink mix, chocolate, reduced calorie, with aspartame, powder, prepared with water and ice
+44|beverages-orange-flavor-drink-breakfast-type-with-pulp-froze|Beverages, Orange-flavor drink, breakfast type, with pulp, frozen concentrate. Not manufactured anymore.
+45|beverages-pepsico-quaker-gatorade-g-performance-o-2-ready-to|Beverages, PEPSICO QUAKER, Gatorade, G performance O 2, ready-to-drink.
+46|beverages-coca-cola-powerade-lemon-lime-flavored-ready-to-dr|Beverages, COCA-COLA, POWERADE, lemon-lime flavored, ready-to-drink
+47|beverages-propel-zero-fruit-flavored-non-carbonated|Beverages, Propel Zero, fruit-flavored, non-carbonated
+48|beverages-arizona-tea-ready-to-drink-lemon|Beverages, ARIZONA, tea, ready-to-drink, lemon
+49|beverages-lipton-brisk-tea-black-ready-to-drink-lemon|Beverages, LIPTON BRISK, tea, black, ready-to-drink, lemon
+50|beverages-cocoa-mix-low-calorie-powder-with-added-calcium-ph|Beverages, Cocoa mix, low calorie, powder, with added calcium, phosphorus, aspartame, without added sodium or vitamin A
+51|beverages-tea-black-brewed-prepared-with-distilled-water|Beverages, tea, black, brewed, prepared with distilled water
+52|beverages-chocolate-flavor-beverage-mix-for-milk-powder-with-4399|Beverages, chocolate-flavor beverage mix for milk, powder, with added nutrients, prepared with whole milk
+53|water-non-carbonated-bottles-natural-fruit-flavors-sweetened|Water, non-carbonated, bottles, natural fruit flavors, sweetened with low calorie sweetener
+54|beverages-v8-splash-juice-drinks-orchard-blend|Beverages, V8 SPLASH Juice Drinks, Orchard Blend
+55|beverages-v8-v-fusion-juices-acai-berry|Beverages, V8 V- FUSION Juices, Acai Berry
+56|beverages-energy-drink-full-throttle|Beverages, Energy drink, FULL THROTTLE
+57|beverages-energy-drink-monster-fortified-with-vitamins-c-b2-|Beverages, Energy Drink, Monster, fortified with vitamins C, B2, B3, B6, B12
+58|beverages-horchata-dry-mix-unprepared-variety-of-brands-all-|Beverages, Horchata, dry mix, unprepared, variety of brands, all with morro seeds
+59|beverages-milk-beverage-reduced-fat-flavored-and-sweetened-r|Beverages, milk beverage, reduced fat, flavored and sweetened, Ready-to-drink,  added calcium, vitamin A and vitamin D
+60|beverages-energy-drink-vault-citrus-flavor|Beverages, Energy drink, VAULT, citrus flavor
+61|beverages-energy-drink-vault-zero-sugar-free-citrus-flavor|Beverages, Energy drink, VAULT Zero, sugar-free, citrus flavor
+62|beverages-pepsico-quaker-gatorade-g2-low-calorie|Beverages, PEPSICO QUAKER, Gatorade G2, low calorie
+63|beverages-fruit-flavored-drink-containing-less-than-3-fruit-|Beverages, Fruit flavored drink containing less than 3% fruit juice, with high vitamin C
+64|beverages-fruit-flavored-drink-reduced-sugar-greater-than-3-|Beverages, Fruit flavored drink, reduced sugar, greater than 3% fruit juice, high vitamin C, added calcium
+65|fish-cusk-raw|Fish, cusk, raw
+66|fish-gefiltefish-commercial-sweet-recipe|Fish, gefiltefish, commercial, sweet recipe
+67|fish-scup-raw|Fish, scup, raw
+68|fish-shad-american-raw|Fish, shad, american, raw
+69|fish-sucker-white-raw|Fish, sucker, white, raw
+70|fish-wolffish-atlantic-raw|Fish, wolffish, Atlantic, raw
+71|mollusks-whelk-unspecified-raw|Mollusks, whelk, unspecified, raw
+72|mollusks-whelk-unspecified-cooked-moist-heat|Mollusks, whelk, unspecified, cooked, moist heat
+73|fish-cusk-cooked-dry-heat|Fish, cusk, cooked, dry heat
+74|fish-pout-ocean-cooked-dry-heat|Fish, pout, ocean, cooked, dry heat
+75|fish-scup-cooked-dry-heat|Fish, scup, cooked, dry heat
+76|fish-shad-american-cooked-dry-heat|Fish, shad, american, cooked, dry heat
+77|fish-sucker-white-cooked-dry-heat|Fish, sucker, white, cooked, dry heat
+78|fish-wolffish-atlantic-cooked-dry-heat|Fish, wolffish, Atlantic, cooked, dry heat
+79|salmon-sockeye-canned-total-can-contents|Salmon, sockeye, canned, total can contents
+80|fish-trout-brook-raw-new-york-state|Fish, trout, brook, raw, New York State
+81|yokan-prepared-from-adzuki-beans-and-sugar|Yokan, prepared from adzuki beans and sugar
+82|peanuts-virginia-oil-roasted-with-salt|Peanuts, virginia, oil-roasted, with salt
+83|meat-extender|Meat extender
+84|soy-protein-concentrate-produced-by-alcohol-extraction|Soy protein concentrate, produced by alcohol extraction
+85|soy-protein-isolate|Soy protein isolate

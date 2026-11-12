@@ -255,7 +255,7 @@ describe("P1-8 number law — data-driven figures only", () => {
     expect(stats.total).toBe(FOODS_COUNT);
     expect(stats.curated).toBe(80); // sitemap policy: tags.length > 0
     expect(stats.longTail).toBe(8750); // Phase-141 data audit
-    expect(stats.arabized).toBe(stats.curated + 2458); // 80 core + 4 arabization batches (batch 4 = +49 GSC-demand rows, Report 15 §5-B2, 2026-11-12)
+    expect(stats.arabized).toBe(stats.curated + 8076); // 80 core + 5 arabization batches (batch 5 = +5,618 final completion rows, owner order 2026-11-12)
     expect(stats.total).toBe(stats.curated + stats.longTail);
   });
 });

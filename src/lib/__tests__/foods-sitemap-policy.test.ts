@@ -14,12 +14,14 @@ import { SEO_FOOD_BAND_SET } from "@/lib/seo-food-band";
  * FOOD-ARABIZATION Phase 1+2+3 (2026-09-19) — band-aware update: the pilot
  * translated a bounded SEO_FOOD_BAND (481 USDA slugs) to real Arabic, the
  * owner-ordered Phase-2 expansion batch added +975 more, and the owner-
- * ordered batch 3 added +953 (cumulative 2,409). The Phase-141 data fact
- * "the whole tail is English" is now scoped: the tail OUTSIDE the band is
- * still English-only; inside the band it is Arabic. The sitemap POLICY
- * ITSELF is deliberately UNCHANGED in these phases (owner directive
- * 2026-09-19: no final sitemap/indexing policy change before pilot quality
- * verification) — pinned below.
+ * ordered batch 3 added +953 (cumulative 2,409). Phase 4 (2026-11-12) added
+ * +49 GSC-demand rows; Phase 5 (2026-11-12, owner order «استكمال تعريب
+ * الأغذية المتبقية») completed the tail with +5,618 — cumulative 8,076.
+ * The tail OUTSIDE the band is now ONLY the documented audience-fit
+ * exclusions (pork/alcohol); inside the band it is Arabic. The sitemap
+ * POLICY ITSELF is deliberately UNCHANGED (the manifest is the future
+ * composite criterion — still awaiting its own owner decision) — pinned
+ * below.
  */
 
 const hasArabic = (s: string) => /[\u0600-\u06FF]/.test(s);
@@ -41,18 +43,24 @@ describe("foods sitemap policy (A-5)", () => {
     // The Phase-141 audit verified ALL 8,750 tail rows ship English
     // nameAr. FOOD-ARABIZATION Phase 1 (481) + Phase 2 (+975) + Phase 3
     // (+953) translated a bounded band of it; everything else keeps
-    // English nameAr (translatable only in a future owner-ordered batch).
-    // If this fails outside the band, a translation landed unguarded —
-    // revisit the sitemap policy then.
+    // English nameAr (translatable only by a future owner-ordered batch
+    // naming the rows — the batch-4 precedent). If this fails outside the
+    // band, a translation landed unguarded — revisit the sitemap policy then.
+    //
+    // Phase 5 (final completion batch, owner order 2026-11-12): the band now
+    // covers the ENTIRE translatable tail — outside it remains EXACTLY the
+    // documented audience-fit exclusions: 597 pork-family + 77 alcohol rows
+    // = 674 English-nameAr rows (wild boar ×2 + hard cider + malt liquor
+    // moved here from the translatable set during the batch's final scan).
     const outside = tail.filter((f) => !SEO_FOOD_BAND_SET.has(f.slug));
     const withArabic = outside.filter((f) => hasArabic(f.nameAr)).length;
     expect(withArabic).toBe(0);
-    expect(outside.length).toBeGreaterThan(6000);
+    expect(outside.length).toBe(674);
     // The band itself is now genuinely Arabic (rankable AR mirrors) —
     // the batches' whole point (full law: foods-ar-purity.test.ts).
-    // 481 pilot + two 500-1,000 batches ≥ the cumulative law floor.
+    // 481 pilot + 975 + 953 + 49 + 5,618 = 8,076 (the final completion batch).
     const band = tail.filter((f) => SEO_FOOD_BAND_SET.has(f.slug));
-    expect(band.length).toBeGreaterThanOrEqual(1482);
+    expect(band.length).toBe(8076);
     expect(band.every((f) => hasArabic(f.nameAr))).toBe(true);
   });
 

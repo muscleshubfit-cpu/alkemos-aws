@@ -1,0 +1,78 @@
+1|steelhead-trout-dried-flesh-shoshone-bannock|Steelhead trout, dried, flesh (Shoshone Bannock)
+2|steelhead-trout-boiled-canned-alaska-native|Steelhead trout, boiled, canned (Alaska Native)
+3|tennis-bread-plain-apache|Tennis Bread, plain (Apache)
+4|salmon-red-sockeye-filets-with-skin-smoked-alaska-native|Salmon, red (sockeye), filets with skin, smoked (Alaska Native)
+5|cattail-narrow-leaf-shoots-northern-plains-indians|Cattail, Narrow Leaf Shoots (Northern Plains Indians)
+6|prickly-pears-raw-northern-plains-indians|Prickly pears, raw (Northern Plains Indians)
+7|prickly-pears-broiled-northern-plains-indians|Prickly pears, broiled (Northern Plains Indians)
+8|prairie-turnips-raw-northern-plains-indians|Prairie Turnips, raw (Northern Plains Indians)
+9|prairie-turnips-boiled-northern-plains-indians|Prairie Turnips, boiled (Northern Plains Indians)
+10|rose-hips-wild-northern-plains-indians|Rose Hips, wild (Northern Plains Indians)
+11|chokecherries-raw-pitted-northern-plains-indians|Chokecherries, raw, pitted (Northern Plains Indians)
+12|stinging-nettles-blanched-northern-plains-indians|Stinging Nettles, blanched (Northern Plains Indians)
+13|pinon-nuts-roasted-navajo|Pinon Nuts, roasted (Navajo)
+14|wocas-dried-seeds-oregon-yellow-pond-lily-klamath|Wocas, dried seeds, Oregon, yellow pond lily (Klamath)
+15|hazelnuts-beaked-northern-plains-indians|Hazelnuts, beaked (Northern Plains Indians)
+16|piki-bread-made-from-blue-cornmeal-hopi|Piki bread, made from blue cornmeal (Hopi)
+17|wocas-tuber-cooked-oregon-yellow-pond-lily-klamath|Wocas, tuber, cooked, Oregon, yellow pond lily (Klamath)
+18|stew-pinto-bean-and-hominy-badufsuki-hopi|Stew, pinto bean and hominy, badufsuki (Hopi)
+19|tea-herbal-brewed-hohoysi-hopi|Tea, herbal, brewed, Hohoysi (Hopi)
+20|tortilla-blue-corn-sakwavikaviki-hopi|Tortilla, blue corn, Sakwavikaviki (Hopi)
+21|bread-blue-corn-somiviki-hopi|Bread, blue corn, somiviki (Hopi)
+22|applebees-9-oz-house-sirloin-steak|APPLEBEE'S, 9 oz house sirloin steak
+23|tgi-fridays-fridays-shrimp-breaded|T.G.I. FRIDAY'S, FRIDAY'S Shrimp, breaded
+24|tgi-fridays-classic-sirloin-steak-10-oz|T.G.I. FRIDAY'S, classic sirloin steak (10 oz)
+25|applebees-fish-hand-battered|APPLEBEE'S, fish, hand battered
+26|olive-garden-lasagna-classico|OLIVE GARDEN, lasagna classico
+27|carrabbas-italian-grill-lasagne|CARRABBA'S ITALIAN GRILL, lasagne
+28|carrabbas-italian-grill-chicken-parmesan-without-cavatappi-p|CARRABBA'S ITALIAN GRILL, chicken parmesan without cavatappi pasta
+29|olive-garden-chicken-parmigiana-without-pasta|OLIVE GARDEN, chicken parmigiana without pasta
+30|restaurant-latino-pupusas-con-frijoles-pupusas-bean|Restaurant, Latino, pupusas con frijoles (pupusas, bean)
+31|restaurant-latino-pupusas-con-queso-pupusas-cheese|Restaurant, Latino, pupusas con queso (pupusas, cheese)
+32|restaurant-latino-arepa-unleavened-cornmeal-bread|Restaurant, Latino, arepa (unleavened cornmeal bread)
+33|restaurant-latino-bunuelos-fried-yeast-bread|Restaurant, Latino, bunuelos (fried yeast bread)
+34|cracker-barrel-farm-raised-catfish-platter|CRACKER BARREL, farm raised catfish platter
+35|dennys-chicken-nuggets-star-shaped-from-kids-menu|DENNY'S, chicken nuggets, star shaped, from kid's menu
+36|syrups-grenadine|Syrups, grenadine
+37|pectin-liquid|Pectin, liquid
+38|frozen-novelties-ice-cream-type-vanilla-ice-cream-light-no-s|Frozen novelties, ice cream type, vanilla ice cream, light, no sugar added, chocolate coated
+39|imitation-cheese-american-or-cheddar-low-cholesterol|Imitation cheese, american or cheddar, low cholesterol
+40|salad-dressing-peppercorn-dressing-commercial-regular|Salad dressing, peppercorn dressing, commercial, regular
+41|cheese-monterey-low-fat|Cheese, monterey, low fat
+42|creamy-dressing-made-with-sour-cream-andor-buttermilk-and-oi-8545|Creamy dressing, made with sour cream and/or buttermilk and oil, reduced calorie, cholesterol-free
+43|papad|Papad
+44|oil-flaxseed-cold-pressed|Oil, flaxseed, cold pressed
+45|cereals-ready-to-eat-weetabix-whole-grain-cereal|Cereals ready-to-eat, WEETABIX whole grain cereal
+46|cereals-ready-to-eat-post-great-grains-raisin-date-pecan|Cereals ready-to-eat, POST, GREAT GRAINS, Raisin, Date & Pecan
+47|gums-seed-gums-includes-locust-bean-guar|Gums, seed gums (includes locust bean, guar)
+48|snacks-potato-chips-white-restructured-baked|Snacks, potato chips, white, restructured, baked
+49|babyfood-baked-product-finger-snacks-cereal-fortified|Babyfood, baked product, finger snacks cereal fortified
+50|cheese-muenster-low-fat|Cheese, muenster, low fat
+51|babyfood-fruit-tutti-frutti-strained|Babyfood, fruit, tutti frutti, strained
+52|babyfood-fruit-tutti-frutti-junior|Babyfood, fruit, tutti frutti, junior
+53|salad-dressing-green-goddess-regular|Salad dressing, green goddess, regular
+54|jams-and-preserves-no-sugar-with-sodium-saccharin-any-flavor|Jams and preserves, no sugar (with sodium saccharin), any flavor
+55|chewing-gum-sugarless|Chewing gum, sugarless
+56|fluid-replacement-electrolyte-solution-include-pedialyte|Fluid replacement, electrolyte solution (include PEDIALYTE)
+57|luncheon-slices-meatless|Luncheon slices, meatless
+58|cereals-ready-to-eat-alpen|Cereals ready-to-eat, ALPEN
+59|cereals-ready-to-eat-familia|Cereals ready-to-eat, FAMILIA
+60|cereals-ready-to-eat-wheat-and-bran-presweetened-with-nuts-a|Cereals ready-to-eat, wheat and bran, presweetened with nuts and fruits
+61|whipped-cream-substitute-dietetic-made-from-powdered-mix|Whipped cream substitute, dietetic, made from powdered mix
+62|quail-cooked-total-edible|Quail, cooked, total edible
+63|pheasant-cooked-total-edible|Pheasant, cooked, total edible
+64|soybean-curd-cheese|Soybean, curd cheese
+65|beverages-fruit-flavored-drink-powder-with-high-vitamin-c-wi|Beverages, fruit-flavored drink, powder, with high vitamin C with other added vitamins, low calorie
+66|beverages-coffee-instant-with-whitener-reduced-calorie|Beverages, coffee, instant, with whitener, reduced calorie
+67|yeast-extract-spread|Yeast extract spread
+68|babyfood-juice-pear|Babyfood, juice, pear
+69|jellyfish-dried-salted|Jellyfish, dried, salted
+70|beverages-abbott-ensure-plus-ready-to-drink|Beverages, ABBOTT, ENSURE PLUS, ready-to-drink
+71|milk-imitation-non-soy|Milk, imitation, non-soy
+72|breakfast-bar-corn-flake-crust-with-fruit|Breakfast bar, corn flake crust with fruit
+73|mayonnaise-dressing-no-cholesterol|Mayonnaise dressing, no cholesterol
+74|vital-wheat-gluten|Vital wheat gluten
+75|syrup-cane|Syrup, Cane
+76|mollusks-snail-raw|Mollusks, snail, raw
+77|loma-linda-low-fat-big-franks-canned-unprepared|LOMA LINDA Low Fat Big Franks, canned, unprepared
+78|loma-linda-big-franks-canned-unprepared|LOMA LINDA Big Franks, canned, unprepared

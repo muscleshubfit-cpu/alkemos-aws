@@ -1,0 +1,85 @@
+1|margarine-like-spread-benecol-light-spread|Margarine-like spread, BENECOL Light Spread
+2|salad-dressing-mayonnaise-light-smart-balance-omega-plus-lig|Salad Dressing, mayonnaise, light, SMART BALANCE, Omega Plus light
+3|margarine-like-vegetable-oil-spread-approximately-37-fat-uns|Margarine-like, vegetable oil spread, approximately 37% fat, unspecified oils, with salt, with added vitamin D
+4|margarine-like-vegetable-oil-spread-60-fat-sticktubbottle-wi-806|Margarine-like, vegetable oil spread, 60% fat, stick/tub/bottle, without salt, with added vitamin D
+5|oil-industrial-soy-low-linolenic|Oil, industrial, soy, low linolenic
+6|oil-industrial-soy-ultra-low-linolenic|Oil, industrial, soy, ultra low linolenic
+7|salad-dressing-poppyseed-creamy|Salad dressing, poppyseed, creamy
+8|canada-goose-breast-meat-skinless-raw|Canada Goose, breast meat, skinless, raw
+9|chicken-capons-meat-and-skin-and-giblets-and-neck-cooked-roa|Chicken, capons, meat and skin and giblets and neck, cooked, roasted
+10|guinea-hen-meat-and-skin-raw|Guinea hen, meat and skin, raw
+11|guinea-hen-meat-only-raw|Guinea hen, meat only, raw
+12|squab-pigeon-meat-and-skin-raw|Squab, (pigeon), meat and skin, raw
+13|squab-pigeon-meat-only-raw|Squab, (pigeon), meat only, raw
+14|squab-pigeon-light-meat-without-skin-raw|Squab, (pigeon), light meat without skin, raw
+15|pate-de-foie-gras-canned-goose-liver-pate-smoked|Pate de foie gras, canned (goose liver pate), smoked
+16|turkey-breast-pre-basted-meat-and-skin-cooked-roasted|Turkey breast, pre-basted, meat and skin, cooked, roasted
+17|turkey-thigh-pre-basted-meat-and-skin-cooked-roasted|Turkey thigh, pre-basted, meat and skin, cooked, roasted
+18|poultry-mechanically-deboned-from-backs-and-necks-with-skin-|Poultry, mechanically deboned, from backs and necks with skin, raw
+19|poultry-mechanically-deboned-from-backs-and-necks-without-sk|Poultry, mechanically deboned, from backs and necks without skin, raw
+20|poultry-mechanically-deboned-from-mature-hens-raw|Poultry, mechanically deboned, from mature hens, raw
+21|turkey-mechanically-deboned-from-turkey-frames-raw|Turkey, mechanically deboned, from turkey frames, raw
+22|ruffed-grouse-breast-meat-skinless-raw|Ruffed Grouse, breast meat, skinless, raw
+23|emu-inside-drums-cooked-broiled|Emu, inside drums, cooked, broiled
+24|turkey-skin-from-whole-light-and-dark-with-added-solution-ro|Turkey, skin from whole, (light and dark), with added solution, roasted
+25|campbells-red-and-white-chicken-and-stars-soup-condensed|CAMPBELL'S Red and White, Chicken and Stars Soup, condensed
+26|campbells-red-and-white-chicken-alphabet-soup-condensed|CAMPBELL'S Red and White, Chicken Alphabet Soup, condensed
+27|campbells-red-and-white-chicken-noodleos-soup-condensed|CAMPBELL'S Red and White, Chicken NOODLEO's Soup, condensed
+28|campbells-red-and-white-beef-consomme-condensed|CAMPBELL'S Red and White, Beef Consomme, condensed
+29|sauce-sofrito-prepared-from-recipe|Sauce, sofrito, prepared from recipe
+30|sauce-plum-ready-to-serve|Sauce, plum, ready-to-serve
+31|sauce-ready-to-serve-pepper-tabasco|Sauce, ready-to-serve, pepper, TABASCO
+32|soup-shark-fin-restaurant-prepared|Soup, shark fin, restaurant-prepared
+33|soup-clam-chowder-new-england-canned-prepared-with-equal-vol|Soup, clam chowder, new england, canned, prepared with equal volume low fat (2%) milk
+34|prego-pasta-heart-smart-ricotta-parmesan-italian-sauce-ready|PREGO Pasta, Heart Smart- Ricotta Parmesan Italian Sauce, ready-to-serve
+35|p-rego-pasta-roasted-garlic-and-herb-italian-sauce-ready-to-|P REGO Pasta, Roasted Garlic and Herb Italian Sauce, ready-to-serve
+36|campbells-chunky-microwavable-bowls-old-fashioned-vegetable-|CAMPBELL'S CHUNKY Microwavable Bowls, Old Fashioned Vegetable Beef Soup, ready-to-serve
+37|soup-cream-of-shrimp-canned-prepared-with-equal-volume-low-f|Soup, cream of shrimp, canned, prepared with equal volume low fat (2%) milk
+38|campbells-red-and-white-chicken-won-ton-soup-condensed|CAMPBELL'S Red and White, Chicken Won Ton Soup, condensed
+39|campbells-red-and-white-scooby-doo-soup-condensed|CAMPBELL'S Red and White, SCOOBY-DOO Soup, condensed
+40|campbells-red-and-white-fiesta-nacho-cheese-soup-condensed|CAMPBELL'S Red and White, Fiesta Nacho Cheese Soup, condensed
+41|soup-tomato-canned-prepared-with-equal-volume-low-fat-2-milk|Soup, tomato, canned, prepared with equal volume low fat (2%) milk
+42|campbells-red-and-white-mega-noodle-in-chicken-broth-condens|CAMPBELL'S Red and White, Mega Noodle in Chicken Broth, condensed
+43|campbells-chunky-soups-firehouse-hot-spicy-beef-bean-chili|CAMPBELL'S CHUNKY Soups, Firehouse - Hot & Spicy Beef & Bean Chili
+44|soup-beef-broth-bouillon-consomme-prepared-with-equal-volume|Soup, beef broth, bouillon, consomme, prepared with equal volume water
+45|campbells-chunky-soups-roadhouse-beef-bean-chili|CAMPBELL'S CHUNKY Soups, Roadhouse - Beef & Bean Chili
+46|campbells-chunky-soups-savory-pot-roast-soup|CAMPBELL'S CHUNKY Soups, Savory Pot Roast Soup
+47|soup-chicken-broth-cubes-dry-prepared-with-water|Soup, chicken broth cubes, dry, prepared with water
+48|campbells-soup-on-the-go-chicken-stars-soup|CAMPBELL'S Soup on the Go, Chicken & Stars Soup
+49|pace-organic-picante-sauce|PACE, Organic Picante Sauce
+50|pace-picante-sauce|PACE, Picante Sauce
+51|smart-soup-santa-fe-corn-chowder|SMART SOUP, Santa Fe Corn Chowder
+52|smart-soup-indian-bean-masala|SMART SOUP, Indian Bean Masala
+53|smart-soup-moroccan-chick-pea|SMART SOUP, Moroccan Chick Pea
+54|smart-soup-vietnamese-carrot-lemongrass|SMART SOUP, Vietnamese Carrot Lemongrass
+55|sauce-pesto-buitoni-pesto-with-basil-ready-to-serve-refriger|Sauce, pesto, BUITONI, pesto with basil, ready-to-serve, refrigerated
+56|sauce-pesto-classico-basil-pesto-ready-to-serve|Sauce, pesto, CLASSICO, basil pesto, ready-to-serve
+57|sauce-pesto-mezzetta-napa-valley-bistro-basil-pesto-ready-to|Sauce, pesto, MEZZETTA, NAPA VALLEY BISTRO, basil pesto, ready-to-serve
+58|sauce-hot-chile-sriracha-cha-by-texas-pete|Sauce, hot chile, sriracha, CHA! BY TEXAS PETE
+59|sauce-hot-chile-sriracha-tuong-ot-sriracha|Sauce, hot chile, sriracha, TUONG OT SRIRACHA
+60|soup-chicken-with-star-shaped-pasta-canned-condensed-single-|Soup, chicken with star-shaped pasta, canned, condensed, single brand
+61|soup-progresso-beef-barley-traditional-ready-to-serve|Soup, PROGRESSO, beef barley, traditional, ready to serve
+62|sauce-worcestershire|Sauce, worcestershire
+63|prego-pasta-chunky-garden-combination-italian-sauce-ready-to|PREGO Pasta, Chunky Garden Combination Italian Sauce, ready-to-serve
+64|corned-beef-loaf-jellied|Corned beef loaf, jellied
+65|lebanon-bologna-beef|Lebanon bologna, beef
+66|pate-liver-not-specified-canned|Pate, liver, not specified, canned
+67|oscar-mayer-wieners-beef-franks|OSCAR MAYER, Wieners (beef franks)
+68|yachtwurst-with-pistachio-nuts-cooked|Yachtwurst, with pistachio nuts, cooked
+69|beef-sausage-pre-cooked|Beef sausage, pre-cooked
+70|cereals-ready-to-eat-post-alpha-bits|Cereals ready-to-eat, POST, ALPHA-BITS
+71|cereals-ready-to-eat-kellogg-kelloggs-all-bran-bran-buds|Cereals ready-to-eat, KELLOGG, KELLOGG'S ALL-BRAN BRAN BUDS
+72|cereals-ready-to-eat-quaker-capn-crunch-with-crunchberries|Cereals ready-to-eat, QUAKER, CAP'N CRUNCH with CRUNCHBERRIES
+73|cereals-ready-to-eat-kellogg-kelloggs-cocoa-krispies|Cereals ready-to-eat, KELLOGG, KELLOGG'S COCOA KRISPIES
+74|cereals-ready-to-eat-quaker-king-vitaman|Cereals ready-to-eat, QUAKER, KING VITAMAN
+75|cereals-ready-to-eat-quaker-sweet-crunchquisp|Cereals ready-to-eat, QUAKER, SWEET CRUNCH/QUISP
+76|cereals-ready-to-eat-kellogg-kelloggs-honey-smacks|Cereals ready-to-eat, KELLOGG, KELLOGG'S HONEY SMACKS
+77|cereals-ready-to-eat-ralston-tasteeos|Cereals ready-to-eat, RALSTON TASTEEOS
+78|cereals-ready-to-eat-malt-o-meal-corn-bursts|Cereals ready-to-eat, MALT-O-MEAL, CORN BURSTS
+79|cereals-ready-to-eat-general-mills-wheaties|Cereals ready-to-eat, GENERAL MILLS, WHEATIES
+80|cereals-quaker-corn-grits-instant-plain-prepared-microwaved-|Cereals, QUAKER, corn grits, instant, plain, prepared (microwaved or boiling water added), without salt
+81|cereals-ready-to-eat-malt-o-meal-marshmallow-mateys|Cereals ready-to-eat, MALT-O-MEAL, MARSHMALLOW MATEYS
+82|cereals-ready-to-eat-post-selects-blueberry-morning|Cereals ready-to-eat, POST SELECTS Blueberry Morning
+83|cereals-ready-to-eat-malt-o-meal-coco-roos|Cereals ready-to-eat, MALT-O-MEAL, COCO-ROOS
+84|cereals-ready-to-eat-quaker-honey-graham-ohs|Cereals ready-to-eat, QUAKER, HONEY GRAHAM OH!S
+85|cereals-quaker-oat-bran-quakermothers-oat-bran-prepared-with|Cereals, QUAKER, Oat Bran, QUAKER/MOTHER'S Oat Bran, prepared with water, no salt

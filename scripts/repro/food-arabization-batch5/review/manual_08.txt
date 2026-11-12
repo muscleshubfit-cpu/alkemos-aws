@@ -1,0 +1,85 @@
+1|subway-meatball-marinara-sub-on-white-bread-no-toppings|SUBWAY, meatball marinara sub on white bread (no toppings)
+2|fast-foods-submarine-sandwich-meatball-marinara-on-white-bre|Fast foods, submarine sandwich, meatball marinara on white bread
+3|mcdonalds-filet-o-fish|McDONALD'S, FILET-O-FISH
+4|wendys-ultimate-chicken-grill-sandwich|WENDY'S, Ultimate Chicken Grill Sandwich
+5|wendys-frosty-dairy-dessert|WENDY'S, Frosty Dairy Dessert
+6|dominos-14-extravaganzza-feast-pizza-classic-hand-tossed-cru|DOMINO'S 14\" EXTRAVAGANZZA FEAST Pizza, Classic Hand-Tossed Crust
+7|papa-johns-14-the-works-pizza-original-crust|PAPA JOHN'S 14\" The Works Pizza, Original Crust
+8|mcdonalds-barbeque-sauce|McDONALD'S, Barbeque Sauce
+9|mcdonalds-hotcakes-plain|McDONALD'S, Hotcakes (plain)
+10|mcdonalds-peanuts-for-sundaes|McDONALD'S, Peanuts (for Sundaes)
+11|mcdonalds-mcflurry-with-mms-candies|McDONALD'S, McFLURRY with M&M'S CANDIES
+12|mcdonalds-mcflurry-with-oreo-cookies|McDONALD'S, McFLURRY with OREO cookies
+13|mcdonalds-newmans-own-cobb-dressing|McDONALD'S, NEWMAN'S OWN Cobb Dressing
+14|mcdonalds-newmans-own-creamy-caesar-dressing|McDONALD'S, NEWMAN'S OWN Creamy Caesar Dressing
+15|mcdonalds-newmans-own-low-fat-balsamic-vinaigrette|McDONALD'S, NEWMAN'S OWN Low Fat Balsamic Vinaigrette
+16|mcdonalds-mcchicken-sandwich|McDONALD'S, McCHICKEN Sandwich
+17|mcdonalds-mcchicken-sandwich-without-mayonnaise|McDONALD'S, McCHICKEN Sandwich (without mayonnaise)
+18|mcdonalds-egg-mcmuffin|McDONALD'S, Egg McMUFFIN
+19|mcdonalds-hotcakes-with-2-pats-margarine-syrup|McDONALD'S, Hotcakes (with 2 pats margarine & syrup)
+20|burger-king-croissanwich-with-egg-and-cheese|BURGER KING, CROISSAN'WICH with Egg and Cheese
+21|fast-foods-miniature-cinnamon-rolls|Fast foods, miniature cinnamon rolls
+22|fast-foods-hamburger-single-regular-patty-double-decker-bun-|Fast foods, hamburger; single, regular patty; double decker bun with condiments and special sauce
+23|fast-foods-cheeseburger-double-regular-patty-double-decker-b|Fast foods, cheeseburger; double, regular patty; double decker bun with condiments and special sauce
+24|popeyes-mild-chicken-strips-analyzed-2006|POPEYES, Mild Chicken Strips, analyzed 2006
+25|popeyes-spicy-chicken-strips-analyzed-2006|POPEYES, Spicy Chicken Strips, analyzed 2006
+26|kashi-pizza-mushroom-trio-spinach-frozen-unprepared|KASHI Pizza, Mushroom Trio & Spinach, frozen, unprepared
+27|kashi-pizza-margherita-frozen-unprepared|KASHI Pizza, Margherita, frozen, unprepared
+28|wendys-double-stack-with-cheese|WENDY'S, Double Stack, with cheese
+29|wendys-crispy-chicken-sandwich|WEND'YS, Crispy Chicken Sandwich
+30|wendys-daves-hot-n-juicy-14-lb-single|WENDY'S, DAVE'S Hot 'N Juicy 1/4 LB, single
+31|kashi-pizza-greek-tzatziki-single-serve-frozen-unprepared|KASHI Pizza, Greek Tzatziki, single serve, frozen, unprepared
+32|kashi-pizza-tikka-masala-single-serve-frozen-unprepared|KASHI Pizza, Tikka Masala, single serve, frozen, unprepared
+33|morningstar-farms-pizza-baja-black-bean-single-serve-frozen-|MORNINGSTAR FARMS Pizza, Baja Black Bean, single serve, frozen, unprepared
+34|fast-foods-breadstick-soft-prepared-with-garlic-and-parmesan|Fast foods, breadstick, soft, prepared with garlic and parmesan cheese
+35|pizza-hut-breadstick-parmesan-garlic|PIZZA HUT, breadstick, parmesan garlic
+36|morningstar-farms-veggie-dog-frozen-unprepared|MORNINGSTAR FARMS Veggie Dog, frozen, unprepared
+37|hot-pockets-croissant-pockets-chicken-broccoli-and-cheddar-s|HOT POCKETS, CROISSANT POCKETS Chicken, Broccoli, and Cheddar Stuffed Sandwich, frozen
+38|spaghettios-spaghettios-a-to-zs|SPAGHETTIOS, SpaghettiOs  A to Z's
+39|spaghettios-spaghettios-raviolios-beef-ravioli-in-meat-sauce|SPAGHETTIOS, SpaghettiOs RavioliOs Beef Ravioli in Meat Sauce
+40|spaghettios-spaghettios-a-to-zs-with-meatballs|SPAGHETTIOS, SpaghettiOs A to Z's with Meatballs
+41|supper-bakes-meal-kits-creamy-stroganoff-sauce-with-pasta|SUPPER BAKES MEAL KITS, Creamy Stroganoff Sauce with pasta
+42|supper-bakes-meal-kits-southwestern-style-chicken-wrice-chic|SUPPER BAKES MEAL KITS, Southwestern-Style Chicken w/rice (chicken not included)
+43|macaroni-and-cheese-dinner-with-dry-sauce-mix-boxed-uncooked|Macaroni and cheese dinner with dry sauce mix, boxed, uncooked
+44|spaghettios-spaghettios-original-easy-open|SPAGHETTIOS, SpaghettiOs Original, easy open
+45|spaghettios-spaghettios-with-meatballs-easy-open|SPAGHETTIOS, SpaghettiOs  with Meatballs - Easy Open
+46|corn-dogs-frozen-prepared|Corn dogs, frozen, prepared
+47|chicken-nuggets-dark-and-white-meat-precooked-frozen-not-reh|Chicken, nuggets, dark and white meat, precooked, frozen, not reheated
+48|chicken-nuggets-white-meat-precooked-frozen-not-reheated|Chicken, nuggets, white meat, precooked, frozen, not reheated
+49|ravioli-cheese-with-tomato-sauce-frozen-not-prepared-include|Ravioli, cheese with tomato sauce, frozen, not prepared, includes regular and light entrees
+50|kashi-chicken-enchilada-with-ancho-sauce-frozen-entree|KASHI, Chicken Enchilada with Ancho Sauce, Frozen Entree
+51|kashi-steam-meal-chicken-fettuccine-frozen-entree|KASHI, STEAM MEAL, Chicken Fettuccine, Frozen Entree
+52|kashi-chicken-florentine-frozen-entree|KASHI, Chicken Florentine, Frozen Entree
+53|kashi-lemongrass-coconut-chicken-frozen-entree|KASHI, Lemongrass Coconut Chicken, Frozen Entree
+54|kashi-mayan-harvest-bake-frozen-unprepared|KASHI Mayan Harvest Bake, frozen, unprepared
+55|kashi-pesto-pasta-primavera-frozen-unprepared|KASHI Pesto Pasta Primavera, frozen, unprepared
+56|kashi-steam-meal-roasted-garlic-chicken-farfalle-frozen-entr|KASHI, STEAM MEAL, Roasted Garlic Chicken Farfalle, Frozen Entree
+57|kashi-three-cheese-penne-frozen-unprepared|KASHI Three Cheese Penne, frozen, unprepared
+58|kashi-tuscan-veggie-bake-frozen-entree|KASHI, Tuscan Veggie Bake, Frozen Entree
+59|beef-chuck-eye-country-style-ribs-boneless-separable-lean-on-7121|Beef, chuck eye Country-Style ribs, boneless, separable lean only, trimmed to 0\" fat, select, cooked, braised
+60|beef-chuck-eye-country-style-ribs-boneless-separable-lean-on-7122|Beef, chuck eye Country-Style ribs, boneless, separable lean only, trimmed to 0\" fat, all grades, cooked, braised
+61|beef-chuck-eye-country-style-ribs-boneless-separable-lean-an-7186|Beef, chuck eye Country-Style ribs, boneless, separable lean and fat, trimmed to 0\" fat, choice, cooked, braised
+62|beef-chuck-eye-country-style-ribs-boneless-separable-lean-an-7187|Beef, chuck eye Country-Style ribs, boneless, separable lean and fat, trimmed to 0\" fat, select, cooked, braised
+63|beef-australian-imported-grass-fed-loin-tenderloin-steakroas|Beef, Australian, imported, grass-fed, loin, tenderloin steak/roast, boneless, separable lean only, raw
+64|beef-australian-imported-wagyu-loin-tenderloin-steakroast-bo|Beef, Australian, imported, Wagyu, loin, tenderloin steak/roast, boneless, separable lean only, Aust. marble score 4/5, raw
+65|beef-australian-imported-grass-fed-loin-tenderloin-steakroas-7343|Beef, Australian, imported, grass-fed, loin, tenderloin steak/roast, boneless, separable lean and fat, raw
+66|beef-australian-imported-grass-fed-loin-top-loin-steakroast-|Beef, Australian, imported, grass-fed, loin, top loin steak/roast, boneless, separable lean only, raw
+67|beef-australian-imported-wagyu-loin-tenderloin-steakroast-bo-7345|Beef, Australian, imported, Wagyu, loin, tenderloin steak/roast, boneless, separable lean and fat, Aust. marble score 4/5, raw
+68|beef-australian-imported-grass-fed-loin-top-loin-steakroast--7346|Beef, Australian, imported, grass-fed, loin, top loin steak/roast, boneless, separable lean and fat, raw
+69|beef-australian-imported-grass-fed-loin-top-sirloin-cap-off-|Beef, Australian, imported, grass-fed, loin, top sirloin cap-off steak/roast, boneless, separable lean only, raw
+70|beef-australian-imported-grass-fed-rib-ribeye-steakroast-lip|Beef, Australian, imported, grass-fed, rib, ribeye steak/roast lip-on, boneless, separable lean only, raw
+71|beef-australian-imported-grass-fed-round-bottom-round-steakr|Beef, Australian, imported, grass-fed, round, bottom round steak/roast, boneless, separable lean only, raw
+72|beef-australian-imported-grass-fed-round-top-round-cap-off-s|Beef, Australian, imported, grass-fed, round, top round cap-off steak/roast, boneless, separable lean only, raw
+73|beef-australian-imported-wagyu-loin-tenderloin-steakroast-bo-7351|Beef, Australian, imported, Wagyu, loin, tenderloin steak/roast, boneless, separable lean only, Aust. marble score 9, raw
+74|beef-australian-imported-wagyu-loin-top-loin-steakroast-bone|Beef, Australian, imported, Wagyu, loin, top loin steak/roast, boneless, separable lean only, Aust. marble score 4/5, raw
+75|beef-australian-imported-wagyu-loin-top-loin-steakroast-bone-7353|Beef, Australian, imported, Wagyu, loin, top loin steak/roast, boneless, separable lean only, Aust. marble score 9, raw
+76|beef-australian-imported-wagyu-rib-small-end-rib-steakroast-|Beef, Australian, imported, Wagyu, rib, small end rib steak/roast, boneless, separable lean only, Aust. marble score 4/5, raw
+77|beef-australian-imported-grass-fed-loin-top-sirloin-cap-off--7356|Beef, Australian, imported, grass-fed, loin, top sirloin cap-off steak/roast, boneless, separable lean and fat, raw
+78|beef-australian-imported-grass-fed-rib-ribeye-steakroast-lip-7357|Beef, Australian, imported, grass-fed, rib, ribeye steak/roast lip-on, boneless, separable lean and fat, raw
+79|beef-australian-imported-grass-fed-round-bottom-round-steakr-7358|Beef, Australian, imported, grass-fed, round, bottom round steak/roast, boneless, separable lean and fat, raw
+80|beef-australian-imported-grass-fed-round-top-round-cap-off-s-7359|Beef, Australian, imported, grass-fed, round, top round cap-off steak/roast, boneless, separable lean and fat, raw
+81|beef-australian-imported-wagyu-loin-top-loin-steakroast-bone-7360|Beef, Australian, imported, Wagyu, loin, top loin steak/roast, boneless, separable lean and fat, Aust. marble score 4/5, raw
+82|beef-australian-imported-wagyu-loin-top-loin-steakroast-sepa|Beef, Australian, imported, Wagyu, loin, top loin steak/roast, separable lean and fat, Aust. marble score 9, raw
+83|beef-australian-imported-wagyu-rib-small-end-rib-steakroast--7362|Beef, Australian, imported, Wagyu, rib, small end rib steak/roast, boneless, separable lean and fat, Aust. marble score 4/5, raw
+84|beef-australian-imported-wagyu-rib-small-end-rib-steakroast--7363|Beef, Australian, imported, Wagyu, rib, small end rib steak/roast, boneless, separable lean and fat, Aust. marble score 9, raw
+85|beef-australian-imported-wagyu-loin-tenderloin-steakroast-bo-7364|Beef, Australian, imported, Wagyu, loin, tenderloin steak/roast, boneless, separable lean and fat, Aust. marble score 9, raw

@@ -1,0 +1,85 @@
+1|cheese-tilsit|Cheese, tilsit
+2|cheese-pasteurized-process-pimento|Cheese, pasteurized process, pimento
+3|sour-dressing-non-butterfat-cultured-filled-cream-type|Sour dressing, non-butterfat, cultured, filled cream-type
+4|cream-substitute-liquid-with-lauric-acid-oil-and-sodium-case|Cream substitute, liquid, with lauric acid oil and sodium caseinate
+5|dessert-topping-pressurized|Dessert topping, pressurized
+6|dessert-topping-semi-solid-frozen|Dessert topping, semi solid, frozen
+7|milk-substitutes-fluid-with-lauric-acid-oil|Milk substitutes, fluid, with lauric acid oil
+8|milk-lowfat-fluid-1-milkfat-with-added-nonfat-milk-solids-vi|Milk, lowfat, fluid, 1% milkfat, with added nonfat milk solids, vitamin A and vitamin D
+9|milk-nonfat-fluid-with-added-nonfat-milk-solids-vitamin-a-an|Milk, nonfat, fluid, with added nonfat milk solids, vitamin A and vitamin D (fat free or skim)
+10|milk-nonfat-fluid-protein-fortified-with-added-vitamin-a-and|Milk, nonfat, fluid, protein fortified, with added vitamin A and vitamin D (fat free and skim)
+11|milk-human-mature-fluid|Milk, human, mature, fluid
+12|milk-reduced-fat-fluid-2-milkfat-with-added-nonfat-milk-soli-134|Milk, reduced fat, fluid, 2% milkfat, with added nonfat milk solids, without added vitamin A
+13|cheese-mexican-queso-anejo|Cheese, mexican, queso anejo
+14|cheese-mexican-queso-asadero|Cheese, mexican, queso asadero
+15|cheese-mexican-queso-chihuahua|Cheese, mexican, queso chihuahua
+16|cheese-provolone-reduced-fat|Cheese, provolone, reduced fat
+17|yogurt-vanilla-or-lemon-flavor-nonfat-milk-sweetened-with-lo-188|Yogurt, vanilla or lemon flavor, nonfat milk, sweetened with low-calorie sweetener, fortified with vitamin D
+18|nutritional-supplement-for-people-with-diabetes-liquid|Nutritional supplement for people with diabetes, liquid
+19|ice-cream-bar-stick-or-nugget-with-crunch-coating|Ice cream bar, stick or nugget, with crunch coating
+20|cheese-mexican-queso-cotija|Cheese, mexican, queso cotija
+21|cheese-cheddar-sharp-sliced|Cheese, cheddar, sharp, sliced
+22|yogurt-vanilla-non-fat|Yogurt, vanilla, non-fat
+23|clif-z-bar|Clif Z bar
+24|babyfood-gerber-2nd-foods-apple-carrot-and-squash-organic|Babyfood, GERBER, 2nd Foods, apple, carrot and squash, organic
+25|finger-snacks-gerber-graduate-puffs-apple-and-cinnamon|Finger snacks, GERBER GRADUATE PUFFS, apple and cinnamon
+26|babyfood-gerber-3rd-foods-apple-mango-and-kiwi|Babyfood, GERBER, 3rd Foods, apple, mango and kiwi
+27|babyfood-juice-apple-and-plum|Babyfood, juice, apple and plum
+28|babyfood-cereal-with-egg-yolks-strained|Babyfood, cereal, with egg yolks, strained
+29|babyfood-cereal-with-egg-yolks-junior|Babyfood, cereal, with egg yolks, junior
+30|zwieback|Zwieback
+31|babyfood-beverage-gerber-graduate-fruit-splashers|Babyfood, beverage, GERBER GRADUATE FRUIT SPLASHERS
+32|babyfood-snack-gerber-graduate-yogurt-melts|Babyfood, snack, GERBER GRADUATE YOGURT MELTS
+33|infant-formula-mead-johnson-enfamil-nutramigen-lipil-with-ir|Infant formula, MEAD JOHNSON, ENFAMIL, NUTRAMIGEN LIPIL, with iron, powder, not reconstituted, with ARA and DHA
+34|infant-formula-abbott-nutrition-similac-sensitive-lactose-fr|Infant formula, ABBOTT NUTRITION, SIMILAC, SENSITIVE (LACTOSE FREE) ready-to-feed, with ARA and DHA
+35|infant-formula-abbott-nutrition-similac-sensitive-lactose-fr-590|Infant formula, ABBOTT NUTRITION, SIMILAC, SENSITIVE, (LACTOSE FREE), liquid concentrate, with ARA and DHA
+36|infant-formula-abbott-nutrition-similac-sensitive-lactose-fr-591|Infant formula, ABBOTT NUTRITION, SIMILAC, SENSITIVE, (LACTOSE FREE), powder, with ARA and DHA
+37|babyfood-mashed-cheddar-potatoes-and-broccoli-toddlers|Babyfood, mashed cheddar potatoes and broccoli, toddlers
+38|toddler-formula-mead-johnson-enfagrow-premium-formerly-enfam|Toddler formula, MEAD JOHNSON, ENFAGROW, PREMIUM (formerly ENFAMIL, LIPIL, NEXT STEP), powder
+39|toddler-formula-mead-johnson-enfagrow-premium-formerly-enfam-609|Toddler formula, MEAD JOHNSON, ENFAGROW PREMIUM (formerly ENFAMIL, LIPIL, NEXT STEP), ready-to-feed
+40|infant-formula-mead-johnson-enfamil-premature-24-calo-ready-|Infant formula, MEAD JOHNSON, ENFAMIL, Premature, 24 calo ready-to-feed
+41|infant-formula-mead-johnson-enfamil-premium-newborn-ready-to|Infant Formula, MEAD JOHNSON, ENFAMIL, Premium, Newborn, ready-to-feed
+42|infant-formula-abbott-nutrition-similac-go-and-grow-ready-to|Infant formula, ABBOTT NUTRITION, SIMILAC, GO AND GROW, ready-to-feed, with ARA and DHA
+43|infant-formula-abbott-nutrition-similac-expert-care-diarrhea|Infant formula, ABBOTT NUTRITION, SIMILAC, Expert Care, Diarrhea, ready- to- feed with ARA and DHA
+44|infant-formula-abbott-nutrition-similac-for-spit-up-ready-to|Infant formula, ABBOTT NUTRITION, SIMILAC, For Spit Up, ready-to-feed, with ARA and DHA
+45|babyfood-baby-mum-mum-rice-biscuits|Babyfood, Baby MUM MUM Rice Biscuits
+46|infant-formula-abbott-nutrition-similac-for-spit-up-powder-w|Infant formula, ABBOTT NUTRITION, SIMILAC, For Spit Up, powder, with ARA and DHA
+47|salad-dressing-kraft-mayo-light-mayonnaise|Salad dressing, KRAFT Mayo Light Mayonnaise
+48|salad-dressing-kraft-mayo-fat-free-mayonnaise-dressing|Salad dressing, KRAFT Mayo Fat Free Mayonnaise Dressing
+49|salad-dressing-kraft-miracle-whip-free-nonfat-dressing|Salad dressing, KRAFT MIRACLE WHIP FREE Nonfat Dressing
+50|oil-tomatoseed|Oil, tomatoseed
+51|oil-teaseed|Oil, teaseed
+52|oil-babassu|Oil, babassu
+53|oil-sheanut|Oil, sheanut
+54|oil-cupu-assu|Oil, cupu assu
+55|oil-soybean-salad-or-cooking-partially-hydrogenated-and-cott|Oil, soybean, salad or cooking, (partially hydrogenated) and cottonseed
+56|shortening-confectionery-coconut-hydrogenated-and-or-palm-ke|Shortening confectionery, coconut (hydrogenated) and or palm kernel (hydrogenated)
+57|shortening-frying-heavy-duty-soybean-hydrogenated-linoleic-l|Shortening frying (heavy duty), soybean (hydrogenated), linoleic (less than 1%)
+58|shortening-confectionery-fractionated-palm|Shortening, confectionery, fractionated palm
+59|oil-ucuhuba-butter|Oil, ucuhuba butter
+60|oil-sunflower-high-oleic-70-and-over|Oil, sunflower, high oleic (70% and over)
+61|shortening-multipurpose-soybean-hydrogenated-and-palm-hydrog|Shortening, multipurpose, soybean (hydrogenated) and palm (hydrogenated)
+62|oil-industrial-mid-oleic-sunflower|Oil, industrial, mid-oleic, sunflower
+63|oil-industrial-canola-with-antifoaming-agent-principal-uses-|Oil, industrial, canola with antifoaming agent, principal uses salads, woks and light frying
+64|oil-industrial-canola-partially-hydrogenated-oil-for-deep-fa|Oil, industrial, canola (partially hydrogenated) oil for deep fat frying
+65|oil-industrial-coconut-principal-uses-candy-coatings-oil-spr|Oil, industrial, coconut, principal uses candy coatings, oil sprays, roasting nuts
+66|shortening-industrial-soy-partially-hydrogenated-pourable-li|Shortening, industrial, soy (partially hydrogenated), pourable liquid fry shortening
+67|oil-industrial-soy-partially-hydrogenated-multiuse-for-non-d|Oil, industrial, soy (partially hydrogenated), multiuse for non-dairy butter flavor
+68|oil-industrial-soy-partially-hydrogenated-and-soy-winterized|Oil, industrial, soy (partially hydrogenated ) and soy (winterized), pourable clear fry
+69|margarine-like-shortening-industrial-soy-partially-hydrogena|Margarine-like shortening, industrial, soy (partially hydrogenated), cottonseed, and soy, principal use flaky pastries
+70|oil-industrial-palm-kernel-confection-fat-uses-similar-to-hi|Oil, industrial, palm kernel, confection fat, uses similar to high quality cocoa butter
+71|oil-industrial-palm-kernel-hydrogenated-confection-fat-uses-|Oil, industrial, palm kernel (hydrogenated), confection fat, uses similar to 95 degree hard butter
+72|oil-industrial-palm-kernel-hydrogenated-confection-fat-inter|Oil, industrial, palm kernel (hydrogenated), confection fat, intermediate grade product
+73|oil-industrial-coconut-confection-fat-typical-basis-for-ice-|Oil, industrial, coconut, confection fat, typical basis for ice cream coatings
+74|oil-industrial-palm-kernel-hydrogenated-used-for-whipped-top|Oil, industrial, palm kernel (hydrogenated) , used for whipped toppings, non-dairy
+75|oil-industrial-coconut-hydrogenated-used-for-whipped-topping|Oil, industrial, coconut (hydrogenated), used for whipped toppings and coffee whiteners
+76|oil-industrial-palm-and-palm-kernel-filling-fat-non-hydrogen|Oil, industrial, palm and palm kernel, filling fat (non-hydrogenated)
+77|oil-industrial-soy-partially-hydrogenated-palm-principal-use|Oil, industrial, soy (partially hydrogenated ), palm, principal uses icings and fillings
+78|shortening-industrial-soy-partially-hydrogenated-for-baking-|Shortening, industrial, soy (partially hydrogenated ) for baking and confections
+79|usda-commodity-food-oil-vegetable-low-saturated-fat|USDA Commodity Food, oil, vegetable, low saturated fat
+80|margarine-like-spread-smart-beat-super-light-without-saturat|Margarine-like spread, SMART BEAT Super Light without saturated fat
+81|margarine-like-spread-smart-beat-smart-squeeze|Margarine-like spread, SMART BEAT Smart Squeeze
+82|margarine-like-spread-smart-balance-omega-plus-spread-with-p|Margarine-like spread, SMART BALANCE Omega Plus Spread (with plant sterols & fish oil)
+83|oil-vegetable-natreon-canola-high-stability-non-trans-high-o|Oil, vegetable, Natreon canola, high stability, non trans, high oleic (70%)
+84|oil-pam-cooking-spray-original|Oil, PAM cooking spray, original
+85|oil-cooking-and-salad-enova-80-diglycerides|Oil, cooking and salad, ENOVA, 80% diglycerides

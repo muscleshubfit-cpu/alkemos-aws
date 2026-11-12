@@ -1,0 +1,85 @@
+1|soy-sauce-made-from-soy-tamari|Soy sauce made from soy (tamari)
+2|soy-sauce-made-from-hydrolyzed-vegetable-protein|Soy sauce made from hydrolyzed vegetable protein
+3|okara|Okara
+4|veggie-burgers-or-soyburgers-unprepared|Veggie burgers or soyburgers, unprepared
+5|tofu-extra-firm-prepared-with-nigari|Tofu, extra firm, prepared with nigari
+6|tofu-hard-prepared-with-nigari|Tofu, hard, prepared with nigari
+7|soymilk-chocolate-unfortified|Soymilk, chocolate, unfortified
+8|frijoles-rojos-volteados-refried-beans-red-canned|Frijoles rojos volteados (Refried beans, red, canned)
+9|soymilk-all-flavors-enhanced|Soymilk (All flavors), enhanced
+10|silk-plus-for-bone-health-soymilk|SILK Plus for Bone Health, soymilk
+11|silk-very-vanilla-soymilk|SILK Very Vanilla, soymilk
+12|silk-nog-soymilk|SILK Nog, soymilk
+13|silk-chai-soymilk|SILK Chai, soymilk
+14|silk-key-lime-soy-yogurt|SILK Key Lime soy yogurt
+15|peanuts-valencia-oil-roasted-without-salt|Peanuts, valencia, oil-roasted, without salt
+16|peanuts-virginia-oil-roasted-without-salt|Peanuts, virginia, oil-roasted, without salt
+17|soy-protein-concentrate-produced-by-acid-wash|Soy protein concentrate, produced by acid wash
+18|soy-protein-isolate-potassium-type|Soy protein isolate, potassium type
+19|soy-sauce-made-from-soy-and-wheat-shoyu-low-sodium|Soy sauce made from soy and wheat (shoyu), low sodium
+20|soy-sauce-reduced-sodium-made-from-hydrolyzed-vegetable-prot|Soy sauce, reduced sodium, made from hydrolyzed vegetable protein
+21|tofu-dried-frozen-koyadofu-prepared-with-calcium-sulfate|Tofu, dried-frozen (koyadofu), prepared with calcium sulfate
+22|tofu-salted-and-fermented-fuyu-prepared-with-calcium-sulfate|Tofu, salted and fermented (fuyu), prepared with calcium sulfate
+23|loma-linda-swiss-stake-with-gravy-canned-unprepared|LOMA LINDA Swiss Stake with Gravy, canned, unprepared
+24|loma-linda-vege-burger-canned-unprepared|LOMA LINDA Vege-Burger, canned, unprepared
+25|loma-linda-redi-burger-canned-unprepared|LOMA LINDA Redi-Burger, canned, unprepared
+26|loma-linda-linketts-canned-unprepared|LOMA LINDA Linketts, canned, unprepared
+27|worthington-frichik-original-canned-unprepared|WORTHINGTON FriChik Original, canned, unprepared
+28|worthington-low-fat-fri-chik-canned-unprepared|WORTHINGTON Low Fat Fri Chik, canned, unprepared
+29|worthington-low-fat-veja-links-canned-unprepared|WORTHINGTON Low Fat Veja-Links, canned, unprepared
+30|worthington-multigrain-cutlets-canned-unprepared|WORTHINGTON Multigrain Cutlets, canned, unprepared
+31|worthington-prime-stakes-canned-unprepared|WORTHINGTON Prime Stakes, canned, unprepared
+32|worthington-saucettes-canned-unprepared|WORTHINGTON Saucettes, canned, unprepared
+33|worthington-vegetable-skallops-canned-unprepared|WORTHINGTON Vegetable Skallops, canned, unprepared
+34|worthington-veja-links-canned-unprepared|WORTHINGTON Veja-Links, canned, unprepared
+35|worthington-chic-ketts-frozen-unprepared|WORTHINGTON Chic-Ketts, frozen, unprepared
+36|worthington-fripats-frozen-unprepared|WORTHINGTON FriPats, frozen, unprepared
+37|worthington-prosage-links-frozen-unprepared|WORTHINGTON Prosage Links, frozen, unprepared
+38|worthington-prosage-roll-frozen-unprepared|WORTHINGTON Prosage Roll, frozen, unprepared
+39|worthington-stakelets-frozen-unprepared|WORTHINGTON Stakelets, frozen, unprepared
+40|worthington-stripples-frozen-unprepared|WORTHINGTON Stripples, frozen, unprepared
+41|worthington-wham-roll-frozen-unprepared|WORTHINGTON Wham (roll), frozen, unprepared
+42|morningstar-farms-mushroom-lovers-burger-frozen-unprepared|MORNINGSTAR FARMS Mushroom Lover's Burger, frozen, unprepared
+43|gardenburger-savory-portabella-veggie-burger-frozen-unprepar|GARDENBURGER Savory Portabella Veggie Burger, frozen, unprepared
+44|morningstar-farms-chikn-grill-veggie-patties-frozen-unprepar|MORNINGSTAR FARMS Chik'n Grill Veggie Patties, frozen, unprepared
+45|morningstar-farms-bbq-riblets-frozen-unprepared|MORNINGSTAR FARMS BBQ Riblets, frozen, unprepared
+46|worthington-leanies-frozen-unprepared|WORTHINGTON Leanies, frozen, unprepared
+47|morningstar-farms-california-turky-burger-frozen-unprepared|MORNINGSTAR FARMS California Turk'y Burger, frozen, unprepared
+48|morningstar-farms-meal-starters-veggie-meatballs-frozen-unpr|MORNINGSTAR FARMS Meal Starters Veggie Meatballs, frozen, unprepared
+49|morningstar-farms-breakfast-sandwich-veggie-sausage-egg-chee|MORNINGSTAR FARMS Breakfast Sandwich Veggie Sausage Egg & Cheese English Muffin, frozen, unprepared
+50|morningstar-farms-breakfast-sandwich-veggie-scramble-cheese-|MORNINGSTAR FARMS Breakfast Sandwich Veggie Scramble & Cheese English Muffin, frozen, unprepared
+51|morningstar-farms-tuscan-greens-beans-frozen-unprepared|MORNINGSTAR FARMS Tuscan Greens & Beans, frozen, unprepared
+52|lamb-new-zealand-imported-rack-partly-frenched-separable-lea-5142|Lamb, New Zealand, imported, rack - partly frenched, separable lean and fat, cooked, fast roasted
+53|lamb-new-zealand-imported-rack-partly-frenched-separable-lea-5144|Lamb, New Zealand, imported, rack - partly frenched, separable lean only, cooked, fast roasted
+54|game-meat-antelope-raw|Game meat, antelope, raw
+55|game-meat-antelope-cooked-roasted|Game meat, antelope, cooked, roasted
+56|game-meat-beaver-raw|Game meat, beaver, raw
+57|game-meat-beaver-cooked-roasted|Game meat, beaver, cooked, roasted
+58|game-meat-beefalo-composite-of-cuts-raw|Game meat, beefalo, composite of cuts, raw
+59|game-meat-beefalo-composite-of-cuts-cooked-roasted|Game meat, beefalo, composite of cuts, cooked, roasted
+60|game-meat-boar-wild-raw|Game meat, boar, wild, raw
+61|game-meat-boar-wild-cooked-roasted|Game meat, boar, wild, cooked, roasted
+62|game-meat-horse-raw|Game meat, horse, raw
+63|game-meat-horse-cooked-roasted|Game meat, horse, cooked, roasted
+64|game-meat-muskrat-raw|Game meat, muskrat, raw
+65|game-meat-muskrat-cooked-roasted|Game meat, muskrat, cooked, roasted
+66|game-meat-opossum-cooked-roasted|Game meat, opossum, cooked, roasted
+67|game-meat-raccoon-cooked-roasted|Game meat, raccoon, cooked, roasted
+68|lamb-variety-meats-and-by-products-kidneys-cooked-braised|Lamb, variety meats and by-products, kidneys, cooked, braised
+69|veal-variety-meats-and-by-products-kidneys-cooked-braised|Veal, variety meats and by-products, kidneys, cooked, braised
+70|veal-variety-meats-and-by-products-lungs-raw|Veal, variety meats and by-products, lungs, raw
+71|veal-variety-meats-and-by-products-lungs-cooked-braised|Veal, variety meats and by-products, lungs, cooked, braised
+72|veal-variety-meats-and-by-products-thymus-raw|Veal, variety meats and by-products, thymus, raw
+73|veal-variety-meats-and-by-products-thymus-cooked-braised|Veal, variety meats and by-products, thymus, cooked, braised
+74|lamb-new-zealand-imported-frozen-composite-of-trimmed-retail-5315|Lamb, New Zealand, imported, frozen, composite of trimmed retail cuts, separable lean and fat, trimmed to 1/8\" fat, raw
+75|lamb-new-zealand-imported-frozen-composite-of-trimmed-retail-5316|Lamb, New Zealand, imported, frozen, composite of trimmed retail cuts, separable lean and fat, trimmed to 1/8\" fat, cooked
+76|game-meat-bison-chuck-shoulder-clod-separable-lean-only-raw|Game meat, bison, chuck, shoulder clod, separable lean only, raw
+77|lamb-new-zealand-imported-brains-cooked-soaked-and-fried|Lamb, New Zealand, imported, brains, cooked, soaked and fried
+78|lamb-new-zealand-imported-testes-cooked-soaked-and-fried|Lamb, New Zealand, imported, testes, cooked, soaked and fried
+79|lamb-new-zealand-imported-testes-raw|Lamb, New Zealand, imported, testes, raw
+80|lamb-new-zealand-imported-rack-fully-frenched-separable-lean|Lamb, New Zealand, imported, rack - fully frenched, separable lean only, cooked, fast roasted
+81|lamb-new-zealand-imported-rack-fully-frenched-separable-lean-5479|Lamb, New Zealand, imported, rack - fully frenched, separable lean and fat, cooked, fast roasted
+82|veal-leg-top-round-cap-off-cutlet-boneless-cooked-grilled|Veal, leg, top round, cap off, cutlet, boneless, cooked, grilled
+83|veal-leg-top-round-cap-off-cutlet-boneless-raw|Veal, leg, top round, cap off, cutlet, boneless, raw
+84|veal-foreshank-osso-buco-separable-lean-only-cooked-braised|Veal, foreshank, osso buco, separable lean only, cooked, braised
+85|veal-seam-fat-only-raw|Veal, seam fat only, raw

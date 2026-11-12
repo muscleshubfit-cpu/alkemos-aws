@@ -1,0 +1,85 @@
+1|veal-seam-fat-only-cooked|Veal, seam fat only, cooked
+2|veal-foreshank-osso-buco-separable-lean-and-fat-cooked-brais|Veal, foreshank, osso buco, separable lean and fat, cooked, braised
+3|bread-irish-soda-prepared-from-recipe|Bread, irish soda, prepared from recipe
+4|bread-protein-includes-gluten|Bread, protein (includes gluten)
+5|bread-stuffing-cornbread-dry-mix|Bread stuffing, cornbread, dry mix
+6|bread-stuffing-cornbread-dry-mix-prepared|Bread stuffing, cornbread, dry mix, prepared
+7|cake-boston-cream-pie-commercially-prepared|Cake, boston cream pie, commercially prepared
+8|cookies-fig-bars|Cookies, fig bars
+9|cookies-fortune|Cookies, fortune
+10|cookies-gingersnaps|Cookies, gingersnaps
+11|cookies-ladyfingers-with-lemon-juice-and-rind|Cookies, ladyfingers, with lemon juice and rind
+12|cookies-peanut-butter-sandwich-special-dietary|Cookies, peanut butter sandwich, special dietary
+13|crackers-crispbread-rye|Crackers, crispbread, rye
+14|crackers-matzo-egg|Crackers, matzo, egg
+15|crackers-rusk-toast|Crackers, rusk toast
+16|doughnuts-cake-type-plain-includes-unsugared-old-fashioned|Doughnuts, cake-type, plain (includes unsugared, old-fashioned)
+17|doughnuts-french-crullers-glazed|Doughnuts, french crullers, glazed
+18|english-muffins-plain-enriched-with-ca-prop-includes-sourdou|English muffins, plain, enriched, with ca prop (includes sourdough)
+19|french-toast-prepared-from-recipe-made-with-low-fat-2-milk|French toast, prepared from recipe, made with low fat (2%) milk
+20|muffins-plain-prepared-from-recipe-made-with-low-fat-2-milk|Muffins, plain, prepared from recipe, made with low fat (2%) milk
+21|muffins-blueberry-prepared-from-recipe-made-with-low-fat-2-m|Muffins, blueberry, prepared from recipe, made with low fat (2%) milk
+22|muffins-corn-prepared-from-recipe-made-with-low-fat-2-milk|Muffins, corn, prepared from recipe, made with low fat (2%) milk
+23|pancakes-special-dietary-dry-mix|Pancakes, special dietary, dry mix
+24|popovers-dry-mix-enriched|Popovers, dry mix, enriched
+25|rolls-hard-includes-kaiser|Rolls, hard (includes kaiser)
+26|wonton-wrappers-includes-egg-roll-wrappers|Wonton wrappers (includes egg roll wrappers)
+27|leavening-agents-yeast-bakers-active-dry|Leavening agents, yeast, baker's, active dry
+28|bread-crumbs-dry-grated-seasoned|Bread crumbs, dry, grated, seasoned
+29|bread-protein-includes-gluten-toasted|Bread, protein, (includes gluten), toasted
+30|rolls-dinner-plain-prepared-from-recipe-made-with-low-fat-2-|Rolls, dinner, plain, prepared from recipe, made with low fat (2%) milk
+31|crackers-matzo-egg-and-onion|Crackers, matzo, egg and onion
+32|waffles-plain-frozen-ready-to-heat-toasted|Waffles, plain, frozen, ready -to-heat, toasted
+33|cookies-ladyfingers-without-lemon-juice-and-rind|Cookies, ladyfingers, without lemon juice and rind
+34|popovers-dry-mix-unenriched|Popovers, dry mix, unenriched
+35|toaster-pastries-kellogg-kelloggs-pop-tarts-smores|Toaster Pastries, KELLOGG, KELLOGG'S POP TARTS, S'mores
+36|kellogg-kellogs-nutri-grain-cereal-bars-mixed-berry|KELLOGG, KELLOG'S NUTRI-GRAIN CEREAL BARS, Mixed Berry
+37|archway-home-style-cookies-date-filled-oatmeal|ARCHWAY Home Style Cookies, Date Filled Oatmeal
+38|archway-home-style-cookies-frosty-lemon|ARCHWAY Home Style Cookies, Frosty Lemon
+39|archway-home-style-cookies-old-fashioned-windmill-cookies|ARCHWAY Home Style Cookies, Old Fashioned Windmill Cookies
+40|archway-home-style-cookies-reduced-fat-ginger-snaps|ARCHWAY Home Style Cookies, Reduced Fat Ginger Snaps
+41|kraft-stove-top-stuffing-mix-chicken-flavor|KRAFT, STOVE TOP Stuffing Mix Chicken Flavor
+42|george-weston-bakeries-brownberry-sage-and-onion-stuffing-mi|GEORGE WESTON BAKERIES, Brownberry Sage and Onion Stuffing Mix, dry
+43|continental-mills-krusteaz-almond-poppyseed-muffin-mix-artif|CONTINENTAL MILLS, KRUSTEAZ Almond Poppyseed Muffin Mix, Artificially Flavored, dry
+44|mckee-baking-little-debbie-nutty-bars-wafers-with-peanut-but|MCKEE BAKING, LITTLE DEBBIE NUTTY BARS, Wafers with Peanut Butter, Chocolate Covered
+45|martha-white-foods-martha-whites-chewy-fudge-brownie-mix-dry|MARTHA WHITE FOODS, Martha White's Chewy Fudge Brownie Mix, dry
+46|martha-white-foods-martha-whites-buttermilk-biscuit-mix-dry|MARTHA WHITE FOODS, Martha White's Buttermilk Biscuit Mix, dry
+47|mission-foods-mission-flour-tortillas-soft-taco-8-inch|MISSION FOODS, MISSION Flour Tortillas, Soft Taco, 8 inch
+48|nabisco-nabisco-oreo-crunchies-cookie-crumb-topping|NABISCO, NABISCO OREO CRUNCHIES, Cookie Crumb Topping
+49|pillsbury-grands-buttermilk-biscuits-refrigerated-dough|PILLSBURY GRANDS, Buttermilk Biscuits, refrigerated dough
+50|pillsbury-golden-layer-buttermilk-biscuits-artificial-flavor|PILLSBURY Golden Layer Buttermilk Biscuits, Artificial Flavor, refrigerated dough
+51|george-weston-bakeries-thomas-english-muffins|GEORGE WESTON BAKERIES, Thomas English Muffins
+52|heinz-weight-watcher-chocolate-eclair-frozen|HEINZ, WEIGHT WATCHER, Chocolate Eclair, frozen
+53|interstate-brands-corp-wonder-hamburger-rolls|INTERSTATE BRANDS CORP, WONDER Hamburger Rolls
+54|general-mills-betty-crocker-supermoist-yellow-cake-mix-dry|GENERAL MILLS, BETTY CROCKER SUPERMOIST Yellow Cake Mix, dry
+55|nabisco-nabisco-snackwells-fat-free-devils-food-cookie-cakes|NABISCO, NABISCO SNACKWELL'S Fat Free Devil's Food Cookie Cakes
+56|tostada-shells-corn|Tostada shells, corn
+57|bread-salvadoran-sweet-cheese-quesadilla-salvadorena|Bread, salvadoran sweet cheese (quesadilla salvadorena)
+58|keikitos-muffins-latino-bakery-item|Keikitos (muffins), Latino bakery item
+59|cake-pound-bimbo-bakeries-usa-panque-casero-home-baked-style|Cake, pound, BIMBO Bakeries USA, Panque Casero, home baked style
+60|pan-dulce-la-ricura-salpora-de-arroz-con-azucar-cookie-like-|Pan Dulce, LA RICURA, Salpora de Arroz con Azucar, cookie-like, contains wheat flour and rice flour
+61|crackers-snack-goya-crackers|Crackers, snack, GOYA CRACKERS
+62|crackers-cream-la-moderna-rikis-cream-crackers|Crackers, cream, LA MODERNA RIKIS CREAM CRACKERS
+63|focaccia-italian-flatbread-plain|Focaccia, Italian flatbread, plain
+64|kashi-tlc-original-7-grain-crackers|KASHI, TLC, Original 7-Grain Crackers
+65|kashi-tlc-toasted-asiago-crackers|KASHI, TLC, Toasted Asiago Crackers
+66|kashi-h2h-woven-wheat-cracker-original|KASHI, H2H Woven Wheat Cracker, Original
+67|kashi-h2h-woven-wheat-cracker-roasted-garlic|KASHI, H2H Woven Wheat Cracker, Roasted Garlic
+68|austin-pb-j-crackers-sandwich-type|AUSTIN, PB & J Crackers, sandwich-type
+69|barbara-dee-winter-mints-cookies|BARBARA DEE, Winter Mints Cookies
+70|kelloggs-beanatural-original-3-bean-chips|KELLOGG'S, BEANATURAL, Original 3-Bean Chips
+71|kelloggs-eggo-biscuit-scramblers-egg-cheese|KELLOGG'S, EGGO, Biscuit Scramblers, Egg & Cheese
+72|schifftigers-milk-bar|SCHIFF,TIGER'S MILK BAR
+73|candies-toblerone-milk-chocolate-with-honey-and-almond-nouga|Candies, TOBLERONE, milk chocolate with honey and almond nougat
+74|snacks-kraft-cornnuts-plain|Snacks, KRAFT, CORNNUTS, plain
+75|snacks-crisped-rice-bar-chocolate-chip|Snacks, crisped rice bar, chocolate chip
+76|topping-smuckers-magic-shell|Topping, SMUCKER'S MAGIC SHELL
+77|snacks-popcorn-oil-popped-microwave-regular-flavor-no-trans-|Snacks, popcorn, oil-popped, microwave, regular flavor, no trans fat
+78|snacks-pretzels-hard-confectioners-coating-chocolate-flavor|Snacks, pretzels, hard, confectioner's coating, chocolate-flavor
+79|snacks-mm-mars-combos-snacks-cheddar-cheese-pretzel|Snacks, M&M MARS, COMBOS Snacks Cheddar Cheese Pretzel
+80|snacks-pretzels-hard-whole-wheat-including-both-salted-and-u|Snacks, pretzels, hard, whole-wheat including both salted and unsalted
+81|candies-nestle-bit-o-honey-candy-chews|Candies, NESTLE, BIT-O'-HONEY Candy Chews
+82|candies-caramello-candy-bar|Candies, CARAMELLO Candy Bar
+83|candies-confectioners-coating-yogurt|Candies, confectioner's coating, yogurt
+84|candies-hersheys-golden-almond-solitaires|Candies, HERSHEY'S GOLDEN ALMOND SOLITAIRES
+85|candies-york-peppermint-pattie|Candies, YORK Peppermint Pattie
