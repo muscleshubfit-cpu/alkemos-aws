@@ -16137,3 +16137,23 @@ Stage Summary:
 - الخام الموثّق بالمستودع: `raw/gsc-performance-2026-11-12/` (5 ملفات) + لقطة الأزواج `fixtures/tool-article-links.published-slugs.json`؛ سكربتا التطبيق والتحليل المحليان: التحليل منسوخ للمستودع والتطبيق محلي غير محفوظ (قابل للإعادة من الجدول الموثّق).
 - Push status: pushed (eb84350b على main 2026-11-12 — CI ‏5/5 + تحقق حي 4/4؛ تفاصيل الإغلاق بمدخل SEO-PLAN-PUBLISH-VERIFY-B1-B2-2026-11-12)
 
+
+<!-- rotated 2026-11-12 by scripts/worklog_rotate.py (Phase 288, ARCH-REMEDIATION): 1 entries moved verbatim from worklog.md -->
+---
+Task ID: SEO-PLAN-PUBLISH-VERIFY-B1-B2-2026-11-12
+Agent: Main (Z.ai)
+Task: إغلاق نشر كوميت التقرير 16 (eb84350b — B1 وحدة الربط «الأداة↔المقالة» + B2 الدفعة الرابعة + تحليل B4) بعد توفير المالك توكن GitHub جديدًا بجلسة 2026-11-12: الدفع إلى main + متابعة CI الكاملة + التحقق الحي قراءة-فقط + توثيق الإغلاق — توثيقي صرف (docs/raw) صفر تعديل كود.
+
+Work Log:
+- قبل الدفع: `git fetch` للتأكد من عدم تحرك origin/main (ما زال 5d7fb347) + إعادة تشغيل البوابات المحلية على الشجرة نفسها (tsc 0 · docs_parity ✓ · docs_audit ✓) — ثم `git push origin main`: المدى 5d7fb347..eb84350b (التوكن عبر GIT_ASKPASS بملف مؤقت خارج المستودع — صفر بقاء بإعدادات git).
+- CI (انطلقت الخمس تلقائيًا لكوميت كود): **5/5 خضراء** بحلول ~19:16 UTC — quality gate 43084229829 · migration audit 43084230076 · deploy-aws 43084229971 · docs parity 43084229761 · stale-refs 43084229812.
+- التحقق الحي بعدها (قراءة-فقط — **4/4**): (1) `/tools/calorie-calculator` = ‏3 روابط `/blog/*` بخادمي HTML · (2) `/ar/tools/calorie-calculator` = ‏3 روابط `/ar/blog/*` · (3) مقالة حساب السعرات EN تربط عائدة 4 مرات لـ`/tools/calorie-calculator` + قسم «Try the calculator» حاضر · (4) مرآة `/ar/foods/mcdonalds-chicken-mcnuggets`: `noindex` صفر · `index, follow` · canonical ذاتي · الاسم العربي حاضر — **بمُعطّل كاش** `?cb=…` لأن حافة Cloudflare (قاعدة alkemos-public-html-cache بTTL ‏43,200 ث) تخدم نسخة ما قبل النشر حتى ≤12 ساعة وdeploy-aws لا يطهّر الكاش (الأصل متحقق والأصل هو ما ستخدمه الحافة بعد الصلاحية).
+- الخام المهيكل القابل لإعادة التشغيل: `raw/plan-execution-publish-2026-11-12/live-verify.json` (CI الخمس + الفحوص الأربعة بنتائجها وأحجامها + ملاحظة الكاش).
+- التوثيق: تحديث التقرير 16 (§6 صف النشر بالنتائج + فقرة نتائج التنفيذ الفعلية + §7 البند 4 «تم») + STATE (سطر آخر كوميت متحقق eb84350b + صف QA) + صف README المجلد وفهرس docs/README + هذا المدخل + تدوير H5.
+- أمانة: صفر ادعاء أثر فهرسة/CTR من هذه الجولة — الأثر بنوافذ GSC القائمة حصرًا (+7/+14/+28 من 11-11) · لا طلبات فهرسة · توصية قائمة بقلب التوكن إن كان الظاهر بالجلسة نفس قيمة ظهرت نصاً سابقًا.
+
+Stage Summary:
+- eb84350b منشور على main ومتحقق منه بالكامل: CI ‏5/5 + فحوص حية 4/4 على الأصل — B1 (الأزواج 19) وB2 (مرايا الـ49 خارج noindex) حية في الإنتاج والحافة ستخدمها خلال ≤12 ساعة.
+- بقي على المالك: A1 (URL Inspection للـ25) · نوافذ A2 · قلب بيانات الاعتماد الظاهرة نصاً بالجلسات · قرارات B4/B3 الجاهزة.
+- Push status: pushed
+
