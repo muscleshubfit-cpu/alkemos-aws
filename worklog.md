@@ -13,7 +13,7 @@ Work Log:
 
 Stage Summary:
 - الاختبارات والبوابات: tsc 0 · eslint 0 · vitest الكاملة · docs_audit · docs_parity · migration_audit · guard-stale-refs — النتائج النهائية بكوميت الإغلاق.
-- Push status: (يُحدَّث بكوميت الإغلاق بعد الدفع والتحقق الحي)
+- Push status: **fb0b2e07 مُدفع على main ومتحقق حيًّا** — CI ‏5/5 خضراء (guard · parity · migration · quality · deploy) · الإنتاج على fb0b2e0 (build-info · /blog و/ar/blog ‏200 · /api/cron/dispatch-pipelines مقفول 401 بلا سر — المنطق الأسبوعي حي) · الكرونان على main ‏0 5 * * 1,4 و0 22 * * 2,5 والسيران active عبر API · أول إطلاقة للمنطق الأسبوعي 23:40 UTC ليلة 12-13/11
 ---
 ---
 Task ID: BLOG-WEEKLY-CADENCE-2026-11-13
