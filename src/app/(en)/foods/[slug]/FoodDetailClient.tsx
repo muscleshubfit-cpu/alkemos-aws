@@ -247,8 +247,8 @@ export default function FoodDetailClient({
           </h2>
           <p className="mt-1 text-sm font-normal text-[#6e6e73]">
             {isAr
-              ? "غيّر الكمية بالجرام وشاهد السعرات والماكروز تتحدّث تلقائيًا."
-              : "Change the grams and see calories + macros update automatically."}
+              ? "أدخل أي كمية بالجرام — من 1 جم فأكثر — فتتحدّث السعرات والماكروز تلقائيًا وفق الكمية التي أدخلتها (قيم كل 100 جم أعلاه مرجع القياس لا وحدة الحساب)."
+              : "Enter any gram amount — from 1 g up — and calories + macros update automatically for the amount you entered (the per-100g values above are the measuring reference, not the calculation unit)."}
           </p>
 
           {/* Gram input */}

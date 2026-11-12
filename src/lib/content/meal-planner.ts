@@ -153,8 +153,8 @@ export const MEAL_PLANNER_CONTENT: ToolReference = {
         {
           kind: "p",
           text: {
-            en: "Two shopping rules keep the plan honest at the store: shop from a list (unlisted items are decisions made by a marketing department, not by your plan) and read the per-100-gram column on labels rather than the per-serving figure — the per-100 g column is the planner's native currency and the only one comparable across products.",
-            ar: "قاعدتا تسوق تحفظان صدق الخطة في المتجر: تسوّق من قائمة (الأصناف غير المدرجة قرارات اتخذها قسم تسويق لا خطتك)، واقرأ عمود «لكل 100 غرام» على الملصقات بدل رقم «الحصة» — فعمود المئة غرام عملة المخطط الأصلية والوحيدة القابلة للمقارنة عبر المنتجات.",
+            en: "Two shopping rules keep the plan honest at the store: shop from a list (unlisted items are decisions made by a marketing department, not by your plan) and read the per-100-gram column on labels rather than the per-serving figure — it is the only column comparable across products, and the planner computes your totals by scaling these per-100 g values onto the exact grams you enter.",
+            ar: "قاعدتا تسوق تحفظان صدق الخطة في المتجر: تسوّق من قائمة (الأصناف غير المدرجة قرارات اتخذها قسم تسويق لا خطتك)، واقرأ عمود «لكل 100 غرام» على الملصقات بدل رقم «الحصة» — فهو العمود الوحيد القابل للمقارنة عبر المنتجات، والمخطط يحسب مجاميعك بقياس قيم كل 100 غرام على الكمية التي تدخلها بالجرام بالضبط.",
           },
         },
       ],

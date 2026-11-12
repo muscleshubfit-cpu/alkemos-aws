@@ -133,11 +133,11 @@ export const FOODS_METHODOLOGY_SECTIONS: readonly MethodologySection[] = [
     headingAr: "عرْف كل 100 جرام والحصص المثبتة بالجرام",
     paragraphsEn: [
       "Every value in the database is expressed per 100 grams of the food in its documented state — the international standard for food composition tables, and the convention that makes portions pure arithmetic: a 37g tablespoon of a food is 0.37 × the per-100g values, whatever your scale reads. State is the variable to watch, not math: raw and cooked weights of the same food differ (water loss concentrates cooked values per gram), so match the weighing state to the entry and the arithmetic stays honest.",
-      "Default servings are anchors, not guesses: each carries a gram equivalent (for example, one medium chicken breast ≈ 150g) so a quick estimate lands near reality instead of inside a 120–250g household range. The meal planner accepts any gram figure and recomputes live — the same per-100g rows feed both surfaces.",
+      "Default servings are anchors, not guesses: each carries a gram equivalent (for example, one medium chicken breast ≈ 150g) so a quick estimate lands near reality instead of inside a 120–250g household range. The meal planner accepts any gram figure the user enters — from 1 g up — and recomputes live against it: the per-100g values are the stored reference, never a mandatory calculation unit. The same per-100g rows feed both surfaces.",
     ],
     paragraphsAr: [
       "كل قيمة في القاعدة معبر عنها لكل 100 جرام من الصنف في حالته الموثقة — المعيار الدولي لجداول التركيب الغذائي، والعرْف الذي يجعل الحصص حسابًا خالصًا: ملعقة بحجم 37 جرامًا من صنف ما تساوي 0.37 × قيم كل 100 جرام، أيًا كان ما يقرأه ميزانك. المتغير الذي يستحق المراقبة هو الحالة لا الحساب: أوزان النيّئ والمطبوخ للصنف نفسه تختلف (فقدان الماء يركّز قيم المطبوخ لكل جرام)، فطابق حالة الوزن مع المدخل ويبقى الحساب صادقًا.",
-      "الحصص الافتراضية مراسٍ لا تخمينات: كل منها تحمل مكافئًا بالجرام (مثلًا: حبة متوسطة من صدر الدجاج ≈ 150 جم) حتى يهبط التقدير السريع قرب الواقع لا داخل مدى منزلي بين 120 و250 جرامًا. مخطط الوجبات يقبل أي رقم بالجرام ويعيد الحساب لحظيًا — صفوف كل 100 جرام نفسها تغذي السطحين.",
+      "الحصص الافتراضية مراسٍ لا تخمينات: كل منها تحمل مكافئًا بالجرام (مثلًا: حبة متوسطة من صدر الدجاج ≈ 150 جم) حتى يهبط التقدير السريع قرب الواقع لا داخل مدى منزلي بين 120 و250 جرامًا. ومخطط الوجبات يقبل أي رقم بالجرام يدخله المستخدم — من 1 جم فأكثر — ويعيد الحساب لحظيًا عليه: قيم كل 100 جرام مرجع مخزّن لا وحدة حساب إلزامية — صفوف كل 100 جرام نفسها تغذي السطحين.",
     ],
   },
   {
@@ -285,8 +285,8 @@ export const FOODS_METHODOLOGY_CHAIN_LINKS: ReadonlyArray<{
   {
     hrefEn: "/meal-planner",
     hrefAr: "/ar/meal-planner",
-    labelEn: "Meal planner (live per-100g arithmetic)",
-    labelAr: "مخطط الوجبات (حساب حيّ لكل 100 جرام)",
+    labelEn: "Meal planner (live gram-based arithmetic from per-100g rows)",
+    labelAr: "مخطط الوجبات (حساب حيّ بالجرام من قيم كل 100 جرام)",
   },
   {
     hrefEn: "/macro-tracker",
