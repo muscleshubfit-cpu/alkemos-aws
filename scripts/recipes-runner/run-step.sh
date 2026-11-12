@@ -147,6 +147,29 @@ while :; do
           export QUEUE_ID="$NEW_QID"
           ARGS=(--step "$STEP" --queueId "$QUEUE_ID")
           echo "   └─ fresh row captured: QUEUE_ID=$QUEUE_ID"
+          # RC3 (forensics 2026-11-12 — the 2026-11-11 r5 repair gap): the
+          # fresh row is at status 'idea' — it must be ADVANCED through the
+          # intermediate stages (r1 … the stage BEFORE the failing one) on
+          # the SAME new row, exactly like the non-r0 chain branch below.
+          # The previous form re-attempted the FAILING step directly on the
+          # fresh 'idea' row and died on deterministic 409 wrong_status
+          # ×3 (attempt 2/3 burned ~8 idle backoff minutes, red X).
+          FAILING_INDEX=-1
+          for i in "${!PIPELINE_STEPS[@]}"; do
+            if [ "${PIPELINE_STEPS[$i]}" = "$STEP" ]; then FAILING_INDEX=$i; fi
+          done
+          if [ "$FAILING_INDEX" -ge 1 ]; then
+            i=1
+            while [ "$i" -lt "$FAILING_INDEX" ]; do
+              RS="${PIPELINE_STEPS[$i]}"
+              echo "   └─ repair step: $RS"
+              if ! MAX_REPAIRS=0 bash "$0" "$RS" "$MAX_ATTEMPTS"; then
+                echo "   └─ repair step $RS failed — chain stops (the failing step re-evaluates next)"
+                break
+              fi
+              i=$((i + 1))
+            done
+          fi
         fi
       fi
     else

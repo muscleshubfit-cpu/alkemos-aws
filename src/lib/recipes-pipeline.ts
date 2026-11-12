@@ -52,7 +52,14 @@ const ideaSchema = z.object({
 });
 
 /** Deterministic rotation slot: least-recently-used cuisine × mealType
- *  over the last 14 published recipes (the coverage matrix, plan §6.2 R0). */
+ *  over the last 14 published recipes (the coverage matrix, plan §6.2 R0).
+ *
+ *  RC1 (forensics 2026-11-12 — the Ful-Medames loop): the comparator
+ *  MUST sort DESCENDING (never-used = 1e9 first, then the OLDEST use) —
+ *  the previous ascending form picked the MOST-recently-used slot, so
+ *  after the first egyptian×breakfast publish every later day demanded
+ *  the same slot and the models answered Ful Medames variants over and
+ *  over (Q-GATE-4 100% overlap · pair_slug/one-per-day duplicates). */
 export async function pickIdeaSlot(): Promise<{ cuisine: RecipeCuisine; mealType: RecipeMealType }> {
   let recent: Array<{ cuisines: string[]; meal_types: string[] }> = [];
   if (isSupabaseAdminConfigured && supabaseAdmin) {
@@ -72,10 +79,10 @@ export async function pickIdeaSlot(): Promise<{ cuisine: RecipeCuisine; mealType
   });
   const neverUsed = 1e9;
   const cuisine = [...RECIPE_CUISINES].sort(
-    (a, b) => (lastUseCuisine.get(a) ?? neverUsed) - (lastUseCuisine.get(b) ?? neverUsed),
+    (a, b) => (lastUseCuisine.get(b) ?? neverUsed) - (lastUseCuisine.get(a) ?? neverUsed),
   )[0];
   const mealType = [...RECIPE_MEAL_TYPES].sort(
-    (a, b) => (lastUseMeal.get(a) ?? neverUsed) - (lastUseMeal.get(b) ?? neverUsed),
+    (a, b) => (lastUseMeal.get(b) ?? neverUsed) - (lastUseMeal.get(a) ?? neverUsed),
   )[0];
   return { cuisine, mealType };
 }
@@ -116,15 +123,39 @@ const FALLBACK_IDEAS: Record<string, Array<{ themeAr: string; themeEn: string; b
   ],
 };
 
+/** RC2 (forensics 2026-11-12): the anti-dup corpus is ALL recipe rows —
+ *  published AND in_production/held/failed alike. The DB guards are
+ *  status-blind (recipes_pair_slug_uidx is GLOBAL; a stale
+ *  in_production master from an abandoned attempt burns its slug
+ *  forever), so the idea layer must steer clear of every existing
+ *  slug — the published-only check let "Ful Medames" pass R0 on
+ *  2026-11-12 and die at R1 with a raw duplicate-key. */
+export async function listRecentPairSlugs(limit = 60): Promise<string[]> {
+  if (!isSupabaseAdminConfigured || !supabaseAdmin) return [];
+  const { data } = await supabaseAdmin
+    .from("recipes")
+    .select("pair_slug")
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  return ((data as Array<{ pair_slug: string }>) ?? []).map((r) => r.pair_slug);
+}
+
 export async function generateRecipeIdea(): Promise<{ idea: RecipeIdea; source: string }> {
   const slot = await pickIdeaSlot();
+  const usedSlugs = await listRecentPairSlugs(30);
+  const avoid = usedSlugs.length > 0
+    ? `ALREADY-USED themes (pair_slug) — do NOT propose these dishes or close variants of them: ${usedSlugs.join(", ")}.`
+    : "";
   const prompt = [
     `Pick today's healthy recipe concept for Alkemos (fitness & nutrition platform, Egyptian/Arab audience).`,
     `REQUIRED slot: cuisine=${slot.cuisine}, mealType=${slot.mealType}.`,
-    `Rules: a real dish that fits the cuisine AND the meal type; gym-friendly (visible protein source, honest macros);`,
+    avoid,
+    `Rules: a real dish that fits the cuisine AND the meal type; gym-friendly (visible protein source, honest macros); distinct from every already-used theme;`,
     `themeAr = the dish name in Modern Standard Arabic; themeEn = the English name; brief = 1-2 sentences describing the dish and its fitness value (Arabic).`,
     `Respond with STRICT JSON only: {"themeAr":"...","themeEn":"...","brief":"..."}`,
-  ].join("\n");
+  ]
+    .filter(Boolean)
+    .join("\n");
 
   try {
     const { text, provider, model } = await dispatchAI("recipe:idea", prompt, {
@@ -137,9 +168,13 @@ export async function generateRecipeIdea(): Promise<{ idea: RecipeIdea; source: 
       source: `${provider}:${model}`,
     };
   } catch {
-    // Deterministic fallback (plan §6.2 R0 — بلا AI)
+    // Deterministic fallback (plan §6.2 R0 — بلا AI). Prefer the first
+    // bank entry whose slug is NOT already used (RC2: the corpus is ALL
+    // rows — a random re-pick of a burned slug is a guaranteed R1
+    // duplicate-key), else the random legacy pick.
     const bank = FALLBACK_IDEAS[slot.cuisine] ?? FALLBACK_IDEAS.international;
-    const pick = bank[Math.floor(Math.random() * bank.length)];
+    const pick = bank.find((e) => !usedSlugs.includes(pairSlugify(e.themeEn)))
+      ?? bank[Math.floor(Math.random() * bank.length)];
     return {
       idea: sealIdea({ ...pick, cuisine: slot.cuisine, mealType: slot.mealType, goal: "maintenance" }),
       source: "fallback:deterministic",
@@ -167,20 +202,14 @@ function sealIdea(base: {
   };
 }
 
-/** R0 gate: theme must not duplicate recent recipes nor collide with a
- *  canonical search intent (Q-GATE-4/5 at idea time). */
+/** R0 gate: theme must not duplicate ANY existing recipe row (Q-GATE-4/5
+ *  at idea time). RC2 (forensics 2026-11-12): the corpus is ALL statuses —
+ *  the DB unique indexes are status-blind, so a published-only check let
+ *  an idea collide with a stale in_production master and die at R1. */
 export async function ideaPassesGuards(idea: RecipeIdea): Promise<string | null> {
-  if (isSupabaseAdminConfigured && supabaseAdmin) {
-    const { data } = await supabaseAdmin
-      .from("recipes")
-      .select("pair_slug")
-      .eq("status", "published")
-      .order("published_at", { ascending: false })
-      .limit(60);
-    const themes = new Set(((data as Array<{ pair_slug: string }>) ?? []).map((r) => r.pair_slug));
-    if (themes.has(pairSlugify(idea.themeEn))) {
-      return `theme "${idea.themeEn}" duplicates a recent pair_slug — rerun r0-idea`;
-    }
+  const themes = new Set(await listRecentPairSlugs(200));
+  if (themes.has(pairSlugify(idea.themeEn))) {
+    return `theme "${idea.themeEn}" duplicates a recent pair_slug — rerun r0-idea`;
   }
   const collision = findBlogIntentCollision(idea.themeEn, idea.themeAr);
   if (collision) {

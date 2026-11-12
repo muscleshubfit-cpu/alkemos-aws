@@ -140,6 +140,28 @@ export async function markRecipeQueueHeld(
   }
 }
 
+/** RC4 (forensics 2026-11-12): an R5 hold whose rerun target is r0-idea
+ *  ABANDONS this attempt — demote the recipes master out of the live set
+ *  ('in_production') so the partial unique index recipes_one_per_day_uidx
+ *  RELEASES the scheduled day for the same-day retry (the run-step.sh
+ *  fresh-r0 repair chain / the dispatch-pipelines backstop). 'failed'
+ *  keeps the row as the honest failure record and its pair_slug stays
+ *  burned (the global recipes_pair_slug_uidx anti-dup law is untouched —
+ *  the R0 guard corpus now sees it). Non-r0 targets keep the master
+ *  in_production: those attempts are still repairable in place. */
+export async function abandonRecipeAttemptMaster(recipeId: string): Promise<void> {
+  try {
+    if (!isSupabaseAdminConfigured || !supabaseAdmin) return;
+    const { error } = await supabaseAdmin
+      .from("recipes")
+      .update({ status: "failed", updated_at: new Date().toISOString() })
+      .eq("id", recipeId);
+    if (error) console.warn(`[recipes-queue] abandon master failed: ${error.message}`);
+  } catch {
+    /* never let bookkeeping crash the pipeline */
+  }
+}
+
 /** Find today's (or the newest ≤36h) resumable row — the RESUME protocol. */
 export async function findResumableRecipeRow(): Promise<RecipeQueueItem | null> {
   if (!isSupabaseAdminConfigured || !supabaseAdmin) return null;

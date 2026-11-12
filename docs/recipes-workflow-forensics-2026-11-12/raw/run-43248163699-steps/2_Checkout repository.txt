@@ -1,0 +1,97 @@
+﻿2026-11-12T15:28:34.5704189Z ##[group]Run actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+2026-11-12T15:28:34.5705982Z with:
+2026-11-12T15:28:34.5706627Z   repository: muscleshubfit-cpu/alkemos-aws
+2026-11-12T15:28:34.5710973Z   token: ***
+2026-11-12T15:28:34.5711557Z   ssh-strict: true
+2026-11-12T15:28:34.5712139Z   ssh-user: git
+2026-11-12T15:28:34.5712719Z   persist-credentials: true
+2026-11-12T15:28:34.5713336Z   clean: true
+2026-11-12T15:28:34.5713920Z   sparse-checkout-cone-mode: true
+2026-11-12T15:28:34.5714898Z   fetch-depth: 1
+2026-11-12T15:28:34.5715778Z   fetch-tags: false
+2026-11-12T15:28:34.5716560Z   show-progress: true
+2026-11-12T15:28:34.5717174Z   lfs: false
+2026-11-12T15:28:34.5717726Z   submodules: false
+2026-11-12T15:28:34.5718326Z   set-safe-directory: true
+2026-11-12T15:28:34.5719002Z   allow-unsafe-pr-checkout: false
+2026-11-12T15:28:34.5720189Z env:
+2026-11-12T15:28:34.5720789Z   AI_CHAIN_TOTAL_BUDGET_MS: 600000
+2026-11-12T15:28:34.5721486Z   AI_PROVIDER_COOLDOWN_MS: 1800000
+2026-11-12T15:28:34.5722146Z   QUEUE_ID: 
+2026-11-12T15:28:34.5722767Z   RECIPES_PUBLISH_ENABLED: true
+2026-11-12T15:28:34.5723668Z   NEXT_PUBLIC_SUPABASE_URL: ***
+2026-11-12T15:28:34.5726336Z   SUPABASE_SERVICE_ROLE_KEY: ***
+2026-11-12T15:28:34.5727053Z   CRON_SECRET: ***
+2026-11-12T15:28:34.5727975Z   OPENROUTER_API: ***
+2026-11-12T15:28:34.5728918Z   OPENROUTER_API_KEY: ***
+2026-11-12T15:28:34.5729747Z   GROQ_API_KEY: ***
+2026-11-12T15:28:34.5730642Z   NVIDIA_API_KEY: ***
+2026-11-12T15:28:34.5731427Z   GEMINI_API_KEY: ***
+2026-11-12T15:28:34.5732283Z   CLOUDFLARE_AI_TOKEN: ***
+2026-11-12T15:28:34.5733040Z   CLOUDFLARE_ACCOUNT_ID: ***
+2026-11-12T15:28:34.5733917Z   TAVILY_API_KEY: ***
+2026-11-12T15:28:34.5734831Z   EXA_API_KEY: ***
+2026-11-12T15:28:34.5735611Z   UPSTASH_REDIS_REST_URL: ***
+2026-11-12T15:28:34.5736942Z   UPSTASH_REDIS_REST_TOKEN: ***
+2026-11-12T15:28:34.5737938Z   PEXELS_API_KEY: ***
+2026-11-12T15:28:34.5738548Z   UNSPLASH_ACCESS_KEY: 
+2026-11-12T15:28:34.5739154Z   PIXABAY_API_KEY: 
+2026-11-12T15:28:34.5739723Z   INDEXNOW_KEY: 
+2026-11-12T15:28:34.5820055Z   SITE_URL: https://alkemos.com
+2026-11-12T15:28:34.5821715Z ##[endgroup]
+2026-11-12T15:28:34.8930740Z Syncing repository: muscleshubfit-cpu/alkemos-aws
+2026-11-12T15:28:34.8934543Z ##[group]Getting Git version info
+2026-11-12T15:28:34.8936167Z Working directory is '/home/runner/work/alkemos-aws/alkemos-aws'
+2026-11-12T15:28:34.8938753Z [command]/usr/bin/git version
+2026-11-12T15:28:34.8940041Z git version 2.56.0
+2026-11-12T15:28:34.8974840Z ##[endgroup]
+2026-11-12T15:28:34.8986567Z Temporarily overriding HOME='/home/runner/work/_temp/f4c0f29b-a3b8-4a96-9313-b9bbce431364' before making global git config changes
+2026-11-12T15:28:34.8989718Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-12T15:28:34.8992851Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/alkemos-aws/alkemos-aws
+2026-11-12T15:28:34.9071534Z Deleting the contents of '/home/runner/work/alkemos-aws/alkemos-aws'
+2026-11-12T15:28:34.9076424Z ##[group]Initializing the repository
+2026-11-12T15:28:34.9081364Z [command]/usr/bin/git init /home/runner/work/alkemos-aws/alkemos-aws
+2026-11-12T15:28:34.9208305Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-11-12T15:28:34.9210262Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-11-12T15:28:34.9212082Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-11-12T15:28:34.9213461Z hint: call:
+2026-11-12T15:28:34.9214418Z hint:
+2026-11-12T15:28:34.9215471Z hint: 	git config --global init.defaultBranch <name>
+2026-11-12T15:28:34.9216702Z hint:
+2026-11-12T15:28:34.9217891Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-11-12T15:28:34.9219681Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-11-12T15:28:34.9221144Z hint:
+2026-11-12T15:28:34.9221961Z hint: 	git branch -m <name>
+2026-11-12T15:28:34.9222883Z hint:
+2026-11-12T15:28:34.9224085Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-11-12T15:28:34.9226897Z Initialized empty Git repository in /home/runner/work/alkemos-aws/alkemos-aws/.git/
+2026-11-12T15:28:34.9236774Z [command]/usr/bin/git remote add origin https://github.com/muscleshubfit-cpu/alkemos-aws
+2026-11-12T15:28:34.9299186Z ##[endgroup]
+2026-11-12T15:28:34.9300811Z ##[group]Disabling automatic garbage collection
+2026-11-12T15:28:34.9307393Z [command]/usr/bin/git config --local gc.auto 0
+2026-11-12T15:28:34.9355199Z ##[endgroup]
+2026-11-12T15:28:34.9357289Z ##[group]Setting up auth
+2026-11-12T15:28:34.9364490Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-11-12T15:28:34.9406748Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-11-12T15:28:34.9922018Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-12T15:28:34.9960501Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-11-12T15:28:35.0249022Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-12T15:28:35.0288707Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-11-12T15:28:35.0579121Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-11-12T15:28:35.0659664Z ##[endgroup]
+2026-11-12T15:28:35.0660784Z ##[group]Fetching the repository
+2026-11-12T15:28:35.0672830Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +b817cd12d4932c16519dc547ebb798b8d489f3b2:refs/remotes/origin/main
+2026-11-12T15:28:40.0935222Z From https://github.com/muscleshubfit-cpu/alkemos-aws
+2026-11-12T15:28:40.0936895Z  * [new ref]         b817cd12d4932c16519dc547ebb798b8d489f3b2 -> origin/main
+2026-11-12T15:28:40.0947381Z ##[endgroup]
+2026-11-12T15:28:40.0948359Z ##[group]Determining the checkout info
+2026-11-12T15:28:40.0949307Z ##[endgroup]
+2026-11-12T15:28:40.0951974Z [command]/usr/bin/git sparse-checkout disable
+2026-11-12T15:28:40.1018180Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-11-12T15:28:40.1050956Z ##[group]Checking out the ref
+2026-11-12T15:28:40.1055068Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+2026-11-12T15:28:40.6508680Z Switched to a new branch 'main'
+2026-11-12T15:28:40.6513644Z branch 'main' set up to track 'origin/main'.
+2026-11-12T15:28:40.6546687Z ##[endgroup]
+2026-11-12T15:28:40.6600992Z [command]/usr/bin/git log -1 --format=%H
+2026-11-12T15:28:40.6631275Z b817cd12d4932c16519dc547ebb798b8d489f3b2

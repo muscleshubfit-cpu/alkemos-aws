@@ -20,6 +20,7 @@ import {
   updateRecipeQueueItem,
   markRecipeQueueFailed,
   parseJsonCell,
+  abandonRecipeAttemptMaster,
 } from "@/lib/recipes-queue";
 
 export const maxDuration = 120;
@@ -324,6 +325,15 @@ export async function GET(request: NextRequest) {
       const first = violations[0];
       const rerunTarget = mapR5FailureToRerunTarget(first?.message ?? "");
       const reason = violations.map((v) => v.message).join(" · ").slice(0, 2000);
+      // RC4 (forensics 2026-11-12): an r0-idea target ABANDONS this
+      // attempt — demote the master out of the live one-per-day set so
+      // the same-day fresh idea (the wrapper's r0 repair chain / the
+      // dispatch backstop) can actually create its pair. Non-r0 targets
+      // keep the master in_production (the attempt is still repairable
+      // in place). Never bends any gate — the hold verdict stands.
+      if (rerunTarget === "r0-idea") {
+        await abandonRecipeAttemptMaster(recipeId);
+      }
       // The runner's repair chain owns the ≤2 cycle budget; the row
       // keeps the target so the admin dashboard can requeue later too.
       await updateRecipeQueueItem(queueId, {
