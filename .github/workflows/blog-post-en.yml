@@ -24,8 +24,9 @@ name: Auto-publish EN article (pipeline v3 — language-split)
 # WEEKLY CADENCE (owner order 2026-11-13 «خفض النشر … 4 مقالات
 #   إجمالًا أسبوعيًا فقط»): the daily law above is REDUCED to TWO EN
 #   articles per week — Tuesday + Friday, still at the SAME 22:00 UTC
-#   slot (18:00 US Eastern — the Phase-119 time and timezone anchors
-#   are untouched; no documented technical necessity to change them).
+#   slot (17:00 US Eastern in winter EST / 18:00 in summer EDT — the
+#   Phase-119 UTC time and timezone anchors are untouched; no documented
+#   technical necessity to change them).
 #   The week's law: 2 AR + 2 EN = 4 articles total on FOUR distinct
 #   days (AR Mon+Thu · EN Tue+Fri), never more than one article per
 #   day. Pair completion keeps the current direction — Monday's AR run
@@ -39,12 +40,16 @@ name: Auto-publish EN article (pipeline v3 — language-split)
 #   and the 23:40 UTC dispatch-pipelines backstop is week-aware (it
 #   only tops up a genuinely missed slot, within the week's cap).
 #
-# ENGLISH WEEKLY SLOTS:
-#   cron (UTC)     US Eastern (EDT, UTC-4)   Rationale
-#   Tue 22:00 →   18:00 ET                  after-work / evening peak
-#   Fri 22:00 →   18:00 ET                  after-work / evening peak
-#   NOTE: when the US drops DST in winter (EST, UTC-5), the local time
-#   shifts one hour EARLIER (17:00) — still the evening peak.
+# ENGLISH WEEKLY SLOTS (DST-audited 2026-11-13 review — the UTC slot is
+#   the anchor; the US-Eastern display follows the US DST law: UTC-5 EST
+#   winter [first Sun of Nov → second Sun of Mar] · UTC-4 EDT summer):
+#   cron (UTC)     US Eastern (current: EST, UTC-5 — winter since 2026-11-01)
+#   Tue 22:00 →   17:00 ET                  after-work / evening peak
+#   Fri 22:00 →   17:00 ET                  (18:00 during summer EDT)
+#   Still the after-work/evening-peak window in BOTH seasons — the US
+#   left DST on 2026-11-01, so the first weekly slots (2026-11-17 onward)
+#   land at 17:00 ET; the schedule itself needs NO change (the UTC
+#   anchor is the Phase-119 law).
 #
 # Env PIPELINE_LANG=en is REQUIRED — P0 refuses to guess the language.
 # AI chain: OpenRouter dual-key pool + Groq interleaved strongest-first,
@@ -57,7 +62,7 @@ on:
     # UTC — the two weekly EN slots (Phase-119 evening time untouched;
     # was `0 22 * * *` daily). Kept in sync with EN_WEEKLY_SLOTS in
     # src/lib/blog-pipeline-dispatch.ts (pinned by blog-weekly-cadence.test.ts).
-    - cron: "0 22 * * 2,5"  # Tue+Fri 18:00 ET (EDT) — the two weekly EN slots
+    - cron: "0 22 * * 2,5"  # Tue+Fri 22:00 UTC — the two weekly EN slots (17:00 ET winter / 18:00 summer DST)
   workflow_dispatch:
     inputs:
       topic:

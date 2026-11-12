@@ -143,8 +143,10 @@ export type PipelineDispatchLang = "ar" | "en";
 // PER WEEK on FOUR distinct days — no day carries more than one
 // article:
 //
-//   AR   Monday + Thursday  05:00 UTC  (08:00 Cairo — morning window)
-//   EN   Tuesday + Friday   22:00 UTC  (18:00 US Eastern — evening)
+//   AR   Monday + Thursday  05:00 UTC  (07:00 Cairo winter / 08:00
+//        summer DST — morning window; the UTC slot is the anchor)
+//   EN   Tuesday + Friday   22:00 UTC  (17:00 US Eastern winter /
+//        18:00 summer DST — evening peak; the UTC slot is the anchor)
 //
 // The Phase-119 geography-anchored TIMES and timezone anchors are
 // UNTOUCHED (owner law: no publishing-time change without a documented

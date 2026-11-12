@@ -24,8 +24,9 @@ name: Auto-publish AR article (pipeline v3 — language-split)
 # WEEKLY CADENCE (owner order 2026-11-13 «خفض النشر … 4 مقالات
 #   إجمالًا أسبوعيًا فقط»): the daily law above is REDUCED to TWO AR
 #   articles per week — Monday + Thursday, still at the SAME 05:00 UTC
-#   slot (08:00 Cairo — the Phase-119 time and timezone anchors are
-#   untouched; no documented technical necessity to change them). The
+#   slot (07:00 Cairo in winter EET / 08:00 in summer EEST — the
+#   Phase-119 UTC time and timezone anchors are untouched; no documented
+#   technical necessity to change them). The
 #   week's law: 2 AR + 2 EN = 4 articles total on FOUR distinct days,
 #   never more than one article per day. Pair completion keeps the
 #   current direction — the Monday AR run CREATEs pair 1 (its EN twin
@@ -37,12 +38,16 @@ name: Auto-publish AR article (pipeline v3 — language-split)
 #   23:40 UTC dispatch-pipelines backstop is week-aware (it only tops
 #   up a genuinely missed slot, within the week's cap).
 #
-# ARABIC WEEKLY SLOTS:
-#   cron (UTC)     Cairo (EEST, UTC+3, current DST)
-#   Mon 05:00  →   08:00 صباحًا   (morning phone scroll / commute)
-#   Thu 05:00  →   08:00 صباحًا
-#   NOTE: when Egypt drops DST in winter (+2), the local time shifts
-#   one hour EARLIER (07:00) — still the morning window; adjust then if needed.
+# ARABIC WEEKLY SLOTS (DST-audited 2026-11-13 review — the UTC slot is
+#   the anchor; the Cairo display follows Egypt's DST law: UTC+2 EET
+#   winter [late Oct → late Apr] · UTC+3 EEST summer [late Apr → Oct]):
+#   cron (UTC)     Cairo local (current: EET, UTC+2 — winter since 2026-10-30)
+#   Mon 05:00  →   07:00 صباحًا   (morning phone scroll / commute)
+#   Thu 05:00  →   07:00 صباحًا   (08:00 during summer DST)
+#   Still the morning window in BOTH seasons — Egypt left DST on
+#   2026-10-29/30 (last Thursday of October, tzdata rule), so the first
+#   weekly slots (2026-11-16 onward) land at 07:00 Cairo; the schedule
+#   itself needs NO change (the UTC anchor is the Phase-119 law).
 #
 # Env PIPELINE_LANG=ar is REQUIRED — P0 refuses to guess the language.
 # AI chain: OpenRouter dual-key pool + Groq interleaved strongest-first,
@@ -55,7 +60,7 @@ on:
     # UTC — the two weekly AR slots (Phase-119 morning time untouched;
     # was `0 5 * * *` daily). Kept in sync with AR_WEEKLY_SLOTS in
     # src/lib/blog-pipeline-dispatch.ts (pinned by blog-weekly-cadence.test.ts).
-    - cron: "0 5 * * 1,4"   # Mon+Thu 08:00 Cairo (EEST) — the two weekly AR slots
+    - cron: "0 5 * * 1,4"   # Mon+Thu 05:00 UTC — the two weekly AR slots (07:00 Cairo winter / 08:00 summer DST)
   workflow_dispatch:
     inputs:
       topic:

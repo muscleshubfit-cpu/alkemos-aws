@@ -36,9 +36,13 @@ export const maxDuration = 60;
  *   week, and the week's total can never exceed its two scheduled
  *   slots per language (the p5-publish weekly guard enforces the hard
  *   cap against every path — retries, manual runs and backstops).
- *   The daily fire time (23:40 UTC, Vercel cron + /etc/cron.d/alkemos)
- *   is UNTOUCHED — the weekly logic lives here, so both fire channels
- *   follow it automatically.
+ *   The daily fire time (23:40 UTC, the server-side /etc/cron.d/alkemos
+ *   on the AWS Lightsail origin — the SOLE fire channel since the
+ *   2026-10-10 cutover; the Vercel crons were retired EMPTY at cutover
+ *   and the project measured definitions:[] on 2026-11-08, see
+ *   docs/VERCEL-LEFTOVERS-AUDIT-2026-11-08.md) is UNTOUCHED — the
+ *   weekly logic lives here, so the fire channel follows it
+ *   automatically.
  *
  *   The 23:40 fire is after BOTH slot hours' grace windows (AR 05:00+90
  *   = 06:30 · EN 22:00+90 = 23:30 UTC), so a merely-late scheduled run
@@ -54,11 +58,14 @@ export const maxDuration = 60;
  * stale (>15 min) — meaningful when an external cron calls this endpoint
  * every few minutes (Layer 2); harmless when called once daily.
  *
- * AUTH: Vercel Cron sends Authorization: Bearer <CRON_SECRET> (fail-closed,
- * same C4 pattern as the other cron routes).
+ * AUTH: the caller sends Authorization: Bearer <CRON_SECRET> (the
+ * server cron's curl since the 2026-10-10 AWS cutover — originally
+ * Vercel Cron; fail-closed, same C4 pattern as the other cron routes).
  *
- * TOKEN: requires GITHUB_DISPATCH_TOKEN (Vercel env) — a fine-grained
- * GitHub PAT scoped to THIS repo with Actions: Read and write ONLY.
+ * TOKEN: requires GITHUB_DISPATCH_TOKEN (server env — the app's
+ * /srv/alkemos/shared/.env on the Lightsail origin, provisioned by
+ * deploy-aws.yml) — a fine-grained GitHub PAT scoped to THIS repo with
+ * Actions: Read and write ONLY.
  * Never commit a PAT into the repo (§3.2). Without the token the endpoint
  * answers 503 with setup instructions (dormant, never crashes the cron).
  *
@@ -242,7 +249,7 @@ export async function GET(request: NextRequest) {
       {
         error: "GITHUB_DISPATCH_TOKEN not configured on this deployment.",
         setup:
-          "Add a fine-grained GitHub PAT (this repo only, Actions: Read and write) as Vercel env GITHUB_DISPATCH_TOKEN, then redeploy.",
+          "Add a fine-grained GitHub PAT (this repo only, Actions: Read and write) as GITHUB_DISPATCH_TOKEN in the server's shared/.env, then restart the app (pm2 restart).",
       },
       { status: 503 },
     );
