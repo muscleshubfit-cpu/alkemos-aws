@@ -9,8 +9,9 @@
  * timeline for each weekly slot plus the two claims under review:
  *   (A) the 23:40 UTC daily fire can compensate each slot (incl.
  *       Tuesday EN) — grace boundaries, per-fire decisions, margins;
- *   (B) the 137h cross-week claim (report §4): window freshness vs the
- *       ACTUAL selection order in findAdoptablePairRow (newest-first).
+ *   (B) the 137h cross-week claim (report §4): window freshness + the
+ *       FIXED FIFO selection order in findAdoptablePairRow
+ *       (BLOG-WEEKLY-COMPENSATION-FIX 2026-11-13 — was newest-first).
  *
  * Run from repo root: bun run scripts/weekly-cadence-timeline-verify.mts
  * (scripts/ is outside tsc/eslint scope by design — same as the other
@@ -94,7 +95,7 @@ console.log("== A2) IN-FLIGHT COVER: a run created 1 min before the fire ==\n");
   console.log(`  Tue 23:40 fire, scheduled run NOT yet created (>100 min delay): missing=${d2.missing} topUpNow=${d2.topUpNow}  -> top-up dispatched (race closed later by p5 daily guard)`);
 }
 
-console.log("\n== B) THE 137h CLAIM — window freshness vs SELECTION ==\n");
+console.log("\n== B) THE 137h CLAIM — window freshness + FIFO SELECTION (BLOG-WEEKLY-COMPENSATION-FIX 2026-11-13) ==\n");
 {
   // Twin T1b created Thu 05:00 week W (2026-11-12) by AR CREATE.
   const twin = {
@@ -104,26 +105,31 @@ console.log("\n== B) THE 137h CLAIM — window freshness vs SELECTION ==\n");
     pair_id: "b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e",
     created_at: "2026-11-12T05:00:00.000Z",
   };
+  const t2 = { ...twin, id: "99999999-8888-4777-9666-555555555555", created_at: "2026-11-16T05:00:00.000Z" };
   const nextTueEnSlot = at("2026-11-17T22:00:00Z");
+  const nextFri = at("2026-11-20T22:00:00Z");
   const ageH = (nextTueEnSlot.getTime() - Date.parse(twin.created_at)) / 3_600_000;
   console.log(`  T1b (created 2026-11-12T05:00Z) age at NEXT Tue 22:00 slot = ${ageH}h`);
   console.log(`  isAdoptablePairRow(T1b, en, now=nextTue) = ${isAdoptablePairRow(twin, "en", { now: nextTueEnSlot })}  (window math: 137 <= 144 OK)`);
-  // But the SELECTION: newest-first. Next Monday's AR run creates T2 (2026-11-16T05:00Z).
-  // findAdoptablePairRow orders created_at DESC and returns the FIRST row only.
-  const candidates = [twin, { ...twin, id: "99999999-8888-4777-9666-555555555555", created_at: "2026-11-16T05:00:00.000Z" }];
-  candidates.sort((a, b) => Date.parse(b.created_at!) - Date.parse(a.created_at!)); // DESC = the SQL ordering in findAdoptablePairRow
-  const selected = candidates[0];
-  console.log(`  findAdoptablePairRow ordering (created_at DESC) with T1b + T2 both adoptable -> SELECTS: created_at=${selected.created_at}  (the NEWER twin T2 — T1b starves)`);
-  // And T1b at the following Friday slot:
-  const nextFri = at("2026-11-20T22:00:00Z");
+  // The SELECTION after the FIX: FIFO. Next Monday's AR run creates T2 (2026-11-16T05:00Z).
+  // findAdoptablePairRow orders created_at ASCENDING and returns the FIRST row — the OLDEST eligible twin.
+  const candidates = [t2, twin]; // seed order irrelevant — the sort decides
+  candidates.sort((a, b) => Date.parse(a.created_at!) - Date.parse(b.created_at!)); // ASC = the SQL ordering in findAdoptablePairRow (fixed)
+  const selectedAtTue = candidates[0];
+  const selectedIsT1b = selectedAtTue.created_at === twin.created_at;
+  console.log(`  findAdoptablePairRow ordering (created_at ASC — FIFO) with T1b + T2 both adoptable -> SELECTS: created_at=${selectedAtTue.created_at}  (the OLDER twin T1b at 137h — T2 waits its turn)`);
+  // T2 at the following Friday slot — pair-3 completes too:
+  const ageT2Fri = (nextFri.getTime() - Date.parse(t2.created_at)) / 3_600_000;
+  console.log(`  T2 (created 2026-11-16T05:00Z) age at NEXT Fri 22:00 slot = ${ageT2Fri}h -> isAdoptablePairRow = ${isAdoptablePairRow(t2, "en", { now: nextFri })}  (113 <= 144 — BOTH pairs complete; starvation impossible)`);
+  // The pre-fix defect, for the record (what FIFO removed):
   const ageFri = (nextFri.getTime() - Date.parse(twin.created_at)) / 3_600_000;
-  console.log(`  T1b age at NEXT Fri 22:00 slot = ${ageFri}h -> isAdoptablePairRow = ${isAdoptablePairRow(twin, "en", { now: nextFri })}  (EXPIRED > 144h — pair-2's AR article orphaned)`);
+  console.log(`  [pre-fix record] had T2 been eaten first, T1b age at NEXT Fri = ${ageFri}h -> isAdoptablePairRow = ${isAdoptablePairRow(twin, "en", { now: nextFri })}  (EXPIRED > 144h — the orphan the fix removed)`);
   // The brief freshness check agrees:
   const brief = (sealedAt: string) => ({
     sharedBrief: { pairId: twin.pair_id, topicEn: "progressive overload fundamentals", topicAr: "مبادئ التحميل التدريجي لبناء العضلات", angleId: "guide", sealedAt },
   });
-  console.log(`  extractSharedBrief(T1b brief) at next Fri = ${extractSharedBrief(brief(twin.created_at), { now: nextFri }) === null ? "null (expired)" : "valid"}`);
-  console.log(`  extractSharedBrief(T1b brief) at next Tue = ${extractSharedBrief(brief(twin.created_at), { now: nextTueEnSlot }) === null ? "null" : "valid (137h <= 144h)"}`);
+  console.log(`  extractSharedBrief(T1b brief) at next Tue = ${extractSharedBrief(brief(twin.created_at), { now: nextTueEnSlot }) === null ? "null" : "valid (137h <= 144h)"}  (T1b IS the twin Tuesday adopts: ${selectedIsT1b})`);
+  console.log(`  extractSharedBrief(T2 brief) at next Fri = ${extractSharedBrief(brief(t2.created_at), { now: nextFri }) === null ? "null" : "valid (113h <= 144h)"}`);
 }
 
 console.log("\n== C) WEEK ROLLOVER — the backstop's same-week compensation scope ==\n");
@@ -136,7 +142,7 @@ console.log("\n== C) WEEK ROLLOVER — the backstop's same-week compensation sco
     console.log(`  fire ${iso} (week starts ${fmt(ws)}): expected=${d.expected} missing=${d.missing} topUpNow=${d.topUpNow}`);
   }
   console.log("  -> Monday 00:00 UTC rolls the week: the missed Friday slot is no longer compensable by the backstop.");
-  console.log("     Only the 144h pairing window can still complete the pair (see B) — and B shows the selection order blocks it.");
+  console.log("     Only the 144h pairing window can still complete the pair (see B) — and B shows the FIFO selection (fixed 2026-11-13) rescues it: Tue takes the 137h twin, Fri the 113h one.");
 }
 
 console.log("\n== D) TWIN AGE at each same-week rescue fire (Thu-created twin, Friday slot missed) ==\n");

@@ -27,8 +27,18 @@
  * The route-level enforcement (skipped_weekly_quota) is proven in
  * blog-weekly-quota.route.test.ts (same mock pattern as the Phase-171
  * daily-quota suite).
+ *
+ * BLOG-WEEKLY-COMPENSATION-FIX 2026-11-13 (owner approval «موافق على
+ * تنفيذ الاصلاح»): the pair-completion block below additionally pins
+ * the SELECTION — not just the window — through a PostgREST-replay
+ * double: with the §5 compound-failure feed (the older 137h twin AND
+ * the fresh 41h twin both awaiting adoption), Tuesday's slot must
+ * consume the OLDER twin and the following Friday slot still finds the
+ * newer one at 113h — both pairs complete. The sibling contract suite
+ * is blog-adopt-order.test.ts (the ordering law + the RESUME
+ * newest-first contrast pin).
  */
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import { readFileSync } from "fs";
 import path from "path";
 import {
@@ -41,6 +51,7 @@ import {
 import {
   BLOG_WEEKLY_QUOTA_PER_LANG,
   RESUME_MAX_AGE_HOURS,
+  findAdoptablePairRow,
   isoDayOfWeek,
   isoWeekStartUTC,
 } from "@/lib/blog-queue";
@@ -50,6 +61,94 @@ import {
   extractSharedBrief,
   isAdoptablePairRow,
 } from "@/lib/blog-pairing";
+
+// ── PostgREST read-builder double for the SELECTION test below —
+// captures the .order() direction the source issues and replays it as
+// a real sort over the seeded rows, exactly as PostgREST would. The
+// state rides vi.hoisted because the vi.mock factory is hoisted above
+// every import. Mirror of blog-adopt-order.test.ts (kept local: this
+// file was mock-free and stays mock-free for every PURE law — only
+// the one ADOPT-selection test touches the double).
+const double = vi.hoisted(() => ({
+  rows: [] as Array<Record<string, unknown>>,
+  queries: [] as Array<{
+    table: string;
+    column: string | null;
+    ascending: boolean | null;
+    limit: number | null;
+  }>,
+}));
+
+vi.mock("@/lib/supabase/admin", () => ({
+  isSupabaseAdminConfigured: true,
+  supabaseAdmin: {
+    from: (table: string) => {
+      const captured: {
+        table: string;
+        column: string | null;
+        ascending: boolean | null;
+        limit: number | null;
+      } = { table, column: null, ascending: null, limit: null };
+      double.queries.push(captured);
+      const filters: Array<(r: Record<string, unknown>) => boolean> = [];
+      const builder: Record<string, unknown> = {};
+      const chain = (): Record<string, unknown> => builder;
+      builder.select = chain;
+      builder.eq = (col: string, val: unknown) => {
+        filters.push((r) => r[col] === val);
+        return builder;
+      };
+      builder.not = (col: string, _op: string, val: unknown) => {
+        filters.push((r) => r[col] !== val);
+        return builder;
+      };
+      builder.is = (col: string, val: unknown) => {
+        filters.push((r) => r[col] === val);
+        return builder;
+      };
+      builder.in = (col: string, vals: unknown[]) => {
+        filters.push((r) => vals.includes(r[col]));
+        return builder;
+      };
+      builder.gte = (col: string, val: unknown) => {
+        filters.push((r) => String(r[col]) >= String(val));
+        return builder;
+      };
+      builder.order = (column: string, opts?: { ascending?: boolean }) => {
+        captured.column = column;
+        captured.ascending = opts?.ascending ?? false;
+        return builder;
+      };
+      builder.limit = (n: number) => {
+        captured.limit = n;
+        return builder;
+      };
+      builder.then = (
+        onFulfilled: (v: { data: Record<string, unknown>[]; error: null }) => unknown,
+        onRejected: (e: unknown) => unknown,
+      ) =>
+        Promise.resolve()
+          .then(() => {
+            const filtered = double.rows.filter((r) => filters.every((f) => f(r)));
+            if (captured.column === null || captured.ascending === null) {
+              return { data: filtered, error: null };
+            }
+            const col = captured.column;
+            const dir = captured.ascending ? 1 : -1;
+            const sorted = [...filtered].sort((x, y) => {
+              const a = String(x[col]);
+              const b = String(y[col]);
+              return a < b ? -dir : a > b ? dir : 0;
+            });
+            const data =
+              captured.limit === null ? sorted : sorted.slice(0, captured.limit);
+            return { data, error: null };
+          })
+          .then(onFulfilled, onRejected);
+      return builder;
+    },
+  },
+}));
 
 // Fixed test week: Monday 2026-11-09 00:00 UTC → Sunday 2026-11-15.
 const MONDAY = new Date("2026-11-09T00:00:00.000Z");
@@ -312,6 +411,11 @@ describe("WEEKLY CADENCE — pair completion across the four-day rhythm", () => 
     created_at: created,
   });
 
+  beforeEach(() => {
+    double.rows.length = 0;
+    double.queries.length = 0;
+  });
+
   it("THE NORMAL HANDOFF: an EN twin created Mon 05:00 is adoptable at Tue 22:00 (41h)", () => {
     const twin = twinRow("2026-11-09T05:00:00.000Z");
     const enSlot = at("2026-11-10T22:00:00.000Z");
@@ -341,6 +445,54 @@ describe("WEEKLY CADENCE — pair completion across the four-day rhythm", () => 
     const twin = twinRow("2026-11-12T05:00:00.000Z");
     const nextEnSlot = at("2026-11-17T22:00:00.000Z");
     expect(isAdoptablePairRow(twin, "en", { now: nextEnSlot })).toBe(true);
+  });
+
+  it("THE COMPOUND-FAILURE SELECTION (review §5): with BOTH twins waiting, Tuesday consumes the OLDER (137h) and Friday still finds the newer (113h) — both pairs complete", async () => {
+    // The window test above (line 335) proves only that a 137h twin is
+    // ELIGIBLE. This test pins the SELECTION through the real lookup:
+    // after Friday's slot + every weekend 23:40 top-up fail, Monday's
+    // AR run creates a FRESH twin — so Tuesday's EN slot finds TWO
+    // researched twins. Newest-first adoption (the review §5 defect)
+    // would eat the fresh one and starve the older past 144h (209h by
+    // the following Friday) leaving its Arabic side orphaned; FIFO
+    // adoption consumes the oldest first and BOTH pairs complete.
+    const T1B = { id: "bbbbbbbb-0000-4000-8000-00000000000b", pair: "b1b2c3d4-0000-4000-8000-000000000001" };
+    const T2 = { id: "cccccccc-0000-4000-8000-000000000002", pair: "c1c2c3d4-0000-4000-8000-000000000002" };
+    const t1bRow = {
+      ...twinRow("2026-11-12T05:00:00.000Z"), // pair-2's twin, created Thu W
+      id: T1B.id,
+      pair_id: T1B.pair,
+    };
+    const t2Row = {
+      ...twinRow("2026-11-16T05:00:00.000Z"), // pair-3's twin, created Mon W+1
+      id: T2.id,
+      pair_id: T2.pair,
+    };
+    double.rows.push(t2Row, t1bRow); // seed order ≠ creation order on purpose
+
+    // The ages the whole guarantee rests on, stated as arithmetic:
+    const tueSlot = at("2026-11-17T22:00:00.000Z");
+    const friSlot = at("2026-11-20T22:00:00.000Z");
+    expect((tueSlot.getTime() - at("2026-11-12T05:00:00.000Z").getTime()) / 3_600_000).toBe(137);
+    expect((tueSlot.getTime() - at("2026-11-16T05:00:00.000Z").getTime()) / 3_600_000).toBe(41);
+    expect((friSlot.getTime() - at("2026-11-16T05:00:00.000Z").getTime()) / 3_600_000).toBe(113);
+    expect((friSlot.getTime() - at("2026-11-12T05:00:00.000Z").getTime()) / 3_600_000).toBe(209); // starved — the orphan the fix removes
+
+    // Tuesday W+1 22:00: BOTH twins are eligible (137h and 41h ≤ 144h)
+    // — the slot must consume the OLDER one.
+    const adoptedAtTue = await findAdoptablePairRow("en");
+    expect(adoptedAtTue?.id).toBe(T1B.id);
+    expect(isAdoptablePairRow(adoptedAtTue, "en", { now: tueSlot })).toBe(true);
+
+    // Tuesday's own P1 walk moves the adopted row out of `researched`.
+    const consumed = double.rows.find((r) => r.id === T1B.id);
+    if (consumed) consumed.status = "outlined";
+
+    // The following Friday slot (113h later): the fresh twin is still
+    // inside its window — pair-3 completes too. BOTH pairs complete.
+    const adoptedAtFri = await findAdoptablePairRow("en");
+    expect(adoptedAtFri?.id).toBe(T2.id);
+    expect(isAdoptablePairRow(adoptedAtFri, "en", { now: friSlot })).toBe(true);
   });
 
   it("beyond 144h the twin expires honestly (no stale blind pairing)", () => {

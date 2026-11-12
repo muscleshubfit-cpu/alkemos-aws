@@ -584,14 +584,25 @@ export async function findResumableRow(
 }
 
 /**
- * ADOPT path: the newest MY-language `researched` row that carries a
- * pair_id (its twin's window created it for me). Returns null when no
- * candidate exists OR on any error — including migration 0076 not yet
- * applied (PostgREST rejects the unknown column) — in which case the
- * route degrades to the exact legacy V3 single-row behavior.
+ * ADOPT path: the OLDEST eligible MY-language `researched` row that
+ * carries a pair_id (its twin's window created it for me) — FIFO
+ * (created_at ASCENDING — BLOG-WEEKLY-COMPENSATION-FIX 2026-11-13 §5,
+ * owner approval «موافق على تنفيذ الاصلاح»): the oldest waiting twin
+ * is the closest to its 144h expiry, so consuming it first makes twin
+ * starvation structurally impossible. The previous newest-first order
+ * let a Tuesday slot eat the fresh 41h twin while the older 137h one
+ * starved past 144h in the compound weekend-failure scenario — its
+ * Arabic side then published orphaned, with no hreflang twin. Returns
+ * null when no candidate exists OR on any error — including migration
+ * 0076 not yet applied (PostgREST rejects the unknown column) — in
+ * which case the route degrades to the exact legacy V3 single-row
+ * behavior.
  *
  * The caller validates freshness + the sealed brief via
- * isAdoptablePairRow/extractSharedBrief (pure, unit-tested).
+ * isAdoptablePairRow/extractSharedBrief (pure, unit-tested). The
+ * RESUME lookups (findResumableRow / findResumePairCandidate) stay
+ * NEWEST-first on purpose — resume wants the freshest pending work;
+ * the contrast is pinned in blog-adopt-order.test.ts.
  */
 export async function findAdoptablePairRow(
   lang: "en" | "ar",
@@ -604,7 +615,7 @@ export async function findAdoptablePairRow(
       .eq("language", lang)
       .eq("status", "researched")
       .not("pair_id", "is", null)
-      .order("created_at", { ascending: false })
+      .order("created_at", { ascending: true })
       .limit(5);
     if (error) {
       console.warn(
