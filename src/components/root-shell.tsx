@@ -92,7 +92,7 @@ const cairo = Cairo({
  * (and cookies()) — which opted EVERY route on the site into dynamic
  * rendering (Next.js: dynamic APIs in a layout make the whole tree
  * dynamic). The production build confirms it: ~110 page routes render
- * per-request, so every crawler hit on every one of the 8,830×2 food
+ * per-request, so every crawler hit on every one of the 8,162×2 food
  * pages / 868×2 exercise pages / blog / tools invoked a serverless
  * function with full React SSR — the measured driver of the Fluid
  * Active CPU overage (4h33m/4h), the 498K function invocations, and a

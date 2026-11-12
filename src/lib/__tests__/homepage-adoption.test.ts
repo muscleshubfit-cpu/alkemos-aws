@@ -389,7 +389,7 @@ describe("HOME-PLATFORM-284 — the platform homepage canaries", () => {
     expect(src).toContain("function LandingFoodCard");
     expect(src).toContain('href={`${isAr ? "/ar/foods" : "/foods"}/${food.slug}`}');
     expect(src).toContain("samples.foods.map");
-    // The 8,830+ database context + the browse-all CTA.
+    // The 8,162+ database context + the browse-all CTA.
     expect(src).toContain("استكشف مكتبة الأطعمة كاملة");
     expect(src).toContain("Explore the full food library");
     // The section copy follows the registry (the {foods} token rides

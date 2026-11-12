@@ -279,8 +279,8 @@ export default function WorkoutTrackerPage() {
           </h2>
           <p className="mt-4 text-base font-normal leading-relaxed text-[var(--muted-2)]">
             {isAr
-              ? "التقدّم لا يُصنع بالتمارين وحدها: احسب أهداف ماكروزك، ابنِ وجباتك من 8,830+ صنفًا غذائيًا بمجاميع حيّة، أو ولّد يومًا كاملًا بالغرامات بالذكاء الاصطناعي — ثم تابع أثرها على وزنك وقياساتك في نفس اللوحة."
-              : "Progress is not built by training alone: calculate your macro targets, build meals from 8,830+ foods with live totals, or generate a full day of eating in grams with AI — then watch their effect on your weight and measurements in the same dashboard."}
+              ? "التقدّم لا يُصنع بالتمارين وحدها: احسب أهداف ماكروزك، ابنِ وجباتك من 8,162+ صنفًا غذائيًا بمجاميع حيّة، أو ولّد يومًا كاملًا بالغرامات بالذكاء الاصطناعي — ثم تابع أثرها على وزنك وقياساتك في نفس اللوحة."
+              : "Progress is not built by training alone: calculate your macro targets, build meals from 8,162+ foods with live totals, or generate a full day of eating in grams with AI — then watch their effect on your weight and measurements in the same dashboard."}
           </p>
           <div className="mt-5 flex flex-wrap gap-2 text-sm">
             <Link

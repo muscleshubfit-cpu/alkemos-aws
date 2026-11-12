@@ -127,7 +127,7 @@ export default function ForCoachesPage() {
               t: isAr ? "تمرين بأدلة أداء كاملة" : "Exercises with guides",
             },
             {
-              n: "8,830+",
+              n: "8,162+",
               t: isAr ? "صنف غذائي بالسعرات والماكروز" : "Foods with full macros",
             },
             {

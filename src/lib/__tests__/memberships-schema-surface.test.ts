@@ -166,7 +166,7 @@ describe("BILINGUAL-CONTENT Phase 2 — schema + consistency canaries", () => {
     expect(served).not.toContain("تمريناً");
     expect(served).not.toContain("صنفاً");
     expect(served).toContain("868+ تمرينًا");
-    expect(served).toContain("8,830+ صنفًا");
+    expect(served).toContain("8,162+ صنفًا");
     // The AR home declares en/x-default WITHOUT the trailing slash —
     // byte-identical with the "/" declarations.
     const arHome = read(AR_HOME);

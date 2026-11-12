@@ -75,8 +75,8 @@ export const TOOLS: ToolEntry[] = [
     slug: "/meal-planner",
     nameAr: "مخطط الوجبات",
     nameEn: "Meal Planner",
-    descAr: "ابنِ وجباتك من 8,830+ صنفًا غذائيًا وتابع الماكروز",
-    descEn: "Build meals from 8,830+ foods and track macros",
+    descAr: "ابنِ وجباتك من 8,162+ صنفًا غذائيًا وتابع الماكروز",
+    descEn: "Build meals from 8,162+ foods and track macros",
     icon: "mealplanner",
   },
   {
@@ -115,8 +115,8 @@ export const TOOL_LIBRARIES: ToolEntry[] = [
     slug: "/foods",
     nameAr: "مكتبة الأطعمة",
     nameEn: "Food Library",
-    descAr: "8,830+ صنفًا غذائيًا بالسعرات والماكروز",
-    descEn: "8,830+ foods with calories and macros",
+    descAr: "8,162+ صنفًا غذائيًا بالسعرات والماكروز",
+    descEn: "8,162+ foods with calories and macros",
     icon: "protein",
   },
   // §12.33: moved from the tools grid into the libraries, renamed per the

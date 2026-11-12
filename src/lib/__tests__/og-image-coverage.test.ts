@@ -183,7 +183,7 @@ describe("og:image coverage (SOCIAL-OG-4 — first-own-image + homepage fallback
     // library grows). The rule's docstring may mention the numbers.
     const specs = gen.slice(gen.indexOf("SPECS = ["));
     expect(specs).not.toMatch(/868/);
-    expect(specs).not.toMatch(/8830/);
+    expect(specs).not.toMatch(/8830|8162/);
   });
 
   it("SOCIAL-OG-EX + SOCIAL-OG-4: exercise shares use the exercise's real photo — cover-first, homepage-card fallback only", () => {

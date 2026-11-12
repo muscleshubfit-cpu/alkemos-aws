@@ -45,8 +45,8 @@ const EXPLORE_ITEMS: {
     href: "/foods",
     nameAr: "مكتبة الأطعمة",
     nameEn: "Food Library",
-    descAr: "8,830+ صنف غذائي بالسعرات والماكروز",
-    descEn: "8,830+ foods with calories and macros",
+    descAr: "8,162+ صنف غذائي بالسعرات والماكروز",
+    descEn: "8,162+ foods with calories and macros",
     icon: "protein",
   },
   // HEALTHY-RECIPES-PLATFORM plan §9.3: the recipes library joins the

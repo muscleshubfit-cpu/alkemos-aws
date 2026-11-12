@@ -19,7 +19,7 @@ const SITE_URL = "https://alkemos.com";
  *
  * Previously /ar/foods/<slug> returned a hard 404 while the Arabic foods
  * listing linked into it. This server component resolves the SAME
- * bilingual food row (src/lib/foods.ts, 8,830 foods with native nameAr /
+ * bilingual food row (src/lib/foods.ts, 8,162 foods with native nameAr /
  * defaultServingAr fields — the same data layer that powers the EN pages)
  * and renders it fully in Arabic.
  *
@@ -75,7 +75,7 @@ export async function generateMetadata({
 
   // P2-12 (§12.37 — owner directive «… ثم ابدأ p2», plan item 12): the
   // USDA long tail ships ENGLISH as its `nameAr` (zero Arabic characters
-  // — the Phase-141 data audit: 8,750 rows) — those AR mirrors render an
+  // — the Phase-141 data audit: 8,084 rows after the 2026-11-12 pork/alcohol deletion) — those AR mirrors render an
   // English H1 inside the Arabic locale: semantically-broken thin pages
   // that can never rank for Arabic queries while diluting AR crawl
   // budget. They now leave the index: noindex,follow (internal-link

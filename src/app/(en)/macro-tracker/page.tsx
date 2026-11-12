@@ -22,11 +22,11 @@ import { MACRO_TRACKER_FAQ_AR, MACRO_TRACKER_FAQ_EN } from "./content";
  * HONESTY LAW (capability inventory 2026-09-30): every claim below maps
  * to a shipped feature —
  *   - Macro calculator: free targets in protein/carbs/fat.
- *   - Meal planner: build meals from 8,830+ foods (+ OpenFoodFacts
+ *   - Meal planner: build meals from 8,162+ foods (+ OpenFoodFacts
  *     search) with LIVE per-meal & per-day macro totals — free, no
  *     signup; save plans with an account (Free tier: 1 saved plan).
  *   - AI meal planner: 2 successful free generations/month, no signup.
- *   - Food database: 8,830+ foods with macros, browseable, bilingual.
+ *   - Food database: 8,162+ foods with macros, browseable, bilingual.
  *   - Water tracker: device-local daily log.
  *   - Weight/measurement tracking: weekly check-ins, photos, chart.
  *   - NO daily food diary / barcode scanning — stated plainly on page.
@@ -51,7 +51,7 @@ export default function MacroTrackerPage() {
         {
           n: "٢",
           title: "ابنِ وجباتك بمجاميع حيّة",
-          desc: "ابحث في 8,830+ صنفًا غذائيًا واضبط الغرامات — مجاميع السعرات والماكروز تتحدّث لحظيًا لكل وجبة ولكل اليوم، بلا تسجيل.",
+          desc: "ابحث في 8,162+ صنفًا غذائيًا واضبط الغرامات — مجاميع السعرات والماكروز تتحدّث لحظيًا لكل وجبة ولكل اليوم، بلا تسجيل.",
           href: "/ar/meal-planner",
           cta: "افتح مخطط الوجبات",
         },
@@ -81,7 +81,7 @@ export default function MacroTrackerPage() {
         {
           n: "2",
           title: "Build meals with live totals",
-          desc: "Search 8,830+ foods, set the grams — calorie and macro totals update live per meal and per day, with no signup.",
+          desc: "Search 8,162+ foods, set the grams — calorie and macro totals update live per meal and per day, with no signup.",
           href: "/meal-planner",
           cta: "Open the meal planner",
         },
@@ -123,8 +123,8 @@ export default function MacroTrackerPage() {
           </h1>
           <p className="mt-4 text-base font-normal leading-relaxed text-[var(--muted-foreground)] md:text-lg">
             {isAr
-              ? "من الهدف إلى الجرام إلى النتيجة: اضبط أهداف ماكروزك، ابنِ وجباتك من 8,830+ صنفًا غذائيًا بمجاميع حيّة، أو ولّد يومًا كاملًا بالذكاء الاصطناعي — ثم تابع أثره على وزنك وقياساتك. التخطيط مجاني بالكامل للبدء، بالعربية والإنجليزية."
-              : "From target to grams to result: set your macro targets, build meals from 8,830+ foods with live totals, or generate a full day with AI — then track the effect on your weight and measurements. Planning is entirely free to start, in English and Arabic."}
+              ? "من الهدف إلى الجرام إلى النتيجة: اضبط أهداف ماكروزك، ابنِ وجباتك من 8,162+ صنفًا غذائيًا بمجاميع حيّة، أو ولّد يومًا كاملًا بالذكاء الاصطناعي — ثم تابع أثره على وزنك وقياساتك. التخطيط مجاني بالكامل للبدء، بالعربية والإنجليزية."
+              : "From target to grams to result: set your macro targets, build meals from 8,162+ foods with live totals, or generate a full day with AI — then track the effect on your weight and measurements. Planning is entirely free to start, in English and Arabic."}
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <Link
@@ -210,8 +210,8 @@ export default function MacroTrackerPage() {
           </h2>
           <p className="mt-4 text-base font-normal leading-relaxed text-[var(--muted-2)]">
             {isAr
-              ? "كل صنف غذائي في قاعدة الـ8,830+ يحمل سعراته وبروتينه وكربوهيدراته ودهونه بمقاسات تقديم ذكية، ومجموعات منتقاة تجمع الأطعمة عالية البروتين ومنخفضة الكربوهيدرات والكيتو — وبجانبها حاسبة السعرات وحاسبة نسبة الدهون ومتتبع الماء اليومي."
-              : "Every food in the 8,830+ database carries its calories, protein, carbs, and fat with smart serving sizes, and curated collections gather high-protein, low-carb, and keto picks — flanked by the calorie calculator, body-fat calculator, and a daily water tracker."}
+              ? "كل صنف غذائي في قاعدة الـ8,162+ يحمل سعراته وبروتينه وكربوهيدراته ودهونه بمقاسات تقديم ذكية، ومجموعات منتقاة تجمع الأطعمة عالية البروتين ومنخفضة الكربوهيدرات والكيتو — وبجانبها حاسبة السعرات وحاسبة نسبة الدهون ومتتبع الماء اليومي."
+              : "Every food in the 8,162+ database carries its calories, protein, carbs, and fat with smart serving sizes, and curated collections gather high-protein, low-carb, and keto picks — flanked by the calorie calculator, body-fat calculator, and a daily water tracker."}
           </p>
           <div className="mt-5 flex flex-wrap gap-2 text-sm">
             {/* Phase 318 (P1-8): the accuracy-chain link — the tool surface

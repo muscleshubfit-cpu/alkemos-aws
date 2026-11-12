@@ -43,7 +43,7 @@ export const WORKOUT_TRACKER_FAQ_EN: Array<{ q: string; a: string }> = [
   },
   {
     q: "Does Alkemos track nutrition too?",
-    a: "On the planning side: the free meal planner builds meals from 8,830+ foods with live calorie and macro totals, and the macro calculator sets your protein, carb, and fat targets before you plan. See the Macro Tracker page for the full nutrition workflow.",
+    a: "On the planning side: the free meal planner builds meals from 8,162+ foods with live calorie and macro totals, and the macro calculator sets your protein, carb, and fat targets before you plan. See the Macro Tracker page for the full nutrition workflow.",
   },
   {
     q: "Is the workout tracker free?",
@@ -74,7 +74,7 @@ export const WORKOUT_TRACKER_FAQ_AR: Array<{ q: string; a: string }> = [
   },
   {
     q: "هل يتتبّع Alkemos التغذية أيضًا؟",
-    a: "على جانب التخطيط: مخطط الوجبات المجاني يبني وجباتك من 8,830+ صنفًا غذائيًا بمجاميع سعرات وماكروز حيّة، وحاسبة الماكروز تضبط أهداف البروتين والكربوهيدرات والدهون قبل التخطيط. اطّلع على صفحة متتبّع الماكروز لمسار التغذية كاملًا.",
+    a: "على جانب التخطيط: مخطط الوجبات المجاني يبني وجباتك من 8,162+ صنفًا غذائيًا بمجاميع سعرات وماكروز حيّة، وحاسبة الماكروز تضبط أهداف البروتين والكربوهيدرات والدهون قبل التخطيط. اطّلع على صفحة متتبّع الماكروز لمسار التغذية كاملًا.",
   },
   {
     q: "هل متتبّع التمارين مجاني؟",

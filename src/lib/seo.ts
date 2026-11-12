@@ -84,8 +84,8 @@ export function jsonLd(obj: unknown): string {
  * against a silent Arabic default leaking back onto EN surfaces).
  */
 const ORG_DESCRIPTIONS: Record<"en" | "ar", string> = {
-  en: "The complete digital training platform: 868+ exercises with photos, 8,830+ foods with nutrition data, ready-made programs, free tools, and personal coaching alongside the EVO AI engine.",
-  ar: "منصة التدريب الرقمي المتكاملة: 868+ تمرينًا، 8,830+ صنفًا غذائيًا بالقيم الغذائية، برامج جاهزة، أدوات مجانية، وتدريب أونلاين مع مدرب خاص وذكاء اصطناعي EVO.",
+  en: "The complete digital training platform: 868+ exercises with photos, 8,162+ foods with nutrition data, ready-made programs, free tools, and personal coaching alongside the EVO AI engine.",
+  ar: "منصة التدريب الرقمي المتكاملة: 868+ تمرينًا، 8,162+ صنفًا غذائيًا بالقيم الغذائية، برامج جاهزة، أدوات مجانية، وتدريب أونلاين مع مدرب خاص وذكاء اصطناعي EVO.",
 };
 
 export function getOrganizationSchema(lang: "en" | "ar") {
@@ -547,7 +547,7 @@ export const CONTENT_LAST_REVIEWED = "2026-09-28";
  *
  * The blog + comparison pages carried `reviewedBy` + `lastReviewed` since
  * Phase SEO-GEO-2, but the LARGEST health-content surfaces on the site did
- * not: the 8,830 food pages and 868 exercise pages (× 2 language mirrors ≈
+ * not: the 8,162 food pages and 868 exercise pages (× 2 language mirrors ≈
  * 19.4K pages) shipped only Breadcrumb + NutritionInformation / HowTo.
  * Those are exactly the YMYL surfaces where Google's QRG raters look for
  * human-expertise signals — and where AI answer engines decide whether a

@@ -116,8 +116,8 @@ export const COMPARISONS: Comparison[] = [
       {
         labelEn: "Food database size",
         labelAr: "حجم قاعدة الأطعمة",
-        alkemosValue: "8,830+ foods (USDA-backed + curated)",
-        alkemosValueAr: "8,830+ صنف غذائي (بمعايير USDA ومنسّقة بدقة)",
+        alkemosValue: "8,162+ foods (USDA-backed + curated)",
+        alkemosValueAr: "8,162+ صنف غذائي (بمعايير USDA ومنسّقة بدقة)",
         competitorValue: "Millions (user-contributed, varying accuracy)",
         competitorValueAr: "ملايين الأصناف (مدخلات من المستخدمين بدقة متفاوتة)",
         outcome: "loss",
@@ -217,7 +217,7 @@ export const COMPARISONS: Comparison[] = [
       {
         heading: "Where MyFitnessPal wins",
         paragraphs: [
-          "MyFitnessPal has the largest food database on the internet — millions of user-contributed entries, including restaurant meals, packaged foods, and regional brands. If your primary goal is calorie tracking and you eat a lot of packaged foods, MyFitnessPal's barcode scanner (premium feature) and 14-million-food database are unmatched. Alkemos's 8,830+-food database is curated and USDA-backed for accuracy, but it cannot compete on raw count.",
+          "MyFitnessPal has the largest food database on the internet — millions of user-contributed entries, including restaurant meals, packaged foods, and regional brands. If your primary goal is calorie tracking and you eat a lot of packaged foods, MyFitnessPal's barcode scanner (premium feature) and 14-million-food database are unmatched. Alkemos's 8,162+-food database is curated and USDA-backed for accuracy, but it cannot compete on raw count.",
           "MyFitnessPal also has a 20-year head start on mobile UX. The app is polished, syncs with every wearable (Apple Watch, Garmin, Fitbit), and has social features that Alkemos does not (friend feeds, challenges). If you want a pure tracker that integrates with your existing fitness ecosystem, MyFitnessPal remains the safer bet.",
         ],
       },
@@ -241,7 +241,7 @@ export const COMPARISONS: Comparison[] = [
       {
         heading: "أين يتفوّق MyFitnessPal",
         paragraphs: [
-          "MyFitnessPal يملك أكبر قاعدة أطعمة على الإنترنت — ملايين المدخلات المُساهمة من المستخدمين، بما في ذلك وجبات المطاعم، الأطعمة المُعلّبة، والعلامات الإقليمية. إذا كان هدفك الأساسي تتبّع السعرات وتتناول الكثير من الأطعمة المُعلّبة، ماسح الباركود في MyFitnessPal (ميزة مدفوعة) وقاعدة الـ14 مليون طعام لا تُضاهى. قاعدة الـ8,830+ صنفًا غذائيًا في Alkemos مُختارة ومستندة لـ USDA للدقّة، لكنها لا تنافس في حجم القاعدة الخام.",
+          "MyFitnessPal يملك أكبر قاعدة أطعمة على الإنترنت — ملايين المدخلات المُساهمة من المستخدمين، بما في ذلك وجبات المطاعم، الأطعمة المُعلّبة، والعلامات الإقليمية. إذا كان هدفك الأساسي تتبّع السعرات وتتناول الكثير من الأطعمة المُعلّبة، ماسح الباركود في MyFitnessPal (ميزة مدفوعة) وقاعدة الـ14 مليون طعام لا تُضاهى. قاعدة الـ8,162+ صنفًا غذائيًا في Alkemos مُختارة ومستندة لـ USDA للدقّة، لكنها لا تنافس في حجم القاعدة الخام.",
           "لدى MyFitnessPal أيضًا نحو عشرين عامًا من السبق في تجربة الاستخدام على الجوال. التطبيق مصقول، يتزامن مع كل ساعة ذكية (Apple Watch، Garmin، Fitbit)، وله ميزات اجتماعية لا يملكها Alkemos (تغذية الأصدقاء، التحدّيات). إذا كنت تريد متتبّعًا خالصًا يتكامل مع نظام لياقتك الحالي، MyFitnessPal يبقى الخيار الأكثر أمانًا.",
         ],
       },
@@ -334,8 +334,8 @@ export const COMPARISONS: Comparison[] = [
       {
         labelEn: "Nutrition tracking",
         labelAr: "تتبّع التغذية",
-        alkemosValue: "8,830+ food database + AI meal planner",
-        alkemosValueAr: "قاعدة 8,830+ صنف غذائي + مخطط وجبات بالذكاء الاصطناعي",
+        alkemosValue: "8,162+ food database + AI meal planner",
+        alkemosValueAr: "قاعدة 8,162+ صنف غذائي + مخطط وجبات بالذكاء الاصطناعي",
         competitorValue: "AI Nutrition Coach (meal plans & recipes — no food tracking)",
         competitorValueAr: "مدرب تغذية ذكي (خطط وجبات ووصفات — بلا تتبّع للطعام)",
         outcome: "win",
@@ -432,8 +432,8 @@ export const COMPARISONS: Comparison[] = [
         heading: "Where Alkemos wins",
         paragraphs: [
           "Alkemos wins on platform breadth. Freeletics is a bodyweight-only app — if you ever want to lift a barbell, use a cable machine, or follow a structured 4-day gym split, Freeletics cannot help you. Alkemos covers every equipment type: barbell, dumbbell, cable, machine, kettlebell, band, and bodyweight. The 868+-exercise library across every equipment type has no equivalent in Freeletics's bodyweight-only catalog.",
-          "Nutrition is the other major gap. Freeletics offers an AI Nutrition Coach with meal plans and recipes but no food tracking — you'd need a separate app (usually MyFitnessPal) for that. Alkemos ships an 8,830+ food database, eight free tools (four calculators, a water tracker, a meal planner, and two AI planners), and full macro tracking inside the same subscription. Paying for Freeletics + MyFitnessPal Premium costs more than Alkemos Premium and gives you less integration.",
-          "The pricing picture is nuanced. Freeletics Training Coach is about $80/year on the 12-month plan, with its nutrition bundle costing extra. Alkemos Premium is $119/year and bundles training plans, the 8,830+-food database, the free tools, and EVO in one subscription. For the same training + nutrition use case, Alkemos is the better value.",
+          "Nutrition is the other major gap. Freeletics offers an AI Nutrition Coach with meal plans and recipes but no food tracking — you'd need a separate app (usually MyFitnessPal) for that. Alkemos ships an 8,162+ food database, eight free tools (four calculators, a water tracker, a meal planner, and two AI planners), and full macro tracking inside the same subscription. Paying for Freeletics + MyFitnessPal Premium costs more than Alkemos Premium and gives you less integration.",
+          "The pricing picture is nuanced. Freeletics Training Coach is about $80/year on the 12-month plan, with its nutrition bundle costing extra. Alkemos Premium is $119/year and bundles training plans, the 8,162+-food database, the free tools, and EVO in one subscription. For the same training + nutrition use case, Alkemos is the better value.",
         ],
       },
     ],
@@ -449,8 +449,8 @@ export const COMPARISONS: Comparison[] = [
         heading: "أين يتفوّق Alkemos",
         paragraphs: [
           "Alkemos يتفوّق في اتساع المنصة. Freeletics تطبيق بوزن الجسم فقط — إذا أردت يومًا رفع بار، استخدام ماكينة كابل، أو اتباع تقسيم 4 أيام جيم منظّم، Freeletics لا يستطيع مساعدتك. Alkemos يغطّي كل أنواع المعدات: بار، دمبل، كابل، ماكينة، كيتل بيل، مطاط، ووزن الجسم. مكتبة الـ868+ تمرين عبر كل أنواع المعدات لا نظير لها في كتالوج Freeletics المحدود بوزن الجسم.",
-          "التغذية هي الفجوة الكبرى الأخرى. Freeletics يُقدّم مدرب تغذية ذكي بخطط وجبات ووصفات لكن بلا تتبّع للطعام — ستحتاج تطبيقًا منفصلًا (عادة MyFitnessPal) لذلك. Alkemos يُقدّم قاعدة 8,830+ صنف غذائي، وثماني أدوات مجانية (أربع حاسبات، ومتتبع ماء، ومخطط وجبات، ومولدا خطط بالذكاء الاصطناعي)، وتتبّع ماكروز كامل داخل نفس الاشتراك. دفع Freeletics + MyFitnessPal Premium يكلّف أكثر من Alkemos Premium ويمنحك تكاملًا أقل.",
-          "صورة التسعير دقيقة. مدرب تدريب Freeletics حوالي $80/سنة في الخطة السنوية، وحزمة التغذية تكلف إضافيًا. Alkemos Premium بـ$119/سنة ويجمع برامج التدريب وقاعدة 8,830+ صنف غذائي والأدوات المجانية وEVO في اشتراك واحد. لنفس حالة الاستخدام تدريب + تغذية، Alkemos قيمة أفضل.",
+          "التغذية هي الفجوة الكبرى الأخرى. Freeletics يُقدّم مدرب تغذية ذكي بخطط وجبات ووصفات لكن بلا تتبّع للطعام — ستحتاج تطبيقًا منفصلًا (عادة MyFitnessPal) لذلك. Alkemos يُقدّم قاعدة 8,162+ صنف غذائي، وثماني أدوات مجانية (أربع حاسبات، ومتتبع ماء، ومخطط وجبات، ومولدا خطط بالذكاء الاصطناعي)، وتتبّع ماكروز كامل داخل نفس الاشتراك. دفع Freeletics + MyFitnessPal Premium يكلّف أكثر من Alkemos Premium ويمنحك تكاملًا أقل.",
+          "صورة التسعير دقيقة. مدرب تدريب Freeletics حوالي $80/سنة في الخطة السنوية، وحزمة التغذية تكلف إضافيًا. Alkemos Premium بـ$119/سنة ويجمع برامج التدريب وقاعدة 8,162+ صنف غذائي والأدوات المجانية وEVO في اشتراك واحد. لنفس حالة الاستخدام تدريب + تغذية، Alkemos قيمة أفضل.",
         ],
       },
     ],
@@ -538,8 +538,8 @@ export const COMPARISONS: Comparison[] = [
       {
         labelEn: "Nutrition database",
         labelAr: "قاعدة بيانات التغذية",
-        alkemosValue: "8,830+ foods + AI meal planner",
-        alkemosValueAr: "8,830+ صنف غذائي + مخطط وجبات بالذكاء الاصطناعي",
+        alkemosValue: "8,162+ foods + AI meal planner",
+        alkemosValueAr: "8,162+ صنف غذائي + مخطط وجبات بالذكاء الاصطناعي",
         competitorValue: "No food database",
         competitorValueAr: "لا توجد قاعدة أطعمة",
         outcome: "win",
@@ -679,8 +679,8 @@ export const COMPARISONS: Comparison[] = [
         // by dietitians and widely cited as the accuracy standard.
         labelEn: "Nutrition-data accuracy",
         labelAr: "دقّة بيانات التغذية",
-        alkemosValue: "8,830+ foods (USDA-backed + curated)",
-        alkemosValueAr: "8,830+ صنف غذائي (بمعايير USDA ومنسّقة بدقة)",
+        alkemosValue: "8,162+ foods (USDA-backed + curated)",
+        alkemosValueAr: "8,162+ صنف غذائي (بمعايير USDA ومنسّقة بدقة)",
         competitorValue: "Curated NCCDB/USDA database — the accuracy benchmark",
         competitorValueAr: "قاعدة منسّقة بمصادر NCCDB/USDA — معيار الدقّة",
         outcome: "loss",
@@ -819,7 +819,7 @@ export const COMPARISONS: Comparison[] = [
         heading: "Where Alkemos wins",
         paragraphs: [
           "Alkemos wins on everything that happens outside the food diary. Cronometer has no exercise library, no workout programs, and no AI coach — exercise appears only as a calorie-burn entry. Alkemos ships 868+ exercises with step-by-step instructions, ready-made programs for home and gym, and the EVO AI coach that builds personalized nutrition and workout plans, suggests meal and exercise swaps, and answers your questions 24/7. If your goal is a training plan plus a nutrition plan in one place, Alkemos covers both sides of the equation.",
-          "The nutrition side is planned rather than logged. The free meal planner lets you build meals from an 8,830+ food database with live calorie and macro totals per meal and per day, the AI meal planner generates a full day of eating in grams from your calorie target, and the macro calculator sets your protein/carb/fat split before you plan. Alkemos does not pretend to be a micronutrient diary — it is a planning platform with real food data, and the honest split is spelled out in the table above.",
+          "The nutrition side is planned rather than logged. The free meal planner lets you build meals from an 8,162+ food database with live calorie and macro totals per meal and per day, the AI meal planner generates a full day of eating in grams from your calorie target, and the macro calculator sets your protein/carb/fat split before you plan. Alkemos does not pretend to be a micronutrient diary — it is a planning platform with real food data, and the honest split is spelled out in the table above.",
           "Arabic speakers again have no real choice: Cronometer ships no Arabic interface, while Alkemos is fully bilingual with native RTL — Arabic exercise names, Arabic food names, and an Arabic AI coach. Personal coaching at $39.99/month with a real coach is also something Cronometer does not offer at any price.",
         ],
       },
@@ -843,7 +843,7 @@ export const COMPARISONS: Comparison[] = [
         heading: "أين يتفوّق Alkemos",
         paragraphs: [
           "Alkemos يتفوّق في كل ما يحدث خارج يوميات الطعام. Cronometer بلا مكتبة تمارين ولا برامج تدريب ولا مدرب ذكاء اصطناعي — التمرين يظهر لديه كقياس حرق سعرات فقط. Alkemos يُقدّم 868+ تمرينًا بشرح خطوة بخطوة، برامج جاهزة للمنزل والنادي، ومدرب EVO الذكي الذي يبني خطط تغذية وتمارين مخصّصة، ويقترح تبديلات للوجبات والتمارين، ويُجيب على أسئلتك على مدار الساعة. إذا كان هدفك خطة تدريب وخطة تغذية في مكان واحد، Alkemos يغطّي جانبي المعادلة.",
-          "جانب التغذية لدينا مخطَّط لا مسجَّل. مخطط الوجبات المجاني يتيح بناء وجباتك من قاعدة 8,830+ صنفًا غذائيًا بمجاميع سعرات وماكروز حيّة لكل وجبة ولكل يوم، ومخطط الوجبات بالذكاء الاصطناعي يولّد يومًا كاملًا بالغرامات من رقم سعراتك، وحاسبة الماكروز تضبط توزيع البروتين والكربوهيدرات والدهون قبل التخطيط. Alkemos لا يدّعي أنه يوميات مغذيات دقيقة — إنه منصة تخطيط ببيانات أطعمة حقيقية، والفصل الصادق موضّح بالجدول أعلاه.",
+          "جانب التغذية لدينا مخطَّط لا مسجَّل. مخطط الوجبات المجاني يتيح بناء وجباتك من قاعدة 8,162+ صنفًا غذائيًا بمجاميع سعرات وماكروز حيّة لكل وجبة ولكل يوم، ومخطط الوجبات بالذكاء الاصطناعي يولّد يومًا كاملًا بالغرامات من رقم سعراتك، وحاسبة الماكروز تضبط توزيع البروتين والكربوهيدرات والدهون قبل التخطيط. Alkemos لا يدّعي أنه يوميات مغذيات دقيقة — إنه منصة تخطيط ببيانات أطعمة حقيقية، والفصل الصادق موضّح بالجدول أعلاه.",
           "الناطقون بالعربية مرة أخرى بلا خيار حقيقي: Cronometer لا يُصدر واجهة عربية، بينما Alkemos ثنائي اللغة بالكامل بدعم RTL أصلي — أسماء تمارين بالعربية، أسماء أطعمة بالعربية، ومدرب ذكاء اصطناعي عربي. التدريب الخاص بـ$39.99 شهريًا مع مدرب حقيقي أيضًا مما لا يُقدّمه Cronometer بأي سعر.",
         ],
       },

@@ -354,8 +354,8 @@ export default function MealPlannerPage() {
           </h1>
           <p className="mx-auto mt-3 max-w-md text-base font-normal text-[var(--muted-foreground)] md:text-lg">
             {isAr
-              ? "ابنِ وجباتك من قاعدة بيانات 8,830+ صنف غذائي وتابع الماكروز لكل وجبة والإجمالي."
-              : "Build your meals from 8,830+ foods and see per-meal + total macros."}
+              ? "ابنِ وجباتك من قاعدة بيانات 8,162+ صنف غذائي وتابع الماكروز لكل وجبة والإجمالي."
+              : "Build your meals from 8,162+ foods and see per-meal + total macros."}
           </p>
           {/* HEALTHY-RECIPES-PLATFORM (plan §9.4): «استبدل هذا الطبق
               بوصفة جاهزة» — ready recipes beside the builder; honest

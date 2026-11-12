@@ -98,9 +98,9 @@ describe("P1-8 content — MSA law on the new Arabic surface", () => {
   // numbers before scanning so the scanner sees the rendered copy.
   const SLOTS: Record<string, string> = {
     total: FOODS_COUNT.toLocaleString("en-US"),
-    curated: "80",
-    longTail: "8,750",
-    arabized: "2,489",
+    curated: "78",
+    longTail: "8,084",
+    arabized: "8,154",
     categories: "9",
   };
   const fill = (s: string) => s.replace(/\{(total|curated|longTail|arabized|categories)\}/g, (_, k) => SLOTS[k as string]);
@@ -249,13 +249,13 @@ describe("P1-8 number law — data-driven figures only", () => {
     expect(citingAr?.a).toContain(expected);
   });
 
-  it("methodology stats: computed from the shipped FOODS array, matching the Phase-141 audit split", () => {
+  it("methodology stats: computed from the shipped FOODS array, matching the Phase-141 audit split (2026-11-12: pork/alcohol deletion — 668 rows removed)", () => {
     const stats = foodsMethodologyStats(FOODS, 9);
     expect(stats.total).toBe(FOODS.length);
     expect(stats.total).toBe(FOODS_COUNT);
-    expect(stats.curated).toBe(80); // sitemap policy: tags.length > 0
-    expect(stats.longTail).toBe(8750); // Phase-141 data audit
-    expect(stats.arabized).toBe(stats.curated + 8076); // 80 core + 5 arabization batches (batch 5 = +5,618 final completion rows, owner order 2026-11-12)
+    expect(stats.curated).toBe(78); // sitemap policy: tags.length > 0 (78 after pork-tenderloin + bacon deletion)
+    expect(stats.longTail).toBe(8084); // 8,750 − 666 deleted tail rows (pork/alcohol deletion 2026-11-12)
+    expect(stats.arabized).toBe(stats.curated + 8076); // 78 core + 5 arabization batches (batch 5 = +5,618 final completion rows, owner order 2026-11-12)
     expect(stats.total).toBe(stats.curated + stats.longTail);
   });
 });

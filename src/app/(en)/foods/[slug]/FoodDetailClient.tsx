@@ -24,7 +24,7 @@ export type FeaturedLinkMini = { href: string; titleAr: string; titleEn: string 
  * Receives the food (and its related foods) as props from the server
  * component (which generates metadata + JSON-LD schemas server-side).
  * BUNDLE LAW (2026-09-05): imports come from foods-shared (tiny) — the
- * full 8,830-food array is server-only; `related` is computed on the
+ * full 8,162-food array is server-only; `related` is computed on the
  * server and passed as a prop so this component never needs the array.
  * Accepts an optional `lang` prop — the /ar/foods/[slug] mirror passes
  * lang="ar" to force Arabic rendering (ProgramDetailClient pattern).
@@ -543,7 +543,7 @@ export default function FoodDetailClient({
             Phase 318 (P1-8): the methodology link — every food page now
             cites the documented reference it draws its values from
             (sources · per-100g convention · citation format). This is
-            the wiring that turns 8,830 pages into citation anchors for
+            the wiring that turns 8,162 pages into citation anchors for
             the methodology surface. */}
         {(collectionLinks.length > 0 || food) && (
           <section className="mt-10">

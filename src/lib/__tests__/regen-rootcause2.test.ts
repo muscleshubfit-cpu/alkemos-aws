@@ -27,7 +27,7 @@ import { describe, it, expect, vi } from "vitest";
  *   corrections could never reach the saved plan.
  *
  * Unlike the earlier plan-generator batteries, this file runs the REAL
- * grounding against the REAL 8,830-row library (they mock it to null —
+ * grounding against the REAL 8,162-row library (they mock it to null —
  * which is exactly why the ranked-matcher defect was invisible to them).
  */
 

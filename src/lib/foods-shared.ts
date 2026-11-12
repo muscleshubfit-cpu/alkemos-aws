@@ -2,7 +2,7 @@
  * FOODS-SHARED — the client-safe slice of the food database.
  *
  * BUNDLE LAW (performance audit 2026-09-05): src/lib/foods.ts is a
- * 3.6MB / 97,310-line data file (8,830 foods). Any client component
+ * 3.3MB data file (8,162 foods). Any client component
  * importing it ships the whole array to the browser — /foods was
  * downloading a ~3MB JS chunk on a mobile-first Egyptian audience.
  *
@@ -75,7 +75,7 @@ export const TAG_LABELS: Record<string, { ar: string; en: string; color: string 
 };
 
 /** Total foods in the database — keep in sync with foods.ts (test-enforced). */
-export const FOODS_COUNT = 8830;
+export const FOODS_COUNT = 8162;
 
 /** Popular filter tag ids used by the public food list UI. */
 export const POPULAR_TAGS = ["high-protein", "low-carb", "keto-friendly", "vegan", "good-for-cutting", "good-for-bulking"];

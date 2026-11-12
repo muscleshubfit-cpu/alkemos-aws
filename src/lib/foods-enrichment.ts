@@ -867,36 +867,6 @@ export const FOODS_ENRICHMENT: Record<string, FoodEnrichment> = {
     },
   },
 
-  "pork-tenderloin": {
-    intro: {
-      en: "Pork tenderloin is the cut nobody expects to be lean: 26 g of protein and only 3.5 g of fat for 143 kcal per 100 g — numbers that stand next to chicken breast while wearing a completely different flavor. A 150 g roast serving brings 39 g of protein home for 215 kcal. It roasts whole in twenty-five minutes, slices neatly for meal-prep containers, and takes sweet, smoky and herby marinades equally well. For anyone tired of the chicken-and-turkey rotation, this is the cheapest escape route that doesn't cost a single macro.",
-      ar: "لحم التندرلوين هو القطعة التي لا أحد يتوقع أن تكون قليلة الدهن: 26 جم بروتين و3.5 جم دهون فقط مقابل 143 سعرة لكل 100 جم — أرقام تقف بجوار صدور الدجاج بنكهة مختلفة تمامًا. حصة مشوية 150 جم تحضر 39 جم بروتين إلى البيت مقابل 215 سعرة. تُشوى كاملة في خمس وعشرين دقيقة، وتُقطع بشكل أنيق لحاويات تحضير الوجبات، وتستقبل التتبيلات الحلوة والمدخنة والعشبية بالتساوي. ولكل من سئم دورة الدجاج والرومي، هذا أرخص طريق هروب لا يكلف ماكرو واحدًا.",
-    },
-    context: {
-      en: {
-        alternatives: "Chicken and turkey breast remain the reference leans; beef sirloin adds a bolder flavor at higher calories; tofu takes the slot on meatless days.",
-        plan: "Roast one tenderloin on Sunday, slice it thin, and you have sandwich protein plus two salads for the first half of the week. During gaining phases, pair it with rice and a walnut-olive oil dressing.",
-        caution: "Do not confuse tenderloin with pork loin — the loin is a bigger, fattier roast with different numbers; and packaged «flavored» loins often carry sugary injections.",
-      },
-      ar: {
-        alternatives: "الدجاج والرومي يبقيان المرجعين الرشيقين؛ وسرلوين البقر يضيف نكهة أجرأ بسعرات أعلى؛ والتوفو يأخذ الخانة في أيام اللحوم.",
-        plan: "اشوِ تندرلوين واحدًا يوم الأحد وقطّعه رقيقًا، فتحصل على بروتين ساندويتش وسلطتين للنصف الأول من الأسبوع. وفي مراحل التضخيم رافقه بالأرز وصلصة الجوز وزيت الزيتون.",
-        caution: "لا تخلط بين التندرلوين ولحم الخاصرة — الخاصرة مشوية أكبر وأدهن بأرقام مختلفة؛ وعبوات «المنكّهة» تحمل غالبًا حقنًا سكرية.",
-      },
-    },
-    faq: {
-      en: [
-        { q: "Is pork tenderloin actually lean?", a: "Yes — 3.5 g of fat and 143 kcal per 100 g put it shoulder to shoulder with chicken breast; it is among the leanest cuts of any animal in this library." },
-        { q: "What's the best way to cook it without drying?", a: "Sear the outside hard, finish in a hot oven to the first sign of done, then rest under foil ten minutes — its small fat margin forgives nothing." },
-        { q: "How much protein in a tenderloin serving?", a: "A 150 g serving carries about 39 g of protein for 215 kcal — a full anchor for any meal of the day." },
-      ],
-      ar: [
-        { q: "هل التندرلوين قليل الدهن فعلًا؟", a: "نعم — 3.5 جم دهون و143 سعرة لكل 100 جم تضعه كتفًا بكتف مع صدور الدجاج؛ وهو من أرشق قطع أي حيوان بهذه المكتبة." },
-        { q: "ما أفضل طريقة لطبخه دون جفاف؟", a: "حمّر السطح بعنف، وأكمله في فرن ساخن حتى أول علامة نضج، ثم اتركه مغطى بورق قصدير عشر دقائق — هامش دهونه الصغير لا يغفر شيئًا." },
-        { q: "كم بروتين في حصة تندرلوين؟", a: "حصة 150 جم تحمل نحو 39 جم بروتين مقابل 215 سعرة — مرساة كاملة لأي وجبة في اليوم." },
-      ],
-    },
-  },
 
   "tofu": {
     intro: {
@@ -1425,36 +1395,6 @@ export const FOODS_ENRICHMENT: Record<string, FoodEnrichment> = {
     },
   },
 
-  "bacon": {
-    intro: {
-      en: "Bacon is the flavor multiplier of the protein world: 37 g of protein riding on 541 kcal and 42 g of fat per 100 g — a ratio that disqualifies it as a protein source and rehires it as a seasoning. Two slices (30 g) cost 162 kcal and bring 11 g of protein alongside the smoky fat that makes eggs, salads and sprouts disappear from plates. On a cut it is a measured luxury; on a bulk it is breakfast's best argument. Its saturated fat and sodium deserve the caution they get — honesty, not panic.",
-      ar: "البيكون مضاعف النكهة في عالم البروتين: 37 جم بروتين تركب 541 سعرة و42 جم دهون لكل 100 جم — نسبة تخرجه من مصادر البروتين وتعيد توظيفه تتبيلة. شريحتان (30 جم) تكلفان 162 سعرة وتجلبان 11 جم بروتين مع الدهن المدخن الذي يجعل البيض والسلطات والبروكلي يختفي من الأطباق. في التنشيف رفاهية مضبوطة؛ وفي التضخيم أقوى حجج الفطور. ودهونه المشبعة وصوديومه يستحقان الحذر الذي ينالانه — بصدق لا بذعر.",
-    },
-    context: {
-      en: {
-        alternatives: "Turkey bacon runs leaner at a flavor cost; smoked salmon delivers the salty-smoky hit with better fats; a teaspoon of smoked paprika in oil fakes the aroma for zero-meat plates.",
-        plan: "On a bulk, two slices beside four eggs and two slices of toast is the classic 700-kcal morning. On a cut, crumble ONE slice over a salad — the flavor distributes further than the calories.",
-        caution: "Restaurants cook bacon in its own rendered fat, stacking beyond the 541 kcal reference; and «maple» or «honey» cured styles add a sugar layer the plain number never carried.",
-      },
-      ar: {
-        alternatives: "بيكون الرومي أميل للرشاقة بكلفة نكهة؛ والسلمون المدخن يوصل ضربة المالح المدخن بدهون أفضل؛ وملعقة صغيرة بابريكا مدخنة في الزيت تزيّن الرائحة للأطباق الخالية من اللحم.",
-        plan: "في التضخيم، شريحتان بجوار أربع بيضات وشريحتي توست هي صباح 700 سعرة الكلاسيكي. وفي التنشيف، فتّت شريحة واحدة فوق سلطة — النكهة تتوزع أبعد من السعرات.",
-        caution: "المطاعم تطبخ البيكون في دهنه المنصهر، فتتجاوز مرجع 541 سعرة؛ وأنماط «القيقب» أو «العسل» المعالجة تضيف طبقة سكر لم تحملها الأرقام السادية قط.",
-      },
-    },
-    faq: {
-      en: [
-        { q: "How much protein in two slices of bacon?", a: "About 11 g for 30 g of bacon, arriving on 162 kcal — protein is a passenger here, not the vehicle." },
-        { q: "Can I eat bacon while cutting?", a: "Yes, as a seasoning — one crumbled slice flavors a whole salad for 81 kcal; treating it as the protein anchor of a meal is where cuts go to die." },
-        { q: "Is bacon that unhealthy?", a: "Its processed-meat classification means «limit», not «never»: sodium and saturated fat are the load-bearing concerns, and portion control handles both." },
-      ],
-      ar: [
-        { q: "كم بروتين في شريحتي بيكون؟", a: "نحو 11 جم لكل 30 جم بيكون، تصل على 162 سعرة — البروتين هنا راكب لا مركبة." },
-        { q: "هل آكل البيكون أثناء التنشيف؟", a: "نعم، كتتبيلة — شريحة واحدة مفتتة تنكّه سلطة كاملة بـ81 سعرة؛ أما اتخاذه مرساة بروتين الوجبة فهنا حيث تموت خطط التنشيف." },
-        { q: "هل البيكون غير صحي إلى هذا الحد؟", a: "تصنيفه ضمن اللحوم المصنعة يعني «اعتدل» لا «أبدًا»: الصوديوم والدهون المشبعة هما الخطران الحاملان، وضبط الحصة يكفيهما." },
-      ],
-    },
-  },
 
   "cucumber": {
     intro: {

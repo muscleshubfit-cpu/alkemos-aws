@@ -75,8 +75,8 @@ const bySlug = new Map(FOODS.map((f) => [f.slug, f]));
 const enrichedSlugs = Object.keys(FOODS_ENRICHMENT);
 
 describe("foods-enrichment batches 1-4 (P1-1 canaries)", () => {
-  it("batches 1-4 cover all 80 curated foods — all real, curated (sitemap-advertised set)", () => {
-    expect(enrichedSlugs.length).toBe(80);
+  it("batches 1-4 cover all 78 curated foods — all real, curated (sitemap-advertised set; 2026-11-12: pork-tenderloin + bacon entries removed by the pork/alcohol deletion)", () => {
+    expect(enrichedSlugs.length).toBe(78);
     for (const slug of enrichedSlugs) {
       const food = bySlug.get(slug);
       expect(food, `${slug} must exist in FOODS`).toBeDefined();

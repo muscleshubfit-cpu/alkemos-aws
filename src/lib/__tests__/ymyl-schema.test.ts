@@ -9,7 +9,7 @@ import { AHMED_ZAKE } from "@/lib/authors";
 /**
  * Phase SEO-GEO-4.5 (§7.1 #6+#7) — YMYL E-E-A-T schema canaries.
  *
- * The food (8,830) + exercise (868) detail pages × 2 language mirrors now
+ * The food (8,162) + exercise (868) detail pages × 2 language mirrors now
  * carry a WebPage JSON-LD node with `lastReviewed` + `reviewedBy` (Person).
  * These tests pin the invariants:
  *   - the node is strictly schema.org-valid (WebPage carries lastReviewed;

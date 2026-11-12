@@ -27,7 +27,7 @@ import {
  * SERVER-RENDERED foods explorer (performance audit 2026-09-05).
  *
  * Previously this whole page was a client component importing the
- * 8,830-food array — a ~3MB JS chunk hit every mobile visitor. Now:
+ * 8,162-food array — a ~3MB JS chunk hit every mobile visitor. Now:
  *   • the grid + filters render on the server from URL search params
  *   • the food array NEVER reaches the browser bundle
  *   • category pills / tag toggles / pagination are plain <Link>s

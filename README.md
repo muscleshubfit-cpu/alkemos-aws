@@ -26,7 +26,7 @@ is **proprietary and confidential** (see [License](#-license)).
   (self-hosted WebP), bilingual names / instructions / tips in Modern Standard
   Arabic + English, filterable by muscle group, equipment, and level
   (`src/lib/exercises.ts`)
-- **Food database** — 8,830 foods with per-100g macros and search that
+- **Food database** — 8,162 foods with per-100g macros and search that
   matches both the Arabic and English name fields (`src/lib/foods.ts`).
   Arabic (MSA) + English names cover the hand-curated core plus the
   arabization batches shipped so far; the long USDA-imported tail still

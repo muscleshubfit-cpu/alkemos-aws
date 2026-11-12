@@ -29,8 +29,8 @@ export const metadata: Metadata = {
     // ~160-char budget (CONTENT-AUDIT P1-7 law): real capabilities only —
     // targets, live totals, AI plans; no food-diary claims.
     // SEO-P2-10 (2026-10-01, SEO audit item 10): 166 → 152 chars — proof
-    // number (8,830+) and the 2-free AI plans kept inside ≤160.
-    "Macro calculator targets, a meal planner with live totals from 8,830+ foods, AI meal plans (2 free/month), and weight tracking — one bilingual platform.",
+    // number (8,162+) and the 2-free AI plans kept inside ≤160.
+    "Macro calculator targets, a meal planner with live totals from 8,162+ foods, AI meal plans (2 free/month), and weight tracking — one bilingual platform.",
   keywords: [
     "macro tracker",
     "macro tracking app",
@@ -52,7 +52,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Macro Tracker — Set Targets, Build Meals, Track Totals | Alkemos",
     description:
-      "Set your macro targets, build meals from 8,830+ foods with live totals, generate AI meal plans, and track your weight — free to start.",
+      "Set your macro targets, build meals from 8,162+ foods with live totals, generate AI meal plans, and track your weight — free to start.",
     url: PAGE_URL,
     siteName: "Alkemos",
     locale: "en_US",
@@ -72,7 +72,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Macro Tracker — Set Targets, Build Meals, Track Totals | Alkemos",
     description:
-      "Macro targets, live meal totals from 8,830+ foods, AI meal plans, and weight tracking — free to start.",
+      "Macro targets, live meal totals from 8,162+ foods, AI meal plans, and weight tracking — free to start.",
     images: ["/images/og/og-home-en.png?v=4"],
   },
 };

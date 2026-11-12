@@ -29,7 +29,7 @@ export const metadata: Metadata = {
   // CONTENT-AUDIT P1-7 (2026-09-28, audit §2.1): 191 chars — trimmed to
   // the ~160 budget; the three-line brand rhythm and proof numbers stay.
   description:
-    "Train smarter. Eat with precision. Alkemos unifies training, nutrition, and AI planning — 868+ exercises, 8,830+ foods, 8 free tools, and the EVO AI coach.",
+    "Train smarter. Eat with precision. Alkemos unifies training, nutrition, and AI planning — 868+ exercises, 8,162+ foods, 8 free tools, and the EVO AI coach.",
   keywords: [
     // Platform-level keywords (primary, English) — focused set, one owner
     // per page; tool names belong to their own routes.
@@ -67,7 +67,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Alkemos — The Smart Fitness & Nutrition Platform",
     description:
-      "868+ exercises, 8,830+ foods, 8 free tools, ready programs and diets, an AI coach, and optional personal coaching — in Arabic and English.",
+      "868+ exercises, 8,162+ foods, 8 free tools, ready programs and diets, an AI coach, and optional personal coaching — in Arabic and English.",
     type: "website",
     siteName: "Alkemos",
     locale: "en_US",
@@ -89,7 +89,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Alkemos — The Smart Fitness & Nutrition Platform",
     description:
-      "Training, nutrition, and AI planning in one bilingual platform: 868+ exercises, 8,830+ foods, 8 free tools, and the EVO AI coach.",
+      "Training, nutrition, and AI planning in one bilingual platform: 868+ exercises, 8,162+ foods, 8 free tools, and the EVO AI coach.",
     images: ["/images/og/og-home-en.png?v=4"],
   },
   robots: {

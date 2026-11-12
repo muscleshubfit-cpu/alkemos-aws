@@ -184,7 +184,7 @@ export default function MacroAccuracyGuideArPage() {
         <section className="marble-card mt-4 p-8 text-center">
           <h2 className="text-2xl font-semibold tracking-tight">خطّط بنفس الأرقام</h2>
           <p className="mt-2 text-sm font-normal text-[var(--muted-foreground)]">
-            حاسبة الماكروز وقاعدة الأطعمة بـ8,830+ صنفًا ومخطط الوجبات بمجاميعه
+            حاسبة الماكروز وقاعدة الأطعمة بـ8,162+ صنفًا ومخطط الوجبات بمجاميعه
             الحيّة — كلها مجانية، بلا بطاقة ائتمان.
           </p>
           <div className="mt-6 flex flex-wrap justify-center gap-2">

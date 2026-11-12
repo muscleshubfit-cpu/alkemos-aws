@@ -11,7 +11,7 @@
  * HONESTY LAW (capability inventory verified 2026-09-30):
  *   - Alkemos has NO daily food diary / intake logging. Macro tracking
  *     on Alkemos lives at the PLANNING level: macro calculator targets
- *     → meal planner with live per-meal & per-day macro totals (8,830+
+ *     → meal planner with live per-meal & per-day macro totals (8,162+
  *     foods, free, no signup) → AI meal-plan generation (2 free/month,
  *     no signup) → weight/measurement tracking to verify the results.
  *     The FAQ below states the no-diary scope explicitly.
@@ -20,7 +20,7 @@
 export const MACRO_TRACKER_FAQ_EN: Array<{ q: string; a: string }> = [
   {
     q: "Is Alkemos a macro tracker?",
-    a: "Alkemos tracks your macros at the planning level. The macro calculator sets your daily protein, carb, and fat targets, the meal planner totals the macros of every meal you build from 8,830+ foods in real time, and the AI meal planner generates a full day of eating in grams from your calorie target. You can plan a complete day with live macro totals without an account.",
+    a: "Alkemos tracks your macros at the planning level. The macro calculator sets your daily protein, carb, and fat targets, the meal planner totals the macros of every meal you build from 8,162+ foods in real time, and the AI meal planner generates a full day of eating in grams from your calorie target. You can plan a complete day with live macro totals without an account.",
   },
   {
     q: "Does Alkemos have a daily food diary?",
@@ -32,7 +32,7 @@ export const MACRO_TRACKER_FAQ_EN: Array<{ q: string; a: string }> = [
   },
   {
     q: "Can I see the macros of individual foods?",
-    a: "Yes. The food database lists calories, protein, carbs, and fat for 8,830+ foods with smart serving sizes — browsable for free in English and Arabic, with curated collections for high-protein, low-carb, and keto picks.",
+    a: "Yes. The food database lists calories, protein, carbs, and fat for 8,162+ foods with smart serving sizes — browsable for free in English and Arabic, with curated collections for high-protein, low-carb, and keto picks.",
   },
   {
     q: "Can I generate a full meal plan for my macros?",
@@ -51,7 +51,7 @@ export const MACRO_TRACKER_FAQ_EN: Array<{ q: string; a: string }> = [
 export const MACRO_TRACKER_FAQ_AR: Array<{ q: string; a: string }> = [
   {
     q: "هل Alkemos متتبّع ماكروز؟",
-    a: "Alkemos يتتبّع ماكروزك على مستوى التخطيط. حاسبة الماكروز تضبط أهدافك اليومية من البروتين والكربوهيدرات والدهون، ومخطط الوجبات يجمع ماكروز كل وجبة تبنيها من 8,830+ صنفًا غذائيًا لحظيًا، ومخطط الوجبات بالذكاء الاصطناعي يولّد يومًا كاملًا بالغرامات من رقم سعراتك. يمكنك تخطيط يوم كامل بمجاميع ماكروز حيّة دون أي حساب.",
+    a: "Alkemos يتتبّع ماكروزك على مستوى التخطيط. حاسبة الماكروز تضبط أهدافك اليومية من البروتين والكربوهيدرات والدهون، ومخطط الوجبات يجمع ماكروز كل وجبة تبنيها من 8,162+ صنفًا غذائيًا لحظيًا، ومخطط الوجبات بالذكاء الاصطناعي يولّد يومًا كاملًا بالغرامات من رقم سعراتك. يمكنك تخطيط يوم كامل بمجاميع ماكروز حيّة دون أي حساب.",
   },
   {
     q: "هل لدى Alkemos يوميات طعام يومية؟",
@@ -63,7 +63,7 @@ export const MACRO_TRACKER_FAQ_AR: Array<{ q: string; a: string }> = [
   },
   {
     q: "هل يمكنني رؤية ماكروز كل صنف غذائي؟",
-    a: "نعم. قاعدة الأطعمة تعرض السعرات والبروتين والكربوهيدرات والدهون لـ8,830+ صنفًا بمقاسات تقديم ذكية — متاحة للتصفح مجانًا بالعربية والإنجليزية، مع مجموعات منتقاة للأطعمة عالية البروتين ومنخفضة الكربوهيدرات والكيتو.",
+    a: "نعم. قاعدة الأطعمة تعرض السعرات والبروتين والكربوهيدرات والدهون لـ8,162+ صنفًا بمقاسات تقديم ذكية — متاحة للتصفح مجانًا بالعربية والإنجليزية، مع مجموعات منتقاة للأطعمة عالية البروتين ومنخفضة الكربوهيدرات والكيتو.",
   },
   {
     q: "هل يمكنني توليد خطة وجبات كاملة لماكروزي؟",

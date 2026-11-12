@@ -32,12 +32,24 @@ import "server-only";
  * boar pork rows moved to the pork exclusion + amber hard cider & malt
  * liquor moved to the alcohol exclusion, both per the standing audience-
  * fit precedents — see docs/FOOD-ARABIZATION-FINAL-BATCH-REPORT-2026-11-12.md).
- * Cumulative 8,076. The untranslated remainder is EXACTLY the documented
+ * Cumulative 8,076. The untranslated remainder was the documented
  * audience-fit exclusions: 597 pork-family rows + 77 alcohol rows = 674
- * rows that keep English nameAr (override-able only by an owner order
+ * rows that kept English nameAr (override-able only by an owner order
  * naming the rows — the batch-4 precedent). Reproducible pipeline:
  * scripts/repro/food-arabization-batch5/ (engine + lexicons + overrides
  * + fail-closed validator mirroring foods-ar-purity.test.ts).
+ *
+ * PORK-ALCOHOL DELETION (owner order 2026-11-12 «حذف الأغذية المحتوية
+ * على لحم الخنزير والكحول نهائيًا» — decision: DELETE from the catalog,
+ * not just exclude from arabization): the 674 were re-audited from the
+ * source; 666 CONFIRMED rows were deleted from FOODS entirely (593
+ * pork-family — 597 minus 6 guardrail-protected poultry/plant rows —
+ * plus the 2 curated confirmed-pork rows pork-tenderloin & bacon; and
+ * 75 alcohol — 77 minus 2 alcohol-free products). The 8 protected
+ * survivors (owner guardrail: «لا تحذف الأغذية النباتية أو الدواجن أو
+ * الأسماك أو المنتجات الخالية من هذه المكونات لمجرد تشابه الاسم»)
+ * keep English nameAr and stay OUTSIDE this band. Full deletion log +
+ * evidence: docs/FOOD-PORK-ALCOHOL-DELETION-2026-11-12.md.
  *
  * Architectural role (arabization plan §6): DECOUPLES three signals that
  * used to be one —

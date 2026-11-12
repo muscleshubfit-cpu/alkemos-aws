@@ -664,8 +664,8 @@ export default function AiMealPlannerPage() {
               {
                 titleAr: "المخطط اليدوي",
                 titleEn: "The manual planner",
-                descAr: "تحكم كامل بلا أي حد: ابنِ يومك صنفًا صنفًا من قاعدة 8,830+ صنفًا بإجماليات حية.",
-                descEn: "Full control with no limits at all: build your day item by item from 8,830+ foods with live totals.",
+                descAr: "تحكم كامل بلا أي حد: ابنِ يومك صنفًا صنفًا من قاعدة 8,162+ صنفًا بإجماليات حية.",
+                descEn: "Full control with no limits at all: build your day item by item from 8,162+ foods with live totals.",
               },
               {
                 titleAr: "24 خطة جاهزة",

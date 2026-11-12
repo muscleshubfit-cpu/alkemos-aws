@@ -16,7 +16,7 @@ import FoodDetailClient from "./FoodDetailClient";
  * Server component for food detail page.
  *
  * C22 fix: previously a "use client" component — could not export
- * generateMetadata. All 8,830 food pages shared the same generic
+ * generateMetadata. All 8,162 food pages shared the same generic
  * title from foods/layout.tsx. Now generates per-page metadata +
  * JSON-LD Breadcrumb schema server-side.
  */
@@ -137,7 +137,7 @@ export default async function Page({
   // ("calories in chicken breast" → parsed from here). Additive to the
   // breadcrumb schema; no existing signals change.
   // Phase SEO-GEO-4.5 (§7.1 #6+#7): YMYL E-E-A-T — reviewedBy Person +
-  // lastReviewed date on the largest health-content surface (8,830 pages).
+  // lastReviewed date on the largest health-content surface (8,162 pages).
   // Standalone WebPage node keeps the existing nutrition node untouched.
   const reviewSchema = food
     ? getReviewedWebPageSchema({

@@ -314,6 +314,7 @@ describe("marketing-surface MSA (Phase 178 — §12.42)", () => {
     const surfaces: Record<string, string[]> = {
       "src/components/views/LandingView.tsx": [
         "8830",
+        "8162",
         "5 حاسبات",
         "6 تبديلات أسبوعيًا",
         "6 تبديلات أسبوعياً",
@@ -325,11 +326,14 @@ describe("marketing-surface MSA (Phase 178 — §12.42)", () => {
         "868+ EXERCISES\"",
         "8830+ صنفًا",
         "8,830+ FOODS\"",
+        "8,162+ صنفًا",
+        "8,162+ FOODS\"",
       ],
       // SEO-P1-6: the moved homepage literals carry the same ban into
       // the islands files (no weakening).
       "src/components/views/LandingViewIslands.tsx": [
         "8830",
+        "8162",
         "5 حاسبات",
         "6 تبديلات أسبوعيًا",
         "6 تبديلات أسبوعياً",
@@ -341,9 +345,12 @@ describe("marketing-surface MSA (Phase 178 — §12.42)", () => {
         "868+ EXERCISES\"",
         "8830+ صنفًا",
         "8,830+ FOODS\"",
+        "8,162+ صنفًا",
+        "8,162+ FOODS\"",
       ],
       "src/components/views/LandingViewDynamicIslands.tsx": [
         "8830",
+        "8162",
         "5 حاسبات",
         "6 تبديلات أسبوعيًا",
         "6 تبديلات أسبوعياً",
@@ -355,9 +362,12 @@ describe("marketing-surface MSA (Phase 178 — §12.42)", () => {
         "868+ EXERCISES\"",
         "8830+ صنفًا",
         "8,830+ FOODS\"",
+        "8,162+ صنفًا",
+        "8,162+ FOODS\"",
       ],
       "src/lib/memberships.ts": [
         "8830",
+        "8162",
         "5 حاسبات",
         "5 free fitness calculators",
         "EVO: 3 تبديلات/أسبوع",
@@ -378,6 +388,7 @@ describe("marketing-surface MSA (Phase 178 — §12.42)", () => {
         "3 تبديلات أسبوعياً",
         "6 تبديلات أسبوعياً",
         "8830",
+        "8162",
         "868-exercise",
         "8,830-food",
         "كم تبديل أسبوعياً",
@@ -398,7 +409,7 @@ describe("marketing-surface MSA (Phase 178 — §12.42)", () => {
         "alkemosValue: \"868 exercises\"",
         "8,830 طعام",
       ],
-      "src/lib/seo.ts": ["8830"],
+      "src/lib/seo.ts": ["8830", "8162"],
     };
     for (const [rel, bannedList] of Object.entries(surfaces)) {
       const src = readFileSync(rel, "utf8");
@@ -467,7 +478,7 @@ describe("marketing-surface MSA (Phase 178 — §12.42)", () => {
       ],
       "src/lib/seo.ts": ["أكثر من 868", "868-exercise"],
       "src/lib/authors.ts": ["868-exercise", "الـ868 تمرينًا"],
-      "src/app/(ar)/ar/meal-planner/layout.tsx": ["8830"],
+      "src/app/(ar)/ar/meal-planner/layout.tsx": ["8830", "8162"],
       "src/app/(en)/ai-workout-planner/page.tsx": ["أكثر من 868"],
       "src/lib/blog-category-content.ts": ["868 تمريناً", "868 entries"],
       "src/app/(en)/coaching/page.tsx": [
@@ -529,6 +540,7 @@ describe("marketing-surface MSA (Phase 178 — §12.42)", () => {
       "$5/month ad-free", // unverified ExRx pricing claim
       "$5/شهر", // unverified ExRx pricing claim (AR)
       "8,830 foods", // content volume always carries "+"
+      "8,162 foods", // content volume always carries "+"
       "English + 8 European languages", // stale Freeletics language list
     ]) {
       expect(src, `Phase 197 stale/unverified claim returned: "${banned}"`).not.toContain(banned);
@@ -536,7 +548,7 @@ describe("marketing-surface MSA (Phase 178 — §12.42)", () => {
     // Verified-current claims + Alkemos service coverage (required):
     for (const required of [
       "8 free tools (4 calculators, water tracker, meal planner, 2 AI planners)",
-      "8,830+ foods",
+      "8,162+ foods",
       "2,200+",
       "200M+",
       "~$80/yr", // Freeletics 12-mo Training Coach (App Store, verified)
@@ -593,8 +605,8 @@ describe("marketing-surface MSA (Phase 178 — §12.42)", () => {
       // (EN and AR cells alike — 2026-09-15 bilingual-cells refresh).
       for (const row of c.rows) {
         for (const value of [row.alkemosValue, row.competitorValue, row.alkemosValueAr, row.competitorValueAr]) {
-          if (value.includes("8,830")) {
-            expect(value, `row "${row.labelEn}": 8,830 without "+"`).toContain("8,830+");
+          if (value.includes("8,830") || value.includes("8,162")) {
+            expect(value, `row "${row.labelEn}": food count without "+"`).toContain(value.includes("8,830") ? "8,830+" : "8,162+");
           }
           if (value.includes("868")) {
             expect(value, `row "${row.labelEn}": 868 without "+"`).toContain("868+");
@@ -775,7 +787,7 @@ describe("marketing-surface MSA (Phase 178 — §12.42)", () => {
     expect(hubDepthCollections).toContain("كما يفعل أي متدرب آخر");
     const arFoods = readFileSync("src/app/(ar)/ar/foods/page.tsx", "utf8");
     expect(arFoods).toContain('title: "مكتبة الأطعمة — السعرات والماكروز لكل 100 جرام"');
-    expect(arFoods).toContain("8,830+ صنفًا غذائيًا");
+    expect(arFoods).toContain("8,162+ صنفًا غذائيًا");
     const widget = readFileSync("src/components/EvoFloatingWidget.tsx", "utf8");
     expect(widget).toContain("أي موضوع يخص اللياقة");
     const plans = readFileSync("src/components/views/PlansView.tsx", "utf8");
@@ -808,12 +820,12 @@ describe("marketing-surface MSA (Phase 178 — §12.42)", () => {
     expect(explorer).toContain('? "صنف غذائي"');
     const promo = readFileSync("src/components/PageBottomPromo.tsx", "utf8");
     expect(promo).toContain('nameAr: "مكتبة الأطعمة"');
-    expect(promo).toContain("8,830+ صنف غذائي بالسعرات والماكروز");
+    expect(promo).toContain("8,162+ صنف غذائي بالسعرات والماكروز");
     expect(promo).toContain("استعرض خطط الاشتراك");
     const mealPlanner = readFileSync("src/app/(en)/meal-planner/page.tsx", "utf8");
-    expect(mealPlanner).toContain("8,830+ صنف غذائي وتابع الماكروز");
+    expect(mealPlanner).toContain("8,162+ صنف غذائي وتابع الماكروز");
     const arMealPlanner = readFileSync("src/app/(ar)/ar/meal-planner/layout.tsx", "utf8");
-    expect(arMealPlanner).toContain("8,830+ صنف غذائي وتتبّع الماكروز");
+    expect(arMealPlanner).toContain("8,162+ صنف غذائي وتتبّع الماكروز");
     const foodDetail = readFileSync("src/app/(en)/foods/[slug]/FoodDetailClient.tsx", "utf8");
     expect(foodDetail).toContain("شارك هذا الصنف الغذائي");
     expect(foodDetail).toContain("الصنف الغذائي غير موجود");
@@ -821,7 +833,7 @@ describe("marketing-surface MSA (Phase 178 — §12.42)", () => {
     expect(coachView2).toContain("سيصله بريد إلكتروني بدعوة");
     const chatRoute = readFileSync("src/app/api/ai/chat/route.ts", "utf8");
     expect(chatRoute).toContain("لم أجد معلومات محددة");
-    expect(chatRoute).toContain("مكتبة الأطعمة (8,830+ صنف غذائي)");
+    expect(chatRoute).toContain("مكتبة الأطعمة (8,162+ صنف غذائي)");
     expect(chatRoute).toContain("اسألني سؤالًا آخر");
     // PHASE 205 round 3 — replacements present:
     const otherTools = readFileSync("src/components/OtherTools.tsx", "utf8");

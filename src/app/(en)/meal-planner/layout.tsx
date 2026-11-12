@@ -13,8 +13,8 @@ export const metadata: Metadata = {
   title: "Meal Planner — Build Custom Meal Plans Free | Alkemos",
   description:
     // SEO-P2-10 (2026-10-01, SEO audit item 10): 173 → 142 chars — the
-    // ≤160 SERP-truncation law now holds (8,830+ proof + CTA kept).
-    "Create a meal plan in minutes: search 8,830+ foods with calories and macros, set portions, and save plans — free to try, export on paid tiers.",
+    // ≤160 SERP-truncation law now holds (8,162+ proof + CTA kept).
+    "Create a meal plan in minutes: search 8,162+ foods with calories and macros, set portions, and save plans — free to try, export on paid tiers.",
   keywords: [
     "meal planner",
     "custom meal plan",
@@ -36,7 +36,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Meal Planner | Alkemos",
     description:
-      "Build a personalized meal plan from 8,830+ foods with calories and macros — free to try.",
+      "Build a personalized meal plan from 8,162+ foods with calories and macros — free to try.",
     type: "website",
     url: "https://alkemos.com/meal-planner",
     // P3-10 (Phase 217, deep-audit م9): og:locale symmetry — the AR twin

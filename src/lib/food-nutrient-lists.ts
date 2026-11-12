@@ -199,6 +199,15 @@ const LOWKCAL_ROWS = LOWKCAL_TOP.map((f) => row(f, kcalOf(f)));
 const FAT_ROWS = FAT_TOP.map((f) => row(f, r1(fatOf(f))));
 const HIGHKCAL_ROWS = HIGHKCAL_TOP.map((f) => row(f, kcalOf(f)));
 const LOWCARB_ROWS = LOWCARB_PROTEIN_TOP.map((f) => row(f, r1(proteinOf(f))));
+// DATA-TRUTH anchors for the low-carb copy (PORK-ALCOHOL DELETION
+// 2026-11-12: the curated bacon row this copy used to describe was deleted
+// by the owner order; per the batch-5 name-not-index law the copy now
+// derives its named examples from the ranked rows themselves).
+const LOWCARB_LEADER = LOWCARB_PROTEIN_TOP[0];
+const LOWCARB_CHEESE =
+  LOWCARB_PROTEIN_TOP.find((f) => f.slug === "cheese-parmesan-low-sodium")!;
+const LOWCARB_BRAISED =
+  LOWCARB_PROTEIN_TOP.find((f) => f.slug.endsWith("cooked-braised"))!;
 const LOWSUGAR_ROWS = LOWSUGAR_FRUIT_TOP.map((f) => row(f, r1(sugarOf(f))));
 const SEAFOOD_ROWS = SEAFOOD_PROTEIN_TOP.map((f) => row(f, r1(proteinOf(f))));
 const DAIRY_ROWS = DAIRY_PROTEIN_TOP.map((f) => row(f, r1(proteinOf(f))));
@@ -829,10 +838,10 @@ descriptionAr: `الزبدة تقود جدول دهون الأطعمة الكا�
     titleAr: "ما أعلى الأطعمة بروتينًا بين قليلة الكربوهيدرات؟ الترتيب",
     h1En: "Low Carb, High Protein Foods",
     h1Ar: "ما أعلى الأطعمة بروتينًا بين قليلة الكربوهيدرات؟",
-    descriptionEn: `Both filters at once: hard cheese leads at ${LOWCARB_ROWS[0].value}g protein with ${LOWCARB_ROWS[0].carbs}g carbs per 100g, ahead of bacon and braised lean cuts — from the Alkemos database.`,
-    descriptionAr: `الفلتران معًا: الجبن الصلب يقود بـ${LOWCARB_ROWS[0].value} جم بروتين مع ${LOWCARB_ROWS[0].carbs} جم كربوهيدرات لكل 100 جرام، أمام البيكون والقطع الخالية المطهوة.`,
-    introEn: `Two filters, one table: every row here stays at or under 5g of carbs per 100g, then ranks by protein. Hard cheese opens at ${LOWCARB_ROWS[0].value}g protein against ${LOWCARB_ROWS[0].carbs}g carbs, bacon follows at ${LOWCARB_ROWS[3].value}g with ${LOWCARB_ROWS[3].carbs}g, and the braised lean cuts deliver ${LOWCARB_ROWS[4].value}g at literally zero carbs. This is the keto and cutting shopper's shortlist — protein first, carbs nearly absent.`,
-    introAr: `فلتران في جدول واحد: كل صف هنا يبقى عند 5 جم كربوهيدرات أو أقل لكل 100 جرام، ثم يرتب بالبروتين. الجبن الصلب يفتتح بـ${LOWCARB_ROWS[0].value} جرام بروتين مقابل ${LOWCARB_ROWS[0].carbs} جرام كربوهيدرات، والبيكون يتبع بـ${LOWCARB_ROWS[3].value} جرامًا مع ${LOWCARB_ROWS[3].carbs} جرام، والقطع الخالية المطهوة ببطء تمنح ${LOWCARB_ROWS[4].value} جرامًا بصفر كربوهيدرات حرفيًا. هذه قائمة تسوق الكيتو والتخسيس — البروتين أولًا والكربوهيدرات شبه غائبة.`,
+    descriptionEn: `Both filters at once: ${LOWCARB_LEADER.nameEn} leads at ${r1(proteinOf(LOWCARB_LEADER))}g protein with ${carbOf(LOWCARB_LEADER)}g carbs per 100g, ahead of smoked fish and hard cheeses — from the Alkemos database.`,
+    descriptionAr: `الفلتران معًا: ${LOWCARB_LEADER.nameAr} يقود بـ${r1(proteinOf(LOWCARB_LEADER))} جم بروتين مع ${carbOf(LOWCARB_LEADER)} جم كربوهيدرات لكل 100 جرام، أمام الأسماك المدخنة والجبن الصلب والقطع الخالية المطهوة.`,
+    introEn: `Two filters, one table: every row here stays at or under 5g of carbs per 100g, then ranks by protein. ${LOWCARB_LEADER.nameEn} opens at ${r1(proteinOf(LOWCARB_LEADER))}g protein against ${carbOf(LOWCARB_LEADER)}g carbs, ${LOWCARB_CHEESE.nameEn} follows at ${r1(proteinOf(LOWCARB_CHEESE))}g with ${carbOf(LOWCARB_CHEESE)}g, and the braised lean cuts — ${LOWCARB_BRAISED.nameEn} at ${r1(proteinOf(LOWCARB_BRAISED))}g — arrive at literally zero carbs. This is the keto and cutting shopper's shortlist — protein first, carbs nearly absent.`,
+    introAr: `فلتران في جدول واحد: كل صف هنا يبقى عند 5 جم كربوهيدرات أو أقل لكل 100 جرام، ثم يرتب بالبروتين. ${LOWCARB_LEADER.nameAr} يفتتح بـ${r1(proteinOf(LOWCARB_LEADER))} جرام بروتين مقابل ${carbOf(LOWCARB_LEADER)} جرام كربوهيدرات، و${LOWCARB_CHEESE.nameAr} تتبع بـ${r1(proteinOf(LOWCARB_CHEESE))} جرامًا مع ${carbOf(LOWCARB_CHEESE)} جرام، والقطع الخالية المطهوة ببطء — ${LOWCARB_BRAISED.nameAr} بـ${r1(proteinOf(LOWCARB_BRAISED))} جرامًا — تصل بصفر كربوهيدرات حرفيًا. هذه قائمة تسوق الكيتو والتخسيس — البروتين أولًا والكربوهيدرات شبه غائبة.`,
     criterionEn: `The carb ceiling is 5g per 100g (a widely used low-carb threshold for a food, stricter than a full meal's), and ranking within it is by protein grams, descending. The family scope rules apply. The two columns printed side by side — protein and carbs — are the whole point: you can verify both numbers on every linked food page.`,
     criterionAr: `سقف الكربوهيدرات 5 جم لكل 100 جرام (عتبة قليلة الكربوهيدرات المعروفة لصنف واحد، أصرم من عتبة الوجبة الكاملة)، والترتيب داخله بجرامات البروتين تنازليًا. وقواعد نطاق العائلة مطبقة. والعمودان المطبوعان جنبًا إلى جنب — البروتين والكربوهيدرات — هما جوهر الصفحة: تستطيع التحقق من الرقمين في صفحة كل صنف مربوط.`,
     metricEn: "Protein (g / 100g, carbs ≤ 5g)",
@@ -841,8 +850,8 @@ descriptionAr: `الزبدة تقود جدول دهون الأطعمة الكا�
       {
         heading: { en: "The cheese paradox", ar: "مفارقة الجبن" },
         body: {
-          en: `Yes, the hardest cheese out-proteins the leanest steak per 100g — ${LOWCARB_ROWS[0].value}g versus ${LOWCARB_ROWS[4].value}g — because cheese is concentrated milk with the water gone. The price sits in the calorie column (${LOWCARB_ROWS[0].calories} versus ${LOWCARB_ROWS[4].calories}), so cutters read this table right-to-left: meat first, cheese as the flavour layer.`,
-          ar: `نعم، أقسى جبن يتفوق على أنحف ستيك بروتينًا لكل 100 جرام — ${LOWCARB_ROWS[0].value} جرامًا مقابل ${LOWCARB_ROWS[4].value} — لأن الجبن حليب مركز ذهب ماؤه. والثمن في عمود السعرات (${LOWCARB_ROWS[0].calories} مقابل ${LOWCARB_ROWS[4].calories})، فقراءة المتخسس لهذا الجدول تبدأ بعمود السعرات قبل عمود البروتين: اللحم أولًا والجبن طبقة النكهة.`,
+          en: `Yes, the hardest cheese here out-proteins the leanest braised cut per 100g — ${r1(proteinOf(LOWCARB_CHEESE))}g versus ${r1(proteinOf(LOWCARB_BRAISED))}g — because cheese is concentrated milk with the water gone. The price sits in the calorie column (${kcalOf(LOWCARB_CHEESE)} versus ${kcalOf(LOWCARB_BRAISED)}), so cutters read this table right-to-left: meat first, cheese as the flavour layer.`,
+          ar: `نعم، أقسى جبن هنا يتفوق على أنحف قطعة مطهوة ببطء بروتينًا لكل 100 جرام — ${r1(proteinOf(LOWCARB_CHEESE))} جرامًا مقابل ${r1(proteinOf(LOWCARB_BRAISED))} — لأن الجبن حليب مركز ذهب ماؤه. والثمن في عمود السعرات (${kcalOf(LOWCARB_CHEESE)} مقابل ${kcalOf(LOWCARB_BRAISED)})، فقراءة المتخسس لهذا الجدول تبدأ بعمود السعرات قبل عمود البروتين: اللحم أولًا والجبن طبقة النكهة.`,
         },
       },
       {

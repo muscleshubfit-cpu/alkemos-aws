@@ -4,7 +4,7 @@
  * «الاستفادة الصحيحة من قاعدة الأطعمة بدل اختلاق بيانات غير موثوقة»).
  *
  * WHAT THIS DOES: when an AI-generated meal item names a food that exists
- * in our 8,830-row library (nameAr/nameEn, normalized match) AND its
+ * in our 8,162-row library (nameAr/nameEn, normalized match) AND its
  * amount carries a parseable gram quantity, the library's per-100g row is
  * the truth anchor. If the model's calorie estimate deviates beyond
  * PLAN_AI_SANITY.groundingTolerance (35% — cooked/raw variance lives
@@ -40,7 +40,7 @@ export function normalizeFoodName(name: string): string {
     .trim();
 }
 
-/** Lazy indexes: built once per process (8830 rows — a few ms). */
+/** Lazy indexes: built once per process (8162 rows — a few ms). */
 let exactIndex: Map<string, Food> | null = null;
 let normalizedRows: Array<{ ar: string; en: string; food: Food }> | null = null;
 

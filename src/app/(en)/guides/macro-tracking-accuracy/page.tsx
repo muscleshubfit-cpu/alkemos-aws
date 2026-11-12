@@ -194,7 +194,7 @@ export default function MacroAccuracyGuidePage() {
         <section className="marble-card mt-4 p-8 text-center">
           <h2 className="text-2xl font-semibold tracking-tight">Plan with the same numbers</h2>
           <p className="mt-2 text-sm font-normal text-[var(--muted-foreground)]">
-            The macro calculator, the 8,830-food database, and the meal planner with live
+            The macro calculator, the 8,162-food database, and the meal planner with live
             totals — all free, no credit card required.
           </p>
           <div className="mt-6 flex flex-wrap justify-center gap-2">

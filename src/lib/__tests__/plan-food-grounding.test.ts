@@ -9,7 +9,7 @@ import { FOODS, getFoodBySlug } from "@/lib/foods";
 /**
  * AI-PLAN-QUALITY 2026-10-24 (owner order item 3 — «الاستفادة الصحيحة من
  * قاعدة الأطعمة بدل اختلاق بيانات غير موثوقة»): the grounding layer ties
- * AI calorie estimates to the REAL 8,830-row library (per-100g × grams).
+ * AI calorie estimates to the REAL 8,162-row library (per-100g × grams).
  * These tests run against the live FOODS array.
  */
 

@@ -44,11 +44,22 @@ import { SEO_FOOD_BAND, SEO_FOOD_BAND_SET } from "@/lib/seo-food-band";
  * + fail-closed validator mirroring this test's law exactly). The 4
  * late-excluded rows (2 wild-boar pork + hard cider + malt liquor) moved
  * to the standing audience-fit exclusions — batch-4 precedent, override
- * only by an owner order naming the rows. Cumulative 8,076. The
- * untranslated remainder is EXACTLY the documented exclusions: 597
- * pork-family + 77 alcohol rows = 674 English-nameAr rows.
+ * only by an owner order naming the rows. Cumulative 8,076.
  *
- * Outside the band: the 674 documented audience-fit exclusions only
+ * PORK-ALCOHOL DELETION (owner order 2026-11-12 «حذف الأغذية المحتوية
+ * على لحم الخنزير والكحول نهائيًا» — decision: DELETE from the catalog,
+ * not just exclude from arabization): every row of the documented
+ * audience-fit exclusions was re-audited from the source (674 = 597
+ * pork-family + 77 alcohol). CONFIRMED rows were DELETED — 593 pork-family
+ * (597 minus 6 guardrail-protected poultry/plant rows, plus the 2 curated
+ * confirmed-pork rows pork-tenderloin & bacon) and 75 alcohol (77 minus 2
+ * alcohol-free products) = 668 rows removed from FOODS. The 8 protected
+ * survivors (owner order: «لا تحذف الأغذية النباتية أو الدواجن أو
+ * الأسماك أو المنتجات الخالية من هذه المكونات لمجرد تشابه الاسم»)
+ * keep English nameAr and stay OUTSIDE the band. Deletion log + full
+ * evidence: docs/FOOD-PORK-ALCOHOL-DELETION-2026-11-12.md.
+ *
+ * Outside the band: the 8 guardrail-protected rows only
  * (foods-sitemap-policy.test.ts pins the new tail fact).
  */
 
@@ -108,9 +119,9 @@ describe("foods-ar-purity (FOOD-ARABIZATION Phase 1–5 — the 8,076-slug band)
     ).toEqual([]);
   });
 
-  it("FREEZE — the 80 curated rows are untouched (hand-written band canary)", () => {
+  it("FREEZE — the 78 curated rows are untouched (hand-written band canary — 2026-11-12: pork-tenderloin + bacon deleted per the pork/alcohol deletion order)", () => {
     const curated = FOODS.filter((f) => (f.tags?.length ?? 0) > 0);
-    expect(curated.length).toBe(80);
+    expect(curated.length).toBe(78);
     const payload = curated
       .map((f) =>
         [
@@ -125,19 +136,23 @@ describe("foods-ar-purity (FOOD-ARABIZATION Phase 1–5 — the 8,076-slug band)
         ].join("|"),
       )
       .join("\n");
-    // Pinned 2026-09-19 (pre-arabization snapshot). If this fails, the
+    // Pinned 2026-09-19 (pre-arabization snapshot); re-pinned 2026-11-12
+    // after the PORK-ALCOHOL DELETION removed the curated confirmed-pork
+    // rows pork-tenderloin + bacon (owner order). If this fails, the
     // curated band was edited — the translation line NEVER touches it.
     expect(sha256(payload)).toBe(
-      "e12bcb268cc9e762e7caf21b80076c912bd0ba33d8327b593ffc19bf047fe675",
+      "de7abeeaad9908cf98c83fdccb6fd3c2c153b921b8f82535d7761da88e1fe59b",
     );
   });
 
-  it("FREEZE — the 8,830 slug identities (URL law: membership AND order)", () => {
+  it("FREEZE — the 8,162 slug identities (URL law: membership AND order — 2026-11-12: 668 pork/alcohol rows deleted)", () => {
     const payload = FOODS.map((f) => f.slug).join("\n");
-    expect(FOODS.length).toBe(8830);
-    // Pinned 2026-09-19. Any slug change/addition/removal/reorder fails CI.
+    expect(FOODS.length).toBe(8162);
+    // Pinned 2026-09-19; re-pinned 2026-11-12 after the pork/alcohol
+    // deletion (668 rows removed). Any slug change/addition/removal/
+    // reorder fails CI.
     expect(sha256(payload)).toBe(
-      "0b2c0ac256e9b2646617769860dc0f9d41dfb366bb4cb5ed1f2028684a0fbffa",
+      "81201df7afbf5a5985692897bc62e43aaf31d4b43d63d68a67a723def6939291",
     );
   });
 
@@ -236,15 +251,27 @@ describe("foods-ar-purity (FOOD-ARABIZATION Phase 1–5 — the 8,076-slug band)
     expect(getFoodBySlug("mcdonalds-filet-o-fish")?.nameAr).toBe("فيليه-أو-فيش ماكدونالدز");
     // The pizza-chain inch families (quote chars must NEVER leak into nameAr)
     expect(getFoodBySlug("pizza-hut-14-cheese-pizza-stuffed-crust")?.nameAr).toBe("بيتزا جبنة بيتزا هت 14 بوصة — بقشرة محشوة");
-    // Boundary pins: the standing audience-fit exclusions stay OUTSIDE the
-    // band (pork + alcohol + the 4 late-excluded rows — override only by a
-    // named owner order; the batch-4 precedent, re-affirmed by report 19).
+    // Boundary pins — PORK-ALCOHOL DELETION (owner order 2026-11-12):
+    // the former audience-fit exclusions are now DELETED from the catalog
+    // entirely (getFoodBySlug → undefined), and the deleted slugs must
+    // NEVER return to the band or the catalog without a named owner order.
     expect(SEO_FOOD_BAND_SET.has("pork-fresh-loin-tenderloin-separable-lean-only-raw")).toBe(false);
     expect(SEO_FOOD_BAND_SET.has("alcoholic-beverage-tequila-sunrise-canned")).toBe(false);
     expect(SEO_FOOD_BAND_SET.has("game-meat-boar-wild-raw")).toBe(false);
     expect(SEO_FOOD_BAND_SET.has("beverages-malt-liquor-beverage")).toBe(false);
-    // …and their English twins keep the verbatim USDA name (no other edit).
-    expect(getFoodBySlug("game-meat-boar-wild-raw")?.nameEn).toBe("Game meat, boar, wild, raw");
-    expect(getFoodBySlug("beverages-malt-liquor-beverage")?.nameEn).toBe("Beverages, Malt liquor beverage");
+    // …and the rows are GONE from the catalog (the deletion order's
+    // completion criterion: no confirmed pork/alcohol food remains).
+    expect(getFoodBySlug("pork-fresh-loin-tenderloin-separable-lean-only-raw")).toBeUndefined();
+    expect(getFoodBySlug("game-meat-boar-wild-raw")).toBeUndefined();
+    expect(getFoodBySlug("beverages-malt-liquor-beverage")).toBeUndefined();
+    expect(getFoodBySlug("alcoholic-beverage-tequila-sunrise-canned")).toBeUndefined();
+    expect(getFoodBySlug("lard")).toBeUndefined();
+    expect(getFoodBySlug("pork-tenderloin")).toBeUndefined();
+    expect(getFoodBySlug("bacon")).toBeUndefined();
+    // …and the 8 guardrail-protected survivors (poultry/plant/alcohol-free)
+    // stay in the catalog with English nameAr — outside the band.
+    expect(getFoodBySlug("bacon-turkey-low-sodium")?.nameEn).toBe("Bacon, turkey, low sodium");
+    expect(getFoodBySlug("bacon-meatless")?.nameEn).toBe("Bacon, meatless");
+    expect(getFoodBySlug("beverages-wine-non-alcoholic")?.nameEn).toBe("Beverages, Wine, non-alcoholic");
   });
 });

@@ -16,9 +16,9 @@ import { FOODS } from "@/lib/foods";
  * 17.6K such URLs spent the site's crawl budget on pages with no
  * differentiation.
  *
- * After: ONLY the 80 CURATED foods (hand-written Arabic names, real
+ * After: ONLY the 78 CURATED foods (hand-written Arabic names, real
  * default servings, tag facets) are advertised, in both languages =
- * 160 URLs. The long tail REMAINS 200-accessible and indexable —
+ * 156 URLs. The long tail REMAINS 200-accessible and indexable —
  * discovery continues through internal links (foods explorer
  * pagination + related-foods links) — it is simply no longer
  * advertised in the sitemap, so crawl budget concentrates on the

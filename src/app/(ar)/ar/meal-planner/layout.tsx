@@ -10,8 +10,8 @@ export const metadata: Metadata = {
   title: "مخطط الوجبات — ابنِ خطة غذائية مخصصة مجانًا",
   description:
     // SEO-P2-10 (2026-10-01, SEO audit item 10): 168 → 134 chars — the
-    // ≤160 SERP-truncation law now holds (8,830+ proof + free CTA kept).
-    "ابنِ خطة وجبات مخصصة في دقائق: ابحث في 8,830+ صنف بالسعرات والماكروز، وحدد الكميات، واحفظ خططك — مجانًا، والتصدير مع الباقات المدفوعة.",
+    // ≤160 SERP-truncation law now holds (8,162+ proof + free CTA kept).
+    "ابنِ خطة وجبات مخصصة في دقائق: ابحث في 8,162+ صنف بالسعرات والماكروز، وحدد الكميات، واحفظ خططك — مجانًا، والتصدير مع الباقات المدفوعة.",
   keywords: [
     "مخطط الوجبات",
     "خطة غذائية مجانية",
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: "مخطط الوجبات | Alkemos",
-    description: "ابنِ وجباتك من 8,830+ صنف غذائي وتتبّع الماكروز — مجانًا.",
+    description: "ابنِ وجباتك من 8,162+ صنف غذائي وتتبّع الماكروز — مجانًا.",
     type: "website",
     locale: "ar_EG",
     url: "https://alkemos.com/ar/meal-planner",

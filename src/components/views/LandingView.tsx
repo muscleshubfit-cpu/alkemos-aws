@@ -847,7 +847,7 @@ export function LandingView({
           SIX real curated food cards carry the SAME four-fact macro
           format as the /foods cards (kcal · P · C · F — labeled cells
           in the food pages' own colors), each linking into the food's
-          detail page; the 8,830+ database context rides FOODS_PLUS.
+          detail page; the 8,162+ database context rides FOODS_PLUS.
           The Meal Planner and the ready-made diet plans own their
           surfaces elsewhere (the tools section below + the #diet
           carousel), so nothing here duplicates them. */}
