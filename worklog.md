@@ -15,7 +15,7 @@ Work Log:
 Stage Summary:
 - البوابات المحلية قبل الدفع: tsc 0 · eslint 0 · vitest 5,953/5,953 (219+2 ملفًا — 36 جديدًا) · docs_parity ✓ · docs_audit ✓ (STATE 31324B) · migration_audit ✓ · guard-stale-refs ✓ — النتائج النهائية مسجلة بكوميت الإغلاق بعد الدفع والتحقق الحي.
 - التحقق الحي بعد الدفع (قانون §8): تعبيرا الكرون عبر API كما أعلاه + السيران active + أول أسبوع كامل (الاثنين 2026-11-16 → الجمعة 2026-11-20) هو الإثبات التوليدي: 4 مقالات فقط وزوجان مكتملان بالمصافحة الثنائية.
-- Push status: pending (يُحدَّث بكوميت الإغلاق)
+- Push status: **28decf35 مُدفع على main ومتحقق حيًّا** — CI ‏9/9 خضراء (gate ‏tsc/eslint/vitest · quality · guard · parity · Supabase Preview · state probes · db-migrate · build-and-deploy · verify battery؛ rollback drill متخطى بالتصميم) · الإنتاج على 28decf3 (build-info · /blog و/ar/blog ‏200 · /api/cron/dispatch-pipelines مقفول 401 بلا سر — المنطق الأسبوعي حي) · الكرونان على main: ‏`0 5 * * 1,4` و`0 22 * * 2,5` والسيران active عبر API · أول أسبوع توليدي كامل: الاثنين 2026-11-16 → الجمعة 2026-11-20 (أسبوع الانتقال الحالي محكوم بنفس الحراس: أي لغة تجاوزت 2 منشورات هذا الأسبوع قبل التخفيض تُقفَل صادقة عند الحد بskipped_weekly_quota والاثنين القادم يفتح نافذة نظيفة)
 ---
 Task ID: RECIPES-WORKFLOW-FAILURE-FORENSICS-2026-11-12
 Agent: Main (Z.ai)
