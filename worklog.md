@@ -16,7 +16,7 @@ Work Log:
 Stage Summary:
 - تعليمات المستودع التشغيلية تصف الآن بنية AWS الفعلية (Lightsail/Caddy/PM2/Next.js) ولا يفترض أي وكيل وجود Vercel في العمل المستقبلي — علامة [vercel skip] متقاعدة بلا بديل (آلية التجاوز الفعلية paths-ignore كانت تعمل قبل هذه الجلسة وستعمل بعدها).
 - أصول التراجع (vercel.json + scripts/vercel + vercel-cleanup + VERCEL_TOKEN) سليمة موسومة — قرار إسقاطها P2-أ ينتظر أمر المالك بسلسلته الموثقة، وتدوير التوكنات (F-7) توصية مؤكدة قائمة.
-- Push status: pushed — انظر سطر التحديث أدناه بعد اكتمال CI (الدفعة تلمس .github/** فتُشغّل خط النشر كاملًا عمدًا بقانونه: بناء ونشر نفس الكود بلا أي تغيير سلوك — كل مخرجات الاختبار محليًا خضراء).
+- Push status: 48414057 مُدفع على main وCI كاملة خضراء (10/10: gate tsc/eslint/vitest · quality · parity · guard · state probes · Supabase Preview · db migrate · build-and-deploy · verify battery — وrollback drill متجاهل بقانونه dispatch-only) + تحقق حي بعدي: build-info يخدم 48414057 · الرئيسية 200 عبر سلسلة cloudflare→Caddy — الدفعة لمست `.github/**` و`next.config.ts` (تعليقيًا) فأثبتت نفسها بجولة نشر حقيقية كاملة بنفس الكود (صفر تغيير سلوك مقيس).
 ---
 Task ID: NUTRITION-GRAM-SCALING-AUDIT-2026-11-12
 Agent: Main (Z.ai)
