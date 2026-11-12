@@ -16,7 +16,7 @@ Work Log:
 Stage Summary:
 - الحكم: العيب الوحيد المكتشف بالمراجعة (تبنّي «الأحدث أولًا» مبطلًا ضمان 137س العابر للأسبوع) أُصلح بأصغر تغيير ممكن — سطر واحد + اختباران أُكد أحمرهما قبل وأخضرهما بعد — والاستحالة البنيوية للتجوع مثبتة بالاختبار والحساب.
 - البوابات: tsc صفر أخطاء · eslint صفر أخطاء (التحذيران الموروثان) · vitest كاملًا 5,959/5,959 (222 ملفًا) · مسبار التسلسل الزمني ✓ · docs_audit · docs_parity · guard-stale-refs تُشغَّل بهذا الكوميت (تعديل src/lib/** يدخل بوابات CI الكاملة).
-- Push status: pushed
+- Push status: **02e49b9e مُدفع على main ومتحقق** — CI ‏10/10 خضراء (gate · quality · guard · parity · Supabase Preview · state probes · db-migrate · build-and-deploy · verify battery · rollback drill متخطى بالتصميم) · الإنتاج حي على 02e49b9e (build-info · /blog و/ar/blog ‏200 · dispatch-pipelines مقفول 401 بلا سر — منطق FIFO حي)
 
 ---
 
