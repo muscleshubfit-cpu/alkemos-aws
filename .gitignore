@@ -69,6 +69,7 @@ pnpm-lock.yaml
 #   scripts/v1_contrast_matrix.py → VRD-V1 WCAG contrast gate (2026-09-23, phase 261 — parses globals.css at run time; §21.1 of the visual-redesign plan)
 #   scripts/geo/ → GEO answer-visibility probe (AUDIT §9-2.4, 2026-09-29 — the monthly AI-answers visibility measurement riding the free model chain; hit the same /scripts/* blanket trap as worklog_rotate in 288 — exception added in the same frame)
 #   scripts/worklog_rotate.py → hard-capped worklog-window rotation (ARCH-REMEDIATION-288, 2026-09-28 — hit the same /scripts/* blanket trap: committed-untracked in 288, the registry row failed CI until the 290-FIXUP exception; docs_audit check M now derives its truth set from git so the class fails locally too)
+#   scripts/visual-dup-baseline.py → BLOG-DIVERSITY-ENGINE §7 visual-duplication baseline measurement (2026-11-13 — dHash 64-bit cross-article scan mirroring the P3 discovery thresholds; the before/after evidence tool for the diversity batch review)
 #   scripts/gdrive/oauth-token-helper.html → one-time LOCAL OAuth token minter for the backup owner (GD-1-ALT, BACKUP-STRATEGY-2026-10-03 §5 — gdrive-oauth-smoke-test.yml + the GDRIVE_OAUTH_TOKEN secret source; hit the same /scripts/* blanket trap as geo/ — exception added in the same frame)
 #   scripts/vercel/ignore-step.sh → Vercel Ignored Build Step law carrier (VERCEL-IGNORE-HARDENING-2026-10-04 — vercel.json ignoreCommand delegates here because the inline field is hard-capped at 256 chars by Vercel's schema; hit the same /scripts/* blanket trap as gdrive/ — exception added in the same frame)
 /scripts/*
@@ -105,6 +106,7 @@ scripts/qa/**/__pycache__/
 !/scripts/storage-restore.mjs
 !/scripts/generate-search-indexes.ts
 !/scripts/v1_contrast_matrix.py
+!/scripts/visual-dup-baseline.py
 !/scripts/worklog_rotate.py
 #   scripts/repro/ → REGEN-ROOTCAUSE-2 (2026-10-26) committed evidence instruments: regen-repro.mts replays the EXACT production ai_jobs payloads through the real engine (the plan-regeneration job-killer reproduction) + fetch-ai-job-fixtures.py (READ-ONLY payload fetcher). Hit the same /scripts/* blanket trap as geo/ — exception added in the same frame. The fixtures themselves (scripts/repro/repro-fixtures/) stay IGNORED — real client data, never committed.
 !/scripts/repro/
