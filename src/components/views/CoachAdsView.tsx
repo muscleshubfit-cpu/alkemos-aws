@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useI18n } from "@/lib/i18n";
 import { useNav } from "@/hooks/use-nav";
+import { EgpTwin } from "@/components/egp/EgpTwin";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -188,6 +189,10 @@ export function CoachAdsView() {
             </p>
             <p className="mt-4 text-3xl font-semibold tracking-tight" dir="ltr">
               {p.priceUsd.toLocaleString(isAr ? "ar-EG" : "en-US")}$
+              {/* EGP-DISPLAY (owner order 2026-11-13): the ad package price
+                  gains its daily EGP twin (stored-rate conversion — the
+                  wallet debit stays USD by the 0038 law). */}
+              <EgpTwin usd={p.priceUsd} isAr={isAr} className="text-xs font-normal" paren />
             </p>
             <p className="mt-2 text-xs font-normal text-[#6e6e73]">
               {isAr ? "سعر ثابت — خصم من المحفظة" : "Fixed price — debited from your wallet"}

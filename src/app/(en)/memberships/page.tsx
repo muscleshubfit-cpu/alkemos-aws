@@ -19,6 +19,7 @@ import {
 // Q&A as FAQPage JSON-LD in the server HTML. Texts moved verbatim (one
 // verified fix: AR q3 «Pro» → «برو» — the audit's Latin-mixing law أ-2).
 import { MEMBERSHIPS_FAQ } from "@/lib/memberships-faq";
+import { EgpTwin } from "@/components/egp/EgpTwin";
 import { Check } from "lucide-react";
 
 export default function MembershipsPage({ lang: langProp }: { lang?: Lang } = {}) {
@@ -152,6 +153,21 @@ export default function MembershipsPage({ lang: langProp }: { lang?: Lang } = {}
                       </span>
                     )}
                   </div>
+                  {/* EGP-DISPLAY (owner order 2026-11-13): the daily EGP twin
+                      under every paid price — USD stays the priced currency
+                      (memberships.ts single source; the twin reads the exact
+                      local_prices row, fallback stored-rate conversion). The
+                      Free tier carries no twin (free has no equivalent). */}
+                  {!isFree && (
+                    <EgpTwin
+                      block
+                      usd={tier.priceMonthly!}
+                      planTier={tier.id}
+                      durationMonths={1}
+                      isAr={isAr}
+                      className={`text-xs font-medium ${isPro ? "text-[#9BA0A6]" : "text-[var(--muted-foreground)]"}`}
+                    />
+                  )}
                 </div>
 
                 {/* Yearly price (shown on the same card when available) */}
@@ -172,8 +188,23 @@ export default function MembershipsPage({ lang: langProp }: { lang?: Lang } = {}
                         /{isAr ? "سنة" : "yr"}
                       </span>
                     </div>
+                    {/* EGP-DISPLAY (2026-11-13): the yearly twin — the exact
+                        local_prices row for the 12-month product. */}
+                    <EgpTwin
+                      block
+                      usd={tier.priceYearly!}
+                      planTier={tier.id}
+                      durationMonths={12}
+                      isAr={isAr}
+                      className={`text-[11px] font-medium ${isPro ? "text-[#9BA0A6]" : "text-[var(--muted-foreground)]"}`}
+                    />
                     <p className={`mt-1 text-[10px] font-normal ${isPro ? "text-[#9BA0A6]" : "text-[var(--muted-foreground)]"}`}>
-                      ${(tier.priceYearly! / 12).toFixed(2)}/{isAr ? "شهر" : "mo"} {isAr ? "بمعدل" : "avg"}
+                      {/* EGP-DISPLAY: the derived monthly average also carries
+                          its twin (stored-rate conversion — a derived figure has
+                          no row; the savings chip stays a pure USD arithmetic
+                          difference by the same law it always had). */}
+                      ${(tier.priceYearly! / 12).toFixed(2)}/{isAr ? "شهر" : "mo"} {isAr ? "بمعدل" : "avg"}{" "}
+                      <EgpTwin usd={tier.priceYearly! / 12} isAr={isAr} />
                     </p>
                     {/* GROWTH-PLAN batch 10: the explicit dollar saving — pure arithmetic from the same source (12 × monthly − yearly), stated at the decision moment so the yearly value needs no mental math. */}
                     <p className={`mt-0.5 text-[10px] font-medium ${isPro ? "text-[#C9CED3]" : "text-[var(--text)]"}`}>
@@ -210,11 +241,21 @@ export default function MembershipsPage({ lang: langProp }: { lang?: Lang } = {}
                         href={ctaHref(tier.id, 1)}
                         className="btn-chrome block w-full px-6 py-3.5 text-center text-sm"
                       >
-                      {/* BILINGUAL-CONTENT Phase 2: pressure-free CTA —
+                        {/* BILINGUAL-CONTENT Phase 2: pressure-free CTA —
                           «الآن»/"now" removed (owner order), the plan NAME
                           added instead, so the primary money button is MORE
-                          specific, not weaker. Price/destination untouched. */}
-                        {isAr ? `اشترك في ${tier.nameAr} — $${tier.priceMonthly!.toFixed(2)}/شهر` : `Subscribe to ${tier.nameEn} — $${tier.priceMonthly!.toFixed(2)}/mo`}
+                          specific, not weaker. Price/destination untouched.
+                          EGP-DISPLAY (2026-11-13): the button price gains its
+                          twin too — the owner's order covers every visible
+                          price figure, CTA buttons included. */}
+                        {isAr ? `اشترك في ${tier.nameAr} — $${tier.priceMonthly!.toFixed(2)}/شهر` : `Subscribe to ${tier.nameEn} — $${tier.priceMonthly!.toFixed(2)}/mo`}{" "}
+                        <EgpTwin
+                          usd={tier.priceMonthly!}
+                          planTier={tier.id}
+                          durationMonths={1}
+                          isAr={isAr}
+                          className="text-xs font-normal opacity-90"
+                        />
                       </a>
                       {/* Yearly CTA — secondary */}
                       {hasYearly && (
@@ -224,7 +265,16 @@ export default function MembershipsPage({ lang: langProp }: { lang?: Lang } = {}
                             isPro ? "btn-outline border-[#3A3F45] text-[#F5F5F7]" : "btn-outline"
                           }`}
                         >
-                          <span>{isAr ? `سنوي — $${tier.priceYearly!.toFixed(2)}` : `Yearly — $${tier.priceYearly!.toFixed(2)}`}</span>
+                          <span>
+                            {isAr ? `سنوي — $${tier.priceYearly!.toFixed(2)}` : `Yearly — $${tier.priceYearly!.toFixed(2)}`}{" "}
+                            <EgpTwin
+                              usd={tier.priceYearly!}
+                              planTier={tier.id}
+                              durationMonths={12}
+                              isAr={isAr}
+                              className="text-xs font-normal opacity-90"
+                            />
+                          </span>
                           <span className="seal-chip">-{Math.round((1 - tier.priceYearly! / (12 * tier.priceMonthly!)) * 100)}%</span>
                         </a>
                       )}

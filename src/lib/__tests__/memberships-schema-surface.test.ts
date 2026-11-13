@@ -202,7 +202,12 @@ describe("BILINGUAL-CONTENT Phase 2 — schema + consistency canaries", () => {
     // The dollar saving line is present and derived.
     expect(page).toContain("12 * tier.priceMonthly! - tier.priceYearly!");
     // The coaching page states its derived yearly saving from the same source.
-    expect(coaching).toContain("12 * (MEMBERSHIPS.find((m) => m.id === \"coaching\")?.priceMonthly");
+    // (EGP-DISPLAY 2026-11-13 refactor: the triple inline
+    // MEMBERSHIPS.find("coaching") chains became the single
+    // coachingMonthlyUsd / coachingYearlyUsd consts — the derivation law is
+    // unchanged: still memberships.ts lookups, never a literal.)
+    expect(coaching).toContain('MEMBERSHIPS.find((m) => m.id === "coaching")');
+    expect(coaching).toContain("12 * coachingMonthlyUsd - coachingYearlyUsd");
     expect(coaching).not.toContain('"أو $359 سنويًا"');
   });
 });

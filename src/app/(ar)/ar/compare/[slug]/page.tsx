@@ -7,6 +7,7 @@ import { ShareButtons } from "@/components/ShareButtons";
 import { COMPARISONS, getComparisonBySlug } from "@/lib/comparisons";
 import { getArticleSchema, getBreadcrumbSchema, getItemListSchema, jsonLd, stripTrailingBrandForArTemplate } from "@/lib/seo";
 import { resolveAuthor } from "@/lib/authors";
+import { EgpPriceText } from "@/components/egp/EgpTwin";
 
 /**
  * /ar/compare/[slug] — Arabic mirror of /compare/[slug].
@@ -204,7 +205,11 @@ export default async function ArabicComparisonPage({
                       <td className="p-4 font-medium">{row.labelAr}</td>
                       <td className={`p-4 ${alkemosBg}`}>
                         <span className="ml-2 font-bold">{alkemosIcon}</span>
-                        {row.alkemosValueAr}
+                        {/* EGP-DISPLAY (أمر المالك 2026-11-13): أرقام أسعار
+                            Alkemos داخل خلايا المقارنة تكتسب توأمها بالجنيه
+                            (صفوف local_prices عبر مطابقة المنتج)؛ أسعار
+                            المنافس تبقى بالدولار وحده — تسعيرهم لا يخصنا. */}
+                        <EgpPriceText text={row.alkemosValueAr} isAr />
                       </td>
                       <td className={`p-4 ${competitorBg}`}>
                         <span className="ml-2 font-bold">{competitorIcon}</span>

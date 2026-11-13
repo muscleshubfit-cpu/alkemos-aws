@@ -129,8 +129,18 @@ carries a 7-day conditional refund (no-features-used, ledger-based —
 - **Payments** — PayPal (create / capture / webhook, idempotent capture) plus
   manual review (InstaPay / Vodafone Cash / bank transfer); the Egyptian
   manual rails display an auto-converted EGP twin refreshed daily from
-  ExchangeRate-API by a scheduled workflow (`src/lib/local-prices.ts`),
-  while PayPal stays USD-only
+  ExchangeRate-API by a scheduled workflow (`src/lib/local-prices.ts`)
+- **Dual-currency price display (site-wide)** — every price surface shows
+  USD first with its EGP equivalent beside it («$14.99 أو 830 جنيه مصري» /
+  «$14.99 or 830 EGP»): landing, memberships, coaching, checkout (including
+  the PayPal total, where the twin is labeled indicative — the charge stays
+  USD), about, comparison tables, the affiliate page and the coach app
+  (`src/lib/egp-display.tsx` + `src/components/egp/EgpTwin.tsx`). One shared
+  client reader reuses the daily ExchangeRate-API layer — one
+  `/api/local-prices` request per page load, no parallel conversion system,
+  and zero changes to any charge amount or transaction currency; the
+  manual rails keep the exact locked EGP transfer figure. Governing report:
+  `docs/DUAL-CURRENCY-DISPLAY-2026-11-13.md`
 
 ---
 

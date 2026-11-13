@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/accordion";
 import { listBlogPosts, getCategoryLabel, type BlogPostCard } from "@/lib/blog";
 import { deferIdle } from "@/lib/defer-idle";
+import { EgpTwin, EgpPriceText } from "@/components/egp/EgpTwin";
 import { Dumbbell, Apple, BarChart3, Bot, Check, ArrowRight, Sparkles } from "lucide-react";
 
 // PHASE 193 (copy audit — claims honesty): the previous data here was 9
@@ -65,6 +66,12 @@ export default function CoachingPage() {
   const router = useRouter();
   const { profile } = useAuth();
   const isAr = lang === "ar";
+  // EGP-DISPLAY (owner order 2026-11-13): single-source derivations for the
+  // pricing card — the same memberships.ts lookups the card already used,
+  // now also feeding the daily EGP twins (exact local_prices rows).
+  const coachingMembership = MEMBERSHIPS.find((m) => m.id === "coaching");
+  const coachingMonthlyUsd = coachingMembership?.priceMonthly ?? 39.99;
+  const coachingYearlyUsd = coachingMembership?.priceYearly ?? 359;
   const [latestPosts, setLatestPosts] = useState<BlogPostCard[]>([]);
 
   // Smooth scroll to pricing section
@@ -509,10 +516,22 @@ export default function CoachingPage() {
                     cost-anchor pattern, honestly): coaching = every Pro
                     feature + the personal coach. $39.99 − $29.99 = $10/month
                     is direct arithmetic from memberships.ts (no multiplier
-                    phrasing, the 2026-09-13 owner directive). */}
-                {isAr
-                  ? "$39.99 شهريًا، شاملة كل مزايا برو مع متابعة المدرب — والفرق عن باقة برو: 10 دولارات شهريًا مقابل مدرب خاص يقرأ أرقامك ويعدّل خطتك بيده."
-                  : "$39.99/month, including every Pro feature plus your coach's follow-up — the difference from Pro: $10 a month for a personal coach who reads your numbers and adjusts your plan."}
+                    phrasing, the 2026-09-13 owner directive).
+                    EGP-DISPLAY (2026-11-13): ONLY the $39.99 price figure
+                    is wrapped (EgpPriceText product-maps it to the coaching
+                    row); the $10/10 دولارات difference stays a pure USD
+                    arithmetic note — same law in both languages. */}
+                {isAr ? (
+                  <>
+                    <EgpPriceText text="$39.99 شهريًا" isAr />
+                    {"، شاملة كل مزايا برو مع متابعة المدرب — والفرق عن باقة برو: 10 دولارات شهريًا مقابل مدرب خاص يقرأ أرقامك ويعدّل خطتك بيده."}
+                  </>
+                ) : (
+                  <>
+                    <EgpPriceText text="$39.99/month" isAr={false} />
+                    {", including every Pro feature plus your coach's follow-up — the difference from Pro: $10 a month for a personal coach who reads your numbers and adjusts your plan."}
+                  </>
+                )}
               </p>
             </Reveal>
             {/* PHASE 68 (owner-approved): the legacy Starter $20 / Elite $40
@@ -531,14 +550,44 @@ export default function CoachingPage() {
                   </h3>
                   <div className="mt-4 flex items-baseline gap-1">
                     {/* chrome-text-on-dark (Phase 198, audit C3): black card in BOTH themes */}
-                    <span className="chrome-text chrome-text-on-dark text-4xl font-semibold tracking-tight md:text-5xl">$39.99</span>
+                    <span className="chrome-text chrome-text-on-dark text-4xl font-semibold tracking-tight md:text-5xl">${coachingMonthlyUsd.toFixed(2)}</span>
                     <span className="text-base font-normal opacity-60">{isAr ? "/شهر" : "/mo"}</span>
                   </div>
-                  {/* GROWTH-PLAN batch 10: the derived dollar saving rides the yearly line (12 × $39.99 − $359 = $120.88) — value stated at the decision moment, zero new facts (pure arithmetic from memberships.ts). */}
+                  {/* EGP-DISPLAY (2026-11-13): the coaching monthly twin — the
+                      exact local_prices row (fallback stored-rate conversion). */}
+                  <EgpTwin
+                    block
+                    usd={coachingMonthlyUsd}
+                    planTier="coaching"
+                    durationMonths={1}
+                    isAr={isAr}
+                    className="mt-1.5 text-xs font-medium opacity-60"
+                  />
+                  {/* GROWTH-PLAN batch 10: the derived dollar saving rides the yearly line (12 × $39.99 − $359 = $120.88) — value stated at the decision moment, zero new facts (pure arithmetic from memberships.ts). EGP-DISPLAY (2026-11-13): the yearly figure gains its twin right after the price; the saving stays a pure USD arithmetic note (not a price). */}
                   <p className="mt-1 text-sm font-normal opacity-60">
-                    {isAr
-                      ? `أو $${(MEMBERSHIPS.find((m) => m.id === "coaching")?.priceYearly ?? 359).toFixed(0)} سنويًا — وفّر $${((12 * (MEMBERSHIPS.find((m) => m.id === "coaching")?.priceMonthly ?? 39.99)) - (MEMBERSHIPS.find((m) => m.id === "coaching")?.priceYearly ?? 359)).toFixed(2)}`
-                      : `or $${(MEMBERSHIPS.find((m) => m.id === "coaching")?.priceYearly ?? 359).toFixed(0)}/yr — save $${((12 * (MEMBERSHIPS.find((m) => m.id === "coaching")?.priceMonthly ?? 39.99)) - (MEMBERSHIPS.find((m) => m.id === "coaching")?.priceYearly ?? 359)).toFixed(2)}`}
+                    {isAr ? (
+                      <>
+                        {`أو $${coachingYearlyUsd.toFixed(0)} سنويًا`}{" "}
+                        <EgpTwin
+                          usd={coachingYearlyUsd}
+                          planTier="coaching"
+                          durationMonths={12}
+                          isAr={isAr}
+                        />
+                        {` — وفّر $${(12 * coachingMonthlyUsd - coachingYearlyUsd).toFixed(2)}`}
+                      </>
+                    ) : (
+                      <>
+                        {`or $${coachingYearlyUsd.toFixed(0)}/yr`}{" "}
+                        <EgpTwin
+                          usd={coachingYearlyUsd}
+                          planTier="coaching"
+                          durationMonths={12}
+                          isAr={isAr}
+                        />
+                        {` — save $${(12 * coachingMonthlyUsd - coachingYearlyUsd).toFixed(2)}`}
+                      </>
+                    )}
                   </p>
                   <ul className="mt-8 space-y-3 text-base font-normal">
                     {/* 2026-09-15 (consistency fix — memberships.ts says

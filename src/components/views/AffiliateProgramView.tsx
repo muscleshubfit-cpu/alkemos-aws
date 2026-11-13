@@ -23,6 +23,7 @@ import { SiteFooter } from "@/components/SiteFooter";
 import { useI18n } from "@/lib/i18n";
 import { useNav } from "@/hooks/use-nav";
 import { useAuth } from "@/hooks/use-auth";
+import { EgpPriceText } from "@/components/egp/EgpTwin";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import {
   AFFILIATE_PROGRAM_FACTS,
@@ -297,7 +298,12 @@ export function AffiliateProgramView() {
                         {ex.label}
                       </p>
                       <p className="mt-0.5 text-[11px] font-normal text-[var(--muted-foreground)]">
-                        {ex.price}
+                        {/* EGP-DISPLAY (owner order 2026-11-13): the PLAN
+                            price line gains its daily EGP twin
+                            (product-mapped to the local_prices rows); the
+                            commission figure below stays USD — it is an
+                            earning, not a price. */}
+                        <EgpPriceText text={ex.price} isAr={isAr} />
                       </p>
                       <p className="chrome-text mt-1 text-xl font-semibold tracking-tight">
                         {ex.earn}
@@ -361,7 +367,21 @@ export function AffiliateProgramView() {
                     {step.title}
                   </h3>
                   <p className="mt-2 text-sm font-normal leading-relaxed text-[var(--muted-foreground)]">
-                    {step.body}
+                    {/* EGP-DISPLAY (2026-11-13): inside the how-it-works
+                        prose, ONLY the plan price figures (14.99 / 29.99 /
+                        39.99) gain twins — the commission figures (3.00 /
+                        6.00 / 8.00) and the $10 payout threshold are
+                        earnings/threshold amounts, not prices, and stay
+                        pure USD. */}
+                    {/(\$[\d,]|[\d,]\$)/.test(step.body) ? (
+                      <EgpPriceText
+                        text={step.body}
+                        isAr={isAr}
+                        onlyAmounts={[14.99, 29.99, 39.99]}
+                      />
+                    ) : (
+                      step.body
+                    )}
                   </p>
                 </div>
               ))}

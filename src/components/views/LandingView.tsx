@@ -30,6 +30,7 @@ import type { BlogPostCard } from "@/lib/blog";
 import Image from "next/image";
 import { ThemeImg, EngravedIcon } from "@/components/ThemeImg";
 import { Reveal, CountUp, CarouselShell, LibraryBrowser, EvoCard, HeroCta } from "./LandingViewIslands";
+import { EgpTwin } from "@/components/egp/EgpTwin";
 import type {
   HomeDietSystemSample,
   HomeFoodSample,
@@ -1256,6 +1257,19 @@ export function LandingView({
                     </span>
                   </span>
                 </div>
+                {/* EGP-DISPLAY (owner order 2026-11-13): the daily EGP twin
+                    under the price — USD stays the priced currency
+                    (memberships.ts single source; the twin is the exact
+                    local_prices row, fallback stored-rate conversion). */}
+                <EgpTwin
+                  block
+                  usd={premiumTier?.priceMonthly ?? 0}
+                  planTier="premium"
+                  durationMonths={1}
+                  isAr={isAr}
+                  className="text-end text-[11px] font-medium"
+                  style={{ color: PALETTE.textMuted }}
+                />
                 <TierFeatureRows
                   rows={
                     isAr
@@ -1294,6 +1308,17 @@ export function LandingView({
                       </span>
                     </span>
                   </div>
+                  {/* EGP-DISPLAY (2026-11-13): same twin law, dark-surface
+                      muted tone (mirrors the /mo suffix color). */}
+                  <EgpTwin
+                    block
+                    usd={proTier?.priceMonthly ?? 0}
+                    planTier="pro"
+                    durationMonths={1}
+                    isAr={isAr}
+                    className="text-end text-[11px] font-medium"
+                    style={{ color: "rgba(245,245,247,0.6)" }}
+                  />
                   <TierFeatureRows
                     pinDark
                     rows={
@@ -1342,6 +1367,18 @@ export function LandingView({
                       {isAr ? " / شهريًا" : " /mo"}
                     </span>
                   </span>
+                  {/* EGP-DISPLAY (2026-11-13): the coaching band joins the
+                      dual-currency law (flex-col end alignment follows the
+                      price position on both breakpoints). */}
+                  <EgpTwin
+                    block
+                    usd={coachingTier?.priceMonthly ?? 0}
+                    planTier="coaching"
+                    durationMonths={1}
+                    isAr={isAr}
+                    className="text-[11px] font-medium"
+                    style={{ color: PALETTE.textMuted }}
+                  />
                   <a href={isAr ? "/ar/coaching" : "/coaching"} className="btn-chrome px-6 py-2.5 text-sm font-medium">
                     {c.coachingCta}
                   </a>

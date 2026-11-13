@@ -15,6 +15,7 @@ import {
 } from "@/lib/coach-limits";
 import { uploadReceipt } from "@/lib/data";
 import { receiptViewUrl } from "@/lib/receipt-view";
+import { EgpTwin } from "@/components/egp/EgpTwin";
 
 /**
  * COACH WALLET (0035) — /coach/wallet
@@ -353,15 +354,36 @@ export function CoachWalletView() {
               {/* FIXED PRICING (m7 owner decision «أ» 2026-09-18): the same
                   single source the server debits (coachActivationCostUsd /
                   COACH_CLIENT_PACKAGES) — no per-coach fee exists anymore,
-                  so the display can NEVER disagree with the debit. */}
-              {((): string => {
+                  so the display can NEVER disagree with the debit.
+                  EGP-DISPLAY (owner order 2026-11-13): every figure gains
+                  its daily EGP twin (stored-rate conversion — the wallet
+                  debit itself stays USD by the 0038 law). The twins are
+                  explicit components (not text parsing) because fmt()
+                  renders ar-EG numerals on the Arabic surface. */}
+              {((): React.ReactNode => {
                 const monthly = COACH_CLIENT_PACKAGES[0].priceUsd;
                 const quarter =
                   COACH_CLIENT_PACKAGES.find((p) => p.months === 3)?.priceUsd ??
                   monthly * 3;
-                return isAr
-                  ? `سعر تفعيل العميل: ${fmt(monthly)}$/شهر — باقة ٣ شهور = ${fmt(quarter)}$ (سعر ثابت)، وأي مدة أخرى = ${fmt(monthly)}$ × الشهور.`
-                  : `Per-client activation: ${fmt(monthly)}$/month — 3-month package = ${fmt(quarter)}$ (fixed price), any other duration = ${fmt(monthly)}$ × months.`;
+                return isAr ? (
+                  <>
+                    {`سعر تفعيل العميل: ${fmt(monthly)}$/شهر`}{" "}
+                    <EgpTwin usd={monthly} isAr paren className="text-xs" />
+                    {` — باقة ٣ شهور = ${fmt(quarter)}$`}{" "}
+                    <EgpTwin usd={quarter} isAr paren className="text-xs" />
+                    {" (سعر ثابت)، وأي مدة أخرى = "}
+                    {`${fmt(monthly)}$ × الشهور.`}
+                  </>
+                ) : (
+                  <>
+                    {`Per-client activation: ${fmt(monthly)}$/month`}{" "}
+                    <EgpTwin usd={monthly} isAr={false} paren className="text-xs" />
+                    {` — 3-month package = ${fmt(quarter)}$`}{" "}
+                    <EgpTwin usd={quarter} isAr={false} paren className="text-xs" />
+                    {" (fixed price), any other duration = "}
+                    {`${fmt(monthly)}$ × months.`}
+                  </>
+                );
               })()}
             </p>
           </div>
@@ -418,7 +440,17 @@ export function CoachWalletView() {
                     className="mt-1.5 flex h-[42px] items-center rounded-xl bg-[#f5f5f7] px-4 text-sm font-medium text-[#1d1d1f]"
                     dir="ltr"
                   >
-                    {payValid ? `${payUsd.toFixed(2)} USD` : "—"}
+                    {/* EGP-DISPLAY (2026-11-13): the top-up preview gains its
+                        indicative EGP twin (stored daily rate) — the wallet
+                        credit itself is USD 1:1 by the 0038 law. */}
+                    {payValid ? (
+                      <>
+                        {payUsd.toFixed(2)} USD{" "}
+                        <EgpTwin usd={payUsd} isAr={isAr} className="text-xs font-normal" paren />
+                      </>
+                    ) : (
+                      "—"
+                    )}
                   </div>
                 </div>
               </div>

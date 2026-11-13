@@ -13,6 +13,8 @@ import { type TierId, type Duration, type PaymentMethod, getTier } from "@/lib/p
 import { MEMBERSHIPS, type MembershipTier } from "@/lib/memberships";
 import { submitSubscriptionRequest, uploadReceipt } from "@/lib/data";
 import { dualPriceString } from "@/lib/local-prices";
+import { useEgpDisplay } from "@/lib/egp-display";
+import { EgpTwin } from "@/components/egp/EgpTwin";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -271,31 +273,18 @@ export function CheckoutView({ tier, months }: { tier: TierId | MembershipTier; 
   const [done, setDone] = useState(false);
   const [paypalDone, setPaypalDone] = useState(false);
 
-  // LOCAL-PAYMENT-EGP (0104): the EGP twin for the manual rails
-  // (InstaPay / Vodafone Cash), fetched once from the public read
-  // endpoint. null — unset price, fetch failure, or a non-positive value —
-  // means USD-ONLY rendering: never zero, never a guessed conversion, the
-  // fail-safe display law. PayPal surfaces NEVER read this value.
-  const [localPriceEgp, setLocalPriceEgp] = useState<number | null>(null);
-  useEffect(() => {
-    let alive = true;
-    fetch("/api/local-prices", { cache: "no-store" })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data: { prices?: { plan_tier: string; duration_months: number; price_egp: number }[] } | null) => {
-        if (!alive || !data?.prices) return;
-        const row = data.prices.find(
-          (p) => p.plan_tier === (tier as string) && p.duration_months === (months as number),
-        );
-        setLocalPriceEgp(row && Number(row.price_egp) > 0 ? Number(row.price_egp) : null);
-      })
-      .catch(() => {
-        // Fetch failure → USD-only (the last successful local price keeps
-        // serving from the DB on the next load; nothing is invented here).
-      });
-    return () => {
-      alive = false;
-    };
-  }, [tier, months]);
+  // LOCAL-PAYMENT-EGP (0104) + EGP-DISPLAY (owner order 2026-11-13): the
+  // private fetch moved into the shared client reader (src/lib/egp-display
+  // .tsx) — ONE /api/local-prices request per page load, shared with every
+  // twin on the site (the same 0104 endpoint, rows and daily rate; no
+  // parallel system). localPriceEgp stays ROW-ONLY (the exact local_prices
+  // figure, null when unset): it is the 0104 AMOUNT LOCK value and the
+  // manual-rail transfer figure — never a computed fallback. The PayPal
+  // surface reads it only as the INDICATIVE twin (see the Total row). null
+  // — unset row or fetch failure — means USD-ONLY rendering there: never
+  // zero, never a guessed conversion, the fail-safe display law.
+  const egp = useEgpDisplay();
+  const localPriceEgp = egp.rowEgp(tier as string, months as number);
 
   // Load PayPal SDK only when PayPal is selected
   const { loaded: paypalLoaded, error: paypalLoadError } = usePayPalScript(method === "paypal");
@@ -536,23 +525,54 @@ export function CheckoutView({ tier, months }: { tier: TierId | MembershipTier; 
                   {plan.monthlyEquivalent && (
                     <div className="flex items-center justify-between text-xs text-[var(--muted-foreground)]">
                       <span>{isAr ? "بمعدل شهري" : "Monthly equivalent"}</span>
-                      <span>${plan.monthlyEquivalent.toFixed(2)}</span>
+                      {/* EGP-DISPLAY (2026-11-13): the equivalent line gains
+                          the illustrative EGP twin (stored daily rate × cash
+                          rounding — no row exists for a derived figure). */}
+                      <span>
+                        ${plan.monthlyEquivalent.toFixed(2)}{" "}
+                        <EgpTwin usd={plan.monthlyEquivalent} isAr={isAr} />
+                      </span>
                     </div>
                   )}
                   <div className="flex items-center justify-between border-t border-[var(--edge)] pt-3">
                     <span className="font-normal text-[var(--muted-foreground)]">
                       {isAr ? "الإجمالي" : "Total"}
                     </span>
-                    {/* LOCAL-PAYMENT-EGP (0104): the paired twin shows on the
-                        summary ONLY while a manual Egyptian rail is selected —
-                        the PayPal selection keeps this row pure USD (PayPal
-                        integration is untouched and USD-only by law). USD is
-                        always first, then «أو»/or, then the EGP twin; an unset
-                        price renders USD-only (never zero, never a guess). */}
+                    {/* LOCAL-PAYMENT-EGP (0104) + EGP-DISPLAY (owner order
+                        2026-11-13 «توحيد عرض الأسعار… بما فيها PayPal»): the
+                        paired twin now renders on BOTH rails with USD always
+                        first, ثم «أو»/or, ثم the EGP twin. The MANUAL rails
+                        keep the ROW-ONLY figure (the exact admin-set amount
+                        the member transfers — the AMOUNT LOCK source; never a
+                        computed fallback). The PAYPAL selection gains the
+                        same figure as an INDICATIVE local equivalent — the
+                        charge itself stays USD-only by law (resolvePlanPrice
+                        and the whole PayPal money path are untouched;
+                        local-payment-egp canary 10 holds), and the note below
+                        says so on the surface. Unset row + no rate → USD-only
+                        (never zero, never a guess). */}
                     <span className="text-xl font-semibold">
-                      {dualPriceString(plan.price, isManualMethod ? localPriceEgp : null, isAr)}
+                      {dualPriceString(
+                        plan.price,
+                        isManualMethod
+                          ? localPriceEgp
+                          : (localPriceEgp ?? egp.egpForUsd(plan.price)),
+                        isAr,
+                      )}
                     </span>
                   </div>
+                  {/* EGP-DISPLAY: the PayPal-side twin is explicitly labeled
+                      indicative — the visitor cannot mistake it for the
+                      charge currency (PayPal charges USD; Vodafone Cash /
+                      InstaPay transfer the exact EGP figure above). */}
+                  {method === "paypal" &&
+                    (localPriceEgp ?? egp.egpForUsd(plan.price)) !== null && (
+                      <p className="text-end text-[11px] font-normal leading-relaxed text-[var(--muted-2)]">
+                        {isAr
+                          ? "قيمة الجنيه المصري مقابل توضيحي وفق سعر الصرف اليومي — الدفع الفعلي عبر PayPal بالدولار الأمريكي."
+                          : "The EGP figure is an indicative equivalent at the daily exchange rate — PayPal charges in USD."}
+                      </p>
+                    )}
                 </div>
 
                 {/* Refund policy (unchanged) */}

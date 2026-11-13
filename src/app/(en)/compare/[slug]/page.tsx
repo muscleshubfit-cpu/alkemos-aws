@@ -7,6 +7,7 @@ import { ShareButtons } from "@/components/ShareButtons";
 import { COMPARISONS, getComparisonBySlug } from "@/lib/comparisons";
 import { getArticleSchema, getBreadcrumbSchema, getItemListSchema, jsonLd } from "@/lib/seo";
 import { resolveAuthor } from "@/lib/authors";
+import { EgpPriceText } from "@/components/egp/EgpTwin";
 
 /**
  * /compare/[slug] — Comparison page (EN).
@@ -217,7 +218,12 @@ export default async function ComparisonPage({
                       <td className="p-4 font-medium">{row.labelEn}</td>
                       <td className={`p-4 ${alkemosBg}`}>
                         <span className="mr-2 font-bold">{alkemosIcon}</span>
-                        {row.alkemosValue}
+                        {/* EGP-DISPLAY (owner order 2026-11-13): Alkemos
+                            price figures inside the comparison cells gain
+                            their EGP twins (product-mapped rows); competitor
+                            prices stay USD-only — they are the competitor's
+                            own pricing, not ours to convert. */}
+                        <EgpPriceText text={row.alkemosValue} isAr={false} />
                       </td>
                       <td className={`p-4 ${competitorBg}`}>
                         <span className="mr-2 font-bold">{competitorIcon}</span>

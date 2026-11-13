@@ -16,6 +16,7 @@ import {
   resolveFaqPage,
   resolveStaticPage,
 } from "@/lib/site-content/static-pages";
+import { EgpPriceText } from "@/components/egp/EgpTwin";
 import type { SiteCopyMap, StaticSection } from "@/lib/site-content/core";
 
 // P3-10/م4 note: the EX_LIB/FOOD_LIB count interpolation now lives as
@@ -98,7 +99,21 @@ export function StaticPageView({
               <h2 className="text-xl font-semibold tracking-tight md:text-2xl">{section.heading}</h2>
               <div className="mt-4 space-y-4 text-base font-normal leading-relaxed text-[var(--muted-2)] md:text-lg">
                 {section.paragraphs.map((p, j) => (
-                  <p key={j}>{p}</p>
+                  <p key={j}>
+                    {/* EGP-DISPLAY (owner order 2026-11-13): a paragraph
+                        carrying USD price figures (the about page's
+                        memberships list) renders through EgpPriceText so
+                        every figure gains its daily EGP twin
+                        (product-mapped to the local_prices rows). All other
+                        paragraphs render verbatim — and before the daily
+                        payload arrives the price paragraph too renders
+                        exactly as it always has (USD-only, fail-safe). */}
+                    {/(\$[\d,]|[\d,]\$)/.test(p) ? (
+                      <EgpPriceText text={p} isAr={isAr} />
+                    ) : (
+                      p
+                    )}
+                  </p>
                 ))}
                 {section.list && (
                   <ul className="mt-4 space-y-2 ps-5">

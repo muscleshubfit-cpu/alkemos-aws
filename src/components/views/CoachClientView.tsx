@@ -38,6 +38,7 @@ const ClientWeightChart = dynamic(
 import { useI18n } from "@/lib/i18n";
 import { useNav } from "@/hooks/use-nav";
 import { useAuth } from "@/hooks/use-auth";
+import { EgpTwin, EgpPriceText } from "@/components/egp/EgpTwin";
 import { Modal } from "@/components/ui/modal";
 import { Popover, PopoverAnchor, PopoverContent } from "@/components/ui/popover";
 // MOBILE-DRAWER 2026-10-25: the food picker's phone surface — a portal
@@ -1016,9 +1017,18 @@ export function CoachClientView({ clientId }: { clientId: string }) {
  <Card className="p-6 shadow-card">
  <h2 className="text-lg font-semibold">{t("coach.subscriptionMgmt")}</h2>
  <p className="mt-1 text-sm font-normal text-[#6e6e73]">
- {lang === "ar"
+ {/* EGP-DISPLAY (2026-11-13): the activation explainer's package prices
+     ($6 / $16) gain their daily EGP twins; the collection guidance (cash /
+     Vodafone Cash / InstaPay) is untouched — the coach collects what they
+     agreed with the client, the wallet debit stays USD. */}
+ <EgpPriceText
+ text={
+ lang === "ar"
  ? "حصّل من العميل خارج الموقع (كاش / فودافون كاش / انستاباي) ثم فعّل اشتراكه من هنا — سيخصم التفعيل رسوم العميل من محفظتك (شهر 6$ — 3 شهور 16$؛ اشحنها من صفحة محفظتي)، وسيصل العميل إشعار فورًا."
- : "Collect from the client outside the site (cash / Vodafone Cash / InstaPay), then activate here — activation debits the per-client fee from your wallet (1 month $6 — 3 months $16; top up from My Wallet), and the client is notified instantly."}
+ : "Collect from the client outside the site (cash / Vodafone Cash / InstaPay), then activate here — activation debits the per-client fee from your wallet (1 month $6 — 3 months $16; top up from My Wallet), and the client is notified instantly."
+ }
+ isAr={isAr}
+ />
  </p>
  <p className="mt-1 text-sm font-normal text-[#6e6e73]">
  {lang === "ar"
@@ -1065,6 +1075,15 @@ export function CoachClientView({ clientId }: { clientId: string }) {
  {pkg && (
  <span className="mt-0.5 block text-xs font-normal text-[#6e6e73]" dir="ltr">
  {pkg.priceUsd}$
+ {/* EGP-DISPLAY (2026-11-13): the duration button's package price
+     gains its daily EGP twin (stored-rate conversion — the wallet
+     debit stays USD by the 0038 law). */}
+ <EgpTwin
+ usd={pkg.priceUsd}
+ isAr={isAr}
+ className="text-[10px] font-normal"
+ paren
+ />
  </span>
  )}
  </button>
@@ -1158,7 +1177,10 @@ export function CoachClientView({ clientId }: { clientId: string }) {
  <div className="space-y-6">
  {!planGateOpen && (
  <div className="rounded-xl border border-[#ff9500]/30 bg-[#ff9500]/10 p-4 text-sm font-medium text-[#b45309]">
- {planGateMessage}
+ {/* EGP-DISPLAY (owner order 2026-11-13): the lock notice carries the
+     activation package prices — each figure gains its daily EGP twin
+     (stored-rate conversion; wallet debits stay USD by the 0038 law). */}
+ <EgpPriceText text={planGateMessage} isAr={isAr} />
  </div>
  )}
  <Card className="p-6 shadow-card">
@@ -1267,7 +1289,10 @@ export function CoachClientView({ clientId }: { clientId: string }) {
  <div className="space-y-6">
  {!planGateOpen && (
  <div className="rounded-xl border border-[#ff9500]/30 bg-[#ff9500]/10 p-4 text-sm font-medium text-[#b45309]">
- {planGateMessage}
+ {/* EGP-DISPLAY (owner order 2026-11-13): the lock notice carries the
+     activation package prices — each figure gains its daily EGP twin
+     (stored-rate conversion; wallet debits stay USD by the 0038 law). */}
+ <EgpPriceText text={planGateMessage} isAr={isAr} />
  </div>
  )}
  <CoachAIPlanGenerator
