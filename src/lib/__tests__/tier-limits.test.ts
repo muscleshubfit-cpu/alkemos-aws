@@ -10,13 +10,19 @@ import {
   cycleWindowStartUtc,
   earliestPaidStartIso,
   quotaWindowStartForSubs,
+  quotaBucketsForSubs,
+  attributeUsageFifo,
+  bucketVerdict,
+  earliestBucketWindowStart,
   type SubRowWithStart,
+  type QuotaBucket,
 } from "@/lib/tier-limits";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // AI-QUOTAS 2026-11-14 (owner order «إعادة هيكلة سياسة الذكاء الاصطناعي
-// والاشتراكات والأرصدة» + the corrective clarification — MONTHLY QUOTAS,
-// developed; never credits/wallets). Governing doc:
+// والاشتراكات والأرصدة» + the corrective clarification + the COMPLETION
+// order «استكمال تطوير نظام الحصص الشهرية» — TWO unified MONTHLY QUOTAS,
+// never credits/wallets, never per-type splits). Governing doc:
 // docs/AI-QUOTAS-POLICY-2026-11-14.md.
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -39,21 +45,21 @@ describe("tier-limits", () => {
     });
   });
 
-  describe("swapLimitForTier (INDEPENDENT monthly quotas per type — 2026-11-14)", () => {
+  describe("swapLimitForTier (ONE UNIFIED monthly quota — completion order 2026-11-14)", () => {
     it("free: 0 swaps (subscriber-only)", () => {
       expect(swapLimitForTier("free")).toBe(0);
     });
 
-    it("premium: 13 swaps/type per month (evolved from the weekly 3 — 3/wk ≈ 13/mo)", () => {
-      expect(swapLimitForTier("premium")).toBe(13);
+    it("premium: 8 swaps/month (meal + exercise combined — the per-type split is retired)", () => {
+      expect(swapLimitForTier("premium")).toBe(8);
     });
 
-    it("pro: 26 swaps/type per month (evolved from the weekly 6 — 6/wk ≈ 26/mo)", () => {
-      expect(swapLimitForTier("pro")).toBe(26);
+    it("pro: 16 swaps/month", () => {
+      expect(swapLimitForTier("pro")).toBe(16);
     });
 
-    it("coaching: 26/month (inherits every Pro benefit — spec 2026-09-13)", () => {
-      expect(swapLimitForTier("coaching")).toBe(26);
+    it("coaching: 16/month (inherits every Pro benefit — spec 2026-09-13)", () => {
+      expect(swapLimitForTier("coaching")).toBe(16);
     });
   });
 
@@ -286,4 +292,176 @@ describe("tier-limits", () => {
       expect(quotaWindowStartForSubs(undefined, now)).toBe("2026-11-01T00:00:00.000Z");
     });
   });
+
+  // ─────────── PARALLEL-ENTITLEMENT BUCKETS (completion order 2026-11-14
+  // §4/§5 — «الاستحقاقات المتوازية»: per-subscription windows + FIFO) ───────────
+
+  describe("quotaBucketsForSubs (one bucket per distinct active paid tier)", () => {
+    const NOW = new Date("2026-11-14T12:00:00Z");
+    const row = (
+      tier: string,
+      startIso: string | null,
+      endIso: string,
+      status = "active",
+    ): SubRowWithStart =>
+      ({ tier, status, end_date: endIso, start_date: startIso }) as SubRowWithStart;
+    const gen = (t: string) =>
+      t === "premium" ? 4 : t === "pro" || t === "coaching" ? 8 : 0;
+
+    it("single premium sub → ONE bucket anchored at its own start_date anniversary", () => {
+      const buckets = quotaBucketsForSubs(
+        [row("premium", "2026-03-15T00:00:00Z", "2036-01-01T00:00:00Z")],
+        gen,
+        NOW,
+      );
+      expect(buckets).toHaveLength(1);
+      expect(buckets[0]).toMatchObject({
+        windowStart: "2026-10-15T00:00:00.000Z",
+        windowEnd: "2026-11-15T00:00:00.000Z",
+        limit: 4,
+        subEnd: "2036-01-01T00:00:00Z",
+        used: 0,
+      });
+    });
+
+    it("stacked premium+pro → TWO buckets, sorted by end_date (FIFO order)", () => {
+      const buckets = quotaBucketsForSubs(
+        [
+          row("pro", "2026-11-20T00:00:00Z", "2036-12-20T00:00:00Z"),
+          row("premium", "2026-03-15T00:00:00Z", "2036-11-15T00:00:00Z"),
+        ],
+        gen,
+        NOW,
+      );
+      expect(buckets).toHaveLength(2);
+      // premium ends first → FIFO order puts it first
+      expect(buckets[0].subEnd).toBe("2036-11-15T00:00:00Z");
+      expect(buckets[0].limit).toBe(4);
+      expect(buckets[1].limit).toBe(8);
+      // the upgrade's window is anchored at ITS OWN purchase date (Nov 20)
+      expect(buckets[1].windowStart).toBe("2026-10-20T00:00:00.000Z");
+    });
+
+    it("duplicate rows of the same mapped tier fold into ONE bucket (earliest start, latest end)", () => {
+      const buckets = quotaBucketsForSubs(
+        [
+          row("premium", "2026-03-15T00:00:00Z", "2036-06-01T00:00:00Z"),
+          row("premium", "2026-01-05T00:00:00Z", "2036-11-01T00:00:00Z"),
+        ],
+        gen,
+        NOW,
+      );
+      expect(buckets).toHaveLength(1);
+      expect(buckets[0].windowStart).toBe("2026-11-05T00:00:00.000Z"); // earliest start's anniversary
+      expect(buckets[0].subEnd).toBe("2036-11-01T00:00:00Z"); // latest end (the paid entitlement)
+    });
+
+    it("expired / non-active / free / unknown rows contribute NOTHING; null rows → []", () => {
+      expect(
+        quotaBucketsForSubs(
+          [
+            row("premium", "2026-03-15T00:00:00Z", "2026-01-01T00:00:00Z"), // expired
+            row("free", "2026-03-15T00:00:00Z", "2036-01-01T00:00:00Z"),
+            row("mystery", "2026-03-15T00:00:00Z", "2036-01-01T00:00:00Z"),
+            row("pro", "2026-03-15T00:00:00Z", "2036-01-01T00:00:00Z", "cancelled"),
+          ],
+          gen,
+          NOW,
+        ),
+      ).toEqual([]);
+      expect(quotaBucketsForSubs(null, gen, NOW)).toEqual([]);
+      expect(quotaBucketsForSubs([], gen, NOW)).toEqual([]);
+    });
+
+    it("0045 legacy tiers map onto their successors (starter→premium bucket)", () => {
+      const buckets = quotaBucketsForSubs(
+        [row("starter", "2026-03-15T00:00:00Z", "2036-01-01T00:00:00Z")],
+        gen,
+        NOW,
+      );
+      expect(buckets).toHaveLength(1);
+      expect(buckets[0].limit).toBe(4); // premium quota via the legacy map
+    });
+  });
+
+  describe("attributeUsageFifo (earliest-expiring bucket consumed first)", () => {
+    const NOW = new Date("2026-11-14T12:00:00Z");
+    const mk = (w: string, limit: number, subEnd: string): QuotaBucket => ({
+      windowStart: w,
+      windowEnd: new Date(new Date(w).getTime() + 30 * 86400000).toISOString(),
+      limit,
+      subEnd,
+      used: 0,
+      ghost: false,
+    });
+
+    it("usage inside the overlap consumes the OLD (earliest-expiring) bucket first — the new sub's entitlement stays whole", () => {
+      // premium [Nov 15→Dec 15] limit 4, ends Dec 15; pro [Nov 20→Dec 20] limit 8
+      const buckets = [
+        mk("2026-11-15T00:00:00Z", 4, "2026-12-15T00:00:00Z"),
+        mk("2026-11-20T00:00:00Z", 8, "2026-12-20T00:00:00Z"),
+      ];
+      attributeUsageFifo(buckets, [
+        "2026-11-22T00:00:00Z",
+        "2026-11-25T00:00:00Z",
+        "2026-11-28T00:00:00Z",
+      ]);
+      expect(buckets[0].used).toBe(3); // all three landed on premium
+      expect(buckets[1].used).toBe(0); // pro untouched
+      expect(bucketVerdict(buckets)).toMatchObject({ used: 3, limit: 12, remaining: 9 });
+    });
+
+    it("spillover: once the old bucket is full, overlap usage flows to the new bucket", () => {
+      const buckets = [
+        mk("2026-11-15T00:00:00Z", 4, "2026-12-15T00:00:00Z"),
+        mk("2026-11-20T00:00:00Z", 8, "2026-12-20T00:00:00Z"),
+      ];
+      attributeUsageFifo(buckets, Array.from({ length: 6 }, () => "2026-11-22T00:00:00Z"));
+      expect(buckets[0].used).toBe(4); // capped at its limit
+      expect(buckets[1].used).toBe(2); // the spillover
+    });
+
+    it("usage BEFORE a bucket's window start never consumes it (no rollover — §5)", () => {
+      const buckets = [mk("2026-11-15T00:00:00Z", 4, "2026-12-15T00:00:00Z")];
+      attributeUsageFifo(buckets, [
+        "2026-10-01T00:00:00Z", // previous window
+        "2026-11-14T00:00:00Z", // still before the window start
+      ]);
+      expect(buckets[0].used).toBe(0);
+    });
+
+    it("usage AFTER a bucket's window end never consumes it", () => {
+      const buckets = [mk("2026-10-15T00:00:00Z", 4, "2026-12-15T00:00:00Z")];
+      attributeUsageFifo(buckets, ["2026-11-20T00:00:00Z"]); // window ended Nov 14
+      expect(buckets[0].used).toBe(0);
+    });
+
+    it("bucketVerdict: Σ limit/used/remaining + the SOONEST window end as renewsAt", () => {
+      const buckets = [
+        mk("2026-10-20T00:00:00Z", 4, "2026-12-15T00:00:00Z"), // renews Nov 19
+        mk("2026-11-20T00:00:00Z", 8, "2026-12-20T00:00:00Z"), // renews Dec 20
+      ];
+      buckets[0].used = 1;
+      const v = bucketVerdict(buckets);
+      expect(v).toMatchObject({ used: 1, limit: 12, remaining: 11 });
+      expect(new Date(v.renewsAt ?? "").toISOString()).toBe(
+        new Date("2026-11-19T00:00:00Z").toISOString(),
+      );
+    });
+
+    it("earliestBucketWindowStart: the usage-fetch lower bound", () => {
+      const buckets = [
+        mk("2026-10-20T00:00:00Z", 4, "2026-12-15T00:00:00Z"),
+        mk("2026-11-05T00:00:00Z", 8, "2026-12-20T00:00:00Z"),
+      ];
+      expect(earliestBucketWindowStart(buckets)).toBe("2026-10-20T00:00:00Z");
+      expect(earliestBucketWindowStart([])).toBe(monthStartLike(NOW));
+    });
+  });
+
+  function monthStartLike(now: Date): string {
+    return new Date(
+      Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1),
+    ).toISOString();
+  }
 });

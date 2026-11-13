@@ -232,7 +232,7 @@ export const COMPARISONS: Comparison[] = [
       {
         heading: "Pricing comparison",
         paragraphs: [
-          "MyFitnessPal Premium is $19.99/month or $79.99/year, and a Premium+ tier ($24.99/month or $99.99/year) adds its Meal Planner. Alkemos Premium is $14.99/month or $119/year — slightly cheaper monthly, slightly more annually, but with dramatically more features included. Alkemos Pro ($29.99/month) raises the unified AI pool to 8 plan generations/month with 6 meal/exercise swaps per week and removes ads; MyFitnessPal has no equivalent tier. Alkemos Coaching ($39.99/month) adds a personal coach; MyFitnessPal offers no personal coaching at any price.",
+          "MyFitnessPal Premium is $19.99/month or $79.99/year, and a Premium+ tier ($24.99/month or $99.99/year) adds its Meal Planner. Alkemos Premium is $14.99/month or $119/year — slightly cheaper monthly, slightly more annually, but with dramatically more features included. Alkemos Pro ($29.99/month) raises the unified AI quota to 8 plan generations/month plus 16 swaps a month (meals or exercises combined) and removes ads; MyFitnessPal has no equivalent tier. Alkemos Coaching ($39.99/month) adds a personal coach; MyFitnessPal offers no personal coaching at any price.",
           "The free tier comparison is even sharper. Alkemos Free includes the full exercise library, the full food database, all eight free tools, and limited EVO AI access. MyFitnessPal Free is a calorie counter with ads — barcode scanning and its deeper insights are Premium-only. For users who want to evaluate the platform before paying, Alkemos Free is meaningfully more useful.",
         ],
       },
@@ -256,7 +256,7 @@ export const COMPARISONS: Comparison[] = [
       {
         heading: "مقارنة الأسعار",
         paragraphs: [
-          "MyFitnessPal Premium بسعر $19.99/شهر أو $79.99/سنة، وهناك مستوى Premium+ ($24.99/شهر أو $99.99/سنة) يضيف مخطط الوجبات. Alkemos Premium بسعر $14.99/شهر أو $119/سنة — أرخص قليلًا شهريًا، أغلى قليلًا سنويًا، لكن بميزات أكثر بكثير. Alkemos Pro ($29.99/شهر) يرفع الرصيد الموحد إلى 8 توليدات بالذكاء الاصطناعي شهريًا مع 6 تبديلات للوجبات أو التمارين أسبوعيًا ويُزيل الإعلانات؛ MyFitnessPal لا يملك مستوى مكافئ. التدريب الأونلاين في Alkemos ($39.99/شهر) يُضيف مدربًا خاصًا؛ MyFitnessPal لا يُقدّم تدريبًا خاصًا بأي سعر.",
+          "MyFitnessPal Premium بسعر $19.99/شهر أو $79.99/سنة، وهناك مستوى Premium+ ($24.99/شهر أو $99.99/سنة) يضيف مخطط الوجبات. Alkemos Premium بسعر $14.99/شهر أو $119/سنة — أرخص قليلًا شهريًا، أغلى قليلًا سنويًا، لكن بميزات أكثر بكثير. Alkemos Pro ($29.99/شهر) يرفع الحصة الموحدة إلى 8 توليدات بالذكاء الاصطناعي شهريًا مع 16 تبديلًا شهريًا (وجبات أو تمارين) ويُزيل الإعلانات؛ MyFitnessPal لا يملك مستوى مكافئ. التدريب الأونلاين في Alkemos ($39.99/شهر) يُضيف مدربًا خاصًا؛ MyFitnessPal لا يُقدّم تدريبًا خاصًا بأي سعر.",
           "مقارنة المستوى المجاني أوضح. Alkemos مجاني يضم مكتبة التمارين الكاملة، قاعدة الأطعمة الكاملة، كل الأدوات الثماني، ووصول محدود لـ EVO. MyFitnessPal مجاني عدّاد سعرات مع إعلانات — ماسح الباركود والرؤى الأعمق ميزات مدفوعة. للمستخدمين الذين يريدون تقييم المنصة قبل الدفع، Alkemos مجاني أكثر فائدة بشكل معنوي.",
         ],
       },

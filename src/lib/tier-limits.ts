@@ -21,8 +21,9 @@
  *
  * ─────────────────────────────────────────────────────────────────────────
  * AI MONTHLY QUOTAS (owner order 2026-11-14 «إعادة هيكلة سياسة الذكاء
- * الاصطناعي والاشتراكات والأرصدة» + التوضيح المُصحِّح — النظام يظل حصصًا
- * شهرية مطوَّرة، لا أرصدة ولا محافظ. Governing doc:
+ * الاصطناعي والاشتراكات والأرصدة» + التوضيح المُصحِّح + أمر الاستكمال
+ * 2026-11-14 «استكمال تطوير نظام الحصص الشهرية» — حصتان موحدتان فقط،
+ * لا أرصدة ولا محافظ ولا تقسيم حسب نوع المحتوى. Governing doc:
  * docs/AI-QUOTAS-POLICY-2026-11-14.md):
  *
  *   1. GENERATION is subscriber-only: free members and guests get the
@@ -32,24 +33,42 @@
  *      subscription message when the verdict says subscriptionRequired.
  *      Paid tiers keep the unified monthly quota (premium 4 · pro 8 ·
  *      coaching 8, aggregated stacking — 2026-10-28 law preserved).
- *   2. SWAPS became INDEPENDENT MONTHLY quotas per type (evolved from
- *      the retired weekly limits by full-entitlement conversion:
- *      3/wk→13/mo · 6/wk→26/mo): free 0 · premium 13 · pro 26 ·
- *      coaching 26 — meal and exercise each get their own quota.
- *   3. RENEWAL follows the CURRENT SUBSCRIPTION CYCLE: quota windows
- *      are anchored at the day-of-month of the earliest
- *      effectively-active paid subscription's start_date
- *      (anniversary-day monthly windows; calendar-month fallback).
- *      cycleWindowStartUtc() is the single source for BOTH the
- *      generation and the swap windows (display == enforcement law).
+ *   2. SWAPS are ONE UNIFIED monthly quota (completion order §1/§2:
+ *      «التبديلات حصة موحدة… سواء كانت تبديل وجبة أو تمرين» — the
+ *      per-type split is RETIRED): free 0 · premium 8 · pro 16 ·
+ *      coaching 16, meal + exercise COMBINED. Generation and swap
+ *      quotas are FULLY INDEPENDENT (§2) — exhausting one never gates
+ *      the other — and both stack across parallel subscriptions (§4).
+ *   3. RENEWAL follows the SUBSCRIPTION CYCLE (§5): every subscription
+ *      gets its OWN monthly window anchored at its own start_date
+ *      anniversary (anniversary-day windows; calendar-month fallback
+ *      when the anchor is unusable). EARLY RENEWAL (§4-أ) extends the
+ *      SAME row (extend_subscription 0018 — start_date never moves),
+ *      so the current window, its remaining quota and the renewal day
+ *      are untouched; the renewal's fresh entitlements arrive with the
+ *      next covered window. AN UPGRADE (§4-ب) starts a NEW parallel
+ *      subscription (own start_date, own window) while the old one
+ *      keeps its quotas and its end_date — the member benefits from
+ *      BOTH («يستفيد العميل من حقوق الاشتراكين دون أن يمس أحدهما
+ *      الآخر»). Usage inside overlapping windows is attributed FIFO —
+ *      EARLIEST-EXPIRING subscription first — so overlap usage can
+ *      never eat a longer-lived paid entitlement (no paid quota is
+ *      ever lost, §7) and unused quotas expire with their own period
+ *      (no rollover, §5).
  *   4. SUCCESS-ONLY + ONCE-ONLY: quota is deducted by inserting ONE
  *      success row (ai_plan_usage / plan_swaps) after the operation
  *      lands; migration 0110 adds a UNIQUE job_ref so a runner re-run
  *      can never record the same job twice. Failures never burn quota.
+ *   5. EXHAUSTION (§3): the verdicts carry subscriptionRequired (402)
+ *      vs exhausted (429) + renewsAt, and every member-facing surface
+ *      offers the EXISTING payment path for renewal/upgrade
+ *      (memberships.ts renewalCheckoutUrlFor / upgradeCheckoutUrlFor).
  *
- * RETIRED (this frame): the weekly swap window (weekStartUtc /
- * countThisWeekSwaps / checkAndRecordSwap — Monday-anchored law of the
- * 2026-09-02 decree) — superseded by the monthly cycle windows above.
+ * RETIRED (this frame): the per-type swap split (13/26 per type) and
+ * the single-earliest-anchor window — superseded by the unified swap
+ * quota + the per-subscription parallel windows above. Also retired
+ * earlier: the weekly swap window (weekStartUtc / countThisWeekSwaps /
+ * checkAndRecordSwap — Monday-anchored law of the 2026-09-02 decree).
  * ─────────────────────────────────────────────────────────────────────────
  */
 
@@ -57,7 +76,7 @@ import { supabaseAdmin, isSupabaseAdminConfigured } from "@/lib/supabase/admin";
 import { MEMBERSHIPS, getLimits, type MembershipTier } from "@/lib/memberships";
 import {
   resolveMembershipTier,
-  resolveUnifiedPlanPoolLimit,
+  mappedPaidTierOf,
   type SubscriptionTierRow,
 } from "@/lib/membership-tier";
 import { createHash } from "node:crypto";
@@ -113,6 +132,53 @@ async function fetchActiveSubTierRows(
 }
 
 /**
+ * The QUOTA-engine rows fetch (completion order §4/§5): effectively-active
+ * paid rows PLUS recently-expired ones (status still 'active', end_date
+ * within the GHOST_LOOKBACK window) — the expired rows feed the GHOST
+ * buckets that keep absorbing the usage they paid for (the no-loss
+ * guarantee). Callers derive the display tier / subscriptionRequired from
+ * the LIVE subset (end_date > now), never from the ghosts.
+ *
+ * Returns null on read failure — same fail-safe contract as the active
+ * fetch (the single-tier hint fallback, never unlimited).
+ */
+async function fetchQuotaSubRows(
+  userId: string,
+): Promise<SubRowWithStart[] | null> {
+  if (!isSupabaseAdminConfigured || !supabaseAdmin) return null;
+  try {
+    const ghostBound = new Date(Date.now() - GHOST_LOOKBACK_MS).toISOString();
+    const { data, error } = await supabaseAdmin
+      .from("subscriptions")
+      .select("tier, status, end_date, start_date")
+      .eq("client_id", userId)
+      .eq("status", "active")
+      .gt("end_date", ghostBound);
+    if (error) {
+      console.error("[tier-limits] fetchQuotaSubRows error:", error.message);
+      return null;
+    }
+    return (data ?? []) as SubRowWithStart[];
+  } catch (e) {
+    console.error(
+      "[tier-limits] fetchQuotaSubRows error:",
+      e instanceof Error ? e.message : e,
+    );
+    return null;
+  }
+}
+
+/** The LIVE subset of quota rows (end_date > now) — display tier + the
+ *  subscriber-only branch read this, ghosts never leak into either. */
+function liveRowsOf(rows: ReadonlyArray<SubRowWithStart>): SubRowWithStart[] {
+  const nowMs = Date.now();
+  return rows.filter((r) => {
+    const endMs = new Date(r.end_date ?? 0).getTime();
+    return Number.isFinite(endMs) && endMs > nowMs;
+  });
+}
+
+/**
  * Best-tier DB fallback for the FEATURE limits (EVO chat daily + monthly
  * swaps — best-membership semantics, NOT the plan pool). Returns "free"
  * when the rows are unreadable — an unknown user never inherits premium
@@ -136,15 +202,15 @@ export function evoChatLimitFor(tier: MembershipTier): number | null {
 }
 
 /**
- * Get the swap MONTHLY limit for a tier (per type: meal/exercise — each
- * type gets its own independent monthly quota).
- * Returns null = unlimited.
+ * Get the UNIFIED monthly swap limit for a tier (completion order
+ * 2026-11-14 §1: meal + exercise swaps COMBINED — the per-type split is
+ * retired). Returns null = unlimited.
  *
  * Maps membership tiers to swap quotas:
  *   free:     0 (no swaps)
- *   premium:  13/month (evolved from the retired weekly 3 — 3/wk ≈ 13/mo)
- *   pro:      26/month (evolved from the retired weekly 6 — 6/wk ≈ 26/mo)
- *   coaching: 26/month (inherits every Pro benefit — Phase 183)
+ *   premium:  8/month
+ *   pro:      16/month
+ *   coaching: 16/month (inherits every Pro benefit — Phase 183)
  */
 export function swapLimitForTier(tier: MembershipTier): number | null {
   // Single source of truth = memberships.ts (evoSwapMonthlyLimit).
@@ -155,18 +221,19 @@ export function swapLimitForTier(tier: MembershipTier): number | null {
  * UNIFIED monthly AI plan-generation pool (owner decree 2026-09-13
  * «البوول الموحد» — spec "Alkemos — Membership & Plan Changes").
  * ONE budget per identity for nutrition + workout COMBINED:
- *   free 2 · premium 4 · pro 8 · coaching 8 (coaching = every Pro
- *   benefit). Guests get the free pool — no signup wall.
+ *   free 0 · premium 4 · pro 8 · coaching 8 (coaching = every Pro
+ *   benefit). Subscriber-only since 2026-11-14 (free = 0).
  * Reads aiPlanMonthlyLimit straight from memberships.ts so the
  * advertised numbers ARE the enforced numbers.
  *
- * MEMBERS (owner order 2026-10-28 «تجميع حصص الاشتراكات المدفوعة»):
- * the enforced member limit is the AGGREGATE over every distinct
- * active paid tier — resolveUnifiedPlanPoolLimit() in
- * membership-tier.ts (the single source of truth for that law);
- * this per-tier helper remains the GUEST pool size + the building
- * block + the fail-safe fallback when the subscription rows cannot
- * be read (never above the entitlement, never unlimited).
+ * MEMBERS (owner order 2026-10-28 «تجميع حصص الاشتراكات المدفوعة» +
+ * completion order 2026-11-14 §4): the enforced member limit is the
+ * AGGREGATE over every distinct active paid tier — one parallel bucket
+ * per subscription (quotaBucketsForSubs below, whose Σ limit equals
+ * resolveUnifiedPlanPoolLimit in membership-tier.ts, the pure-law twin);
+ * this per-tier helper remains the building block + the fail-safe
+ * fallback when the subscription rows cannot be read (never above the
+ * entitlement, never unlimited).
  */
 export function unifiedPlanPoolFor(tier: MembershipTier): number {
   return getLimits(tier).aiPlanMonthlyLimit;
@@ -277,15 +344,16 @@ export type UnifiedPlanQuotaVerdict = {
 
 /**
  * THE unified-quota gate (owner decree 2026-09-13 + aggregation order
- * 2026-10-28 + subscriber-only correction 2026-11-14).
+ * 2026-10-28 + subscriber-only correction 2026-11-14 + completion order
+ * 2026-11-14 parallel entitlements).
  *
  * Identity resolution:
- *   - userId             → member quota = the AGGREGATE of every distinct
- *     paid tier held as an effectively-active subscription (rows read
- *     via the service-role admin client with the SAME active+expiry
- *     filters as getAuthUser(); `tierHint` stays the display-tier hint
- *     and the fail-safe single-tier fallback when the rows are
- *     unreadable — never unlimited, never above the entitlement).
+ *   - userId             → member quota = ONE bucket per distinct paid
+ *     tier held as an effectively-active subscription (rows read via the
+ *     service-role admin client with the SAME active+expiry filters as
+ *     getAuthUser(); `tierHint` stays the display-tier hint and the
+ *     fail-safe single-tier fallback when the rows are unreadable —
+ *     never unlimited, never above the entitlement).
  *     FREE members resolve to the FREE quota (0) → blocked with
  *     subscriptionRequired (generation is subscriber-only).
  *   - guests (no userId)  → the FREE quota (0) → blocked with
@@ -294,10 +362,9 @@ export type UnifiedPlanQuotaVerdict = {
  *   - staffHint          → unlimited (STAFF QUOTA SEMANTICS; usage is
  *     still recorded for analytics).
  *
- * RENEWAL (2026-11-14): the member's window is the SUBSCRIPTION-CYCLE
- * month anchored at the earliest effectively-active paid subscription's
- * start_date day (see quotaWindowStartForSubs) — quotas renew with the
- * subscription cycle, not the calendar month.
+ * RENEWAL (completion order §4/§5): every subscription's window is its
+ * OWN start_date-anniversary month (quotaBucketsForSubs below) — quotas
+ * renew with each subscription's own cycle, never the calendar month.
  */
 export async function checkUnifiedPlanQuota(opts: {
   userId?: string | null;
@@ -314,40 +381,84 @@ export async function checkUnifiedPlanQuota(opts: {
     };
   }
   if (opts.userId) {
-    // AGGREGATED PAID-POOL LAW (owner order 2026-10-28 «تجميع حصص
-    // الاشتراكات المدفوعة"): the member limit is the SUM of every
-    // distinct paid tier held as an effectively-active subscription
-    // (premium 4 + pro 8 + coaching 8 — stacking, not best-tier-wins).
-    // The rows are read from the SAME active + expiry window the auth
-    // entry points use; `tierHint` remains the DISPLAY-tier hint (and
-    // the fail-safe single-tier fallback when the rows cannot be read).
-    // The usage ledger is identity-keyed (0085) — activations
-    // structurally never zero or double it.
-    const rows = await fetchActiveSubTierRows(opts.userId);
+    // PARALLEL-ENTITLEMENT LAW (completion order 2026-11-14 §4/§5): one
+    // bucket per distinct effectively-active paid subscription (plus
+    // GHOST buckets for recently-expired ones — see quotaBucketsForSubs),
+    // window anchored at that subscription's OWN start_date anniversary,
+    // usage attributed FIFO (earliest-expiring subscription first). Early
+    // renewal (same row extended) never moves the window — remaining
+    // quota is untouched; an upgrade adds a parallel bucket without
+    // touching the old one; when the old subscription expires its ghost
+    // keeps absorbing the usage it paid for, so nothing paid is lost.
+    const rows = await fetchQuotaSubRows(opts.userId);
+    const liveRows = rows !== null ? liveRowsOf(rows) : null;
     const hintTier = sanitizeTier(opts.tierHint);
     const tier: MembershipTier = hintTier
-      ?? (rows ? resolveMembershipTier("client", rows) : "free");
+      ?? (liveRows ? resolveMembershipTier("client", liveRows) : "free");
+    const buckets = quotaBucketsForSubs(rows, (t) => unifiedPlanPoolFor(t));
+    if (buckets.length > 0) {
+      const since = earliestBucketWindowStart(buckets);
+      // Read failure → count 0 (soft quota — same convention as the
+      // retired head-count query; a transient read never blocks a member).
+      const usage = await fetchUsageTimestamps("ai_plan_usage", opts.userId, since);
+      attributeUsageFifo(buckets, usage ?? []);
+      const v = bucketVerdict(buckets);
+      if (v.limit === 0) {
+        // Only ghost buckets (everything expired) — no live paid tier:
+        // generation is subscriber-only.
+        return {
+          allowed: false, used: 0, limit: 0, remaining: 0, unlimited: false,
+          tier, reason: "subscription_required", subscriptionRequired: true,
+          renewsAt: null,
+        };
+      }
+      return {
+        allowed: v.remaining > 0,
+        used: v.used,
+        limit: v.limit,
+        remaining: v.remaining,
+        unlimited: false,
+        tier,
+        reason: null,
+        subscriptionRequired: false,
+        renewsAt: v.renewsAt,
+      };
+    }
+    if (rows !== null) {
+      // Rows readable but NO active paid tier → the FREE quota (0 —
+      // generation is subscriber-only; the hint can never out-grant the DB).
+      return {
+        allowed: false, used: 0, limit: 0, remaining: 0, unlimited: false,
+        tier, reason: "subscription_required", subscriptionRequired: true,
+        renewsAt: null,
+      };
+    }
     // Fail-safe: rows unavailable (admin client unconfigured / read
-    // error) → the single-tier hint quota at most — NEVER unlimited and
-    // never above the entitled aggregate (a stacked member is briefly
-    // under-granted on a transient read failure, never over-granted).
-    const limit =
-      rows !== null
-        ? resolveUnifiedPlanPoolLimit(rows)
-        : unifiedPlanPoolFor(hintTier ?? "free");
-    // RENEWAL 2026-11-14: count inside the SUBSCRIPTION-CYCLE window.
-    const windowStart = quotaWindowStartForSubs(rows);
-    const used = await countPlanRowsBy("user_id", opts.userId, windowStart);
+    // error) → the single-tier hint quota at most, calendar-month window
+    // — NEVER unlimited and never above the entitled aggregate (a
+    // stacked member is briefly under-granted on a transient read
+    // failure, never over-granted).
+    const failSafeLimit = unifiedPlanPoolFor(hintTier ?? "free");
+    if (failSafeLimit <= 0) {
+      return {
+        allowed: false, used: 0, limit: 0, remaining: 0, unlimited: false,
+        tier, reason: "subscription_required", subscriptionRequired: true,
+        renewsAt: null,
+      };
+    }
+    const failSafeStart = monthStartUtc();
+    const failSafeUsage = await fetchUsageTimestamps("ai_plan_usage", opts.userId, failSafeStart);
+    const failSafeUsed = failSafeUsage?.length ?? 0;
     return {
-      allowed: used < limit,
-      used,
-      limit,
-      remaining: Math.max(0, limit - used),
+      allowed: failSafeUsed < failSafeLimit,
+      used: failSafeUsed,
+      limit: failSafeLimit,
+      remaining: Math.max(0, failSafeLimit - failSafeUsed),
       unlimited: false,
       tier,
-      reason: used >= limit && limit === 0 ? "subscription_required" : null,
-      subscriptionRequired: limit === 0,
-      renewsAt: addMonthsIso(windowStart, 1),
+      reason: null,
+      subscriptionRequired: false,
+      renewsAt: addMonthsIso(failSafeStart, 1),
     };
   }
   // Guest (2026-11-14 subscriber-only correction): the FREE quota is 0 —
@@ -525,6 +636,249 @@ export function quotaWindowStartForSubs(
   return cycleWindowStartUtc(earliestPaidStartIso(rows), now);
 }
 
+/* ─────────────── PARALLEL-ENTITLEMENT BUCKETS (completion order 2026-11-14 §4/§5)
+ *
+ * «الاستحقاقات المتوازية»: every effectively-active paid subscription
+ * contributes ONE bucket = {its OWN start_date-anniversary monthly window,
+ * its tier's monthly quota, its end_date}. The member's verdict is the
+ * SUM over buckets with usage attributed FIFO — each success row lands in
+ * the EARLIEST-EXPIRING bucket whose window contains it and that still
+ * has capacity. This is the whole "accounting": a pure function over the
+ * existing ledgers (no new tables, no per-subscription balances, no
+ * wallets — «أبسط بنية ممكنة»), and it satisfies every order invariant:
+ *
+ *   - EARLY RENEWAL (§4-أ): extend_subscription keeps the SAME row and
+ *     its start_date → the SAME window, the SAME remaining quota —
+ *     nothing resets, nothing is lost; the extended end_date simply
+ *     keeps the bucket alive through the windows the renewal paid for.
+ *   - UPGRADE (§4-ب): the new tier is a NEW row with its OWN start_date
+ *     → its own window from the purchase date; the old row's bucket,
+ *     quotas and end_date are untouched («دون أن يمس أحدهما الآخر»).
+ *   - OLD SUB EXPIRES — GHOST BUCKETS (the no-loss guarantee, §7): a
+ *     recently-expired paid row keeps GHOST buckets (capacity = its paid
+ *     quota, window clamped to its lifetime) that still ABSORB the usage
+ *     rows they paid for but contribute ZERO to the available limit.
+ *     Without them, overlap usage would re-attribute to the surviving
+ *     subscription the moment the old row expires — the exact
+ *     «تضيع استحقاقات مدفوعة» defect («استخدم 6 خلال التداخل ثم فقد 4 من
+ *     حصة الجديد»). Ghosts die on their own: their capacity only covers
+ *     windows they actually lived, and no bucket ever counts rows from a
+ *     past window (no rollover, §5).
+ *   - NO ROLLOVER (§5): usage before a bucket's window start belongs to
+ *     a past window of that subscription and can never consume it.
+ *   - STACKING (2026-10-28 law): Σ live buckets = the aggregate limit
+ *     (premium 4+8 alongside pro 8+16 for the overlap).
+ */
+export type QuotaBucket = {
+  /** The bucket's monthly window start (ISO) — the sub's own anniversary. */
+  windowStart: string;
+  /** windowStart + 1 month (ISO) — the next renewal of THIS bucket
+   *  (ghost buckets clamp to the sub's end_date — they die with it). */
+  windowEnd: string;
+  /** The tier's monthly quota — CAPACITY for attribution. */
+  limit: number;
+  /** The subscription's end_date — the FIFO order key. */
+  subEnd: string;
+  /** Units consumed inside this bucket's window after FIFO attribution. */
+  used: number;
+  /** GHOST (the sub already expired): absorbs the usage it paid for but
+   *  contributes ZERO to the available limit — never grants anything. */
+  ghost: boolean;
+};
+
+/** How far back a recently-expired paid row can still matter: any monthly
+ *  window is ≤ 31 days, so a ghost whose end_date is older than 45 days
+ *  can never intersect the fetched usage range. */
+const GHOST_LOOKBACK_MS = 45 * 86400000;
+
+/**
+ * Build the bucket set from paid subscription rows (live + recent ghosts;
+ * see fetchQuotaSubRows). LIVE rows: ONE bucket per distinct mapped tier
+ * (stray duplicate rows fold: earliest start, latest end). GHOST rows
+ * (expired within the lookback, no live sibling of the same tier): one
+ * bucket per monthly window they lived that intersects the live windows'
+ * range — capacity = the paid quota, windowEnd clamped to the death date.
+ * Sorted by subEnd ASC (the FIFO order — earliest-expiring absorbed
+ * first, ghosts naturally sorting before longer-lived live buckets).
+ */
+export function quotaBucketsForSubs(
+  rows: ReadonlyArray<SubRowWithStart> | null | undefined,
+  quotaOf: (tier: MembershipTier) => number,
+  now: Date = new Date(),
+): QuotaBucket[] {
+  if (!rows || rows.length === 0) return [];
+  const nowMs = now.getTime();
+  // Pass 1 — live rows per distinct mapped tier (earliest start, latest end).
+  const liveByTier = new Map<MembershipTier, { start: string | null; end: string }>();
+  // Ghost candidates: expired within the lookback, per distinct mapped tier.
+  const ghostByTier = new Map<MembershipTier, { start: string | null; end: string }>();
+  for (const r of rows) {
+    if (r.status !== "active" || !r.end_date) continue;
+    const endMs = new Date(r.end_date).getTime();
+    if (!Number.isFinite(endMs)) continue;
+    const tier = mappedPaidTierOf(r.tier);
+    if (!tier) continue;
+    const limit = quotaOf(tier);
+    if (limit <= 0) continue; // defensive: a zero-quota tier adds nothing
+    const isLive = endMs > nowMs;
+    const map = isLive ? liveByTier : ghostByTier;
+    if (isLive && ghostByTier.has(tier)) ghostByTier.delete(tier); // a live sibling wins
+    if (!isLive && liveByTier.has(tier)) continue; // stray expired duplicate under a live row
+    if (!isLive && endMs <= nowMs - GHOST_LOOKBACK_MS) continue; // too old to matter
+    const prev = map.get(tier);
+    if (!prev) {
+      map.set(tier, { start: r.start_date ?? null, end: r.end_date });
+      continue;
+    }
+    // Duplicate rows of the same mapped tier: earliest start, latest end.
+    if (r.start_date && (!prev.start || new Date(r.start_date).getTime() < new Date(prev.start).getTime())) {
+      prev.start = r.start_date;
+    }
+    if (endMs > new Date(prev.end).getTime()) prev.end = r.end_date;
+  }
+
+  const buckets: QuotaBucket[] = [];
+  for (const [tier, { start, end }] of liveByTier) {
+    const windowStart = cycleWindowStartUtc(start, now);
+    buckets.push({
+      windowStart,
+      windowEnd: addMonthsIso(windowStart, 1),
+      limit: quotaOf(tier),
+      subEnd: end,
+      used: 0,
+      ghost: false,
+    });
+  }
+  // The ghost relevance bound: the earliest LIVE window start (ghosts
+  // only need to absorb rows the live buckets could otherwise steal).
+  let sinceMs: number | null = null;
+  for (const b of buckets) {
+    const ms = new Date(b.windowStart).getTime();
+    if (sinceMs === null || ms < sinceMs) sinceMs = ms;
+  }
+  const monthMs = 30 * 86400000; // walk-back step (approx; clamps fix edges)
+  for (const [tier, { start, end }] of ghostByTier) {
+    const endMs = new Date(end).getTime();
+    const quota = quotaOf(tier);
+    // The window containing the sub's last live instant…
+    let w = new Date(cycleWindowStartUtc(start, new Date(Math.min(nowMs, endMs) - 1))).getTime();
+    // …plus earlier lived windows, while they still intersect [since, now].
+    let guard = 0;
+    while (w + monthMs > (sinceMs ?? nowMs) && guard < 4) {
+      guard += 1;
+      const windowStartIso = new Date(w).toISOString();
+      const windowEndMs = Math.min(new Date(addMonthsIso(windowStartIso, 1)).getTime(), endMs);
+      if (windowEndMs > (sinceMs ?? nowMs)) {
+        buckets.push({
+          windowStart: windowStartIso,
+          windowEnd: new Date(windowEndMs).toISOString(),
+          limit: quota,
+          subEnd: end,
+          used: 0,
+          ghost: true,
+        });
+      }
+      w -= monthMs;
+    }
+  }
+  buckets.sort((a, b) => new Date(a.subEnd).getTime() - new Date(b.subEnd).getTime());
+  return buckets;
+}
+
+/** The earliest window start among buckets — the usage-fetch lower bound
+ *  (ghost windows included: their rows must be fetched so they can absorb
+ *  them). */
+export function earliestBucketWindowStart(buckets: ReadonlyArray<QuotaBucket>): string {
+  let earliest: string | null = null;
+  for (const b of buckets) {
+    if (earliest === null || new Date(b.windowStart).getTime() < new Date(earliest).getTime()) {
+      earliest = b.windowStart;
+    }
+  }
+  return earliest ?? monthStartUtc();
+}
+
+/**
+ * Attribute usage rows to buckets, FIFO by subscription end_date: each
+ * timestamp consumes ONE unit from the earliest-expiring bucket whose
+ * window contains it and that still has capacity. Rows that fit no
+ * window (past windows — never fetched) or no capacity (overage races)
+ * are ignored — the verdict can only under-count those, never a paid
+ * entitlement. Ghost buckets absorb exactly like live ones (that is
+ * their whole job) — they just never add to the available limit.
+ */
+export function attributeUsageFifo(
+  buckets: QuotaBucket[],
+  usageTimestamps: ReadonlyArray<string | Date>,
+): QuotaBucket[] {
+  const sorted = usageTimestamps
+    .map((t) => new Date(t).getTime())
+    .filter((ms) => Number.isFinite(ms))
+    .sort((a, b) => a - b);
+  for (const ts of sorted) {
+    for (const b of buckets) {
+      if (ts >= new Date(b.windowStart).getTime() && ts < new Date(b.windowEnd).getTime()) {
+        if (b.used < b.limit) {
+          b.used += 1;
+          break;
+        }
+      }
+    }
+  }
+  return buckets;
+}
+
+/** The aggregated verdict over buckets: Σ limit (LIVE buckets only —
+ * ghosts never grant), the LIVE consumption (ghost-absorbed units left
+ * with the subscription that paid for them — they never count against a
+ * live entitlement), remaining, and the SOONEST LIVE window end (when
+ * the member's next quota refresh lands). */
+export function bucketVerdict(buckets: ReadonlyArray<QuotaBucket>): {
+  used: number;
+  limit: number;
+  remaining: number;
+  renewsAt: string | null;
+} {
+  let used = 0;
+  let limit = 0;
+  let renewsAt: string | null = null;
+  for (const b of buckets) {
+    if (b.ghost) continue; // absorbs usage, never grants and never counts
+    used += b.used;
+    limit += b.limit;
+    if (renewsAt === null || new Date(b.windowEnd).getTime() < new Date(renewsAt).getTime()) {
+      renewsAt = b.windowEnd;
+    }
+  }
+  return { used, limit, remaining: Math.max(0, limit - used), renewsAt };
+}
+
+/**
+ * Fetch a member's success-ledger timestamps since an instant (the FIFO
+ * engine needs WHEN each unit landed, not just how many). Returns null
+ * on read failure — callers treat null as "count 0" (soft quota, the
+ * same fail-open convention the retired head-count query had).
+ */
+async function fetchUsageTimestamps(
+  table: "ai_plan_usage" | "plan_swaps",
+  userId: string,
+  sinceIso: string,
+): Promise<string[] | null> {
+  if (!isSupabaseAdminConfigured || !supabaseAdmin) return null;
+  const { data, error } = await supabaseAdmin
+    .from(table)
+    .select("created_at")
+    .eq("user_id", userId)
+    .gte("created_at", sinceIso)
+    .order("created_at", { ascending: true })
+    .limit(400);
+  if (error) {
+    console.error(`[tier-limits] fetchUsageTimestamps(${table}) error:`, error.message);
+    return null;
+  }
+  return (data ?? []).map((r: { created_at?: string | null }) => r.created_at ?? "").filter(Boolean);
+}
+
 /**
  * LEGACY per-kind EVO-save counter — feeds ONLY the member-edit
  * anti-spam cap (30 EVO-sourced saves/month per kind). NOT the plan
@@ -664,24 +1018,22 @@ export async function recordEvoChatUsage(
 }
 
 /**
- * Count this QUOTA WINDOW's swaps for a user (per type — meal and
- * exercise each have their own independent monthly quota).
- * Uses the plan_swaps ledger + the SUBSCRIPTION-CYCLE window (2026-11-14
- * renewal law) — display and enforcement share this exact math.
+ * Count this QUOTA WINDOW's swaps for a user — UNIFIED across types
+ * (completion order 2026-11-14 §2: meal + exercise swap rows all draw
+ * from the ONE quota; the swap_type column stays in the ledger for
+ * analytics only). Uses the plan_swaps ledger + the per-subscription
+ * cycle windows — display and enforcement share this exact math.
  */
-export async function countCycleSwaps(
-  userId: string,
-  swapType: "meal" | "exercise",
-): Promise<number> {
+export async function countCycleSwaps(userId: string): Promise<number> {
   if (!isSupabaseAdminConfigured || !supabaseAdmin) return 0;
-  const rows = await fetchActiveSubTierRows(userId);
-  const windowStart = quotaWindowStartForSubs(rows);
+  const rows = await fetchQuotaSubRows(userId);
+  const buckets = quotaBucketsForSubs(rows, (t) => swapLimitForTier(t) ?? 0);
+  const since = buckets.length > 0 ? earliestBucketWindowStart(buckets) : monthStartUtc();
   const { count, error } = await supabaseAdmin
     .from("plan_swaps")
     .select("*", { count: "exact", head: true })
     .eq("user_id", userId)
-    .eq("swap_type", swapType)
-    .gte("created_at", windowStart);
+    .gte("created_at", since);
   if (error) {
     console.error("[tier-limits] countCycleSwaps error:", error.message);
     return 0;
@@ -737,53 +1089,94 @@ export async function checkEvoChatLimit(
 
 /**
  * AI-PLAN-QUALITY 2026-10-24 (owner order item 4 — «تحديث الحصص المدفوعة
- * بصورة صحيحة») + AI-QUOTAS 2026-11-14: CHECK-ONLY quota gate for the
- * member swap enqueue. The monthly swap quota is recorded ONLY when the
- * regeneration job actually SUCCEEDS (the runner calls recordSwapUsage
- * after finishJob) — a permanently FAILED regeneration never burns a
- * paid unit. Semantics mirror the unified plan quota (success-only).
- * The soft-limit race window (count + no insert) keeps the documented
- * 1-off overage parity of the old check+insert pair.
+ * بصورة صحيحة») + AI-QUOTAS 2026-11-14 completion order: CHECK-ONLY quota
+ * gate for the member swap enqueue. The monthly swap quota is recorded
+ * ONLY when the regeneration job actually SUCCEEDS (the runner calls
+ * recordSwapUsage after finishJob) — a permanently FAILED regeneration
+ * never burns a paid unit. Semantics mirror the unified plan quota
+ * (success-only). The soft-limit race window (count + no insert) keeps
+ * the documented 1-off overage parity of the old check+insert pair.
  *
- * MONTHLY per type (2026-11-14 correction): meal and exercise each have
- * their own independent monthly quota (free 0 · premium 13 · pro 26 ·
- * coaching 26) renewed on the subscription-cycle window — the weekly
- * Monday window is retired.
+ * UNIFIED MONTHLY QUOTA (completion order §1/§2): ONE quota for meal +
+ * exercise swaps COMBINED (free 0 · premium 8 · pro 16 · coaching 16)
+ * — the per-type split is retired. The quota rides the SAME
+ * parallel-entitlement bucket engine as generation (per-subscription
+ * windows + FIFO attribution + stacking, §4/§5) and is FULLY
+ * INDEPENDENT from the generation quota (§2 — exhausting one never
+ * gates the other). The `swapType` parameter is kept for call-site
+ * compatibility; the counting is unified and never filters by it.
  */
 export type SwapQuotaVerdict = {
   allowed: boolean;
   used: number;
   limit: number | null;
+  remaining: number;
   unlimited: boolean;
   /** true when the tier's quota is 0 (free) — swaps are subscriber-only. */
   subscriptionRequired: boolean;
+  /** When the current window renews (ISO) — display surfaces read it. */
+  renewsAt: string | null;
 };
 
 export async function checkSwapQuota(
   userId: string,
-  swapType: "meal" | "exercise",
+  _swapType: "meal" | "exercise",
   tierHint?: string | null,
   staffHint?: boolean,
 ): Promise<SwapQuotaVerdict> {
   if (staffHint) {
-    return { allowed: true, used: 0, limit: null, unlimited: true, subscriptionRequired: false };
+    return { allowed: true, used: 0, limit: null, remaining: 0, unlimited: true, subscriptionRequired: false, renewsAt: null };
   }
-  const tier = sanitizeTier(tierHint) ?? (await resolveTierFromDb(userId));
-  const limit = swapLimitForTier(tier);
-
-  if (limit === null) {
-    return { allowed: true, used: 0, limit: null, unlimited: true, subscriptionRequired: false };
+  const rows = await fetchQuotaSubRows(userId);
+  const liveRows = rows !== null ? liveRowsOf(rows) : null;
+  const hintTier = sanitizeTier(tierHint);
+  const tier: MembershipTier = hintTier
+    ?? (liveRows ? resolveMembershipTier("client", liveRows) : "free");
+  const buckets = quotaBucketsForSubs(rows, (t) => swapLimitForTier(t) ?? 0);
+  if (buckets.length > 0) {
+    const since = earliestBucketWindowStart(buckets);
+    // Read failure → count 0 (soft quota — same convention as generation).
+    const usage = await fetchUsageTimestamps("plan_swaps", userId, since);
+    attributeUsageFifo(buckets, usage ?? []);
+    const v = bucketVerdict(buckets);
+    if (v.limit === 0) {
+      // Only ghosts — no live paid tier: swaps are subscriber-only.
+      return { allowed: false, used: 0, limit: 0, remaining: 0, unlimited: false, subscriptionRequired: true, renewsAt: null };
+    }
+    return {
+      allowed: v.remaining > 0,
+      used: v.used,
+      limit: v.limit,
+      remaining: v.remaining,
+      unlimited: false,
+      subscriptionRequired: false,
+      renewsAt: v.renewsAt,
+    };
   }
-  if (limit === 0) {
-    return { allowed: false, used: 0, limit: 0, unlimited: false, subscriptionRequired: true };
+  if (rows !== null) {
+    // Rows readable but NO active paid tier → swaps are subscriber-only.
+    return { allowed: false, used: 0, limit: 0, remaining: 0, unlimited: false, subscriptionRequired: true, renewsAt: null };
   }
-  const used = await countCycleSwaps(userId, swapType);
+  // Fail-safe: rows unreadable → the single-tier hint quota at most,
+  // calendar-month window (never unlimited, never above the entitlement).
+  const failSafeLimit = swapLimitForTier(hintTier ?? "free");
+  if (failSafeLimit === null) {
+    return { allowed: true, used: 0, limit: null, remaining: 0, unlimited: true, subscriptionRequired: false, renewsAt: null };
+  }
+  if (failSafeLimit === 0) {
+    return { allowed: false, used: 0, limit: 0, remaining: 0, unlimited: false, subscriptionRequired: true, renewsAt: null };
+  }
+  const failSafeStart = monthStartUtc();
+  const failSafeUsage = await fetchUsageTimestamps("plan_swaps", userId, failSafeStart);
+  const failSafeUsed = failSafeUsage?.length ?? 0;
   return {
-    allowed: used < limit,
-    used,
-    limit,
+    allowed: failSafeUsed < failSafeLimit,
+    used: failSafeUsed,
+    limit: failSafeLimit,
+    remaining: Math.max(0, failSafeLimit - failSafeUsed),
     unlimited: false,
     subscriptionRequired: false,
+    renewsAt: addMonthsIso(failSafeStart, 1),
   };
 }
 

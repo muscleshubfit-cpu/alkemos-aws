@@ -65,17 +65,24 @@ is **proprietary and confidential** (see [License](#-license)).
   quality eval, surfaced read-only at `/admin/evo-analytics`
 
 ### Memberships
-Four tiers — Free, Premium, Pro, Coaching — with unified monthly AI quotas,
-a subscriber feature (the 2026-11-14 order): plan generations (only
-successful generations count; failed attempts and edits never burn quota)
-plus INDEPENDENT monthly swap quotas per type (meals and exercises each),
-renewed on the subscription cycle; saved-results capacity and export on
-top. Free keeps the full free product (tools, libraries, content, EVO chat
-10 messages/day) — generation starts with Premium. Prices, quotas, and tier
-features are defined in a single source: `src/lib/memberships.ts` + the
-quota engine `src/lib/tier-limits.ts` (the aggregate resolver:
-`src/lib/membership-tier.ts`). Every paid tier carries a 7-day conditional
-refund (no-features-used, ledger-based — `src/lib/refund.ts`).
+Four tiers — Free, Premium, Pro, Coaching — with TWO unified monthly AI
+quotas, a subscriber feature (the 2026-11-14 orders): plan generations
+(nutrition + workout from ONE quota; only successful generations count —
+failed attempts and edits never burn quota) and swaps (meal + exercise
+from ONE quota), fully independent of each other, renewed on each
+subscription's own cycle (parallel-entitlement engine: early renewal
+extends the same row and never resets remaining quota; an upgrade runs
+beside the old subscription — both benefit, nothing paid is ever lost,
+`src/lib/tier-limits.ts`); saved-results capacity and export on top. Free
+keeps the full free product (tools, libraries, content, EVO chat
+10 messages/day) — generation and swaps start with Premium, and quota
+exhaustion offers renewal/upgrade through the existing /checkout path
+(`renewalCheckoutUrlFor`/`upgradeCheckoutUrlFor` in `src/lib/memberships.ts`).
+Prices, quotas, and tier features are defined in a single source:
+`src/lib/memberships.ts` + the quota engine `src/lib/tier-limits.ts` (the
+aggregate resolver: `src/lib/membership-tier.ts`). Every paid tier carries
+a 7-day conditional refund (no-features-used, ledger-based —
+`src/lib/refund.ts`).
 
 ### Notifications
 - **Member bell** (`src/components/NotificationBell.tsx`) — per-user rows in

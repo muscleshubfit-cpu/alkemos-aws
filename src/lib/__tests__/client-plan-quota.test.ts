@@ -28,23 +28,28 @@ import {
  */
 
 const h = vi.hoisted(() => {
-  // count returned per (table, identity key)
+  // count returned per (table, identity key) — countUnifiedPlanUsage's
+  // analytics readers (the head-count path)
   const counts: Record<string, number> = {};
+  // usage ROWS per (table, identity key) — the parallel-bucket engine
+  // reads created_at stamps (checkUnifiedPlanQuota)
+  const usage: Record<string, Array<{ created_at: string }>> = {};
   // subscriptions ROWS for the aggregated-pool DB fetch (owner order
   // 2026-10-28 «تجميع حصص الاشتراكات المدفوعة» — full rows, not bare
   // tier strings: the pool aggregates over the active+expiry window)
-  const subRows: Array<{ tier: string; status: string; end_date: string }> = [];
+  const subRows: Array<{ tier: string; status: string; end_date: string; start_date: string | null }> = [];
   // captured inserts per table
   const inserts: Array<{ table: string; row: Record<string, unknown> }> = [];
-  return { counts, subRows, inserts };
+  return { counts, usage, subRows, inserts };
 });
 
-type CountRow = { count: number | null; error: unknown };
+type CountRow = { count: number | null; error: unknown; data: unknown };
 interface FakeBuilder extends PromiseLike<CountRow> {
   select: () => FakeBuilder;
   eq: (col: string, val: unknown) => FakeBuilder;
   gt: () => FakeBuilder;
-  gte: (col: string, since: string) => FakeBuilder;
+  gte: (col: string, val: unknown) => FakeBuilder;
+  order: () => FakeBuilder;
   limit: () => FakeBuilder;
   maybeSingle: () => Promise<{ data: unknown; error: unknown }>;
   single: () => Promise<{ data: unknown; error: unknown }>;
@@ -53,6 +58,7 @@ interface FakeBuilder extends PromiseLike<CountRow> {
 vi.mock("@/lib/supabase/admin", () => {
   const makeBuilder = (table: string): FakeBuilder => {
     let identity = "";
+    let sinceMs = 0;
     const outcome = (): Promise<CountRow> => {
       if (table === "subscriptions") {
         return Promise.resolve({
@@ -61,10 +67,14 @@ vi.mock("@/lib/supabase/admin", () => {
           data: h.subRows,
         } as unknown as CountRow);
       }
+      const rows = (h.usage[`${table}:${identity}`] ?? []).filter(
+        (r) => new Date(r.created_at).getTime() >= sinceMs,
+      );
       return Promise.resolve({
-        count: h.counts[`${table}:${identity}`] ?? 0,
+        count: h.counts[`${table}:${identity}`] ?? rows.length,
         error: null,
-      });
+        data: rows,
+      } as unknown as CountRow);
     };
     const builder: FakeBuilder = {
       select: () => builder,
@@ -78,9 +88,13 @@ vi.mock("@/lib/supabase/admin", () => {
         return builder;
       },
       gt: () => builder,
-      // The unified pool is monthly-only — every gte here is the month
-      // window; kept in the signature for parity with the real builder.
-      gte: (_col: string, _since: string) => builder,
+      // gte carries the window start (created_at) — the bucket engine's
+      // usage fetch lower bound.
+      gte: (col: string, val: unknown) => {
+        if (col === "created_at") sinceMs = new Date(String(val)).getTime();
+        return builder;
+      },
+      order: () => builder,
       limit: () => builder,
       maybeSingle: () => Promise.resolve({ data: null, error: null }),
       single: () => Promise.resolve({ data: null, error: null }),
@@ -116,12 +130,26 @@ vi.mock("@/lib/supabase/admin", () => {
 
 /** A future ISO date for effectively-active fixture rows. */
 const futureIso = () => new Date(Date.now() + 30 * 86400000).toISOString();
+/** An active row anchored 20 days ago (its current window covers NOW). */
+const activeRow = (tier: string) => ({
+  tier,
+  status: "active",
+  end_date: futureIso(),
+  start_date: new Date(Date.now() - 20 * 86400000).toISOString(),
+});
+/** N success rows 1 day ago (inside every bucket's window). */
+const setEngineUsage = (n: number) => {
+  h.usage[`ai_plan_usage:${USER}`] = Array.from({ length: n }, (_, i) => ({
+    created_at: new Date(Date.now() - 86400000 - i * 60_000).toISOString(),
+  }));
+};
 
 const USER = "11111111-1111-1111-1111-111111111111";
 
 describe("unified AI plan pool (Phase 183 — «البوول الموحد»)", () => {
   beforeEach(() => {
     for (const k of Object.keys(h.counts)) delete h.counts[k];
+    for (const k of Object.keys(h.usage)) delete h.usage[k];
     h.subRows.length = 0;
     h.inserts.length = 0;
   });
@@ -141,8 +169,8 @@ describe("unified AI plan pool (Phase 183 — «البوول الموحد»)", (
   });
 
   it("member quota: premium 4 — 2 used → allowed, remaining 2", async () => {
-    h.subRows.push({ tier: "premium", status: "active", end_date: futureIso() });
-    h.counts[`ai_plan_usage:${USER}`] = 2;
+    h.subRows.push(activeRow("premium"));
+    setEngineUsage(2);
     const r = await checkUnifiedPlanQuota({ userId: USER, tierHint: "premium" });
     expect(r.allowed).toBe(true);
     expect(r.tier).toBe("premium");
@@ -152,8 +180,8 @@ describe("unified AI plan pool (Phase 183 — «البوول الموحد»)", (
   });
 
   it("member quota blocks at the tier limit (pro 8, combined kinds)", async () => {
-    h.subRows.push({ tier: "pro", status: "active", end_date: futureIso() });
-    h.counts[`ai_plan_usage:${USER}`] = 8; // e.g. 5 nutrition + 3 workout
+    h.subRows.push(activeRow("pro"));
+    setEngineUsage(8); // e.g. 5 nutrition + 3 workout
     const r = await checkUnifiedPlanQuota({ userId: USER, tierHint: "pro" });
     expect(r.allowed).toBe(false);
     expect(r.used).toBe(8);
@@ -209,10 +237,7 @@ describe("unified AI plan pool (Phase 183 — «البوول الموحد»)", (
   });
 
   it("DB-fallback: stacked premium+pro rows AGGREGATE (4+8=12 — owner order 2026-10-28), display tier stays pro", async () => {
-    h.subRows.push(
-      { tier: "premium", status: "active", end_date: futureIso() },
-      { tier: "pro", status: "active", end_date: futureIso() },
-    );
+    h.subRows.push(activeRow("premium"), activeRow("pro"));
     const r = await checkUnifiedPlanQuota({ userId: USER });
     expect(r.tier).toBe("pro"); // display tier: best membership wins
     expect(r.limit).toBe(12); // quota: aggregated, not best-tier

@@ -123,12 +123,14 @@ export async function activatePlan(planId: string, clientId: string) {
 
 /**
  * Get current swap usage for display — T-AI-DEEP-AUDIT-V2 (D6 fix),
- * evolved by AI-QUOTAS 2026-11-14 (حصص شهرية مستقلة لكل نوع).
- * MUST mirror the ENFORCEMENT exactly — and the single source for that
- * is now the SERVER meter (/api/ai/quota reads checkSwapQuota with the
- * subscription-cycle window + evoSwapMonthlyLimit straight from
- * memberships.ts). The client copy just maps the verdict: no drift is
- * possible because there is no second implementation.
+ * evolved by AI-QUOTAS 2026-11-14 and UNIFIED by the completion order
+ * (§1/§2: meal + exercise swaps draw from ONE monthly quota — the
+ * per-type split is retired). MUST mirror the ENFORCEMENT exactly — and
+ * the single source for that is the SERVER meter (/api/ai/quota reads
+ * checkSwapQuota with the per-subscription cycle windows +
+ * evoSwapMonthlyLimit straight from memberships.ts). The client copy
+ * just maps the verdict: no drift is possible because there is no
+ * second implementation.
  */
 export async function getSwapUsage(userId: string) {
  try {
@@ -136,35 +138,38 @@ export async function getSwapUsage(userId: string) {
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const data = (await res.json()) as {
    swaps?: {
-    meal?: { used?: number; limit?: number | null; unlimited?: boolean; subscriptionRequired?: boolean };
-    exercise?: { used?: number; limit?: number | null; unlimited?: boolean; subscriptionRequired?: boolean };
+    used?: number;
+    limit?: number | null;
+    unlimited?: boolean;
+    subscriptionRequired?: boolean;
+    renewsAt?: string | null;
+    renewalUrl?: string | null;
+    upgradeUrl?: string | null;
    };
   };
-  const map = (s?: {
-   used?: number;
-   limit?: number | null;
-   unlimited?: boolean;
-   subscriptionRequired?: boolean;
-  }) => {
-   const limit = typeof s?.limit === "number" ? s.limit : null;
-   const used = typeof s?.used === "number" ? s.used : 0;
-   return {
-    used,
-    limit,
-    remaining: limit === null ? Infinity : Math.max(0, limit - used),
-    unlimited: Boolean(s?.unlimited) || limit === null,
-    subscriptionRequired: Boolean(s?.subscriptionRequired) || limit === 0,
-   };
-  };
+  const limit = typeof data?.swaps?.limit === "number" ? data.swaps.limit : null;
+  const used = typeof data?.swaps?.used === "number" ? data.swaps.used : 0;
   return {
-   meal: map(data?.swaps?.meal),
-   exercise: map(data?.swaps?.exercise),
+   used,
+   limit,
+   remaining: limit === null ? Infinity : Math.max(0, limit - used),
+   unlimited: Boolean(data?.swaps?.unlimited) || limit === null,
+   subscriptionRequired: Boolean(data?.swaps?.subscriptionRequired) || limit === 0,
+   renewsAt: typeof data?.swaps?.renewsAt === "string" ? data.swaps.renewsAt : null,
+   renewalUrl: typeof data?.swaps?.renewalUrl === "string" ? data.swaps.renewalUrl : null,
+   upgradeUrl: typeof data?.swaps?.upgradeUrl === "string" ? data.swaps.upgradeUrl : null,
   };
  } catch {
   // Best-effort display: the server stays the enforcement authority.
   return {
-   meal: { used: 0, limit: 0, remaining: 0, unlimited: false, subscriptionRequired: true },
-   exercise: { used: 0, limit: 0, remaining: 0, unlimited: false, subscriptionRequired: true },
+   used: 0,
+   limit: 0,
+   remaining: 0,
+   unlimited: false,
+   subscriptionRequired: true,
+   renewsAt: null,
+   renewalUrl: null,
+   upgradeUrl: null,
   };
  }
 }

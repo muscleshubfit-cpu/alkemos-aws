@@ -153,13 +153,32 @@ const POOL_TIERS: Record<string, MembershipTier> = {
  *     caller from that ledger; this function owns the LIMIT only.
  *
  * Pool numbers come straight from memberships.ts (single source) —
- * free 2 · premium 4 · pro 8 · coaching 8.
+ * free 0 · premium 4 · pro 8 · coaching 8.
  */
 export function resolveUnifiedPlanPoolLimit(
   subs: ReadonlyArray<SubscriptionTierRow> | null | undefined,
   now: Date = new Date(),
 ): number {
-  const freePool = getLimits("free").aiPlanMonthlyLimit;
+  return resolveAggregatedQuota(subs, (t) => getLimits(t).aiPlanMonthlyLimit, now);
+}
+
+/**
+ * The SHARED aggregation core of BOTH quota laws (generation pool 2026-10-28
+ * + unified swaps, completion order 2026-11-14 §4 «يستفيد العميل من حقوق
+ * الاشتراكين»): the SUM of `quotaOf(tier)` over every DISTINCT paid tier
+ * held as an effectively-active subscription — one contribution per mapped
+ * tier, entitlement-window verified, unknown tiers contribute nothing.
+ *
+ * Pure + exported so tier-limits.ts builds its per-subscription buckets
+ * from the SAME mapped-tier set (the bucket builder needs the identical
+ * dedup/window law — meter == enforcement can never drift).
+ */
+export function resolveAggregatedQuota(
+  subs: ReadonlyArray<SubscriptionTierRow> | null | undefined,
+  quotaOf: (tier: MembershipTier) => number,
+  now: Date = new Date(),
+): number {
+  const freePool = quotaOf("free");
   if (!subs || subs.length === 0) return freePool;
   const nowMs = now.getTime();
   const counted = new Set<MembershipTier>();
@@ -176,7 +195,30 @@ export function resolveUnifiedPlanPoolLimit(
     // One contribution per distinct mapped tier — never twice.
     if (counted.has(tier)) continue;
     counted.add(tier);
-    total += getLimits(tier).aiPlanMonthlyLimit;
+    total += quotaOf(tier);
   }
   return counted.size === 0 ? freePool : total;
+}
+
+/**
+ * UNIFIED SWAP QUOTA aggregation (completion order 2026-11-14 §1/§4): the
+ * member's monthly swap quota = the SUM of `evoSwapMonthlyLimit` over every
+ * distinct effectively-active paid tier — the SAME stacking law as the
+ * generation pool (an upgrade keeps the old subscription's FULL quotas
+ * running beside the new one: premium 8 + pro 16 = 24 for the overlap).
+ * Supersedes the retired best-tier swap semantics — same law for BOTH
+ * quotas, one structure, no per-subscription accounting.
+ */
+export function resolveUnifiedSwapLimit(
+  subs: ReadonlyArray<SubscriptionTierRow> | null | undefined,
+  now: Date = new Date(),
+): number {
+  return resolveAggregatedQuota(subs, (t) => getLimits(t).evoSwapMonthlyLimit, now);
+}
+
+/** The mapped PAID tier of a subscription row (legacy starter/elite folded
+ * onto their successors; free/unknown → null) — shared by the aggregation
+ * law and tier-limits' per-subscription bucket builder. */
+export function mappedPaidTierOf(tier: string): MembershipTier | null {
+  return POOL_TIERS[tier] ?? null;
 }

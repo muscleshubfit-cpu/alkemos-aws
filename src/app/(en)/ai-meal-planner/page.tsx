@@ -648,7 +648,7 @@ export default function AiMealPlannerPage() {
             never answers the shopper's most common confusion: generator vs
             manual planner vs ready plans vs EVO. Rows mirror the verified
             service set (manual planner: no limits; ready plans: 24; EVO
-            swaps: subscription-gated weekly counter). */}
+            swaps: subscription-gated unified monthly quota). */}
         <section className="mt-10">
           <h2 className="text-xl font-semibold tracking-tight text-[var(--text)]">
             {isAr ? "أربعة مسارات للتخطيط — أيها يناسبك؟" : "Four ways to plan — which fits you?"}

@@ -101,14 +101,17 @@ function asPlanContent(v: Json | null | undefined): PlanContent | null {
 }
 
 /** Swap-quota readout shape returned by data/plans.getSwapUsage.
- * AI-QUOTAS 2026-11-14: swaps are INDEPENDENT monthly quotas per type and
- * carry a subscriptionRequired flag (free members see the subscribe CTA
- * instead of a broken 0/0 widget). */
+ * AI-QUOTAS completion order 2026-11-14 (§1/§2): ONE unified monthly
+ * swap quota — meal + exercise combined (the per-type split is retired) —
+ * carrying a subscriptionRequired flag (free members see the subscribe
+ * CTA instead of a broken 0/0 widget) and the exhaustion renewal links
+ * (§3) that ride the existing /checkout payment path. */
 type SwapUsage = Awaited<ReturnType<typeof getSwapUsage>>;
 
 /** Unified generation quota readout — the SAME /api/ai/quota verdict the
  * enforcement reads (meter == enforcement law; one fetch serves both the
- * plan quota and the swap quotas in refreshUsage). */
+ * plan quota and the swap quotas in refreshUsage). Carries the §3
+ * exhaustion links (renewal = current plan, upgrade = next tier up). */
 type PlanQuota = {
  used: number;
  limit: number;
@@ -116,6 +119,8 @@ type PlanQuota = {
  unlimited: boolean;
  subscriptionRequired: boolean;
  renewsAt: string | null;
+ renewalUrl: string | null;
+ upgradeUrl: string | null;
 };
 
 export function PlansView() {
@@ -129,15 +134,17 @@ export function PlansView() {
  const [loading, setLoading] = useState(true);
  const [active, setActive] = useState<Plan | null>(null);
  const [swapLoading, setSwapLoading] = useState<string | null>(null);
+ // AI-QUOTAS completion order: ONE unified swap quota (meal + exercise).
  const [swapUsage, setSwapUsage] = useState<SwapUsage>({
- meal: { used: 0, limit: 0, remaining: 0, unlimited: false, subscriptionRequired: true },
- exercise: { used: 0, limit: 0, remaining: 0, unlimited: false, subscriptionRequired: true },
+ used: 0, limit: 0, remaining: 0, unlimited: false, subscriptionRequired: true,
+ renewsAt: null, renewalUrl: null, upgradeUrl: null,
  });
  // AI-QUOTAS 2026-11-14: the unified monthly generation quota + the
  // subscription-cycle renewal date (one /api/ai/quota fetch feeds the
  // plan quota AND the swap quotas — the same verdicts enforcement reads).
  const [planQuota, setPlanQuota] = useState<PlanQuota>({
  used: 0, limit: 0, remaining: 0, unlimited: false, subscriptionRequired: true, renewsAt: null,
+ renewalUrl: null, upgradeUrl: null,
  });
  const [generating, setGenerating] = useState<"nutrition" | "workout" | null>(null);
  const [pendingPlans, setPendingPlans] = useState<ReturnType<typeof readPendingPlanJobs>>([]);
@@ -189,6 +196,9 @@ export function PlansView() {
  unlimited: Boolean(quotaMeter.plans.unlimited),
  subscriptionRequired: Boolean(quotaMeter.plans.subscriptionRequired),
  renewsAt: typeof quotaMeter.plans.renewsAt === "string" ? quotaMeter.plans.renewsAt : null,
+ // §3 exhaustion links — the server owns the URLs (never invented here).
+ renewalUrl: typeof quotaMeter.plans.renewalUrl === "string" ? quotaMeter.plans.renewalUrl : null,
+ upgradeUrl: typeof quotaMeter.plans.upgradeUrl === "string" ? quotaMeter.plans.upgradeUrl : null,
  });
  }
  } catch {
@@ -200,12 +210,12 @@ export function PlansView() {
  // the user clicks. refreshUsage() reconciles with server truth right
  // after enqueue (and doubles as the rollback on failure). The server
  // remains the enforcement authority — this is display-only.
- const applyOptimisticUsage = useCallback((kind: "meal" | "exercise") => {
+ // AI-QUOTAS completion order: ONE unified quota — a meal or an exercise
+ // swap both decrement the SAME counter (§2).
+ const applyOptimisticUsage = useCallback((_kind: "meal" | "exercise") => {
  setSwapUsage((prev) => {
- const cur = prev[kind];
- if (cur.unlimited) return prev;
- const next = { ...cur, used: cur.used + 1, remaining: Math.max(0, cur.remaining - 1) };
- return kind === "meal" ? { ...prev, meal: next } : { ...prev, exercise: next };
+ if (prev.unlimited) return prev;
+ return { ...prev, used: prev.used + 1, remaining: Math.max(0, prev.remaining - 1) };
  });
  }, []);
 
@@ -392,9 +402,12 @@ export function PlansView() {
  return;
  }
  if (!planQuota.unlimited && planQuota.remaining <= 0) {
+ // §3 exhaustion: clear message + the banner above carries the direct
+ // renewal/upgrade links (toasts are text-only — the links live in the
+ // persistent quota banner so they stay clickable).
  toast.error(isAr
- ? `استهلكت حصة توليد الخطط لهذه الدورة (${planQuota.used}/${planQuota.limit}) — تتجدد الحصة مع دورة الاشتراك.`
- : `You've used your plan-generation quota for this cycle (${planQuota.used}/${planQuota.limit}) — it renews with your subscription cycle.`);
+ ? `انتهت حصة توليد الخطط لهذه الدورة (${planQuota.used}/${planQuota.limit}) — تتجدد في ${planQuota.renewsAt ? new Date(planQuota.renewsAt).toLocaleDateString("ar-EG") : ""}. جدّد اشتراكك أو رقِّه من الأعلى لإضافة استحقاقات جديدة.`
+ : `Your plan-generation quota for this cycle is used up (${planQuota.used}/${planQuota.limit}) — it renews on ${planQuota.renewsAt ? new Date(planQuota.renewsAt).toLocaleDateString("en-US") : ""}. Renew or upgrade from the banner above to add new entitlements.`);
  return;
  }
  setGenerating(kind);
@@ -479,18 +492,19 @@ export function PlansView() {
  const swapMeal = async (planId: string, mealIndex: number) => {
  if (!profile) return;
  // Check remaining quota client-side first — the server enforces too.
- // 2026-11-14: swaps are subscriber-only — the required case gets the
- // honest subscribe CTA instead of a broken 0/0 widget.
- if (swapUsage.meal.subscriptionRequired) {
+ // Completion order §2: ONE unified swap quota — meal and exercise draw
+ // from the same budget (the required case gets the honest subscribe
+ // CTA instead of a broken 0/0 widget).
+ if (swapUsage.subscriptionRequired) {
  toast.error(isAr
- ? "تبديل الوجبات متاح لمشتركي بريميوم وأعلى — اشترك للحصول على حصة تبديل شهرية."
- : "Meal swaps are available to Premium subscribers and above — subscribe for a monthly swap quota.");
+ ? "التبديلات متاحة لمشتركي بريميوم وأعلى — اشترك للحصول على حصة تبديلات شهرية للوجبات والتمارين."
+ : "Swaps are available to Premium subscribers and above — subscribe for a monthly swap quota (meals and exercises).");
  return;
  }
- if (swapUsage.meal.remaining <= 0) {
+ if (swapUsage.remaining <= 0) {
  toast.error(isAr
- ? `استهلكت حصة تبديل الوجبات لهذه الدورة (${swapUsage.meal.used}/${swapUsage.meal.limit}) — تتجدد مع دورة الاشتراك.`
- : `You've used your meal-swap quota for this cycle (${swapUsage.meal.used}/${swapUsage.meal.limit}) — it renews with your subscription cycle.`);
+ ? `انتهت حصة التبديلات لهذه الدورة (${swapUsage.used}/${swapUsage.limit}) — تتجدد مع دورة الاشتراك. جدّد اشتراكك أو رقّه من الأعلى لإضافة استحقاقات جديدة.`
+ : `Your swap quota for this cycle is used up (${swapUsage.used}/${swapUsage.limit}) — it renews with your subscription cycle. Renew or upgrade from the banner above to add new entitlements.`);
  return;
  }
  setSwapLoading(`meal-${planId}-${mealIndex}`);
@@ -580,16 +594,18 @@ export function PlansView() {
 
  const swapExercise = async (planId: string, dayIndex: number, exIndex: number) => {
  if (!profile) return;
- if (swapUsage.exercise.subscriptionRequired) {
+ // Completion order §2: ONE unified swap quota (same checks as meals —
+ // meal and exercise swaps draw from the same monthly budget).
+ if (swapUsage.subscriptionRequired) {
  toast.error(isAr
- ? "تبديل التمارين متاح لمشتركي بريميوم وأعلى — اشترك للحصول على حصة تبديل شهرية."
- : "Exercise swaps are available to Premium subscribers and above — subscribe for a monthly swap quota.");
+ ? "التبديلات متاحة لمشتركي بريميوم وأعلى — اشترك للحصول على حصة تبديلات شهرية للوجبات والتمارين."
+ : "Swaps are available to Premium subscribers and above — subscribe for a monthly swap quota (meals and exercises).");
  return;
  }
- if (swapUsage.exercise.remaining <= 0) {
+ if (swapUsage.remaining <= 0) {
  toast.error(isAr
- ? `استهلكت حصة تبديل التمارين لهذه الدورة (${swapUsage.exercise.used}/${swapUsage.exercise.limit}) — تتجدد مع دورة الاشتراك.`
- : `You've used your exercise-swap quota for this cycle (${swapUsage.exercise.used}/${swapUsage.exercise.limit}) — it renews with your subscription cycle.`);
+ ? `انتهت حصة التبديلات لهذه الدورة (${swapUsage.used}/${swapUsage.limit}) — تتجدد مع دورة الاشتراك. جدّد اشتراكك أو رقّه من الأعلى لإضافة استحقاقات جديدة.`
+ : `Your swap quota for this cycle is used up (${swapUsage.used}/${swapUsage.limit}) — it renews with your subscription cycle. Renew or upgrade from the banner above to add new entitlements.`);
  return;
  }
  setSwapLoading(`ex-${planId}-${dayIndex}-${exIndex}`);
@@ -807,11 +823,13 @@ export function PlansView() {
  <p className="mt-2 text-base font-normal text-[#6e6e73] md:text-lg">{t("plans.subtitle")}</p>
  </div>
 
- {/* ── AI-QUOTAS 2026-11-14: the quota banner + self-service generation ──
-     (owner order «إتاحة توليد خطة جديدة من داخل قسم الخطط وفق صلاحية
-     الاشتراك والحصة» — all inside the EXISTING Plans section; no new
-     section, no separate EVO area). Free members see the honest subscribe
-     CTA instead of 0/0 widgets (the m6-fix law, carried forward). */}
+ {/* ── AI-QUOTAS (completion order 2026-11-14): the quota banner — TWO
+     unified quotas only (generation + swaps; meal/exercise never split,
+     §1/§2), each with its own honest exhaustion treatment (§3: clear
+     message + direct renewal/upgrade links riding the EXISTING /checkout
+     payment path; exhausting one quota NEVER gates the other). Free
+     members see the honest subscribe CTA instead of 0/0 widgets (the
+     m6-fix law, carried forward). */}
  <div className="rounded-2xl bg-[#f5f5f7] px-5 py-4 text-sm font-normal text-[#6e6e73]">
  {planQuota.subscriptionRequired ? (
  <div className="flex flex-wrap items-center gap-2">
@@ -828,6 +846,7 @@ export function PlansView() {
  </a>
  </div>
  ) : (
+ <div className="space-y-2">
  <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
  <span>
  {isAr ? "توليد الخطط:" : "Plan generations:"}{" "}
@@ -839,19 +858,11 @@ export function PlansView() {
  </span>
  <span className="text-[#d2d2d7]">|</span>
  <span>
- {isAr ? "تبديل وجبات:" : "Meal swaps:"}{" "}
- <strong className={swapUsage.meal.remaining > 0 ? "text-[#1d1d1f]" : "text-[#ff3b30]"}>
- {swapUsage.meal.unlimited ? "∞" : swapUsage.meal.remaining}
+ {isAr ? "التبديلات (وجبات أو تمارين):" : "Swaps (meal or exercise):"}{" "}
+ <strong className={swapUsage.remaining > 0 ? "text-[#1d1d1f]" : "text-[#ff3b30]"}>
+ {swapUsage.unlimited ? "∞" : swapUsage.remaining}
  </strong>
- {swapUsage.meal.unlimited ? "" : `/${swapUsage.meal.limit}`}
- </span>
- <span className="text-[#d2d2d7]">|</span>
- <span>
- {isAr ? "تبديل تمارين:" : "Exercise swaps:"}{" "}
- <strong className={swapUsage.exercise.remaining > 0 ? "text-[#1d1d1f]" : "text-[#ff3b30]"}>
- {swapUsage.exercise.unlimited ? "∞" : swapUsage.exercise.remaining}
- </strong>
- {swapUsage.exercise.unlimited ? "" : `/${swapUsage.exercise.limit}`}
+ {swapUsage.unlimited ? "" : `/${swapUsage.limit}`}
  </span>
  {planQuota.renewsAt && (
  <>
@@ -861,6 +872,50 @@ export function PlansView() {
  {new Date(planQuota.renewsAt).toLocaleDateString(isAr ? "ar-EG" : "en-US")}
  </span>
  </>
+ )}
+ </div>
+ {/* §3 — generation exhausted: clear message + direct renewal/upgrade
+     links (the EXISTING payment path; one quota's exhaustion never
+     hides or gates the other quota's readout above). */}
+ {!planQuota.unlimited && planQuota.remaining <= 0 && (
+ <div className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-xl bg-white px-3 py-2 text-[#1d1d1f]">
+ <span className="font-medium text-[#ff3b30]">
+ {isAr
+ ? `انتهت حصة توليد الخطط لهذه الدورة (${planQuota.used}/${planQuota.limit})${planQuota.renewsAt ? ` — تتجدد في ${new Date(planQuota.renewsAt).toLocaleDateString("ar-EG")}` : ""}.`
+ : `Your generation quota for this cycle is used up (${planQuota.used}/${planQuota.limit})${planQuota.renewsAt ? ` — renews on ${new Date(planQuota.renewsAt).toLocaleDateString("en-US")}` : ""}.`}
+ </span>
+ {planQuota.renewalUrl && (
+ <a href={planQuota.renewalUrl} className="font-medium text-[#0071e3] hover:underline">
+ {isAr ? "تجديد الاشتراك الآن ›" : "Renew your plan now ›"}
+ </a>
+ )}
+ {planQuota.upgradeUrl && (
+ <a href={planQuota.upgradeUrl} className="font-medium text-[#0071e3] hover:underline">
+ {isAr ? "الترقية إلى باقة أعلى ›" : "Upgrade to a higher plan ›"}
+ </a>
+ )}
+ </div>
+ )}
+ {/* §3 — swaps exhausted: same treatment, INDEPENDENT of generation
+     (the generation quota above stays usable if it still has units). */}
+ {!swapUsage.unlimited && swapUsage.remaining <= 0 && (
+ <div className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-xl bg-white px-3 py-2 text-[#1d1d1f]">
+ <span className="font-medium text-[#ff3b30]">
+ {isAr
+ ? `انتهت حصة التبديلات لهذه الدورة (${swapUsage.used}/${swapUsage.limit})${swapUsage.renewsAt ? ` — تتجدد في ${new Date(swapUsage.renewsAt).toLocaleDateString("ar-EG")}` : ""}.`
+ : `Your swap quota for this cycle is used up (${swapUsage.used}/${swapUsage.limit})${swapUsage.renewsAt ? ` — renews on ${new Date(swapUsage.renewsAt).toLocaleDateString("en-US")}` : ""}.`}
+ </span>
+ {swapUsage.renewalUrl && (
+ <a href={swapUsage.renewalUrl} className="font-medium text-[#0071e3] hover:underline">
+ {isAr ? "تجديد الاشتراك الآن ›" : "Renew your plan now ›"}
+ </a>
+ )}
+ {swapUsage.upgradeUrl && (
+ <a href={swapUsage.upgradeUrl} className="font-medium text-[#0071e3] hover:underline">
+ {isAr ? "الترقية إلى باقة أعلى ›" : "Upgrade to a higher plan ›"}
+ </a>
+ )}
+ </div>
  )}
  </div>
  )}

@@ -115,7 +115,7 @@ const offerCatalogSchema = {
       "@type": "Offer",
       name: tierName("premium"),
       description:
-        "أدر خططك: محادثة EVO بلا حدود، و4 خطط ذكاء اصطناعي شهريًا، و3 تبديلات أسبوعية، مع التصدير والمزامنة. $14.99 شهريًا أو $119 سنويًا.",
+        "أدر خططك: محادثة EVO بلا حدود، و4 خطط ذكاء اصطناعي شهريًا، و8 تبديلات شهريًا (وجبات أو تمارين)، مع التصدير والمزامنة. $14.99 شهريًا أو $119 سنويًا.",
       price: tierPrice("premium"),
       priceCurrency: "USD",
       url: `${SITE_URL}/ar/memberships`,
@@ -124,7 +124,7 @@ const offerCatalogSchema = {
       "@type": "Offer",
       name: tierName("pro"),
       description:
-        "كيّف خططك وارتقِ: 8 خطط ذكاء اصطناعي شهريًا، و6 تبديلات للوجبات أو التمارين أسبوعيًا، بلا إعلانات. $29.99 شهريًا أو $239 سنويًا.",
+        "كيّف خططك وارتقِ: 8 خطط ذكاء اصطناعي شهريًا، و16 تبديلًا شهريًا (وجبات أو تمارين)، بلا إعلانات. $29.99 شهريًا أو $239 سنويًا.",
       price: tierPrice("pro"),
       priceCurrency: "USD",
       url: `${SITE_URL}/ar/memberships`,

@@ -1324,8 +1324,8 @@ export function LandingView({
                     pinDark
                     rows={
                       isAr
-                        ? ["كل مزايا البريميوم", "8 خطط و26 تبديلًا شهريًا", "تجربة بلا إعلانات"]
-                        : ["Everything in Premium", "8 plans + 26 swaps a month", "Ad-free experience"]
+                        ? ["كل مزايا البريميوم", "8 خطط و16 تبديلًا شهريًا", "تجربة بلا إعلانات"]
+                        : ["Everything in Premium", "8 plans + 16 swaps a month", "Ad-free experience"]
                     }
                   />
                   <a

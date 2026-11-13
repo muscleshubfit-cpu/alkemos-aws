@@ -593,7 +593,7 @@ export default function CoachingPage() {
                     {/* 2026-09-15 (consistency fix — memberships.ts says
                         coaching inherits every Pro limit; this card now says
                         so explicitly, same numbers, copy-only): */}
-                    {[isAr ? "كل مميزات برو (8 خطط ذكاء اصطناعي شهريًا، 6 تبديلات أسبوعية، بلا إعلانات)" : "All Pro features (8 AI plans/month, 6 swaps/week, ad-free)",
+                    {[isAr ? "كل مميزات برو (8 خطط ذكاء اصطناعي شهريًا، 16 تبديلًا شهريًا، بلا إعلانات)" : "All Pro features (8 AI plans/month, 16 swaps/month, ad-free)",
                       isAr ? "خطط تغذية وتمارين من مدرب خاص" : "Nutrition + workout plans from a personal coach",
                       isAr ? "EVO: محادثة غير محدودة وذاكرة دائمة" : "EVO: unlimited chat + cross-session memory",
                       isAr ? "متابعة أسبوعية بتذكير تلقائي" : "Weekly check-in reminders",

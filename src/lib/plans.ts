@@ -20,7 +20,11 @@ export type Tier = {
  prices: Record<Duration, number>;
  popular?: boolean;
  best?: boolean;
- /** Daily swap limit per type (meal/exercise). null = unlimited. */
+ /** Legacy display field for the original /coaching products — NOT an
+  * enforcement number. The live swap quota law lives in memberships.ts
+  * (evoSwapMonthlyLimit — ONE unified monthly quota, meal + exercise
+  * combined, completion order 2026-11-14) and is enforced by tier-limits.
+  * Kept on the data shape for the coaching-page products' history. */
  swapLimit: number | null;
 };
 
@@ -108,12 +112,6 @@ export function allFeatureKeys(id: TierId): string[] {
  if (!tier) return [];
  const inherited = tier.inheritsFrom ? allFeatureKeys(tier.inheritsFrom) : [];
  return [...inherited, ...tier.featureKeys];
-}
-
-/** Get swap limit for a tier (null = unlimited). */
-export function swapLimitFor(id: TierId): number | null {
- const tier = getTier(id);
- return tier?.swapLimit ?? null;
 }
 
 // Response time shown per tier in the comparison table.

@@ -127,21 +127,21 @@ export async function POST(request: NextRequest) {
       // plan-creation is gated by the Phase 183 unified monthly pool
       // (success-only, ai_plan_usage — see the check further below).
     } else {
-      // user_swap_meal | user_swap_exercise → enforce the INDEPENDENT
-      // MONTHLY swap quota for that type (AI-QUOTAS 2026-11-14 — evolved
-      // from the retired weekly C16 limits; subscription-cycle window).
-      // AI-PLAN-QUALITY 2026-10-24 law carried forward: CHECK-ONLY here —
-      // the unit is recorded by the runner when the job lands `done`
-      // (success-only); a permanently FAILED regeneration never burns
-      // a paid unit.
+      // user_swap_meal | user_swap_exercise → enforce the UNIFIED monthly
+      // swap quota (AI-QUOTAS completion order 2026-11-14 §1/§2 — meal and
+      // exercise swaps draw from ONE quota; the per-type split is retired;
+      // per-subscription cycle windows). AI-PLAN-QUALITY 2026-10-24 law
+      // carried forward: CHECK-ONLY here — the unit is recorded by the
+      // runner when the job lands `done` (success-only); a permanently
+      // FAILED regeneration never burns a paid unit.
       if (userId) {
         const swapType = gate === "user_swap_meal" ? "meal" : "exercise";
         const limitCheck = await checkSwapQuota(userId, swapType, authTier, Boolean(authRole && authRole !== "client"));
         if (!limitCheck.allowed) {
           const limitText =
             limitCheck.subscriptionRequired
-              ? "الاستبدال متاح لمشتركي بريميوم وأعلى — اشترك للحصول على حصص تبديل شهرية للوجبات والتمارين."
-              : `استهلكت حصة التبديل لهذه الدورة (${limitCheck.used}/${limitCheck.limit}). تتجدد الحصة مع دورة الاشتراك.`;
+              ? "التبديلات متاحة لمشتركي بريميوم وأعلى — اشترك للحصول على حصة تبديلات شهرية للوجبات والتمارين."
+              : `انتهت حصة التبديلات لهذه الدورة (${limitCheck.used}/${limitCheck.limit}) — تتجدد مع دورة الاشتراك. جدّد اشتراكك أو رقِّه لإضافة استحقاقات جديدة.`;
           return NextResponse.json(
             {
               error: `⏰ ${limitText}`,
@@ -149,6 +149,7 @@ export async function POST(request: NextRequest) {
               subscriptionRequired: limitCheck.subscriptionRequired,
               used: limitCheck.used,
               limit: limitCheck.limit,
+              renewsAt: limitCheck.renewsAt ?? null,
             },
             {
               status: limitCheck.subscriptionRequired ? 402 : 429,

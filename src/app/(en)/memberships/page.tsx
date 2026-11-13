@@ -315,8 +315,9 @@ export default function MembershipsPage({ lang: langProp }: { lang?: Lang } = {}
             free-vs-paid tables): the "why paid at all?" bridge the buyer
             needs between the pricing grid and the persona cards. Four REAL
             paid deltas, every number against memberships.ts (AI-QUOTAS
-            2026-11-14: unified monthly quota 4/8/8 subscriber-only · swaps
-            13/26 monthly per type · saved results 3/50/200 ·
+            2026-11-14 completion order: unified monthly generation quota
+            4/8/8 subscriber-only · swaps ONE unified quota 8/16 ·
+            saved results 3/50/200 ·
             meal-planner saves 1/10/50 · ads Free+Premium only — Pro and
             Coaching ad-free). Direct numbers only (the 2026-09-13 owner
             directive — no multiplier phrasing). Copy-only. */}
@@ -342,8 +343,8 @@ export default function MembershipsPage({ lang: langProp }: { lang?: Lang } = {}
                 icon: "runner",
                 titleAr: "تكييف شهري لخطتك",
                 titleEn: "Monthly plan adaptation",
-                bodyAr: "تبديلات الوجبات والتمارين داخل خطتك القائمة: 13 شهريًا مع بريميوم و26 مع برو (لكل نوع حصته المستقلة) — فتتطور خطتك مع تقدمك بدل أن تبدأ من الصفر كل مرة.",
-                bodyEn: "Meal & exercise swaps inside your plan: 13 per month with Premium and 26 with Pro (a separate quota per type) — it evolves with your progress instead of starting over.",
+                bodyAr: "تبديلات الوجبات والتمارين داخل خطتك القائمة: حصة شهرية موحدة 8 تبديلات مع بريميوم و16 مع برو (وجبة أو تمرين من الحصة نفسها) — فتتطور خطتك مع تقدمك بدل أن تبدأ من الصفر كل مرة.",
+                bodyEn: "Meal & exercise swaps inside your plan: ONE unified monthly quota — 8 with Premium and 16 with Pro (a meal or an exercise each use one unit) — it evolves with your progress instead of starting over.",
               },
               {
                 icon: "scroll",
@@ -379,8 +380,8 @@ export default function MembershipsPage({ lang: langProp }: { lang?: Lang } = {}
             Improvement 3 — owner-approved frame): "Which plan fits you?" —
             the buyer's first decision question, unserved by any copy. Four
             honest personas, every number against memberships.ts (unified
-            pool 2/4/8/8 · meal-planner saves 1/10/50/50 · saved results
-            3/50/200/200 · swaps 13/26 monthly per type · ads Free+Premium
+            pool 0/4/8/8 · meal-planner saves 1/10/50/50 · saved results
+            3/50/200/200 · swaps ONE unified quota 0/8/16/16 · ads Free+Premium
             only). The Free row states the honest free product (AI-QUOTAS
             2026-11-14: generation is subscriber-only; free keeps every
             library, tool and EVO chat). */}
@@ -403,16 +404,16 @@ export default function MembershipsPage({ lang: langProp }: { lang?: Lang } = {}
                 tierEn: "Premium",
                 fitAr: "صرت تعدّل وتجرب وتولّد أكثر",
                 fitEn: "You're iterating and experimenting",
-                bodyAr: "حصة شهرية من 4 خطط، ومحادثة بلا حدود مع EVO، و13 تبديلًا شهريًا لكل نوع — مع سعة أكبر: 10 جداول وجبات محفوظة، و50 نتيجة أدوات قابلة للتصدير.",
-                bodyEn: "A monthly quota of 4 plans, unlimited chat, and 13 swaps per type each month — plus more capacity: 10 saved meal-planner plans and 50 saved tool results with export.",
+                bodyAr: "حصة شهرية من 4 خطط، ومحادثة بلا حدود مع EVO، و8 تبديلات شهريًا (وجبات أو تمارين من الحصة نفسها) — مع سعة أكبر: 10 جداول وجبات محفوظة، و50 نتيجة أدوات قابلة للتصدير.",
+                bodyEn: "A monthly quota of 4 plans, unlimited chat, and 8 swaps a month (meal or exercise, one quota) — plus more capacity: 10 saved meal-planner plans and 50 saved tool results with export.",
               },
               {
                 tierAr: "برو",
                 tierEn: "Pro",
                 fitAr: "تتدرب بجدية وتريد خطة تتكيف معك شهريًا — بلا إعلانات",
                 fitEn: "You train seriously and want monthly adaptation, ad-free",
-                bodyAr: "8 خطط و26 تبديلًا لكل نوع شهريًا، وتحليل لأنماط تقدمك — مع 50 جدول وجبات محفوظًا، و200 نتيجة أدوات، وتجربة خالية من الإعلانات.",
-                bodyEn: "8 generations and 26 swaps per type each month, and progress pattern analysis — 50 saved plans, 200 saved tool results, and no ads.",
+                bodyAr: "8 خطط و16 تبديلًا شهريًا (وجبات أو تمارين من الحصة نفسها)، وتحليل لأنماط تقدمك — مع 50 جدول وجبات محفوظًا، و200 نتيجة أدوات، وتجربة خالية من الإعلانات.",
+                bodyEn: "8 generations and 16 swaps a month (meal or exercise, one quota), and progress pattern analysis — 50 saved plans, 200 saved tool results, and no ads.",
               },
               {
                 tierAr: "التدريب الأونلاين",
@@ -584,16 +585,16 @@ export default function MembershipsPage({ lang: langProp }: { lang?: Lang } = {}
               confused are actually two different budgets. */}
           <p className="mx-auto mt-4 max-w-2xl text-center text-xs font-normal leading-relaxed text-[var(--muted-foreground)]">
             {isAr
-              ? "توليد خطط الذكاء الاصطناعي يسحب من رصيد شهري واحد موحد (التغذية والتمارين معًا، ويُحتسب التوليد الناجح فقط، ويتجدد مع أول كل شهر) — وهذا الرصيد منفصل كليًا عن حدود الحفظ في مخطط الوجبات ونتائج الأدوات."
-              : "AI plan generation draws from ONE unified monthly pool (nutrition + workout combined, success-only counting, resets on the 1st) — and it is completely separate from the Meal-Planner save limits and the tool-results save limits."}
+              ? "توليد خطط الذكاء الاصطناعي يسحب من حصة شهرية واحدة موحدة (التغذية والتمارين معًا، ويُحتسب التوليد الناجح فقط، وتتجدد مع دورة الاشتراك) — وهذه الحصة منفصلة كليًا عن حدود الحفظ في مخطط الوجبات ونتائج الأدوات."
+              : "AI plan generation draws from ONE unified monthly quota (nutrition + workout combined, success-only counting, renewing with your subscription cycle) — and it is completely separate from the Meal-Planner save limits and the tool-results save limits."}
           </p>
           {/* Phase 195 (owner directive): «Swaps» alone could read as a full
               plan regeneration — the limits row above means MEAL/EXERCISE
               swaps inside the existing plan, never a regeneration. */}
           <p className="mx-auto mt-2 max-w-2xl text-center text-xs font-normal leading-relaxed text-[var(--muted-foreground)]">
             {isAr
-              ? "«التبديلات» تعني استبدال وجبات أو تمارين فردية داخل خطتك دون إعادة إنشاء الخطة كاملة — وهي أسبوعية وتتجدد كل يوم اثنين."
-              : "“Swaps” means replacing individual meals or exercises within your plan — never a full plan regeneration. They are weekly and reset every Monday."}
+              ? "«التبديلات» تعني استبدال وجبات أو تمارين فردية داخل خطتك دون إعادة إنشاء الخطة كاملة — وهي حصة شهرية موحدة تتجدد مع دورة الاشتراك."
+              : "“Swaps” means replacing individual meals or exercises within your plan — never a full plan regeneration. They share ONE unified monthly quota (meals and exercises combined) that renews with your subscription cycle."}
           </p>{/* Access-point fix (2026-09-14): the /compare vertical had ZERO
               UI access points — a natural contextual bridge from the
               plan-comparison table to the platform-comparisons library

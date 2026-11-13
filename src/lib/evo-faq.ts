@@ -10,10 +10,11 @@
  * FAQ rich results (May 2026) but AI answer engines parse JSON-LD from
  * the server HTML (the GEO citation gap this closes).
  *
- * Every number verified against src/lib/memberships.ts on 2026-10-19:
- * free chat 10/day · generation subscriber-only 4/8/8 (premium/pro/coaching) ·
- * swaps monthly per type 13/26/26 · cross-device chat-history
- * restore paid-only · memory free-with-account · chat plans saved to the
+ * Every number verified against src/lib/memberships.ts on 2026-10-19
+ * (re-verified 2026-11-14 — completion order): free chat 10/day ·
+ * generation subscriber-only 4/8/8 (premium/pro/coaching) · swaps ONE
+ * unified monthly quota 8/16/16 (meal + exercise combined) ·
+ * cross-device chat-history restore paid-only · memory free-with-account ·
  * dashboard subscriber-gated.
  */
 
@@ -23,7 +24,7 @@ export const EVO_FAQ: Record<"en" | "ar", EvoFaqItem[]> = {
   en: [
     {
       q: "Is EVO free?",
-      a: "Yes, for everyone: 10 messages a day on the free tier, plus answers, guidance and fitness math. Plan generation & swaps are subscriber features — 4 generations a month on Premium, 8 on Pro and Coaching, plus 13 monthly swaps per type on Premium and 26 on Pro. Subscribers also get unlimited chat, persistent memory, and full chat-history restore across devices.",
+      a: "Yes, for everyone: 10 messages a day on the free tier, plus answers, guidance and fitness math. Plan generation & swaps are subscriber features — 4 generations a month on Premium, 8 on Pro and Coaching, plus a unified swap quota of 8 a month on Premium and 16 on Pro (meals and exercises combined). Subscribers also get unlimited chat, persistent memory, and full chat-history restore across devices.",
     },
     {
       q: "What data does EVO see?",
@@ -43,7 +44,7 @@ export const EVO_FAQ: Record<"en" | "ar", EvoFaqItem[]> = {
     },
     {
       q: "Can EVO swap a meal or exercise inside my plan?",
-      a: "Yes, with a subscription: 13 swaps a month on Premium and 26 on Pro (meal and exercise each have their own monthly quota) — one tap, and the result is saved into your plan automatically.",
+      a: "Yes, with a subscription: ONE unified monthly quota of 8 swaps on Premium and 16 on Pro (a meal swap or an exercise swap each use one unit of the same quota) — one tap, and the result is saved into your plan automatically.",
     },
     {
       q: "Can it build a full plan from the chat?",
@@ -57,7 +58,7 @@ export const EVO_FAQ: Record<"en" | "ar", EvoFaqItem[]> = {
   ar: [
     {
       q: "هل EVO مجاني؟",
-      a: "نعم، للجميع: 10 رسائل يوميًا في الباقة المجانية، مع الإجابات والتوجيه وحل الحسابات. أما توليد الخطط والتبديلات فميزة لمشتركي بريميوم وأعلى: 4 توليدات شهريًا مع بريميوم و8 مع برو والتدريب الأونلاين، و13 تبديلًا شهريًا لكل نوع مع بريميوم و26 مع برو. ويحصل المشتركون أيضًا على محادثة غير محدودة وذاكرة دائمة واسترجاع سجل المحادثة كاملًا عبر الأجهزة.",
+      a: "نعم، للجميع: 10 رسائل يوميًا في الباقة المجانية، مع الإجابات والتوجيه وحل الحسابات. أما توليد الخطط والتبديلات فميزة لمشتركي بريميوم وأعلى: 4 توليدات شهريًا مع بريميوم و8 مع برو والتدريب الأونلاين، وحصة تبديلات موحدة 8 تبديلات شهريًا مع بريميوم و16 مع برو (تجمع الوجبات والتمارين من الحصة نفسها). ويحصل المشتركون أيضًا على محادثة غير محدودة وذاكرة دائمة واسترجاع سجل المحادثة كاملًا عبر الأجهزة.",
     },
     {
       q: "ما البيانات التي يقرأها EVO؟",
@@ -77,7 +78,7 @@ export const EVO_FAQ: Record<"en" | "ar", EvoFaqItem[]> = {
     },
     {
       q: "هل يستطيع EVO تبديل وجبة أو تمرين داخل خطتي؟",
-      a: "نعم مع الاشتراك: 13 تبديلًا شهريًا مع بريميوم و26 مع برو (لكل من الوجبات والتمارين حصته الشهرية المستقلة) — بضغطة واحدة، والنتيجة تُحفظ في خطتك تلقائيًا.",
+      a: "نعم مع الاشتراك: حصة شهرية موحدة واحدة من 8 تبديلات مع بريميوم و16 مع برو (تبديل الوجبة أو التمرين كلاهما يستهلك وحدة من الحصة نفسها) — بضغطة واحدة، والنتيجة تُحفظ في خطتك تلقائيًا.",
     },
     {
       q: "هل يستطيع بناء خطة كاملة من المحادثة؟",

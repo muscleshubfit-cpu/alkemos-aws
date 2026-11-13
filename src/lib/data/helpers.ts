@@ -5,7 +5,6 @@
 
 import { supabase, isSupabaseConfigured } from "@/lib/supabase/client";
 import type { Profile } from "@/lib/supabase/types";
-import { swapLimitFor } from "@/lib/plans";
 // PHASE 66: trackReferral / awardCommission / processSubscriptionInitialPayment
 // removed from the browser layer — referral tracking now happens SERVER-SIDE
 // (0057 trigger + signup metadata) and commissions run in
@@ -16,7 +15,7 @@ import { getReferralCookie, clearReferralCookie } from "@/lib/referral-cookie";
 // access them, and so domain modules can import everything from "./helpers".
 export { supabase, isSupabaseConfigured };
 export type { Profile };
-export { swapLimitFor, getReferralCookie, clearReferralCookie };
+export { getReferralCookie, clearReferralCookie };
 
 /* -------------------------------------------------------------------------- */
 /* Upload validation helper (M7 fix) */

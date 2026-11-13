@@ -263,8 +263,8 @@ export default function ForCoachesPage() {
               </h3>
               <p className="mt-2 text-sm leading-relaxed text-[var(--muted-foreground)]">
                 {isAr
-                  ? "توليد الخطط لعميلك يسحب من رصيده الموحد حسب باقته — رصيد واحد شهري يجمع التغذية والتمارين معًا: بريميوم 4 توليدات شهريًا · برو 8 · التدريب الأونلاين 8 (ويورّث كل مزايا برو). وهو الرصيد نفسه الذي يستخدمه عميلك من EVO وصفحات المخططات؛ يتجدد في أول كل شهر، ولا يُحتسب إلا التوليد الناجح — الفاشل لا يحرق حصة. أما التعديل بيدك ورفع الخطط اليدوية وإعادة توليد أي وجبة أو صنف أو يوم تدريب أو تمرين بالذكاء الاصطناعي — فكلها غير محدودة تمامًا."
-                  : "Generating a client's plans draws from their own tier's unified monthly balance — ONE pool for nutrition AND workouts combined: Premium 4 generations/month · Pro 8 · Coaching 8 (inherits every Pro benefit). It is the same pool they spend through EVO and the planner pages; it resets on the 1st, and only successful generations count — failed ones never burn quota. Hand-editing, manual uploads, and AI-regenerating any meal, item, workout day, or exercise are all unlimited."}
+                  ? "توليد الخطط لعميلك يسحب من حصته الموحدة حسب باقته — حصة واحدة شهرية تجمع التغذية والتمارين معًا: بريميوم 4 توليدات شهريًا · برو 8 · التدريب الأونلاين 8 (ويورّث كل مزايا برو). وهي الحصة نفسها التي يستخدمها عميلك من EVO وصفحات المخططات؛ تتجدد مع دورة اشتراكه، ولا يُحتسب إلا التوليد الناجح — الفاشل لا يحرق حصة. أما التعديل بيدك ورفع الخطط اليدوية وإعادة توليد أي وجبة أو صنف أو يوم تدريب أو تمرين بالذكاء الاصطناعي — فكلها غير محدودة تمامًا."
+                  : "Generating a client's plans draws from their own tier's unified monthly quota — ONE quota for nutrition AND workouts combined: Premium 4 generations/month · Pro 8 · Coaching 8 (inherits every Pro benefit). It is the same quota they spend through EVO and the planner pages; it renews with their subscription cycle, and only successful generations count — failed ones never burn quota. Hand-editing, manual uploads, and AI-regenerating any meal, item, workout day, or exercise are all unlimited."}
               </p>
             </div>
           </div>

@@ -214,21 +214,39 @@ describe("A) resolveMembershipTier — the premium→pro lifecycle ladder", () =
 // ─────────────────────────────────────────────────────────────────────
 
 const h = vi.hoisted(() => {
-  // count returned per (table, identity key) — ai_plan_usage rows are
-  // keyed by USER (0085: user_id XOR guest_key), never by subscription.
-  const counts: Record<string, number> = {};
+  // usage rows per (table, identity key) — ai_plan_usage rows are keyed
+  // by USER (0085: user_id XOR guest_key), never by subscription; the
+  // parallel-bucket engine reads their created_at stamps.
+  const usage: Record<string, Array<{ created_at: string }>> = {};
   // subscriptions ROWS for the aggregated-pool DB fetch (owner order
   // 2026-10-28 — full rows: the pool aggregates the active+expiry window)
-  const subRows: Array<{ tier: string; status: string; end_date: string }> = [];
-  return { counts, subRows };
+  const subRows: Array<{ tier: string; status: string; end_date: string; start_date: string | null }> = [];
+  return { usage, subRows };
 });
 
-type CountRow = { count: number | null; error: unknown };
-interface FakeBuilder extends PromiseLike<CountRow> {
+const UP_NOW = Date.now();
+const UP_DAY = DAY;
+/** N success rows 1 day ago — inside every bucket's window. */
+const setUpgradeUsage = (n: number, user = MEMBER) => {
+  h.usage[`ai_plan_usage:${user}`] = Array.from({ length: n }, (_, i) => ({
+    created_at: new Date(UP_NOW - UP_DAY - i * 60_000).toISOString(),
+  }));
+};
+/** An active row anchored 20 days ago (window covers NOW). */
+const upActive = (tier: string, endDaysAhead = 30) => ({
+  tier,
+  status: "active",
+  end_date: new Date(UP_NOW + endDaysAhead * UP_DAY).toISOString(),
+  start_date: new Date(UP_NOW - 20 * UP_DAY).toISOString(),
+});
+
+type RowOutcome = { count: number | null; error: unknown; data: unknown };
+interface FakeBuilder extends PromiseLike<RowOutcome> {
   select: () => FakeBuilder;
   eq: (col: string, val: unknown) => FakeBuilder;
   gt: () => FakeBuilder;
-  gte: () => FakeBuilder;
+  gte: (col: string, val: unknown) => FakeBuilder;
+  order: () => FakeBuilder;
   limit: () => FakeBuilder;
   maybeSingle: () => Promise<{ data: unknown; error: unknown }>;
   single: () => Promise<{ data: unknown; error: unknown }>;
@@ -237,15 +255,19 @@ interface FakeBuilder extends PromiseLike<CountRow> {
 vi.mock("@/lib/supabase/admin", () => {
   const makeBuilder = (table: string): FakeBuilder => {
     let identity = "";
-    const outcome = (): Promise<CountRow> => {
+    let sinceMs = 0;
+    const outcome = (): Promise<RowOutcome> => {
       if (table === "subscriptions") {
         return Promise.resolve({
           count: null,
           error: null,
           data: h.subRows,
-        } as unknown as CountRow);
+        } as unknown as RowOutcome);
       }
-      return Promise.resolve({ count: h.counts[`${table}:${identity}`] ?? 0, error: null });
+      const rows = (h.usage[`${table}:${identity}`] ?? []).filter(
+        (r) => new Date(r.created_at).getTime() >= sinceMs,
+      );
+      return Promise.resolve({ count: rows.length, error: null, data: rows } as unknown as RowOutcome);
     };
     const builder: FakeBuilder = {
       select: () => builder,
@@ -256,7 +278,11 @@ vi.mock("@/lib/supabase/admin", () => {
         return builder;
       },
       gt: () => builder,
-      gte: () => builder,
+      gte: (col, val) => {
+        if (col === "created_at") sinceMs = new Date(String(val)).getTime();
+        return builder;
+      },
+      order: () => builder,
       limit: () => builder,
       maybeSingle: () => Promise.resolve({ data: null, error: null }),
       single: () => Promise.resolve({ data: null, error: null }),
@@ -274,13 +300,13 @@ const MEMBER = "22222222-2222-2222-2222-222222222222";
 
 describe("B) checkUnifiedPlanQuota — partial consumption then upgrade (the 374 gap, under the 376 aggregate law)", () => {
   beforeEach(() => {
-    for (const k of Object.keys(h.counts)) delete h.counts[k];
+    for (const k of Object.keys(h.usage)) delete h.usage[k];
     h.subRows.length = 0;
   });
 
   it("BEFORE the upgrade: 2 of the 4 premium generations burned → {used:2, limit:4, remaining:2}", async () => {
-    h.subRows.push({ tier: "premium", status: "active", end_date: iso(30 * DAY) });
-    h.counts[`ai_plan_usage:${MEMBER}`] = 2; // e.g. 1 nutrition + 1 workout
+    h.subRows.push(upActive("premium"));
+    setUpgradeUsage(2); // e.g. 1 nutrition + 1 workout
     const v = await checkUnifiedPlanQuota({ userId: MEMBER, tierHint: "premium" });
     expect(v).toMatchObject({ used: 2, limit: 4, remaining: 2, allowed: true, tier: "premium" });
   });
@@ -288,11 +314,8 @@ describe("B) checkUnifiedPlanQuota — partial consumption then upgrade (the 374
   it("THE UPGRADE VERDICT (376 law): same member, pro row added — {used:2, limit:12, remaining:10} — usage NOT zeroed, pool AGGREGATED", async () => {
     // The ledger is identity-keyed (0085): activating a subscription row
     // never touches it. The pool aggregates the paid rows (4+8=12).
-    h.subRows.push(
-      { tier: "premium", status: "active", end_date: iso(30 * DAY) },
-      { tier: "pro", status: "active", end_date: iso(30 * DAY) },
-    );
-    h.counts[`ai_plan_usage:${MEMBER}`] = 2;
+    h.subRows.push(upActive("premium"), upActive("pro"));
+    setUpgradeUsage(2);
     const v = await checkUnifiedPlanQuota({ userId: MEMBER, tierHint: "pro" });
     expect(v).toMatchObject({ used: 2, limit: 12, remaining: 10, allowed: true, tier: "pro" });
     // The two wrong implementations this canary kills:
@@ -303,47 +326,41 @@ describe("B) checkUnifiedPlanQuota — partial consumption then upgrade (the 374
   });
 
   it("EXHAUSTED premium at the upgrade moment: 4/4 blocked as premium, unblocked as premium+pro with exactly the 8 new paid units", async () => {
-    h.counts[`ai_plan_usage:${MEMBER}`] = 4;
-    h.subRows.push({ tier: "premium", status: "active", end_date: iso(30 * DAY) });
+    setUpgradeUsage(4);
+    h.subRows.push(upActive("premium"));
     const before = await checkUnifiedPlanQuota({ userId: MEMBER, tierHint: "premium" });
     expect(before.allowed).toBe(false);
     expect(before.remaining).toBe(0);
-    h.subRows.push({ tier: "pro", status: "active", end_date: iso(30 * DAY) });
+    h.subRows.push(upActive("pro"));
     const after = await checkUnifiedPlanQuota({ userId: MEMBER, tierHint: "pro" });
     expect(after).toMatchObject({ used: 4, limit: 12, remaining: 8, allowed: true });
   });
 
-  it("upgrade does NOT grant a fresh month-window: the ledger keeps counting the SAME calendar month (pool resets on the 1st only)", async () => {
-    // 11 successes this month (4 as premium + 7 as pro) → 1 left, blocked at 12.
-    h.subRows.push(
-      { tier: "premium", status: "active", end_date: iso(30 * DAY) },
-      { tier: "pro", status: "active", end_date: iso(30 * DAY) },
-    );
-    h.counts[`ai_plan_usage:${MEMBER}`] = 11;
+  it("upgrade does NOT grant a fresh month-window: the shared verdict keeps counting the SAME cycle (11/12 → 1 left, blocked at 12)", async () => {
+    // 11 successes this window (4 as premium + 7 as pro) → 1 left, blocked at 12.
+    h.subRows.push(upActive("premium"), upActive("pro"));
+    setUpgradeUsage(11);
     const v = await checkUnifiedPlanQuota({ userId: MEMBER, tierHint: "pro" });
     expect(v).toMatchObject({ used: 11, limit: 12, remaining: 1, allowed: true });
-    h.counts[`ai_plan_usage:${MEMBER}`] = 12;
+    setUpgradeUsage(12);
     const blocked = await checkUnifiedPlanQuota({ userId: MEMBER, tierHint: "pro" });
     expect(blocked.allowed).toBe(false);
     expect(blocked.remaining).toBe(0);
   });
 
   it("DB-fallback path (no tierHint — the /api/ai/jobs enqueue gate shape): stacked rows AGGREGATE → limit 12, display tier pro", async () => {
-    h.subRows.push(
-      { tier: "premium", status: "active", end_date: iso(30 * DAY) },
-      { tier: "pro", status: "active", end_date: iso(30 * DAY) },
-    );
+    h.subRows.push(upActive("premium"), upActive("pro"));
     const v = await checkUnifiedPlanQuota({ userId: MEMBER });
     expect(v.tier).toBe("pro");
     expect(v.limit).toBe(12);
   });
 
-  it("every other tier limit steps with the SAME single-tier law (swap monthly 13→26, saved-results 50→200, ads off at pro)", () => {
-    // AI-QUOTAS 2026-11-14: swaps became INDEPENDENT monthly quotas per
-    // type (13/26 — the full-entitlement conversion of the retired 3/6
-    // weekly limits). Replaced, never 13+26.
-    expect(swapLimitForTier("premium")).toBe(13);
-    expect(swapLimitForTier("pro")).toBe(26);
+  it("every other tier limit steps with the SAME single-tier law (swap monthly 8→16 unified, saved-results 50→200, ads off at pro)", () => {
+    // AI-QUOTAS completion order 2026-11-14: swaps are ONE UNIFIED monthly
+    // quota (8/16 — meal + exercise combined; the per-type split and the
+    // retired 13/26 numbers are gone). Replaced, never 8+16.
+    expect(swapLimitForTier("premium")).toBe(8);
+    expect(swapLimitForTier("pro")).toBe(16);
     expect(getLimits("premium").savedResultsLimit).toBe(50);
     expect(getLimits("pro").savedResultsLimit).toBe(200);
     expect(getLimits("premium").adsEnabled).toBe(true);

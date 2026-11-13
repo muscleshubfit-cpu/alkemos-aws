@@ -288,8 +288,8 @@ export default function AiWorkoutPlannerPage() {
           </h1>
           <p className="mx-auto mt-3 max-w-md text-base font-normal text-[var(--muted-foreground)] md:text-lg">
             {isAr
-              ? "ولّد نظامًا تدريبيًا أسبوعيًا متوازنًا في ثوانٍ — مجانًا فورًا."
-              : "Generate a balanced weekly split in seconds — free to try, no credit card required."}
+              ? "ولّد نظامًا تدريبيًا أسبوعيًا متوازنًا في ثوانٍ — المكتبة والبرامج الجاهزة مجانية دائمًا."
+              : "Generate a balanced weekly split in seconds — the exercise library and ready-made programs stay free."}
           </p>
           <div className="seal-chip mt-4 inline-flex items-center gap-2">
             <Sparkles className="h-3.5 w-3.5 text-[var(--muted-2)]" aria-hidden="true" />
@@ -734,8 +734,8 @@ export default function AiWorkoutPlannerPage() {
               {
                 q: isAr ? "هل أحتاج حسابًا لتوليد التقسيمة؟" : "Do I need an account to generate a split?",
                 a: isAr
-                  ? "لا — كل زائر يحصل على توليدين ناجحين شهريًا بلا تسجيل ولا بطاقة: رصيدك الشهري مجاني من دخولك الأول. والحساب المجاني يجعل كل خطة تولّدها تُحفظ في حسابك وتصل إليها من أي جهاز."
-                  : "No — every visitor gets 2 successful generations a month with no signup and no card: your monthly pool is free from your very first visit. A free account saves every plan you generate to your account, reachable from any device.",
+                  ? "التوليد بالذكاء الاصطناعي ميزة مشتركين (بريميوم وأعلى) بحصة شهرية تتجدد مع دورة الاشتراك — لكن الحاسبات والمكتبات والمحتوى كلها مجانية بلا تسجيل، ومحادثة EVO تمنحك 10 رسائل يوميًا مجانًا. والحساب المجاني يحفظ كل خطة تصل إليك ويوصلها إليك من أي جهاز."
+                  : "AI generation is a subscriber feature (Premium and above) with a monthly quota that renews with your subscription cycle — but the calculators, libraries and content are all free with no signup, and EVO chat gives you 10 free messages a day. A free account saves every plan you receive and reaches it from any device.",
               },
               {
                 q: isAr ? "هل أحتاج ناديًا؟" : "Do I need a gym?",
@@ -770,16 +770,16 @@ export default function AiWorkoutPlannerPage() {
                   : "Yes — pick \"beginner\" and the generator lays out the foundational movements at comfortable volumes (3 to 8 exercises per day). Not sure about your level? Start with beginner — moving up in your next generation is easier than the reverse, and if the week feels easy, the next level is your call next time.",
               },
               {
-                q: isAr ? "كم توليدًا متاحًا؟ وماذا بعد نفاد الرصيد؟" : "How many generations do I get — and what happens when the pool runs out?",
+                q: isAr ? "كم توليدًا متاحًا؟ وماذا بعد نفاد الحصة؟" : "How many generations do I get — and what happens when the quota runs out?",
                 a: isAr
-                  ? "رصيد شهري موحد واحد يجمع خطط التغذية والتمارين معًا: توليدان ناجحان شهريًا لكل زائر بلا حساب، ويرتفع إلى 4 مع بريميوم و8 مع برو والتدريب الأونلاين — ولا يُحتسب إلا التوليد الناجح. بعد نفاد الرصيد تبقى كل خطة ولّدتها مرئية ومتاحة؛ ما يتوقف هو التوليد الجديد حتى يتجدد الرصيد أول الشهر."
-                  : "One unified monthly pool covers nutrition and workout plans together: 2 successful generations a month for every visitor with no account, rising to 4 with Premium and 8 with Pro and Coaching — only successful generations count. After the pool runs out, every plan you generated stays visible and accessible; what pauses is new generation until the pool resets on the 1st.",
+                  ? "حصة شهرية موحدة واحدة تجمع خطط التغذية والتمارين معًا وهي ميزة مشتركين: 4 توليدات ناجحة شهريًا مع بريميوم و8 مع برو والتدريب الأونلاين — ولا يُحتسب إلا التوليد الناجح. بعد نفاد الحصة تبقى كل خطة وصلتك مرئية ومتاحة؛ ما يتوقف هو التوليد الجديد حتى تتجدد الحصة مع دورة الاشتراك أو تجدد اشتراكك."
+                  : "One unified monthly quota covers nutrition and workout plans together, a subscriber feature: 4 successful generations a month with Premium and 8 with Pro and Coaching — only successful generations count. After the quota runs out, every plan you received stays visible and accessible; what pauses is new generation until the quota renews with your subscription cycle or you renew your plan.",
               },
               {
                 q: isAr ? "هل أستطيع تعديل التقسيمة أو طلب غيرها؟" : "Can I change the split or ask for another one?",
                 a: isAr
-                  ? "نعم — زر «ولّد نظامًا آخر» يولّد تقسيمة جديدة من رصيدك الشهري بمدخلات معدلة إن أردت. ومع الاشتراك يستطيع EVO تبديل تمارين فردية داخل خطتك أسبوعيًا (3 تبديلات مع بريميوم و6 مع برو)، وللتبديل اليدوي الكامل برامج التدريب الجاهزة معروضة لكل مستوى وهدف."
-                  : "Yes — the \"Generate another split\" button draws a new split from your monthly pool, with edited inputs if you like. With a subscription, EVO can swap individual exercises inside your plan weekly (3 swaps with Premium, 6 with Pro), and for full manual control the ready workout programs are laid out for every level and goal.",
+                  ? "نعم — زر «ولّد نظامًا آخر» يولّد تقسيمة جديدة من حصتك الشهرية بمدخلات معدلة إن أردت. ومع الاشتراك يستطيع EVO تبديل تمارين فردية داخل خطتك من حصة التبديلات الشهرية الموحدة (8 تبديلات مع بريميوم و16 مع برو)، وللتبديل اليدوي الكامل برامج التدريب الجاهزة معروضة لكل مستوى وهدف."
+                  : "Yes — the \"Generate another split\" button draws a new split from your monthly quota, with edited inputs if you like. With a subscription, EVO can swap individual exercises inside your plan from the unified monthly swap quota (8 swaps with Premium, 16 with Pro), and for full manual control the ready workout programs are laid out for every level and goal.",
               },
               {
                 q: isAr ? "ما الفرق بين هذه الأداة وبين EVO؟" : "How is this different from EVO?",

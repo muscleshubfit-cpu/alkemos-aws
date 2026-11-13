@@ -50,8 +50,8 @@ export default function EvoPage() {
       icon: RefreshCw,
       titleAr: "استبدالات ذكية بعداد",
       titleEn: "Smart Swaps With A Counter",
-      descAr: "استبدل أي وجبة أو تمرين بضغطة واحدة، مع عداد واضح يبيّن رصيدك الأسبوعي — وتُحفظ النتيجة في خطتك تلقائيًا.",
-      descEn: "Swap any meal or exercise in one tap, with a clear weekly counter — and the result is saved into your plan.",
+      descAr: "استبدل أي وجبة أو تمرين بضغطة واحدة، مع عداد واضح يبيّن حصتك الشهرية المتبقية — وتُحفظ النتيجة في خطتك تلقائيًا.",
+      descEn: "Swap any meal or exercise in one tap, with a clear counter of your remaining monthly quota — and the result is saved into your plan.",
       color: "#ff9500",
     },
     {
@@ -467,7 +467,7 @@ export default function EvoPage() {
             identity tint + chrome treatment. PHASE 183 rewrite (owner
             directive 2026-09-13): the old pre-unified-pool rows are gone —
             every cell below mirrors the ACTUAL enforcement (ai_plan_usage
-            unified pool · swaps weekly paid-only · measurements paid-only ·
+            unified pool · swaps one unified monthly quota paid-only · measurements paid-only ·
             memory free-with-account D1 · cross-device history paid-only).
             The old "blog summary vs full summary" split was never
             implemented — removed. Phase 185 (owner directive, same day):
@@ -545,8 +545,8 @@ export default function EvoPage() {
                 featEn: "Meal/exercise swaps in your plan",
                 freeAr: "✗ (نصائح عامة)",
                 freeEn: "✗ (general tips)",
-                subAr: "✓ 13–26 شهريًا حسب باقتك",
-                subEn: "✓ 13–26/month by tier",
+                subAr: "✓ 8–16 شهريًا حسب باقتك",
+                subEn: "✓ 8–16/month by tier",
               },
               {
                 featAr: "رد مبني على قياساتك (الوزن والخصر)",

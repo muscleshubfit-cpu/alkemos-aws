@@ -87,23 +87,30 @@ export default function ProfilePage() {
   const membership = MEMBERSHIPS.find((m) => m.id === tier);
 
   // AGGREGATED PAID-POOL (owner order 2026-10-28 «تجميع حصص الاشتراكات
-  // المدفوعة»): the plan-pool line shows the AGGREGATED monthly pool —
-  // every distinct effectively-active paid tier contributes its pool
-  // once (premium 4 + pro 8 = 12). The single-source for that number is
-  // the METER (/api/ai/quota — the same checkUnifiedPlanQuota verdict
-  // the generation gates enforce; meter == enforcement law), NOT a
+  // المدفوعة» + completion order 2026-11-14 §4): the plan-pool AND swap
+  // lines show the AGGREGATED monthly quotas — every distinct
+  // effectively-active paid tier contributes its quota once (generation:
+  // premium 4 + pro 8 = 12 · swaps: premium 8 + pro 16 = 24). The
+  // single-source for those numbers is the METER (/api/ai/quota — the
+  // same verdicts the gates enforce; meter == enforcement law), NOT a
   // client-side recomputation. Other limits below stay per-tier
-  // (best-tier feature gates — ads/saves/chat/swap semantics unchanged).
+  // (best-tier feature gates — ads/saves/chat semantics unchanged).
   const [planPoolLimit, setPlanPoolLimit] = useState<number | null>(null);
+  const [swapQuotaLimit, setSwapQuotaLimit] = useState<number | null>(null);
   useEffect(() => {
     if (!profile || isCoach || isAdmin) return;
     let cancelled = false;
     fetch("/api/ai/quota")
       .then((r) => (r.ok ? r.json() : null))
       .then((j) => {
-        if (cancelled || !j?.plans || j.plans.unlimited) return;
-        if (typeof j.plans.limit === "number" && j.plans.limit > 0) {
+        if (cancelled) return;
+        if (j?.plans && !j.plans.unlimited && typeof j.plans.limit === "number" && j.plans.limit > 0) {
           setPlanPoolLimit(j.plans.limit);
+        }
+        // AI-QUOTAS completion order §1: ONE unified swap quota (meal +
+        // exercise combined) — the meter's swaps.limit is the aggregate.
+        if (j?.swaps && !j.swaps.unlimited && typeof j.swaps.limit === "number" && j.swaps.limit > 0) {
+          setSwapQuotaLimit(j.swaps.limit);
         }
       })
       .catch(() => {
@@ -687,12 +694,13 @@ export default function ProfilePage() {
                 { label: isAr ? "EVO رسائل يوميًا" : "EVO messages a day", value: limits.evoChatDailyLimit === null ? "∞" : `${limits.evoChatDailyLimit}` },
                 // Unified monthly quota (2026-09-13 → 2026-11-14): ONE
                 // monthly budget for nutrition + workout AI generations
-                // combined — free = 0 (subscriber-only generation).
+                // combined — free = 0 (subscriber-only generation). Reads
+                // the METER's aggregated limit (meter == enforcement).
                 { label: isAr ? "توليدات الخطط بالذكاء الاصطناعي/شهر" : "AI plan gens/mo", value: `${planPoolLimit ?? limits.aiPlanMonthlyLimit}` },
-                // 2026-11-14: swaps became INDEPENDENT monthly quotas per
-                // type (13/26) — renewed on the subscription cycle.
-                { label: isAr ? "تبديلات/شهر (وجبات)" : "Meal swaps/mo", value: limits.evoSwapMonthlyLimit === 0 ? "—" : `${limits.evoSwapMonthlyLimit}` },
-                { label: isAr ? "تبديلات/شهر (تمارين)" : "Exercise swaps/mo", value: limits.evoSwapMonthlyLimit === 0 ? "—" : `${limits.evoSwapMonthlyLimit}` },
+                // Completion order 2026-11-14 §1: ONE unified swap quota
+                // (meal + exercise combined — the per-type split is
+                // retired). Reads the METER's aggregated limit.
+                { label: isAr ? "تبديلات/شهر (وجبات وتمارين)" : "Swaps/mo (meals & exercises)", value: (swapQuotaLimit ?? limits.evoSwapMonthlyLimit) === 0 ? "—" : `${swapQuotaLimit ?? limits.evoSwapMonthlyLimit}` },
                 { label: isAr ? "حفظ نتائج" : "Saved results", value: limits.savedResultsLimit === null ? "∞" : `${limits.savedResultsLimit}` },
                 { label: isAr ? "جداول وجبات" : "Meal plans saved", value: limits.mealPlannerMaxSaved === null ? "∞" : `${limits.mealPlannerMaxSaved}` },
               ].map((item, i) => (

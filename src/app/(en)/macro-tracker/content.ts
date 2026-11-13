@@ -37,7 +37,7 @@ export const MACRO_TRACKER_FAQ_EN: Array<{ q: string; a: string }> = [
   },
   {
     q: "Can I generate a full meal plan for my macros?",
-    a: "Yes. The AI Meal Planner generates a complete day of meals in grams from your calorie target and diet system — 2 successful generations per month free, no signup required, with meal swaps available through the EVO AI coach.",
+    a: "Yes. The AI Meal Planner generates a complete day of meals in grams from your calorie target and diet system — generation is a subscriber feature (Premium and above) with a monthly quota, and meal swaps are available through the EVO AI coach with a unified monthly swap quota.",
   },
   {
     q: "How do I know the plan is working?",
@@ -68,7 +68,7 @@ export const MACRO_TRACKER_FAQ_AR: Array<{ q: string; a: string }> = [
   },
   {
     q: "هل يمكنني توليد خطة وجبات كاملة لماكروزي؟",
-    a: "نعم. مخطط الوجبات بالذكاء الاصطناعي يولّد يومًا كاملًا من الوجبات بالغرامات من رقم سعراتك ونظامك الغذائي — توليدان ناجحان شهريًا مجانًا بلا تسجيل، مع تبديلات وجبات متاحة عبر مدرب EVO الذكي.",
+    a: "نعم. مخطط الوجبات بالذكاء الاصطناعي يولّد يومًا كاملًا من الوجبات بالغرامات من رقم سعراتك ونظامك الغذائي — والتوليد ميزة مشتركين (بريميوم وأعلى) بحصة شهرية، مع تبديلات وجبات متاحة عبر مدرب EVO الذكي بحصة تبديلات شهرية موحدة.",
   },
   {
     q: "كيف أعرف أن الخطة تعمل؟",

@@ -388,14 +388,14 @@ export const TOOL_SCHEMA_DATA: Record<string, ToolSchemaData> = {
         "The site's four diet systems (balanced, high-protein, keto, vegetarian)",
         "Optional preferences respected in the prompt",
         "Strict shape and calorie-closure validation on every plan",
-        "Free for everyone: 2 plan generations per month per visitor, no account",
+        "AI generation for subscribers (Premium and above) with a monthly quota renewing with the subscription cycle",
       ],
       ar: [
         "توليد يوم كامل بالغرامات بضغطة واحدة",
         "أنظمة الموقع الأربعة (متوازن، عالي البروتين، كيتو، نباتي)",
         "ملاحظات اختيارية تُحترم في التوليد",
         "تحقق صارم من الشكل وإغلاق السعرات لكل خطة",
-        "مجاني للجميع: توليدان شهريًا لكل زائر",
+        "التوليد بالذكاء الاصطناعي لمشتركي بريميوم وأعلى بحصة شهرية تتجدد مع دورة الاشتراك",
       ],
     },
     crumbs: {
@@ -447,14 +447,14 @@ export const TOOL_SCHEMA_DATA: Record<string, ToolSchemaData> = {
         "Four goals, three levels, three equipment worlds",
         "The split always matches your requested training days exactly",
         "Strict shape validation on every generated plan",
-        "Free for everyone: 2 plan generations per month per visitor, no account",
+        "AI generation for subscribers (Premium and above) with a monthly quota renewing with the subscription cycle",
       ],
       ar: [
         "توليد نظام أسبوعي كامل بضغطة واحدة",
         "أربعة أهداف وثلاثة مستويات وثلاثة عوالم تجهيز",
         "النظام يطابق أيام تدريبك المطلوبة بالضبط دائمًا",
         "تحقق صارم من الشكل لكل نظام مولّد",
-        "مجاني للجميع: توليدان شهريًا لكل زائر بلا حساب",
+        "التوليد بالذكاء الاصطناعي لمشتركي بريميوم وأعلى بحصة شهرية تتجدد مع دورة الاشتراك",
       ],
     },
     crumbs: {
