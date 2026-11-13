@@ -275,7 +275,25 @@ PROBES: list[dict] = [
              "column": "job_ref"},
         ],
     },
-]# fmt: on
+    # 0111 — AI-QUOTA CLEAN-STACK GUARD (the 0108/0109 precedent class,
+    # dd46903f CI evidence): on production a verified NO-OP (0110 already
+    # applied — its strong probe row covers the two columns); on a clean
+    # test stack it recreates plan_swaps + lands 0110's columns + restores
+    # 0065's RLS posture so the chain is self-sufficient. Honest weak
+    # strength: the same two columns remain present after it, which is
+    # exactly what these checks pin.
+    {
+        "file": "20261114200000_0111_ai_quota_clean_stack_guard.sql",
+        "label": "0111 AI-QUOTA-CLEAN-STACK-GUARD",
+        "strength": "weak",
+        "checks": [
+            {"type": "swagger_column", "table": "ai_plan_usage",
+             "column": "job_ref"},
+            {"type": "swagger_column", "table": "plan_swaps",
+             "column": "job_ref"},
+        ],
+    },
+]# fmt on
 
 # --- named transforms for rest_rows probes ----------------------------------
 
