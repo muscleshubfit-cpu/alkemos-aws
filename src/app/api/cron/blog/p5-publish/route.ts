@@ -3,7 +3,7 @@ import { supabaseAdmin, isSupabaseAdminConfigured } from "@/lib/supabase/admin";
 import { normalizeCategory } from "@/lib/blog-server";
 import { countWords, splitFaqSection, filterFaqsByRelevance, clampMetaTitle, clampMetaDescription, type OutlinePlan } from "@/lib/blog-pipeline";
 import { scanLatinContamination } from "@/lib/blog-msa";
-import { runP5QualityGates } from "@/lib/blog-quality-gates";
+import { runP5QualityGates, completeTitlePrefixAnchors } from "@/lib/blog-quality-gates";
 import { verifyBodyLinks } from "@/lib/blog-link-verify";
 import { EDITORIAL_FAQ_COUNT_RANGE, EDITORIAL_AUTHORITY_DOMAINS, EDITORIAL_SEED_AUTHORITY_LINKS } from "@/lib/blog-editorial-law";
 import { getRecentPostsByLanguage } from "@/lib/blog-topics";
@@ -365,14 +365,40 @@ export async function GET(request: NextRequest) {
     // title-anchor is then judged by the grammar rules alone, which
     // 2-5-word grammatical titles pass anyway).
     let legalTitles: string[] = [];
+    let recentPosts: Array<{ title: string; slug: string }> = [];
     try {
-      legalTitles = (await getRecentPostsByLanguage(lang, 100)).map((p) => p.title);
+      recentPosts = await getRecentPostsByLanguage(lang, 100);
+      legalTitles = recentPosts.map((p) => p.title);
     } catch {
       /* best-effort whitelist — battery runs regardless */
     }
+    // BLOG-DIVERSITY-ENGINE batch finding (2026-11-13, run 43438011549):
+    // DETERMINISTIC title-prefix anchor completion (FAQ-filter precedent
+    // — P5 edits only what is provably intended). The review model
+    // repeatedly plants the LINKED POST'S TITLE HEAD as the anchor
+    // («best protein timing after a workout» → post «Best Protein
+    // Timing After a Workout: …»); the head is not the exact legal
+    // title, so G5 rejects it and weak models re-plant a different
+    // near-miss head every repair cycle (3 cycles measured live).
+    // Completing the prefix to the exact title is URL-safe (link
+    // verification above already ran; only anchor text changes) and
+    // lands the anchor on the always-legal form.
+    let gateMd = verifiedMd;
+    if (recentPosts.length > 0) {
+      const anchored = completeTitlePrefixAnchors(verifiedMd, recentPosts);
+      if (anchored.completed.length > 0) {
+        console.log(
+          `[blog/p5-publish] anchor completion: ${anchored.completed.length} title-prefix anchor(s) completed to the exact post title: ${anchored.completed
+            .slice(0, 5)
+            .map((c) => `«${c.from}» → «${c.to}»`)
+            .join(" · ")}`,
+        );
+        gateMd = anchored.bodyMd;
+      }
+    }
     const gateViolations = runP5QualityGates({
       lang,
-      bodyMd: verifiedMd,
+      bodyMd: gateMd,
       faqCount: finalFaqJson.length,
       legalTitles,
     });
@@ -389,7 +415,7 @@ export async function GET(request: NextRequest) {
     // list and the 23:40 dispatch backstop tops the day's slot up. EN
     // articles skip (Latin is their prose).
     if (lang === "ar") {
-      const bodyLatin = scanLatinContamination(verifiedMd);
+      const bodyLatin = scanLatinContamination(gateMd);
       if (bodyLatin.count > 0) {
         throw new Error(
           `p5: latin contamination in final body (${bodyLatin.count} tokens: ${bodyLatin.tokens.slice(0, 10).join(", ")}) — rerun p4-review`,
@@ -408,7 +434,7 @@ export async function GET(request: NextRequest) {
       // BODY IMAGE EMBEDDING LAW: images[0] = featured/og cover; images[1..N]
       // are inserted into the article markdown at section boundaries (was:
       // dropped entirely → every post was a wall of text).
-      content: embedBodyImages(verifiedMd, images),
+      content: embedBodyImages(gateMd, images),
       // Phase SEO-GEO-6.3 (§12.19 P0-3): word-boundary clamp replaces the
       // old `.slice(0, 60)` mid-word hard cut (23/31 EN titles were landing
       // in the SERP truncated mid-word; AR budget is wider at 70).

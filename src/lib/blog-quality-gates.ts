@@ -186,6 +186,61 @@ export function findUngrammaticalAnchors(
 }
 
 /**
+ * BLOG-DIVERSITY-ENGINE batch finding (2026-11-13, run 43438011549) —
+ * DETERMINISTIC TITLE-PREFIX ANCHOR COMPLETION. The live failure class:
+ * the review model plants an anchor that is the LINKED POST'S TITLE
+ * HEAD (everything before the subtitle colon — e.g. «best protein
+ * timing after a workout» for the post «Best Protein Timing After a
+ * Workout: Maximize Muscle Growth»). The exact FULL title is the
+ * explicitly-legal anchor form (the gate's legalTitles whitelist), but
+ * the truncated head is not — it is 6+ words or a function-word-less
+ * keyword list, so G5 rejects it and weak models keep re-planting a
+ * DIFFERENT near-miss head every repair cycle (three cycles measured).
+ * This pass completes any internal-blog-link anchor that normalizes to
+ * a strict PREFIX of its linked post's title to that exact title —
+ * URL untouched (link verification upstream is unaffected), prose
+ * stays true to what the model cited, and the anchor lands on the
+ * always-legal form. Same publish-layer philosophy as the deterministic
+ * FAQ relevance filter (P5 edits only what is provably intended).
+ */
+export function completeTitlePrefixAnchors(
+  bodyMd: string,
+  posts: Array<{ title: string; slug: string }>,
+): { bodyMd: string; completed: Array<{ from: string; to: string }> } {
+  const bySlug = new Map<string, { title: string; slug: string }>();
+  for (const p of posts) {
+    if (p?.slug && p?.title) bySlug.set(p.slug, p);
+  }
+  const normalize = (s: string) =>
+    s.trim().toLowerCase().replace(/[\u064B-\u0652]/g, "").replace(/[^\p{L}\p{N}]+/gu, " ").trim();
+  const completed: Array<{ from: string; to: string }> = [];
+  const out = bodyMd.replace(
+    MD_LINK_RE,
+    (full: string, anchorRaw: string, url: string) => {
+      const internal = url.match(/\/(?:ar\/)?blog\/([^/?#]+)/);
+      if (!internal) return full;
+      let post: { title: string; slug: string } | undefined;
+      try {
+        post = bySlug.get(decodeURIComponent(internal[1]));
+      } catch {
+        post = bySlug.get(internal[1]);
+      }
+      if (!post) return full;
+      const anchor = anchorRaw.trim();
+      const na = normalize(anchor);
+      const nt = normalize(post.title);
+      if (!na || na === nt) return full; // already the exact legal title
+      if (nt.startsWith(`${na} `)) {
+        completed.push({ from: anchor, to: post.title });
+        return `[${post.title}](${url})`;
+      }
+      return full;
+    },
+  );
+  return { bodyMd: out, completed };
+}
+
+/**
  * G6 — quoted long-tail SEARCH phrases pasted into prose (audit §C4:
  * «your daily target for "how many calories should i eat to lose
  * weight" while still feeding muscle»). Deliberately CONSERVATIVE so a

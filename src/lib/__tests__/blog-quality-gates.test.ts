@@ -13,6 +13,7 @@ import {
   findUngrammaticalAnchors,
   findQuotedSearchPhrases,
   runP5QualityGates,
+  completeTitlePrefixAnchors,
 } from "@/lib/blog-quality-gates";
 
 const LEGAL_TITLES = [
@@ -130,6 +131,49 @@ describe("G5 — anchor grammar law", () => {
     expect(findUngrammaticalAnchors(md, "ar", [])).toEqual([
       "إرشادات الكلية الأمريكية للطب الرياضي حول التغذية السليمة دائمًا",
     ]);
+  });
+});
+
+describe("completeTitlePrefixAnchors — the deterministic title-prefix completion (batch finding 2026-11-13)", () => {
+  const POSTS = [
+    { title: "Best Protein Timing After a Workout: Maximize Muscle Growth", slug: "best-protein-timing-after-workout" },
+    { title: "دليل بناء العضلات في المنزل: الشرح الكامل", slug: "home-muscle-guide" },
+  ];
+
+  it("completes a linked post's title-HEAD anchor to the exact full title (the legal form)", () => {
+    const md = "See [best protein timing after a workout](/blog/best-protein-timing-after-workout) for details.";
+    const out = completeTitlePrefixAnchors(md, POSTS);
+    expect(out.completed).toEqual([
+      { from: "best protein timing after a workout", to: "Best Protein Timing After a Workout: Maximize Muscle Growth" },
+    ]);
+    expect(out.bodyMd).toContain("[Best Protein Timing After a Workout: Maximize Muscle Growth](/blog/best-protein-timing-after-workout)");
+    // and the completed anchor now PASSES G5 that rejected the head
+    expect(findUngrammaticalAnchors(out.bodyMd, "en", POSTS.map((p) => p.title))).toEqual([]);
+  });
+
+  it("completes AR title-head anchors too (diacritics/punctuation-insensitive)", () => {
+    const md = "راجع [دليل بناء العضلات في المنزل](/ar/blog/home-muscle-guide) للمزيد.";
+    const out = completeTitlePrefixAnchors(md, POSTS);
+    expect(out.completed.length).toBe(1);
+    expect(out.bodyMd).toContain("[دليل بناء العضلات في المنزل: الشرح الكامل](/ar/blog/home-muscle-guide)");
+  });
+
+  it("leaves an already-exact title, a non-prefix anchor and an unknown slug untouched", () => {
+    const md = [
+      "[Best Protein Timing After a Workout: Maximize Muscle Growth](/blog/best-protein-timing-workout)",
+      "[this natural phrase](/blog/best-protein-timing-after-workout)",
+      "[some anchor](/blog/does-not-exist)",
+    ].join(" ");
+    const out = completeTitlePrefixAnchors(md, POSTS);
+    expect(out.completed).toEqual([]);
+    expect(out.bodyMd).toBe(md);
+  });
+
+  it("external and tool links are never touched (only internal blog links resolve)", () => {
+    const md = "[healthy diet](https://www.who.int/news-room/fact-sheets/detail/healthy-diet) and [calculator](/tools/calorie-calculator) stay.";
+    const out = completeTitlePrefixAnchors(md, POSTS);
+    expect(out.completed).toEqual([]);
+    expect(out.bodyMd).toBe(md);
   });
 });
 

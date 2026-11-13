@@ -116,9 +116,14 @@ describe("P5 source pins — the review NEVER happens automatically", () => {
     const batteryPos = src.indexOf("runP5QualityGates({");
     expect(verifyPos).toBeGreaterThan(-1);
     expect(batteryPos).toBeGreaterThan(verifyPos);
-    // the battery + latin gate + stored content all read the VERIFIED md:
-    expect(src).toContain("bodyMd: verifiedMd");
-    expect(src).toContain("embedBodyImages(verifiedMd, images)");
+    // the battery + latin gate + stored content all read the VERIFIED md —
+    // BLOG-DIVERSITY-ENGINE (2026-11-13): after link verification, the
+    // deterministic title-prefix anchor completion may refine anchors
+    // (gateMd), and the battery + latin gate + stored content all read
+    // THAT same body (no content drift between gate and publish):
+    expect(src).toContain("bodyMd: gateMd");
+    expect(src).toContain("embedBodyImages(gateMd, images)");
+    expect(src).toContain("completeTitlePrefixAnchors(verifiedMd, recentPosts)");
   });
 });
 
