@@ -132,6 +132,51 @@ describe("G5 — anchor grammar law", () => {
       "إرشادات الكلية الأمريكية للطب الرياضي حول التغذية السليمة دائمًا",
     ]);
   });
+
+  // BLOG-DIVERSITY-ENGINE live fix (2026-11-13, runs 43462878375 +
+  // 43466380856): the canonical tool-NAME anchor class. Instruction 8
+  // (owner SEO directive 2026-09-01) mandates the tool link; Arabic tool
+  // names are idafa chains with no function words — the gate deadlocked
+  // against its own instruction across every repair cycle (measured
+  // twice live: the SAME «حاسبة مؤشر كتلة الجسم» anchor re-planted and
+  // re-rejected until the repair budget burned out).
+  it("AR (DIVERSITY-ENGINE live fix): the canonical tool-NAME anchor passes — the live «حاسبة مؤشر كتلة الجسم» BMI-calculator class (both the /ar mirror and the EN-form URL)", () => {
+    const mirror = "استخدم [حاسبة مؤشر كتلة الجسم](/ar/tools/bmi-calculator) لتقدير نطاقك.";
+    expect(findUngrammaticalAnchors(mirror, "ar", [])).toEqual([]);
+    const enForm = "استخدم [حاسبة مؤشر كتلة الجسم](/tools/bmi-calculator) لتقدير نطاقك.";
+    expect(findUngrammaticalAnchors(enForm, "ar", [])).toEqual([]);
+    // Absolute-origin variant a model may plant — same route, same verdict.
+    const absolute = "استخدم [حاسبة مؤشر كتلة الجسم](https://alkemos.com/ar/tools/bmi-calculator) لتقدير نطاقك.";
+    expect(findUngrammaticalAnchors(absolute, "ar", [])).toEqual([]);
+  });
+
+  it("DIVERSITY-ENGINE live fix: the exemption is NAME-BOUND — a keyword-stuffing anchor that merely points at a tool URL stays judged", () => {
+    // No BMI trigger phrase inside «تمارين بناء العضلات المنزل» — stuffing shape on a tool route is still stuffing.
+    const md = "شوف [تمارين بناء العضلات المنزل](/ar/tools/bmi-calculator) للمزيد.";
+    expect(findUngrammaticalAnchors(md, "ar", [])).toEqual([
+      "تمارين بناء العضلات المنزل",
+    ]);
+  });
+
+  it("DIVERSITY-ENGINE live fix: a tool name pointing at the WRONG tool stays judged (the rule resolves by URL, then matches its own patterns)", () => {
+    // «حاسبة مؤشر كتلة الجسم» (4 words, no function words) names the BMI tool, but the URL is the macro calculator — the macro rule's own patterns don't match it, so the keyword-list shape stays judged.
+    const md = "راجع [حاسبة مؤشر كتلة الجسم](/tools/macro-calculator) للمزيد.";
+    expect(findUngrammaticalAnchors(md, "ar", [])).toEqual([
+      "حاسبة مؤشر كتلة الجسم",
+    ]);
+  });
+
+  it("DIVERSITY-ENGINE live fix: a tool-name anchor ABOVE the 7-word economy threshold is still rejected (the count law holds on tool links too)", () => {
+    const md = "استخدم [حاسبة مؤشر كتلة الجسم المجانية السريعة لدينا دائمًا](/ar/tools/bmi-calculator) الآن.";
+    expect(findUngrammaticalAnchors(md, "ar", [])).toEqual([
+      "حاسبة مؤشر كتلة الجسم المجانية السريعة لدينا دائمًا",
+    ]);
+  });
+
+  it("EN (DIVERSITY-ENGINE live fix): the canonical EN tool name passes («body mass index calculator» — 4 words, names the tool it links)", () => {
+    const md = "Try the [body mass index calculator](/tools/bmi-calculator) for your range.";
+    expect(findUngrammaticalAnchors(md, "en", [])).toEqual([]);
+  });
 });
 
 describe("completeTitlePrefixAnchors — the deterministic title-prefix completion (batch finding 2026-11-13)", () => {

@@ -293,3 +293,60 @@ function tryWrapFirstOccurrence(
   }
   return null;
 }
+
+/* ─────────────────────────────────────────────────────────────────
+ * BLOG-DIVERSITY-ENGINE live fix (2026-11-13, live runs 43462878375 +
+ * 43466380856): tool-NAME anchor recognition for the P5 G5 gate.
+ *
+ * The measured deadlock: P4 instruction 8 (owner SEO directive
+ * 2026-09-01) REQUIRES the review model to link tool mentions, and the
+ * canonical Arabic tool names are idafa construct chains
+ * («حاسبة مؤشر كتلة الجسم» — the BMI calculator) — grammatical noun
+ * phrases that structurally carry no function words, so G5's
+ * keyword-list heuristic rejected them on every repair cycle while the
+ * model kept re-planting the same canonical name (the instruction is
+ * mandatory; the name is the tool's). Pure leaf, same regex surface the
+ * deterministic pass itself uses.
+ * ───────────────────────────────────────────────────────────────── */
+
+/** Normalize a planted URL to the route form TOOL_RULES knows: tolerate
+ *  an absolute origin (https://alkemos.com/… · https://www.alkemos.com/…)
+ *  in addition to the relative forms the instructions show. */
+function normalizeToolUrl(url: string): string {
+  let u = url.trim();
+  for (const origin of ["https://www.alkemos.com", "https://alkemos.com"]) {
+    if (u.startsWith(origin)) {
+      u = u.slice(origin.length);
+      break;
+    }
+  }
+  return u;
+}
+
+/** Does `url` point at one of the deterministic tool routes (EN url or
+ *  /ar mirror)? Exposed for the G5 anchor gate's name-bound exemption. */
+export function isToolLinkUrl(url: string): boolean {
+  const u = normalizeToolUrl(url);
+  return TOOL_RULES.some((r) => u === r.url || u === r.urlAr);
+}
+
+/**
+ * NAME-BOUND exemption test: does `anchor` demonstrably NAME the tool at
+ * `url` — i.e. contain one of THAT exact tool route's trigger phrases
+ * (the same regex surface insertToolLinks wraps)? A canonical tool name
+ * («حاسبة مؤشر كتلة الجسم» contains «مؤشر كتلة»/«كتلة الجسم») passes;
+ * a keyword-stuffing anchor that merely points at a tool URL
+ * («تمارين بناء العضلات المنزل» — no BMI trigger inside) does not, and
+ * a tool name pointing at the WRONG tool does not either (the rule is
+ * resolved by URL, then matched by its own patterns).
+ */
+export function anchorNamesItsTool(url: string, anchor: string): boolean {
+  const u = normalizeToolUrl(url);
+  const rule = TOOL_RULES.find((r) => u === r.url || u === r.urlAr);
+  if (!rule) return false;
+  // Defensive against any future /g flag on a rule pattern (stateful
+  // lastIndex on .test) — strip it for this read-only probe.
+  return [...rule.patternsAr, ...rule.patternsEn].some(
+    (p) => new RegExp(p.source, p.flags.replace("g", "")).test(anchor),
+  );
+}

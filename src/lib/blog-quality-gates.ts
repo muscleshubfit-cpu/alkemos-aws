@@ -35,6 +35,10 @@
  */
 
 import { EDITORIAL_AUTHORITY_DOMAINS, EDITORIAL_FAQ_COUNT_RANGE } from "./blog-editorial-law";
+// BLOG-DIVERSITY-ENGINE live fix (2026-11-13): tool-NAME anchor
+// recognition — the same regex surface the deterministic tool-link pass
+// uses (pure leaf, no new dependency class).
+import { anchorNamesItsTool } from "./blog-tool-links";
 
 export type GateLang = "en" | "ar";
 
@@ -147,6 +151,23 @@ export function findUngrammaticalAnchors(
     // surface). Authority anchors within the AR word-economy threshold (≤7)
     // pass without the function-word check.
     if (words.length <= 7 && isAuthorityUrl(m[2])) continue;
+    // BLOG-DIVERSITY-ENGINE live fix (2026-11-13, live runs 43462878375 +
+    // 43466380856): an anchor that NAMES the tool it links — it contains
+    // one of that exact tool route's trigger phrases — is the canonical
+    // tool-name form instruction 8 (owner SEO directive 2026-09-01)
+    // REQUIRES the review model to plant. Arabic tool names are idafa
+    // construct chains («حاسبة مؤشر كتلة الجسم») — grammatical noun
+    // phrases that structurally carry no function words, so the
+    // keyword-list heuristic rejected them on EVERY repair cycle while
+    // the model kept re-planting the same canonical name (the
+    // instruction is mandatory; the name is the tool's) — a measured
+    // publish deadlock. Same shape as the round-2 authority exemption: a
+    // name-bound citation, not keyword stuffing — and PRECISION-bound:
+    // the URL must resolve to the tool AND the anchor must contain one
+    // of THAT tool's trigger phrases, within the ≤7 word-economy cap
+    // (an 8+ word stack on a tool URL stays judged; a stuffing anchor
+    // on a tool URL stays judged; the r2 canary below pins that).
+    if (words.length <= 7 && anchorNamesItsTool(m[2], anchor)) continue;
     // BLOG-RECOVERY-3 (2026-10-21, live run 39580182779): the EN-calibrated
     // >5 auto-reject killed legitimate 6-word ARABIC noun clauses — measured
     // «كمية الماء التي يحتاجها الرياضي يوميًا» (6 words, carries the function
