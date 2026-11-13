@@ -30,6 +30,7 @@ import {
   hasFemaleSubjectSignal,
   pickResultIndex,
   isExcludedImageUrl,
+  normalizeImageUrlForCompare,
 } from "@/lib/image-safety";
 import { supabaseAdmin, isSupabaseAdminConfigured } from "@/lib/supabase/admin";
 
@@ -94,8 +95,66 @@ export async function getRecentFeaturedImageUrls(limit = 30): Promise<string[]> 
 type PexelsPhoto = {
   alt?: string | null;
   photographer?: string | null;
+  width?: number | null;
+  height?: number | null;
   src?: { landscape?: string; large?: string; medium?: string; original?: string } | null;
 };
+
+/**
+ * BLOG-DIVERSITY-ENGINE (2026-11-13) — full candidate lists for the ranked
+ * image-discovery path: every safe result of ONE source search, in result
+ * order (rank 0 = the source's own relevance head). The legacy single-pick
+ * functions below ride these lists, so there is ONE fetch path per source.
+ */
+export type ImageCandidate = {
+  url: string;
+  alt: string;
+  credit: string;
+  source: "pexels" | "unsplash" | "pixabay";
+  width?: number;
+  height?: number;
+  /** 0-based position in the source's own result order. */
+  rank: number;
+};
+
+/** All safe Pexels results for a query (alt-screened + exclusion-filtered). */
+async function searchPexelsCandidates(
+  query: string,
+  opts?: ImageSourceOptions,
+): Promise<ImageCandidate[]> {
+  const key = process.env.PEXELS_API_KEY;
+  if (!key || !query.trim()) return [];
+  try {
+    const res = await fetch(
+      `https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&per_page=${RESULTS_PER_SEARCH}&orientation=landscape`,
+      { headers: { Authorization: key }, signal: AbortSignal.timeout(15_000) },
+    );
+    if (!res.ok) return [];
+    const data = (await res.json()) as { photos?: PexelsPhoto[] } | null;
+    const photos = data?.photos ?? [];
+    return photos
+      .map((p, rank) => ({
+        p,
+        url: p.src?.landscape || p.src?.large || p.src?.medium || p.src?.original || "",
+        rank,
+      }))
+      .filter(
+        (c) =>
+          c.url && !altTextUnsafe(c.p.alt) && !isExcludedImageUrl(c.url, opts?.excludeUrls),
+      )
+      .map((c) => ({
+        url: c.url,
+        alt: c.p.alt || query,
+        credit: c.p.photographer ? `Photo by ${c.p.photographer} on Pexels` : "Pexels",
+        source: "pexels" as const,
+        width: c.p.width ?? undefined,
+        height: c.p.height ?? undefined,
+        rank: c.rank,
+      }));
+  } catch {
+    return [];
+  }
+}
 
 /**
  * Search Pexels for a photo matching the query. PRIMARY source.
@@ -105,53 +164,62 @@ async function searchPexels(
   query: string,
   opts?: ImageSourceOptions,
 ): Promise<SourcedImage> {
-  const key = process.env.PEXELS_API_KEY;
-  if (!key || !query.trim()) return null;
-
-  try {
-    const res = await fetch(
-      `https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&per_page=${RESULTS_PER_SEARCH}&orientation=landscape`,
-      { headers: { Authorization: key }, signal: AbortSignal.timeout(15_000) },
-    );
-    if (!res.ok) return null;
-    const data = (await res.json()) as { photos?: PexelsPhoto[] } | null;
-    const photos = data?.photos ?? [];
-    // «لا عرى» + PHASE 173 «لا نساء»: reject any result whose alt text
-    // carries NSFW, immodest-signal, or female-subject vocabulary (the
-    // v3.1 shirtless-back catch + the no-women owner law).
-    const candidates = photos
-      .map((p) => ({
-        photo: p,
-        url: p.src?.landscape || p.src?.large || p.src?.medium || p.src?.original,
-      }))
-      .filter(
-        (c) =>
-          c.url && !altTextUnsafe(c.photo?.alt) && !isExcludedImageUrl(c.url, opts?.excludeUrls),
-      );
-    if (candidates.length === 0) return null;
-
-    const { photo, url } = candidates[pickResultIndex(candidates.length, opts?.variationKey)];
-    if (!photo || !url) return null;
-
-    // src.landscape = 1200×627 crop with auto=compress&cs=tinysrgb —
-    // lightweight at the CDN level before next/image further optimizes.
-    return {
-      url,
-      alt: photo.alt || query,
-      credit: photo.photographer ? `Photo by ${photo.photographer} on Pexels` : "Pexels",
-    };
-  } catch {
-    return null;
-  }
+  const candidates = await searchPexelsCandidates(query, opts);
+  if (candidates.length === 0) return null;
+  const picked = candidates[pickResultIndex(candidates.length, opts?.variationKey)];
+  return { url: picked.url, alt: picked.alt, credit: picked.credit };
 }
 
 /** Unsplash search-result photo shape (only the fields we consume). */
 type UnsplashPhoto = {
   alt_description?: string | null;
   description?: string | null;
+  width?: number | null;
+  height?: number | null;
   urls?: { regular?: string; full?: string } | null;
   user?: { name?: string | null } | null;
 };
+
+/** All safe Unsplash results for a query (failover source). */
+async function searchUnsplashCandidates(
+  query: string,
+  opts?: ImageSourceOptions,
+): Promise<ImageCandidate[]> {
+  const key = process.env.UNSPLASH_ACCESS_KEY;
+  if (!key || !query.trim()) return [];
+  try {
+    const res = await fetch(
+      `https://api.unsplash.com/search/photos?query=${encodeURIComponent(query)}&per_page=${RESULTS_PER_SEARCH}&orientation=landscape`,
+      { headers: { Authorization: `Client-ID ${key}` }, signal: AbortSignal.timeout(15_000) },
+    );
+    if (!res.ok) return [];
+    const data = (await res.json()) as { results?: UnsplashPhoto[] } | null;
+    const results = data?.results ?? [];
+    return results
+      .map((p, rank) => ({
+        p,
+        url: p.urls?.regular || p.urls?.full || "",
+        rank,
+      }))
+      .filter(
+        (c) =>
+          c.url &&
+          !altTextUnsafe(c.p.alt_description || c.p.description) &&
+          !isExcludedImageUrl(c.url, opts?.excludeUrls),
+      )
+      .map((c) => ({
+        url: c.url,
+        alt: c.p.alt_description || query,
+        credit: c.p.user?.name ? `Photo by ${c.p.user.name} on Unsplash` : "Unsplash",
+        source: "unsplash" as const,
+        width: c.p.width ?? undefined,
+        height: c.p.height ?? undefined,
+        rank: c.rank,
+      }));
+  } catch {
+    return [];
+  }
+}
 
 /**
  * Search Unsplash for a photo matching the query (failover source).
@@ -160,41 +228,10 @@ async function searchUnsplash(
   query: string,
   opts?: ImageSourceOptions,
 ): Promise<SourcedImage> {
-  const key = process.env.UNSPLASH_ACCESS_KEY;
-  if (!key || !query.trim()) return null;
-
-  try {
-    const res = await fetch(
-      `https://api.unsplash.com/search/photos?query=${encodeURIComponent(query)}&per_page=${RESULTS_PER_SEARCH}&orientation=landscape`,
-      { headers: { Authorization: `Client-ID ${key}` }, signal: AbortSignal.timeout(15_000) },
-    );
-    if (!res.ok) return null;
-    const data = (await res.json()) as { results?: UnsplashPhoto[] } | null;
-    const results = data?.results ?? [];
-    const candidates = results
-      .map((p) => ({
-        photo: p,
-        url: p.urls?.regular || p.urls?.full,
-      }))
-      .filter(
-        (c) =>
-          c.url &&
-          !altTextUnsafe(c.photo?.alt_description || c.photo?.description) &&
-          !isExcludedImageUrl(c.url, opts?.excludeUrls),
-      );
-    if (candidates.length === 0) return null;
-
-    const { photo, url } = candidates[pickResultIndex(candidates.length, opts?.variationKey)];
-    if (!photo || !url) return null;
-
-    return {
-      url,
-      alt: photo.alt_description || query,
-      credit: photo.user?.name ? `Photo by ${photo.user.name} on Unsplash` : "Unsplash",
-    };
-  } catch {
-    return null;
-  }
+  const candidates = await searchUnsplashCandidates(query, opts);
+  if (candidates.length === 0) return null;
+  const picked = candidates[pickResultIndex(candidates.length, opts?.variationKey)];
+  return { url: picked.url, alt: picked.alt, credit: picked.credit };
 }
 
 /** Pixabay search-result photo shape (only the fields we consume). */
@@ -204,7 +241,47 @@ type PixabayPhoto = {
   webformatURL?: string;
   previewURL?: string;
   user?: string | null;
+  imageWidth?: number;
+  imageHeight?: number;
 };
+
+/** All safe Pixabay results for a query (failover source; safesearch=true). */
+async function searchPixabayCandidates(
+  query: string,
+  opts?: ImageSourceOptions,
+): Promise<ImageCandidate[]> {
+  const key = process.env.PIXABAY_API_KEY;
+  if (!key || !query.trim()) return [];
+  try {
+    const res = await fetch(
+      `https://pixabay.com/api/?key=${key}&q=${encodeURIComponent(query)}&image_type=photo&orientation=horizontal&per_page=${RESULTS_PER_SEARCH}&safesearch=true`,
+      { signal: AbortSignal.timeout(15_000) },
+    );
+    if (!res.ok) return [];
+    const data = (await res.json()) as { hits?: PixabayPhoto[] } | null;
+    const hits = data?.hits ?? [];
+    return hits
+      .map((h, rank) => ({
+        h,
+        url: h.largeImageURL || h.webformatURL || h.previewURL || "",
+        rank,
+      }))
+      .filter(
+        (c) => c.url && !altTextUnsafe(c.h.tags) && !isExcludedImageUrl(c.url, opts?.excludeUrls),
+      )
+      .map((c) => ({
+        url: c.url,
+        alt: c.h.tags || query,
+        credit: c.h.user ? `Photo by ${c.h.user} on Pixabay` : "Pixabay",
+        source: "pixabay" as const,
+        width: c.h.imageWidth,
+        height: c.h.imageHeight,
+        rank: c.rank,
+      }));
+  } catch {
+    return [];
+  }
+}
 
 /**
  * Search Pixabay for a photo matching the query (failover source;
@@ -214,39 +291,10 @@ async function searchPixabay(
   query: string,
   opts?: ImageSourceOptions,
 ): Promise<SourcedImage> {
-  const key = process.env.PIXABAY_API_KEY;
-  if (!key || !query.trim()) return null;
-
-  try {
-    const res = await fetch(
-      `https://pixabay.com/api/?key=${key}&q=${encodeURIComponent(query)}&image_type=photo&orientation=horizontal&per_page=${RESULTS_PER_SEARCH}&safesearch=true`,
-      { signal: AbortSignal.timeout(15_000) },
-    );
-    if (!res.ok) return null;
-    const data = (await res.json()) as { hits?: PixabayPhoto[] } | null;
-    const hits = data?.hits ?? [];
-    const candidates = hits
-      .map((h) => ({
-        photo: h,
-        url: h.largeImageURL || h.webformatURL || h.previewURL,
-      }))
-      .filter(
-        (c) =>
-          c.url && !altTextUnsafe(c.photo?.tags) && !isExcludedImageUrl(c.url, opts?.excludeUrls),
-      );
-    if (candidates.length === 0) return null;
-
-    const { photo: hit, url } = candidates[pickResultIndex(candidates.length, opts?.variationKey)];
-    if (!hit || !url) return null;
-
-    return {
-      url,
-      alt: hit.tags || query,
-      credit: hit.user ? `Photo by ${hit.user} on Pixabay` : "Pixabay",
-    };
-  } catch {
-    return null;
-  }
+  const candidates = await searchPixabayCandidates(query, opts);
+  if (candidates.length === 0) return null;
+  const picked = candidates[pickResultIndex(candidates.length, opts?.variationKey)];
+  return { url: picked.url, alt: picked.alt, credit: picked.credit };
 }
 
 /**
@@ -293,6 +341,77 @@ export async function fetchFeaturedImageMultiQuery(
     if (result) return result;
   }
   return null;
+}
+
+/**
+ * BLOG-DIVERSITY-ENGINE (2026-11-13) — multi-source candidate pool for the
+ * ranked discovery path: Pexels first; when it returns fewer than `limit`
+ * safe results the failover sources top the list up (one query, one pass,
+ * no repeated searches). Results are URL-deduped and capped at `limit`.
+ */
+export async function fetchImageCandidates(
+  query: string,
+  opts?: ImageSourceOptions & { limit?: number },
+): Promise<ImageCandidate[]> {
+  const { query: safeQuery } = sanitizeImageQuery(query || "");
+  if (!safeQuery) return [];
+  const limit = Math.max(1, Math.min(opts?.limit ?? 12, 20));
+
+  const out: ImageCandidate[] = [];
+  const seen = new Set<string>();
+  const push = (list: ImageCandidate[]) => {
+    for (const c of list) {
+      const key = normalizeImageUrlForCompare(c.url);
+      if (!key || seen.has(key)) continue;
+      seen.add(key);
+      out.push(c);
+      if (out.length >= limit) return;
+    }
+  };
+
+  push(await searchPexelsCandidates(safeQuery, opts));
+  if (out.length < limit) push(await searchUnsplashCandidates(safeQuery, opts));
+  if (out.length < limit) push(await searchPixabayCandidates(safeQuery, opts));
+  return out;
+}
+
+/**
+ * BLOG-DIVERSITY-ENGINE (2026-11-13) — the visual-dedup memory: featured
+ * images of the most recent posts PLUS the images embedded in their bodies
+ * (the legacy memory saw featured covers only, so a repeated scene could
+ * re-enter through a body slot). Degrades to [] on any failure.
+ */
+export async function getRecentImageUrls(featuredLimit = 30, bodyPostLimit = 10): Promise<string[]> {
+  try {
+    if (!isSupabaseAdminConfigured || !supabaseAdmin) return [];
+    const { data } = await supabaseAdmin
+      .from("blog_posts")
+      .select("featured_image, content")
+      .order("created_at", { ascending: false })
+      .limit(Math.max(featuredLimit, bodyPostLimit));
+    const rows = data ?? [];
+    const urls: string[] = [];
+    const seen = new Set<string>();
+    const add = (u: unknown) => {
+      const s = String(u || "");
+      const key = normalizeImageUrlForCompare(s);
+      if (s.startsWith("http") && key && !seen.has(key)) {
+        seen.add(key);
+        urls.push(s);
+      }
+    };
+    rows.slice(0, featuredLimit).forEach((r) => add(r.featured_image));
+    // markdown body images: ![alt](url)
+    rows.slice(0, bodyPostLimit).forEach((r) => {
+      const md = String(r.content || "");
+      const re = /!\[[^\]]*\]\((https?:\/\/[^)\s]+)[^)]*\)/g;
+      let m: RegExpExecArray | null;
+      while ((m = re.exec(md)) !== null) add(m[1]);
+    });
+    return urls;
+  } catch {
+    return [];
+  }
 }
 
 /**

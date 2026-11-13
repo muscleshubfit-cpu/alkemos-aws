@@ -104,6 +104,9 @@ const LEGACY_POLICIES: Record<string, LegacyPolicy> = {
   "blog:latin-tokens-ar": { temperature: 0.2, maxTokens: 1200, jsonMode: true, timeoutMs: 60_000, maxModels: 3 },
   "blog:latin-repair-ar": { temperature: 0.2, maxTokens: 6400, jsonMode: false, timeoutMs: 110_000, maxModels: 3 },
   "blog:topics": { temperature: 0.85, maxTokens: 800, jsonMode: true, timeoutMs: 22_000, maxModels: 2 },
+  // BLOG-DIVERSITY-ENGINE (2026-11-13) — P3 image-discovery planner
+  // (blog-image-discovery.ts buildVisualBrief); mirrors the registry spec.
+  "blog:visual-brief": { temperature: 0.4, maxTokens: 900, jsonMode: true, timeoutMs: 45_000, maxModels: 3 },
   // tools (ai-job-processors.ts)
   "ai-job:article-generate": { temperature: 0.7, maxTokens: 6000, jsonMode: true, timeoutMs: 120_000, maxModels: 4 },
   "ai-job:paraphrase": { temperature: 0.7, maxTokens: 4000, jsonMode: false, timeoutMs: 70_000, maxModels: 2 },

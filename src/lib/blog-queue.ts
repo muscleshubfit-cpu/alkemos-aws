@@ -664,6 +664,47 @@ export async function findRecentPairRows(
 }
 
 /**
+ * BLOG-DIVERSITY-ENGINE (2026-11-13) — the LRU angle-rotation input: the
+ * newest-first angle ids (bundle.outline.angle) of this language's recent
+ * queue rows. Best-effort by law: any failure / missing column → [] (the
+ * caller keeps the legacy random angle draw).
+ */
+export async function getRecentAngleIds(
+  lang: PipelineLang,
+  limit = 8,
+): Promise<string[]> {
+  if (!isSupabaseAdminConfigured || !supabaseAdmin) return [];
+  try {
+    const { data } = await supabaseAdmin
+      .from("blog_generation_queue")
+      .select("article_bundle")
+      .eq("language", lang)
+      .order("created_at", { ascending: false })
+      .limit(limit * 3);
+    const out: string[] = [];
+    for (const r of data ?? []) {
+      try {
+        const bundle =
+          typeof r.article_bundle === "string" && r.article_bundle
+            ? JSON.parse(r.article_bundle)
+            : null;
+        const angle =
+          bundle && typeof bundle === "object" && !Array.isArray(bundle)
+            ? (bundle as { outline?: { angle?: unknown } }).outline?.angle
+            : null;
+        if (typeof angle === "string" && angle && !out.includes(angle)) out.push(angle);
+      } catch {
+        /* skip malformed bundles */
+      }
+      if (out.length >= limit) break;
+    }
+    return out;
+  } catch {
+    return [];
+  }
+}
+
+/**
  * PHASE 5-E / stage هـ (owner order 2026-10-31 «نفّذ جميع المراحل
  * المتبقية» approving Phase-4 §12-6 — the Phase-1 §8-6(أ)
  * recommendation): the RESUME-PAIR candidate lookup.
@@ -686,9 +727,6 @@ export async function findResumePairCandidate(
 ): Promise<QueueItem | null> {
   if (!isSupabaseAdminConfigured || !supabaseAdmin) return null;
   try {
-    const since = new Date(
-      Date.now() - RESUME_MAX_AGE_HOURS * 3_600_000,
-    ).toISOString();
     const { data, error } = await supabaseAdmin
       .from("blog_generation_queue")
       .select("*")

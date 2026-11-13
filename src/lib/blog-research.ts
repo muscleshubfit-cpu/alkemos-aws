@@ -44,19 +44,20 @@
  * Output is stored on the queue row inside `article_bundle.research0`.
  */
 import { parseJSON } from "./ai-provider";
+import {
+  getRecentPostsByLanguage,
+  getRecentGeneratedTopics,
+  getRecentContentDigests,
+  isDuplicateTopic,
+  pickRotationCategory,
+} from "./blog-topics";
+import { buildDiversityDirective, findSemanticTopicCollision } from "./blog-semantic";
 import type { GroundedFullTextPage } from "./ai-provider";
 // R4 (AI-Router unification): P0 research rides the registry through
 // dispatchGrounded — the §6-أ language-split arm ladder stays the engine's
 // groundedArmOrder(lang); policy (0.7 · 4000 · 180s) resolves from the
 // blog:research spec.
 import { dispatchGrounded } from "./ai-router";
-import {
-  getRecentPostsByLanguage,
-  getRecentGeneratedTopics,
-  getRecentContentDigests,
-  pickRotationCategory,
-  isDuplicateTopic,
-} from "./blog-topics";
 
 export type ResearchKeyword = { keyword: string; searchVolume: string };
 export type ResearchFaq = { question: string; answer: string };
@@ -455,6 +456,15 @@ async function researchLanguage(lang: "en" | "ar"): Promise<{ data: LanguageRese
     getRecentContentDigests(lang, 12),
   ]);
   const recentTitles = [...recentPosts, ...recentJobs].map((p) => p.title).filter(Boolean);
+  // BLOG-DIVERSITY-ENGINE (2026-11-13): the flexible coverage plan — the
+  // prompt now names the LEAST-covered domains (weighted toward recent
+  // articles) and the saturated ones, and mandates the 5 suggestions span
+  // ≥4 domains with distinct search goals/audiences/angles. Flexible
+  // balancing, never a forced equal split (owner order §1.6).
+  const diversityBlock = buildDiversityDirective(
+    lang,
+    recentPosts.map((p) => ({ title: p.title, focusKeyword: p.focusKeyword })),
+  );
   const digestBlock = digests.length
     ? digests
         .slice(0, 12)
@@ -478,6 +488,7 @@ ${digestBlock}` : ""}`
 ${outLang}
 USE YOUR GOOGLE SEARCH TOOL to ground this research in what people ACTUALLY search RIGHT NOW in this niche (query volume patterns, currently-ranking questions, real People-Also-Ask entries, fresh SERP angles) — model memory alone is NOT acceptable as the evidence base. Volume labels remain estimates ("high/medium/low") informed by what the search results indicate.
 ${recentBlock}
+${diversityBlock}
 
 LONG-TAIL KEYWORD LAW (owner directive 2026-09-01):
 - At least 6 of the 10 keywords MUST be LONG-TAIL keywords: 3+ word phrases phrased the way real people search (question format, "how to…", "best … for …", "… vs …", or a very specific intent), NOT broad one/two-word head terms.
@@ -599,15 +610,21 @@ export async function runPhase0Research(
   // Prefer topics that survived the dup-guard when ranking categories is
   // not applicable here — keep rotation semantics identical, but ALSO
   // pre-flag duplicate topics so P1's guard sees fewer all-dup sets.
+  // BLOG-DIVERSITY-ENGINE (2026-11-13): the pre-filter is now LEXICAL
+  // (isDuplicateTopic) AND SEMANTIC (findSemanticTopicCollision — a
+  // paraphrase of a recent article with zero shared words is dropped
+  // here, before P1 ever ranks it). ≥2 survivors keep the filter; an
+  // all-dup set falls back to the raw 5 (honest — P1 still guards).
+  const survivesDedup = (t: string) =>
+    !recent.some(
+      (p) =>
+        isDuplicateTopic(t, t, [p]).duplicate ||
+        findSemanticTopicCollision(t, t, [p]).collision,
+    );
+  const deduped = r.data.topics.filter(survivesDedup);
   const research = {
     ...r.data,
-    topics: r.data.topics.filter(
-      (t) => !recent.some((p) => isDuplicateTopic(t, t, [p]).duplicate),
-    ).length >= 2
-      ? r.data.topics.filter(
-          (t) => !recent.some((p) => isDuplicateTopic(t, t, [p]).duplicate),
-        )
-      : r.data.topics,
+    topics: deduped.length >= 2 ? deduped : r.data.topics,
   };
   return {
     lang,

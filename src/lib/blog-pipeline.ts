@@ -17,6 +17,12 @@ import { parseJSON } from "./ai-provider";
 import { dispatchAI } from "./ai-router";
 import { type LanguageResearch } from "./blog-research";
 import { getRecentPostsByLanguage, getRecentContentDigests, isDuplicateTopic } from "./blog-topics";
+// BLOG-DIVERSITY-ENGINE (2026-11-13): semantic dedup + LRU angle rotation.
+import {
+  findSemanticTopicCollision,
+  pickLeastRecentlyUsedAngle,
+} from "./blog-semantic";
+import { getRecentAngleIds } from "./blog-queue";
 import { sanitizeModelSlug } from "./slug";
 import {
   AR_MSA_EDITOR_LAW,
@@ -200,7 +206,19 @@ export const ARTICLE_ANGLES: ArticleAngle[] = [
   },
 ];
 
-export function pickArticleAngle(): ArticleAngle {
+export function pickArticleAngle(recentAngleIds?: string[]): ArticleAngle {
+  // BLOG-DIVERSITY-ENGINE (2026-11-13): LRU rotation replaces the pure
+  // random draw when recent angles are known — consecutive articles stop
+  // sharing one structural mold. No history → the legacy random pick.
+  if (recentAngleIds && recentAngleIds.length > 0) {
+    const ids = ARTICLE_ANGLES.map((a) => a.id);
+    const lru = pickLeastRecentlyUsedAngle(
+      ids,
+      recentAngleIds,
+      ids[Math.floor(Math.random() * ids.length)],
+    );
+    return ARTICLE_ANGLES.find((a) => a.id === lru) ?? ARTICLE_ANGLES[0];
+  }
   return ARTICLE_ANGLES[Math.floor(Math.random() * ARTICLE_ANGLES.length)];
 }
 
@@ -227,8 +245,17 @@ export async function pickTopicIndex(
     /* fall through to deterministic pick */
   }
   // Deterministic fallback: first non-duplicate suggestion (LRU-friendly).
+  // BLOG-DIVERSITY-ENGINE (2026-11-13): the dup test is LEXICAL and
+  // SEMANTIC — a paraphrased repeat of a recent article is skipped too.
   for (let i = 0; i < topics.length; i++) {
-    if (!recent.some((p) => isDuplicateTopic(topics[i], topics[i], [p]).duplicate)) return i;
+    if (
+      !recent.some(
+        (p) =>
+          isDuplicateTopic(topics[i], topics[i], [p]).duplicate ||
+          findSemanticTopicCollision(topics[i], topics[i], [p]).collision,
+      )
+    )
+      return i;
   }
   return 0;
 }
@@ -243,7 +270,16 @@ export async function buildOutline(
   opts?: { forcedAngle?: string },
 ): Promise<{ outline: OutlinePlan; source: string }> {
   const forced = ARTICLE_ANGLES.find((a) => a.id === opts?.forcedAngle);
-  const angle = forced ?? pickArticleAngle();
+  // BLOG-DIVERSITY-ENGINE (2026-11-13): recent angles (newest-first) from
+  // this language's queue rows — the LRU rotation input. Best-effort: an
+  // empty list keeps the legacy random draw.
+  let recentAngles: string[] = [];
+  try {
+    recentAngles = await getRecentAngleIds(lang, 8);
+  } catch {
+    /* angle rotation is best-effort */
+  }
+  const angle = forced ?? pickArticleAngle(recentAngles);
   const angleLine = lang === "ar"
     ? `نوع المقال المطلوب: ${angle.ar} — صمّم أقسام H2 بحيث تناسب هذا النوع فعلًا (${angle.shapeAr})؛ ممنوع إعادة استخدام هيكل عام موحّد لكل المقالات.`
     : `ARTICLE TYPE: ${angle.en} — shape the H2 sections to genuinely fit this type (${angle.shapeEn}); do NOT reuse a generic one-size-fits-all skeleton.`;
@@ -306,7 +342,7 @@ Create the detailed article blueprint. Return STRICT JSON only:
   "slugBase": "short-url-slug-in-lowercase-english-even-for-arabic",
   "sections": ["H2 heading 1", "..."],            // exactly 5-7 H2s shaped for the article type above; at least TWO phrased as real long-tail search questions; NOT copying the section skeletons of the recent articles above
   "lsiKeywords": ["...", "..."],                   // 8-12 sub-keywords to weave in naturally; at least 5 must be 3+ word long-tail phrases
-  "imagePlan": [ {"subject": "exact visual subject", "type": "photo|infographic|diagram"} ] // 3-5 items matching the sections. IMAGE LAW: subjects MUST be ENGLISH physical OBJECTS or SCENES ONLY (equipment, food, interiors) — NEVER any person, body part, people word, or clothing wording. PHASE 173 OWNER LAW (absolute): NEVER any woman, girl, or female subject in any image — if a person is ever needed, adult MEN only; otherwise use non-human subjects (equipment, food, anatomy diagrams, empty gym scenes)
+  "imagePlan": [ {"subject": "exact visual subject", "type": "photo|infographic|diagram"} ] // 3-5 items, ONE per major section. IMAGE LAW: subjects MUST be ENGLISH physical OBJECTS or SCENES ONLY (equipment, food, interiors) — NEVER any person, body part, people word, or clothing wording. PHASE 173 OWNER LAW (absolute): NEVER any woman, girl, or female subject in any image — if a person is ever needed, adult MEN only; otherwise use non-human subjects (equipment, food, anatomy diagrams, empty gym scenes). SPECIFICITY LAW (BLOG-DIVERSITY-ENGINE): each subject names THE EXACT object/food/equipment/scene of ITS section (e.g. "curd yogurt casein night bowl", "kettlebell goblet squat living room") — a generic subject like "dumbbell", "healthy food" or "gym equipment" is a FAILURE because every article would then search the same photo.
 }`;
   // R4: policy (0.6 · 4000 · jsonMode=false by the 161.5 tolerant-extractor
   // law · 110s window · depth 3) resolves from the registry — the PHASE-171

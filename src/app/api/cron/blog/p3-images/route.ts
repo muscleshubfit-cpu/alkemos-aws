@@ -2,8 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   fetchFeaturedImage,
   getRecentFeaturedImageUrls,
+  getRecentImageUrls,
   type SourcedImage,
 } from "@/lib/blog-images";
+import { selectImagesWithDiscovery } from "@/lib/blog-image-discovery";
 import { verifyCronAuth } from "@/lib/cron-auth";
 import { cronBlogQueueQuerySchema } from "@/lib/validation/schemas";
 import { sanitizeImageQuery } from "@/lib/image-safety";
@@ -44,6 +46,88 @@ const FALLBACK_QUERIES = [
   "barbell plates close up",
   "fresh vegetables kitchen",
 ];
+
+/**
+ * BLOG-DIVERSITY-ENGINE (2026-11-13) — the V2 image-sourcing PRIMARY path.
+ * Owner order §2 «تحسين البحث عن الصور»: the legacy single-query +
+ * random-index pick (below, kept as the fallback) produced the same
+ * generic scenes across articles. V2 plans 4-6 PRECISE English queries
+ * from the article itself (model visual brief, deterministic per-domain
+ * fallback), runs each against the SAME free stock sources (Pexels-first,
+ * Unsplash/Pixabay failover — image-source law untouched), downloads and
+ * fingerprints (dHash) every candidate + the last 30 articles' images,
+ * REJECTS near-duplicates (<10 Hamming bits), ranks the rest by relevance
+ * × visual diversity, re-phrases weak queries via the alternatives, and
+ * adopts the bilingual twin's cover when the pair already sourced one
+ * (owner order §3). Diagnostics are stored on the bundle for the batch
+ * review. Any failure degrades to the legacy path — P3 never dies.
+ */
+async function sourceImagesV2(
+  plan: ImagePlanItem[],
+  coverHint: string,
+  queueId: string,
+  ctx: {
+    lang: "en" | "ar";
+    topic: string;
+    title: string;
+    focusKeyword: string;
+    sections: string[];
+    pairId?: string | null;
+  },
+): Promise<{ images: Array<NonNullable<SourcedImage>>; diagnostics: Record<string, unknown> }> {
+  // Visual-dedup memory: recent FEATURED covers + recent BODY images (the
+  // legacy memory saw covers only — a repeated scene could re-enter
+  // through a body slot). Degrades to [] on any failure.
+  const recentUrls = await getRecentImageUrls(30, 10);
+  let images: Array<NonNullable<SourcedImage>> = [];
+  let diagnostics: Record<string, unknown> = {};
+  try {
+    const result = await selectImagesWithDiscovery({
+      lang: ctx.lang,
+      queueId,
+      topic: ctx.topic,
+      title: ctx.title,
+      focusKeyword: ctx.focusKeyword,
+      sections: ctx.sections,
+      imagePlanSubjects: plan.map((p) => p.subject),
+      pairId: ctx.pairId ?? null,
+      excludeUrls: recentUrls,
+      recentImageUrls: recentUrls,
+      minImages: MIN_IMAGES,
+      maxImages: MAX_IMAGES,
+    });
+    images = result.images;
+    diagnostics = result.diagnostics as unknown as Record<string, unknown>;
+    console.log(
+      `[blog/p3-images] V2 discovery: brief=${result.diagnostics.briefSource} ` +
+        `twinCover=${result.diagnostics.twinCoverAdopted} ` +
+        `nearDupRejected=${result.diagnostics.nearDuplicateRejected} ` +
+        `picked=${images.length}`,
+    );
+  } catch (e) {
+    console.warn(
+      `[blog/p3-images] V2 discovery failed — legacy path: ${e instanceof Error ? e.message : e}`,
+    );
+  }
+
+  // MIN-fill via the LEGACY path (model brief empty + all sources weak):
+  // keep whatever V2 picked, top up with the historical single-query flow.
+  if (images.length < MIN_IMAGES) {
+    const legacy = (await sourceImages(plan, coverHint, queueId)).filter(
+      (im): im is NonNullable<SourcedImage> => Boolean(im),
+    );
+    const seen = new Set(images.map((i) => i.url));
+    for (const img of legacy) {
+      if (images.length >= MAX_IMAGES) break;
+      if (img && !seen.has(img.url)) {
+        images.push(img);
+        seen.add(img.url);
+      }
+    }
+    diagnostics.legacyFill = legacy.length;
+  }
+  return { images: images.slice(0, MAX_IMAGES), diagnostics };
+}
 
 async function sourceImages(
   plan: ImagePlanItem[],
@@ -157,14 +241,37 @@ export async function GET(request: NextRequest) {
       throw new Error("p3: image plan missing — rerun p1-outline");
     }
 
-    const imgs = await sourceImages(plan, `${qi.focus_keyword || ""} ${bundle.outline?.title || qi.topic || ""}`.trim(), qi.id);
+    // BLOG-DIVERSITY-ENGINE (2026-11-13): V2 discovery is the PRIMARY
+    // path (multi-query plan + visual fingerprint dedup + ranked pick +
+    // twin-cover adoption); the legacy single-query flow stays as the
+    // fallback inside sourceImagesV2. Diagnostics ride the bundle for
+    // the batch review.
+    const { images: imgs, diagnostics } = await sourceImagesV2(
+      plan,
+      `${qi.focus_keyword || ""} ${bundle.outline?.title || qi.topic || ""}`.trim(),
+      qi.id,
+      {
+        lang,
+        topic: qi.topic || "",
+        title: String(bundle.outline?.title || qi.topic || ""),
+        focusKeyword: qi.focus_keyword || "",
+        sections: Array.isArray(bundle.outline?.sections)
+          ? bundle.outline.sections.map((s: unknown) => String(s))
+          : [],
+        pairId: qi.pair_id ?? null,
+      },
+    );
     if (imgs.length === 0) {
       throw new Error("p3: no images could be sourced");
     }
 
     const updateErr = await updateQueueItem(qi.id, {
       status: "images_done",
-      article_bundle: JSON.stringify({ ...bundle, images: imgs }),
+      article_bundle: JSON.stringify({
+        ...bundle,
+        images: imgs,
+        imageDiagnostics: diagnostics,
+      }),
     });
     if (updateErr) throw new Error(updateErr);
 
@@ -174,6 +281,9 @@ export async function GET(request: NextRequest) {
       queueId: qi.id,
       lang,
       images: imgs.length,
+      briefSource: diagnostics.briefSource ?? "legacy",
+      twinCoverAdopted: diagnostics.twinCoverAdopted ?? false,
+      nearDuplicateRejected: diagnostics.nearDuplicateRejected ?? 0,
     });
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);

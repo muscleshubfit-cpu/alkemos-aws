@@ -14,6 +14,7 @@ import { extractSharedBrief } from "@/lib/blog-pairing";
 import { verifyCronAuth } from "@/lib/cron-auth";
 import { cronBlogQueueQuerySchema } from "@/lib/validation/schemas";
 import { getRecentPostsByLanguage, isDuplicateTopic } from "@/lib/blog-topics";
+import { findSemanticTopicCollision } from "@/lib/blog-semantic";
 import { isSupabaseAdminConfigured } from "@/lib/supabase/admin";
 
 export const maxDuration = 60;
@@ -35,19 +36,24 @@ export const maxDuration = 60;
  *
  * GET /api/cron/blog/p1-outline?queueId=<uuid>
  */
+/**
+ * BLOG-DIVERSITY-ENGINE (2026-11-13): the dup guard is LEXICAL and
+ * SEMANTIC — a candidate that merely PARAPHRASES a recent article
+ * (different words, same subject/intent) is skipped too.
+ */
 async function guardDuplicate(
   lang: "en" | "ar",
   candidates: string[],
 ): Promise<string> {
   const idx = await pickTopicIndex(lang, candidates);
   let topic = candidates[idx] ?? candidates[0];
+  const isDup = (t: string, p: { title: string; focusKeyword: string }) =>
+    isDuplicateTopic(t, t, [p]).duplicate ||
+    findSemanticTopicCollision(t, t, [p]).collision;
   try {
     const recent = await getRecentPostsByLanguage(lang, 100);
-    if (recent.some((p) => isDuplicateTopic(topic, topic, [p]).duplicate)) {
-      topic =
-        candidates.find(
-          (t) => !recent.some((p) => isDuplicateTopic(t, t, [p]).duplicate),
-        ) ?? topic;
+    if (recent.some((p) => isDup(topic, p))) {
+      topic = candidates.find((t) => !recent.some((p) => isDup(t, p))) ?? topic;
     }
   } catch {
     /* dup-guard is best-effort */

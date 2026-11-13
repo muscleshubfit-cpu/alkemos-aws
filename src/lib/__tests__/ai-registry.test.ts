@@ -70,6 +70,9 @@ const GOLDEN: Record<string, Record<string, unknown>> = {
   "blog:latin-repair-ar": { temperature: 0.2, maxTokens: 6400, jsonMode: false, timeoutMs: 110_000, maxModels: 3 },
   "blog:topics-ar": { temperature: 0.85, maxTokens: 800, jsonMode: true, timeoutMs: 22_000, maxModels: 2 },
   "blog:topics-en": { temperature: 0.85, maxTokens: 800, jsonMode: true, timeoutMs: 22_000, maxModels: 2 },
+  // blog — P3 image discovery (BLOG-DIVERSITY-ENGINE 2026-11-13)
+  "blog:visual-brief-ar": { temperature: 0.4, maxTokens: 900, jsonMode: true, timeoutMs: 45_000, maxModels: 3 },
+  "blog:visual-brief-en": { temperature: 0.4, maxTokens: 900, jsonMode: true, timeoutMs: 45_000, maxModels: 3 },
   // tools — ai-job-processors.ts:1181 (article_generate) + :584 (ten tools)
   "ai-job:article-generate": { temperature: 0.7, maxTokens: 6000, jsonMode: true, timeoutMs: 120_000, maxModels: 4 },
   "ai-job:paraphrase": { temperature: 0.7, maxTokens: 4000, jsonMode: false, timeoutMs: 70_000, maxModels: 2 },

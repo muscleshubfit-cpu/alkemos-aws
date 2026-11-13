@@ -726,6 +726,36 @@ export const AI_FUNCTION_REGISTRY: Record<string, AIFunctionSpec> = {
     },
   },
 
+  /* ── BLOG VISUAL-BRIEF — the P3 image-discovery planner (diversity
+   * engine 2026-11-13): turns the article (title/topic/H2s) into a
+   * precise ENGLISH multi-query stock-search plan. Light JSON payload,
+   * deterministic per-domain fallback below it (blog-image-discovery.ts)
+   * — a failed/invalid brief NEVER fails the pipeline. */
+  "blog:visual-brief": {
+    id: "blog:visual-brief",
+    family: "blog",
+    langTemplate: { style: "suffix", variants: ["ar", "en"] },
+    role: { json: true, streaming: false, language: "both", payloadClass: "light" },
+    ladder: [...ROTATED_LEADS, GEMINI_TAIL],
+    policy: {
+      temperature: 0.4,
+      maxTokens: 900,
+      jsonMode: true,
+      timeoutMs: 45_000,
+      maxModels: 3,
+      budgetEnv: "AI_CHAIN_TOTAL_BUDGET_MS",
+    },
+    gates: ["validateBriefQueries (≥3 EN queries · scene spread ≥3 · 2-8 words)", "deterministic domain-scene fallback (never fails P3)"],
+    metering: { scope: "blog:visual-brief-{lang}" },
+    entry: { surface: "gha-workflow", trigger: "pipeline P3 image discovery (visual brief + multi-query plan)" },
+    knobs: ["AI_CHAIN_TOTAL_BUDGET_MS"],
+    doc: {
+      since: "BLOG-DIVERSITY-ENGINE (2026-11-13)",
+      rationale: "Light JSON brief; the old P3 searched one generic query per slot and picked randomly — the brief plans specific, scene-diverse EN queries with alternatives.",
+      evidence: "blog-image-discovery.ts buildVisualBrief option block",
+    },
+  },
+
   /* ── BLOG DRAFT-GENERATE — the manual≡auto engine twin (§6-و, ت4) ──
    * The manual article request's PRIMARY path is the SAME paired pipeline
    * as automatic generation (Phase 162: enqueue dispatches
