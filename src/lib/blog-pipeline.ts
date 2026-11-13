@@ -15,6 +15,9 @@ import { parseJSON } from "./ai-provider";
 // pin registry≡legacy≡the pre-migration blocks; AI_ROUTER_MODE=legacy is
 // the no-deploy rollback.
 import { dispatchAI } from "./ai-router";
+// P4-QUALITY-COOLDOWN (2026-11-13): the review parse-failure class cools the
+// serving provider's chain scope so the step retry walks to a healthy entry.
+import { markCooldown } from "./ai-provider-cooldown";
 import { type LanguageResearch } from "./blog-research";
 import { getRecentPostsByLanguage, getRecentContentDigests, isDuplicateTopic } from "./blog-topics";
 // BLOG-DIVERSITY-ENGINE (2026-11-13): semantic dedup + LRU angle rotation.
@@ -1015,6 +1018,29 @@ Return STRICT JSON only:
   // review draws instead of burning images + review + a P5 repair cycle
   // on a review that can never publish (live-measured shrinkage: 1201→752).
   if (!parsed || !md) {
+    // P4-QUALITY-COOLDOWN (live incident 2026-11-13, owner order «أصلحه
+    // فعليًا»): a provider that ANSWERS (HTTP 200, non-empty) with an
+    // unparseable payload for the review JSON contract is a mislabeled
+    // transport success — the chain's first-non-empty-answer law stops the
+    // walk at it, so the step-level ×3 retry deterministically re-draws the
+    // SAME degraded entry and the ladder's healthy nvidia/gemini entries
+    // are never reached (measured: openrouter/nemotron-3-ultra-550b:free
+    // served 72–1820-char non-JSON junk for blog:review-ar 6/6 across runs
+    // 43450016961/43455214750 on 2026-11-13, while the SAME role succeeded
+    // on it 2026-11-11 run 43121569766 — a transient free-endpoint
+    // degradation the engine had no defense against). Marking the
+    // provider's chain scope makes the NEXT attempt (the 120s-later step
+    // retry, or the R1 repair chain — same runner VM, same registry file)
+    // skip it WITHOUT consuming attempt budget and walk to the next healthy
+    // provider, exactly like the exhaustion class (BLOG-PROVIDER-FAILOVER
+    // 2026-10-16 semantics). Registry laws intact: opt-in via
+    // AI_PROVIDER_COOLDOWN_MS (set in the blog workflows), per-runner-VM
+    // state (a fresh job re-probes the provider fresh), and the honest
+    // error below stays byte-identical (R4 class-separation pin).
+    markCooldown(
+      `chain:${provider}`,
+      `quality: unparseable review JSON from ${provider}/${model} (P4 review contract)`,
+    );
     throw new Error(`P4 ${lang}: invalid review JSON from ${provider}:${model}`);
   }
   let reviewWords = countWords(md);

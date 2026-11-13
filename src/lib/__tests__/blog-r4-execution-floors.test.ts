@@ -56,6 +56,12 @@ vi.mock("@/lib/ai-provider", () => {
   };
 });
 
+// P4-QUALITY-COOLDOWN (2026-11-13): the cooldown registry is mocked so the
+// parse-failure canary can assert the quality mark WITHOUT the opt-in env.
+vi.mock("@/lib/ai-provider-cooldown", () => ({
+  markCooldown: vi.fn(),
+}));
+
 import {
   BLOG_EXECUTION_WORD_FLOOR,
   generateFullArticle,
@@ -151,6 +157,31 @@ describe("R4 · P4 execution floor (reviewAndEnhance)", () => {
     await expect(reviewAndEnhance("en", filler(1300), OUTLINE, [])).rejects.toThrow(
       "P4 en: invalid review JSON from p:m",
     );
+  });
+
+  it("P4-QUALITY-COOLDOWN: a parse failure marks the serving provider's chain scope — the ×3 retry walks past the degraded entry (live incident 2026-11-13: nemotron:free served non-JSON 6/6 while nvidia/gemini were never reached)", async () => {
+    const { markCooldown } = await import("@/lib/ai-provider-cooldown");
+    const broken = (aiProvider as unknown as {
+      callFreeAIFallbackChain: ReturnType<typeof vi.fn>;
+    }).callFreeAIFallbackChain;
+    broken.mockImplementationOnce(async () => ({ text: "not json at all", model: "m", provider: "p" }));
+    await expect(reviewAndEnhance("en", filler(1300), OUTLINE, [])).rejects.toThrow(
+      "P4 en: invalid review JSON from p:m",
+    );
+    // The quality mark: the provider's CHAIN scope (the exact key the
+    // engine's walk checks) with a quality-class reason naming the entry.
+    expect(markCooldown).toHaveBeenCalledWith(
+      "chain:p",
+      expect.stringContaining("quality: unparseable review JSON from p/m"),
+    );
+  });
+
+  it("P4-QUALITY-COOLDOWN does NOT fire on the healthy path (no mark for a parseable, floor-passing review)", async () => {
+    vi.clearAllMocks(); // earlier parse-failure tests in this file marked the scope
+    const { markCooldown } = await import("@/lib/ai-provider-cooldown");
+    state.articleMd = filler(1250);
+    await reviewAndEnhance("en", filler(1300), OUTLINE, []);
+    expect(markCooldown).not.toHaveBeenCalled();
   });
 
   it("PASSES an adequate 1250-word review output", async () => {
