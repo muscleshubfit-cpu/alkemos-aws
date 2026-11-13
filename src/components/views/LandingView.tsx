@@ -523,7 +523,8 @@ function LandingProgramCard({ prog, isAr }: { prog: HomeProgramSample; isAr: boo
 // ── VRD-V8R — the membership cards' REAL feature rows ──
 // Two–three scannable facts per tier, each mirroring the tier's
 // documented limits in memberships.ts (the single source — the page
-// invents nothing): the free pool (2/4/8), the EVO daily fair-use
+// invents nothing): the monthly quotas (subscriber-only
+  // generation — 4/8/8 paid tiers), the EVO daily fair-use
 // limit, the export/ad-free deltas. The checkseal icon is the SAME
 // engraved mark the /memberships feature lists render — one data
 // language across both surfaces. `pinDark` forces the dark engraving
@@ -1072,9 +1073,9 @@ export function LandingView({
       {/* ===================== 7.5 THE FREE-ALLOWANCE BAND (HOME-POLISH-285) =====================
           The owner directive: the honest free monthly plan quota moved
           from AFTER the EVO card to immediately BEFORE the AI Planning
-          section — it now INTRODUCES the AI planners (the unified plan
-          pool; guests included — a verified policy restatement, never
-          marketing copy). A slim band on the white surface, directly
+          section — it introduces the AI planners (AI-QUOTAS 2026-11-14:
+          generation is subscriber-only — the band now states the honest
+          policy, never marketing copy). A slim band on the white surface, directly
           above the AI section's tint band. */}
       <section aria-label={isAr ? "رصيد الخطط المجاني" : "The free plan allowance"} className="bg-[var(--bg)] px-4 pb-10 md:pb-14">
         <div className="mx-auto max-w-6xl">
@@ -1231,8 +1232,8 @@ export function LandingView({
                 <TierFeatureRows
                   rows={
                     isAr
-                      ? ["كل المكتبات والأدوات", "توليدان شهريًا للخطط الذكية", "EVO: 10 رسائل يوميًا"]
-                      : ["Every library and tool", "2 AI plans a month", "EVO: 10 messages a day"]
+                      ? ["كل المكتبات والأدوات مجانًا", "توليد الخطط والتبديلات للمشتركين", "EVO: 10 رسائل يوميًا"]
+                      : ["Every library and tool, free", "AI plans & swaps for subscribers", "EVO: 10 messages a day"]
                   }
                 />
                 <a href="/auth?mode=signup" className="btn-outline mt-4 w-full px-6 py-2.5 text-sm font-medium">
@@ -1323,8 +1324,8 @@ export function LandingView({
                     pinDark
                     rows={
                       isAr
-                        ? ["كل مزايا البريميوم", "8 خطط شهريًا و6 تبديلات أسبوعية", "تجربة بلا إعلانات"]
-                        : ["Everything in Premium", "8 plans a month + 6 weekly swaps", "Ad-free experience"]
+                        ? ["كل مزايا البريميوم", "8 خطط و26 تبديلًا شهريًا", "تجربة بلا إعلانات"]
+                        : ["Everything in Premium", "8 plans + 26 swaps a month", "Ad-free experience"]
                     }
                   />
                   <a

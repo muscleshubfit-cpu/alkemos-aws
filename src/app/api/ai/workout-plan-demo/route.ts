@@ -32,14 +32,13 @@ import {
  *   2. BURST GUARD: IP-keyed 20 attempts / 24 h — abuse protection
  *      only, NOT quota (the old 5/day entry-counted limit is retired;
  *      failures never burn the pool — success-only law).
- *   3. UNIFIED POOL (ai_plan_usage, migrations 0085+0086): guests get
- *      the FREE pool (2/month, G6 DUAL-DIMENSION identity — the salted
- *      hash of the body's guestId AND the salted hash of the client
- *      IP, counted as max(browser, network) — no signup wall, and a
- *      fresh incognito window can NO LONGER reset the balance);
- *      members get their tier pool (free 2 · premium 4 · pro 8 ·
- *      coaching 8). Nutrition and workout generations draw from the
- *      SAME pool.
+ *   3. UNIFIED MONTHLY QUOTA (ai_plan_usage ledger, migrations 0085+0086
+ *      + 0110) — AI-QUOTAS 2026-11-14: generation is SUBSCRIBER-ONLY:
+ *      free members and guests get 402 with the subscribe CTA (the
+ *      manual planner, calculators and ready-made programs stay free);
+ *      members get their tier quota (premium 4 · pro 8 · coaching 8,
+ *      aggregated stacking) renewed on the SUBSCRIPTION-CYCLE window.
+ *      Nutrition and workout generations draw from the SAME quota.
  *   4. SHAPE: strictly validated (exact day count, 3–8 exercises/day,
  *      bounded sets/reps) — drifted payloads are rejected 422, never
  *      displayed, never counted.
@@ -95,10 +94,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // ── Unified-pool gate (guest OR member — no signup wall). ──
-    // G6: guests burn in BOTH dimensions — browser (guest_key) and
-    // network (ip_key). The incognito-reset hole is closed: a fresh
-    // localStorage UUID can't escape the same-IP history.
+    // ── Unified-quota gate (AI-QUOTAS 2026-11-14). ──
+    // SUBSCRIBER-ONLY generation: free members and guests → 402 with the
+    // subscribe CTA. Subscribers over their monthly quota → 429 with the
+    // cycle renewal date.
     const auth = await getAuthUser(request);
     const userId = auth?.id ?? null;
     let guestKey: string | null = null;
@@ -117,23 +116,31 @@ export async function POST(request: NextRequest) {
       staffHint: auth?.is_staff ?? false,
     });
     if (!quota.allowed) {
-      // G6: pick the copy by the BINDING dimension — a fresh browser
-      // meeting an exhausted NETWORK pool gets its own honest message
-      // (+ soft free-account CTA, never a wall).
-      const networkBlocked = quota.reason === "network";
+      const renewsOn = quota.renewsAt ? new Date(quota.renewsAt).toLocaleDateString(req.language === "ar" ? "ar-EG" : "en-US") : "";
       return NextResponse.json(
         {
-          error: networkBlocked
-            ? req.language === "ar"
-              ? "رصيد التوليد المجاني لهذا الشهر على هذه الشبكة استُخدم بالفعل — أنشئ حسابًا مجانيًا لتحصل على رصيد خاص بك، أو عد أول الشهر عندما يتجدد رصيد الشبكة."
-              : "The free monthly plan generations on this network are already used — create a free account to get your own pool, or come back on the 1st when the network quota resets."
-            : req.language === "ar"
-              ? `رصيدك من توليد الخطط لهذا الشهر انتهى (${quota.limit} شهريًا) — خططك السابقة متاحة أدناه، ويتجدد الرصيد أول الشهر.`
-              : `Your plan-generation quota for this month is used (${quota.limit}/month) — your previous plans stay available below; the quota resets on the 1st.`,
-          quotaExhausted: true,
-          quota: { used: quota.used, limit: quota.limit, remaining: 0, reason: quota.reason },
+          error:
+            quota.subscriptionRequired
+              ? req.language === "ar"
+                ? "توليد الخطط بالذكاء الاصطناعي متاح لمشتركي بريميوم وأعلى — الحاسبات والمخطط اليدوي وبرامج التدريب الجاهزة تظل مجانية بالكامل. اشترك لتوليد خطط التغذية والتمارين بحصة شهرية تتجدد مع دورة الاشتراك."
+                : "AI plan generation is available to Premium subscribers and above — the calculators, the manual planner and the ready-made programs stay completely free. Subscribe to generate nutrition & workout plans with a monthly quota that renews with your subscription cycle."
+              : req.language === "ar"
+                ? `استهلكت حصة توليد الخطط لهذه الدورة (${quota.used}/${quota.limit} — تغذية وتمارين من الحصة نفسها). تتجدد الحصة في ${renewsOn}. خططك السابقة متاحة أدناه دائمًا.`
+                : `You've used your AI plan-generation quota for this cycle (${quota.used}/${quota.limit} — nutrition and workout share one quota). It renews on ${renewsOn}. Your previous plans always stay available below.`,
+          subscriptionRequired: quota.subscriptionRequired,
+          quotaExhausted: !quota.subscriptionRequired,
+          quota: {
+            used: quota.used,
+            limit: quota.limit,
+            remaining: quota.remaining,
+            subscriptionRequired: quota.subscriptionRequired,
+            renewsAt: quota.renewsAt,
+          },
         },
-        { status: 429, headers: { "Retry-After": "3600" } },
+        {
+          status: quota.subscriptionRequired ? 402 : 429,
+          headers: { "Retry-After": "3600" },
+        },
       );
     }
 

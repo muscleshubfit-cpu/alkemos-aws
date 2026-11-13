@@ -295,15 +295,17 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // SUBSCRIBER-ONLY features (Phase 183): SWAPS only. Plan creation
-    // is now pool-gated for EVERYONE (guest/free/paid) — see the
-    // unified-pool check below. G5: the gate fires by ACTUAL tier.
+    // SUBSCRIBER-ONLY features (Phase 183 for swaps + AI-QUOTAS 2026-11-14
+    // for plan generation): BOTH swaps and plan creation are subscriber
+    // features now — generation is gated for guests/free members with the
+    // subscribe CTA (see the unified-quota check below), and swaps keep
+    // their subscriber-gate message. G5: gates fire by ACTUAL tier.
     const intent = classifyEvoIntent(message);
 
     if (intent.isSwapRequest && !isPaidTier) {
       return NextResponse.json({
         response:
-          "🔒 Swaps are a subscriber feature — meal and exercise swaps need an active Premium/Pro/Coaching subscription.\n\nI can still build you meal & workout plans (your monthly quota applies), answer exercise and food questions, and run fitness math.",
+          "🔒 Swaps are a subscriber feature — meal and exercise swaps need an active Premium/Pro/Coaching subscription (each type has its own monthly quota).\n\nI can still answer exercise and food questions and run fitness math for you.",
         links: [
           {
             label: "View membership plans →",
@@ -314,16 +316,16 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // 1.6 PHASE 183 — the UNIFIED monthly plan pool (owner decree
-    // 2026-09-13 «البوول الموحد»): ONE budget for nutrition + workout
-    // generations COMBINED, success-only, for guests AND members.
-    //   - member: pool for their tier (free 2 · premium 4 · pro 8 ·
-    //     coaching 8) via the verified tier hint.
-    //   - guest (G6 dual-dimension, migration 0086): the FREE pool
-    //     (2/month) counted as max(hashed guest id, hashed IP) — a
-    //     fresh incognito window can NO LONGER reset the balance.
+    // 1.6 AI-QUOTAS 2026-11-14 — the UNIFIED MONTHLY plan quota (the
+    // 2026-09-13 «البوول الموحد» decree kept as monthly quotas): ONE
+    // budget for nutrition + workout generations COMBINED, success-only,
+    // renewed on the SUBSCRIPTION-CYCLE window.
+    //   - SUBSCRIBER-ONLY: free members and guests get the subscribe
+    //     CTA (free quota = 0 — generation is a paid feature now).
+    //   - member: quota for their aggregated active paid tiers
+    //     (premium 4 · pro 8 · coaching 8) via the verified tier hint.
     // Swap intents intentionally NOT counted here — they ride the
-    // weekly /api/ai/jobs quota (no double-billing).
+    // independent monthly /api/ai/jobs swap quotas (no double-billing).
     if (intent.isPlanCreation) {
       const planGuestKey = userId
         ? null
@@ -339,15 +341,20 @@ export async function POST(request: NextRequest) {
         staffHint: authIsStaff,
       });
       if (!quota.allowed) {
-        const responseText =
-          `⏰ You've used your AI plan generations for this month (${quota.used}/${quota.limit} — nutrition and workout share one pool). Your quota resets on the 1st.` +
-          (quota.reason === "network"
-            ? "\n\nThe free pool on this network is already used — create a free account to get your own pool."
-            : quota.tier === "free"
-              ? "\n\nCreate a free account to keep your plans saved across devices — or upgrade for a bigger monthly pool."
-              : quota.tier === "premium"
-                ? "\n\nUpgrade to Pro for 8 generations per month."
-                : "");
+        // NOTE: replyLanguage is derived later (line ~525) — this early
+        // gate uses the message's own script, the same detector that
+        // produces it (pure function, safe at this point).
+        const gateLang = isArabicText(message) ? "ar" : "en";
+        const renewsOn = quota.renewsAt
+          ? new Date(quota.renewsAt).toLocaleDateString(gateLang === "ar" ? "ar-EG" : "en-US")
+          : "";
+        const responseText = quota.subscriptionRequired
+          ? (gateLang === "ar"
+              ? "🔒 توليد الخطط بالذكاء الاصطناعي متاح لمشتركي بريميوم وأعلى — اشترك لتوليد خطط التغذية والتمارين بحصة شهرية تتجدد مع دورة الاشتراك. لا يزال بإمكاني الإجابة عن أسئلة التمارين والأطعمة وحل الحسابات."
+              : "🔒 AI plan generation is a subscriber feature — subscribe (Premium or above) to generate meal & workout plans with a monthly quota that renews with your subscription cycle. I can still answer exercise and food questions and run fitness math.")
+          : (gateLang === "ar"
+              ? `⏰ استهلكت حصة توليد الخطط لهذه الدورة (${quota.used}/${quota.limit} — تغذية وتمارين من الحصة نفسها). تتجدد الحصة في ${renewsOn}.`
+              : `⏰ You've used your AI plan generations for this cycle (${quota.used}/${quota.limit} — nutrition and workout share one quota). Your quota renews on ${renewsOn}.`);
         return NextResponse.json(
           {
             response: responseText,

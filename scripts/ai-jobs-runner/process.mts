@@ -74,33 +74,66 @@ async function main(): Promise<void> {
   let failed = 0;
   const failedLabels: string[] = [];
 
-  // AI-PLAN-QUALITY 2026-10-24 (owner order item 4 — «تحديث الحصص المدفوعة
-  // بصورة صحيحة»): the member swap quota is recorded HERE, when a
-  // meal_regenerate / exercise_regenerate job actually lands `done`.
-  // The enqueue gate is check-only now — a permanently failed
-  // regeneration no longer burns the member's paid weekly swap.
+  // AI-QUOTAS 2026-11-14 (owner order «إعادة هيكلة سياسة الذكاء الاصطناعي
+  // والاشتراكات والأرصدة» + the corrective clarification — monthly quotas,
+  // developed): the member's INDEPENDENT monthly swap quota (per type) is
+  // recorded HERE, when a meal_regenerate / exercise_regenerate job
+  // actually lands `done` (AI-PLAN-QUALITY 2026-10-24 success-only law).
+  // ROLE-AWARE target (the planPoolBillingForRequester matrix, extended
+  // to swaps): b2b coach → the swap burns the CLIENT's quota (the
+  // 2026-09-01/13 decrees carried onto swaps); client self-service → his
+  // own; site-coach / admin / unresolvable → the staff member's own
+  // history row only (staff never burns a client's quota).
+  // Migration 0110: job_ref is UNIQUE — a re-run after `done` returns
+  // false here and logs the truth (no double deduction, ever).
   // Fail-soft: a ledger hiccup NEVER fails the finished job.
-  const recordSwapOnSuccess = async (job: { job_type: string; requested_by?: string | null }): Promise<void> => {
+  const recordSwapOnSuccess = async (job: {
+    id: string;
+    job_type: string;
+    requested_by?: string | null;
+    payload?: Record<string, unknown> | null;
+  }): Promise<void> => {
     try {
       if (job.job_type !== "meal_regenerate" && job.job_type !== "exercise_regenerate") return;
-      const userId = String(job.requested_by || "");
-      if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userId)) return;
-      const { recordSwapUsage } = await import("../../src/lib/tier-limits");
-      // HONEST-LEDGER 2026-10-26 (live QA round, Task
-      // QA-TEST-ACCOUNTS-2026-10-26): recordSwapUsage now RETURNS the
-      // insert's truth — this log must never say «usage recorded» again
-      // unless the plan_swaps row actually landed (measured live: the
-      // runner printed the success line while the insert was dying on
-      // the NOT NULL plan_type column — GHA drain run 40246588409).
-      const recorded = await recordSwapUsage(userId, job.job_type === "meal_regenerate" ? "meal" : "exercise");
+      const requesterId = String(job.requested_by || "");
+      if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(requesterId)) return;
+      const { recordSwapUsage, planPoolBillingForRequester } = await import("../../src/lib/tier-limits");
+      const { supabaseAdmin } = await import("../../src/lib/supabase/admin");
+      // Whose quota burns? Resolve the requester's role (same profile read
+      // the plan-pool path uses) and apply the attribution matrix.
+      let targetId = requesterId;
+      let attribution = "requester (unresolved role) — staff/history row only";
+      if (supabaseAdmin) {
+        const { data: profile } = await supabaseAdmin
+          .from("profiles")
+          .select("role, coach_kind")
+          .eq("id", requesterId)
+          .maybeSingle();
+        const policy = planPoolBillingForRequester(profile?.role ?? null, profile?.coach_kind ?? null);
+        if (policy.bill) {
+          const clientId = String(job.payload?.clientId ?? "");
+          if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(clientId)) {
+            targetId = clientId;
+            attribution = policy.reason;
+          }
+        } else {
+          attribution = policy.reason;
+        }
+      }
+      // HONEST-LEDGER 2026-10-26: recordSwapUsage RETURNS the insert's
+      // truth — this log must never say «usage recorded» unless the
+      // plan_swaps row actually landed (0110: a UNIQUE job_ref duplicate
+      // returns false = the job was already recorded — also logged honest).
+      const recorded = await recordSwapUsage(
+        targetId,
+        job.job_type === "meal_regenerate" ? "meal" : "exercise",
+        job.id,
+      );
       if (recorded) {
-        console.log(`[ai-jobs] usage recorded: ${job.job_type} → plan_swaps(${userId.slice(0, 8)}…)`);
+        console.log(`[ai-jobs] usage recorded: ${job.job_type} → plan_swaps(${targetId.slice(0, 8)}… · ${attribution})`);
       } else {
-        // The truth: the job is done, but the weekly quota ledger was
-        // NOT updated — the member got this swap outside the recorded
-        // balance (see the [tier-limits] recordSwap error above).
         console.warn(
-          `[ai-jobs] usage NOT recorded: ${job.job_type} → plan_swaps insert FAILED for ${userId.slice(0, 8)}… (job stays done)`,
+          `[ai-jobs] usage NOT recorded: ${job.job_type} → plan_swaps insert FAILED or duplicate job_ref for ${targetId.slice(0, 8)}… (job stays done)`,
         );
       }
     } catch (e) {
@@ -109,22 +142,29 @@ async function main(): Promise<void> {
   };
 
   // PLAN-REGEN-CONSTRAINTS 2026-10-24 (owner order item 3 — «تصحيح منطق
-  // الأرصدة والاستحقاقات»): the CLIENT's unified plan pool for a successful
-  // plan_nutrition / plan_workout job is recorded HERE — after finishJob
-  // lands `done` (the old in-processor recording sat BEFORE finishJob: a
-  // finishJob failure → requeue → re-run burned the pool TWICE) — and it is
-  // ROLE-AWARE (tier-limits.planPoolBillingForRequester):
-  //   · b2b coach (role=coach, coach_kind='b2b'|null) → the client's pool
+  // الأرصدة والاستحقاقات» — carried by AI-QUOTAS 2026-11-14): the CLIENT's
+  // unified monthly plan quota for a successful plan_nutrition / plan_workout
+  // job is recorded HERE — after finishJob lands `done` (the old
+  // in-processor recording sat BEFORE finishJob: a finishJob failure →
+  // requeue → re-run burned the quota TWICE) — and it is ROLE-AWARE
+  // (tier-limits.planPoolBillingForRequester — extended 2026-11-14 with the
+  // CLIENT self-service branch for the new dashboard generation):
+  //   · b2b coach (role=coach, coach_kind='b2b'|null) → the client's quota
   //     burns — the owner's documented decrees (2026-09-01 + 2026-09-13),
   //     exactly as before;
-  //   · SITE COACH (role=coach, coach_kind='site') → NO client-pool burn —
+  //   · CLIENT self-service (2026-11-14 dashboard path) → the member's own
+  //     quota burns;
+  //   · SITE COACH (role=coach, coach_kind='site') → NO client-quota burn —
   //     his B2C members already paid the site (migration 0067's own law);
-  //   · ADMIN (site staff) → NO client-pool burn — the measured live defect
+  //   · ADMIN (site staff) → NO client-quota burn — the measured live defect
   //     this kills: 18/20 recent plan jobs were admin-requested and each
-  //     burned its client's pool;
+  //     burned its client's quota;
   //   · unresolvable requester → NO burn (fail-open on the ledger).
+  // Migration 0110: job_ref is UNIQUE — a re-run after `done` dies on the
+  // unique index and the insert is skipped (no double deduction, ever).
   // Fail-soft: a lookup/ledger hiccup NEVER fails the finished job.
   const recordPlanPoolOnSuccess = async (job: {
+    id: string;
     job_type: string;
     requested_by?: string | null;
     payload?: Record<string, unknown> | null;
@@ -153,19 +193,21 @@ async function main(): Promise<void> {
       }
       const policy = planPoolBillingForRequester(role, coachKind);
       if (!policy.bill) {
-        console.log(`[ai-jobs] plan-pool billing skipped: ${policy.reason}`);
+        console.log(`[ai-jobs] plan-quota billing skipped: ${policy.reason}`);
         return;
       }
       await recordUnifiedPlanUsage({
         userId: clientId,
         kind: job.job_type === "plan_nutrition" ? "nutrition" : "workout",
         surface: "coach",
+        // Migration 0110: the UNIQUE job_ref — deduct exactly once.
+        jobRef: job.id,
       });
       console.log(
         `[ai-jobs] usage recorded: ${job.job_type} → ai_plan_usage(client ${clientId.slice(0, 8)}…, requester ${role}/${coachKind ?? "b2b"})`,
       );
     } catch (e) {
-      console.warn("[ai-jobs] plan-pool usage recording failed (job stays done):", e instanceof Error ? e.message : e);
+      console.warn("[ai-jobs] plan-quota usage recording failed (job stays done):", e instanceof Error ? e.message : e);
     }
   };
 

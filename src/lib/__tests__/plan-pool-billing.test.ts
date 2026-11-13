@@ -14,13 +14,17 @@ import { planPoolBillingForRequester } from "@/lib/tier-limits";
  * ADMIN and each burned its client's pool (client 87cd7ba6, coaching
  * tier pool 8/month, lost 5 units to admin-driven work in two days).
  *
- * THE POLICY MATRIX + THE WIRING PINS:
- *   - b2b coach  → bills the client pool (owner decrees 2026-09-01/13);
+ * THE POLICY MATRIX + THE WIRING PINS (AI-QUOTAS 2026-11-14: extended with
+ * the CLIENT self-service branch — the new dashboard generation bills the
+ * member's own quota; the enqueue route guarantees clientId === requester):
+ *   - client self-service → bills the member's own quota (2026-11-14);
+ *   - b2b coach  → bills the client quota (owner decrees 2026-09-01/13);
  *   - site coach → NEVER bills (B2C members already paid the site — 0067);
  *   - admin      → NEVER bills (site staff work — the measured defect);
  *   - unresolved → never bills (fail-open);
  *   - the processors no longer record (source pin);
- *   - the runner records AFTER finishJob (source pin — no double burn);
+ *   - the runner records AFTER finishJob (source pin — no double burn; the
+ *     0110 UNIQUE job_ref now enforces single-record structurally);
  *   - the enqueue gate accepts the site-coach roster (source pin).
  */
 
@@ -56,10 +60,15 @@ describe("planPoolBillingForRequester — the policy matrix", () => {
     expect(planPoolBillingForRequester("admin", "site").bill).toBe(false);
   });
 
-  it("unresolvable / client requesters never bill (fail-open on the ledger)", () => {
+  it("CLIENT self-service (the 2026-11-14 dashboard path) bills the member's own quota — the route guarantees clientId === requester", () => {
+    const v = planPoolBillingForRequester("client", null);
+    expect(v.bill).toBe(true);
+    expect(v.reason).toContain("self-service");
+  });
+
+  it("unresolvable requesters never bill (fail-open on the ledger)", () => {
     expect(planPoolBillingForRequester(null, null).bill).toBe(false);
     expect(planPoolBillingForRequester(undefined, undefined).bill).toBe(false);
-    expect(planPoolBillingForRequester("client", null).bill).toBe(false);
     expect(planPoolBillingForRequester("weird-role", "b2b").bill).toBe(false);
     expect(planPoolBillingForRequester(42, {}).bill).toBe(false);
   });
@@ -84,7 +93,10 @@ describe("the billing wiring pins (fail on revert)", () => {
     expect(s).toContain('from("profiles")');
     expect(s).toContain("planPoolBillingForRequester(role, coachKind)");
     // fail-soft: a ledger hiccup never fails the finished job
-    expect(s).toContain("plan-pool usage recording failed (job stays done)");
+    expect(s).toContain("plan-quota usage recording failed (job stays done)");
+    // 0110: the UNIQUE job_ref rides the recording call (structural once-only)
+    expect(s).toContain("jobRef: job.id");
+    expect(s).toContain("recordSwapUsage(");
   });
 
   it("the enqueue gate accepts the SITE-COACH roster (site_coach_assignments) and skips the B2B money gates for it", () => {

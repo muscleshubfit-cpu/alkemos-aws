@@ -315,14 +315,14 @@ describe("HOME-PLATFORM-284 — the platform homepage canaries", () => {
     // AR-COPY-REWRITE-287 (2026-11-04): the Arabic pin follows the
     // re-authored native-MSA wording (same verified fact — a free
     // monthly AI-plan allowance for every visitor).
-    // BILINGUAL-CONTENT Phase 2 (owner-approved optional item 8,
-    // 2026-11-04): the NUMBER is now stated in the band itself — 2
-    // successful generations/month (memberships.ts free-tier
-    // aiPlanMonthlyLimit), matching the FAQ below it. The pin follows
-    // the wording (the 287 same-commit precedent).
+    // AI-QUOTAS 2026-11-14 (the corrective owner order): generation is
+    // subscriber-only — the band states the honest policy (free members
+    // keep the full free product; generation & swaps ride monthly quotas
+    // for Premium and above). The pin follows the wording (the 287
+    // same-commit precedent).
     // The text lives in the registry; the band renders before #plan.
-    expect(readBoth()).toContain("لكل زائر رصيد شهري مجاني: توليدان ناجحان من خطط الذكاء الاصطناعي");
-    expect(readBoth()).toContain("2 successful AI plan generations");
+    expect(readBoth()).toContain("توليد الخطط والتبديلات بالذكاء الاصطناعي ميزة لمشتركي بريميوم وأعلى");
+    expect(readBoth()).toContain("AI plan generation & swaps are subscriber features (Premium and above)");
     expect(readBoth()).toContain("توليد بالذكاء الاصطناعي");
     expect(readBoth()).toContain("AI GENERATION");
     const allowanceAt = src.indexOf('aria-label={isAr ? "رصيد الخطط المجاني" : "The free plan allowance"}');
@@ -467,8 +467,8 @@ describe("HOME-PLATFORM-284 — the platform homepage canaries", () => {
       // the REAL limit-derived feature rows (memberships.ts limits).
       "العضويات والتدريب الأونلاين",
       "MEMBERSHIPS & COACHING",
-      "توليدان شهريًا للخطط الذكية",
-      "2 AI plans a month",
+      "توليد الخطط والتبديلات للمشتركين",
+      "AI plans & swaps for subscribers",
       "كل مزايا المستوى المجاني",
       "Everything in the Free tier",
       "تجربة بلا إعلانات",

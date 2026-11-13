@@ -257,6 +257,24 @@ PROBES: list[dict] = [
             {"type": "swagger_table", "table": "recipe_favorites"},
         ],
     },
+    # 0110 — AI-QUOTA SUCCESS IDEMPOTENCY (owner order 2026-11-14 «إعادة
+    # هيكلة سياسة الذكاء الاصطناعي والاشتراكات والأرصدة» + the corrective
+    # clarification: the system STAYS monthly quotas, developed — no
+    # credits/wallets. Governing doc docs/AI-QUOTAS-POLICY-2026-11-14.md):
+    # job_ref uuid columns (unique partial index) on ai_plan_usage and
+    # plan_swaps — one success row per queued job, structurally no double
+    # deduction. Strong probes: both columns present in the PostgREST spec.
+    {
+        "file": "20261114150000_0110_ai_quota_success_idempotency.sql",
+        "label": "0110 AI-QUOTA-SUCCESS-IDEMPOTENCY",
+        "strength": "strong",
+        "checks": [
+            {"type": "swagger_column", "table": "ai_plan_usage",
+             "column": "job_ref"},
+            {"type": "swagger_column", "table": "plan_swaps",
+             "column": "job_ref"},
+        ],
+    },
 ]# fmt: on
 
 # --- named transforms for rest_rows probes ----------------------------------

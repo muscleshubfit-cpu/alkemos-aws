@@ -88,7 +88,7 @@ export default function MacroTrackerPage() {
         {
           n: "3",
           title: "Or generate a full day",
-          desc: "The AI Meal Planner builds your day in grams from your calorie target and diet system — 2 free generations per month, no account.",
+          desc: "The AI Meal Planner builds your day in grams from your calorie target and diet system — a subscriber feature (Premium and above) with a monthly quota. The manual meal planner stays free.",
           href: "/ai-meal-planner",
           cta: "Generate a meal plan",
         },

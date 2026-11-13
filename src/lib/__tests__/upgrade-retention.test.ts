@@ -174,12 +174,12 @@ describe("A) resolveMembershipTier — the premium→pro lifecycle ladder", () =
     expect(filters.length).toBe(2); // getAuthUser + getAuthUserFromHeaders
   });
 
-  it("BOTH expired (the whole stack lapses) → free (pool 2)", () => {
+  it("BOTH expired (the whole stack lapses) → free (quota 0 — the 2026-11-14 subscriber-only order)", () => {
     const tier = resolveMembershipTier("client", []);
     expect(tier).toBe("free");
-    expect(resolveUnifiedPlanPoolLimit([])).toBe(2);
+    expect(resolveUnifiedPlanPoolLimit([])).toBe(0);
     // expired rows leaking through the pre-filter contribute NOTHING
-    expect(resolveUnifiedPlanPoolLimit([expired("premium"), expired("pro")])).toBe(2);
+    expect(resolveUnifiedPlanPoolLimit([expired("premium"), expired("pro")])).toBe(0);
   });
 
   it("coaching stacked under the upgrade (premium+pro+coaching) → pro (membership_tier reports the MEMBERSHIP)", () => {
@@ -338,9 +338,12 @@ describe("B) checkUnifiedPlanQuota — partial consumption then upgrade (the 374
     expect(v.limit).toBe(12);
   });
 
-  it("every other tier limit steps with the SAME single-tier law (swap weekly 3→6, saved-results 50→200, ads off at pro)", () => {
-    expect(swapLimitForTier("premium")).toBe(3);
-    expect(swapLimitForTier("pro")).toBe(6); // replaced, not 3+6
+  it("every other tier limit steps with the SAME single-tier law (swap monthly 13→26, saved-results 50→200, ads off at pro)", () => {
+    // AI-QUOTAS 2026-11-14: swaps became INDEPENDENT monthly quotas per
+    // type (13/26 — the full-entitlement conversion of the retired 3/6
+    // weekly limits). Replaced, never 13+26.
+    expect(swapLimitForTier("premium")).toBe(13);
+    expect(swapLimitForTier("pro")).toBe(26);
     expect(getLimits("premium").savedResultsLimit).toBe(50);
     expect(getLimits("pro").savedResultsLimit).toBe(200);
     expect(getLimits("premium").adsEnabled).toBe(true);
@@ -494,14 +497,19 @@ describe("F) meter == enforcement (the /api/ai/quota contract after the upgrade)
     const route = src("src/app/api/ai/quota/route.ts");
     expect(route).toContain("checkUnifiedPlanQuota");
     expect(route).toContain("tierHint: tier");
-    expect(route).toContain("Display ALWAYS reads the same ledger enforcement counts");
+    // AI-QUOTAS 2026-11-14: the meter ALSO reads the swap verdicts (the
+    // same checkSwapQuota the enqueue gate runs) — meter == enforcement.
+    expect(route).toContain("checkSwapQuota");
+    expect(route).toContain("meter == enforcement");
   });
 
-  it("the member demo-generation gate burns the SAME unified pool on success (the live-scenario path)", () => {
+  it("the member demo-generation gate burns the SAME unified quota on success (the live-scenario path)", () => {
     const route = src("src/app/api/ai/meal-plan-demo/route.ts");
     expect(route).toContain("checkUnifiedPlanQuota");
     expect(route).toContain("recordUnifiedPlanUsage");
     expect(route).toContain("counted ONLY on");
-    expect(route).toContain("Checked BEFORE the provider call");
+    // The 2026-11-14 subscriber gate: the blocked branch picks its copy
+    // from subscriptionRequired (402) vs the exhausted quota (429).
+    expect(route).toContain("subscriptionRequired ? 402 : 429");
   });
 });

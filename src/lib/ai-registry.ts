@@ -1128,7 +1128,7 @@ export const AI_FUNCTION_REGISTRY: Record<string, AIFunctionSpec> = {
       // maxModels intentionally absent at the call site → engine default 2.
       budgetEnv: "AI_CHAIN_TOTAL_BUDGET_MS",
     },
-    gates: ["parseDemoPlanText + ±20% calorie deviation (honest 422)", "guest burst pool 2/month (success-only)"],
+    gates: ["parseDemoPlanText + ±20% calorie deviation (honest 422)", "subscriber-only monthly quota (success-only — 402 for free/guest)"],
     metering: { scope: "meal-demo" },
     entry: { surface: "vercel-sync", trigger: "visitor /ai-meal-planner demo (no signup)" },
     knobs: ["AI_CHAIN_TOTAL_BUDGET_MS"],
@@ -1152,7 +1152,7 @@ export const AI_FUNCTION_REGISTRY: Record<string, AIFunctionSpec> = {
       // maxModels intentionally absent → engine default 2.
       budgetEnv: "AI_CHAIN_TOTAL_BUDGET_MS",
     },
-    gates: ["parseWorkoutPlanText + shape check", "guest burst pool 2/month (success-only)"],
+    gates: ["parseWorkoutPlanText + shape check", "subscriber-only monthly quota (success-only — 402 for free/guest)"],
     metering: { scope: "workout-demo" },
     entry: { surface: "vercel-sync", trigger: "visitor /ai-workout-planner demo (no signup)" },
     knobs: ["AI_CHAIN_TOTAL_BUDGET_MS"],

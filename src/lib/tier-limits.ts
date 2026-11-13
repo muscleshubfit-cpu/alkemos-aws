@@ -5,25 +5,52 @@
  * client-side). Fixes C15 (EVO chat limit bypassable) and C16
  * (swap limit bypassable).
  *
- * 2026-08-27 CRITICAL FIXES (audit findings G1–G4):
+ * 2026-08-27 CRITICAL FIXES (audit findings G1–G4 — kept; their fixes
+ * survive the 2026-11-14 restructure):
  *
- *   G3 — resolveTier() previously used getSubscriptionForClient(), which
- *        filtered NEITHER status NOR end_date: expired/pending/rejected
- *        subscriptions still granted unlimited Premium/Pro limits. It also
- *        imported a "use client" module (browser Supabase client without
- *        cookies) into server route context, so RLS could hide the rows and
- *        collapse paying users to "free". Now:
- *          1. The verified auth tier from getAuthUser()/requireUser()
- *             (already status='active' + end_date>now()-filtered) is passed
- *             in by every caller as `tierHint` and trusted first.
- *          2. Fallback re-resolution queries through the SERVICE-ROLE admin
- *             client with the same active+expiry filters.
+ *   G3 — resolveTier() previously trusted unfiltered subscription rows
+ *        (expired/pending still granted paid limits). The verified auth
+ *        tier from getAuthUser()/requireUser() is passed in by every
+ *        caller as `tierHint` and trusted first; fallback re-resolution
+ *        queries through the SERVICE-ROLE admin client with the same
+ *        active+expiry filters.
+ *   G1/G2 — EVO chat daily counting lives in the tamper-proof
+ *        `evo_chat_usage` ledger (migration 0022): server-inserted
+ *        before dispatch, no client INSERT/DELETE policies — clearing
+ *        chat history cannot reset the quota.
  *
- *   G1/G2 — EVO chat daily counting moved to the tamper-proof
- *        `evo_chat_usage` ledger (migration 0022). Rows are inserted by the
- *        SERVER before each AI dispatch; users have no INSERT/DELETE policy,
- *        so neither skipping client inserts nor clearing chat history can
- *        reset/bypass the quota anymore.
+ * ─────────────────────────────────────────────────────────────────────────
+ * AI MONTHLY QUOTAS (owner order 2026-11-14 «إعادة هيكلة سياسة الذكاء
+ * الاصطناعي والاشتراكات والأرصدة» + التوضيح المُصحِّح — النظام يظل حصصًا
+ * شهرية مطوَّرة، لا أرصدة ولا محافظ. Governing doc:
+ * docs/AI-QUOTAS-POLICY-2026-11-14.md):
+ *
+ *   1. GENERATION is subscriber-only: free members and guests get the
+ *      FREE quota (0) — every generation surface (planner pages, EVO
+ *      plan intents, dashboard self-service, coach B2B jobs for
+ *      clients) must pass checkUnifiedPlanQuota() first and show the
+ *      subscription message when the verdict says subscriptionRequired.
+ *      Paid tiers keep the unified monthly quota (premium 4 · pro 8 ·
+ *      coaching 8, aggregated stacking — 2026-10-28 law preserved).
+ *   2. SWAPS became INDEPENDENT MONTHLY quotas per type (evolved from
+ *      the retired weekly limits by full-entitlement conversion:
+ *      3/wk→13/mo · 6/wk→26/mo): free 0 · premium 13 · pro 26 ·
+ *      coaching 26 — meal and exercise each get their own quota.
+ *   3. RENEWAL follows the CURRENT SUBSCRIPTION CYCLE: quota windows
+ *      are anchored at the day-of-month of the earliest
+ *      effectively-active paid subscription's start_date
+ *      (anniversary-day monthly windows; calendar-month fallback).
+ *      cycleWindowStartUtc() is the single source for BOTH the
+ *      generation and the swap windows (display == enforcement law).
+ *   4. SUCCESS-ONLY + ONCE-ONLY: quota is deducted by inserting ONE
+ *      success row (ai_plan_usage / plan_swaps) after the operation
+ *      lands; migration 0110 adds a UNIQUE job_ref so a runner re-run
+ *      can never record the same job twice. Failures never burn quota.
+ *
+ * RETIRED (this frame): the weekly swap window (weekStartUtc /
+ * countThisWeekSwaps / checkAndRecordSwap — Monday-anchored law of the
+ * 2026-09-02 decree) — superseded by the monthly cycle windows above.
+ * ─────────────────────────────────────────────────────────────────────────
  */
 
 import { supabaseAdmin, isSupabaseAdminConfigured } from "@/lib/supabase/admin";
@@ -51,20 +78,23 @@ function sanitizeTier(tier: unknown): MembershipTier | null {
  * auth subs list. Uses the service-role admin client (RLS-bypassing)
  * with the SAME active + expiry filtering the auth entry points apply
  * (status='active' AND end_date > now) — mirrors getAuthUser()'s
- * window in auth-server.ts.
+ * window in auth-server.ts. start_date rides along for the quota
+ * cycle window (the 2026-11-14 renewal law: anniversary-day anchor).
  *
  * Returns null when the admin client is unavailable or the read fails
  * (fail-safe: checkUnifiedPlanQuota then falls back to the single-tier
  * hint pool — never to unlimited, never above the entitlement).
  */
+export type SubRowWithStart = SubscriptionTierRow & { start_date: string | null };
+
 async function fetchActiveSubTierRows(
   userId: string,
-): Promise<SubscriptionTierRow[] | null> {
+): Promise<SubRowWithStart[] | null> {
   if (!isSupabaseAdminConfigured || !supabaseAdmin) return null;
   try {
     const { data, error } = await supabaseAdmin
       .from("subscriptions")
-      .select("tier, status, end_date")
+      .select("tier, status, end_date, start_date")
       .eq("client_id", userId)
       .eq("status", "active")
       .gt("end_date", new Date().toISOString());
@@ -72,7 +102,7 @@ async function fetchActiveSubTierRows(
       console.error("[tier-limits] fetchActiveSubTierRows error:", error.message);
       return null;
     }
-    return (data ?? []) as SubscriptionTierRow[];
+    return (data ?? []) as SubRowWithStart[];
   } catch (e) {
     console.error(
       "[tier-limits] fetchActiveSubTierRows error:",
@@ -83,7 +113,7 @@ async function fetchActiveSubTierRows(
 }
 
 /**
- * Best-tier DB fallback for the FEATURE limits (EVO chat daily + weekly
+ * Best-tier DB fallback for the FEATURE limits (EVO chat daily + monthly
  * swaps — best-membership semantics, NOT the plan pool). Returns "free"
  * when the rows are unreadable — an unknown user never inherits premium
  * limits (fail-safe, unchanged).
@@ -106,21 +136,19 @@ export function evoChatLimitFor(tier: MembershipTier): number | null {
 }
 
 /**
- * Get the swap weekly limit for a tier (per type: meal/exercise).
+ * Get the swap MONTHLY limit for a tier (per type: meal/exercise — each
+ * type gets its own independent monthly quota).
  * Returns null = unlimited.
  *
- * Maps membership tiers to swap limits:
+ * Maps membership tiers to swap quotas:
  *   free:     0 (no swaps)
- *   premium:  3/week
- *   pro:      6/week
- *   coaching: 6/week (inherits every Pro benefit — Phase 183)
+ *   premium:  13/month (evolved from the retired weekly 3 — 3/wk ≈ 13/mo)
+ *   pro:      26/month (evolved from the retired weekly 6 — 6/wk ≈ 26/mo)
+ *   coaching: 26/month (inherits every Pro benefit — Phase 183)
  */
 export function swapLimitForTier(tier: MembershipTier): number | null {
-  // Single source of truth = memberships.ts (evoSwapLimit).
-  // Previously a hardcoded switch duplicated these numbers — the two could
-  // drift apart from the advertised comparison table. They agree
-  // today (0/3/6/6); now they CANNOT diverge.
-  return getLimits(tier).evoSwapLimit;
+  // Single source of truth = memberships.ts (evoSwapMonthlyLimit).
+  return getLimits(tier).evoSwapMonthlyLimit;
 }
 
 /**
@@ -178,17 +206,18 @@ export function hashIpKey(ip: string): string {
 export type PlanSurface = "planner" | "evo" | "coach";
 
 /**
- * Count this month's SUCCESSFUL AI plan generations for one identity
+ * Count this window's SUCCESSFUL AI plan generations for one identity
  * (member userId OR guestKey/ipKey — several dimensions may be given;
  * the result is the MAX across them, the G6 dual-dimension law). The
  * ledger is ai_plan_usage (migration 0085 + 0086): a row exists ONLY
  * after a plan was generated AND validated — failed attempts, input
- * edits, navigation, or re-viewing an existing plan never burn the pool.
+ * edits, navigation, or re-viewing an existing plan never burn the quota.
  */
 export async function countUnifiedPlanUsage(identity: {
   userId?: string | null;
   guestKey?: string | null;
   ipKey?: string | null;
+  windowStartIso?: string | null;
 }): Promise<number> {
   const dims: Array<["user_id" | "guest_key" | "ip_key", string]> = [];
   if (identity.userId) dims.push(["user_id", identity.userId]);
@@ -196,22 +225,25 @@ export async function countUnifiedPlanUsage(identity: {
   if (identity.ipKey) dims.push(["ip_key", identity.ipKey]);
   if (dims.length === 0) return 0;
   const counts = await Promise.all(
-    dims.map(([col, val]) => countPlanRowsBy(col, val)),
+    dims.map(([col, val]) =>
+      countPlanRowsBy(col, val, identity.windowStartIso ?? monthStartUtc()),
+    ),
   );
   return Math.max(...counts);
 }
 
-/** One dimension → this month's success-row count (head count query). */
+/** One dimension → the window's success-row count (head count query). */
 async function countPlanRowsBy(
   column: "user_id" | "guest_key" | "ip_key",
   value: string,
+  windowStartIso: string,
 ): Promise<number> {
   if (!isSupabaseAdminConfigured || !supabaseAdmin) return 0;
   const { count, error } = await supabaseAdmin
     .from("ai_plan_usage")
     .select("*", { count: "exact", head: true })
     .eq(column, value)
-    .gte("created_at", monthStartUtc());
+    .gte("created_at", windowStartIso);
   if (error) {
     console.error("[tier-limits] countPlanRowsBy error:", error.message);
     return 0; // fail open on counting errors — soft quota, same as chat
@@ -219,40 +251,53 @@ async function countPlanRowsBy(
   return count ?? 0;
 }
 
-/** Verdict for the unified pool — what enforcement AND display read. */
+/** Verdict for the unified quota — what enforcement AND display read. */
 export type UnifiedPlanQuotaVerdict = {
   allowed: boolean;
-  used: number; // successful generations this month (combined kinds)
-  limit: number; // the tier's unified pool size
+  used: number; // successful generations this window (combined kinds)
+  limit: number; // the tier's unified monthly quota size
   remaining: number;
   unlimited: boolean; // staff semantics — never limited, still recorded
   tier: MembershipTier | "guest";
   /**
-   * G6: WHY a guest was blocked — routes pick the error copy from it.
-   *   "pool"    → this browser's own pool is exhausted (classic message)
-   *   "network" → the browser is fresh but the shared IP dimension is
-   *               exhausted (incognito-retry case) → network copy + soft
-   *               free-account CTA. null when allowed / member / staff.
+   * WHY the caller was blocked — routes pick the error copy from it.
+   *   "subscription_required" → free member / guest: generation is
+   *     subscriber-only (2026-11-14 order) → subscribe CTA + 402.
+   *   "pool" → a subscriber whose monthly quota is exhausted → 429.
+   *   "network" → legacy guest-dimension copy (kept for API shape
+   *     compatibility; unreachable while the free quota is 0).
+   * null when allowed / staff.
    */
-  reason: "pool" | "network" | null;
+  reason: "pool" | "network" | "subscription_required" | null;
+  /** true when limit === 0 (no active paid subscription) — the 402 flag. */
+  subscriptionRequired: boolean;
+  /** When the current window renews (ISO) — display surfaces read it. */
+  renewsAt: string | null;
 };
 
 /**
- * THE unified-pool gate (owner decree 2026-09-13 «البوول الموحد» +
- * owner order 2026-10-28 «تجميع حصص الاشتراكات المدفوعة»).
+ * THE unified-quota gate (owner decree 2026-09-13 + aggregation order
+ * 2026-10-28 + subscriber-only correction 2026-11-14).
  *
  * Identity resolution:
- *   - userId             → member pool = the AGGREGATE of every distinct
+ *   - userId             → member quota = the AGGREGATE of every distinct
  *     paid tier held as an effectively-active subscription (rows read
  *     via the service-role admin client with the SAME active+expiry
  *     filters as getAuthUser(); `tierHint` stays the display-tier hint
  *     and the fail-safe single-tier fallback when the rows are
  *     unreadable — never unlimited, never above the entitlement).
- *   - guestKey           → the FREE pool (2/month). No signup wall:
- *     guests generate within the free quota; the signup nudge stays
- *     soft (benefits only, never a block).
+ *     FREE members resolve to the FREE quota (0) → blocked with
+ *     subscriptionRequired (generation is subscriber-only).
+ *   - guests (no userId)  → the FREE quota (0) → blocked with
+ *     subscriptionRequired (the subscribe CTA; no guest generation
+ *     path exists under the 2026-11-14 policy).
  *   - staffHint          → unlimited (STAFF QUOTA SEMANTICS; usage is
  *     still recorded for analytics).
+ *
+ * RENEWAL (2026-11-14): the member's window is the SUBSCRIPTION-CYCLE
+ * month anchored at the earliest effectively-active paid subscription's
+ * start_date day (see quotaWindowStartForSubs) — quotas renew with the
+ * subscription cycle, not the calendar month.
  */
 export async function checkUnifiedPlanQuota(opts: {
   userId?: string | null;
@@ -265,31 +310,34 @@ export async function checkUnifiedPlanQuota(opts: {
     return {
       allowed: true, used: 0, limit: 0, remaining: 0, unlimited: true,
       tier: opts.userId ? "free" : "guest", reason: null,
+      subscriptionRequired: false, renewsAt: null,
     };
   }
   if (opts.userId) {
     // AGGREGATED PAID-POOL LAW (owner order 2026-10-28 «تجميع حصص
-    // الاشتراكات المدفوعة»): the member limit is the SUM of every
+    // الاشتراكات المدفوعة"): the member limit is the SUM of every
     // distinct paid tier held as an effectively-active subscription
     // (premium 4 + pro 8 + coaching 8 — stacking, not best-tier-wins).
     // The rows are read from the SAME active + expiry window the auth
     // entry points use; `tierHint` remains the DISPLAY-tier hint (and
     // the fail-safe single-tier fallback when the rows cannot be read).
-    // The usage ledger below is identity-keyed (0085) — activations
+    // The usage ledger is identity-keyed (0085) — activations
     // structurally never zero or double it.
     const rows = await fetchActiveSubTierRows(opts.userId);
     const hintTier = sanitizeTier(opts.tierHint);
     const tier: MembershipTier = hintTier
       ?? (rows ? resolveMembershipTier("client", rows) : "free");
     // Fail-safe: rows unavailable (admin client unconfigured / read
-    // error) → the single-tier hint pool at most — NEVER unlimited and
+    // error) → the single-tier hint quota at most — NEVER unlimited and
     // never above the entitled aggregate (a stacked member is briefly
     // under-granted on a transient read failure, never over-granted).
     const limit =
       rows !== null
         ? resolveUnifiedPlanPoolLimit(rows)
         : unifiedPlanPoolFor(hintTier ?? "free");
-    const used = await countPlanRowsBy("user_id", opts.userId);
+    // RENEWAL 2026-11-14: count inside the SUBSCRIPTION-CYCLE window.
+    const windowStart = quotaWindowStartForSubs(rows);
+    const used = await countPlanRowsBy("user_id", opts.userId, windowStart);
     return {
       allowed: used < limit,
       used,
@@ -297,38 +345,26 @@ export async function checkUnifiedPlanQuota(opts: {
       remaining: Math.max(0, limit - used),
       unlimited: false,
       tier,
-      reason: null, // members have exactly one identity — no dimension copy
+      reason: used >= limit && limit === 0 ? "subscription_required" : null,
+      subscriptionRequired: limit === 0,
+      renewsAt: addMonthsIso(windowStart, 1),
     };
   }
-  // Guest (G6 dual-dimension law, migration 0086): the pool burns in
-  // BOTH the browser dimension (guest_key — survives IP rotation) and
-  // the network dimension (ip_key — survives incognito/clear-storage).
-  // used = max(browser, network): whichever dimension saw more success
-  // rows this month IS the balance — the meter reads the same number
-  // (meter == enforcement law). An empty guestKey still counts by IP;
-  // both empty (caller gave nothing) = a fresh guest with the full free
-  // pool — the burst guard still caps abuse.
-  const limit = unifiedPlanPoolFor("free");
-  const [usedGuest, usedIp] = await Promise.all([
-    opts.guestKey ? countPlanRowsBy("guest_key", opts.guestKey) : Promise.resolve(0),
-    opts.ipKey ? countPlanRowsBy("ip_key", opts.ipKey) : Promise.resolve(0),
-  ]);
-  const used = Math.max(usedGuest, usedIp);
-  const blocked = used >= limit;
-  const reason =
-    blocked && usedIp >= limit && usedIp > usedGuest
-      ? "network"
-      : blocked
-        ? "pool"
-        : null;
+  // Guest (2026-11-14 subscriber-only correction): the FREE quota is 0 —
+  // guests have NO generation path. The G6 dual-dimension counters are
+  // retired for enforcement (limit 0 blocks unconditionally); the reason
+  // is the subscription_required copy so every surface shows the same
+  // honest subscribe CTA.
   return {
-    allowed: !blocked,
-    used,
-    limit,
-    remaining: Math.max(0, limit - used),
+    allowed: false,
+    used: 0,
+    limit: unifiedPlanPoolFor("free"),
+    remaining: 0,
     unlimited: false,
     tier: "guest",
-    reason,
+    reason: "subscription_required",
+    subscriptionRequired: true,
+    renewsAt: null,
   };
 }
 
@@ -339,6 +375,12 @@ export async function checkUnifiedPlanQuota(opts: {
  * attempts never burn quota). Errors are logged but never thrown:
  * a ledger hiccup must not break the member's generated plan (soft
  * quota, same convention as the chat counters).
+ *
+ * MIGRATION 0110 (2026-11-14): `jobRef` (the originating ai_jobs.id) is
+ * UNIQUE in the ledger — a runner re-run after `done` dies on the
+ * unique index and skips here (logged), so a successful job deducts
+ * the quota EXACTLY ONCE, structurally. Sync surfaces (planner pages,
+ * EVO intents) pass no jobRef and record once per request as before.
  */
 export async function recordUnifiedPlanUsage(opts: {
   userId?: string | null;
@@ -346,6 +388,7 @@ export async function recordUnifiedPlanUsage(opts: {
   ipKey?: string | null;
   kind: EvoPlanKind;
   surface?: PlanSurface;
+  jobRef?: string | null;
 }): Promise<void> {
   if (!isSupabaseAdminConfigured || !supabaseAdmin) return;
   if (!opts.userId && !opts.guestKey) return;
@@ -358,13 +401,15 @@ export async function recordUnifiedPlanUsage(opts: {
     ip_key: opts.userId ? null : opts.ipKey ?? null,
     kind: opts.kind,
     surface: opts.surface ?? "planner",
+    job_ref: opts.jobRef ?? null,
   });
   if (error) {
     console.error("[tier-limits] recordUnifiedPlanUsage error:", error.message);
   }
 }
 
-/** UTC month start — "resets monthly" = resets on the 1st, UTC. */
+/** UTC month start — the CALENDAR-MONTH FALLBACK window (analytics +
+ * users with no usable subscription anchor). */
 export function monthStartUtc(): string {
   const now = new Date();
   return new Date(
@@ -372,19 +417,112 @@ export function monthStartUtc(): string {
   ).toISOString();
 }
 
-/**
- * UTC week start — Monday 00:00 UTC (owner decree 2026-09-02 weekly plan
- * cap). Same Monday-anchored convention as the weekly swaps reset
- * («الرصيد يتصفّر يوم الاثنين»), so both weekly windows agree.
+/* ─────────────── SUBSCRIPTION-CYCLE QUOTA WINDOWS (2026-11-14) ───────────────
+ * «تجديد الحصص وفق دورة الاشتراك الحالية»: quota windows renew with the
+ * subscription's own monthly cycle, not the calendar month. start_date is
+ * set ONCE at first purchase (extend_subscription 0018 only extends
+ * end_date), so the DAY-OF-MONTH of the earliest effectively-active paid
+ * subscription's start_date is the stable anniversary anchor: a member
+ * who subscribed on the 15th gets quota windows [15th → 15th).
  */
-export function weekStartUtc(now: Date = new Date()): string {
-  const d = new Date(
-    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()),
+
+/** Days in a UTC month (handles leap years). */
+function daysInUtcMonth(year: number, month0: number): number {
+  return new Date(Date.UTC(year, month0 + 1, 0)).getUTCDate();
+}
+
+/** ISO instant + N months (UTC, clamped to the target month's length). */
+function addMonthsIso(iso: string, months: number): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  const day = d.getUTCDate();
+  const targetTotal = d.getUTCMonth() + months;
+  const targetYear = d.getUTCFullYear() + Math.floor(targetTotal / 12);
+  const targetMonth = ((targetTotal % 12) + 12) % 12;
+  const clampedDay = Math.min(day, daysInUtcMonth(targetYear, targetMonth));
+  return new Date(
+    Date.UTC(targetYear, targetMonth, clampedDay,
+      d.getUTCHours(), d.getUTCMinutes(), d.getUTCSeconds()),
+  ).toISOString();
+}
+
+/**
+ * PURE: the current subscription-cycle window start for an anchor
+ * start_date — the most recent occurrence of the anchor's day-of-month
+ * at or before `now` (clamped to month length; Feb 31st → Feb 28/29).
+ * Falls back to the calendar-month start when the anchor is unusable
+ * (null / unparseable / in the future).
+ */
+export function cycleWindowStartUtc(
+  anchorStartDate: string | null | undefined,
+  now: Date = new Date(),
+): string {
+  const calendarStart = new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1),
+  ).toISOString();
+  if (!anchorStartDate) return calendarStart;
+  const anchor = new Date(anchorStartDate);
+  if (Number.isNaN(anchor.getTime())) return calendarStart;
+  const anchorDay = anchor.getUTCDate();
+  const nowUtc = Date.UTC(
+    now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(),
   );
-  const dow = d.getUTCDay(); // 0=Sun … 6=Sat
-  const mondayOffset = dow === 0 ? 6 : dow - 1;
-  d.setUTCDate(d.getUTCDate() - mondayOffset);
-  return d.toISOString();
+  const clamp = (y: number, m: number) =>
+    Date.UTC(y, m, Math.min(anchorDay, daysInUtcMonth(y, m)));
+  // Candidate in the current month; if it is still ahead of now, the
+  // window is last month's occurrence (still inside the paid period).
+  let startMs = clamp(now.getUTCFullYear(), now.getUTCMonth());
+  if (startMs > nowUtc) {
+    const prevTotal = now.getUTCMonth() - 1;
+    const prevYear = now.getUTCFullYear() + Math.floor(prevTotal / 12);
+    const prevMonth = ((prevTotal % 12) + 12) % 12;
+    startMs = clamp(prevYear, prevMonth);
+  }
+  return new Date(startMs).toISOString();
+}
+
+/**
+ * The EARLIEST start_date among a member's effectively-active PAID rows
+ * (the original subscription relationship — the stable anniversary
+ * anchor; stacking a second tier later never moves the renewal day).
+ * Unknown/legacy-free rows contribute nothing (paid tiers only — the
+ * same POOL_TIERS set the aggregate law uses).
+ */
+const PAID_ANCHOR_TIERS: ReadonlySet<string> = new Set([
+  "premium", "pro", "coaching", "starter", "elite", // 0045 legacy included
+]);
+
+export function earliestPaidStartIso(
+  rows: ReadonlyArray<SubRowWithStart> | null | undefined,
+): string | null {
+  if (!rows || rows.length === 0) return null;
+  let earliest: string | null = null;
+  for (const r of rows) {
+    if (r.status !== "active" || !r.end_date) continue;
+    if (!PAID_ANCHOR_TIERS.has(r.tier)) continue;
+    const endMs = new Date(r.end_date).getTime();
+    if (!Number.isFinite(endMs) || endMs <= Date.now()) continue;
+    const startIso = r.start_date;
+    if (!startIso) continue;
+    const startMs = new Date(startIso).getTime();
+    if (!Number.isFinite(startMs)) continue;
+    if (earliest === null || startMs < new Date(earliest).getTime()) {
+      earliest = startIso;
+    }
+  }
+  return earliest;
+}
+
+/**
+ * Window start for a member's quota: the subscription-cycle anchor when
+ * usable, else the calendar month. rows === null (read failure) → the
+ * calendar month (fail-safe — a transient read never widens a window).
+ */
+export function quotaWindowStartForSubs(
+  rows: ReadonlyArray<SubRowWithStart> | null | undefined,
+  now: Date = new Date(),
+): string {
+  return cycleWindowStartUtc(earliestPaidStartIso(rows), now);
 }
 
 /**
@@ -526,28 +664,26 @@ export async function recordEvoChatUsage(
 }
 
 /**
- * Count this week's swaps for a user (per type).
- * Uses the plan_swaps table (server-side, Monday-anchored week).
+ * Count this QUOTA WINDOW's swaps for a user (per type — meal and
+ * exercise each have their own independent monthly quota).
+ * Uses the plan_swaps ledger + the SUBSCRIPTION-CYCLE window (2026-11-14
+ * renewal law) — display and enforcement share this exact math.
  */
-async function countThisWeekSwaps(
+export async function countCycleSwaps(
   userId: string,
   swapType: "meal" | "exercise",
 ): Promise<number> {
   if (!isSupabaseAdminConfigured || !supabaseAdmin) return 0;
-  const now = new Date();
-  const dayOfWeek = now.getDay(); // 0=Sun, 1=Mon, ...
-  const mondayOffset = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-  const weekStart = new Date(now);
-  weekStart.setDate(now.getDate() - mondayOffset);
-  weekStart.setHours(0, 0, 0, 0);
+  const rows = await fetchActiveSubTierRows(userId);
+  const windowStart = quotaWindowStartForSubs(rows);
   const { count, error } = await supabaseAdmin
     .from("plan_swaps")
     .select("*", { count: "exact", head: true })
     .eq("user_id", userId)
     .eq("swap_type", swapType)
-    .gte("created_at", weekStart.toISOString());
+    .gte("created_at", windowStart);
   if (error) {
-    console.error("[tier-limits] countThisWeekSwaps error:", error.message);
+    console.error("[tier-limits] countCycleSwaps error:", error.message);
     return 0;
   }
   return count ?? 0;
@@ -592,113 +728,85 @@ export async function checkEvoChatLimit(
   };
 }
 
+/* ─────────── RETIRED (2026-11-14): checkAndRecordSwap — the weekly
+ * check+insert pair (Monday-anchored). Superseded by checkSwapQuota
+ * (check-only, monthly subscription-cycle window) + the runner's
+ * success-only recordSwapUsage — a permanently failed regeneration never
+ * burns quota (the 2026-10-24 law, carried forward).
+ * ─────────────────────────────────────────────────────────────── */
+
 /**
- * Check if a user can perform another swap.
- * Returns { allowed, used, limit, unlimited }.
+ * AI-PLAN-QUALITY 2026-10-24 (owner order item 4 — «تحديث الحصص المدفوعة
+ * بصورة صحيحة») + AI-QUOTAS 2026-11-14: CHECK-ONLY quota gate for the
+ * member swap enqueue. The monthly swap quota is recorded ONLY when the
+ * regeneration job actually SUCCEEDS (the runner calls recordSwapUsage
+ * after finishJob) — a permanently FAILED regeneration never burns a
+ * paid unit. Semantics mirror the unified plan quota (success-only).
+ * The soft-limit race window (count + no insert) keeps the documented
+ * 1-off overage parity of the old check+insert pair.
  *
- * Also records the swap in plan_swaps if allowed (server-side check +
- * insert).
- *
- * @param tierHint Same contract as checkEvoChatLimit.
- * @param staffHint True for platform staff (coach|admin) — bypasses the
- *                  weekly limit (STAFF QUOTA SEMANTICS); still recorded.
+ * MONTHLY per type (2026-11-14 correction): meal and exercise each have
+ * their own independent monthly quota (free 0 · premium 13 · pro 26 ·
+ * coaching 26) renewed on the subscription-cycle window — the weekly
+ * Monday window is retired.
  */
-export async function checkAndRecordSwap(
-  userId: string,
-  swapType: "meal" | "exercise",
-  tierHint?: string | null,
-  staffHint?: boolean,
-): Promise<{
+export type SwapQuotaVerdict = {
   allowed: boolean;
   used: number;
   limit: number | null;
   unlimited: boolean;
-}> {
-  if (staffHint) {
-    await recordSwap(userId, swapType);
-    return { allowed: true, used: 0, limit: null, unlimited: true };
-  }
-  const tier = sanitizeTier(tierHint) ?? (await resolveTierFromDb(userId));
-  const limit = swapLimitForTier(tier);
+  /** true when the tier's quota is 0 (free) — swaps are subscriber-only. */
+  subscriptionRequired: boolean;
+};
 
-  if (limit === null) {
-    // Unlimited — still record the swap for analytics
-    await recordSwap(userId, swapType);
-    return { allowed: true, used: 0, limit: null, unlimited: true };
-  }
-
-  if (limit === 0) {
-    return { allowed: false, used: 0, limit: 0, unlimited: false };
-  }
-
-  const used = await countThisWeekSwaps(userId, swapType);
-  if (used >= limit) {
-    return { allowed: false, used, limit, unlimited: false };
-  }
-
-  // Record the swap (atomic — the count above + this insert could race,
-  // but the weekly limit is soft; a 1-off overage is acceptable)
-  await recordSwap(userId, swapType);
-  return { allowed: true, used: used + 1, limit, unlimited: false };
-}
-
-/**
- * AI-PLAN-QUALITY 2026-10-24 (owner order item 4 — «تحديث الحصص المدفوعة
- * بصورة صحيحة»): CHECK-ONLY quota gate for the member swap enqueue. The
- * paid weekly swap quota is now recorded ONLY when the regeneration job
- * actually SUCCEEDS (the runner calls recordSwapUsage after finishJob) —
- * the old record-at-enqueue burned a paid unit for every permanently
- * FAILED regeneration. Semantics mirror the Phase-183 unified plan pool
- * (success-only via ai_plan_usage) — the owner's own established law.
- * The soft-limit race window (count + no insert) keeps the documented
- * 1-off overage parity of the old check+insert pair.
- */
 export async function checkSwapQuota(
   userId: string,
   swapType: "meal" | "exercise",
   tierHint?: string | null,
   staffHint?: boolean,
-): Promise<{
-  allowed: boolean;
-  used: number;
-  limit: number | null;
-  unlimited: boolean;
-}> {
+): Promise<SwapQuotaVerdict> {
   if (staffHint) {
-    return { allowed: true, used: 0, limit: null, unlimited: true };
+    return { allowed: true, used: 0, limit: null, unlimited: true, subscriptionRequired: false };
   }
   const tier = sanitizeTier(tierHint) ?? (await resolveTierFromDb(userId));
   const limit = swapLimitForTier(tier);
 
   if (limit === null) {
-    return { allowed: true, used: 0, limit: null, unlimited: true };
+    return { allowed: true, used: 0, limit: null, unlimited: true, subscriptionRequired: false };
   }
   if (limit === 0) {
-    return { allowed: false, used: 0, limit: 0, unlimited: false };
+    return { allowed: false, used: 0, limit: 0, unlimited: false, subscriptionRequired: true };
   }
-  const used = await countThisWeekSwaps(userId, swapType);
+  const used = await countCycleSwaps(userId, swapType);
   return {
     allowed: used < limit,
     used,
     limit,
     unlimited: false,
+    subscriptionRequired: false,
   };
 }
 
 /**
  * Record a SUCCESSFUL swap in the plan_swaps table — called by the GHA
  * runner after a meal_regenerate / exercise_regenerate job lands `done`
- * (AI-PLAN-QUALITY 2026-10-24: success-only quota law). Fail-soft by
- * inheritance (recordSwap swallows its own errors).
+ * (success-only quota law). Fail-soft by inheritance (recordSwap swallows
+ * its own errors).
+ *
+ * MIGRATION 0110 (2026-11-14): jobRef is UNIQUE in the ledger — a runner
+ * re-run after `done` dies on the unique index and returns false, so a
+ * successful swap deducts the quota EXACTLY ONCE, structurally.
  */
 export async function recordSwapUsage(
   userId: string,
   swapType: "meal" | "exercise",
+  jobRef?: string | null,
 ): Promise<boolean> {
-  return recordSwap(userId, swapType);
+  return recordSwap(userId, swapType, jobRef);
 }
 
-/* ─────────────── PLAN-POOL BILLING POLICY (PLAN-REGEN-CONSTRAINTS 2026-10-24) ───────────────
+/* ─────────────── PLAN-QUOTA ATTRIBUTION POLICY (PLAN-REGEN-CONSTRAINTS 2026-10-24
+ * + AI-QUOTAS 2026-11-14 client self-service branch)
  *
  * OWNER ORDER 2026-10-24 item 3 («تصحيح منطق الأرصدة والاستحقاقات… أضف
  * اختبارات مستقلة تثبت أن مدرب الموقع لا يُخصم من رصيد العميل، وأن قواعد
@@ -707,40 +815,43 @@ export async function recordSwapUsage(
  *
  *   - B2B coach (profiles.role='coach' + coach_kind='b2b' — migration
  *     0067's partner model): plan generation burns the CLIENT's unified
- *     monthly pool — the documented owner decrees (2026-09-01 «توليد
+ *     monthly quota — the documented owner decrees (2026-09-01 «توليد
  *     الخطط بيتحسب من الرصيد سواء عن طريق المدرب او عن طريق ايفو» +
  *     2026-09-13 «البوول الموحد»). UNCHANGED.
  *   - Site coach (role='coach' + coach_kind='site' — the B2C follow-up
  *     roster): his members ALREADY paid the site (migration 0067's own
  *     rationale: mixing B2C members into the B2B money tables "would
  *     bill site coaches for members who already paid the SITE") — his
- *     generations must NOT burn the member's self-service pool.
+ *     generations must NOT burn the member's self-service quota.
  *   - Admin (role='admin' — the site's own staff): STAFF QUOTA SEMANTICS
  *     (the enqueue gate already bypasses every check for admins) — site
- *     work never consumes a client's paid balance. This was the MEASURED
+ *     work never consumes a client's quota. This was the MEASURED
  *     live defect: 18/20 recent plan jobs were admin-requested and every
  *     one burned its client's pool (client 87cd7ba6 lost 5 of 8 units to
  *     admin-driven work in two days).
+ *   - CLIENT self-service (2026-11-14 — the NEW dashboard generation
+ *     path): a member generating for HIMSELF (the enqueue route enforces
+ *     payload.clientId === requester) BILLS the member's own quota —
+ *     the self-service twin of the b2b-coach law.
  *   - Unresolvable requester: NO burn (fail-open on the ledger — never
  *     bills a client when the requester cannot be attributed).
  *
- * The recording itself moved from the processors (inside the job, BEFORE
- * finishJob — a finishJob failure + requeue + re-run burned the pool
- * TWICE) to the runner AFTER finishJob lands `done` — the same
- * success-only, single-record shape recordSwapOnSuccess already has.
+ * The recording itself lives in the runner AFTER finishJob lands `done`
+ * (2026-10-24 law) — success-only, single-record (0110's job_ref now
+ * enforces the single-record part structurally).
  * ─────────────────────────────────────────────────────────────────────────────── */
 
 export type PlanPoolBillingVerdict = {
-  /** true = record ONE ai_plan_usage row against the client's pool. */
+  /** true = record ONE ai_plan_usage row against the client's quota. */
   bill: boolean;
   /** The policy reason (logged by the runner — auditable). */
   reason: string;
 };
 
 /**
- * WHO pays the client's unified plan pool for a successful plan job.
- * Pure function — the runner resolves the requester's profile and hands
- * the two fields in; tests pin the full matrix.
+ * WHO pays the client's unified plan quota for a successful plan job.
+ * Pure function — the enqueue gate and the runner resolve the
+ * requester's profile and hand the two fields in; tests pin the matrix.
  */
 export function planPoolBillingForRequester(
   role: unknown,
@@ -750,15 +861,20 @@ export function planPoolBillingForRequester(
   const k = String(coachKind ?? "").trim().toLowerCase();
   if (r === "coach") {
     if (k === "site") {
-      return { bill: false, reason: "site-coach: B2C follow-up — member already paid the site (0067 law); no client-pool burn" };
+      return { bill: false, reason: "site-coach: B2C follow-up — member already paid the site (0067 law); no client-quota burn" };
     }
     // 'b2b' AND the legacy default (NULL kind → 'b2b' per migration 0067)
-    return { bill: true, reason: "b2b-coach: client unified pool per owner decrees 2026-09-01/2026-09-13" };
+    return { bill: true, reason: "b2b-coach: client unified quota per owner decrees 2026-09-01/2026-09-13" };
   }
   if (r === "admin") {
-    return { bill: false, reason: "admin: site staff work — staff quota semantics; no client-pool burn" };
+    return { bill: false, reason: "admin: site staff work — staff quota semantics; no client-quota burn" };
   }
-  return { bill: false, reason: `unresolved requester role (${r || "none"}) — fail-open, no client-pool burn` };
+  if (r === "client") {
+    // 2026-11-14: member self-service generation (dashboard Plans section)
+    // — the route guarantees clientId === requester; his own quota burns.
+    return { bill: true, reason: "client self-service generation — member's own unified quota (2026-11-14 law)" };
+  }
+  return { bill: false, reason: `unresolved requester role (${r || "none"}) — fail-open, no client-quota burn` };
 }
 
 /**
@@ -788,6 +904,7 @@ export function planPoolBillingForRequester(
 async function recordSwap(
   userId: string,
   swapType: "meal" | "exercise",
+  jobRef?: string | null,
 ): Promise<boolean> {
   if (!isSupabaseAdminConfigured || !supabaseAdmin) return false;
   const { error } = await supabaseAdmin
@@ -807,6 +924,9 @@ async function recordSwap(
       // violates not-null constraint», GHA drain run 40246588409).
       plan_type: swapType === "meal" ? "meal" : "workout",
       swap_type: swapType,
+      // 0110 (2026-11-14): UNIQUE when present — the structural
+      // deduct-exactly-once guarantee for queued swap jobs.
+      job_ref: jobRef ?? null,
     });
   if (error) {
     console.error("[tier-limits] recordSwap error:", error.message);

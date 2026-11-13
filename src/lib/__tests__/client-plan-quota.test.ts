@@ -9,19 +9,17 @@ import {
 } from "@/lib/tier-limits";
 
 /**
- * PHASE 183 (owner decree 2026-09-13 «البوول الموحد» — spec "Alkemos —
- * Membership & Plan Changes"): ONE monthly pool per identity for
- * nutrition + workout generations COMBINED — free 2 · premium 4 ·
- * pro 8 · coaching 8 — counted SUCCESS-ONLY from the ai_plan_usage
- * ledger (migration 0085): a row exists only after a plan was actually
- * generated and validated.
+ * PHASE 183 (owner decree 2026-09-13 «البوول الموحد») kept as MONTHLY
+ * QUOTAS by the AI-QUOTAS 2026-11-14 corrective order: ONE monthly quota
+ * per identity for nutrition + workout generations COMBINED — free 0
+ * (subscriber-only) · premium 4 · pro 8 · coaching 8 — counted SUCCESS-ONLY
+ * from the ai_plan_usage ledger (migrations 0085+0110): a row exists only
+ * after a plan was actually generated and validated.
  *
- * G6 (owner report 2026-09-13, migration 0086): the guest pool is
- * DUAL-DIMENSION — used = max(count(guest_key), count(ip_key)) — so a
- * fresh incognito window (fresh guest_key, same IP) or a router IP
- * rotation (fresh IP, same browser) can NO LONGER reset the balance.
- * The owner reproduced the original hole live: closed one incognito
- * window, opened another, saw 2/2 again.
+ * 2026-11-14 SUBSCRIBER-ONLY GATE: guests have NO generation path — the
+ * verdict blocks unconditionally with reason "subscription_required"
+ * (the G6 dual-dimension counters no longer guard any surface; the
+ * hashing helpers stay for the chat anon key).
  *
  * These tests mock the service-role client: fixed ai_plan_usage counts
  * per (table, dimension key), subscriptions rows for the DB-tier
@@ -128,20 +126,21 @@ describe("unified AI plan pool (Phase 183 — «البوول الموحد»)", (
     h.inserts.length = 0;
   });
 
-  it("countUnifiedPlanUsage reads only the success ledger, per dimension", async () => {
+  it("countUnifiedPlanUsage reads only the success ledger, per dimension (analytics readers)", async () => {
     h.counts[`ai_plan_usage:${USER}`] = 3;
     expect(await countUnifiedPlanUsage({ userId: USER })).toBe(3);
     expect(await countUnifiedPlanUsage({ guestKey: "abc" })).toBe(0);
     h.counts["ai_plan_usage:abc"] = 2;
     expect(await countUnifiedPlanUsage({ guestKey: "abc" })).toBe(2);
     expect(await countUnifiedPlanUsage({})).toBe(0); // no identity → 0
-    // G6: several dimensions → the MAX across them (the dual law)
+    // Several dimensions → the MAX across them (the historical G6 law,
+    // kept for the analytics readers).
     h.counts["ai_plan_usage:ip-9"] = 5;
     expect(await countUnifiedPlanUsage({ guestKey: "abc", ipKey: "ip-9" })).toBe(5);
     expect(await countUnifiedPlanUsage({ guestKey: "zzz", ipKey: "abc" })).toBe(2);
   });
 
-  it("member pool: premium 4 — 2 used → allowed, remaining 2", async () => {
+  it("member quota: premium 4 — 2 used → allowed, remaining 2", async () => {
     h.subRows.push({ tier: "premium", status: "active", end_date: futureIso() });
     h.counts[`ai_plan_usage:${USER}`] = 2;
     const r = await checkUnifiedPlanQuota({ userId: USER, tierHint: "premium" });
@@ -149,9 +148,10 @@ describe("unified AI plan pool (Phase 183 — «البوول الموحد»)", (
     expect(r.tier).toBe("premium");
     expect(r.limit).toBe(4);
     expect(r.remaining).toBe(2);
+    expect(r.subscriptionRequired).toBe(false);
   });
 
-  it("member pool blocks at the tier limit (pro 8, combined kinds)", async () => {
+  it("member quota blocks at the tier limit (pro 8, combined kinds)", async () => {
     h.subRows.push({ tier: "pro", status: "active", end_date: futureIso() });
     h.counts[`ai_plan_usage:${USER}`] = 8; // e.g. 5 nutrition + 3 workout
     const r = await checkUnifiedPlanQuota({ userId: USER, tierHint: "pro" });
@@ -159,82 +159,53 @@ describe("unified AI plan pool (Phase 183 — «البوول الموحد»)", (
     expect(r.used).toBe(8);
     expect(r.limit).toBe(8);
     expect(r.remaining).toBe(0);
+    expect(r.subscriptionRequired).toBe(false);
   });
 
-  it("guest pool: free numbers (2/month), no signup wall", async () => {
-    h.counts["ai_plan_usage:guestkey-1"] = 1;
+  // ── 2026-11-14: guests have NO generation path — every historical guest
+  // shape (dual-dimension, incognito, IP rotation) now collapses into ONE
+  // verdict: blocked + subscriptionRequired (the subscribe CTA).
+  it("guest: blocked with the subscribe verdict (no signup-free generation)", async () => {
+    h.counts["ai_plan_usage:guestkey-1"] = 1; // irrelevant: limit 0
     const r = await checkUnifiedPlanQuota({ guestKey: "guestkey-1" });
-    expect(r.allowed).toBe(true);
+    expect(r.allowed).toBe(false);
     expect(r.tier).toBe("guest");
-    expect(r.limit).toBe(2);
-    expect(r.remaining).toBe(1);
-    expect(r.reason).toBeNull();
-  });
-
-  it("guest pool blocks after 2 successes", async () => {
-    h.counts["ai_plan_usage:guestkey-1"] = 2;
-    const r = await checkUnifiedPlanQuota({ guestKey: "guestkey-1" });
-    expect(r.allowed).toBe(false);
+    expect(r.limit).toBe(0);
     expect(r.remaining).toBe(0);
-    expect(r.reason).toBe("pool");
+    expect(r.reason).toBe("subscription_required");
+    expect(r.subscriptionRequired).toBe(true);
   });
 
-  it("G6 — THE INCOUNTER TEST: fresh incognito (new guest id, SAME IP) does NOT reset the balance", async () => {
-    // The owner's exact repro: browser #1 burned 2/2, a brand-new
-    // incognito window arrives with a fresh guest id + same network.
-    h.counts["ai_plan_usage:ip-key-1"] = 2; // the network dimension remembers
-    const r = await checkUnifiedPlanQuota({
-      guestKey: "brand-new-incognito-guest", // zero rows
-      ipKey: "ip-key-1",
-    });
-    expect(r.allowed).toBe(false); // blocked — the hole is closed
-    expect(r.used).toBe(2); // max(0, 2)
-    expect(r.remaining).toBe(0);
-    expect(r.reason).toBe("network"); // → the network copy + soft CTA
+  it("G6 shapes (incognito / IP rotation / partial burn / ip-only) all collapse to the same blocked verdict", async () => {
+    for (const [guestKey, ipKey] of [
+      ["brand-new-incognito-guest", "ip-key-1"],
+      ["guestkey-1", "ip-changed-after-router-reboot"],
+      ["guestkey-1", "ip-key-1"],
+      [undefined, "ip-key-1"],
+    ] as const) {
+      const r = await checkUnifiedPlanQuota({ guestKey, ipKey });
+      expect(r.allowed).toBe(false);
+      expect(r.reason).toBe("subscription_required");
+      expect(r.subscriptionRequired).toBe(true);
+    }
   });
 
-  it("G6 — router/IP rotation (fresh IP, SAME browser) does not reset the balance either", async () => {
-    h.counts["ai_plan_usage:guestkey-1"] = 2;
-    const r = await checkUnifiedPlanQuota({
-      guestKey: "guestkey-1",
-      ipKey: "ip-changed-after-router-reboot",
-    });
-    expect(r.allowed).toBe(false);
-    expect(r.used).toBe(2); // max(2, 0)
-    expect(r.reason).toBe("pool");
-  });
-
-  it("G6 — partial burn across dimensions counts the max", async () => {
-    h.counts["ai_plan_usage:guestkey-1"] = 1;
-    h.counts["ai_plan_usage:ip-key-1"] = 1;
-    const r = await checkUnifiedPlanQuota({ guestKey: "guestkey-1", ipKey: "ip-key-1" });
-    expect(r.used).toBe(1);
-    expect(r.allowed).toBe(true); // 1/2
-    expect(r.remaining).toBe(1);
-  });
-
-  it("G6 — ip dimension alone still meters guests (EVO widget sends no guestId)", async () => {
-    h.counts["ai_plan_usage:ip-key-1"] = 1;
-    const r = await checkUnifiedPlanQuota({ ipKey: "ip-key-1" });
-    expect(r.used).toBe(1);
-    expect(r.allowed).toBe(true);
-    expect(r.remaining).toBe(1);
-  });
-
-  it("unknown identity degrades to a fresh guest (full free pool)", async () => {
+  it("unknown identity (no dimensions at all) is blocked too (fail-closed)", async () => {
     const r = await checkUnifiedPlanQuota({});
-    expect(r.allowed).toBe(true);
+    expect(r.allowed).toBe(false);
     expect(r.tier).toBe("guest");
-    expect(r.limit).toBe(2);
+    expect(r.limit).toBe(0);
+    expect(r.subscriptionRequired).toBe(true);
   });
 
-  it("DB-fallback: no active subscription → free pool (2)", async () => {
+  it("DB-fallback: no active subscription → the free quota (0 — blocked, subscriber-only)", async () => {
     h.subRows.length = 0;
     h.counts[`ai_plan_usage:${USER}`] = 1;
     const r = await checkUnifiedPlanQuota({ userId: USER });
     expect(r.tier).toBe("free");
-    expect(r.limit).toBe(2);
-    expect(r.allowed).toBe(true); // 1/2
+    expect(r.limit).toBe(0);
+    expect(r.allowed).toBe(false);
+    expect(r.subscriptionRequired).toBe(true);
   });
 
   it("DB-fallback: stacked premium+pro rows AGGREGATE (4+8=12 — owner order 2026-10-28), display tier stays pro", async () => {
@@ -244,7 +215,9 @@ describe("unified AI plan pool (Phase 183 — «البوول الموحد»)", (
     );
     const r = await checkUnifiedPlanQuota({ userId: USER });
     expect(r.tier).toBe("pro"); // display tier: best membership wins
-    expect(r.limit).toBe(12); // pool: aggregated, not best-tier
+    expect(r.limit).toBe(12); // quota: aggregated, not best-tier
+    // RENEWAL (2026-11-14): the verdict carries the cycle renewal date.
+    expect(typeof r.renewsAt).toBe("string");
   });
 
   it("staff bypass: unlimited, no ledger read", async () => {

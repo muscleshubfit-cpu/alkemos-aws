@@ -31,9 +31,9 @@ import { toast } from "sonner";
  *
  * The bilingual client page behind /ai-meal-planner and its AR mirror
  * /ar/ai-meal-planner (re-export). Generation via
- * /api/ai/meal-plan-demo within the caller's unified monthly pool
- * (guest 2/month — no signup wall; member 2/4/8/8 by tier), counted
- * ONLY on success.
+ * /api/ai/meal-plan-demo within the caller's unified monthly quota
+ * (subscriber-only — free/guest get a 402 + subscribe CTA; member
+ * 4/8/8 by tier), counted ONLY on success.
  *
  * PERSISTENCE LAW (the disappearing-plan fix): the generated plan is
  * never "render-only state" anymore —
@@ -254,8 +254,8 @@ export default function AiMealPlannerPage() {
   const quotaChip =
     quota && quota.limit > 0
       ? isAr
-        ? `رصيد الشهر: ${quota.remaining} متبقٍ من ${quota.limit}`
-        : `This month: ${quota.remaining} of ${quota.limit} left`
+        ? `حصة الدورة: ${quota.remaining} متبقٍ من ${quota.limit}`
+        : `This cycle: ${quota.remaining} of ${quota.limit} left`
       : null;
 
   return (
@@ -270,12 +270,12 @@ export default function AiMealPlannerPage() {
           </h1>
           <p className="mx-auto mt-3 max-w-md text-base font-normal text-[var(--muted-foreground)] md:text-lg">
             {isAr
-              ? "ولّد خطة يوم كاملة بالغرامات والسعرات في ثوانٍ — مجانًا فورًا."
-              : "Generate a complete day plan in grams and calories in seconds — free to try, no credit card required."}
+              ? "ولّد خطة يوم كاملة بالغرامات والسعرات في ثوانٍ — الحاسبات والمخطط اليدوي مجانيان دائمًا."
+              : "Generate a complete day plan in grams and calories in seconds — the calculators and the manual planner stay free."}
           </p>
           <div className="seal-chip mt-4 inline-flex items-center gap-2">
             <Sparkles className="h-3.5 w-3.5 text-[var(--muted-2)]" aria-hidden="true" />
-            {isAr ? "مجاني: توليدان شهريًا لكل زائر" : "Free: 2 generations per month for every visitor"}
+            {isAr ? "توليد الخطط بالذكاء الاصطناعي لمشتركي بريميوم وأعلى" : "AI plan generation for Premium subscribers and above"}
           </div>
         </div>
 
@@ -368,7 +368,7 @@ export default function AiMealPlannerPage() {
                 ? isAr ? "جارٍ التوليد…" : "Generating…"
                 : plan
                   ? isAr ? "ولّد خطة أخرى" : "Generate another plan"
-                  : isAr ? "ولّد خطتي المجانية" : "Generate my free plan"}
+                  : isAr ? "ولّد خطتي" : "Generate my plan"}
             </button>
             {quotaChip && (
               <span className="text-xs font-normal text-[var(--muted-foreground)]" data-testid="quota-chip">
@@ -517,7 +517,7 @@ export default function AiMealPlannerPage() {
             <p className="mt-3 text-sm font-normal leading-relaxed text-[var(--muted-foreground)]">
               {isAr
                 ? "الخطة تقدير تعليمي قابل للنسخ — راجعها وعدّل كمياتها على مائدتك، وقِس أثرها بالاتجاه الأسبوعي لا بقراءة يوم. خطتك تبقى معك على هذا الجهاز في التنقل والتحديث، ولا تختفي عند استنفاد رصيد الشهر."
-                : "This plan is a copyable educational estimate — review it, adjust the portions to your table, and measure its effect on the weekly trend, not a single reading. Your plan stays with you on this device across navigation and refreshes — and never disappears when the month's quota runs out."}
+                : "This plan is a copyable educational estimate — review it, adjust the portions to your table, and measure its effect on the weekly trend, not a single reading. Your plan stays with you on this device across navigation and refreshes — and never disappears when the cycle's quota runs out."}
             </p>
 
             {/* HEALTHY-RECIPES-PLATFORM (plan §9.4): 2-3 published recipes
@@ -593,7 +593,7 @@ export default function AiMealPlannerPage() {
             <p className="mt-2 text-sm font-normal leading-relaxed text-[var(--muted-foreground)]">
               {isAr
                 ? "لا يُخصم من رصيدك إلا التوليد الناجح — وكل خطة تُفحص قبل عرضها؛ فإن خرجت عن الشكل تُرفض لا تُعرض."
-                : "Only successful generations are deducted from your quota — every plan is validated before display; a drifted one is rejected, never shown."}
+                : "Only successful generations are deducted from your quota — every plan is validated before display; a drifted one is rejected, never shown. Generation is a subscriber feature (Premium and above)."}
             </p>
           </div>
           <div>
@@ -602,8 +602,8 @@ export default function AiMealPlannerPage() {
             </h2>
             <p className="mt-3 text-base font-normal leading-relaxed text-[var(--muted-foreground)]">
               {isAr
-                ? "كل زائر يحصل على توليديْن ناجحيْن شهريًا من رصيده الشهري المجاني — والرصيد يُحسب للتوليد الناجح فقط. بإنشاء حساب مجاني تبقى خططك محفوظة في حسابك من أي جهاز؛ ومع بريميوم يرتفع الرصيد إلى 4 توليدات شهريًا (و8 مع برو) مع الحفظ والإدارة الكاملة. للتحكم اليدوي بلا أي حد، افتح مخطط الوجبات وابنِ يومك صنفًا صنفًا بإجماليات حية؛ ولتصفح جاهز فوري، مصفوفة خطط الطعام تضم 24 خطة يوم معروضة بالغرامات."
-                : "Every visitor gets 2 successful generations per month from a free monthly allowance — no credit card required, and only successful generations count. Create a free account and your plans are saved to it from any device; Premium lifts the pool to 4 generations a month (8 with Pro) with full saving and management. For manual control with no limits at all, open the meal planner and build your day item by item with live totals; for instant browsing, the diet-plan matrix holds 24 complete daily plans laid out in grams."}
+                ? "توليد الخطط بالذكاء الاصطناعي ميزة لمشتركي بريميوم وأعلى — بحصة شهرية تتجدد مع دورة الاشتراك، وتُحسب للتوليد الناجح فقط. بإنشاء حساب مجاني تبقى خططك محفوظة في حسابك من أي جهاز؛ وحصة بريميوم 4 توليدات شهريًا (و8 مع برو) مع الحفظ والإدارة الكاملة. للتحكم اليدوي بلا أي حد، افتح مخطط الوجبات وابنِ يومك صنفًا صنفًا بإجماليات حية؛ ولتصفح جاهز فوري، مصفوفة خطط الطعام تضم 24 خطة يوم معروضة بالغرامات."
+                : "AI plan generation is a subscriber feature (Premium and above) — a monthly quota renewing with your subscription cycle, counted only on success. Create a free account and your plans are saved to it from any device; the Premium quota is 4 generations a month (8 with Pro) with full saving and management. For manual control with no limits at all, open the meal planner and build your day item by item with live totals; for instant browsing, the diet-plan matrix holds 24 complete daily plans laid out in grams."}
             </p>
             <div className="mt-4 flex flex-wrap gap-2">
               <Link href={isAr ? "/ar/meal-planner" : "/meal-planner"} className="rounded-full border border-[var(--edge)] px-4 py-2 text-sm font-normal text-[var(--text)] transition-colors hover:border-[var(--chrome-edge)]">
@@ -658,8 +658,8 @@ export default function AiMealPlannerPage() {
               {
                 titleAr: "المولد (هذه الصفحة)",
                 titleEn: "The generator (this page)",
-                descAr: "يوم كامل بالغرامات في ثوانٍ — من رصيدك الشهري المجاني (توليدان شهريًا بلا حساب).",
-                descEn: "A complete day in grams in seconds — from your free monthly pool (2 a month, no account).",
+                descAr: "يوم كامل بالغرامات في ثوانٍ — لمشتركي بريميوم وأعلى (حصة شهرية تتجدد مع دورة الاشتراك).",
+                descEn: "A complete day in grams in seconds — for Premium-and-above subscribers (a monthly quota renewing with your subscription cycle).",
               },
               {
                 titleAr: "المخطط اليدوي",
@@ -676,8 +676,8 @@ export default function AiMealPlannerPage() {
               {
                 titleAr: "EVO للتكييف المستمر",
                 titleEn: "EVO for continuous adaptation",
-                descAr: "مع الاشتراك: تبديل أي وجبة داخل خطتك أسبوعيًا بضغطة واحدة، والنتيجة تُحفظ تلقائيًا.",
-                descEn: "With a subscription: swap any meal in your plan weekly in one tap, and the result saves automatically.",
+                descAr: "مع الاشتراك: تبديل أي وجبة داخل خطتك من حصتك الشهرية بضغطة واحدة، والنتيجة تُحفظ تلقائيًا.",
+                descEn: "With a subscription: swap any meal in your plan from your monthly quota in one tap, and the result saves automatically.",
               },
             ].map((path) => (
               <div key={path.titleEn} className="marble-card p-5">
@@ -695,7 +695,8 @@ export default function AiMealPlannerPage() {
         {/* PRIORITY-PAGES Implementation 1 (2026-10-19) — the FAQ this
             page never had (audit: 230 words, zero FAQ, the product's
             first free-experience gateway). Plain visible HTML; every
-            number verified against memberships.ts (pool 2/4/8/8) and
+            number verified against memberships.ts (AI-QUOTAS 2026-11-14:
+            subscriber-only quota 4/8/8) and
             ai-meal-planner.ts (3-5 meals, ±20% kcal gate, notes field
             passed as hard constraints). */}
         <section className="mt-10">
@@ -707,14 +708,14 @@ export default function AiMealPlannerPage() {
               {
                 q: isAr ? "هل الخطة المجانية كاملة؟" : "Is the free plan complete?",
                 a: isAr
-                  ? "نعم — توليدان ناجحان شهريًا لكل زائر بلا حساب، وكل توليد يوم كامل بثلاث إلى خمس وجبات بالغرامات والسعرات. وما ولّدته يبقى على جهازك بدون حساب، ويُحفظ دائمًا بحساب مجاني."
-                  : "Yes — two successful generations a month for every visitor with no signup, and each is a complete day of three to five meals in grams and calories. What you generate stays on your device without an account, and is saved permanently with a free one.",
+                  ? "نعم — كل توليد يوم كامل بثلاث إلى خمس وجبات بالغرامات والسعرات. التوليد ميزة مشتركين (بريميوم وأعلى) بحصة شهرية تتجدد مع دورة الاشتراك، وما ولّدته يُحفظ دائمًا بحسابك المجاني ويتزامن عبر أجهزتك."
+                  : "Yes — each generation is a complete day of three to five meals in grams and calories. Generation is a subscriber feature (Premium and above) with a monthly quota renewing with your subscription cycle, and what you generate is saved permanently to your free account and synced across your devices.",
               },
               {
                 q: isAr ? "هل الخطة المولدة يوم واحد أم أسبوع؟" : "Is the generated plan one day or a week?",
                 a: isAr
                   ? "توليد واحد = يوم كامل بالغرامات والسعرات. تستطيع توليد يوم مختلف في المرة التالية من رصيدك، ومع الاشتراك يستطيع EVO تبديل أي وجبة من خطتك القائمة."
-                  : "One generation = one complete day in grams and calories. You can generate a different day next time from your pool, and with a subscription EVO can swap any meal in your existing plan.",
+                  : "One generation = one complete day in grams and calories. You can generate a different day next time from your quota, and with a subscription EVO can swap any meal in your existing plan.",
               },
               {
                 q: isAr ? "هل يحترم التوليد قيودي الغذائية؟" : "Does it respect my dietary constraints?",

@@ -78,10 +78,10 @@ const expired = (tier: string, endOffsetMs = -5 * DAY): SubscriptionTierRow => (
 // ─────────────────────────────────────────────────────────────────────
 
 describe("A) resolveUnifiedPlanPoolLimit — stacking, window, dedup", () => {
-  it("no rows at all → the FREE pool (2) — the no-membership baseline", () => {
-    expect(resolveUnifiedPlanPoolLimit(null)).toBe(2);
-    expect(resolveUnifiedPlanPoolLimit(undefined)).toBe(2);
-    expect(resolveUnifiedPlanPoolLimit([])).toBe(2);
+  it("no rows at all → the FREE quota (0 — the 2026-11-14 subscriber-only order)", () => {
+    expect(resolveUnifiedPlanPoolLimit(null)).toBe(0);
+    expect(resolveUnifiedPlanPoolLimit(undefined)).toBe(0);
+    expect(resolveUnifiedPlanPoolLimit([])).toBe(0);
   });
 
   it("SINGLE paid subscriptions: premium 4 · pro 8 · coaching 8", () => {
@@ -112,22 +112,23 @@ describe("A) resolveUnifiedPlanPoolLimit — stacking, window, dedup", () => {
   });
 
   it("the numbers come from memberships.ts (single source — no local copies)", () => {
-    expect(getLimits("free").aiPlanMonthlyLimit).toBe(2);
+    // AI-QUOTAS 2026-11-14: free = 0 (subscriber-only generation).
+    expect(getLimits("free").aiPlanMonthlyLimit).toBe(0);
     expect(getLimits("premium").aiPlanMonthlyLimit).toBe(4);
     expect(getLimits("pro").aiPlanMonthlyLimit).toBe(8);
     expect(getLimits("coaching").aiPlanMonthlyLimit).toBe(8);
-    // 2+4+8+8 = the full-stack aggregate above
+    // 0+4+8+8 = the full-stack aggregate above
     expect(
       getLimits("free").aiPlanMonthlyLimit +
         getLimits("premium").aiPlanMonthlyLimit +
         getLimits("pro").aiPlanMonthlyLimit +
         getLimits("coaching").aiPlanMonthlyLimit,
-    ).toBe(22); // 20 paid + the free baseline of 2
+    ).toBe(20);
   });
 
-  it("the FREE pool NEVER stacks on top of paid pools", () => {
+  it("the FREE quota NEVER stacks on top of paid quotas", () => {
     // A 'free' row is not a paid tier — it contributes nothing; a member
-    // with premium reads 4, not 4+2.
+    // with premium reads 4, not 4+0 (and never a free-generation path).
     expect(
       resolveUnifiedPlanPoolLimit([active("free"), active("premium")], NOW),
     ).toBe(4);
@@ -138,10 +139,10 @@ describe("A) resolveUnifiedPlanPoolLimit — stacking, window, dedup", () => {
     expect(
       resolveUnifiedPlanPoolLimit([expired("premium"), active("pro")], NOW),
     ).toBe(8);
-    // both expired → the free baseline
+    // both expired → the free quota (0 — no generation path at all)
     expect(
       resolveUnifiedPlanPoolLimit([expired("premium"), expired("pro")], NOW),
-    ).toBe(2);
+    ).toBe(0);
   });
 
   it("ENTITLEMENT WINDOW — the end_date boundary is exclusive at 'now'", () => {
@@ -151,14 +152,14 @@ describe("A) resolveUnifiedPlanPoolLimit — stacking, window, dedup", () => {
         [{ tier: "premium", status: "active", end_date: boundary.toISOString() }],
         NOW,
       ),
-    ).toBe(2);
+    ).toBe(0);
     const justBefore = new Date(NOW.getTime() - 1);
     expect(
       resolveUnifiedPlanPoolLimit(
         [{ tier: "premium", status: "active", end_date: justBefore.toISOString() }],
         NOW,
       ),
-    ).toBe(2);
+    ).toBe(0);
     const justAfter = new Date(NOW.getTime() + 1);
     expect(
       resolveUnifiedPlanPoolLimit(
@@ -177,13 +178,13 @@ describe("A) resolveUnifiedPlanPoolLimit — stacking, window, dedup", () => {
         ],
         NOW,
       ),
-    ).toBe(2);
+    ).toBe(0);
     expect(
       resolveUnifiedPlanPoolLimit(
         [{ tier: "premium", status: "cancelled", end_date: iso(30 * DAY) }],
         NOW,
       ),
-    ).toBe(2);
+    ).toBe(0);
   });
 
   it("CANCELLATION keeps access to end_date — a cancelled-but-unexpired row (status still 'active', Phase 68 law) STILL contributes", () => {
@@ -227,8 +228,8 @@ describe("A) resolveUnifiedPlanPoolLimit — stacking, window, dedup", () => {
     ).toBe(12);
   });
 
-  it("UNKNOWN tiers contribute NOTHING (never fall through to the free pool's 2)", () => {
-    expect(resolveUnifiedPlanPoolLimit([active("mega")], NOW)).toBe(2);
+  it("UNKNOWN tiers contribute NOTHING (never fall through to a free-generation path)", () => {
+    expect(resolveUnifiedPlanPoolLimit([active("mega")], NOW)).toBe(0);
     expect(
       resolveUnifiedPlanPoolLimit([active("mega"), active("pro")], NOW),
     ).toBe(8);
@@ -408,10 +409,17 @@ describe("B) checkUnifiedPlanQuota — the aggregated verdict", () => {
     expect(v.limit).toBe(12); // pool: 4+8 aggregated
   });
 
-  it("GUESTS unchanged: the free pool (2), dual-dimension law intact", async () => {
-    h.counts["ai_plan_usage:guest-agg-1"] = 1;
-    const v = await checkUnifiedPlanQuota({ guestKey: "guest-agg-1" });
-    expect(v).toMatchObject({ used: 1, limit: 2, remaining: 1, allowed: true, tier: "guest" });
+  it("GUESTS (2026-11-14): NO generation path — blocked with the subscribe CTA verdict, whatever dimensions are given", async () => {
+    h.counts["ai_plan_usage:guest-agg-1"] = 1; // irrelevant now: limit 0 blocks unconditionally
+    const v = await checkUnifiedPlanQuota({ guestKey: "guest-agg-1", ipKey: "ip-agg-1" });
+    expect(v).toMatchObject({
+      allowed: false,
+      limit: 0,
+      remaining: 0,
+      tier: "guest",
+      reason: "subscription_required",
+      subscriptionRequired: true,
+    });
   });
 
   it("STAFF unchanged: unlimited, never reads the ledger", async () => {
@@ -420,17 +428,20 @@ describe("B) checkUnifiedPlanQuota — the aggregated verdict", () => {
     expect(v).toMatchObject({ allowed: true, unlimited: true });
   });
 
-  it("FAIL-SAFE: rows unreadable (admin client down) → the single-tier hint pool at most — never unlimited, never above the entitlement", async () => {
+  it("FAIL-SAFE: rows unreadable (admin client down) → the single-tier hint quota at most — never unlimited, never above the entitlement", async () => {
     h.adminDown.down = true;
     h.counts[`ai_plan_usage:${MEMBER}`] = 9;
-    // tierHint pro (auth-resolved) → the per-tier pool 8 — the stacked
+    // tierHint pro (auth-resolved) → the per-tier quota 8 — the stacked
     // member is briefly UNDER-granted (9 ≥ 8 → blocked), never over.
     const v = await checkUnifiedPlanQuota({ userId: MEMBER, tierHint: "pro" });
     expect(v).toMatchObject({ limit: 8, used: 9, remaining: 0, allowed: false });
     expect(v.unlimited).toBe(false);
-    // no hint either → the free pool (fail-closed to the baseline)
+    // no hint either → the free quota (fail-closed to the 0 baseline — a
+    // transient read failure never opens a free-generation path)
     const v2 = await checkUnifiedPlanQuota({ userId: MEMBER });
-    expect(v2.limit).toBe(2);
+    expect(v2.limit).toBe(0);
+    expect(v2.allowed).toBe(false);
+    expect(v2.subscriptionRequired).toBe(true);
   });
 });
 
@@ -478,8 +489,8 @@ describe("C) every quota path rides the SAME law (source pins)", () => {
     expect(page).toContain("planPoolLimit ?? limits.aiPlanMonthlyLimit");
   });
 
-  it("the per-tier helper remains the guest pool + the building block (2/4/8/8 from memberships.ts)", () => {
-    expect(unifiedPlanPoolFor("free")).toBe(2);
+  it("the per-tier helper remains the building block (0/4/8/8 from memberships.ts — free = 0, the 2026-11-14 order)", () => {
+    expect(unifiedPlanPoolFor("free")).toBe(0);
     expect(unifiedPlanPoolFor("premium")).toBe(4);
     expect(unifiedPlanPoolFor("pro")).toBe(8);
     expect(unifiedPlanPoolFor("coaching")).toBe(8);

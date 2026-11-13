@@ -298,24 +298,25 @@ export default function MembershipsPage({ lang: langProp }: { lang?: Lang } = {}
             : "No auto-renewal — you pay once and renew only if you choose · Cancel anytime from your account page · Full refund within 7 days if no paid features were used"}
         </p>
 
-        {/* No-signup trial + UNIFIED SAVE LADDER (owner directive
-            2026-09-13): the AI pool is visible as a core free experience,
+        {/* SAVE LADDER (owner directive 2026-09-13, AI-QUOTAS 2026-11-14):
             the save story is the same three-step ladder everywhere (no
             account → device · free account → permanent save + sync ·
             paid → broader management + per-tier benefits), and the AI
             generation quota stays clearly separated from the Meal-Planner
-            save limits. Copy-only. */}
+            save limits. Generation itself is subscriber-only since the
+            2026-11-14 order — the intro states the honest policy. Copy-only. */}
         <p className="mx-auto mt-8 max-w-2xl text-center text-sm font-normal text-[var(--muted-foreground)]">
           {isAr
-            ? "جرّب توليد الخطط بالذكاء الاصطناعي فورًا ومن دون حساب — خطتك تبقى على جهازك. وأنشئ حسابًا مجانيًا لتحفظ خططك للأبد وتتزامن عبر أجهزتك. ومع الباقات المدفوعة تتوسع الإدارة والسعات والتصدير بحسب باقتك."
-            : "You can try AI plan generation instantly: no account keeps your plan on this device, a free account saves it permanently in your account & syncs it across your devices, and paid tiers add broader management and extra benefits per plan."}
+            ? "توليد الخطط والتبديلات بالذكاء الاصطناعي متاح لمشتركي بريميوم وأعلى بحصص شهرية تتجدد مع دورة الاشتراك — وكل ما تحفظه يبقى لك. أنشئ حسابًا مجانيًا لتحفظ خططك للأبد وتتزامن عبر أجهزتك، ومع الباقات المدفوعة تتوسع الإدارة والسعات والتصدير بحسب باقتك."
+            : "AI plan generation & swaps are available to Premium-and-above subscribers with monthly quotas renewing with your subscription cycle — and everything you save stays yours. Create a free account to keep your plans forever and sync them across your devices, and paid tiers add broader management and extra benefits per plan."}
         </p>
 
         {/* CONVERSION-2026 (competitor study §3 — the Freeletics/MyFitnessPal
             free-vs-paid tables): the "why paid at all?" bridge the buyer
             needs between the pricing grid and the persona cards. Four REAL
-            paid deltas, every number against memberships.ts (unified pool
-            2/4/8 · swaps 3/6 weekly paid · saved results 3/50/200 ·
+            paid deltas, every number against memberships.ts (AI-QUOTAS
+            2026-11-14: unified monthly quota 4/8/8 subscriber-only · swaps
+            13/26 monthly per type · saved results 3/50/200 ·
             meal-planner saves 1/10/50 · ads Free+Premium only — Pro and
             Coaching ad-free). Direct numbers only (the 2026-09-13 owner
             directive — no multiplier phrasing). Copy-only. */}
@@ -334,15 +335,15 @@ export default function MembershipsPage({ lang: langProp }: { lang?: Lang } = {}
                 icon: "macros",
                 titleAr: "خطط أكثر كل شهر",
                 titleEn: "More plans every month",
-                bodyAr: "رصيدك الشهري من الخطط الذكية — تغذية وتمارين من رصيد واحد — يتوسع من 2 في المجاني إلى 4 مع بريميوم و8 مع برو.",
-                bodyEn: "Your unified AI-plan pool (nutrition + workout combined) grows from 2 on Free to 4 with Premium and 8 with Pro.",
+                bodyAr: "حصتك الشهرية من الخطط الذكية — تغذية وتمارين من حصة واحدة — هي ميزة اشتراك: 4 خطط مع بريميوم و8 مع برو، تتجدد مع دورة اشتراكك.",
+                bodyEn: "Your unified AI-plan quota (nutrition + workout combined) is a subscriber feature: 4 plans with Premium and 8 with Pro, renewing with your subscription cycle.",
               },
               {
                 icon: "runner",
-                titleAr: "تكييف أسبوعي لخطتك",
-                titleEn: "Weekly plan adaptation",
-                bodyAr: "تبديلات EVO للوجبات والتمارين داخل خطتك القائمة: 3 أسبوعيًا مع بريميوم و6 مع برو — فتتطور خطتك مع تقدمك بدل أن تبدأ من الصفر كل مرة.",
-                bodyEn: "EVO meal & exercise swaps inside your plan: 3 per week with Premium, 6 with Pro — it evolves with your progress instead of starting over.",
+                titleAr: "تكييف شهري لخطتك",
+                titleEn: "Monthly plan adaptation",
+                bodyAr: "تبديلات الوجبات والتمارين داخل خطتك القائمة: 13 شهريًا مع بريميوم و26 مع برو (لكل نوع حصته المستقلة) — فتتطور خطتك مع تقدمك بدل أن تبدأ من الصفر كل مرة.",
+                bodyEn: "Meal & exercise swaps inside your plan: 13 per month with Premium and 26 with Pro (a separate quota per type) — it evolves with your progress instead of starting over.",
               },
               {
                 icon: "scroll",
@@ -379,9 +380,10 @@ export default function MembershipsPage({ lang: langProp }: { lang?: Lang } = {}
             the buyer's first decision question, unserved by any copy. Four
             honest personas, every number against memberships.ts (unified
             pool 2/4/8/8 · meal-planner saves 1/10/50/50 · saved results
-            3/50/200/200 · swaps 3/6 weekly paid · ads Free+Premium only).
-            The Free row's "1 nutrition + 1 workout plan a month" is the
-            arithmetic of the unified pool (2 combined), never 2+2. */}
+            3/50/200/200 · swaps 13/26 monthly per type · ads Free+Premium
+            only). The Free row states the honest free product (AI-QUOTAS
+            2026-11-14: generation is subscriber-only; free keeps every
+            library, tool and EVO chat). */}
         <section className="mt-12">
           <h2 className="text-center text-2xl font-semibold tracking-tight md:text-3xl">
             {isAr ? "أي باقة تناسبك؟" : "Which plan fits you?"}
@@ -391,26 +393,26 @@ export default function MembershipsPage({ lang: langProp }: { lang?: Lang } = {}
               {
                 tierAr: "مجاني",
                 tierEn: "Free",
-                fitAr: "في بداية الطريق: تريد أرقامك وخطة أولى تجربها",
-                fitEn: "You're starting and want your numbers and first plan",
-                bodyAr: "التوليدان الشهريان يكفيان لخطة تغذية وخطة تمرين في الشهر، ومعهما 10 رسائل يوميًا مع EVO — والحساب المجاني يحفظ خططك للأبد ويزامنها عبر أجهزتك.",
-                bodyEn: "The 2 monthly generations cover one nutrition plan and one workout plan a month, plus 10 EVO messages a day. A free account keeps your plans forever and syncs them across devices.",
+                fitAr: "في بداية الطريق: أرقامك ومكتبات المنصة وأدواتها كاملة",
+                fitEn: "You're starting: your numbers and the full platform",
+                bodyAr: "كل المكتبات والأدوات والحاسبات مجانية، مع 10 رسائل يوميًا مع EVO — والحساب المجاني يحفظ خططك للأبد ويزامنها عبر أجهزتك. أما توليد الخطط والتبديلات بالذكاء الاصطناعي فيبدأ من بريميوم.",
+                bodyEn: "Every library, tool and calculator is free, plus 10 EVO messages a day — a free account keeps your plans forever and syncs them across devices. AI plan generation & swaps start with Premium.",
               },
               {
                 tierAr: "بريميوم",
                 tierEn: "Premium",
                 fitAr: "صرت تعدّل وتجرب وتولّد أكثر",
                 fitEn: "You're iterating and experimenting",
-                bodyAr: "رصيد شهري من 4 خطط، ومحادثة بلا حدود مع EVO، و3 تبديلات أسبوعية — مع سعة أكبر: 10 جداول وجبات محفوظة، و50 نتيجة أدوات قابلة للتصدير.",
-                bodyEn: "4 generations a month, unlimited chat, and 3 weekly swaps — plus more capacity: 10 saved meal-planner plans and 50 saved tool results with export.",
+                bodyAr: "حصة شهرية من 4 خطط، ومحادثة بلا حدود مع EVO، و13 تبديلًا شهريًا لكل نوع — مع سعة أكبر: 10 جداول وجبات محفوظة، و50 نتيجة أدوات قابلة للتصدير.",
+                bodyEn: "A monthly quota of 4 plans, unlimited chat, and 13 swaps per type each month — plus more capacity: 10 saved meal-planner plans and 50 saved tool results with export.",
               },
               {
                 tierAr: "برو",
                 tierEn: "Pro",
-                fitAr: "تتدرب بجدية وتريد خطة تتكيف معك أسبوعيًا — بلا إعلانات",
-                fitEn: "You train seriously and want weekly adaptation, ad-free",
-                bodyAr: "8 خطط شهريًا و6 تبديلات أسبوعية، وتحليل لأنماط تقدمك — مع 50 جدول وجبات محفوظًا، و200 نتيجة أدوات، وتجربة خالية من الإعلانات.",
-                bodyEn: "8 generations, 6 weekly swaps, and progress pattern analysis — 50 saved plans, 200 saved tool results, and no ads.",
+                fitAr: "تتدرب بجدية وتريد خطة تتكيف معك شهريًا — بلا إعلانات",
+                fitEn: "You train seriously and want monthly adaptation, ad-free",
+                bodyAr: "8 خطط و26 تبديلًا لكل نوع شهريًا، وتحليل لأنماط تقدمك — مع 50 جدول وجبات محفوظًا، و200 نتيجة أدوات، وتجربة خالية من الإعلانات.",
+                bodyEn: "8 generations and 26 swaps per type each month, and progress pattern analysis — 50 saved plans, 200 saved tool results, and no ads.",
               },
               {
                 tierAr: "التدريب الأونلاين",

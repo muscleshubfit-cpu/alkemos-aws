@@ -46,22 +46,33 @@ describe("memberships", () => {
   });
 
   describe("getLimits", () => {
-    it("free tier: 10 EVO messages/day, 0 swaps", () => {
+    // AI-QUOTAS 2026-11-14: generation is subscriber-only (free quota 0)
+    // and swaps became INDEPENDENT monthly quotas per type.
+    it("free tier: 10 EVO messages/day, 0 generation, 0 swaps", () => {
       const limits = getLimits("free");
       expect(limits.evoChatDailyLimit).toBe(10);
-      expect(limits.evoSwapLimit).toBe(0);
+      expect(limits.aiPlanMonthlyLimit).toBe(0);
+      expect(limits.evoSwapMonthlyLimit).toBe(0);
     });
 
-    it("pro tier: unlimited EVO, 6 swaps/week", () => {
-      const limits = getLimits("pro");
-      expect(limits.evoChatDailyLimit).toBeNull();
-      expect(limits.evoSwapLimit).toBe(6);
-    });
-
-    it("premium tier: unlimited EVO, 3 swaps", () => {
+    it("premium tier: unlimited EVO, 4 generations, 13 swaps/type per month", () => {
       const limits = getLimits("premium");
       expect(limits.evoChatDailyLimit).toBeNull();
-      expect(limits.evoSwapLimit).toBe(3);
+      expect(limits.aiPlanMonthlyLimit).toBe(4);
+      expect(limits.evoSwapMonthlyLimit).toBe(13);
+    });
+
+    it("pro tier: unlimited EVO, 8 generations, 26 swaps/type per month", () => {
+      const limits = getLimits("pro");
+      expect(limits.evoChatDailyLimit).toBeNull();
+      expect(limits.aiPlanMonthlyLimit).toBe(8);
+      expect(limits.evoSwapMonthlyLimit).toBe(26);
+    });
+
+    it("coaching tier inherits every Pro quota (8 generations, 26 swaps)", () => {
+      const limits = getLimits("coaching");
+      expect(limits.aiPlanMonthlyLimit).toBe(getLimits("pro").aiPlanMonthlyLimit);
+      expect(limits.evoSwapMonthlyLimit).toBe(getLimits("pro").evoSwapMonthlyLimit);
     });
   });
 

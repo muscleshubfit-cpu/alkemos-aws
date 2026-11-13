@@ -1,64 +1,59 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuthUser } from "@/lib/auth-server";
-import { clientIp } from "@/lib/rate-limit";
 import {
   countTodayChatUsage,
   checkUnifiedPlanQuota,
-  hashGuestKey,
-  hashIpKey,
+  checkSwapQuota,
   evoChatLimitFor,
 } from "@/lib/tier-limits";
 
 /**
- * GET /api/ai/quota — Phase 69 (owner-approved): the EVO QUOTA METER
- * → Phase 183 (owner decree 2026-09-13 «البوول الموحد»): the meter now
- * reads ONE unified plan pool (nutrition + workout COMBINED) from the
- * success-only ledger (ai_plan_usage, migration 0085), for members AND
- * guests.
+ * GET /api/ai/quota — Phase 69 (owner-approved): the AI QUOTA METER
+ * → Phase 183 (unified pool) → AI-QUOTAS 2026-11-14 («إعادة هيكلة سياسة
+ * الذكاء الاصطناعي والاشتراكات والأرصدة» + التوضيح المُصحِّح — حصص شهرية
+ * مطوَّرة، لا أرصدة. Governing doc: docs/AI-QUOTAS-POLICY-2026-11-14.md).
  *
- *   - ?guestId=<uuid>  (anonymous callers): the guest's pool — FREE
- *     tier numbers (2/month). G6 (migration 0086): the id is hashed
- *     server-side AND the pool is counted as max(browser dimension,
- *     network dimension — salted hash of the client IP), so a fresh
- *     incognito window NO LONGER shows a reset 2/2 balance. No raw
- *     values stored. No signup wall — guests see their remaining
- *     generations exactly like members do.
- *   - authed callers:  their AGGREGATED paid pool (owner order
- *     2026-10-28 «تجميع حصص الاشتراكات المدفوعة» — every distinct
- *     effectively-active paid tier contributes its pool once:
- *     free 2 · premium 4 · pro 8 · coaching 8; premium+pro = 12).
+ * The meter reads the SAME ledgers the enforcement counts (checkUnifiedPlanQuota
+ * / checkSwapQuota — meter == enforcement law) and adds the subscription-cycle
+ * renewal date (renewsAt):
  *
- * Display ALWAYS reads the same ledger enforcement counts
- * (checkUnifiedPlanQuota) — the meter matches what is enforced.
+ *   - authed callers: their unified monthly GENERATION quota (aggregated
+ *     stacking — premium 4 + pro 8 = 12) + their INDEPENDENT monthly SWAP
+ *     quotas (meal and exercise, per type — evolved from the retired weekly
+ *     limits) + subscriptionRequired when no active paid subscription
+ *     exists (generation is subscriber-only — the 2026-11-14 correction).
+ *   - anonymous callers: subscriptionRequired (no generation path) + the
+ *     free EVO chat daily limit for the meter.
+ *   - staff: unlimited semantics (nothing counted for display).
+ *
  * Read-only — nothing is recorded here.
  *
  * Response `nutrition`/`workout` keys are kept for one release as
- * mirrors of the unified pool (older widgets read them); they are
+ * mirrors of the unified quota (older widgets read them); they are
  * deprecated — read `plans` instead.
  */
 export async function GET(request: NextRequest) {
   const auth = await getAuthUser(request);
 
-  // ── Guest pool (unified + free chat readout). ──
-  // G6: the meter reads BOTH guest dimensions (browser + IP) — exactly
-  // what enforcement checks (meter == enforcement law). A brand-new
-  // incognito session from a network that already burned its pool sees
-  // the honest 2/2 used, not a fake-fresh balance.
+  // ── Guest: no generation path (subscriber-only — 2026-11-14). ──
   if (!auth) {
-    const rawGuestId = new URL(request.url).searchParams.get("guestId") ?? "";
-    const guestKey = rawGuestId.trim().length >= 8 ? hashGuestKey(rawGuestId.trim()) : null;
-    const ipKey = hashIpKey(clientIp(request));
-    const pool = await checkUnifiedPlanQuota({ guestKey, ipKey });
+    const freeChat = { used: 0, limit: evoChatLimitFor("free"), unlimited: false };
+    const blockedQuota = {
+      used: 0,
+      limit: 0,
+      remaining: 0,
+      unlimited: false,
+      subscriptionRequired: true,
+    };
     return NextResponse.json({
-      chat: { used: 0, limit: evoChatLimitFor("free"), unlimited: false },
-      plans: {
-        used: pool.used,
-        limit: pool.limit,
-        remaining: pool.remaining,
-        unlimited: pool.unlimited,
+      chat: freeChat,
+      plans: { ...blockedQuota, renewsAt: null },
+      swaps: {
+        meal: { ...blockedQuota },
+        exercise: { ...blockedQuota },
       },
-      nutrition: { used: pool.used, limit: pool.limit, unlimited: pool.unlimited, weeklyUsed: 0, weeklyLimit: null },
-      workout: { used: pool.used, limit: pool.limit, unlimited: pool.unlimited, weeklyUsed: 0, weeklyLimit: null },
+      nutrition: { ...blockedQuota, weeklyUsed: 0, weeklyLimit: null },
+      workout: { ...blockedQuota, weeklyUsed: 0, weeklyLimit: null },
     });
   }
 
@@ -67,9 +62,14 @@ export async function GET(request: NextRequest) {
 
   if (staff) {
     // STAFF QUOTA SEMANTICS — unlimited, nothing counted for display
+    const unlimited = { used: 0, limit: null, remaining: 0, unlimited: true, subscriptionRequired: false };
     return NextResponse.json({
       chat: { used: 0, limit: null, unlimited: true },
-      plans: { used: 0, limit: null, remaining: 0, unlimited: true },
+      plans: { ...unlimited, renewsAt: null },
+      swaps: {
+        meal: { ...unlimited },
+        exercise: { ...unlimited },
+      },
       nutrition: { used: 0, limit: null, unlimited: true, weeklyUsed: 0, weeklyLimit: null },
       workout: { used: 0, limit: null, unlimited: true, weeklyUsed: 0, weeklyLimit: null },
       staff: true,
@@ -84,12 +84,26 @@ export async function GET(request: NextRequest) {
     tierHint: tier,
   });
 
+  const [mealSwap, exerciseSwap] = await Promise.all([
+    checkSwapQuota(auth.id, "meal", tier),
+    checkSwapQuota(auth.id, "exercise", tier),
+  ]);
+
   const unified = {
     used: pool.used,
     limit: pool.limit,
     remaining: pool.remaining,
     unlimited: pool.unlimited,
+    subscriptionRequired: pool.subscriptionRequired,
+    renewsAt: pool.renewsAt,
   };
+  const toSwap = (v: typeof mealSwap) => ({
+    used: v.used,
+    limit: v.limit,
+    remaining: v.limit === null ? Infinity : Math.max(0, (v.limit ?? 0) - v.used),
+    unlimited: v.unlimited,
+    subscriptionRequired: v.subscriptionRequired,
+  });
 
   return NextResponse.json({
     chat: {
@@ -98,6 +112,10 @@ export async function GET(request: NextRequest) {
       unlimited: chatLimit === null,
     },
     plans: unified,
+    swaps: {
+      meal: toSwap(mealSwap),
+      exercise: toSwap(exerciseSwap),
+    },
     nutrition: { ...unified, weeklyUsed: 0, weeklyLimit: null },
     workout: { ...unified, weeklyUsed: 0, weeklyLimit: null },
   });

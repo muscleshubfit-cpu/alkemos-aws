@@ -685,10 +685,14 @@ export default function ProfilePage() {
             <div className="mt-4 grid grid-cols-2 gap-3">
               {[
                 { label: isAr ? "EVO رسائل يوميًا" : "EVO messages a day", value: limits.evoChatDailyLimit === null ? "∞" : `${limits.evoChatDailyLimit}` },
-                // Unified pool (2026-09-13): ONE monthly budget for
-                // nutrition + workout AI generations combined.
+                // Unified monthly quota (2026-09-13 → 2026-11-14): ONE
+                // monthly budget for nutrition + workout AI generations
+                // combined — free = 0 (subscriber-only generation).
                 { label: isAr ? "توليدات الخطط بالذكاء الاصطناعي/شهر" : "AI plan gens/mo", value: `${planPoolLimit ?? limits.aiPlanMonthlyLimit}` },
-                { label: isAr ? "تبديلات/أسبوع" : "Swaps/week", value: limits.evoSwapLimit === 0 ? "—" : limits.evoSwapLimit === null ? "∞" : `${limits.evoSwapLimit}` },
+                // 2026-11-14: swaps became INDEPENDENT monthly quotas per
+                // type (13/26) — renewed on the subscription cycle.
+                { label: isAr ? "تبديلات/شهر (وجبات)" : "Meal swaps/mo", value: limits.evoSwapMonthlyLimit === 0 ? "—" : `${limits.evoSwapMonthlyLimit}` },
+                { label: isAr ? "تبديلات/شهر (تمارين)" : "Exercise swaps/mo", value: limits.evoSwapMonthlyLimit === 0 ? "—" : `${limits.evoSwapMonthlyLimit}` },
                 { label: isAr ? "حفظ نتائج" : "Saved results", value: limits.savedResultsLimit === null ? "∞" : `${limits.savedResultsLimit}` },
                 { label: isAr ? "جداول وجبات" : "Meal plans saved", value: limits.mealPlannerMaxSaved === null ? "∞" : `${limits.mealPlannerMaxSaved}` },
               ].map((item, i) => (

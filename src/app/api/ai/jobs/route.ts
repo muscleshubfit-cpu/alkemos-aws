@@ -25,8 +25,14 @@ import { aiJobEnqueueBodySchema } from "@/lib/validation/schemas";
  * POST /api/ai/jobs        body: { type, payload }
  *   Gates per type:
  *     plan_* / article_tool / article_generate / social_post → coach only
- *     meal_regenerate / exercise_regenerate → logged-in user AND the same
- *       weekly tier limits as the old swap system (C16), recorded at enqueue.
+ *       (2026-11-14): PLUS a member SELF-SERVICE branch for
+ *       plan_nutrition / plan_workout — a CLIENT may enqueue a plan job
+ *       for HIMSELF only (payload.clientId === requester, enforced
+ *       below) gated by his unified monthly quota; coaches keep the
+ *       B2B gates below. This powers the Plans-section generation.
+ *     meal_regenerate / exercise_regenerate → logged-in user AND the
+ *       INDEPENDENT monthly swap quota for that type (2026-11-14 —
+ *       evolved from the retired weekly C16 limits), recorded on success.
  * GET  /api/ai/jobs?id=<uuid>   → own single job (status/result)
  * GET  /api/ai/jobs?limit=10    → own recent jobs (queue visibility)
  *
@@ -98,8 +104,19 @@ export async function POST(request: NextRequest) {
     const gate = JOB_GATE[type];
     if (gate === "coach") {
       if (authRequired) {
-        const coachAuth = await requireCoach(request);
-        if (coachAuth instanceof Response) return coachAuth;
+        // AI-QUOTAS 2026-11-14 — MEMBER SELF-SERVICE GENERATION: a client
+        // may enqueue plan_nutrition / plan_workout for HIMSELF only
+        // (payload.clientId === requester — verified below before any
+        // write, quota-gated after). Coaches/admins keep the coach gate
+        // (requireCoach) and the B2B ownership/activation gates below.
+        // This powers the Plans-section generation button.
+        const isClientSelfPlanJob =
+          authRole === "client" &&
+          (type === "plan_nutrition" || type === "plan_workout");
+        if (!isClientSelfPlanJob) {
+          const coachAuth = await requireCoach(request);
+          if (coachAuth instanceof Response) return coachAuth;
+        }
       }
     } else if (authRole && authRole !== "client") {
       // STAFF QUOTA SEMANTICS (T-4PILLAR + admin role 2026-08-29): staff
@@ -110,28 +127,33 @@ export async function POST(request: NextRequest) {
       // plan-creation is gated by the Phase 183 unified monthly pool
       // (success-only, ai_plan_usage — see the check further below).
     } else {
-      // user_swap_meal | user_swap_exercise → enforce C16 weekly tier limit.
-      // AI-PLAN-QUALITY 2026-10-24: the gate is CHECK-ONLY here — the paid
-      // unit is recorded by the runner when the job lands `done`
-      // (success-only law, mirroring the Phase-183 unified plan pool);
-      // a permanently FAILED regeneration no longer burns the member's
-      // weekly swap quota. The 429 shape and messages are unchanged.
+      // user_swap_meal | user_swap_exercise → enforce the INDEPENDENT
+      // MONTHLY swap quota for that type (AI-QUOTAS 2026-11-14 — evolved
+      // from the retired weekly C16 limits; subscription-cycle window).
+      // AI-PLAN-QUALITY 2026-10-24 law carried forward: CHECK-ONLY here —
+      // the unit is recorded by the runner when the job lands `done`
+      // (success-only); a permanently FAILED regeneration never burns
+      // a paid unit.
       if (userId) {
         const swapType = gate === "user_swap_meal" ? "meal" : "exercise";
         const limitCheck = await checkSwapQuota(userId, swapType, authTier, Boolean(authRole && authRole !== "client"));
         if (!limitCheck.allowed) {
           const limitText =
-            limitCheck.limit === 0
-              ? "الاستبدال متاح لعملاء البريميوم وأعلى."
-              : `استهلكت ${limitCheck.used}/${limitCheck.limit} استبدال هذا الأسبوع. الرصيد يتصفّر يوم الاثنين.`;
+            limitCheck.subscriptionRequired
+              ? "الاستبدال متاح لمشتركي بريميوم وأعلى — اشترك للحصول على حصص تبديل شهرية للوجبات والتمارين."
+              : `استهلكت حصة التبديل لهذه الدورة (${limitCheck.used}/${limitCheck.limit}). تتجدد الحصة مع دورة الاشتراك.`;
           return NextResponse.json(
             {
               error: `⏰ ${limitText}`,
               rateLimited: true,
+              subscriptionRequired: limitCheck.subscriptionRequired,
               used: limitCheck.used,
               limit: limitCheck.limit,
             },
-            { status: 429, headers: { "Retry-After": "3600" } },
+            {
+              status: limitCheck.subscriptionRequired ? 402 : 429,
+              headers: { "Retry-After": "3600" },
+            },
           );
         }
       }
@@ -141,17 +163,67 @@ export async function POST(request: NextRequest) {
     //    2026-09-13) ──────────────────────────────────────────────
     // The old 4 nutrition + 4 workout coach-side cap is GONE, and the
     // 2026-09-02 one-balance law (weekly 1+1/2+2 + monthly 4+4/8+8) was
-    // itself superseded by the Phase 183 UNIFIED monthly pool: ONE
-    // success-only budget per client identity (nutrition + workout
-    // COMBINED), fed by coach AND EVO AND planner generations (owner
-    // decree 2026-09-13 «البوول الموحد»). Owner order 2026-10-28
-    // «تجميع حصص الاشتراكات المدفوعة»: the pool size is the AGGREGATE
-    // of every distinct effectively-active paid tier (free 2 · premium
-    // 4 · pro 8 · coaching 8; premium+pro = 12). Editing tools (meal/
+    // itself superseded by the Phase 183 UNIFIED monthly quota (kept as
+    // a MONTHLY QUOTA by the 2026-11-14 corrective order): ONE success-
+    // only budget per client identity (nutrition + workout COMBINED),
+    // fed by coach AND EVO AND planner generations (owner decree
+    // 2026-09-13 «البوول الموحد»). Owner order 2026-10-28 «تجميع حصص
+    // الاشتراكات المدفوعة»: the quota size is the AGGREGATE of every
+    // distinct effectively-active paid tier (free 0 — subscriber-only
+    // 2026-11-14 · premium 4 · pro 8 · coaching 8; premium+pro = 12). Editing tools (meal/
     // exercise regenerate — staff-bypassed above) and manual uploads stay
     // UNLIMITED. Admins remain unlimited (staff quota semantics). A coach
     // may also only generate for his OWN clients — ownership verified
     // below.
+    // ── AI-QUOTAS 2026-11-14 — MEMBER SELF-SERVICE PLAN GENERATION ─────
+    // A client enqueues plan_nutrition / plan_workout for HIMSELF only,
+    // gated by his unified monthly quota (subscriber-only: free → 402;
+    // exhausted → 429 with the cycle renewal date). The runner bills his
+    // own quota on success (planPoolBillingForRequester's client branch).
+    if (
+      authRequired &&
+      (type === "plan_nutrition" || type === "plan_workout") &&
+      authRole === "client" &&
+      userId
+    ) {
+      const clientId = String(payload?.clientId ?? "");
+      if (clientId !== userId) {
+        return NextResponse.json(
+          {
+            error:
+              "توليد الخطط من حسابك يتم لعنوان حسابك فقط — حدّد نفسك كمستهدف الخطة.",
+            code: "self_service_only",
+          },
+          { status: 403 },
+        );
+      }
+      const selfQuota = await checkUnifiedPlanQuota({
+        userId,
+        tierHint: authTier,
+      });
+      if (!selfQuota.allowed) {
+        return NextResponse.json(
+          {
+            error: selfQuota.subscriptionRequired
+              ? "توليد الخطط بالذكاء الاصطناعي متاح لمشتركي بريميوم وأعلى — اشترك لتوليد خطط التغذية والتمارين بحصة شهرية تتجدد مع دورة الاشتراك."
+              : `استهلكت حصة توليد الخطط لهذه الدورة (${selfQuota.used}/${selfQuota.limit} — تغذية وتمارين من الحصة نفسها). تتجدد الحصة في ${selfQuota.renewsAt ? new Date(selfQuota.renewsAt).toLocaleDateString("ar-EG") : ""}.`,
+            code: selfQuota.subscriptionRequired
+              ? "subscription_required"
+              : "plan_quota_exhausted",
+            subscriptionRequired: selfQuota.subscriptionRequired,
+            rateLimited: true,
+            used: selfQuota.used,
+            limit: selfQuota.limit,
+            renewsAt: selfQuota.renewsAt,
+          },
+          {
+            status: selfQuota.subscriptionRequired ? 402 : 429,
+            headers: { "Retry-After": selfQuota.subscriptionRequired ? "3600" : "86400" },
+          },
+        );
+      }
+    }
+
     if (
       authRequired &&
       (type === "plan_nutrition" || type === "plan_workout") &&
@@ -236,12 +308,13 @@ export async function POST(request: NextRequest) {
         );
       }
       // ── OWNER DECREE (2026-09-01, carried by the 2026-09-13 unified
-      // pool «البوول الموحد»): «توليد الخطط بيتحسب من الرصيد سواء عن
+      // pool «البوول الموحد» — kept as a MONTHLY QUOTA by the 2026-11-14
+      // corrective order): «توليد الخطط بيتحسب من الرصيد سواء عن
       // طريق المدرب او عن طريق ايفو» — the coach's generation burns
-      // the CLIENT's UNIFIED plan balance (ONE pool for nutrition +
+      // the CLIENT's UNIFIED plan quota (ONE quota for nutrition +
       // workout COMBINED, sized 2026-10-28 as the AGGREGATE of every
-      // distinct effectively-active paid tier: free 2 · premium 4 ·
-      // pro 8 · coaching 8; premium+pro = 12,
+      // distinct effectively-active paid tier: free 0 — subscriber-only
+      // 2026-11-14 · premium 4 · pro 8 · coaching 8; premium+pro = 12,
       // success-only via ai_plan_usage — the member's widget and this
       // gate read the same ledger). The old per-kind split and weekly
       // caps are retired (Phase 183).
@@ -251,16 +324,23 @@ export async function POST(request: NextRequest) {
       // the weekly swaps).
       const clientQuota = await checkUnifiedPlanQuota({ userId: clientId });
       if (!clientQuota.unlimited && !clientQuota.allowed) {
-        const message = `رصيد توليد الخطط الموحد للعميل انتهى (${clientQuota.used}/${clientQuota.limit} — تغذية وتمارين من الرصيد نفسه). التوليد — منك أو من إيفو لدى العميل — يُخصم من الرصيد نفسه ويُصفَّر في أول الشهر. يمكنك تعديل الخطة الحالية أو رفع خطة يدويًا دون حدود.`;
+        const renewsOn = clientQuota.renewsAt
+          ? new Date(clientQuota.renewsAt).toLocaleDateString("ar-EG")
+          : "";
+        const message = clientQuota.subscriptionRequired
+          ? "هذا العميل ليس لديه اشتراك فعّال — توليد الخطط متاح لمشتركي بريميوم وأعلى. يمكنك تعديل الخطة الحالية أو رفع خطة يدويًا دون حدود."
+          : `حصة توليد الخطط الموحدة للعميل انتهت (${clientQuota.used}/${clientQuota.limit} — تغذية وتمارين من الحصة نفسها). التوليد — منك أو من إيفو لدى العميل — يُخصم من الحصة نفسها وتتجدد في ${renewsOn}. يمكنك تعديل الخطة الحالية أو رفع خطة يدويًا دون حدود.`;
         return NextResponse.json(
           {
             error: message,
-            code: "client_plan_quota_exhausted",
+            code: clientQuota.subscriptionRequired
+              ? "client_subscription_required"
+              : "client_plan_quota_exhausted",
             rateLimited: true,
             used: clientQuota.used,
             limit: clientQuota.limit,
           },
-          { status: 429, headers: { "Retry-After": "86400" } },
+          { status: 402, headers: { "Retry-After": "86400" } },
         );
       }
       } // end B2B gates (the site-coach branch above skips them)

@@ -10,10 +10,7 @@ import {
  LS_TICKETS,
 } from "./helpers";
 import { createNotificationDeduped, createAdminNotification } from "./notifications";
-import { getSubscriptionForClient } from "./subscriptions";
-import { getLimits } from "@/lib/memberships";
 import type { Database, Plan, SupportTicket } from "@/lib/supabase/types";
-import type { MembershipTier } from "@/lib/memberships";
 // Type-only imports — erased at build, so the client bundle never pulls in
 // the generator or its AI dependencies (same pattern as blog.ts BlogFaq).
 import type { NutritionPlanContent, WorkoutPlanContent } from "../plan-generator";
@@ -125,60 +122,51 @@ export async function activatePlan(planId: string, clientId: string) {
 }
 
 /**
- * Get current swap usage for display — T-AI-DEEP-AUDIT-V2 (D6 fix).
- * MUST mirror the ENFORCEMENT in tier-limits.ts / /api/ai/jobs exactly:
- *   - weekly Monday-anchored window (was: daily — stale legacy system)
- *   - limits from memberships.ts evoSwapLimit via the VERIFIED active
- *     subscription (was: swapLimitFor from the retired starter/elite
- *     tier system — "premium" resolved to undefined → showed UNLIMITED
- *     while the server enforced 3/week)
+ * Get current swap usage for display — T-AI-DEEP-AUDIT-V2 (D6 fix),
+ * evolved by AI-QUOTAS 2026-11-14 (حصص شهرية مستقلة لكل نوع).
+ * MUST mirror the ENFORCEMENT exactly — and the single source for that
+ * is now the SERVER meter (/api/ai/quota reads checkSwapQuota with the
+ * subscription-cycle window + evoSwapMonthlyLimit straight from
+ * memberships.ts). The client copy just maps the verdict: no drift is
+ * possible because there is no second implementation.
  */
 export async function getSwapUsage(userId: string) {
- const userSub = await getSubscriptionForClient(userId);
- const tierId = (userSub?.tier ?? "free") as MembershipTier;
- const LIMIT = getLimits(tierId).evoSwapLimit; // number | null (null = unlimited)
- // Monday-anchored week start — byte-for-byte the same math as
- // tier-limits.countThisWeekSwaps, so display == enforcement.
- const now = new Date();
- const dayOfWeek = now.getDay(); // 0=Sun, 1=Mon, ...
- const mondayOffset = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
- const weekStart = new Date(now);
- weekStart.setDate(now.getDate() - mondayOffset);
- weekStart.setHours(0, 0, 0, 0);
- if (isSupabaseConfigured && supabase) {
- const [meals, exercises] = await Promise.all([
- supabase
- .from("plan_swaps")
- .select("*", { count: "exact", head: true })
- .eq("user_id", userId)
- .eq("swap_type", "meal")
- .gte("created_at", weekStart.toISOString()),
- supabase
- .from("plan_swaps")
- .select("*", { count: "exact", head: true })
- .eq("user_id", userId)
- .eq("swap_type", "exercise")
- .gte("created_at", weekStart.toISOString()),
- ]);
- return {
- meal: {
- used: meals.count ?? 0,
- limit: LIMIT,
- remaining: LIMIT === null ? Infinity : Math.max(0, LIMIT - (meals.count ?? 0)),
- unlimited: LIMIT === null,
- },
- exercise: {
- used: exercises.count ?? 0,
- limit: LIMIT,
- remaining: LIMIT === null ? Infinity : Math.max(0, LIMIT - (exercises.count ?? 0)),
- unlimited: LIMIT === null,
- },
- };
+ try {
+  const res = await fetch("/api/ai/quota", { cache: "no-store" });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const data = (await res.json()) as {
+   swaps?: {
+    meal?: { used?: number; limit?: number | null; unlimited?: boolean; subscriptionRequired?: boolean };
+    exercise?: { used?: number; limit?: number | null; unlimited?: boolean; subscriptionRequired?: boolean };
+   };
+  };
+  const map = (s?: {
+   used?: number;
+   limit?: number | null;
+   unlimited?: boolean;
+   subscriptionRequired?: boolean;
+  }) => {
+   const limit = typeof s?.limit === "number" ? s.limit : null;
+   const used = typeof s?.used === "number" ? s.used : 0;
+   return {
+    used,
+    limit,
+    remaining: limit === null ? Infinity : Math.max(0, limit - used),
+    unlimited: Boolean(s?.unlimited) || limit === null,
+    subscriptionRequired: Boolean(s?.subscriptionRequired) || limit === 0,
+   };
+  };
+  return {
+   meal: map(data?.swaps?.meal),
+   exercise: map(data?.swaps?.exercise),
+  };
+ } catch {
+  // Best-effort display: the server stays the enforcement authority.
+  return {
+   meal: { used: 0, limit: 0, remaining: 0, unlimited: false, subscriptionRequired: true },
+   exercise: { used: 0, limit: 0, remaining: 0, unlimited: false, subscriptionRequired: true },
+  };
  }
- return {
- meal: { used: 0, limit: LIMIT, remaining: LIMIT === null ? Infinity : LIMIT, unlimited: LIMIT === null },
- exercise: { used: 0, limit: LIMIT, remaining: LIMIT === null ? Infinity : LIMIT, unlimited: LIMIT === null },
- };
 }
 
 export async function addPlan(plan: PlanInsert): Promise<Plan> {

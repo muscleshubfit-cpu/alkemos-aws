@@ -34,8 +34,9 @@ import { toast } from "sonner";
  * /ai-workout-planner — the AI workout planner page (§12.32 → Phase
  * 183, owner decree 2026-09-13 «البوول الموحد» — spec "Alkemos —
  * Membership & Plan Changes") — the workout twin of the meal-planner
- * page: unified monthly pool (guest 2/month — no signup wall; member
- * 2/4/8/8 by tier), success-only counting, and the PERSISTENCE LAW:
+ * page: unified monthly quota (subscriber-only — free/guest 402 +
+ * subscribe CTA; member 4/8/8 by tier), success-only counting, and
+ * the PERSISTENCE LAW:
  *   - GUEST: plan mirrored to localStorage, re-hydrated on mount —
  *     navigation, exercise-detail visits, back buttons, and refreshes
  *     never lose it; it stays rendered after the pool is exhausted.
@@ -292,7 +293,7 @@ export default function AiWorkoutPlannerPage() {
           </p>
           <div className="seal-chip mt-4 inline-flex items-center gap-2">
             <Sparkles className="h-3.5 w-3.5 text-[var(--muted-2)]" aria-hidden="true" />
-            {isAr ? "مجاني: توليدان شهريًا لكل زائر" : "Free: 2 generations per month for every visitor"}
+            {isAr ? "توليد الخطط بالذكاء الاصطناعي لمشتركي بريميوم وأعلى" : "AI plan generation for Premium subscribers and above"}
           </div>
         </div>
 
@@ -422,7 +423,7 @@ export default function AiWorkoutPlannerPage() {
                 ? isAr ? "جارٍ التوليد…" : "Generating…"
                 : plan
                   ? isAr ? "ولّد نظامًا آخر" : "Generate another split"
-                  : isAr ? "ولّد نظامي المجاني" : "Generate my free split"}
+                  : isAr ? "ولّد نظامي" : "Generate my split"}
             </button>
             {quotaChip && (
               <span className="text-xs font-normal text-[var(--muted-foreground)]" data-testid="quota-chip">
@@ -605,7 +606,7 @@ export default function AiWorkoutPlannerPage() {
             <p className="mt-3 text-sm font-normal leading-relaxed text-[var(--muted-foreground)]">
               {isAr
                 ? "النظام تقدير تعليمي قابل للنسخ — راجع أداء كل حركة على أدائك أنت، وابدأ بأوزان تُتقن بها الشكل الكامل قبل التدرج. نظامك يبقى معك على هذا الجهاز في التنقل والتحديث، ولا يختفي عند استنفاد رصيد الشهر."
-                : "This split is a copyable educational estimate — review every movement against your own performance, and start with weights you can own with full form before climbing. Your split stays with you on this device across navigation and refreshes — and never disappears when the month's quota runs out."}
+                : "This split is a copyable educational estimate — review every movement against your own performance, and start with weights you can own with full form before climbing. Your split stays with you on this device across navigation and refreshes — and never disappears when the cycle's quota runs out."}
             </p>
 
             {/* SOFT signup nudge (guests only) — benefits, never a wall. */}
@@ -674,8 +675,8 @@ export default function AiWorkoutPlannerPage() {
             </h2>
             <p className="mt-3 text-base font-normal leading-relaxed text-[var(--muted-foreground)]">
               {isAr
-                ? "كل زائر يحصل على توليديْن ناجحيْن شهريًا من رصيده الشهري المجاني — والرصيد يُحسب للتوليد الناجح فقط، وخططك السابقة تبقى متاحة بعد استنفاده. بإنشاء حساب مجاني تُحفظ خططك من أي جهاز؛ ومع بريميوم يرتفع الرصيد إلى 4 توليدات شهريًا (و8 مع برو). للتصفح الجاهز فورًا، برامج التدريب الجاهزة معروضة لكل مستوى وهدف؛ ولكل حركة بشرحها، مكتبة التمارين تضم 868+ تمرينًا — ولنظامك الغذائي، مخطط الوجبات بالذكاء الاصطناعي ينتظر رقم سعراتك."
-                : "Every visitor gets 2 successful generations per month from a free monthly allowance — no credit card required, and only successful generations count; your previous plans stay available after the quota runs out. Create a free account and your plans are saved from any device; Premium lifts the pool to 4 generations a month (8 with Pro). For instant browsing, the ready workout programs are laid out for every level and goal; for every movement explained, the exercise library holds 868+ exercises — and for the diet side of your week, the AI meal planner is waiting for your calorie number."}
+                ? "توليد الخطط بالذكاء الاصطناعي ميزة لمشتركي بريميوم وأعلى — بحصة شهرية تتجدد مع دورة الاشتراك، وتُحسب للتوليد الناجح فقط، وخططك السابقة تبقى متاحة دائمًا. بإنشاء حساب مجاني تُحفظ خططك من أي جهاز؛ وحصة بريميوم 4 توليدات شهريًا (و8 مع برو). للتصفح الجاهز فورًا، برامج التدريب الجاهزة معروضة لكل مستوى وهدف؛ ولكل حركة بشرحها، مكتبة التمارين تضم 868+ تمرينًا — ولنظامك الغذائي، مخطط الوجبات بالذكاء الاصطناعي ينتظر رقم سعراتك."
+                : "AI plan generation is a subscriber feature (Premium and above) — a monthly quota renewing with your subscription cycle, counted only on success, and your previous plans always stay available. Create a free account and your plans are saved from any device; the Premium quota is 4 generations a month (8 with Pro). For instant browsing, the ready workout programs are laid out for every level and goal; for every movement explained, the exercise library holds 868+ exercises — and for the diet side of your week, the AI meal planner is waiting for your calorie number."}
             </p>
             <div className="mt-4 flex flex-wrap gap-2">
               <Link href={isAr ? "/ar/programs" : "/programs"} className="rounded-full border border-[var(--edge)] px-4 py-2 text-sm font-normal text-[var(--text)] transition-colors hover:border-[var(--chrome-edge)]">

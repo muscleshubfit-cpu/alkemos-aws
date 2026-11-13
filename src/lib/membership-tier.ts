@@ -145,8 +145,9 @@ const POOL_TIERS: Record<string, MembershipTier> = {
  *     SAME row instead of inserting a sibling, so a renewal never
  *     double-counts; the dedup here guarantees it even against stray
  *     duplicate rows («لا تحتسب الحصة نفسها مرتين»).
- *   - No active paid row → the FREE pool (2). The free pool is the
- *     no-membership baseline — it never stacks on top of paid pools.
+ *   - No active paid row → the FREE quota (0 — the 2026-11-14
+ *     subscriber-only order: no free generation path). Never stacks
+ *     on top of paid quotas.
  *   - The usage ledger (ai_plan_usage, 0085) is identity-keyed and
  *     untouched by activations — used/remaining are computed by the
  *     caller from that ledger; this function owns the LIMIT only.

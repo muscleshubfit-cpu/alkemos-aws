@@ -42,7 +42,7 @@ export const MEMBERSHIPS_FAQ: Record<"en" | "ar", MembershipsFaqItem[]> = {
     },
     {
       q: "Is there a free trial?",
-      a: "The trial IS the product: open the AI Workout or AI Meal Planner and generate your first plan instantly (2 successful generations per month for every visitor; a free account saves them permanently). There is no temporary trial subscription — the Free tier is free forever.",
+      a: "The product itself is the experience: every library, tool and calculator is free forever, plus 10 EVO messages a day. AI plan generation & swaps are subscriber features (Premium and above) with monthly quotas — subscribe and generate your first plan instantly.",
     },
     {
       q: "Payment methods?",
@@ -82,7 +82,7 @@ export const MEMBERSHIPS_FAQ: Record<"en" | "ar", MembershipsFaqItem[]> = {
     },
     {
       q: "هل توجد تجربة مجانية؟",
-      a: "التجربة هي المنتج نفسه: افتح مخطط التمارين أو مخطط الوجبات بالذكاء الاصطناعي وولّد خطتك الأولى فورًا — لكل زائر توليدان ناجحان شهريًا، وما تولّده يُحفظ للأبد بحساب مجاني. لا يوجد اشتراك تجريبي مؤقت؛ المستوى المجاني مجاني للأبد.",
+      a: "التجربة هي المنتج نفسه: كل مكتبة وأداة وحاسبة مجانية للأبد، مع 10 رسائل يوميًا مع EVO. وتوليد الخطط والتبديلات بالذكاء الاصطناعي ميزة لمشتركي بريميوم وأعلى بحصص شهرية — اشترك وولّد خطتك الأولى فورًا.",
     },
     {
       q: "ما هي طرق الدفع؟",

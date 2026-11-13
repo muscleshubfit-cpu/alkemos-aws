@@ -1414,6 +1414,10 @@ export type Database = {
           old_item: Json | null;
           new_item: Json | null;
           reason: string | null;
+          // 0110 AI-QUOTA-SUCCESS-IDEMPOTENCY: the originating ai_jobs.id —
+          // UNIQUE (partial index) so a runner re-run can never record one
+          // successful swap twice (no double quota deduction, ever).
+          job_ref: string | null;
           created_at: string;
         };
         Insert: {
@@ -1427,6 +1431,7 @@ export type Database = {
           old_item?: Json | null;
           new_item?: Json | null;
           reason?: string | null;
+          job_ref?: string | null;
           created_at?: string;
         };
         Update: {
@@ -1439,6 +1444,7 @@ export type Database = {
           old_item?: Json | null;
           new_item?: Json | null;
           reason?: string | null;
+          job_ref?: string | null;
         };
         Relationships: [];
       };
@@ -2071,6 +2077,10 @@ export type Database = {
           ip_key: string | null;
           kind: string;
           surface: string;
+          // 0110 AI-QUOTA-SUCCESS-IDEMPOTENCY: the originating ai_jobs.id —
+          // UNIQUE (partial index) so a runner re-run can never record one
+          // successful job twice (no double quota deduction, ever).
+          job_ref: string | null;
           created_at: string;
         };
         Insert: {
@@ -2080,6 +2090,7 @@ export type Database = {
           ip_key?: string | null;
           kind: string;
           surface?: string;
+          job_ref?: string | null;
           created_at?: string;
         };
         Update: {
@@ -2089,6 +2100,7 @@ export type Database = {
           ip_key?: string | null;
           kind?: string;
           surface?: string;
+          job_ref?: string | null;
           created_at?: string;
         };
         Relationships: [

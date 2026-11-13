@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Salad, Dumbbell, FileText, Download, Printer, RefreshCw, Loader2, Info } from "lucide-react";
+import { Salad, Dumbbell, FileText, Download, Printer, RefreshCw, Loader2, Info, Sparkles, Plus } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/hooks/use-auth";
 import { useNav } from "@/hooks/use-nav";
@@ -23,6 +23,10 @@ import { displayCalories } from "@/lib/nutrition-totals";
 import { resolvePlanDietType } from "@/lib/diet-types";
 import { getQuestionnaire } from "@/lib/data";
 import { enqueueAiJobClient, getAiJob } from "@/lib/ai-jobs-client";
+// AI-QUOTAS 2026-11-14: the member self-service generation rides the SAME
+// survivable pending-job registry the coach plan flow uses (survives
+// reloads — the GHA runner finishes the job even with a dead tab).
+import { addPendingPlanJob, readPendingPlanJobs, removePendingPlanJob } from "@/lib/plan-jobs";
 import { applyMemberSwapToContent } from "@/lib/member-swap-apply";
 import { resolveExerciseImage, getExerciseImage, getExerciseImages, getFallbackSVG } from "@/lib/exercise-images";
 import { useExerciseLookup } from "@/lib/exercise-lookup";
@@ -96,8 +100,23 @@ function asPlanContent(v: Json | null | undefined): PlanContent | null {
  return v as PlanContent;
 }
 
-/** Swap-quota readout shape returned by data/plans.getSwapUsage. */
+/** Swap-quota readout shape returned by data/plans.getSwapUsage.
+ * AI-QUOTAS 2026-11-14: swaps are INDEPENDENT monthly quotas per type and
+ * carry a subscriptionRequired flag (free members see the subscribe CTA
+ * instead of a broken 0/0 widget). */
 type SwapUsage = Awaited<ReturnType<typeof getSwapUsage>>;
+
+/** Unified generation quota readout — the SAME /api/ai/quota verdict the
+ * enforcement reads (meter == enforcement law; one fetch serves both the
+ * plan quota and the swap quotas in refreshUsage). */
+type PlanQuota = {
+ used: number;
+ limit: number;
+ remaining: number;
+ unlimited: boolean;
+ subscriptionRequired: boolean;
+ renewsAt: string | null;
+};
 
 export function PlansView() {
  const { t, lang } = useI18n();
@@ -110,7 +129,19 @@ export function PlansView() {
  const [loading, setLoading] = useState(true);
  const [active, setActive] = useState<Plan | null>(null);
  const [swapLoading, setSwapLoading] = useState<string | null>(null);
- const [swapUsage, setSwapUsage] = useState<SwapUsage>({ meal: { used: 0, limit: 2, remaining: 2, unlimited: false }, exercise: { used: 0, limit: 2, remaining: 2, unlimited: false } });
+ const [swapUsage, setSwapUsage] = useState<SwapUsage>({
+ meal: { used: 0, limit: 0, remaining: 0, unlimited: false, subscriptionRequired: true },
+ exercise: { used: 0, limit: 0, remaining: 0, unlimited: false, subscriptionRequired: true },
+ });
+ // AI-QUOTAS 2026-11-14: the unified monthly generation quota + the
+ // subscription-cycle renewal date (one /api/ai/quota fetch feeds the
+ // plan quota AND the swap quotas — the same verdicts enforcement reads).
+ const [planQuota, setPlanQuota] = useState<PlanQuota>({
+ used: 0, limit: 0, remaining: 0, unlimited: false, subscriptionRequired: true, renewsAt: null,
+ });
+ const [generating, setGenerating] = useState<"nutrition" | "workout" | null>(null);
+ const [pendingPlans, setPendingPlans] = useState<ReturnType<typeof readPendingPlanJobs>>([]);
+ const activePlanWatchers = useRef<Set<string>>(new Set());
  // PHASE 99 — pending-swaps snapshot (mirror of the localStorage queue)
  // powering the persistent «جارٍ التبديل» badge + double-submit guard.
  const [pendingSwaps, setPendingSwaps] = useState<PendingSwap[]>([]);
@@ -143,8 +174,23 @@ export function PlansView() {
  const refreshUsage = useCallback(async () => {
  if (!profile) return;
  try {
- const u = await getSwapUsage(profile.id);
+ // ONE meter fetch — the same /api/ai/quota verdicts enforcement reads
+ // (the swap helper maps .swaps from the same response).
+ const [u, quotaMeter] = await Promise.all([
+ getSwapUsage(profile.id),
+ fetch("/api/ai/quota", { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)).catch(() => null),
+ ]);
  setSwapUsage(u);
+ if (quotaMeter?.plans) {
+ setPlanQuota({
+ used: Number(quotaMeter.plans.used ?? 0),
+ limit: quotaMeter.plans.unlimited || quotaMeter.plans.limit === null ? Number.POSITIVE_INFINITY : Number(quotaMeter.plans.limit ?? 0),
+ remaining: quotaMeter.plans.unlimited || quotaMeter.plans.limit === null ? Number.POSITIVE_INFINITY : Number(quotaMeter.plans.remaining ?? 0),
+ unlimited: Boolean(quotaMeter.plans.unlimited),
+ subscriptionRequired: Boolean(quotaMeter.plans.subscriptionRequired),
+ renewsAt: typeof quotaMeter.plans.renewsAt === "string" ? quotaMeter.plans.renewsAt : null,
+ });
+ }
  } catch {
  /* keep last known usage */
  }
@@ -268,6 +314,120 @@ export function PlansView() {
  readPendingSwaps().forEach((entry) => void watchSwapJob(entry));
  }, [watchSwapJob]);
 
+ /* ── AI-QUOTAS 2026-11-14 — MEMBER SELF-SERVICE GENERATION ──────────────
+ * «توليد خطة جديدة من داخل قسم الخطط وفق صلاحية الاشتراك والحصة»:
+ * a member enqueues plan_nutrition / plan_workout for HIMSELF through the
+ * SAME ai_jobs queue the coach uses (the route verifies clientId ===
+ * requester and gates by the unified monthly quota; the runner bills his
+ * quota on success ONLY — a failed job never burns quota, and the UNIQUE
+ * job_ref makes double-billing structurally impossible). The plan row
+ * lands approved + current (selfService flag). Survives reloads via the
+ * shared plan-jobs registry. */
+ const reloadPlans = useCallback(async () => {
+ if (!profile) return;
+ try {
+ const data = await listPlans(profile.id);
+ setPlans(data);
+ } catch {
+ /* keep last known list */
+ }
+ }, [profile]);
+
+ const watchPlanJob = useCallback(
+ async (jobId: string) => {
+ if (activePlanWatchers.current.has(jobId)) return;
+ activePlanWatchers.current.add(jobId);
+ try {
+ const deadline = Date.now() + 26 * 60_000;
+ while (Date.now() < deadline) {
+ await new Promise((r) => setTimeout(r, 20_000));
+ let job: AiJobRow | null = null;
+ try {
+ job = await getAiJob(jobId);
+ } catch {
+ continue; // transient network error — keep waiting
+ }
+ if (job?.status === "done") {
+ removePendingPlanJob(jobId);
+ setPendingPlans(readPendingPlanJobs());
+ await reloadPlans();
+ await refreshUsage();
+ toast.success(isAr ? "خطتك الجديدة جاهزة ✅ — تظهر أعلى القائمة." : "Your new plan is ready ✅ — it's at the top of the list.");
+ return;
+ }
+ if (job?.status === "failed") {
+ removePendingPlanJob(jobId);
+ setPendingPlans(readPendingPlanJobs());
+ // Success-only law: a failed job never burned the quota — the meter
+ // reconcile is just bookkeeping hygiene.
+ void refreshUsage();
+ toast.error(job.error_message || (isAr ? "فشل توليد الخطة." : "The plan generation failed."));
+ return;
+ }
+ }
+ removePendingPlanJob(jobId);
+ setPendingPlans(readPendingPlanJobs());
+ toast.error(isAr ? "انتهت مهلة انتظار التوليد — تابع لاحقًا من قسم الخطط." : "The generation wait timed out — check back later in the Plans section.");
+ } finally {
+ activePlanWatchers.current.delete(jobId);
+ }
+ }, [reloadPlans, refreshUsage]);
+
+ // Resume watching generations queued before a page reload.
+ useEffect(() => {
+ const pending = readPendingPlanJobs().filter((e) => e.clientId === profile?.id);
+ setPendingPlans(pending);
+ pending.forEach((e) => void watchPlanJob(e.id));
+ }, [profile, watchPlanJob]);
+
+ const generatePlan = useCallback(
+ async (kind: "nutrition" | "workout") => {
+ if (!profile) return;
+ // Server enforces too (subscription + unified monthly quota) — this is
+ // the honest pre-check (fast feedback, no enqueue round-trip).
+ if (planQuota.subscriptionRequired) {
+ toast.error(isAr
+ ? "توليد الخطط بالذكاء الاصطناعي متاح لمشتركي بريميوم وأعلى — اشترك لتوليد خطط التغذية والتمارين بحصة شهرية."
+ : "AI plan generation is available to Premium subscribers and above — subscribe to generate nutrition & workout plans with a monthly quota.");
+ return;
+ }
+ if (!planQuota.unlimited && planQuota.remaining <= 0) {
+ toast.error(isAr
+ ? `استهلكت حصة توليد الخطط لهذه الدورة (${planQuota.used}/${planQuota.limit}) — تتجدد الحصة مع دورة الاشتراك.`
+ : `You've used your plan-generation quota for this cycle (${planQuota.used}/${planQuota.limit}) — it renews with your subscription cycle.`);
+ return;
+ }
+ setGenerating(kind);
+ try {
+ // The member's questionnaires ride the payload exactly like the
+ // coach's flow (allergies/dislikes/goals — the generator's inputs).
+ const [nutriQ, fitQ] = await Promise.all([
+ getQuestionnaire(profile.id, "nutrition").catch(() => null),
+ getQuestionnaire(profile.id, "fitness").catch(() => null),
+ ]);
+ const jobId = await enqueueAiJobClient(kind === "nutrition" ? "plan_nutrition" : "plan_workout", {
+ clientId: profile.id,
+ selfService: true,
+ clientContext: {
+ name: profile.full_name,
+ ...(nutriQ?.data && typeof nutriQ.data === "object" ? { nutrition: nutriQ.data } : {}),
+ ...(fitQ?.data && typeof fitQ.data === "object" ? { fitness: fitQ.data } : {}),
+ },
+ });
+ addPendingPlanJob({ id: jobId, clientId: profile.id, kind, createdAt: Date.now() });
+ setPendingPlans(readPendingPlanJobs().filter((e) => e.clientId === profile?.id));
+ void watchPlanJob(jobId);
+ toast.info(isAr
+ ? "تم إرسال طلب التوليد 🚀 خطتك الجديدة ستظهر أعلى القائمة تلقائيًا خلال دقائق حتى لو قفلت الصفحة."
+ : "Generation request sent 🚀 Your new plan appears at the top of the list within minutes, even if you close the page.");
+ } catch (e) {
+ toast.error((e instanceof Error ? e.message : "") || t("common.error"));
+ } finally {
+ setGenerating(null);
+ }
+ },
+ [profile, planQuota, watchPlanJob]);
+
  useEffect(() => {
  if (!profile) return;
  (async () => {
@@ -278,6 +438,9 @@ export function PlansView() {
  ]);
  setPlans(data);
  setSwapUsage(usage);
+ // AI-QUOTAS 2026-11-14: the unified generation quota meter rides the
+ // same refresh path (display == enforcement).
+ void refreshUsage();
  // NOTIF→PLAN 2026-10-24 (owner order item 3 — التوجيه): the
  // plan_activated notification deep link (/plans?plan=<id>) auto-opens
  // THIS plan's modal — the member lands on the exact plan the bell
@@ -298,7 +461,7 @@ export function PlansView() {
  setLoading(false);
  }
  })();
- }, [profile]);
+ }, [profile, refreshUsage]);
 
  if (loading) return <div className="text-muted-foreground">{t("common.loading")}</div>;
 
@@ -316,8 +479,18 @@ export function PlansView() {
  const swapMeal = async (planId: string, mealIndex: number) => {
  if (!profile) return;
  // Check remaining quota client-side first — the server enforces too.
+ // 2026-11-14: swaps are subscriber-only — the required case gets the
+ // honest subscribe CTA instead of a broken 0/0 widget.
+ if (swapUsage.meal.subscriptionRequired) {
+ toast.error(isAr
+ ? "تبديل الوجبات متاح لمشتركي بريميوم وأعلى — اشترك للحصول على حصة تبديل شهرية."
+ : "Meal swaps are available to Premium subscribers and above — subscribe for a monthly swap quota.");
+ return;
+ }
  if (swapUsage.meal.remaining <= 0) {
- toast.error(`${t("plans.swaps.mealExhausted")} (${swapUsage.meal.limit}/${swapUsage.meal.limit})`);
+ toast.error(isAr
+ ? `استهلكت حصة تبديل الوجبات لهذه الدورة (${swapUsage.meal.used}/${swapUsage.meal.limit}) — تتجدد مع دورة الاشتراك.`
+ : `You've used your meal-swap quota for this cycle (${swapUsage.meal.used}/${swapUsage.meal.limit}) — it renews with your subscription cycle.`);
  return;
  }
  setSwapLoading(`meal-${planId}-${mealIndex}`);
@@ -407,8 +580,16 @@ export function PlansView() {
 
  const swapExercise = async (planId: string, dayIndex: number, exIndex: number) => {
  if (!profile) return;
+ if (swapUsage.exercise.subscriptionRequired) {
+ toast.error(isAr
+ ? "تبديل التمارين متاح لمشتركي بريميوم وأعلى — اشترك للحصول على حصة تبديل شهرية."
+ : "Exercise swaps are available to Premium subscribers and above — subscribe for a monthly swap quota.");
+ return;
+ }
  if (swapUsage.exercise.remaining <= 0) {
- toast.error(`${t("plans.swaps.exerciseExhausted")} (${swapUsage.exercise.limit}/${swapUsage.exercise.limit})`);
+ toast.error(isAr
+ ? `استهلكت حصة تبديل التمارين لهذه الدورة (${swapUsage.exercise.used}/${swapUsage.exercise.limit}) — تتجدد مع دورة الاشتراك.`
+ : `You've used your exercise-swap quota for this cycle (${swapUsage.exercise.used}/${swapUsage.exercise.limit}) — it renews with your subscription cycle.`);
  return;
  }
  setSwapLoading(`ex-${planId}-${dayIndex}-${exIndex}`);
@@ -626,15 +807,19 @@ export function PlansView() {
  <p className="mt-2 text-base font-normal text-[#6e6e73] md:text-lg">{t("plans.subtitle")}</p>
  </div>
 
- {/* Weekly swap quota (Monday reset — mirrors checkAndRecordSwap) */}
- {/* m6 fix (DEEP-UX-AUDIT-2026-09-18): the Free plan (evoSwapLimit 0) used
-     to render a bare «0/0 remaining» — it read as a BROKEN widget, not as
-     a plan boundary (support-question bait). limit===0 now gets an honest
-     explanation + the memberships upgrade path instead of the number. */}
+ {/* ── AI-QUOTAS 2026-11-14: the quota banner + self-service generation ──
+     (owner order «إتاحة توليد خطة جديدة من داخل قسم الخطط وفق صلاحية
+     الاشتراك والحصة» — all inside the EXISTING Plans section; no new
+     section, no separate EVO area). Free members see the honest subscribe
+     CTA instead of 0/0 widgets (the m6-fix law, carried forward). */}
  <div className="rounded-2xl bg-[#f5f5f7] px-5 py-4 text-sm font-normal text-[#6e6e73]">
- {swapUsage.meal.limit === 0 ? (
+ {planQuota.subscriptionRequired ? (
  <div className="flex flex-wrap items-center gap-2">
- <span>{t("plans.swaps.notIncluded")}</span>
+ <span>
+ {isAr
+ ? "توليد الخطط والتبديلات بالذكاء الاصطناعي متاحة لمشتركي بريميوم وأعلى — بحصص شهرية تتجدد مع دورة الاشتراك."
+ : "AI plan generation & swaps are available to Premium subscribers and above — monthly quotas renewing with your subscription cycle."}
+ </span>
  <a
  href={isAr ? "/ar/memberships" : "/memberships"}
  className="font-medium text-[#0071e3] hover:underline"
@@ -643,13 +828,129 @@ export function PlansView() {
  </a>
  </div>
  ) : (
+ <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+ <span>
+ {isAr ? "توليد الخطط:" : "Plan generations:"}{" "}
+ <strong className={planQuota.remaining > 0 ? "text-[#1d1d1f]" : "text-[#ff3b30]"}>
+ {planQuota.unlimited ? "∞" : planQuota.remaining}
+ </strong>
+ {planQuota.unlimited ? "" : `/${planQuota.limit}`}
+ {" "}{isAr ? "متبقٍ هذه الدورة" : "left this cycle"}
+ </span>
+ <span className="text-[#d2d2d7]">|</span>
+ <span>
+ {isAr ? "تبديل وجبات:" : "Meal swaps:"}{" "}
+ <strong className={swapUsage.meal.remaining > 0 ? "text-[#1d1d1f]" : "text-[#ff3b30]"}>
+ {swapUsage.meal.unlimited ? "∞" : swapUsage.meal.remaining}
+ </strong>
+ {swapUsage.meal.unlimited ? "" : `/${swapUsage.meal.limit}`}
+ </span>
+ <span className="text-[#d2d2d7]">|</span>
+ <span>
+ {isAr ? "تبديل تمارين:" : "Exercise swaps:"}{" "}
+ <strong className={swapUsage.exercise.remaining > 0 ? "text-[#1d1d1f]" : "text-[#ff3b30]"}>
+ {swapUsage.exercise.unlimited ? "∞" : swapUsage.exercise.remaining}
+ </strong>
+ {swapUsage.exercise.unlimited ? "" : `/${swapUsage.exercise.limit}`}
+ </span>
+ {planQuota.renewsAt && (
  <>
- <span>{t("plans.swaps.mealDaily")} <strong className={swapUsage.meal.remaining > 0 ? "text-[#1d1d1f]" : "text-[#ff3b30]"}>{swapUsage.meal.remaining}</strong>/{swapUsage.meal.limit} {t("plans.swaps.remaining")}</span>
- <span className="mx-3 text-[#d2d2d7]">|</span>
- <span>{t("plans.swaps.exerciseDaily")} <strong className={swapUsage.exercise.remaining > 0 ? "text-[#1d1d1f]" : "text-[#ff3b30]"}>{swapUsage.exercise.remaining}</strong>/{swapUsage.exercise.limit} {t("plans.swaps.remaining")}</span>
+ <span className="text-[#d2d2d7]">|</span>
+ <span>
+ {isAr ? "تتجدد الحصة:" : "Quota renews:"}{" "}
+ {new Date(planQuota.renewsAt).toLocaleDateString(isAr ? "ar-EG" : "en-US")}
+ </span>
  </>
  )}
  </div>
+ )}
+ </div>
+
+ {/* ── Member self-service generation (AI-QUOTAS 2026-11-14) — the
+     two buttons ride the member's own unified monthly quota. */}
+ <div className="grid gap-4 sm:grid-cols-2">
+ <Card className="flex flex-col gap-3 p-5">
+ <div className="flex items-center gap-2">
+ <Salad className="h-5 w-5 text-primary" />
+ <h3 className="font-semibold">{isAr ? "توليد خطة تغذية جديدة" : "Generate a new nutrition plan"}</h3>
+ </div>
+ <p className="text-xs text-muted-foreground">
+ {isAr
+ ? "خطة تغذية كاملة بالذكاء الاصطناعي مبنية على استبيانك — تُخصم من حصة التوليد الشهرية عند النجاح فقط."
+ : "A full AI nutrition plan built from your questionnaire — deducted from your monthly generation quota only on success."}
+ </p>
+ <div className="flex items-center justify-between">
+ <Badge variant="secondary">{isAr ? "تُظهر خلال دقائق" : "Ready within minutes"}</Badge>
+ <Button
+ size="sm"
+ className="gap-2"
+ disabled={generating !== null || pendingPlans.length > 0}
+ onClick={() => void generatePlan("nutrition")}
+ >
+ {generating === "nutrition" ? (
+ <Loader2 className="h-4 w-4 animate-spin" />
+ ) : (
+ <Plus className="h-4 w-4" />
+ )}
+ {isAr ? "توليد" : "Generate"}
+ </Button>
+ </div>
+ </Card>
+ <Card className="flex flex-col gap-3 p-5">
+ <div className="flex items-center gap-2">
+ <Dumbbell className="h-5 w-5 text-primary" />
+ <h3 className="font-semibold">{isAr ? "توليد خطة تمارين جديدة" : "Generate a new workout plan"}</h3>
+ </div>
+ <p className="text-xs text-muted-foreground">
+ {isAr
+ ? "برنامج تمرين أسبوعي بالذكاء الاصطناعي مبنٍ على هدفك ومستواك — تُخصم من حصة التوليد الشهرية عند النجاح فقط."
+ : "An AI weekly workout program built from your goal and level — deducted from your monthly generation quota only on success."}
+ </p>
+ <div className="flex items-center justify-between">
+ <Badge variant="secondary">{isAr ? "تُظهر خلال دقائق" : "Ready within minutes"}</Badge>
+ <Button
+ size="sm"
+ className="gap-2"
+ disabled={generating !== null || pendingPlans.length > 0}
+ onClick={() => void generatePlan("workout")}
+ >
+ {generating === "workout" ? (
+ <Loader2 className="h-4 w-4 animate-spin" />
+ ) : (
+ <Plus className="h-4 w-4" />
+ )}
+ {isAr ? "توليد" : "Generate"}
+ </Button>
+ </div>
+ </Card>
+ </div>
+
+ {/* Pending generation status — the survivable watcher keeps the member
+     informed even across reloads (pendingPlans mirrors the registry). */}
+ {pendingPlans.length > 0 && (
+ <div className="flex items-center gap-2 rounded-2xl bg-[#e8f0fe] px-5 py-4 text-sm text-[#0071e3]">
+ <Loader2 className="h-4 w-4 animate-spin" />
+ <span>
+ {isAr
+ ? `جارٍ توليد ${pendingPlans.length === 1 ? "خطة" : `${pendingPlans.length} خطط`} بالذكاء الاصطناعي — ستظهر أعلى القائمة تلقائيًا عند اكتمالها (حتى لو أغلقت الصفحة).`
+ : `Generating ${pendingPlans.length === 1 ? "a plan" : `${pendingPlans.length} plans`} — they appear at the top of the list automatically when ready (even if you close the page).`}
+ </span>
+ </div>
+ )}
+
+ {/* ── Latest plan highlight (owner order: «عرض أحدث خطة أنتجها EVO
+     للعميل») — the newest plan row of ANY source (EVO-saved plans land in
+     the same plans table via member-edit save-evo; planner/coach/self-
+     service generations land here too). listPlans is created_at DESC. */}
+ {plans.length > 0 && (
+ <div>
+ <div className="mb-3 flex items-center gap-2 text-sm font-medium text-[#6e6e73]">
+ <Sparkles className="h-4 w-4 text-primary" />
+ <span>{isAr ? "أحدث خطة" : "Latest plan"}</span>
+ </div>
+ <PlanCard plan={plans[0]} onClick={() => setActive(plans[0])} />
+ </div>
+ )}
 
  <Tabs defaultValue="workout">
  <TabsList className="flex-wrap rounded-full bg-[#f5f5f7] p-1">

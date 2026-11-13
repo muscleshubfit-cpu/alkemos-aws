@@ -239,17 +239,15 @@ export const HOME_COPY_GROUPS: HomeCopyGroup[] = [
         multiline: true,
         labelEn: "Free-allowance bar text",
         labelAr: "نص شريط الرصيد المجاني",
-        // BILINGUAL-CONTENT Phase 2 (owner-approved optional item 8,
-        // 2026-11-04): the NUMBER is now shown — the FAQ directly below
-        // and memberships.ts (free tier aiPlanMonthlyLimit: 2) already
-        // state it; the band was the only free-value surface hiding it.
-        // Fact chain: 2 successful generations/month for every visitor
-        // (unified pool, nutrition OR workout). The homepage-adoption
-        // canary pin was updated in the same commit (the 287 precedent).
+        // AI-QUOTAS 2026-11-14: generation is SUBSCRIBER-ONLY — the band
+        // states the honest policy (free members keep the full free product;
+        // generation & swaps ride monthly quotas for Premium and above). The
+        // homepage-adoption canary pin was updated in the same commit (the
+        // 287 precedent).
         defaultEn:
-          "Every visitor has a monthly free allowance: 2 successful AI plan generations — nutrition or workout.",
+          "AI plan generation & swaps are subscriber features (Premium and above) — monthly quotas that renew with your subscription cycle. The libraries, tools, calculators and EVO chat (10 messages/day) stay free for everyone.",
         defaultAr:
-          "لكل زائر رصيد شهري مجاني: توليدان ناجحان من خطط الذكاء الاصطناعي — تغذية أو تمرين.",
+          "توليد الخطط والتبديلات بالذكاء الاصطناعي ميزة لمشتركي بريميوم وأعلى — بحصص شهرية تتجدد مع دورة الاشتراك. وتظل المكتبات والأدوات والحاسبات ومحادثة EVO (10 رسائل يوميًا) مجانية للجميع.",
       },
       {
         prop: "planAllowanceChip",
@@ -541,7 +539,7 @@ export const HOME_FAQ_DEFAULT: { en: SiteFaqItem[]; ar: SiteFaqItem[] } = {
   en: [
     {
       q: "Can I use Alkemos for free?",
-      a: "Yes. Access is completely free — exercises, food database, routines, and smart calculators work instantly without signup. Every visitor receives a monthly allowance for AI meal and workout plans, plus 10 messages a day with EVO. Creating a free account syncs and saves your plans across devices.",
+      a: "Yes. Access is completely free — exercises, food database, routines, and smart calculators work instantly without signup, plus 10 messages a day with EVO. AI meal and workout plan generation is a subscriber feature (Premium and above) with monthly quotas. Creating a free account syncs and saves your plans across devices.",
     },
     {
       q: "How does EVO work?",
@@ -563,7 +561,7 @@ export const HOME_FAQ_DEFAULT: { en: SiteFaqItem[]; ar: SiteFaqItem[] } = {
   ar: [
     {
       q: "هل يمكنني استخدام Alkemos مجانًا؟",
-      a: "نعم. التصفح مجاني بالكامل: التمارين والأطعمة والبرامج والأدوات تعمل مباشرة دون أي تسجيل، ولكل زائر رصيد شهري لتوليد خطط التغذية والتمارين، مع 10 رسائل يوميًا مع EVO. وأنشئ حسابًا مجانيًا لتحفظ خططك للأبد وتجدها على جميع أجهزتك.",
+      a: "نعم. التصفح مجاني بالكامل: التمارين والأطعمة والبرامج والأدوات تعمل مباشرة دون أي تسجيل، مع 10 رسائل يوميًا مع EVO. وتوليد خطط التغذية والتمارين ميزة لمشتركي بريميوم وأعلى بحصص شهرية. وأنشئ حسابًا مجانيًا لتحفظ خططك للأبد وتجدها على جميع أجهزتك.",
     },
     {
       q: "كيف يعمل EVO؟",

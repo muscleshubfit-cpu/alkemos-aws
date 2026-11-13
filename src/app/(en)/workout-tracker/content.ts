@@ -12,7 +12,7 @@
  * HONESTY LAW (capability inventory verified 2026-09-30):
  *   - Alkemos has NO per-session set/rep workout logging. The FAQ below
  *     states this explicitly — the page pivots to what exists: AI plan
- *     generation (2 free generations/month, no signup), ready-made
+ *     generation (subscriber feature — monthly quotas), ready-made
  *     programs, the 868+ exercise library, and ProgressView's body-metric
  *     tracking (weight, waist, chest, hips, arm, neck, energy, adherence,
  *     progress photos, weight chart, weekly check-in reminders).
@@ -23,7 +23,7 @@
 export const WORKOUT_TRACKER_FAQ_EN: Array<{ q: string; a: string }> = [
   {
     q: "Is Alkemos a workout tracker?",
-    a: "Alkemos is a workout planning and progress-tracking platform. It generates personalized workout plans with AI (2 free generations per month, no signup required), offers ready-made programs for home and gym, and tracks your results — weight, five body measurements, progress photos, and weekly check-in scores — in one free account. It does not log individual sets and reps per session; the tracking lives at the plan-and-progress level.",
+    a: "Alkemos is a workout planning and progress-tracking platform. It generates personalized workout plans with AI (a subscriber feature with monthly quotas for Premium and above), offers ready-made programs for home and gym, and tracks your results — weight, five body measurements, progress photos, and weekly check-in scores — in one free account. It does not log individual sets and reps per session; the tracking lives at the plan-and-progress level.",
   },
   {
     q: "How do I track my workout progress on Alkemos?",
@@ -47,7 +47,7 @@ export const WORKOUT_TRACKER_FAQ_EN: Array<{ q: string; a: string }> = [
   },
   {
     q: "Is the workout tracker free?",
-    a: "Yes. The exercise library, food database, all 8 free tools (including both AI planners' monthly free generations), plan browsing, and progress tracking are free with an account. Paid tiers raise the AI plan-generation pool and add deeper features.",
+    a: "Yes. The exercise library, food database, all 8 free tools, the manual planners, plan browsing, and progress tracking are free with an account. AI plan generation is a subscriber feature (Premium and above) with monthly quotas, and paid tiers add deeper features.",
   },
 ];
 

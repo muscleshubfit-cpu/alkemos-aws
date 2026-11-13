@@ -12,7 +12,8 @@
  *   - TRIAL FOR EVERYONE, NO SIGNUP WALL (Phase 183 «البوول الموحد»):
  *     one synchronous demo call on the free-chain — no ai_jobs queue,
  *     no membership gate. Generation is gated by the caller's unified
- *     monthly pool (guests = the free 2/month) counted SUCCESS-ONLY;
+ *     monthly quota (subscriber-only — free/guest get a 402) counted
+ *     SUCCESS-ONLY;
  *     the route auto-saves member plans to the `plans` table and guests
  *     keep theirs in localStorage (plan-persistence.ts).
  *   - COST CEILING: an IP burst guard runs BEFORE any provider call
@@ -30,9 +31,10 @@ export const DEMO_CALORIE_MAX = 4000;
 export const DEMO_NOTES_MAX = 200;
 /** Phase 183 (2026-09-13 «البوول الموحد»): the old IP-keyed 5/day
  * trial ceiling is retired — generations are gated by the UNIFIED
- * monthly pool (ai_plan_usage, migration 0085; guests get the free 2)
- * counted SUCCESS-ONLY by the route; an IP burst guard (abuse-only,
- * failures don't burn the pool) lives in the route, not here. */
+ * monthly quota (ai_plan_usage, migrations 0085+0110; subscriber-only —
+ * free/guest get a 402, member 4/8/8) counted SUCCESS-ONLY by the
+ * route; an IP burst guard (abuse-only, failures don't burn the
+ * quota) lives in the route, not here. */
 /** The generated day must close within ±20% of the requested calories. */
 export const DEMO_CALORIE_DRIFT = 0.2;
 

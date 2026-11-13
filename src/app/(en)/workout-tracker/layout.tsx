@@ -27,7 +27,7 @@ export const metadata: Metadata = {
   description:
     // ~160-char budget (CONTENT-AUDIT P1-7 law): real capabilities only —
     // AI plans, programs, exercise library, body-metric tracking.
-    "AI workout plans (2 free/month, no signup), ready-made programs, 868+ exercise guides — plus weight, measurements and progress photos in one free dashboard.",
+    "AI workout plans for subscribers (monthly quotas), ready-made programs, 868+ exercise guides — plus weight, measurements and progress photos in one free dashboard.",
   keywords: [
     "workout tracker",
     "workout tracking app",

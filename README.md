@@ -65,14 +65,17 @@ is **proprietary and confidential** (see [License](#-license)).
   quality eval, surfaced read-only at `/admin/evo-analytics`
 
 ### Memberships
-Four tiers — Free, Premium, Pro, Coaching — with a unified monthly pool of AI
-plan generations (only successful generations count; failed attempts and
-edits never burn quota), weekly plan-swap quotas, saved-results capacity, and
-export. Prices, quotas, and tier features are defined in a single source:
-`src/lib/memberships.ts` + the quota engine `src/lib/tier-limits.ts`
-(the aggregate resolver: `src/lib/membership-tier.ts`). Every paid tier
-carries a 7-day conditional refund (no-features-used, ledger-based —
-`src/lib/refund.ts`).
+Four tiers — Free, Premium, Pro, Coaching — with unified monthly AI quotas,
+a subscriber feature (the 2026-11-14 order): plan generations (only
+successful generations count; failed attempts and edits never burn quota)
+plus INDEPENDENT monthly swap quotas per type (meals and exercises each),
+renewed on the subscription cycle; saved-results capacity and export on
+top. Free keeps the full free product (tools, libraries, content, EVO chat
+10 messages/day) — generation starts with Premium. Prices, quotas, and tier
+features are defined in a single source: `src/lib/memberships.ts` + the
+quota engine `src/lib/tier-limits.ts` (the aggregate resolver:
+`src/lib/membership-tier.ts`). Every paid tier carries a 7-day conditional
+refund (no-features-used, ledger-based — `src/lib/refund.ts`).
 
 ### Notifications
 - **Member bell** (`src/components/NotificationBell.tsx`) — per-user rows in

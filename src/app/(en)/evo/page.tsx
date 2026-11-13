@@ -98,8 +98,8 @@ export default function EvoPage() {
       icon: Sparkles,
       titleAr: "متاح للجميع — مجانًا",
       titleEn: "Available to Everyone — Free",
-      descAr: "افتح EVO وابدأ فورًا: 10 رسائل يوميًا، ورصيد شهري موحد لتوليد خطط التغذية والتمارين (توليدان للمجاني، ويرتفع إلى 8 مع أعلى الباقات) — المشتركون يحصلون على رصيد أكبر ومزايا أعمق.",
-      descEn: "Open EVO and start instantly: 10 messages/day, plus one unified monthly pool for nutrition & workout plan generation (2 on Free, up to 8 on the top tiers) — subscribers get a bigger pool and deeper features.",
+      descAr: "افتح EVO وابدأ فورًا: 10 رسائل يوميًا مجانًا، والإجابة عن أسئلة التمارين والتغذية وحل الحسابات — وتوليد خطط التغذية والتمارين والتبديلات داخلها متاح لمشتركي بريميوم وأعلى بحصص شهرية تتجدد مع دورة الاشتراك.",
+      descEn: "Open EVO and start instantly: 10 messages a day free, exercise & nutrition answers and fitness math — while plan generation and in-plan swaps are available to Premium-and-above subscribers with monthly quotas renewing with the subscription cycle.",
       color: "#ff9500",
     },
   ];
@@ -483,8 +483,8 @@ export default function EvoPage() {
           </h2>
           <p className="mx-auto mt-3 max-w-lg text-center text-sm font-normal text-[var(--muted-foreground)]">
             {isAr
-              ? "EVO متاح للجميع: توليد خطط التغذية والتمارين يسحب من رصيد شهري موحد واحد، والمحادثة اليومية عدّاد منفصل عنه — والمشتركون يحصلون على رصيد أكبر ومزايا أعمق. وفي حفظ الخطط: بدون حساب تبقى خطتك على جهازك، وبحساب مجاني تُحفظ دائمًا في حسابك وتتزامن عبر أجهزتك، ومع الاشتراك تحصل على إدارة أوسع ومزايا إضافية حسب باقتك."
-              : "EVO is available to everyone: nutrition & workout plan generation draws from ONE unified monthly pool, daily chat is a separate counter — and subscribers get a bigger pool and deeper features. On saving plans: no account keeps your plan on this device, a free account saves it permanently in your account & syncs it across your devices, and a subscription adds broader management and extra benefits per plan."}
+              ? "EVO متاح للجميع: المحادثة اليومية عدّاد مستقل (10 رسائل مجانًا وبلا حدود للاشتراكات المدفوعة)، وتوليد خطط التغذية والتمارين والتبديلات داخلها ميزة لمشتركي بريميوم وأعلى بحصص شهرية تتجدد مع دورة الاشتراك. وفي حفظ الخطط: بدون حساب تبقى خطتك على جهازك، وبحساب مجاني تُحفظ دائمًا في حسابك وتتزامن عبر أجهزتك، ومع الاشتراك تحصل على إدارة أوسع ومزايا إضافية حسب باقتك."
+              : "EVO is available to everyone: daily chat is its own counter (10 messages free, unlimited on paid tiers), while nutrition & workout plan generation and in-plan swaps are a Premium-and-above subscriber feature with monthly quotas renewing with the subscription cycle. On saving plans: no account keeps your plan on this device, a free account saves it permanently in your account & syncs it across your devices, and a subscription adds broader management and extra benefits per plan."}
           </p>
 
           <div className="marble-card mt-8 overflow-hidden">
@@ -501,10 +501,10 @@ export default function EvoPage() {
             </div>
             {[
               {
-                featAr: "توليد الخطط بالذكاء الاصطناعي (تغذية + تمرين من رصيد واحد)",
-                featEn: "AI plan generation (nutrition + workout, one pool)",
-                freeAr: "✓ توليدان شهريًا — لكل زائر",
-                freeEn: "✓ 2/month — for every visitor",
+                featAr: "توليد الخطط بالذكاء الاصطناعي (تغذية + تمرين من حصة واحدة)",
+                featEn: "AI plan generation (nutrition + workout, one quota)",
+                freeAr: "✗ (ميزة مشتركين)",
+                freeEn: "✗ (subscriber feature)",
                 subAr: "✓ 4–8 شهريًا حسب باقتك",
                 subEn: "✓ 4–8/month by tier",
               },
@@ -545,8 +545,8 @@ export default function EvoPage() {
                 featEn: "Meal/exercise swaps in your plan",
                 freeAr: "✗ (نصائح عامة)",
                 freeEn: "✗ (general tips)",
-                subAr: "✓ 3–6 أسبوعيًا حسب باقتك",
-                subEn: "✓ 3–6/week by tier",
+                subAr: "✓ 13–26 شهريًا حسب باقتك",
+                subEn: "✓ 13–26/month by tier",
               },
               {
                 featAr: "رد مبني على قياساتك (الوزن والخصر)",

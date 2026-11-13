@@ -81,7 +81,7 @@ export default function WorkoutTrackerPage() {
     : [
         {
           title: "AI workout plans",
-          desc: "Generate a complete weekly split from your goal, level, days, and equipment — 2 free generations per month, no signup, and only successful generations count against your quota.",
+          desc: "Generate a complete weekly split from your goal, level, days, and equipment — a subscriber feature (Premium and above) with a monthly quota, and only successful generations count against it.",
           href: "/ai-workout-planner",
           cta: "Generate a plan",
         },

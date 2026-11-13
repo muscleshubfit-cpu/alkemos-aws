@@ -181,6 +181,12 @@ export function sanitizeJobPayload(type: AiJobType, raw: unknown): Json {
       return {
         clientId: str(p.clientId, 64),
         clientContext: pickClientContext(p.clientContext),
+        // AI-QUOTAS 2026-11-14: member self-service generation (dashboard
+        // Plans section) — the route sets this ONLY after verifying
+        // clientId === requester; the runner materializes the plan row
+        // approved + current (the member auto-save law of the demo
+        // routes) instead of a coach-pending draft.
+        selfService: p.selfService === true,
         // DRAFT-HYGIENE 2026-10-25: the superseded draft's id (regeneration
         // flow) — the runner deletes it AFTER the replacement draft exists
         // and ONLY while it is still an unapproved draft.

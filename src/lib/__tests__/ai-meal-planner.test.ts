@@ -191,8 +191,8 @@ describe("ai meal planner trial (§12.28)", () => {
     expect(page).toContain("useI18n");
     expect(page).toContain("meal-plan-demo");
     expect(page).toContain("ReviewInviteCard");
-    expect(page).toContain("توليدان شهريًا لكل زائر");
-    expect(page).toContain("2 generations per month");
+    expect(page).toContain("توليد الخطط بالذكاء الاصطناعي لمشتركي بريميوم وأعلى");
+    expect(page).toContain("AI plan generation for Premium subscribers and above");
     const en = readFileSync(LAYOUT_EN, "utf8");
     expect(en).toContain('canonical: "https://alkemos.com/ai-meal-planner"');
     expect(en).toContain("ar: \"https://alkemos.com/ar/ai-meal-planner\"");
@@ -311,11 +311,11 @@ describe("ai meal planner trial (§12.28)", () => {
     expect(header).toContain('hrefAr: "/ar/ai-meal-planner", hrefEn: "/ai-meal-planner"');
   });
 
-  it("HONEST COPY: the page states the unified-pool limits (2/month free, success-only, plans persist)", () => {
+  it("HONEST COPY: the page states the subscriber-only quota law (success-only, plans persist)", () => {
     const page = readFileSync(PAGE_FILE, "utf8");
-    expect(page).toContain("2 generations per month");
+    expect(page).toContain("AI plan generation for Premium subscribers and above");
     expect(page).toContain("Only successful generations are deducted from your quota");
-    expect(page).toContain("never disappears when the month's quota runs out");
+    expect(page).toContain("never disappears when the cycle's quota runs out");
     // Phase 183 persistence law: the page hydrates (localStorage +
     // account) and mirrors every generated plan — no more ephemeral.
     expect(page).toContain("loadGuestPlan");

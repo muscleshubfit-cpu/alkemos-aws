@@ -12,7 +12,8 @@
  *   - Alkemos has NO daily food diary / intake logging. Macro tracking
  *     on Alkemos lives at the PLANNING level: macro calculator targets
  *     → meal planner with live per-meal & per-day macro totals (8,162+
- *     foods, free, no signup) → AI meal-plan generation (2 free/month,
+ *     foods, free, no signup) → AI meal-plan generation (subscriber
+ *     feature — monthly quotas,
  *     no signup) → weight/measurement tracking to verify the results.
  *     The FAQ below states the no-diary scope explicitly.
  */
@@ -44,7 +45,7 @@ export const MACRO_TRACKER_FAQ_EN: Array<{ q: string; a: string }> = [
   },
   {
     q: "Is the macro tracker free?",
-    a: "Yes. The macro calculator, the food database, the meal planner's live macro totals, and 2 free AI meal-plan generations per month all work without paying. Paid tiers raise the AI generation pool and add deeper features.",
+    a: "Yes. The macro calculator, the food database, and the meal planner's live macro totals all work without paying. AI meal-plan generation is a subscriber feature (Premium and above) with monthly quotas, and paid tiers add deeper features.",
   },
 ];
 
