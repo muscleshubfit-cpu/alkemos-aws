@@ -970,7 +970,7 @@ DO ALL OF THE FOLLOWING:
    - BMI → [anchor](/tools/bmi-calculator)
    - water intake/hydration → [anchor](/tools/water-tracker)
    - meal plan/meal prep → [anchor](/meal-planner)
-9. Add at most 2 external links ONLY to well-known authoritative domains you are certain exist (${EDITORIAL_AUTHORITY_DOMAINS.join(", ")}) in [anchor](https://...) format — each link must directly support the sentence it is attached to; do NOT add links for linking's sake.
+9. EXTERNAL AUTHORITY LINKS (YMYL E-E-A-T floor — REQUIRED; the publish gate REJECTS an article with zero of them): include AT LEAST ONE and at most 2 external links, ONLY to well-known authoritative domains (${EDITORIAL_AUTHORITY_DOMAINS.join(", ")}) in [anchor](https://...) format — each link must directly support the sentence it is attached to; do NOT add links for linking's sake. When not certain a URL exists, use one of these stable VERIFIED pages: https://www.who.int/news-room/fact-sheets/detail/healthy-diet · https://www.who.int/news-room/fact-sheets/detail/physical-activity · https://www.ncbi.nlm.nih.gov/books/NBK537084/
 10. Keep all "## " section structure (including the FAQ section); output the COMPLETE final article. Do NOT append any closing call-to-action, marketing outro, or "join Alkemos" pitch paragraph — the website already renders its CTA cards after the article; the article itself must end with its content (the conclusion/summary).
 
 Return STRICT JSON only:

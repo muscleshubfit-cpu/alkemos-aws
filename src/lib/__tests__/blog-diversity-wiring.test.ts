@@ -15,6 +15,21 @@ function src(rel: string): string {
   return readFileSync(rel, "utf8");
 }
 
+describe("P4 review prompt ↔ P5 G4 gate alignment (batch 2026-11-13 finding)", () => {
+  const pipeline = src("src/lib/blog-pipeline.ts");
+
+  it("instruction 9 states the ≥1 authority-link FLOOR the P5 gate enforces", () => {
+    // Live evidence (run 43435605031): a stuck EN row failed P5's G4
+    // authority floor through 3+ repair cycles because instruction 9
+    // said "at most 2" (an upper bound — zero satisfies it) while the
+    // FACT GUARD scared the model off unverified URLs. The standing
+    // prompt must REQUIRE the link and name stable verified pages.
+    expect(pipeline).toContain("AT LEAST ONE and at most 2 external links");
+    expect(pipeline).toContain("stable VERIFIED pages");
+    expect(pipeline).toContain("who.int/news-room/fact-sheets/detail/healthy-diet");
+  });
+});
+
 describe("P0 research — the diversity engine rides the topic-discovery path", () => {
   const research = src("src/lib/blog-research.ts");
 
