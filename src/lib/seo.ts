@@ -228,26 +228,26 @@ const EVO_APPLICATION_TEXT: Record<
     name: "EVO — AI Coach",
     description:
       "EVO is an intelligent performance engine — not just a chatbot. It reads your health data and goal, builds personalized nutrition and workout plans, suggests smart meal and exercise swaps, and provides 24/7 fitness and nutrition consulting via AI.",
-    offerDescription: "Free for everyone",
+    offerDescription: "Free daily chat for everyone; plans and swaps with a subscription",
     featureList: [
       "Builds personalized nutrition and workout plans from your data",
       "Instant fitness and nutrition consulting 24/7",
-      "Smart meal and exercise swaps",
+      "Smart meal and exercise swaps (subscriber feature)",
       "Tracks your progress, weight, and measurements",
-      "Available to visitors and members",
+      "Free daily chat for visitors and members",
     ],
   },
   ar: {
     name: "EVO — المدرب الذكي",
     description:
       "EVO هو محرك أداء ذكي — ليس مجرد روبوت محادثة. يقرأ بياناتك الصحية وهدفك، يبني لك خطط تغذية وتمارين مخصصة، ويقترح تبديلات ذكية للوجبات والتمارين، ويوفر استشارات لياقة وتغذية على مدار الساعة عبر الذكاء الاصطناعي.",
-    offerDescription: "مجاني للجميع",
+    offerDescription: "محادثة يومية مجانية للجميع؛ والخطط والتبديلات مع الاشتراك",
     featureList: [
       "بناء خطط تغذية وتمارين مخصصة من بياناتك",
       "استشارات لياقة وتغذية فورية على مدار الساعة",
-      "تبديل الوجبات والتمارين بذكاء",
+      "تبديل الوجبات والتمارين بذكاء (ميزة مشتركين)",
       "تتبع تقدمك ووزنك وقياساتك",
-      "متاح للزوار والمشتركين",
+      "محادثة يومية مجانية للزوار والمشتركين",
     ],
   },
 };

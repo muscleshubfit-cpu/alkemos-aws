@@ -247,10 +247,10 @@ export default async function DietPlanCellPageEn({ params }: Params) {
             {SYSTEM_GUIDANCE_EN[sys.slug]}
           </p>
 
-          {/* ── Free customization CTA (§12.28: AI generator first, manual planner for exact grams) ── */}
+          {/* ── Customization CTA (§12.28: AI generator first, manual planner for exact grams) ── */}
           <div className="mt-10 rounded-3xl border border-[var(--edge)] bg-[var(--tint)] p-6">
             <h2 className="text-lg font-semibold tracking-tight text-[var(--text)]">
-              Make it your plan — free
+              Make it your plan
             </h2>
             <p className="mt-2 text-base font-normal leading-relaxed text-[var(--muted-foreground)]">
               The plan above is drawn for {lv} calories in general; your own
@@ -259,7 +259,8 @@ export default async function DietPlanCellPageEn({ params }: Params) {
                 plan your meals with AI
               </Link>{" "}
               — enter your number, system, and preferences, and a complete day
-              plan in grams is generated for you in seconds, free for everyone.
+              plan in grams is generated for you in seconds (AI generation is
+              a subscriber feature, Premium and above).
               For exact manual control, open the{" "}
               <Link href="/meal-planner" className="font-medium underline decoration-[var(--edge)] underline-offset-4 hover:text-[var(--text)]">
                 meal planner
@@ -361,8 +362,9 @@ export default async function DietPlanCellPageEn({ params }: Params) {
                 the totals build live per meal and per day, and you adjust
                 the grams until the day lands exactly on your target. For a
                 regenerated day from your number, system, and preferences,
-                the AI meal planner builds one in seconds, free for
-                everyone. And with a subscription, EVO can swap any single
+                the AI meal planner builds one in seconds — a subscriber
+                feature (Premium and above). And with a subscription, EVO can
+                swap any single
                 meal inside your plan for a macro-matched equivalent without
                 touching the rest of the day.
               </p>

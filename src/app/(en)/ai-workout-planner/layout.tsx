@@ -7,16 +7,15 @@ import { ToolSchemaScripts } from "@/components/ToolSchemaScripts";
  * with /ar/ai-workout-planner.
  */
 export const metadata: Metadata = {
-  title: "AI Workout Planner — Free Weekly Split Generator | Alkemos",
+  title: "AI Workout Planner — Weekly Split Generator | Alkemos",
   description:
     // SEO-P2-10 (2026-10-01, SEO audit item 10): 169 → 138 chars — the
-    // ≤160 SERP-truncation law now holds (free-trial CTA kept).
-    "Generate a balanced weekly workout split with AI: pick goal, level, days, and equipment, and get a validated split in seconds. Free trial.",
+    // ≤160 SERP-truncation law now holds (subscriber CTA kept).
+    "Generate a balanced weekly workout split with AI: pick goal, level, days, and equipment, get a validated split in seconds — for subscribers.",
   keywords: [
     "ai workout planner",
     "ai workout generator",
     "workout split generator",
-    "free ai workout plan",
     "weekly workout program",
     "مخطط التمارين بالذكاء الاصطناعي",
   ],
@@ -31,7 +30,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "AI Workout Planner | Alkemos",
     description:
-      "Generate a balanced weekly split in seconds — free trial.",
+      "Generate a balanced weekly split in seconds — AI generation for subscribers (Premium and above).",
     type: "website",
     url: "https://alkemos.com/ai-workout-planner",
     // P3-10 (Phase 217, deep-audit م9): og:locale symmetry — the AR twin

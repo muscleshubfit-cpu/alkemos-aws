@@ -630,8 +630,8 @@ export default function EvoPage() {
                 href: isAr ? "/ar/ai-meal-planner" : "/ai-meal-planner",
                 titleAr: "مخطط الوجبات بالذكاء الاصطناعي",
                 titleEn: "AI Meal Planner",
-                descAr: "ولّد خطة تغذية كاملة — مجانًا.",
-                descEn: "Generate a full nutrition plan — free to try.",
+                descAr: "ولّد خطة تغذية كاملة — لمشتركي بريميوم وأعلى.",
+                descEn: "Generate a full nutrition plan — for subscribers (Premium and above).",
               },
               {
                 href: isAr ? "/ar/ai-workout-planner" : "/ai-workout-planner",

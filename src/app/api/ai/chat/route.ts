@@ -87,11 +87,12 @@ import type { Database, Json } from "@/lib/supabase/types";
  *   5. Subscriber mode — full context (plans, progress, questionnaires)
  *
  * 2026-09-13 PHASE 183 «البوول الموحد» (spec "Alkemos — Membership &
- * Plan Changes"):
- *   - Plan-creation intents are NO LONGER subscriber-gated: guests,
- *     free, and paid tiers can all generate plans — gated ONLY by the
- *     UNIFIED monthly pool (ai_plan_usage, migration 0085): guest/free
- *     2 · premium 4 · pro 8 · coaching 8, nutrition + workout COMBINED.
+ * Plan Changes") → SUPERSEDED 2026-11-14 (AI-QUOTAS corrective order —
+ * subscriber-only generation, see the 1.6 block below for the live law):
+ *   - Plan-creation intents are subscriber-gated again: guests and free
+ *     members get the subscribe CTA (free quota = 0) — paid tiers draw
+ *     from the UNIFIED monthly pool (ai_plan_usage, migration 0085):
+ *     premium 4 · pro 8 · coaching 8, nutrition + workout COMBINED.
  *   - SUCCESS-ONLY accounting: the pool unit is burned AFTER a real
  *     model answer reached the user (statSuccess in the after() block)
  *     — the old record-before-dispatch plan_* insert (which burned
@@ -305,7 +306,7 @@ export async function POST(request: NextRequest) {
     if (intent.isSwapRequest && !isPaidTier) {
       return NextResponse.json({
         response:
-          "🔒 Swaps are a subscriber feature — meal and exercise swaps need an active Premium/Pro/Coaching subscription (each type has its own monthly quota).\n\nI can still answer exercise and food questions and run fitness math for you.",
+          "🔒 Swaps are a subscriber feature — meal and exercise swaps need an active Premium/Pro/Coaching subscription (one unified monthly swap quota: meal and exercise combined).\n\nI can still answer exercise and food questions and run fitness math for you.",
         links: [
           {
             label: "View membership plans →",

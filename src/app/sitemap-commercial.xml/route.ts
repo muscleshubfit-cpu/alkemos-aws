@@ -66,10 +66,10 @@ export async function GET() {
     // ---- Planners & trackers (trial gateways + search-intent landings)
     { loc: `${base}/meal-planner`, changefreq: "monthly", priority: 0.8, alternates: { en: `${base}/meal-planner`, ar: `${base}/ar/meal-planner` } },
     { loc: `${base}/ar/meal-planner`, changefreq: "monthly", priority: 0.8, alternates: { en: `${base}/meal-planner`, ar: `${base}/ar/meal-planner` } },
-    // §12.28: the AI meal-planner trial pair (free generation, no signup).
+    // §12.28: the AI meal-planner pair (generation for subscribers, Premium and above).
     { loc: `${base}/ai-meal-planner`, changefreq: "monthly", priority: 0.8, alternates: { en: `${base}/ai-meal-planner`, ar: `${base}/ar/ai-meal-planner` } },
     { loc: `${base}/ar/ai-meal-planner`, changefreq: "monthly", priority: 0.8, alternates: { en: `${base}/ai-meal-planner`, ar: `${base}/ar/ai-meal-planner` } },
-    // §12.32: the AI workout-planner trial pair (free generation, no signup).
+    // §12.32: the AI workout-planner pair (generation for subscribers, Premium and above).
     { loc: `${base}/ai-workout-planner`, changefreq: "monthly", priority: 0.8, alternates: { en: `${base}/ai-workout-planner`, ar: `${base}/ar/ai-workout-planner` } },
     { loc: `${base}/ar/ai-workout-planner`, changefreq: "monthly", priority: 0.8, alternates: { en: `${base}/ai-workout-planner`, ar: `${base}/ar/ai-workout-planner` } },
     // P0 SEO audit (2026-09-30, finding #1): the two search-intent landing

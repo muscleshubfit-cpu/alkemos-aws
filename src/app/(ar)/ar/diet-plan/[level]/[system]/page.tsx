@@ -242,10 +242,10 @@ export default async function DietPlanCellPage({ params }: Params) {
             {SYSTEM_GUIDANCE[sys.slug]}
           </p>
 
-          {/* ── Free customization CTA (the embedded tool path — §12.28: AI generator first, manual planner for exact grams) ── */}
+          {/* ── Customization CTA (the embedded tool path — §12.28: AI generator first, manual planner for exact grams) ── */}
           <div className="mt-10 rounded-3xl border border-[var(--edge)] bg-[var(--tint)] p-6">
             <h2 className="text-lg font-semibold tracking-tight text-[var(--text)]">
-              اجعلها خطتك أنت — مجانًا
+              اجعلها خطتك أنت
             </h2>
             <p className="mt-2 text-base font-normal leading-relaxed text-[var(--muted-foreground)]">
               الخطة أعلاه مرسومة على مقاس {lv} سعرة عمومًا؛ وأرقامك أنت تستحق
@@ -254,7 +254,7 @@ export default async function DietPlanCellPage({ params }: Params) {
                 خطّط وجباتك بالذكاء الاصطناعي
               </Link>{" "}
               — أدخل رقمك ونظامك وملاحظاتك فتُولَّد لك خطة يوم كاملة بالغرامات
-              في ثوانٍ، مجانًا للجميع. وللتحكم اليدوي الدقيق افتح{" "}
+              في ثوانٍ (التوليد بالذكاء الاصطناعي ميزة مشتركي بريميوم وأعلى). وللتحكم اليدوي الدقيق افتح{" "}
               <Link href="/ar/meal-planner" className="font-medium underline decoration-[var(--edge)] underline-offset-4 hover:text-[var(--text)]">
                 مخطط الوجبات
               </Link>{" "}
@@ -345,7 +345,8 @@ export default async function DietPlanCellPage({ params }: Params) {
                 أصناف هذه الخطة بغراماتك أنت — الإجماليات تُبنى حية لكل وجبة
                 ولكل يوم، وتعدّل الغرامات حتى يهبط يومك على هدفك بالضبط.
                 ولو أردت يومًا مولّدًا من رقمك ونظامك وملاحظاتك فمخطط الوجبات
-                بالذكاء الاصطناعي يبنيه في ثوانٍ مجانًا للجميع. ومع الاشتراك
+                بالذكاء الاصطناعي يبنيه في ثوانٍ — وهو ميزة مشتركي بريميوم
+                وأعلى. ومع الاشتراك
                 يستطيع EVO استبدال أي وجبة منفردة داخل خطتك بمكافئ مطابق
                 للماكروز دون المساس ببقية اليوم.
               </p>

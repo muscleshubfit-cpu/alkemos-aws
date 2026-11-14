@@ -3,21 +3,21 @@ import { ToolSchemaScripts } from "@/components/ToolSchemaScripts";
 
 /**
  * /ai-meal-planner layout — §12.28 (owner directive «اين صفحة تخطيط
- * الوجبات بالذكاء الاصطناعي؟ مطلوب إنشاؤها مع سماح بالتجربة للجميع
- * بدون تعارض مع الاشتراكات»). EN side of the full hreflang pair with
+ * الوجبات بالذكاء الاصطناعي؟ مطلوب إنشاؤها» — generation for
+ * subscribers since the 2026-11-14 AI-QUOTAS order, no conflict with
+ * subscriptions). EN side of the full hreflang pair with
  * /ar/ai-meal-planner.
  */
 export const metadata: Metadata = {
-  title: "AI Meal Planner — Free Day Plan Generator | Alkemos",
+  title: "AI Meal Planner — Day Plan Generator | Alkemos",
   // PHASE 189 (SEO-GEO-10, deep-audit P1-3): was 189 chars — trimmed to
   // the 158 EN budget, same funnel message, sentence ends cleanly.
   description:
-    "Generate a daily meal plan in grams and calories with AI: pick your calorie target and diet system, add preferences, get a validated plan — free to try.",
+    "Generate a daily meal plan in grams and calories with AI: pick your calorie target, diet system, and preferences, get a validated plan — for subscribers.",
   keywords: [
     "ai meal planner",
     "ai meal plan generator",
     "meal plan generator",
-    "free ai meal planner",
     "personalized meal plan",
     "مخطط وجبات بالذكاء الاصطناعي",
   ],
@@ -32,7 +32,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "AI Meal Planner | Alkemos",
     description:
-      "Generate a complete day plan in grams and calories — free trial.",
+      "Generate a complete day plan in grams and calories — AI generation for subscribers (Premium and above).",
     type: "website",
     url: "https://alkemos.com/ai-meal-planner",
     // P3-10 (Phase 217, deep-audit م9): og:locale symmetry — the AR twin

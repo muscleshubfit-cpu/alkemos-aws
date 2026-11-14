@@ -117,8 +117,9 @@ export default function DietPlanHubPageEn() {
           <p className="mt-3 text-base font-normal leading-relaxed text-[var(--muted-foreground)]">
             Every plan page ends with the customization step: plan your meals
             with AI — it generates a complete day from your number, system,
-            and preferences, free without any account — or open the manual
-            meal planner, enter the same items at your own grams, and watch
+            and preferences (AI generation is a subscriber feature, Premium
+            and above) — or open the manual meal planner, enter the same
+            items at your own grams, and watch
             the totals build live for each meal and for the day, then adjust
             the grams until your day lands exactly on your target. The ready
             plan opens the door; customization makes it your home.

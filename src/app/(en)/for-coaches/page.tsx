@@ -259,12 +259,12 @@ export default function ForCoachesPage() {
             </ul>
             <div className="marble-card mt-6 p-6">
               <h3 className="text-sm font-bold">
-                {isAr ? "خطط الذكاء الاصطناعي — رصيد شهري موحد" : "AI plans — one unified monthly balance"}
+                {isAr ? "خطط الذكاء الاصطناعي — حصة شهرية موحدة" : "AI plans — one unified monthly quota"}
               </h3>
               <p className="mt-2 text-sm leading-relaxed text-[var(--muted-foreground)]">
                 {isAr
-                  ? "توليد الخطط لعميلك يسحب من حصته الموحدة حسب باقته — حصة واحدة شهرية تجمع التغذية والتمارين معًا: بريميوم 4 توليدات شهريًا · برو 8 · التدريب الأونلاين 8 (ويورّث كل مزايا برو). وهي الحصة نفسها التي يستخدمها عميلك من EVO وصفحات المخططات؛ تتجدد مع دورة اشتراكه، ولا يُحتسب إلا التوليد الناجح — الفاشل لا يحرق حصة. أما التعديل بيدك ورفع الخطط اليدوية وإعادة توليد أي وجبة أو صنف أو يوم تدريب أو تمرين بالذكاء الاصطناعي — فكلها غير محدودة تمامًا."
-                  : "Generating a client's plans draws from their own tier's unified monthly quota — ONE quota for nutrition AND workouts combined: Premium 4 generations/month · Pro 8 · Coaching 8 (inherits every Pro benefit). It is the same quota they spend through EVO and the planner pages; it renews with their subscription cycle, and only successful generations count — failed ones never burn quota. Hand-editing, manual uploads, and AI-regenerating any meal, item, workout day, or exercise are all unlimited."}
+                  ? "توليد الخطط لعميلك يسحب من حصته الموحدة حسب باقته — حصة واحدة شهرية تجمع التغذية والتمارين معًا: بريميوم 4 توليدات شهريًا · برو 8 · التدريب الأونلاين 8 (ويورّث كل مزايا برو). وهي الحصة نفسها التي يستخدمها عميلك من EVO وصفحات المخططات؛ تتجدد مع دورة اشتراكه، ولا يُحتسب إلا التوليد الناجح — الفاشل لا يحرق حصة. وتبديلات الوجبات والتمارين تسحب من حصة التبديلات الشهرية الموحدة للعميل (بريميوم 8 · برو والتدريب الأونلاين 16). أما التعديل بيدك ورفع الخطط اليدوية وأدوات التحرير التحريرية (إعادة توليد صنف غذائي أو يوم كامل) — فكلها غير محدودة تمامًا ولا تخصم من حصة العميل."
+                  : "Generating a client's plans draws from their own tier's unified monthly quota — ONE quota for nutrition AND workouts combined: Premium 4 generations/month · Pro 8 · Coaching 8 (inherits every Pro benefit). It is the same quota they spend through EVO and the planner pages; it renews with their subscription cycle, and only successful generations count — failed ones never burn quota. Meal and exercise swaps draw from the client's ONE unified monthly swap quota (Premium 8 · Pro and Coaching 16). Hand-editing, manual uploads, and the staff editorial regeneration tools (food item / whole day) are all unlimited and never burn the client's quota."}
               </p>
             </div>
           </div>

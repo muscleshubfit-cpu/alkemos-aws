@@ -52,7 +52,7 @@ export const STATIC_PAGE_DEFAULTS: Record<
         {
           heading: "ماذا تجد على المنصة؟",
           paragraphs: [
-            "يمكنك البدء مجانًا فورًا: احسب سعراتك وماكروزك، أو تصفّح التمارين والبرامج، أو ولّد خطة تغذية أو تمرين بالذكاء الاصطناعي — والحساب المجاني يحفظ كل ما تولّده ويزامنه عبر أجهزتك.",
+            "يمكنك البدء مجانًا فورًا: احسب سعراتك وماكروزك، أو تصفّح التمارين والبرامج، أو ابنِ يومك في مخطط الوجبات اليدوي — والتوليد بالذكاء الاصطناعي ميزة مشتركي بريميوم وأعلى. والحساب المجاني يحفظ كل ما تبنيه ويزامنه عبر أجهزتك.",
           ],
           links: [
             { label: "الأدوات المجانية", href: "/ar/tools" },
@@ -107,7 +107,7 @@ export const STATIC_PAGE_DEFAULTS: Record<
         {
           heading: "What You'll Find",
           paragraphs: [
-            "You can start free, instantly: calculate your calories and macros, browse exercises and programs, or generate a nutrition or workout plan with AI — and a free account saves and syncs everything you generate.",
+            "You can start free, instantly: calculate your calories and macros, browse exercises and programs, or build your day in the manual meal planner — AI plan generation is a subscriber feature (Premium and above). A free account saves and syncs everything you build.",
           ],
           links: [
             { label: "Free tools", href: "/tools" },
@@ -140,7 +140,7 @@ export const STATIC_PAGE_DEFAULTS: Record<
         {
           heading: "Memberships & Pricing",
           paragraphs: [
-            "The model is simple: the Free tier is free forever and includes the full product with usage limits (EVO chat 10 messages/day, 2 plan generations per month). Subscriptions widen the limits: Premium at $14.99/mo or $119/yr, Pro at $29.99/mo or $239/yr, and Coaching at $39.99/mo or $359/yr, which adds a personal coach with weekly check-ins. Every price and limit is published in full on the memberships page.",
+            "The model is simple: the Free tier is free forever and includes the full product with usage limits (EVO chat 10 messages/day — every library, tool, and calculator stays free). AI plan generation and swaps are subscriber features: Premium at $14.99/mo or $119/yr, Pro at $29.99/mo or $239/yr, and Coaching at $39.99/mo or $359/yr, which adds a personal coach with weekly check-ins. Every price and limit is published in full on the memberships page.",
           ],
           links: [
             { label: "Memberships & pricing", href: "/memberships" },
@@ -308,8 +308,8 @@ export const STATIC_PAGE_DEFAULTS: Record<
           heading: "تبديلات الوجبات والتمارين",
           paragraphs: [
             "التبديلات تعني استبدال وجبات أو تمارين فردية داخل خطتك دون إعادة إنشاء الخطة كاملة.",
-            "حد التبديلات الأسبوعي يعتمد على باقتك: مجاني: لا توجد. بريميوم: 3 تبديلات للوجبات أو التمارين أسبوعيًا. برو: 6 أسبوعيًا. التدريب الأونلاين: 6 أسبوعيًا.",
-            "التبديلات تتجدد كل يوم اثنين.",
+            "حصة التبديلات شهرية موحدة واحدة للوجبات والتمارين معًا وتعتمد على باقتك: مجاني: لا توجد. بريميوم: 8 تبديلات شهريًا. برو: 16 شهريًا. التدريب الأونلاين: 16 شهريًا.",
+            "تتجدد حصة التبديلات مع دورة اشتراكك، ولا يُحتسب إلا التبديل الناجح.",
           ],
         },
         {
@@ -365,8 +365,8 @@ export const STATIC_PAGE_DEFAULTS: Record<
           heading: "Meal & Exercise Swaps",
           paragraphs: [
             "Swaps replace individual meals or exercises within your plan — they never regenerate the whole plan.",
-            "Weekly swap limits depend on your plan: Free: none. Premium: 3 meal/exercise swaps per week. Pro: 6 per week. Coaching: 6 per week.",
-            "Swaps reset every Monday.",
+            "The swap quota is ONE unified monthly quota (meal and exercise swaps combined) by plan: Free: none. Premium: 8 swaps per month. Pro: 16 per month. Coaching: 16 per month.",
+            "Swaps renew with your subscription cycle, and only successful swaps are counted.",
           ],
         },
         {

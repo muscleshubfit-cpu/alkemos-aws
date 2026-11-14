@@ -97,7 +97,7 @@ export default function MembershipsLayout({
       {
         "@type": "Offer",
         name: "Free",
-        description: "The full product, free forever: libraries, 8 tools, EVO chat (10 messages/day), and 2 AI plan generations per month.",
+        description: "The full product, free forever: libraries, 8 tools, manual meal planner, and EVO chat (10 messages/day). AI plan generation and swaps are subscriber features.",
         price: "0",
         priceCurrency: "USD",
         url: "https://alkemos.com/memberships",
@@ -106,7 +106,7 @@ export default function MembershipsLayout({
         "@type": "Offer",
         name: "Premium",
         description:
-          "Manage your plans: unlimited EVO chat, 4 AI plan generations/month, 3 swaps/week, export and sync. $14.99/month or $119/year.",
+          "Manage your plans: unlimited EVO chat, 4 AI plan generations/month, 8 swaps/month (one unified quota), export and sync. $14.99/month or $119/year.",
         price: "14.99",
         priceCurrency: "USD",
         url: "https://alkemos.com/memberships",
@@ -115,7 +115,7 @@ export default function MembershipsLayout({
         "@type": "Offer",
         name: "Pro",
         description:
-          "Adapt & optimize: 8 AI plan generations/month, 6 meal/exercise swaps per week, no ads. $29.99/month or $239/year.",
+          "Adapt & optimize: 8 AI plan generations/month, 16 swaps/month (one unified quota), no ads. $29.99/month or $239/year.",
         price: "29.99",
         priceCurrency: "USD",
         url: "https://alkemos.com/memberships",

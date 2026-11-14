@@ -7,9 +7,9 @@ import { ToolSchemaScripts } from "@/components/ToolSchemaScripts";
  * appends exactly one "— Alkemos" (anti-double-brand law, eadb3e7).
  */
 export const metadata: Metadata = {
-  title: "مخطط الوجبات بالذكاء الاصطناعي — ولّد خطة يومك مجانًا",
+  title: "مخطط الوجبات بالذكاء الاصطناعي — ولّد خطة يومك",
   description:
-    "ولّد خطة يوم كاملة بالغرامات والسعرات بالذكاء الاصطناعي: اختر هدفك من السعرات والنظام الغذائي وأضف ملاحظاتك، واحصل على خطة يوم مُتحققة في ثوانٍ — تجربة مجانية.",
+    "ولّد خطة يوم كاملة بالغرامات والسعرات بالذكاء الاصطناعي: اختر هدفك ونظامك وأضف ملاحظاتك، واحصل على خطة مُتحققة في ثوانٍ — التوليد لمشتركي بريميوم وأعلى.",
   keywords: [
     "مخطط وجبات بالذكاء الاصطناعي",
     "مولد خطط الوجبات",
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: "مخطط الوجبات بالذكاء الاصطناعي | Alkemos",
-    description: "ولّد خطة يوم كاملة بالغرامات والسعرات في ثوانٍ — تجربة مجانية.",
+    description: "ولّد خطة يوم كاملة بالغرامات والسعرات في ثوانٍ — التوليد لمشتركي بريميوم وأعلى.",
     type: "website",
     locale: "ar_EG",
     url: "https://alkemos.com/ar/ai-meal-planner",

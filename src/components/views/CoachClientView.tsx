@@ -2790,7 +2790,7 @@ function PlanViewerModal({
  الهدف الجديد ({targetRegenConfirm} سعرة) يتطلب إعادة توليد الخطة — تغيير الرقم وحده لا يجعل الوجبات تطابقه.
  </p>
  <p className="mt-1 leading-relaxed text-muted-foreground">
- سيُرسل طلب توليد جديد بالهدف الجديد مع الحفاظ الكامل على بيانات العميل وقيوده (الحساسيات، النظام الغذائي{planDietType ? ` (${DIET_TYPE_LABELS_AR[planDietType]})` : ""}، الهدف، القياسات). تصل الخطة الجديدة كمسودة خلال دقائق — {plan.status === "draft" ? "وتحل محل هذه المسودة عند وصولها" : "والخطة الحالية تبقى معتمدة كما هي حتى تعتمد الجديدة"}. هذا يخصم وحدة من رصيد توليد الخطط الشهري للعميل.
+ سيُرسل طلب توليد جديد بالهدف الجديد مع الحفاظ الكامل على بيانات العميل وقيوده (الحساسيات، النظام الغذائي{planDietType ? ` (${DIET_TYPE_LABELS_AR[planDietType]})` : ""}، الهدف، القياسات). تصل الخطة الجديدة كمسودة خلال دقائق — {plan.status === "draft" ? "وتحل محل هذه المسودة عند وصولها" : "والخطة الحالية تبقى معتمدة كما هي حتى تعتمد الجديدة"}. هذا يخصم وحدة من حصة توليد الخطط الشهرية للعميل.
  </p>
  <div className="mt-2 flex flex-wrap items-center gap-2">
  <Button size="sm" variant="ghost" className="h-7" onClick={() => setTargetRegenConfirm(null)}>
@@ -3891,8 +3891,8 @@ function CoachAIPlanGenerator({
  <div className="mt-0.5 text-[11px] font-medium text-muted-foreground">
  <span>
  {isAr
- ? `رصيد خطط العميل الموحد (توليدك + إيفو، تغذية وتمارين): ${pool.used}/${pool.limit} شهريًا`
- : `Client's unified plan balance (yours + EVO, nutrition + workout): ${pool.used}/${pool.limit} monthly`}
+ ? `حصة خطط العميل الموحدة (توليدك + إيفو، تغذية وتمارين): ${pool.used}/${pool.limit} شهريًا`
+ : `Client's unified plan quota (yours + EVO, nutrition + workout): ${pool.used}/${pool.limit} monthly`}
  </span>
  </div>
  );
@@ -3905,8 +3905,8 @@ function CoachAIPlanGenerator({
  <div className="mt-0.5 text-[11px] font-medium text-muted-foreground">
  <span>
  {isAr
- ? `رصيد ${kindAr} العميل (توليدك + إيفو): ${cb.used}/${cb.limit} شهريًا`
- : `Client's ${kindEn} balance (your + EVO generations): ${cb.used}/${cb.limit} monthly`}
+ ? `حصة ${kindAr} العميل (توليدك + إيفو): ${cb.used}/${cb.limit} شهريًا`
+ : `Client's ${kindEn} quota (your + EVO generations): ${cb.used}/${cb.limit} monthly`}
  </span>
  </div>
  );
@@ -4063,8 +4063,8 @@ function CoachAIPlanGenerator({
  {(atCap("nutrition") || atCap("workout")) && (
  <p className="mt-3 rounded-xl border border-amber-500/30 bg-amber-500/5 px-3 py-2 text-xs font-medium text-amber-600">
  {isAr
- ? "بلغت حدود التوليد بالذكاء الاصطناعي لهذا العميل — التوليد منك أو من إيفو يُخصم من رصيده الشهري نفسه. تعديل الخطط والرفع اليدوي متاحان دون حدود."
- : "AI generation caps reached for this client — your generations and the member's EVO ones draw from the same monthly balance. Editing plans and manual uploads stay unlimited."}
+ ? "بلغت حدود التوليد بالذكاء الاصطناعي لهذا العميل — التوليد منك أو من إيفو يُخصم من حصته الشهرية نفسها. تعديل الخطط والرفع اليدوي متاحان دون حدود."
+ : "AI generation caps reached for this client — your generations and the member's EVO ones draw from the same monthly quota. Editing plans and manual uploads stay unlimited."}
  </p>
  )}
 

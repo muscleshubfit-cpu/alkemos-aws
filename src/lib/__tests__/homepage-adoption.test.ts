@@ -325,9 +325,9 @@ describe("HOME-PLATFORM-284 — the platform homepage canaries", () => {
     expect(readBoth()).toContain("AI plan generation & swaps are subscriber features (Premium and above)");
     expect(readBoth()).toContain("توليد بالذكاء الاصطناعي");
     expect(readBoth()).toContain("AI GENERATION");
-    const allowanceAt = src.indexOf('aria-label={isAr ? "رصيد الخطط المجاني" : "The free plan allowance"}');
-    expect(allowanceAt, "the free-allowance band is missing").toBeGreaterThan(-1);
-    expect(allowanceAt, "the allowance band must sit BEFORE the #plan section").toBeLessThan(src.indexOf('id="plan"'));
+    const allowanceAt = src.indexOf('aria-label={isAr ? "سياسة حصص الخطط والتبديلات" : "The plan and swap quota policy"}');
+    expect(allowanceAt, "the quota-policy band is missing").toBeGreaterThan(-1);
+    expect(allowanceAt, "the policy band must sit BEFORE the #plan section").toBeLessThan(src.indexOf('id="plan"'));
     // SEO-P1-6: EvoCard moved verbatim to the islands file — its pins
     // (the chat-surface law + the honest quota + the locale-aware EVO
     // link) follow the text; the /chat ban now covers every homepage

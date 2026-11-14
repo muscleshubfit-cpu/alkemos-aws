@@ -23,8 +23,8 @@ import { WORKOUT_TRACKER_FAQ_AR, WORKOUT_TRACKER_FAQ_EN } from "./content";
  *
  * HONESTY LAW (capability inventory 2026-09-30): every claim below maps
  * to a shipped feature —
- *   - AI workout plans: 2 successful free generations/month, no signup
- *     (api/ai/workout-plan-demo, unified monthly pool).
+ *   - AI workout plans: subscriber feature (Premium and above) with a
+ *     unified monthly quota (api/ai/workout-plan-demo, success-only).
  *   - Ready-made programs + 868+ exercise library with instructions.
  *   - Progress tracking (ProgressView): weight + waist/chest/hips/arm/
  *     neck, energy & adherence self-scores 1–10, notes, progress photos,
@@ -43,7 +43,7 @@ export default function WorkoutTrackerPage() {
     ? [
         {
           title: "خطة تمارين بالذكاء الاصطناعي",
-          desc: "ولّد نظامًا أسبوعيًا كاملًا من هدفك ومستواك وأيامك ومعداتك — توليدان مجانًا شهريًا بلا تسجيل، ولا يُحسب رصيدك إلا على التوليد الناجح.",
+          desc: "ولّد نظامًا أسبوعيًا كاملًا من هدفك ومستواك وأيامك ومعداتك — التوليد ميزة مشتركي بريميوم وأعلى بحصة شهرية، ولا تُخصم حصتك إلا عند التوليد الناجح.",
           href: "/ar/ai-workout-planner",
           cta: "ولّد خطة الآن",
         },
@@ -183,7 +183,7 @@ export default function WorkoutTrackerPage() {
               href={isAr ? "/ar/ai-workout-planner" : "/ai-workout-planner"}
               className="btn-chrome px-6 py-2.5 text-sm"
             >
-              {isAr ? "ولّد خطة مجانية" : "Generate a free plan"}
+              {isAr ? "ولّد خطتك بالذكاء الاصطناعي" : "Generate your plan with AI"}
             </Link>
             <Link
               href="/auth"

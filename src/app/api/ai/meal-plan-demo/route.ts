@@ -194,7 +194,7 @@ export async function POST(request: NextRequest) {
         {
           error:
             req.language === "ar"
-              ? "خرج التوليد عن الشكل المطلوب — جرّب مرة أخرى (الزرر فوق). لا يُخصم من رصيدك إلا التوليد الناجح."
+              ? "خرج التوليد عن الشكل المطلوب — جرّب مرة أخرى (الزرر فوق). لا تُخصم حصتك إلا عند التوليد الناجح."
               : "The generated plan missed the required shape — try again (button above). Only successful generations are deducted from your quota.",
           detail: plan.error,
           quota: { used: quota.used, limit: quota.limit, remaining: quota.remaining },

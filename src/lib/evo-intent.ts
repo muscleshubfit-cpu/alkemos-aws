@@ -5,13 +5,15 @@
  * The old route had ONE flat `subscriberOnlyPatterns` list, which could
  * only answer "is this a subscriber feature?" — it could NOT distinguish
  * PLAN CREATION (unified monthly pool — Phase 183 «البوول الموحد»)
- * from SWAP REQUESTS (weekly quota, enforced server-side by /api/ai/jobs).
+ * from SWAP REQUESTS (unified monthly swap quota, enforced server-side
+ * by /api/ai/jobs — the 2026-11-14 completion order).
  * Result: the advertised "3/6 plans per month" quotas were never enforced.
  *
  * This module classifies a message into:
  *   - isPlanCreation  → counts against the MONTHLY plan quota (per domain)
  *   - isSwapRequest   → conversational advice in chat; the structured swap
- *                       action goes through /api/ai/jobs (weekly quota)
+ *                       action goes through /api/ai/jobs (unified monthly
+ *                       swap quota)
  *   - isSubscriberOnly→ plan creation OR swap (the subscriber gate — SAME
  *                       coverage as the old flat list, no regression)
  *   - planDomain      → "nutrition" | "workout" (nutrition when food-ish
@@ -78,7 +80,7 @@ const NUTRITION_HINT_RE =
 export type EvoIntent = {
   /** Message asks EVO to CREATE a meal/workout plan → monthly quota. */
   isPlanCreation: boolean;
-  /** Message asks for a swap/regeneration → subscriber-only, weekly flow. */
+  /** Message asks for a swap/regeneration → subscriber-only, unified monthly swap quota. */
   isSwapRequest: boolean;
   /** The subscriber gate (plan creation OR swap) — same as the old flat list. */
   isSubscriberOnly: boolean;

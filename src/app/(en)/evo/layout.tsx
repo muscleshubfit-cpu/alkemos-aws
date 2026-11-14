@@ -12,7 +12,7 @@ export const metadata: Metadata = {
     // truncates at ~155-160. Front-loaded the definition + core actions.
     // SEO-P2-10 (2026-10-01, SEO audit item 10): 189 → 159 chars — the
     // ≤160 SERP-truncation law now holds exactly (proof kept: free-for-all).
-    "EVO, your intelligent performance engine: builds personalized nutrition and workout plans from your data and goal, and suggests smart swaps. Free for everyone.",
+    "EVO, your intelligent performance engine: personalized nutrition and workout plans plus smart swaps — chat is free daily; plans and swaps with a subscription.",
   keywords: [
     "EVO AI coach",
     "AI fitness coach",
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "EVO — AI Fitness Coach | Alkemos",
     description:
-      "An intelligent engine that builds personalized plans from your data and suggests smart swaps. Free for everyone.",
+      "An intelligent engine that builds personalized plans and suggests smart swaps — chat free daily; plans and swaps with a subscription.",
     type: "website",
     locale: "en_US",
     url: "https://alkemos.com/evo",

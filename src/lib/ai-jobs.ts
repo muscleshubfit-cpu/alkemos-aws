@@ -7,8 +7,11 @@
  *
  *   plan_nutrition       coach asks a full nutrition plan  (+2 alts/meal)
  *   plan_workout         coach asks a weekly workout program (4-8 weeks framing)
- *   meal_regenerate      swap one meal (tier-limited weekly, like old C16)
- *   exercise_regenerate  swap one exercise (library-filtered, injury-safe)
+ *   meal_regenerate      swap one meal (unified monthly swap quota —
+ *                        the 2026-11-14 completion order retired the
+ *                        old weekly C16 tier split)
+ *   exercise_regenerate  swap one exercise (library-filtered, injury-safe;
+ *                        same unified monthly swap quota)
  *   food_item_regenerate swap ONE food item (±15% kcal, same role) — staff
  *                        editing tool (Phase 79: same features as the admin
  *                        external-plans console, owner «الكوتشينج يستفيدوا

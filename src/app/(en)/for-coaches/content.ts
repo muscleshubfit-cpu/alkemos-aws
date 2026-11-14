@@ -29,7 +29,7 @@ export const COACH_FAQ_AR: Array<{ q: string; a: string }> = [
   },
   {
     q: "ما حدود الذكاء الاصطناعي؟",
-    a: "توليد الخطط لعميلك يسحب من رصيده الموحد حسب باقته — رصيد واحد شهري يجمع خطط التغذية والتمارين معًا: بريميوم 4 توليدات شهريًا، وبرو 8، والتدريب الأونلاين 8 (ويورّث كل مزايا برو). وهو الرصيد نفسه الذي يستخدمه عميلك بنفسه من EVO وصفحات المخططات؛ يتجدد الرصيد في أول كل شهر، ولا يُحتسب إلا التوليد الناجح — الفاشل لا يحرق حصة. أما التعديل اليدوي ورفع الخطط اليدوية وإعادة توليد أي وجبة أو صنف غذائي أو يوم تدريب أو تمرين بالذكاء الاصطناعي — فكلها غير محدودة تمامًا.",
+    a: "توليد الخطط لعميلك يسحب من حصته الموحدة حسب باقته — حصة شهرية واحدة تجمع خطط التغذية والتمارين معًا: بريميوم 4 توليدات شهريًا، وبرو 8، والتدريب الأونلاين 8 (ويورّث كل مزايا برو). وهي الحصة نفسها التي يستخدمها عميلك بنفسه من EVO وصفحات المخططات؛ تتجدد مع دورة اشتراكه، ولا يُحتسب إلا التوليد الناجح — الفاشل لا يحرق حصة. وتبديلات الوجبات والتمارين تسحب من حصة التبديلات الشهرية الموحدة للعميل (بريميوم 8 · برو والتدريب الأونلاين 16). أما التعديل بيدك ورفع الخطط اليدوية وأدوات التحرير التحريرية (إعادة توليد صنف غذائي أو يوم كامل) — فكلها غير محدودة تمامًا ولا تخصم من حصة العميل.",
   },
   {
     q: "هل سينتمي عملاؤي إلى الموقع؟",
@@ -60,7 +60,7 @@ export const COACH_FAQ_EN: Array<{ q: string; a: string }> = [
   },
   {
     q: "What are the AI limits?",
-    a: "Generating a client's plans draws from his own unified monthly pool by tier — ONE balance for nutrition AND workouts combined: Premium 4 generations per month, Pro 8, and Coaching 8 (coaching inherits every Pro benefit). It is the same pool your client spends himself through EVO and the planner pages; the pool resets on the 1st of each month, and only successful generations count — failed ones never burn quota. Hand-editing, manual uploads, and AI-regenerating any meal, food item, workout day, or exercise are all unlimited.",
+    a: "Generating a client's plans draws from his own unified monthly quota by tier — ONE quota for nutrition AND workouts combined: Premium 4 generations per month, Pro 8, and Coaching 8 (coaching inherits every Pro benefit). It is the same quota your client spends himself through EVO and the planner pages; it renews with his subscription cycle, and only successful generations count — failed ones never burn quota. Meal and exercise swaps draw from the client's ONE unified monthly swap quota (Premium 8 · Pro and Coaching 16). Hand-editing, manual uploads, and the staff editorial regeneration tools (food item / whole day) are all unlimited and never burn the client's quota.",
   },
   {
     q: "Will my clients belong to the site?",

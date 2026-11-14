@@ -27,9 +27,9 @@ export type ToolEntry = {
   icon: string;
 };
 
-// §12.28: the AI meal-planner trial — free generation, no signup.
-// §12.32: the AI workout-planner trial (owner directive «ضيف أداة جديده
-// مخطط التمارين بالذكاء الاصطناعي»).
+// §12.28: the AI meal-planner page (generation for subscribers).
+// §12.32: the AI workout-planner page (owner directive «ضيف أداة جديده
+// مخطط التمارين بالذكاء الاصطناعي»; generation for subscribers).
 export const TOOLS: ToolEntry[] = [
   {
     slug: "calorie-calculator",

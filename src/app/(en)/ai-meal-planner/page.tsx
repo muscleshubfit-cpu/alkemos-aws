@@ -516,7 +516,7 @@ export default function AiMealPlannerPage() {
             </div>
             <p className="mt-3 text-sm font-normal leading-relaxed text-[var(--muted-foreground)]">
               {isAr
-                ? "الخطة تقدير تعليمي قابل للنسخ — راجعها وعدّل كمياتها على مائدتك، وقِس أثرها بالاتجاه الأسبوعي لا بقراءة يوم. خطتك تبقى معك على هذا الجهاز في التنقل والتحديث، ولا تختفي عند استنفاد رصيد الشهر."
+                ? "الخطة تقدير تعليمي قابل للنسخ — راجعها وعدّل كمياتها على مائدتك، وقِس أثرها بالاتجاه الأسبوعي لا بقراءة يوم. خطتك تبقى معك على هذا الجهاز في التنقل والتحديث، ولا تختفي عند استنفاد حصة الدورة."
                 : "This plan is a copyable educational estimate — review it, adjust the portions to your table, and measure its effect on the weekly trend, not a single reading. Your plan stays with you on this device across navigation and refreshes — and never disappears when the cycle's quota runs out."}
             </p>
 
@@ -540,7 +540,7 @@ export default function AiMealPlannerPage() {
                 </h3>
                 <p className="mt-2 text-sm font-normal leading-relaxed text-[var(--muted-foreground)]">
                   {isAr
-                    ? "خطتك الآن محفوظة على هذا الجهاز فقط. بإنشاء حساب مجاني تُحفظ كل خطة تولّدها تلقائيًا في حسابك وتصل إليها من أي جهاز، وتديرها من صفحة خططي. ومع بريميوم يرتفع رصيدك إلى 4 توليدات شهريًا (و8 مع برو) مع حفظ وتحميل كامل الخطط."
+                    ? "خطتك الآن محفوظة على هذا الجهاز فقط. بإنشاء حساب مجاني تُحفظ كل خطة تولّدها تلقائيًا في حسابك وتصل إليها من أي جهاز، وتديرها من صفحة خططي. ومع بريميوم ترتفع حصتك إلى 4 توليدات شهريًا (و8 مع برو) مع حفظ وتحميل كامل الخطط."
                     : "Right now your plan lives on this device only. Create a free account and every plan you generate is saved to it automatically — reachable from any device and managed from your plans page. Premium lifts your monthly pool to 4 generations (8 with Pro) plus full plan saving and export."}
                 </p>
                 <div className="mt-3 flex flex-wrap gap-2">
@@ -592,7 +592,7 @@ export default function AiMealPlannerPage() {
             </p>
             <p className="mt-2 text-sm font-normal leading-relaxed text-[var(--muted-foreground)]">
               {isAr
-                ? "لا يُخصم من رصيدك إلا التوليد الناجح — وكل خطة تُفحص قبل عرضها؛ فإن خرجت عن الشكل تُرفض لا تُعرض."
+                ? "لا تُخصم حصتك إلا عند التوليد الناجح — وكل خطة تُفحص قبل عرضها؛ فإن خرجت عن الشكل تُرفض لا تُعرض."
                 : "Only successful generations are deducted from your quota — every plan is validated before display; a drifted one is rejected, never shown. Generation is a subscriber feature (Premium and above)."}
             </p>
           </div>
@@ -714,7 +714,7 @@ export default function AiMealPlannerPage() {
               {
                 q: isAr ? "هل الخطة المولدة يوم واحد أم أسبوع؟" : "Is the generated plan one day or a week?",
                 a: isAr
-                  ? "توليد واحد = يوم كامل بالغرامات والسعرات. تستطيع توليد يوم مختلف في المرة التالية من رصيدك، ومع الاشتراك يستطيع EVO تبديل أي وجبة من خطتك القائمة."
+                  ? "توليد واحد = يوم كامل بالغرامات والسعرات. تستطيع توليد يوم مختلف في المرة التالية من حصتك، ومع الاشتراك يستطيع EVO تبديل أي وجبة من خطتك القائمة."
                   : "One generation = one complete day in grams and calories. You can generate a different day next time from your quota, and with a subscription EVO can swap any meal in your existing plan.",
               },
               {
@@ -724,15 +724,15 @@ export default function AiMealPlannerPage() {
                   : "Yes — the optional-notes field passes your constraints to the generator as explicit rules it must respect (e.g. no dairy, fish twice a week). The four systems are ready too: balanced, high-protein, keto, vegetarian.",
               },
               {
-                q: isAr ? "ماذا يحدث بعد نفاد رصيد التوليد؟" : "What happens when the pool runs out?",
+                q: isAr ? "ماذا يحدث بعد نفاد حصة التوليد؟" : "What happens when the pool runs out?",
                 a: isAr
-                  ? "تبقى كل خطة ولّدتها مرئية ومتاحة في لوحة خططك — ما يتوقف هو التوليد الجديد فقط، حتى يتجدد رصيدك في أول الشهر."
-                  : "Every plan you generated stays visible and accessible in your plans dashboard — only new generation pauses, until your pool resets on the 1st of the next month.",
+                  ? "تبقى كل خطة ولّدتها مرئية ومتاحة في لوحة خططك — ما يتوقف هو التوليد الجديد فقط، حتى تتجدد حصتك مع دورة اشتراكك."
+                  : "Every plan you generated stays visible and accessible in your plans dashboard — only new generation pauses, until your quota renews with your subscription cycle.",
               },
               {
                 q: isAr ? "ما الفرق بين المولد والمخطط اليدوي والخطط الجاهزة؟" : "Generator vs manual planner vs ready plans?",
                 a: isAr
-                  ? "المولد يخرج يومًا كاملًا في ثوانٍ من رصيدك؛ المخطط اليدوي يعطيك تحكمًا كاملًا بلا حدود؛ والـ24 خطة الجاهزة للتصفح الفوري بالغرامات. القسم أعلاه («أربعة مسارات للتخطيط») يفصلها كلها."
+                  ? "المولد يخرج يومًا كاملًا في ثوانٍ من حصتك؛ المخطط اليدوي يعطيك تحكمًا كاملًا بلا حدود؛ والـ24 خطة الجاهزة للتصفح الفوري بالغرامات. القسم أعلاه («أربعة مسارات للتخطيط») يفصلها كلها."
                   : "The generator produces a complete day in seconds from your pool; the manual planner gives you full control with no limits; and the 24 ready-made plans are there for instant browsing in grams. The section above (\"Four ways to plan\") lays them all out.",
               },
             ].map((faq) => (

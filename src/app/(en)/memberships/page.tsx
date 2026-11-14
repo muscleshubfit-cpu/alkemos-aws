@@ -439,7 +439,7 @@ export default function MembershipsPage({ lang: langProp }: { lang?: Lang } = {}
           </div>
           <p className="mx-auto mt-6 max-w-2xl text-center text-xs font-normal leading-relaxed text-[var(--muted-foreground)]">
             {isAr
-              ? "القاعدة بسيطة: ابدأ بالمجاني، وارتقِ حين يصبح رصيدك أو سعتك أضيق من استخدامك — والتفاصيل الكاملة في جدول المقارنة والأسعار أعلاه."
+              ? "القاعدة بسيطة: ابدأ بالمجاني، وارتقِ حين تصبح حصتك أو سعتك أضيق من استخدامك — والتفاصيل الكاملة في جدول المقارنة والأسعار أعلاه."
               : "Rule of thumb: start free, and move up when your pool or capacity feels tight — the full details are in the comparison table and the prices above."}
           </p>
         </section>

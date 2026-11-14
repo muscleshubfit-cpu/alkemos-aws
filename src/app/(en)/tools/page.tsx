@@ -54,8 +54,8 @@ export default function ToolsPage() {
           </p>
           <p className="mx-auto mt-4 max-w-2xl text-center text-sm font-normal leading-relaxed text-[var(--muted-foreground)] md:max-w-3xl md:text-base">
             {isAr
-              ? "الأرقام أولًا: كل تغيير حقيقي في جسمك يبدأ بمعرفة أرقامك — كم تحرق، وكيف توزّعها، وماذا تقيس. أدوات Alkemos الثماني المجانية تحسبها لك كاملة دون حاجة إلى حساب: ابدأ بحاسبة السعرات لتعرف رقمك اليومي، وزّعه بالماكروز، ابنِ يومك في مخطط الوجبات من قاعدة 8,162+ صنفًا غذائيًا، أو ولّد خطة كاملة بالذكاء الاصطناعي في ثوانٍ — ثم تابع دهون جسمك وماءك حتى تصل."
-              : "Numbers first: every real change in your body starts with knowing your numbers — how much you burn, how you split them, and what you track. Alkemos' eight free tools calculate them all, no account needed: start with the Calorie Calculator for your daily number, split it with the Macro Calculator, build your day in the Meal Planner from 8,162+ foods, or generate a full plan with AI in seconds — then track body fat and water on the way."}
+              ? "الأرقام أولًا: كل تغيير حقيقي في جسمك يبدأ بمعرفة أرقامك — كم تحرق، وكيف توزّعها، وماذا تقيس. أدوات Alkemos الثماني المجانية تحسبها لك كاملة: ابدأ بحاسبة السعرات لتعرف رقمك اليومي، وزّعه بالماكروز، ابنِ يومك في مخطط الوجبات من قاعدة 8,162+ صنفًا غذائيًا — كل ذلك دون حاجة إلى حساب — ثم تابع دهون جسمك وماءك حتى تصل. ولتوليد الخطة كاملة بالذكاء الاصطناعي في ثوانٍ فهو متاح لمشتركي بريميوم وأعلى."
+              : "Numbers first: every real change in your body starts with knowing your numbers — how much you burn, how you split them, and what you track. Alkemos' eight free tools calculate them all, no account needed: start with the Calorie Calculator for your daily number, split it with the Macro Calculator, build your day in the manual Meal Planner from 8,162+ foods — then track body fat and water on the way. Generating the full plan with AI in seconds is available to subscribers (Premium and above)."}
           </p>
         </div>
 

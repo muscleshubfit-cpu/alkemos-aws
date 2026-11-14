@@ -122,10 +122,11 @@ export async function POST(request: NextRequest) {
       // STAFF QUOTA SEMANTICS (T-4PILLAR + admin role 2026-08-29): staff
       // (coach | admin) crafting client plans use meal/exercise swaps as
       // an EDITING tool, not as client self-service — quota-bypass them.
-      // The weekly C16 limit stays exactly as-is for clients (free 0 ·
-      // premium 3 · pro 6 · coaching 6 — Phase 183 inherits Pro), and
-      // plan-creation is gated by the Phase 183 unified monthly pool
-      // (success-only, ai_plan_usage — see the check further below).
+      // The UNIFIED monthly swap quota (2026-11-14 completion order —
+      // free 0 · premium 8 · pro 16 · coaching 16) is enforced below for
+      // client self-service, and plan-creation is gated by the unified
+      // monthly pool (success-only, ai_plan_usage — see the check further
+      // below).
     } else {
       // user_swap_meal | user_swap_exercise → enforce the UNIFIED monthly
       // swap quota (AI-QUOTAS completion order 2026-11-14 §1/§2 — meal and

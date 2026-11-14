@@ -237,8 +237,8 @@ export const HOME_COPY_GROUPS: HomeCopyGroup[] = [
         prop: "planAllowance",
         key: "home.plan.allowance",
         multiline: true,
-        labelEn: "Free-allowance bar text",
-        labelAr: "نص شريط الرصيد المجاني",
+        labelEn: "Quota-policy bar text",
+        labelAr: "نص شريط سياسة الحصص",
         // AI-QUOTAS 2026-11-14: generation is SUBSCRIBER-ONLY — the band
         // states the honest policy (free members keep the full free product;
         // generation & swaps ride monthly quotas for Premium and above). The
@@ -252,8 +252,8 @@ export const HOME_COPY_GROUPS: HomeCopyGroup[] = [
       {
         prop: "planAllowanceChip",
         key: "home.plan.allowanceChip",
-        labelEn: "Free-allowance chip",
-        labelAr: "شريحة الرصيد",
+        labelEn: "Generation chip",
+        labelAr: "شريحة التوليد",
         defaultEn: "AI GENERATION",
         defaultAr: "توليد بالذكاء الاصطناعي",
       },
@@ -569,7 +569,7 @@ export const HOME_FAQ_DEFAULT: { en: SiteFaqItem[]; ar: SiteFaqItem[] } = {
     },
     {
       q: "هل أحتاج إلى اشتراك؟",
-      a: "لا يلزمك أي اشتراك لاستخدام المنصة والاستفادة من ميزاتها الأساسية. العضويات اختيارية تمامًا، وتوسّع ما تفعله داخل المنصة: رصيدًا أكبر لتوليد الخطط الذكية، ومحادثة بلا حدود مع EVO، وتصديرًا كاملًا — ومن مستوى برو فما فوق، تجربة بلا إعلانات.",
+      a: "لا يلزمك أي اشتراك لاستخدام المنصة والاستفادة من ميزاتها الأساسية. العضويات اختيارية تمامًا، وتوسّع ما تفعله داخل المنصة: حصة أكبر لتوليد الخطط الذكية، ومحادثة بلا حدود مع EVO، وتصديرًا كاملًا — ومن مستوى برو فما فوق، تجربة بلا إعلانات.",
     },
     {
       q: "هل يناسبني Alkemos إذا كنت مبتدئًا؟",

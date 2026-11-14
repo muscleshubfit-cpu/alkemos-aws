@@ -1077,7 +1077,7 @@ export function LandingView({
           generation is subscriber-only — the band now states the honest
           policy, never marketing copy). A slim band on the white surface, directly
           above the AI section's tint band. */}
-      <section aria-label={isAr ? "رصيد الخطط المجاني" : "The free plan allowance"} className="bg-[var(--bg)] px-4 pb-10 md:pb-14">
+      <section aria-label={isAr ? "سياسة حصص الخطط والتبديلات" : "The plan and swap quota policy"} className="bg-[var(--bg)] px-4 pb-10 md:pb-14">
         <div className="mx-auto max-w-6xl">
           <Reveal>
             <div className="marble-card flex flex-col items-center justify-between gap-3 px-5 py-4 text-center md:flex-row md:gap-4 md:text-start">

@@ -25,7 +25,8 @@ import { MACRO_TRACKER_FAQ_AR, MACRO_TRACKER_FAQ_EN } from "./content";
  *   - Meal planner: build meals from 8,162+ foods (+ OpenFoodFacts
  *     search) with LIVE per-meal & per-day macro totals — free, no
  *     signup; save plans with an account (Free tier: 1 saved plan).
- *   - AI meal planner: 2 successful free generations/month, no signup.
+ *   - AI meal planner: subscriber feature (Premium and above) with a
+ *     unified monthly quota (success-only).
  *   - Food database: 8,162+ foods with macros, browseable, bilingual.
  *   - Water tracker: device-local daily log.
  *   - Weight/measurement tracking: weekly check-ins, photos, chart.
@@ -58,7 +59,7 @@ export default function MacroTrackerPage() {
         {
           n: "٣",
           title: "أو ولّد يومًا كاملًا",
-          desc: "مخطط الوجبات بالذكاء الاصطناعي يبني يومك بالغرامات من رقم سعراتك ونظامك الغذائي — توليدان مجانًا شهريًا بلا حساب.",
+          desc: "مخطط الوجبات بالذكاء الاصطناعي يبني يومك بالغرامات من رقم سعراتك ونظامك الغذائي — التوليد ميزة مشتركي بريميوم وأعلى بحصة شهرية.",
           href: "/ar/ai-meal-planner",
           cta: "ولّد خطة وجبات",
         },

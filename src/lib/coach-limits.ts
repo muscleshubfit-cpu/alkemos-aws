@@ -22,10 +22,12 @@
  *    183): ONE success-only budget per identity for nutrition +
  *    workout COMBINED, recorded in ai_plan_usage (migration 0085) —
  *    the same pool the member's EVO chat and the planner pages spend
- *    from; resets on the 1st. Owner order 2026-10-28 «تجميع حصص
- *    الاشتراكات المدفوعة»: the pool size is the AGGREGATE of every
- *    distinct effectively-active paid tier (free 2 · premium 4 ·
- *    pro 8 · coaching 8; premium+pro = 12). The old per-kind split
+ *    from. Owner order 2026-10-28 «تجميع حصص الاشتراكات المدفوعة»: the
+ *    pool size is the AGGREGATE of every
+ *    distinct effectively-active paid tier (free 0 — subscriber-only
+ *    since 2026-11-14 · premium 4 · pro 8 · coaching 8; premium+pro =
+ *    12) and it renews on each subscription's own cycle window
+ *    (tier-limits.ts). The old per-kind split
  *    (4+4 / 8+8), the weekly caps
  *    (1+1 / 2+2), and the separate coach-side 4/4 cap
  *    (COACH_AI_PLAN_LIMIT, 0034) are ALL retired. EDITING plans

@@ -379,8 +379,8 @@ export const TOOL_SCHEMA_DATA: Record<string, ToolSchemaData> = {
     },
     name: { en: "AI Meal Planner", ar: "مخطط الوجبات بالذكاء الاصطناعي" },
     description: {
-      en: "Free AI meal planner trial: generate a complete day plan in grams and calories from your target, diet system, and preferences in seconds — free to try; your plan stays on your device, and a free account saves it permanently.",
-      ar: "تجربة مجانية لمخطط الوجبات بالذكاء الاصطناعي: ولّد خطة يوم كاملة بالغرامات والسعرات من رقمك ونظامك وملاحظاتك في ثوانٍ — مجانًا؛ خطتك تبقى على جهازك، والحساب المجاني يحفظها بشكل دائم.",
+      en: "AI meal planner: generate a complete day plan in grams and calories from your target, diet system, and preferences in seconds — AI generation for subscribers (Premium and above); your plan stays on your device, and a free account saves it permanently.",
+      ar: "مخطط الوجبات بالذكاء الاصطناعي: ولّد خطة يوم كاملة بالغرامات والسعرات من رقمك ونظامك وملاحظاتك في ثوانٍ — التوليد لمشتركي بريميوم وأعلى؛ خطتك تبقى على جهازك، والحساب المجاني يحفظها بشكل دائم.",
     },
     features: {
       en: [
@@ -408,8 +408,8 @@ export const TOOL_SCHEMA_DATA: Record<string, ToolSchemaData> = {
         ar: "كيف تولّد خطة وجبات بالذكاء الاصطناعي",
       },
       description: {
-        en: "Turn your calorie target into a generated day plan with grams and validated totals using the free Alkemos AI meal planner trial.",
-        ar: "حوّل هدف سعراتك إلى خطة يوم مولّدة بغرامات وإجماليات مُتحققة باستخدام تجربة مخطط الوجبات بالذكاء الاصطناعي المجانية من Alkemos.",
+        en: "Turn your calorie target into a generated day plan with grams and validated totals using the Alkemos AI meal planner (generation for subscribers, Premium and above).",
+        ar: "حوّل هدف سعراتك إلى خطة يوم مولّدة بغرامات وإجماليات مُتحققة باستخدام مخطط الوجبات بالذكاء الاصطناعي من Alkemos (التوليد لمشتركي بريميوم وأعلى).",
       },
       steps: {
         en: [
@@ -438,8 +438,8 @@ export const TOOL_SCHEMA_DATA: Record<string, ToolSchemaData> = {
     },
     name: { en: "AI Workout Planner", ar: "مخطط التمارين بالذكاء الاصطناعي" },
     description: {
-      en: "Free AI workout planner trial: generate a balanced weekly split from your goal, level, training days, and equipment in seconds — free to try; your plan stays on your device, and a free account saves it permanently.",
-      ar: "تجربة مجانية لمخطط التمارين بالذكاء الاصطناعي: ولّد نظامًا تدريبيًا أسبوعيًا متوازنًا من هدفك ومستواك وأيامك ومعداتك في ثوانٍ — مجانًا؛ خطتك تبقى على جهازك، والحساب المجاني يحفظها بشكل دائم.",
+      en: "AI workout planner: generate a balanced weekly split from your goal, level, training days, and equipment in seconds — AI generation for subscribers (Premium and above); your plan stays on your device, and a free account saves it permanently.",
+      ar: "مخطط التمارين بالذكاء الاصطناعي: ولّد نظامًا تدريبيًا أسبوعيًا متوازنًا من هدفك ومستواك وأيامك ومعداتك في ثوانٍ — التوليد لمشتركي بريميوم وأعلى؛ نظامك يبقى على جهازك، والحساب المجاني يحفظه بشكل دائم.",
     },
     features: {
       en: [
@@ -467,8 +467,8 @@ export const TOOL_SCHEMA_DATA: Record<string, ToolSchemaData> = {
         ar: "كيف تولّد خطة تمارين بالذكاء الاصطناعي",
       },
       description: {
-        en: "Turn your goal, level, days, and equipment into a generated weekly split with validated structure using the free Alkemos AI workout planner trial.",
-        ar: "حوّل هدفك ومستواك وأيامك ومعداتك إلى نظام أسبوعي مولّد ببنية مُتحققة باستخدام تجربة مخطط التمارين بالذكاء الاصطناعي المجانية من Alkemos.",
+        en: "Turn your goal, level, days, and equipment into a generated weekly split with validated structure using the Alkemos AI workout planner (generation for subscribers, Premium and above).",
+        ar: "حوّل هدفك ومستواك وأيامك ومعداتك إلى نظام أسبوعي مولّد ببنية مُتحققة باستخدام مخطط التمارين بالذكاء الاصطناعي من Alkemos (التوليد لمشتركي بريميوم وأعلى).",
       },
       steps: {
         en: [

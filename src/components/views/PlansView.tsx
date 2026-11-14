@@ -299,7 +299,8 @@ export function PlansView() {
  if (job?.status === "failed") {
  removePendingSwap(entry.id);
  // REGEN-RELIABILITY FIX 2026-10-24 (owner order item 2 — «عدم استهلاك
- // الحصة عند الفشل»): the server records the weekly swap unit ONLY on
+ // الحصة عند الفشل»): the server records the unified monthly swap
+ // unit ONLY on
  // success (recordSwapOnSuccess in the runner) — the optimistic
  // decrement from the click must roll back to server truth HERE too,
  // or the member stares at a burned unit the DB never charged.

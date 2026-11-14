@@ -31,7 +31,7 @@ export const WORKOUT_TRACKER_FAQ_EN: Array<{ q: string; a: string }> = [
   },
   {
     q: "Can I get a workout plan without signing up?",
-    a: "Yes. The AI Workout Planner gives every visitor 2 successful generations per month with no account and no credit card — pick your goal, level, training days, and equipment, and get a complete weekly split validated before display. A free account saves your plans across devices and unlocks limited EVO AI coach access.",
+    a: "You can browse everything without an account, but AI plan generation is a subscriber feature (Premium and above). With a Premium subscription the AI Workout Planner builds your complete weekly split — pick your goal, level, training days, and equipment — validated before display. A free account saves your plans across devices and unlocks limited EVO AI coach access (10 messages/day).",
   },
   {
     q: "Does Alkemos log sets and reps for each workout?",
@@ -62,7 +62,7 @@ export const WORKOUT_TRACKER_FAQ_AR: Array<{ q: string; a: string }> = [
   },
   {
     q: "هل يمكنني الحصول على خطة تمارين بدون تسجيل؟",
-    a: "نعم. مخطط التمارين بالذكاء الاصطناعي يمنح كل زائر توليديْن ناجحيْن شهريًا بلا حساب وبلا بطاقة ائتمان — اختر هدفك ومستواك وأيام تدريبك ومعداتك واحصل على نظام أسبوعي كامل يُفحص قبل عرضه. الحساب المجاني يحفظ خططك عبر أجهزتك ويفتح وصولًا محدودًا لمدرب EVO الذكي.",
+    a: "يمكنك تصفّح كل شيء بدون حساب، لكن توليد الخطط بالذكاء الاصطناعي ميزة مشتركين (بريميوم وأعلى). مع اشتراك بريميوم يبني لك مخطط التمارين نظامك الأسبوعي الكامل — اختر هدفك ومستواك وأيام تدريبك ومعداتك — ويُفحص النظام قبل عرضه. والحساب المجاني يحفظ خططك عبر أجهزتك ويفتح وصولًا محدودًا لمدرب EVO الذكي (10 رسائل يوميًا).",
   },
   {
     q: "هل يسجّل Alkemos المجموعات والتكرارات لكل تمرين؟",
@@ -78,6 +78,6 @@ export const WORKOUT_TRACKER_FAQ_AR: Array<{ q: string; a: string }> = [
   },
   {
     q: "هل متتبّع التمارين مجاني؟",
-    a: "نعم. مكتبة التمارين وقاعدة الأطعمة وكل الأدوات الثماني المجانية (بما فيها التوليد الشهري المجاني لكلا المخططيْن الذكييْن) وتصفّح الخطط وتتبّع التقدّم — كلها مجانية بحساب. الباقات المدفوعة ترفع رصيد توليد الخطط بالذكاء الاصطناعي وتضيف مزايا أعمق.",
+    a: "نعم. مكتبة التمارين وقاعدة الأطعمة وكل الأدوات الثماني المجانية (الحاسبات ومتتبع الماء والمخطط اليدوي ومخططا الذكاء الاصطناعي) وتصفّح الخطط وتتبّع التقدّم — كلها مجانية بحساب. توليد الخطط بالذكاء الاصطناعي ميزة مشتركين (بريميوم وأعلى) بحصة شهرية تتجدد مع دورة الاشتراك، والباقات المدفوعة ترفع حصة التوليد وتضيف مزايا أعمق.",
   },
 ];

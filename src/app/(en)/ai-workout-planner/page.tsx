@@ -272,7 +272,7 @@ export default function AiWorkoutPlannerPage() {
   const quotaChip =
     quota && quota.limit > 0
       ? isAr
-        ? `رصيد الشهر: ${quota.remaining} متبقٍ من ${quota.limit}`
+        ? `حصة الدورة: ${quota.remaining} متبقٍ من ${quota.limit}`
         : `This month: ${quota.remaining} of ${quota.limit} left`
       : null;
 
@@ -605,7 +605,7 @@ export default function AiWorkoutPlannerPage() {
             </div>
             <p className="mt-3 text-sm font-normal leading-relaxed text-[var(--muted-foreground)]">
               {isAr
-                ? "النظام تقدير تعليمي قابل للنسخ — راجع أداء كل حركة على أدائك أنت، وابدأ بأوزان تُتقن بها الشكل الكامل قبل التدرج. نظامك يبقى معك على هذا الجهاز في التنقل والتحديث، ولا يختفي عند استنفاد رصيد الشهر."
+                ? "النظام تقدير تعليمي قابل للنسخ — راجع أداء كل حركة على أدائك أنت، وابدأ بأوزان تُتقن بها الشكل الكامل قبل التدرج. نظامك يبقى معك على هذا الجهاز في التنقل والتحديث، ولا يختفي عند استنفاد حصة الدورة."
                 : "This split is a copyable educational estimate — review every movement against your own performance, and start with weights you can own with full form before climbing. Your split stays with you on this device across navigation and refreshes — and never disappears when the cycle's quota runs out."}
             </p>
 
@@ -618,7 +618,7 @@ export default function AiWorkoutPlannerPage() {
                 </h3>
                 <p className="mt-2 text-sm font-normal leading-relaxed text-[var(--muted-foreground)]">
                   {isAr
-                    ? "نظامك الآن محفوظ على هذا الجهاز فقط. بإنشاء حساب مجاني تُحفظ كل خطة تولّدها تلقائيًا في حسابك وتصل إليها من أي جهاز، وتديرها من صفحة خططي. ومع بريميوم يرتفع رصيدك إلى 4 توليدات شهريًا (و8 مع برو) مع الحفظ والإدارة الكاملة."
+                    ? "نظامك الآن محفوظ على هذا الجهاز فقط. بإنشاء حساب مجاني تُحفظ كل خطة تولّدها تلقائيًا في حسابك وتصل إليها من أي جهاز، وتديرها من صفحة خططي. ومع بريميوم ترتفع حصتك إلى 4 توليدات شهريًا (و8 مع برو) مع الحفظ والإدارة الكاملة."
                     : "Right now your split lives on this device only. Create a free account and every plan you generate is saved to it automatically — reachable from any device and managed from your plans page. Premium lifts your monthly pool to 4 generations (8 with Pro) plus full plan saving and management."}
                 </p>
                 <div className="mt-3 flex flex-wrap gap-2">
@@ -665,7 +665,7 @@ export default function AiWorkoutPlannerPage() {
             </h2>
             <p className="mt-3 text-base font-normal leading-relaxed text-[var(--muted-foreground)]">
               {isAr
-                ? "معرفة التمارين خطوة أولى؛ أما التحدي فهو تركيبها في أسبوع متوازن يطابق أهدافك ومستواك وأيامك ومعداتك. التوليد يحل مشكلة «من أين أبدأ هذا الأسبوع؟» بوضع نظام كامل أمامك في ثوانٍ — بدل الاعتماد على برنامج عام لم يُصمم لأهدافك. النموذج يلتزم بقواعد صارمة (عدد الأيام يطابق طلبك بالضبط، 3 إلى 8 تمارين لكل يوم، مجموعات وتكرارات معقولة) وكل نظام يُفحص قبل عرضه؛ فإن خرج عن الشكل يُرفض لا يُعرض — ولا يُخصم من رصيدك إلا التوليد الناجح."
+                ? "معرفة التمارين خطوة أولى؛ أما التحدي فهو تركيبها في أسبوع متوازن يطابق أهدافك ومستواك وأيامك ومعداتك. التوليد يحل مشكلة «من أين أبدأ هذا الأسبوع؟» بوضع نظام كامل أمامك في ثوانٍ — بدل الاعتماد على برنامج عام لم يُصمم لأهدافك. النموذج يلتزم بقواعد صارمة (عدد الأيام يطابق طلبك بالضبط، 3 إلى 8 تمارين لكل يوم، مجموعات وتكرارات معقولة) وكل نظام يُفحص قبل عرضه؛ فإن خرج عن الشكل يُرفض لا يُعرض — ولا تُخصم حصتك إلا عند التوليد الناجح."
                 : "Knowing the exercises is step one; the real challenge is assembling them into a balanced week that matches your goals, level, days, and equipment. Generation solves the \"where do I even start this week?\" problem by laying out a complete split in seconds — instead of leaning on a generic program never designed for your goals. The model follows strict rules (the day count matches your request exactly, 3 to 8 exercises per day, sane sets and reps) and every split is validated before display; a drifted one is rejected, never shown — and only successful generations are deducted from your quota."}
             </p>
           </div>
@@ -723,8 +723,9 @@ export default function AiWorkoutPlannerPage() {
             measured demand). Plain visible HTML (no accordion) so the
             answers ship in the server HTML for non-JS crawlers; every
             number verified against src/lib/memberships.ts (unified pool:
-            visitor/free 2, premium 4, pro/coaching 8 — success-only
-            counting) and ai-workout-planner.ts (3-8 exercises/day). */}
+            free 0 — subscriber-only since 2026-11-14, premium 4,
+            pro/coaching 8 — success-only counting) and
+            ai-workout-planner.ts (3-8 exercises/day). */}
         <section className="mt-10">
           <h2 className="text-xl font-semibold tracking-tight text-[var(--text)]">
             {isAr ? "أسئلة شائعة حول المخطط" : "Workout planner FAQ"}

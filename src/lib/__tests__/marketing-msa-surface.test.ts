@@ -907,4 +907,180 @@ describe("marketing-surface MSA (Phase 178 — §12.42)", () => {
     const email = readFileSync("src/lib/email-validation.ts", "utf8");
     expect(email).toContain("يجب أن يحتوي على @ ونقطة، مثل: name@example.com");
   });
+
+  // ─────────────────────────────────────────────────────────────────────
+  // AI-QUOTAS INDEPENDENT AUDIT (2026-11-14, post-53d39156 audit round):
+  // the audit found post-completion-order STALE copy on surfaces the
+  // 53d39156 sweep missed — the EN memberships OfferCatalog (2 free
+  // generations + 3/6 weekly swaps), the Terms page (the entire retired
+  // weekly law), the planner pages' meta (free-trial framing), the
+  // for-coaches FAQ (رصيد + 1st-of-month renewal), a live EVO chat
+  // message claiming the retired per-type swap split, and "رصيد" quota
+  // wording across AR product copy. All fixed in the audit round —
+  // these bans keep every one of those regressions out for good.
+  // ─────────────────────────────────────────────────────────────────────
+  it("AI-QUOTAS audit round: no retired quota law may return to any surface (numbers, renewal windows, رصيد wording, free-trial claims)", () => {
+    const surfaces: Record<string, string[]> = {
+      // The Terms page + About (the retired weekly law + old free-generation claims).
+      "src/lib/site-content/static-pages.ts": [
+        "3 تبديلات للوجبات أو التمارين أسبوعيًا",
+        "بريميوم: 3 تبديلات",
+        "التبديلات تتجدد كل يوم اثنين",
+        "3 meal/exercise swaps per week",
+        "Swaps reset every Monday",
+        "2 plan generations per month",
+        "2 توليد خطة",
+      ],
+      // The EN memberships OfferCatalog JSON-LD (the completion order's
+      // AR twin was fixed in 53d39156; the EN twin was missed there).
+      "src/app/(en)/memberships/layout.tsx": [
+        "2 AI plan generations per month",
+        "3 swaps/week",
+        "6 meal/exercise swaps per week",
+        "6 swaps/week",
+        "13 swaps",
+        "26 swaps",
+      ],
+      // The for-coaches FAQ (visible copy + FAQPage JSON-LD source).
+      "src/app/(en)/for-coaches/content.ts": [
+        "رصيد واحد شهري",
+        "من رصيده الموحد",
+        "يتجدد الرصيد في أول كل شهر",
+        "ONE balance",
+        "resets on the 1st of each month",
+      ],
+      "src/app/(en)/for-coaches/page.tsx": ["رصيد شهري موحد", "monthly balance"],
+      // The planner surfaces' machine-readable schema.
+      "src/lib/tool-schema.ts": [
+        "Free AI meal planner trial",
+        "Free AI workout planner trial",
+        "free to try",
+        "تجربة مجانية",
+        "تجربة مخطط الوجبات",
+        "تجربة مخطط التمارين",
+        "— مجانًا؛",
+      ],
+      // The planner pages' metadata (title/description/OG/keywords).
+      "src/app/(en)/ai-meal-planner/layout.tsx": [
+        "Free Day Plan Generator",
+        "free to try",
+        "free trial",
+        "free ai meal planner",
+      ],
+      "src/app/(ar)/ar/ai-meal-planner/layout.tsx": ["تجربة مجانية", "مجانًا"],
+      "src/app/(en)/ai-workout-planner/layout.tsx": [
+        "Free Weekly Split Generator",
+        "free to try",
+        "Free trial",
+        "free ai workout plan",
+      ],
+      "src/app/(ar)/ar/ai-workout-planner/layout.tsx": ["تجربة مجانية", "مجانًا"],
+      // The tools hub (OG + intro copy).
+      "src/app/(en)/tools/layout.tsx": ["free to try", "AI plan generators — free"],
+      "src/app/(en)/tools/page.tsx": [
+        "دون حاجة إلى حساب: ابدأ",
+        "generate a full plan with AI in seconds — then",
+      ],
+      // The tracker landing pages (FAQ JSON-LD sources + feature cards).
+      "src/app/(en)/workout-tracker/content.ts": [
+        "every visitor 2 successful generations",
+        "توليديْن ناجحيْن",
+        "التوليد الشهري المجاني",
+        "ترفع رصيد توليد الخطط",
+      ],
+      "src/app/(en)/macro-tracker/content.ts": [
+        "توليدَا خطة الوجبات الشهريان المجانيان",
+        "ترفع رصيد التوليد",
+      ],
+      "src/app/(en)/workout-tracker/page.tsx": [
+        "توليدان مجانًا شهريًا",
+        "لا يُحسب رصيدك",
+        "ولّد خطة مجانية",
+        "Generate a free plan",
+      ],
+      "src/app/(en)/macro-tracker/page.tsx": ["توليدان مجانًا شهريًا بلا حساب"],
+      // The diet-plan library (parent + leaf, AR + EN).
+      "src/app/(en)/diet-plan/page.tsx": ["free without any account"],
+      "src/app/(ar)/ar/diet-plan/page.tsx": ["مجانًا —", "وملاحظاتك مجانًا"],
+      "src/app/(en)/diet-plan/[level]/[system]/page.tsx": [
+        "Make it your plan — free",
+        "free for everyone",
+      ],
+      "src/app/(ar)/ar/diet-plan/[level]/[system]/page.tsx": [
+        "مجانًا للجميع",
+        "اجعلها خطتك أنت — مجانًا",
+      ],
+      // The EVO meta/SEO cluster ("Free for everyone" adjacent to plan
+      // building/swap claims — chat is free; generation and swaps are not).
+      "src/lib/seo.ts": ["offerDescription: \"Free for everyone\"", 'offerDescription: "مجاني للجميع"'],
+      "src/app/(en)/evo/layout.tsx": ["Free for everyone."],
+      "src/app/(ar)/ar/evo/layout.tsx": ["مجاني للجميع.", "مجاني للجميع\""],
+      "src/app/(en)/evo/page.tsx": ["خطة تغذية كاملة — مجانًا", "nutrition plan — free to try"],
+      // The live EVO chat gate + the planner demo error toasts.
+      "src/app/api/ai/chat/route.ts": ["each type has its own monthly quota"],
+      "src/app/api/ai/meal-plan-demo/route.ts": ["لا يُخصم من رصيدك"],
+      "src/app/api/ai/workout-plan-demo/route.ts": ["لا يُخصم من رصيدك"],
+      // رصيد wording on quota surfaces (the corrective order: quotas are
+      // NEVER credits — the coach MONEY wallet surfaces are a different,
+      // legitimate domain and are not in this list).
+      "src/app/(en)/ai-meal-planner/page.tsx": [
+        "رصيد الشهر",
+        "يرتفع رصيدك",
+        "من رصيدك",
+        "نفاد رصيد",
+        "يتجدد رصيدك في أول الشهر",
+      ],
+      "src/app/(en)/ai-workout-planner/page.tsx": [
+        "رصيد الشهر",
+        "يرتفع رصيدك",
+        "من رصيدك",
+        "رصيدك إلا",
+      ],
+      "src/lib/comparisons.ts": ["يرفع الرصيد الموحد"],
+      "src/lib/site-content/home.ts": ["رصيدًا أكبر"],
+      "src/app/(en)/memberships/page.tsx": ["رصيدك أو سعتك"],
+      "src/components/views/CoachClientView.tsx": [
+        "رصيد خطط العميل",
+        "رصيد توليد الخطط",
+        "من رصيده الشهري",
+        "unified plan balance",
+        "monthly balance",
+      ],
+      "src/components/views/LandingView.tsx": ["رصيد الخطط المجاني"],
+      "src/lib/memberships-faq.ts": ["لا رصيدًا"],
+      "src/lib/evo-intent.ts": ["weekly quota"],
+      "src/lib/ai-jobs.ts": ["tier-limited weekly"],
+      "src/lib/coach-limits.ts": ["free 2 ·"],
+      "src/app/api/coach/ai-usage/route.ts": ["free 2 ·"],
+      "src/app/api/ai/jobs/route.ts": ["premium 3 · pro 6"],
+    };
+    for (const [rel, bannedList] of Object.entries(surfaces)) {
+      const src = readFileSync(rel, "utf8");
+      for (const banned of bannedList) {
+        expect(
+          src,
+          `${rel}: retired AI-quota phrase returned: "${banned}"`,
+        ).not.toContain(banned);
+      }
+    }
+    // The required CURRENT law anchors (the audit's positive pins — if
+    // these drift, the surface stopped stating the real law):
+    const terms = readFileSync("src/lib/site-content/static-pages.ts", "utf8");
+    expect(terms).toContain("حصة التبديلات شهرية موحدة واحدة");
+    expect(terms).toContain("ONE unified monthly quota (meal and exercise swaps combined)");
+    expect(terms).toContain("تتجدد حصة التبديلات مع دورة اشتراكك");
+    const enLayout = readFileSync("src/app/(en)/memberships/layout.tsx", "utf8");
+    expect(enLayout).toContain("8 swaps/month (one unified quota)");
+    expect(enLayout).toContain("16 swaps/month (one unified quota)");
+    expect(enLayout).toContain("AI plan generation and swaps are subscriber features");
+    const coachesFaq = readFileSync("src/app/(en)/for-coaches/content.ts", "utf8");
+    expect(coachesFaq).toContain("تتجدد مع دورة اشتراكه");
+    expect(coachesFaq).toContain("renews with his subscription cycle");
+    expect(coachesFaq).toContain("حصة التبديلات الشهرية الموحدة للعميل (بريميوم 8");
+    const toolSchema = readFileSync("src/lib/tool-schema.ts", "utf8");
+    expect(toolSchema).toContain("AI generation for subscribers (Premium and above)");
+    expect(toolSchema).toContain("التوليد لمشتركي بريميوم وأعلى");
+    const chatRoute = readFileSync("src/app/api/ai/chat/route.ts", "utf8");
+    expect(chatRoute).toContain("one unified monthly swap quota: meal and exercise combined");
+  });
 });

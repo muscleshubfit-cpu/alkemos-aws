@@ -228,8 +228,82 @@ describe("A) lifecycle walkthrough — early renewal, upgrade, expiry (no loss)"
 });
 
 /* ─────────────────────────────────────────────────────────────────────
- * B. END-TO-END VERDICTS — the gates over a mocked DB
+ * A2. INDEPENDENT-AUDIT SCENARIOS (2026-11-14 audit round — the two
+ * lifecycle shapes the walkthrough above did not pin explicitly):
+ *   §1  FIRST PURCHASE (no prior subscription): the entitlement starts
+ *       at the PURCHASE date — fresh quota, own anniversary window.
+ *   §5  MIRROR EXPIRY: the NEW (short) subscription expires while the
+ *       OLD (long) one keeps running — the survivor keeps its FULL
+ *       entitlement minus the true spillover only, and usage after the
+ *       new sub's death lands on the survivor.
  * ───────────────────────────────────────────────────────────────────── */
+describe("A2) independent-audit scenarios — first purchase + mirror expiry", () => {
+  it("§1 FIRST PURCHASE: fresh entitlement from the purchase date — own window, full quota, zero used (BOTH quotas)", () => {
+    const bought = new Date("2026-10-10T10:00:00Z");
+    const now = new Date("2026-10-12T12:00:00Z"); // two days after buying
+    // Generation quota: premium 4 from the purchase anniversary window.
+    const genBuckets = quotaBucketsForSubs(
+      [row("premium", "2026-10-10T10:00:00Z", "2026-11-10T10:00:00Z")],
+      gen,
+      now,
+    );
+    expect(genBuckets).toHaveLength(1);
+    expect(genBuckets[0].ghost).toBe(false);
+    expect(genBuckets[0].windowStart).toBe("2026-10-10T00:00:00.000Z"); // the purchase day
+    expect(genBuckets[0].limit).toBe(4);
+    attributeUsageFifo(genBuckets, []); // no usage yet
+    expect(bucketVerdict(genBuckets)).toMatchObject({ used: 0, limit: 4, remaining: 4 });
+    expect(bucketVerdict(genBuckets).renewsAt).toBe("2026-11-10T00:00:00.000Z");
+    // Swap quota: the SAME purchase window, premium 8, fully available.
+    const swapBuckets = quotaBucketsForSubs(
+      [row("premium", "2026-10-10T10:00:00Z", "2026-11-10T10:00:00Z")],
+      swapQ,
+      now,
+    );
+    expect(bucketVerdict(swapBuckets)).toMatchObject({ used: 0, limit: 8, remaining: 8 });
+    expect(bucketVerdict(swapBuckets).renewsAt).toBe("2026-11-10T00:00:00.000Z");
+    // The aggregators agree with the bucket engine from day one.
+    expect(resolveUnifiedPlanPoolLimit([row("premium", "2026-10-10T10:00:00Z", "2026-11-10T10:00:00Z")], now)).toBe(4);
+    expect(resolveUnifiedSwapLimit([row("premium", "2026-10-10T10:00:00Z", "2026-11-10T10:00:00Z")], now)).toBe(8);
+  });
+
+  it("§5 MIRROR EXPIRY: the NEW short sub dies while the OLD long sub runs — the survivor keeps its entitlement minus the true spillover, and post-death usage lands on it", () => {
+    // OLD premium: bought Aug 10, a long renewal keeps it alive to Feb 10.
+    const premiumRow = row("premium", "2026-08-10T10:00:00Z", "2027-02-10T10:00:00Z");
+    // NEW pro: bought Nov 20 for one month — dies Dec 20.
+    const proRow = row("pro", "2026-11-20T14:00:00Z", "2026-12-20T14:00:00Z");
+    // DURING the overlap (Dec 1): pro is the EARLIEST-EXPIRING bucket →
+    // FIFO burns it first (2 units).
+    const duringOverlap = new Date("2026-12-01T12:00:00Z");
+    let buckets = quotaBucketsForSubs([premiumRow, proRow], gen, duringOverlap);
+    attributeUsageFifo(buckets, ["2026-11-25T09:00:00Z", "2026-11-28T09:00:00Z"]);
+    expect(bucketVerdict(buckets)).toMatchObject({ used: 2, limit: 12, remaining: 10 });
+    const proUsedDuringOverlap = buckets.find((b) => !b.ghost && b.limit === 8)!.used;
+    expect(proUsedDuringOverlap).toBe(2); // the short sub paid for these
+    // AFTER the new sub dies (Dec 22) + one more generation lands (Dec 25):
+    // the pro GHOST absorbs the 2 overlap units it paid for, the Dec 25
+    // unit lands on the SURVIVING premium window, and premium's verdict
+    // reads 4 − 1 = 3 — NOT 4 − 3 (no re-attribution of the dead sub's
+    // units onto the survivor).
+    const afterMirrorExpiry = new Date("2026-12-22T12:00:00Z");
+    buckets = quotaBucketsForSubs([premiumRow, proRow], gen, afterMirrorExpiry);
+    const ghosts = buckets.filter((b) => b.ghost);
+    expect(ghosts.length).toBeGreaterThanOrEqual(1); // the pro ghost shields
+    attributeUsageFifo(buckets, [
+      "2026-11-25T09:00:00Z",
+      "2026-11-28T09:00:00Z",
+      "2026-12-25T09:00:00Z",
+    ]);
+    const v = bucketVerdict(buckets);
+    expect(v).toMatchObject({ used: 1, limit: 4, remaining: 3 });
+    expect(v.remaining).not.toBe(1); // the re-attribution defect this kills
+    // The swap quota rides the same shape: 8 (premium) after the pro
+    // ghost absorbed its own overlap units.
+    const swapBuckets = quotaBucketsForSubs([premiumRow, proRow], swapQ, afterMirrorExpiry);
+    attributeUsageFifo(swapBuckets, ["2026-11-25T09:00:00Z", "2026-12-25T09:00:00Z"]);
+    expect(bucketVerdict(swapBuckets)).toMatchObject({ used: 1, limit: 8, remaining: 7 });
+  });
+});
 
 const h = vi.hoisted(() => {
   const subRows: Array<{ tier: string; status: string; end_date: string; start_date: string | null }> = [];

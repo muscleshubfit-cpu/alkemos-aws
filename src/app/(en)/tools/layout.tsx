@@ -32,7 +32,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: "Free Fitness Tools | Alkemos",
-    description: "8 free tools: calculators, meal planner, and AI plan generators — free to try.",
+    description: "8 free tools: calculators, water tracker, and the manual meal planner — AI plan generation for subscribers.",
     type: "website",
     locale: "en_US",
     url: "https://alkemos.com/tools",
