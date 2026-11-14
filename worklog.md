@@ -11,9 +11,9 @@ Work Log:
 - البطارية: tsc **0** · eslint **0** (التحذيران القديمان) · vitest **6,121/6,121** (227 ملفًا · +3) · next build exit 0 (2,323 صفحة) · docs_parity/docs_audit/migration_audit كلها ✓ · **صفر ميجريشن وصفر مساس بقوانين الحصص/الأسعار/الإنتاج** (منع تكرار المشكلة بمراجعة المعنى والسياق لا الأرقام فقط — تعريفات memberships.ts هي المرجع).
 
 Stage Summary:
-- التقرير الحاكم: docs/AUDIT-AI-QUOTAS-INDEPENDENT-2026-11-14.md (سيناريوهات المحرك 10/10 بجدول أدلة · الأسطح المفحوصة · 34 تناقضًا بمساراتها · الاختبارات · مشكلات غير محلولة: كاش CF العربي بنافذته الموثقة + تجاوز فحص البوابة للموظفين سلوك موثق) + §9 بالوثيقة الحاكمة AI-QUOTAS-POLICY-2026-11-14 + صف بسجل docs/README.md.
-- Push status: pushed — انظر أدناه.
-- Commit SHA: يُوثق بgit log (قانون Phase 288 — كوميت واحد للمهمة).
+- التقرير الحاكم: docs/AUDIT-AI-QUOTAS-INDEPENDENT-2026-11-14.md (سيناريوهات المحرك 10/10 بجدول أدلة · الأسطح المفحوصة · 34 تناقضًا بمساراتها · الاختبارات · مشكلات غير محلولة: تجاوز فحص البوابة للموظفين سلوك موثق) + §9 بالوثيقة الحاكمة + صف بسجل docs/README.md.
+- Push status: pushed — **ce95ae92 على main: CI ‏5/5 خضراء** (quality-gate · docs-parity · migration-state · stale-refs · deploy-aws) + **التحقق الحي**: build-info=ce95ae9 · الشروط AR/EN بالقانون الموحد 0/8/16/16 بلا أثر للاثنين/3-6 · بطاقات العضويات AR تعرض 8/16 موحدة بلا 13/26 (زال كاش ‏CF القديم) · JSON-LD ‏EN: 8/16 unified · ميتا المخططين AR/EN «for subscribers/لمشتركي بريميوم وأعلى» بلا Free · EVO ‏AR/EN والأدوات وfor-coaches وdiet-plan حية بالشكل المصحح.
+- Commit SHA: يُوثق بgit log (قانون Phase 288 — كوميت واحد للمهمة + كوميت إغلاق التوثيق هذا).
 
 ---
 Task ID: AI-QUOTAS-COMPLETION-2026-11-14
