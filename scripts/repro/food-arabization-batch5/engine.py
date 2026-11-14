@@ -1,7 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Compositional translator for the final arabization batch (batch 5).
+STATE NOTE (cleanup 2026-11-15): the batch-5 pipeline data files
+(target_translatable.json · translated_names.json · generated_names.json
+· final_names.json · remaining_untranslated.json) were removed after the
+batch shipped into src/lib/foods.ts (the source of truth) — regenerate
+them from the DB per the batch-5 report protocol before re-running.
+Kept: engine + lexicons + brands + overrides/ + review/ + manual_queue.
+"""
+
 Family handlers mirror the established batches 1-4 naming conventions.
 Fail-closed validation mirrors foods-ar-purity.test.ts exactly:
 non-empty · Arabic present · ZERO Latin · differs from nameEn · 2-80 chars · no CJK · unique.
