@@ -209,9 +209,29 @@ export function requireRowLang(qi: QueueItem): PipelineLang {
 export async function updateQueueItem(
   queueId: string,
   updates: { status: string; article_bundle?: string; error_message?: string; en_post_id?: string; ar_post_id?: string; topic?: string; topic_ar?: string; focus_keyword?: string; focus_keyword_ar?: string },
+  /**
+   * ART-6 (audit AI-GENERATION-PIPELINES 2026-11-15, P1 bucket 5): the
+   * optional COMPARE-AND-SWAP guard — when expectStatus is set, the update
+   * only lands while the row still carries that status (a lost race
+   * affects zero rows and returns a named error instead of silently
+   * overwriting a concurrent writer's state).
+   */
+  opts?: { expectStatus?: string },
 ): Promise<string | null> {
   if (!isSupabaseAdminConfigured || !supabaseAdmin) {
     return "Supabase admin not configured.";
+  }
+  if (opts?.expectStatus) {
+    const { data, error } = await supabaseAdmin
+      .from("blog_generation_queue")
+      .update(updates)
+      .eq("id", queueId)
+      .eq("status", opts.expectStatus)
+      .select("id")
+      .maybeSingle();
+    if (error) return `Queue update ${queueId}: ${error.message}`;
+    if (!data) return `Queue CAS update ${queueId}: lost the race (status no longer "${opts.expectStatus}")`;
+    return null;
   }
   const { error } = await supabaseAdmin
     .from("blog_generation_queue")
@@ -224,18 +244,44 @@ export async function updateQueueItem(
 /**
  * Mark a queue item as failed with a descriptive error message.
  * Best-effort — never throws (used in catch blocks).
- */
+ *
+ * ART-2 (audit AI-GENERATION-PIPELINES 2026-11-15, P1 bucket 5): the
+ * failure ALSO increments the row's resume_count (read-modify-write,
+ * best-effort) — the RESUME walk now caps consecutive failed resumes
+ * (≤ MAX_RESUME_ATTEMPTS) so a deterministically-failing row can never
+ * starve every slot and backstop for the whole 144h window. A missing
+ * column (migration not yet applied) degrades to the legacy write. */
+export const MAX_RESUME_ATTEMPTS = 2;
+
 export async function markQueueItemFailed(
   queueId: string,
   errorMessage: string,
 ): Promise<void> {
   if (!isSupabaseAdminConfigured || !supabaseAdmin) return;
   try {
+    // ART-2: read the current counter, then increment (PostgREST has no
+    // `col = col + 1` expression — the read-modify-write is bounded by the
+    // single-writer GHA serialization the queue already relies on).
+    let resumeUpdate: Record<string, unknown> = {};
+    try {
+      const { data: row } = await supabaseAdmin
+        .from("blog_generation_queue")
+        .select("resume_count")
+        .eq("id", queueId)
+        .maybeSingle();
+      const current = typeof (row as { resume_count?: unknown } | null)?.resume_count === "number"
+        ? (row as { resume_count: number }).resume_count
+        : 0;
+      resumeUpdate = { resume_count: current + 1 };
+    } catch {
+      /* column not applied yet → legacy write below only */
+    }
     await supabaseAdmin
       .from("blog_generation_queue")
       .update({
         status: "failed",
         error_message: errorMessage.slice(0, 2000), // cap to avoid DB column overflow
+        ...resumeUpdate,
       })
       .eq("id", queueId);
   } catch {
@@ -332,24 +378,18 @@ export async function stampQueueRowRepairDirective(
       }
       existing = (data as { article_bundle?: string | null }).article_bundle ?? null;
     }
-    const base: Record<string, unknown> = {};
-    if (existing) {
-      try {
-        Object.assign(base, JSON.parse(existing) as Record<string, unknown>);
-      } catch {
-        /* unparseable bundle → start fresh, marker still stamps */
-      }
-    }
-    const prev = parseBundleRepairLoop(existing);
-    base.repairLoop = {
-      directives: (prev?.directives ?? 0) + 1,
-      lastTarget: target,
-      lastAt: new Date().toISOString(),
-    };
-    await supabaseAdmin
-      .from("blog_generation_queue")
-      .update({ article_bundle: JSON.stringify(base) })
-      .eq("id", queueId);
+    // ART-16: optimistic-locked stamp (the observability marker can no
+    // longer be erased by a racing P0 adoption write). The pre-read bundle
+    // (the caller's knownBundle, or the fresh read above) rides the first
+    // CAS attempt.
+    await stampQueueBundleField(queueId, (base) => {
+      const prev = parseBundleRepairLoop(JSON.stringify(base));
+      base.repairLoop = {
+        directives: (prev?.directives ?? 0) + 1,
+        lastTarget: target,
+        lastAt: new Date().toISOString(),
+      };
+    }, existing);
   } catch (e) {
     console.warn(
       `[blog-queue] stampQueueRowRepairDirective degraded: ${e instanceof Error ? e.message : e}`,
@@ -412,15 +452,42 @@ export function bundleResearchSource(
  * never throws). Used by P0 when an ADOPTED/JOINED row is consumed by a
  * coach-triggered run — the row then bypasses the P5 daily quota.
  */
-export async function markQueueRowCoachRequested(queueId: string): Promise<void> {
+/* ─────────────── ART-16 (audit AI-GENERATION-PIPELINES 2026-11-15, P1
+ * bucket 5): OPTIMISTIC LOCKING for the article_bundle stamps.
+ * The repair-loop / coach-requested markers were read-modify-write with
+ * NO guard — two writers (a P5 repair stamp racing a P0 adoption stamp)
+ * could silently erase each other's marker (a lost coachRequested marker
+ * wrongly subjects the row to the daily quota). The helper below writes
+ * CONDITIONALLY on the bundle bytes it read (`WHERE article_bundle =
+ * <old>`): a lost race retries on the fresh value (re-merging the
+ * marker), twice, then degrades with a LOUD warn — never a silent
+ * erase. ──────────────────────────────────────────────────────────── */
+async function stampQueueBundleField(
+  queueId: string,
+  mutate: (base: Record<string, unknown>) => void,
+  /** ART-16: an optional pre-read bundle (the caller may already hold it)
+   *  rides the FIRST attempt; a lost CAS re-reads fresh inside the loop. */
+  preReadBundle?: string | null,
+): Promise<void> {
   if (!isSupabaseAdminConfigured || !supabaseAdmin) return;
-  try {
-    const { data } = await supabaseAdmin
-      .from("blog_generation_queue")
-      .select("article_bundle")
-      .eq("id", queueId)
-      .maybeSingle();
-    const existing = (data as { article_bundle?: string | null } | null)?.article_bundle ?? null;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    let existing: string | null;
+    if (attempt === 0 && preReadBundle !== undefined) {
+      existing = preReadBundle;
+    } else {
+      const { data, error: readErr } = await supabaseAdmin
+        .from("blog_generation_queue")
+        .select("article_bundle")
+        .eq("id", queueId)
+        .maybeSingle();
+      if (readErr || !data) {
+        console.warn(
+          `[blog-queue] stampQueueBundleField read failed (attempt ${attempt + 1}): ${readErr?.message ?? "row not found"}`,
+        );
+        return;
+      }
+      existing = (data as { article_bundle?: string | null }).article_bundle ?? null;
+    }
     const base: Record<string, unknown> = {};
     if (existing) {
       try {
@@ -429,11 +496,46 @@ export async function markQueueRowCoachRequested(queueId: string): Promise<void>
         /* unparseable bundle → start fresh, marker still stamps */
       }
     }
-    base.coachRequested = true;
-    await supabaseAdmin
+    mutate(base);
+    const next = JSON.stringify(base);
+    if (next === existing) return; // nothing to change
+    // ART-16: the conditional write — only wins when the bundle is still
+    // the bytes we read. PostgREST returns the affected row on success.
+    // ART-16: the CAS condition — a NULL bundle matches via .is(), a
+    // string bundle via .eq() (PostgREST eq-null does not match NULL).
+    // The filter rides BEFORE the terminal .maybeSingle() (the builder
+    // chain ends there).
+    const query = supabaseAdmin
       .from("blog_generation_queue")
-      .update({ article_bundle: JSON.stringify(base) })
+      .update({ article_bundle: next })
       .eq("id", queueId);
+    const conditional = existing === null
+      ? query.is("article_bundle", null)
+      : query.eq("article_bundle", existing);
+    const { data: updated, error: writeErr } = await conditional
+      .select("id")
+      .maybeSingle();
+    if (writeErr) {
+      console.warn(`[blog-queue] stampQueueBundleField write failed: ${writeErr.message}`);
+      return;
+    }
+    if (updated) return; // won the CAS
+    // Lost the race — the bundle changed under us: retry on the fresh
+    // value so BOTH markers survive (merge, never overwrite).
+  }
+  console.warn(
+    `[blog-queue] stampQueueBundleField: 3 CAS attempts lost on ${queueId} — the marker was NOT stamped (loud by design, never a silent erase)`,
+  );
+}
+
+export async function markQueueRowCoachRequested(queueId: string): Promise<void> {
+  if (!isSupabaseAdminConfigured || !supabaseAdmin) return;
+  try {
+    // ART-16: optimistic-locked stamp (a racing writer can no longer
+    // erase the coachRequested quota-exemption marker).
+    await stampQueueBundleField(queueId, (base) => {
+      base.coachRequested = true;
+    });
   } catch (e) {
     console.warn(
       `[blog-queue] markQueueRowCoachRequested degraded: ${e instanceof Error ? e.message : e}`,
@@ -566,6 +668,14 @@ export async function findResumableRow(
         "failed",
       ])
       .gte("created_at", since)
+      // ART-2 (audit P1): the resume cap — a row that already failed
+      // MAX_RESUME_ATTEMPTS resumes is EXCLUDED (it is deterministically
+      // broken; every further resume burns a full P2→P4 budget and
+      // starves the slots). The `.lte` also covers pre-migration rows
+      // (default 0). A missing column errors the query → null → the
+      // P0 route degrades to the ADOPT/JOIN/CREATE walk (honest, loud in
+      // the logs, never a silent wrong pick).
+      .lte("resume_count", MAX_RESUME_ATTEMPTS)
       .order("created_at", { ascending: false })
       .limit(1);
     if (error) {

@@ -2,8 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin, isSupabaseAdminConfigured } from "@/lib/supabase/admin";
 import { normalizeCategory } from "@/lib/blog-server";
 import { countWords, splitFaqSection, filterFaqsByRelevance, clampMetaTitle, clampMetaDescription, type OutlinePlan } from "@/lib/blog-pipeline";
+// ART-4: the shared prose word counter (markdown symbols stripped, FAQ split out).
+import { countProseWords } from "@/lib/blog-word-count";
+// ART-7: deterministic internal-link verification (slug exists + language rule).
+import { verifyInternalLinks } from "@/lib/blog-link-verify";
 import { scanLatinContamination } from "@/lib/blog-msa";
-import { runP5QualityGates, completeTitlePrefixAnchors } from "@/lib/blog-quality-gates";
+import { runP5QualityGates, completeTitlePrefixAnchors, maxShingleContainment, SHINGLE_CONTAINMENT_CEILING } from "@/lib/blog-quality-gates";
 import { verifyBodyLinks } from "@/lib/blog-link-verify";
 import { EDITORIAL_FAQ_COUNT_RANGE, EDITORIAL_AUTHORITY_DOMAINS, EDITORIAL_SEED_AUTHORITY_LINKS } from "@/lib/blog-editorial-law";
 import { getRecentPostsByLanguage } from "@/lib/blog-topics";
@@ -187,20 +191,43 @@ export async function GET(request: NextRequest) {
       throw new Error("p5: missing reviewed artifacts — rerun p4-review");
     }
 
-    // AUDIT_REPORT §9-0.3 (2026-09-29) — publish-layer LENGTH GATE (same
-    // mechanism as the Phase-176 Latin gate below: fail honestly → the row
-    // is marked failed with the diagnostic → the 23:40 UTC dispatch backstop
-    // tops the day's slot up with a fresh run). Measured on the SAME basis
-    // as reading_time and the audit's n=109 baseline (review.markdown — the
-    // lifted FAQ section included, it renders as the visible FAQ cards).
-    // Runs BEFORE the quota/dup guards so a short draft fails fast without
-    // spending DB roundtrips; a failed row never consumed the daily quota
-    // (the guard counts PUBLISHED rows only).
-    const draftWords = countWords(review.markdown);
+    // ART-4 (audit AI-GENERATION-PIPELINES 2026-11-15, P1 bucket 5): the
+    // length gate now measures PROSE — (a) the FAQ section is SPLIT OUT
+    // first (it renders as the separate FAQ cards, and its 150-300 words
+    // used to count towards the 1000-word floor), and (b) markdown
+    // scaffolding symbols (##, bullets, link targets) are stripped by the
+    // shared countProseWords before counting. The split is hoisted above
+    // the gate so both consumers share ONE result. The floor VALUE and
+    // the fail-honest mechanism are unchanged.
+    const { body: earlyFaqStrippedMd, faqs: earlyFaqs } = splitFaqSection(lang, review.markdown);
+    const draftWords = countProseWords(earlyFaqStrippedMd);
     if (draftWords < P5_WORD_FLOOR) {
       throw new Error(
-        `p5: article too short (${draftWords} words < ${P5_WORD_FLOOR}-word floor) — rerun p2-content`,
+        `p5: article too short (${draftWords} prose words, FAQ excluded, < ${P5_WORD_FLOOR}-word floor) — rerun p2-content`,
       );
+    }
+
+    // ART-3 (audit P1): the meta-description P5 fallback — a legacy/edge
+    // outline whose clamped description is empty or <80 chars used to
+    // publish a SERP-empty snippet (P1 now fails fast for NEW outlines;
+    // this belt covers rows already in the queue + model drops). The
+    // fallback is DETERMINISTIC: the H2-less first paragraph of the body,
+    // clamped by the same word-boundary law.
+    let publishableMetaDescription = clampMetaDescription(outline.metaDescription, lang);
+    if (publishableMetaDescription.trim().length < 80) {
+      const firstPara = earlyFaqStrippedMd
+        .split(/\n\s*\n/)
+        .map((para) => para.replace(/^#{1,6}\s+/gm, "").trim())
+        .find((para) => para.length > 60) ?? "";
+      if (firstPara) {
+        publishableMetaDescription = clampMetaDescription(
+          `${outline.title}${lang === "ar" ? " — " : ": "}${firstPara}`,
+          lang,
+        );
+        console.log(
+          `[blog/p5-publish] ART-3 meta-description fallback applied (${publishableMetaDescription.length} chars)`,
+        );
+      }
     }
 
     // PHASE 171 (proposal ج) — DAILY QUOTA GUARD (publish-layer law):
@@ -234,6 +261,32 @@ export async function GET(request: NextRequest) {
           `[blog/p5-publish] weekly quota already met for ${lang} (${publishedThisWeek} automated row(s) created this week published) — skipping ${qi.id}`,
         );
         return quotaSkipWeekly(qi.id, lang, publishedThisWeek);
+      }
+    }
+
+    // ART-6 (audit AI-GENERATION-PIPELINES 2026-11-15, P1 bucket 5): the
+    // CAS CLAIM — the daily/weekly quota guards below were read-then-
+    // publish with no compare-and-swap, so a manual dispatch racing the
+    // GHA-serialized run could double-publish. The row is now atomically
+    // claimed (status → "publishing", conditional on the EXACT status this
+    // request validated): a retry/dispatch that loses the claim gets an
+    // honest 409. The claim also narrows the cross-row quota race to the
+    // claim→insert gap (the guards re-run BELOW the claim — the counts
+    // see every row already flipped to published by a sibling run). The
+    // final flip below is CAS'd on "publishing" the same way.
+    {
+      const { data: claimed, error: claimErr } = await supabaseAdmin
+        .from("blog_generation_queue")
+        .update({ status: "publishing" })
+        .eq("id", qi.id)
+        .eq("status", qi.status)
+        .select("id")
+        .maybeSingle();
+      if (claimErr || !claimed) {
+        return NextResponse.json(
+          { ok: false, queueId: qi.id, skipped: true, reason: "publish_claim_lost", actual_status: qi.status },
+          { status: 409 },
+        );
       }
     }
 
@@ -280,7 +333,9 @@ export async function GET(request: NextRequest) {
     // relevant → no FAQ cards at all (the Phase-172 no-forced-filler
     // law). AR answers that still carry bare Latin tokens are dropped
     // the same way (belt-and-braces for the P4 repair gate).
-    const { body: faqStrippedMd, faqs: parsedFaqs } = splitFaqSection(lang, review.markdown);
+    // ART-4: the split already ran above the length gate — reuse it.
+    const faqStrippedMd = earlyFaqStrippedMd;
+    const parsedFaqs = earlyFaqs;
     const relevanceHint = `${outline.title} ${qi.focus_keyword ?? ""}`;
     const relevantFaqs = filterFaqsByRelevance(parsedFaqs, relevanceHint);
     const faqRelevanceDropped = parsedFaqs.length - relevantFaqs.length;
@@ -338,17 +393,55 @@ export async function GET(request: NextRequest) {
         `[blog/p5-publish] link-verify: ${linkVerify.unverified.length} link(s) inconclusive (kept — 403/405/429/timeout): ${linkVerify.unverified.slice(0, 5).join(", ")}`,
       );
     }
-    const verifiedMd = linkVerify.md;
+    // ART-7 (audit P1): INTERNAL links were never verified — a hallucinated
+    // /blog/slug or a wrong-language /ar/blog/ prefix sailed into
+    // production (the internal variant of the «85 dead links» class).
+    // Deterministic check against the PUBLISHED slugs of the correct
+    // language: a dead or wrong-prefix internal link is unwrapped to its
+    // anchor text exactly like a dead citation. Fail-soft: a DB hiccup
+    // skips the pass (never fails the publish on an infra miss).
+    const verifiedExternalMd = linkVerify.md;
+    const internalVerify = await verifyInternalLinks(verifiedExternalMd, lang, {
+      // ART-7: the published-slug loader — one cached query per language.
+      loadSlugs: async (slugLang) => {
+        const db = supabaseAdmin!;
+        const { data } = await db
+          .from("blog_posts")
+          .select("slug")
+          .eq("is_published", true)
+          .eq("language", slugLang)
+          .limit(2000);
+        return new Set((data ?? []).map((r) => String((r as { slug?: unknown }).slug ?? "")));
+      },
+    });
+    if (internalVerify.removed.length > 0) {
+      console.warn(
+        `[blog/p5-publish] internal-link verify: ${internalVerify.removed.length} dead/wrong-language link(s) unwrapped: ${internalVerify.removed.slice(0, 5).join(", ")}`,
+      );
+    }
+    const verifiedMd = internalVerify.md;
     // AUDIT_REPORT §9-1.4: the FAQ ceiling applies to the degraded
     // research0 path too (its pool holds up to 10 — the lifted path is
     // already capped at 7 by splitFaqSection).
+    // ART-14 (audit AI-GENERATION-PIPELINES 2026-11-15, P1 bucket 5): the
+    // research0 FALLBACK list now passes the SAME AR contamination scan
+    // the lifted list passes — it used to bypass the filter entirely, so
+    // a degraded path shipped Latin-contaminated FAQ cards the lifted
+    // path would never allow.
+    const fallbackFaqs = filterFaqsByRelevance(bundle.research0?.faqs ?? [], relevanceHint).slice(
+      0,
+      EDITORIAL_FAQ_COUNT_RANGE.max,
+    );
     const finalFaqJson =
       finalFaqs.length > 0
         ? finalFaqs
-        : filterFaqsByRelevance(bundle.research0?.faqs ?? [], relevanceHint).slice(
-            0,
-            EDITORIAL_FAQ_COUNT_RANGE.max,
-          );
+        : lang === "ar"
+          ? fallbackFaqs.filter(
+              (f) =>
+                scanLatinContamination(f.question).count === 0 &&
+                scanLatinContamination(f.answer).count === 0,
+            )
+          : fallbackFaqs;
 
     // AUDIT_REPORT §9-المرحلة 1, item 4 (2026-09-29) — the EXPANDED
     // deterministic quality battery (G2-G6; G1 length ran above).
@@ -401,10 +494,64 @@ export async function GET(request: NextRequest) {
       bodyMd: gateMd,
       faqCount: finalFaqJson.length,
       legalTitles,
+      // ART-15: the outline's own headings — the body must still cover
+      // every section the outline promised (P4 may polish, not drop).
+      outlineHeadings: Array.isArray(outline.sections) ? outline.sections : [],
     });
+    // ART-11 (audit P1): the review's own keywordCoverage verdict was
+    // DECORATIVE — a review that graded its article's coverage «poor»
+    // still published. The verdict now rides the battery as a directed
+    // p4-review violation (the review model already knows the keyword —
+    // the repair directive asks it to weave the missing coverage in).
+    const reviewCoverage = (bundle.review as { report?: { keywordCoverage?: unknown } } | undefined)?.report?.keywordCoverage;
+    if (reviewCoverage === "poor") {
+      gateViolations.push("review graded keyword coverage as poor (the article under-covers its focus keyword)");
+    }
     if (gateViolations.length > 0) {
       throw new Error(
         `p5: quality-gate battery failed — ${gateViolations.join(" | ")} — rerun p4-review`,
+      );
+    }
+
+    // ART-15 (audit P1): the 5-gram prose-similarity check — the new
+    // body's shingle containment against each of the last 8 published
+    // bodies of this language. Above the ceiling the repair is
+    // REGENERATION (p2-content), so it throws its own named error instead
+    // of riding the p4-review battery. Fail-soft: a DB hiccup skips the
+    // check (never fails the publish on an infra miss).
+    try {
+      const { data: recentBodies } = await supabaseAdmin
+        .from("blog_posts")
+        .select("content")
+        .eq("is_published", true)
+        .eq("language", lang)
+        .order("created_at", { ascending: false })
+        .limit(8);
+      const publishedBodies = (recentBodies ?? [])
+        .map((r) => String((r as { content?: unknown }).content ?? ""))
+        .filter((c) => c.length > 0);
+      const shingle = maxShingleContainment(gateMd, publishedBodies);
+      if (shingle && shingle.ratio > SHINGLE_CONTAINMENT_CEILING) {
+        throw new Error(
+          `p5: body 5-gram overlap ${(shingle.ratio * 100).toFixed(0)}% with published article #${shingle.againstIndex + 1} (> ${(SHINGLE_CONTAINMENT_CEILING * 100).toFixed(0)}% ceiling) — rerun p2-content`,
+        );
+      }
+    } catch (e) {
+      // The shingle violation itself must PROPAGATE (rethrow); only the
+      // DB-fetch hiccup degrades open.
+      if (e instanceof Error && e.message.includes("5-gram overlap")) throw e;
+      console.warn("[blog/p5-publish] ART-15 shingle check degraded open:", e instanceof Error ? e.message : e);
+    }
+
+    // ART-17 (audit P1): the <3-images NOTICE — the P3 completion loop now
+    // draws from FALLBACK_QUERIES directly (see p3-images), so a healthy
+    // run lands 3+; fewer than 3 means the stock sources themselves ran
+    // dry. Logged loudly for the queue-health digest (never a publish
+    // blocker: the article body renders fine with 1-2 images, and a hard
+    // gate here would burn the whole P0→P4 chain over an image miss).
+    if (images.length < 3) {
+      console.warn(
+        `[blog/p5-publish] ART-17 notice: only ${images.length} image(s) sourced for ${slug} (stock sources ran dry) — body embeds degrade gracefully`,
       );
     }
 
@@ -430,7 +577,7 @@ export async function GET(request: NextRequest) {
       // PHASE 178: excerpt + meta_description ride the same clamped value
       // (the P1 parser already clamps; this is the idempotent safety for
       // outlines serialized into older queue rows) — no more mid-word cuts.
-      excerpt: clampMetaDescription(outline.metaDescription, lang),
+      excerpt: publishableMetaDescription,
       // BODY IMAGE EMBEDDING LAW: images[0] = featured/og cover; images[1..N]
       // are inserted into the article markdown at section boundaries (was:
       // dropped entirely → every post was a wall of text).
@@ -439,7 +586,7 @@ export async function GET(request: NextRequest) {
       // old `.slice(0, 60)` mid-word hard cut (23/31 EN titles were landing
       // in the SERP truncated mid-word; AR budget is wider at 70).
       meta_title: clampMetaTitle(outline.title, lang),
-      meta_description: clampMetaDescription(outline.metaDescription, lang),
+      meta_description: publishableMetaDescription,
       focus_keyword: qi.focus_keyword,
       keywords: outline.lsiKeywords,
       category: safeCategory,
@@ -479,13 +626,22 @@ export async function GET(request: NextRequest) {
     if (insertErr) throw new Error(`Post insert (${lang}): ${insertErr.message}`);
     publishedPostId = post?.id || null;
 
-    const updateErr = await updateQueueItem(qi.id, {
-      status: "published",
-      ...(lang === "en"
-        ? { en_post_id: publishedPostId ?? undefined }
-        : { ar_post_id: publishedPostId ?? undefined }),
-    });
-    if (updateErr) throw new Error(updateErr);
+    // ART-6: the final flip is CAS'd on "publishing" — only the claim
+    // holder can complete the publish (a stale retry that re-read the row
+    // as "reviewed" can never overwrite a completed publish). The flip
+    // rides updateQueueItem's expectStatus CAS so the queue module stays
+    // the single write surface.
+    const flipErr = await updateQueueItem(
+      qi.id,
+      {
+        status: "published",
+        ...(lang === "en"
+          ? { en_post_id: publishedPostId ?? undefined }
+          : { ar_post_id: publishedPostId ?? undefined }),
+      },
+      { expectStatus: "publishing" },
+    );
+    if (flipErr) throw new Error(flipErr);
 
     // PHASE 157 — BILINGUAL HANDSHAKE (best-effort, never fails the
     // publish): find the twin queue row by pair_id; if the twin already

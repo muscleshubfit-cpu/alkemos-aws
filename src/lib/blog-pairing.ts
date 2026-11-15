@@ -40,6 +40,9 @@ import { parseJSON } from "./ai-provider";
 import { dispatchAI } from "./ai-router";
 import { type LanguageResearch } from "./blog-research";
 import { ARTICLE_ANGLES } from "./blog-pipeline";
+// ART-10: the same lexical+semantic topic dedup the walks use.
+import { getRecentPostsByLanguage, isDuplicateTopic } from "./blog-topics";
+import { findSemanticTopicCollision } from "./blog-semantic";
 // PHASE 171 (blog-audit proposal ب): parsePairingJSON rides the
 // 161.5-hardened parseJSON from ai-provider (was the weak parseJSONLoose —
 // strict-only, no truncation repair / control-char escaping).
@@ -325,6 +328,29 @@ Return STRICT JSON only:
         arCandidates: arResearch.topics,
       });
       if (choice) {
+        // ART-10 (audit AI-GENERATION-PIPELINES 2026-11-15, P1 bucket 9):
+        // a NEW Arabic phrasing was sealed into the brief with NO
+        // duplication check at all (the EN candidate was pre-filtered;
+        // the free-form Arabic topic was not). The SAME lexical+semantic
+        // dedup the topic walks run now guards the seal — a collision
+        // rejects the attempt (the retry redraws; the route degrades to
+        // legacy V3 when all attempts collide, exactly the no-blind-pair
+        // law). The literal candidates were already dup-filtered upstream
+        // — the check below is cheap for them.
+        const arIsLiteral = arResearch.topics.some((c) => c.trim() === choice.topicAr);
+        if (!arIsLiteral) {
+          const recentArTitles = await getRecentPostsByLanguage("ar", 100).catch(() => []);
+          const arDup = recentArTitles.some(
+            (rt) =>
+              isDuplicateTopic(choice.topicAr, choice.topicAr, [rt]).duplicate ||
+              findSemanticTopicCollision(choice.topicAr, choice.topicAr, [rt]).collision,
+          );
+          if (arDup) {
+            lastError = new Error(`pairing: new Arabic topic duplicates a recent AR article`);
+            console.warn(`[blog-pairing] attempt ${attempt} AR-topic duplicate — retrying`);
+            continue;
+          }
+        }
         console.log(
           `[blog-pairing] paired (${provider}:${model}, attempt ${attempt}) angle=${choice.angleId}`,
         );

@@ -181,7 +181,12 @@ export async function RecipeDetailView({
             lang={lang}
           />
 
-          {/* optional enrichment values (owner §2 — never fabricated) */}
+          {/* optional enrichment values (owner §2 — never fabricated).
+              REC-8 (audit AI-GENERATION-PIPELINES 2026-11-15, P1): a
+              PARTIAL-coverage value (some ingredients carry the datum,
+              some do not) is displayed WITH an explicit «بيانات جزئية»
+              note instead of posing as a confident total; complete
+              coverage renders the old clean form. */}
           {detail.satFatPerServing !== null || detail.sodiumPerServing !== null ? (
             <p className="mt-3 text-xs text-[var(--muted-foreground)]">
               {isAr ? "قيم إضافية لكل حصة:" : "Additional per-serving values:"}{" "}
@@ -196,10 +201,22 @@ export async function RecipeDetailView({
                   ? `صوديوم ${detail.sodiumPerServing} مجم`
                   : `sodium ${detail.sodiumPerServing} mg`
                 : null}
-              {" — "}
-              {isAr
-                ? "تُدرج فقط عند توفر بيانات مرجعية موثوقة."
-                : "listed only where reliable reference data exists."}
+              {(detail.satFatCoverage === "partial" || detail.sodiumCoverage === "partial") && (
+                <span className="font-semibold">
+                  {" — "}
+                  {isAr
+                    ? "بيانات جزئية (ليست كل المكونات تحمل هذا العنصر بالمرجع) — القيمة مبدئية لا إجمالية."
+                    : "partial data (not every ingredient carries this nutrient in the reference) — an indicative value, not a total."}
+                </span>
+              )}
+              {detail.satFatCoverage !== "partial" && detail.sodiumCoverage !== "partial" && (
+                <>
+                  {" — "}
+                  {isAr
+                    ? "تُدرج فقط عند توفر بيانات مرجعية موثوقة."
+                    : "listed only where reliable reference data exists."}
+                </>
+              )}
             </p>
           ) : null}
 

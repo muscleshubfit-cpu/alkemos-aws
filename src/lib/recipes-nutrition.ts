@@ -80,6 +80,8 @@ export type NutritionComputation = {
   sources: NutritionSourceRecord[];
   consistency: ConsistencyRecord;
   sodiumCoverage: "none" | "partial" | "complete";
+  /** REC-8: the same coverage law for saturated fat. */
+  satFatCoverage: "none" | "partial" | "complete";
   totalWeightG: number;
   servingWeightG: number;
 };
@@ -181,7 +183,39 @@ export function computeRecipeNutrition(input: {
       );
     }
 
-    const factor = ing.amount_g / 100;
+    // REC-5 (audit AI-GENERATION-PIPELINES 2026-11-15, P1 bucket 6):
+    // WEIGHT-STATE MATCHING — the ref row's own state (encoded in its
+    // slug: "-cooked" suffix vs raw default) must agree with the declared
+    // weight_state, else the grams are CONVERTED through yield_cooked_g.
+    // The measured defect: «150جم دجاج مطبوخ» on a RAW ref row was
+    // computed as 150g of RAW chicken — silently under-counting ~27% (the
+    // eater's 150 cooked grams came from ~215 raw grams). The conversion
+    // is the standard cooking-yield math: raw_eq = cooked_g ÷ (yield/100);
+    // when the ref row itself is COOKED and the grams are declared RAW,
+    // cooked_eq = raw_g × (yield/100). Rows without a yield datum keep the
+    // legacy arithmetic (documented honest limit — the curated seed fills
+    // yields for the cookable families).
+    const refIsCooked = /-cooked$/.test(ref.slug);
+    let effectiveAmountG = ing.amount_g;
+    if (refIsCooked !== (ing.weight_state === "cooked")) {
+      const yieldG = typeof ref.yield_cooked_g === "number" && ref.yield_cooked_g > 0
+        ? ref.yield_cooked_g
+        : null;
+      if (yieldG) {
+        effectiveAmountG = refIsCooked
+          ? ing.amount_g * (yieldG / 100) // raw grams → cooked-equivalent on a cooked row
+          : ing.amount_g / (yieldG / 100); // cooked grams → raw-equivalent on a raw row
+        console.warn(
+          `[recipes-nutrition] REC-5 weight-state conversion: "${ing.name_en}" ${ing.amount_g}g ${ing.weight_state} on ${ref.slug} → ${Math.round(effectiveAmountG)}g effective (yield ${yieldG})`,
+        );
+      } else {
+        console.warn(
+          `[recipes-nutrition] REC-5 weight-state mismatch WITHOUT yield datum: "${ing.name_en}" ${ing.amount_g}g ${ing.weight_state} on ${ref.slug} — legacy arithmetic kept (no conversion possible)`,
+        );
+      }
+    }
+
+    const factor = effectiveAmountG / 100;
     const p = ref.per100g;
     calories += p.calories * factor;
     protein += p.protein_g * factor;
@@ -252,12 +286,17 @@ export function computeRecipeNutrition(input: {
 
   const sodiumCoverage: "none" | "partial" | "complete" =
     sodiumCount === 0 ? "none" : sodiumCount === ingredients.length ? "complete" : "partial";
+  // REC-8 (audit P1): the SAME coverage law for saturated fat — a partial
+  // sat-fat sum was displayed as a confident total with no caveat.
+  const satFatCoverage: "none" | "partial" | "complete" =
+    satFatCount === 0 ? "none" : satFatCount === ingredients.length ? "complete" : "partial";
 
   return {
     totals,
     perServing,
     sources,
     consistency,
+    satFatCoverage,
     sodiumCoverage,
     totalWeightG: round2(totalWeight),
     servingWeightG: round2(totalWeight / servings),

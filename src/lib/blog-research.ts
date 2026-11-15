@@ -134,9 +134,24 @@ function asStringArray(v: unknown, max: number): string[] {
     .slice(0, max);
 }
 
-function normalizeResearch(rawInput: unknown): LanguageResearch {
+function normalizeResearch(rawInput: unknown, lang?: "en" | "ar"): LanguageResearch {
   // Loose record view — model JSON fields are defensively coerced below.
   const raw = (typeof rawInput === "object" && rawInput !== null ? rawInput : {}) as Record<string, unknown>;
+  // ART-8 (audit AI-GENERATION-PIPELINES 2026-11-15, P1 bucket 5): the
+  // LANGUAGE CHECK — an AR run whose model answered with English keywords
+  // /FAQs/questions polluted the P2 prompt with the wrong script (and the
+  // EN run vice versa). Each free-text item must carry a meaningful ratio
+  // of the run language's script; wrong-language items are DROPPED (the
+  // same honest-filter law as the dup pre-filter — never a forced keep).
+  const arabicCharRatio = (t: string) => {
+    const letters = (t.match(/[\u0600-\u06FF]/g) ?? []).length;
+    const latin = (t.match(/[A-Za-z]/g) ?? []).length;
+    const total = letters + latin;
+    if (total < 4) return 1; // too short to judge — keep
+    return letters / total;
+  };
+  const matchesLang = (t: string) =>
+    !lang ? true : lang === "ar" ? arabicCharRatio(t) >= 0.5 : arabicCharRatio(t) <= 0.5;
   const keywords: ResearchKeyword[] = Array.isArray(raw.keywords)
     ? (raw.keywords as unknown[])
         .map((k): ResearchKeyword => {
@@ -148,6 +163,8 @@ function normalizeResearch(rawInput: unknown): LanguageResearch {
           };
         })
         .filter((k: ResearchKeyword) => k.keyword.length > 2)
+        // ART-8: wrong-language keywords never enter the bundle.
+        .filter((k: ResearchKeyword) => matchesLang(k.keyword))
         .slice(0, 10)
     : [];
 
@@ -161,6 +178,8 @@ function normalizeResearch(rawInput: unknown): LanguageResearch {
           };
         })
         .filter((f: ResearchFaq) => f.question.length > 5 && f.answer.length > 2)
+        // ART-8: wrong-language FAQs never enter the bundle.
+        .filter((f: ResearchFaq) => matchesLang(f.question) && matchesLang(f.answer))
         .slice(0, 10)
     : [];
 
@@ -181,6 +200,15 @@ function normalizeResearch(rawInput: unknown): LanguageResearch {
         .slice(0, 12)
     : [];
 
+  // ART-8: the FAQ FLOOR — the prompt asks ≥4 questions; a run that
+  // returned fewer (or lost them to the language filter) fails HONESTLY
+  // at P0 (the ×3 retry redraws the research) instead of shipping an
+  // FAQ-starved bundle whose P5 FAQ cards silently degrade.
+  if (faqs.length < 4) {
+    throw new Error(
+      `P0 ${lang ?? "?"}: research returned ${faqs.length} usable FAQs (< 4 floor) — retrying draws fresh research`,
+    );
+  }
   return {
     keywords,
     faqs,
@@ -540,7 +568,7 @@ Return STRICT JSON only, no markdown fences:
       },
     );
     const parsed = parseJSON<Record<string, unknown>>(text);
-    const data = parsed ? normalizeResearch(parsed) : null;
+    const data = parsed ? normalizeResearch(parsed, lang) : null;
     if (data && data.topics.length > 0 && data.keywords.length >= 5) {
       // Attach the AUTHORITATIVE live-search evidence from groundingMetadata
       // (real queries + real result pages) — model JSON never fabricates it.

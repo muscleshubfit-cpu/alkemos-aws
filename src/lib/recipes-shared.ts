@@ -205,6 +205,10 @@ export type RecipeDetail = RecipeSummary & {
   fiberPerServing: number;
   satFatPerServing: number | null;
   sodiumPerServing: number | null;
+  /** REC-8 (audit P1): enrichment coverage — a partial sum is displayed
+   *  WITH an explicit «بيانات جزئية» note instead of a confident total. */
+  satFatCoverage?: "none" | "partial" | "complete";
+  sodiumCoverage?: "none" | "partial" | "complete";
   steps: Array<{ position: number; text: string }>;
   tips: string | null;
   storageInfo: string | null;

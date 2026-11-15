@@ -53,6 +53,8 @@ vi.mock("@/lib/blog-server", () => ({ normalizeCategory: vi.fn((c: string) => c 
 // behavior lives in blog-link-verify.test.ts; here it is a no-op
 // pass-through so the behavioral P5 tests never touch the network.
 vi.mock("@/lib/blog-link-verify", () => ({
+  // ART-7 (P1): the internal-link verify pass — boundary no-op here.
+  verifyInternalLinks: vi.fn(async (md: string) => ({ checked: [], removed: [], md })),
   verifyBodyLinks: vi.fn(async (md: string) => ({
     checked: [],
     dead: [],
@@ -138,6 +140,9 @@ describe("AUDIT_REPORT §9-0.3 — P5 publish-layer length gate", () => {
   it("measures the reviewed markdown (reading_time + audit-baseline basis)", () => {
     const src = read(P5_ROUTE);
     expect(src).toContain("countWords(review.markdown)");
+    // ART-4 (P1): the FLOOR measures prose — markdown symbols stripped and
+    // the FAQ section split out before counting.
+    expect(src).toContain("countProseWords(earlyFaqStrippedMd)");
   });
 
   it("fails honestly with the rerun diagnostic", () => {
@@ -244,7 +249,9 @@ describe("AUDIT_REPORT §9-0.3 — P5 length gate BEHAVIOR (route invoked)", () 
     expect(res.status).toBe(500);
     const body = (await res.json()) as { error?: string };
     expect(body.error).toContain("article too short");
-    expect(body.error).toContain("words < 1000-word floor");
+    // ART-4 (P1, same-commit canary update): the floor now measures PROSE
+    // (markdown stripped, FAQ split out) — the message names both.
+    expect(body.error).toContain("prose words, FAQ excluded, < 1000-word floor");
     expect(blogQueue.markQueueItemFailed).toHaveBeenCalledTimes(1);
     const [failedId, failedMsg] = (blogQueue.markQueueItemFailed as ReturnType<typeof vi.fn>).mock
       .calls[0] as [string, string];
@@ -252,7 +259,7 @@ describe("AUDIT_REPORT §9-0.3 — P5 length gate BEHAVIOR (route invoked)", () 
     expect(failedMsg).toContain("p5: article too short");
     expect(failedMsg).toContain("rerun p2-content");
     // the diagnostic carries the measurement — ops can see WHY it failed
-    expect(failedMsg).toMatch(/\d+ words < 1000/);
+    expect(failedMsg).toMatch(/\d+ prose words, FAQ excluded/);
   });
 
   it("PASSES an adequate 1500-word draft on to the next guard (no false block)", async () => {

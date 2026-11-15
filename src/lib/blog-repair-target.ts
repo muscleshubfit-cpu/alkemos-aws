@@ -61,7 +61,11 @@ export function mapP5FailureToRerunTarget(message: string): P5RerunTarget | null
   // G1 — publish-layer word floor (audit §3.1: 419/1077-word drafts):
   // the writing step is the root cause; only regenerating content fixes
   // it (the review pass cannot conjure 800 missing words honestly).
-  if (/article too short \(\d+ words </.test(msg)) return "p2-content";
+  // ART-4 reworded the message (prose words, FAQ excluded) — the regex
+  // accepts BOTH the legacy and the new wording (same-commit law).
+  if (/article too short \(\d+(?: prose)? words/.test(msg)) return "p2-content";
+  // ART-15: wholesale prose reuse vs a published body — regeneration.
+  if (msg.includes("5-gram overlap")) return "p2-content";
   // G2–G6 deterministic battery (FAQ count, H2 sections, anchors,
   // authority links, quoted search phrases) — the draft exists; the
   // review pass is the step that rewrites it into compliance.

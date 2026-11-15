@@ -420,6 +420,42 @@ export async function enqueueAiJob(opts: {
     throw new Error("SUPABASE_SERVICE_ROLE_KEY not configured");
   }
   const clean = sanitizeJobPayload(opts.type, opts.payload);
+  // NUT-9 (audit AI-GENERATION-PIPELINES 2026-11-15, P1 bucket 9): the
+  // SHORT-WINDOW DEDUP — a double click (or a retrying client) used to
+  // insert two identical jobs that BOTH ran and BOTH burned quota on
+  // success (billing is success-only per job_ref — two distinct jobs
+  // carry two distinct refs). A QUEUED/PROCESSING job of the SAME type
+  // for the SAME requester+client enqueued in the last 3 minutes is
+  // returned AS-IS: the watcher reconciles to one plan either way, and
+  // no second generation runs. Best-effort by the queue's law — a
+  // lookup error proceeds to a fresh insert (never blocks the click).
+  try {
+    const clientId = String(opts.payload?.clientId ?? "");
+    const dedupWindowStart = new Date(Date.now() - 3 * 60 * 1000).toISOString();
+    let dedupQuery = supabaseAdmin
+      .from("ai_jobs")
+      .select("id, payload")
+      .eq("job_type", opts.type)
+      .in("status", ["queued", "processing"])
+      .gte("created_at", dedupWindowStart)
+      .order("created_at", { ascending: false })
+      .limit(5);
+    if (opts.requestedBy) dedupQuery = dedupQuery.eq("requested_by", opts.requestedBy);
+    const { data: recent, error: dedupErr } = await dedupQuery;
+    if (!dedupErr && Array.isArray(recent)) {
+      const twin = (recent as Array<{ id: string; payload: Record<string, unknown> }>).find(
+        (r) => String(r.payload?.clientId ?? "") === clientId && clientId !== "",
+      );
+      if (twin) {
+        console.log(
+          `[ai-jobs] NUT-9 dedup: returning existing ${opts.type} job ${twin.id.slice(0, 8)} (same requester+client within 3m)`,
+        );
+        return { id: twin.id };
+      }
+    }
+  } catch {
+    /* dedup is best-effort — proceed to a fresh insert */
+  }
   const { data, error } = await supabaseAdmin
     .from("ai_jobs")
     .insert({

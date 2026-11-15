@@ -77,6 +77,11 @@ vi.mock("@/lib/supabase/admin", () => ({
         filters.push((r) => String(r[col]) >= String(val));
         return builder;
       };
+      // ART-2 (P1): the resume-cap filter on resume_count.
+      builder.lte = (col: string, val: unknown) => {
+        filters.push((r) => Number(r[col] ?? 0) <= Number(val));
+        return builder;
+      };
       builder.order = (column: string, opts?: { ascending?: boolean }) => {
         captured.column = column;
         captured.ascending = opts?.ascending ?? false;

@@ -21,6 +21,10 @@
 
 import { recomputeNutritionTotals } from "@/lib/nutrition-totals";
 import type { NutritionPlanContent } from "@/lib/plan-generator";
+// NUT-6 (audit AI-GENERATION-PIPELINES 2026-11-15, P1): the day-budget
+// closure law — the pure zero-dependency gate leaf (client-safe by
+// construction, the same module the runner's materialization uses).
+import { dayBudgetClosureViolation } from "@/lib/plan-ai-validation";
 
 export type SwapKind = "meal" | "exercise";
 
@@ -137,6 +141,19 @@ export function applyMemberSwapToContent(
     // The full totals recompute — the OLD code left the calorie card at
     // the previous meal's numbers over the NEW meal.
     const recomputed = recomputeNutritionTotals(next);
+    // NUT-6 (audit P1): the day-budget closure — the swap anchor is the
+    // meal's CURRENT total (±20% server-side), so consecutive swaps could
+    // ratchet the day total unboundedly. The recomputed DAY total must
+    // stay within ±25% of the plan's declared daily_calories; a breach is
+    // REJECTED with the named reason (the member sees exactly why, the
+    // plan row stays untouched, and the success-only quota never burned).
+    const dayViolation = dayBudgetClosureViolation(
+      (recomputed as unknown as Record<string, unknown>).daily_calories,
+      Number((recomputed as unknown as Record<string, unknown>).meals_total_calories ?? 0),
+    );
+    if (dayViolation) {
+      return { ok: false, error: dayViolation };
+    }
     return { ok: true, content: recomputed as unknown as Record<string, unknown> };
   }
 

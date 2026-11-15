@@ -207,7 +207,12 @@ function sealIdea(base: {
  *  the DB unique indexes are status-blind, so a published-only check let
  *  an idea collide with a stale in_production master and die at R1. */
 export async function ideaPassesGuards(idea: RecipeIdea): Promise<string | null> {
-  const themes = new Set(await listRecentPairSlugs(200));
+  // REC-9 (audit AI-GENERATION-PIPELINES 2026-11-15, P1 bucket 9): the
+  // guard corpus is now UNLIMITED (one indexed column; the corpus grows
+  // one row/day) — the old 200-row window let an idea collide with an
+  // older slug sail through R0 and die at R1 on the raw duplicate-key,
+  // classified failed instead of a therapeutic r0 hold.
+  const themes = new Set(await listRecentPairSlugs(5000));
   if (themes.has(pairSlugify(idea.themeEn))) {
     return `theme "${idea.themeEn}" duplicates a recent pair_slug — rerun r0-idea`;
   }
@@ -302,6 +307,15 @@ export async function generateRecipeStructure(
     `4. Season honestly: salt/spices in realistic grams (e.g. salt 2-4g).`,
     `5. servings 1-12, realistic prep/cook minutes. stepsOutlineAr/En: 3-15 short imperative steps each (skeleton, not prose).`,
     `6. Do NOT compute or output any nutrition numbers — the platform computes them from the reference data.`,
+    // REC-3 (audit P1): the quantity-law prompt side — the R5 gate holds
+    // violations; the instruction makes the FIRST attempt compliant.
+    `7. QUANTITY LAW (gate-enforced): realistic amounts per ingredient — spices/salt ≤ 60g, oils/sweeteners ≤ 300g, meats ≤ 2500g, whole recipe 100g-15kg, one serving 50-1200g and 50-1500 kcal. Hallucinated quantities hold the recipe.`,
+    // REC-5: the weight-state prompt side — the state must match the ref
+    // row's own slug (a "-cooked" slug takes cooked grams).
+    `8. WEIGHT STATE (gate-enforced): weightState must match the reference slug's own state — a "...-raw" slug takes RAW grams, a "...-cooked" slug takes COOKED grams (mismatches are converted by cooking yield at R2, changing the numbers).`,
+    // REC-14: the halal narrative law (the ingredient catalog is halal by
+    // construction; the R3 narrative is the guarded surface).
+    `9. HALAL LAW (gate-enforced on every text surface): the platform is strictly halal — the final article/tips/substitutions/meta must NEVER mention pork, bacon, ham, lard, wine, beer, rum or any alcohol (exception: "turkey bacon" and cooking vinegar such as خل التفاح/خل النبيذ).`,
     ``,
     `CATALOG (slug | English | Arabic):`,
     catalogList,
@@ -418,6 +432,12 @@ export async function authorRecipeVersion(
         `المطلوب: عربية فصحى حديثة رصينة (ممنوع العامية)، مقدمة تحريرية فريدة (لا ترجمة لأي نص آخر)،`,
         `خطوات مرقمة 3-15 خطوة عملية مفصلة، نصائح، معلومات تخزين، بدائل واقعية، عنوان جذاب،`,
         `metaTitle ≤ 70 حرفًا، metaDescription بين 50 و160 حرفًا.`,
+        // REC-14 (audit P1): the halal narrative law — R5 scans every text
+        // surface with the same token law the ingredient gate uses.
+        `قانون الحلال (تُفحص آليًّا كل نصوص الوصفة): ممنوع نهائيًا ذكر لحم الخنزير أو مشتقاته (بيكون/لحم مقدد/هام) أو أي مشروب كحولي (نبيذ/بيرة/روم) في أي نص — الاستثناءان: «بيكون رومي» وخل الطبخ (خل التفاح/خل النبيذ).`,
+        // REC-15 (audit P1): steps↔ingredients coherence — both directions
+        // are gate-enforced at R5.
+        `قانون تماسك الخطوات (تُفحص آليًّا): كل خطوة تذكر فقط مكونات القائمة الفعلية — لا تذكر مكوّنًا غير موجود بالقائمة (ولا حتى كريمات/أجبانًا غير مدرجة)، وكل مكوّن غير اختياري يجب أن يظهر في خطوة واحدة على الأقل.`,
         `مخطط الخطوات المقترح:`,
         input.stepsOutline.map((s, i) => `${i + 1}. ${s}`).join("\n"),
         ``,
@@ -436,6 +456,10 @@ export async function authorRecipeVersion(
         `Deliver: a unique editorial voice (this is NOT a translation of any other text), an engaging excerpt,`,
         `3-15 numbered practical steps, tips, storage info, realistic substitutions, a compelling title,`,
         `metaTitle ≤ 60 chars, metaDescription between 50 and 160 chars.`,
+        // REC-14: the halal narrative law (EN side).
+        `HALAL LAW (gate-enforced on every text surface): NEVER mention pork, bacon, ham, lard, wine, beer, rum or any alcohol anywhere in the text — the only exceptions: "turkey bacon" and cooking vinegar.`,
+        // REC-15: steps↔ingredients coherence (EN side).
+        `STEPS COHERENCE (gate-enforced): steps mention ONLY ingredients from the actual list — never a listed-nowhere ingredient (not even creams/cheeses absent from the list), and every non-optional ingredient must appear in at least one step.`,
         `Suggested steps outline:`,
         input.stepsOutline.map((s, i) => `${i + 1}. ${s}`).join("\n"),
         ``,

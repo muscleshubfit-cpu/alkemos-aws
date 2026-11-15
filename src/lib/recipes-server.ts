@@ -49,6 +49,8 @@ type MasterRow = {
   nutrition_total: Partial<Record<keyof NutritionTotals, number>> | null;
   nutrition_sources: Array<{ source?: string; version?: string }> | null;
   sodium_coverage?: string;
+  /** REC-8 (audit P1): the same coverage law for saturated fat. */
+  sat_fat_coverage?: string;
   cuisines: string[];
   goals: string[];
   diets: string[];
@@ -171,7 +173,7 @@ const fetchRecipeDetailUncached = async (
          recipes!inner(
            id, pair_slug, servings, serving_weight_g, prep_minutes, cook_minutes,
            image_url, image_alt_ar, image_alt_en, image_source, image_verified,
-           nutrition_total, nutrition_per_serving, nutrition_sources, sodium_coverage,
+           nutrition_total, nutrition_per_serving, nutrition_sources, sodium_coverage, sat_fat_coverage,
            cuisines, goals, diets, meal_types, budget_tier,
            verification, verification_status, published_at, updated_at,
            recipe_ingredients(position, amount_g, weight_state, name_ar, name_en, note_ar, note_en, is_optional, nutrient_ref_slug, nutrient_reference(per100g))
@@ -218,6 +220,10 @@ const fetchRecipeDetailUncached = async (
       fiberPerServing: per.fiber_g,
       satFatPerServing: per.sat_fat_g,
       sodiumPerServing: per.sodium_mg,
+      // REC-8 (audit P1): the coverage verdicts ride the detail so the
+      // view can label partial enrichment honestly.
+      satFatCoverage: (master.sat_fat_coverage as RecipeDetail["satFatCoverage"]) ?? "none",
+      sodiumCoverage: (master.sodium_coverage as RecipeDetail["sodiumCoverage"]) ?? "none",
       steps: Array.isArray(row.steps) ? row.steps : [],
       tips: row.tips,
       storageInfo: row.storage_info,

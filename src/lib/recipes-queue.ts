@@ -162,6 +162,47 @@ export async function abandonRecipeAttemptMaster(recipeId: string): Promise<void
   }
 }
 
+/** REC-11 (audit AI-GENERATION-PIPELINES 2026-11-15, P1 bucket 7): the
+ *  STALE-ROW REAPER. A run dying between R1 and R5 left its queue row in
+ *  an open status FOREVER — the 36h RESUME window ignores it, nothing
+ *  else ever closed it, and openRows grew monotonically (the measured
+ *  ratchet the admin dashboard kept showing). The reaper (called at R0)
+ *  closes every open row older than the resume window with an honest
+ *  `failed` + a named reason, and releases its recipes master out of
+ *  in_production (the RC4 abandon pattern) so the one-per-day unique
+ *  index frees the day. Best-effort by the queue's own law — never
+ *  crashes the pipeline. */
+export async function reapStaleRecipeRows(): Promise<number> {
+  if (!isSupabaseAdminConfigured || !supabaseAdmin) return 0;
+  const cutoff = new Date(Date.now() - 36 * 3600 * 1000).toISOString();
+  try {
+    const { data: stale, error } = await supabaseAdmin
+      .from("recipe_generation_queue")
+      .select("id, recipe_id")
+      .in("status", ["idea", "structured", "nutrition_verified", "authored", "imaged", "gates_passed"])
+      .lt("created_at", cutoff)
+      .limit(50);
+    if (error || !Array.isArray(stale) || stale.length === 0) return 0;
+    for (const row of stale as Array<{ id: string; recipe_id: string | null }>) {
+      await supabaseAdmin
+        .from("recipe_generation_queue")
+        .update({
+          status: "failed",
+          error_message: "REC-11 reaper: open row exceeded the 36h resume window (run died mid-pipeline) — closed honestly",
+        })
+        .eq("id", row.id);
+      // RC4 belt: release the recipes master so recipes_one_per_day_uidx
+      // frees the scheduled day (only when the master is still live).
+      if (row.recipe_id) await abandonRecipeAttemptMaster(row.recipe_id);
+    }
+    console.log(`[recipes-queue] REC-11 reaper closed ${stale.length} stale open row(s)`);
+    return stale.length;
+  } catch {
+    /* never let bookkeeping crash the pipeline */
+    return 0;
+  }
+}
+
 /** Find today's (or the newest ≤36h) resumable row — the RESUME protocol. */
 export async function findResumableRecipeRow(): Promise<RecipeQueueItem | null> {
   if (!isSupabaseAdminConfigured || !supabaseAdmin) return null;

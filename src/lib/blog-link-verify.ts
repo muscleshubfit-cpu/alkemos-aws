@@ -162,3 +162,106 @@ export async function verifyBodyLinks(
 
   return { checked, dead, unverified, skipped, md };
 }
+
+
+/* ─────────────────────────────────────────────────────────────────────
+ * ART-7 (audit AI-GENERATION-PIPELINES 2026-11-15, P1 bucket 5) — the
+ * INTERNAL-link verification pass. External citations were HEAD-verified
+ * above; internal /blog/ links were NEVER checked — a hallucinated slug
+ * or a wrong-language /ar/blog/ prefix shipped to production (the
+ * internal variant of the measured «85 dead links» class).
+ *
+ * POLICY (deterministic, no network): every markdown link whose URL
+ * starts with /blog/ or /ar/blog/ must resolve to a PUBLISHED post of
+ * the CORRECT language (an EN article links /blog/<slug>, an AR article
+ * links /ar/blog/<slug>). A dead or wrong-prefix internal link is
+ * UNWRAPPED to its anchor text (the citation-removal precedent). The
+ * caller injects the DB fetch (a slug-set loader) so the module stays
+ * unit-testable; an injected-null loader skips the pass fail-open.
+ * ───────────────────────────────────────────────────────────────────── */
+
+export type InternalLinkVerifyResult = {
+  /** Internal links found and judged. */
+  checked: string[];
+  /** Dead / wrong-language internal URLs (unwrapped from the body). */
+  removed: string[];
+  /** The body with the removed internal links reduced to anchor text. */
+  md: string;
+};
+
+/** One internal blog link row: the URL + the language its prefix declares. */
+function parseInternalBlogLink(url: string): { slug: string; prefixLang: "en" | "ar" } | null {
+  // /blog/<slug> → EN fabric · /ar/blog/<slug> → AR fabric.
+  const m = url.match(/^\/(ar\/)?blog\/([^/?#]+)/);
+  if (!m) return null;
+  return { slug: m[2], prefixLang: m[1] ? "ar" : "en" };
+}
+
+/** Extract every INTERNAL markdown link from the body (images excluded). */
+export function collectInternalBlogLinks(bodyMd: string): string[] {
+  const urls = new Set<string>();
+  for (const m of bodyMd.matchAll(MD_LINK_RE)) {
+    const url = m[2];
+    if (!url.startsWith("/")) continue;
+    if (parseInternalBlogLink(url)) urls.add(url);
+  }
+  return [...urls];
+}
+
+/**
+ * Verify the internal /blog/ links of a markdown body against the
+ * published-slug set of each language, unwrapping dead/wrong-language
+ * ones to their anchor text. `loadSlugs` fetches the published slug set
+ * per language (the P5 route passes a cached DB query; tests inject a
+ * fixed map).
+ */
+export async function verifyInternalLinks(
+  bodyMd: string,
+  articleLang: "en" | "ar",
+  opts?: {
+    loadSlugs?: (lang: "en" | "ar") => Promise<Set<string>> | Set<string>;
+  },
+): Promise<InternalLinkVerifyResult> {
+  const links = collectInternalBlogLinks(bodyMd);
+  if (links.length === 0) return { checked: [], removed: [], md: bodyMd };
+  // Fail-open: no loader (legacy callers / DB hiccup) → nothing removed.
+  const loadSlugs = opts?.loadSlugs;
+  if (!loadSlugs) return { checked: links, removed: [], md: bodyMd };
+
+  const slugSets: Partial<Record<"en" | "ar", Set<string>>> = {};
+  const getSlugs = async (lang: "en" | "ar"): Promise<Set<string>> => {
+    if (slugSets[lang]) return slugSets[lang]!;
+    try {
+      const loaded = await loadSlugs(lang);
+      slugSets[lang] = loaded instanceof Set ? loaded : new Set(loaded ?? []);
+    } catch {
+      slugSets[lang] = new Set(); // fail-open: unknown slug → kept
+    }
+    return slugSets[lang]!;
+  };
+
+  const removed: string[] = [];
+  for (const url of links) {
+    const parsed = parseInternalBlogLink(url);
+    if (!parsed) continue;
+    // Language rule: the PREFIX language must match the ARTICLE language
+    // (an /ar/blog/ link inside an EN article is the measured wrong-prefix
+    // class — even when the slug exists it points at the wrong twin) and
+    // the slug must be published in that language.
+    if (parsed.prefixLang !== articleLang) {
+      removed.push(url);
+      continue;
+    }
+    const slugs = await getSlugs(parsed.prefixLang);
+    if (slugs.size > 0 && !slugs.has(parsed.slug)) {
+      removed.push(url);
+    }
+  }
+
+  let md = bodyMd;
+  for (const url of removed) {
+    const escaped = url.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    md = md.replace(new RegExp(`\\[([^\\]]*)\\]\\(${escaped}\\)`, "g"), "$1");
+  }
+  return { checked: links, removed, md };
+}

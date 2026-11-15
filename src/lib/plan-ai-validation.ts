@@ -167,6 +167,17 @@ export const PLAN_AI_SANITY = {
   overviewMax: 600,
   weeklyVolumeMax: 200,
   progressionMax: 400,
+  /** NUT-2 (audit P1): the declared macros (P×4 + C×4 + F×9) must close
+   *  on the declared daily calories within this band — a coach override
+   * of 3000g protein against a 2000 kcal target is rejected/rescaled
+   * before it can ever be presented as the plan's official numbers. */
+  macroClosureTolerance: 0.1,
+  /** NUT-6 (audit P1): after a meal/item swap the recomputed DAY total
+   * must stay within this band of the plan's declared daily_calories —
+   * the ratchet-drift kill (each swap's ±20% meal gate alone compounds
+   * without a day-level anchor). Same value as planDriftTolerance by
+   * design (one day band, every surface). */
+  dayBudgetDriftTolerance: 0.25,
 } as const;
 
 /* ─────────────────────────── Coercion helpers ─────────────────────────── */
@@ -258,6 +269,121 @@ function normFood(s: string): string {
     .trim();
 }
 
+/* ─────────────── NUT-4: GLOBAL HALAL GATE (audit AI-GENERATION-PIPELINES
+ * 2026-11-15, P1 bucket 1) ───────────────
+ *
+ * MEASURED GAP: the diet tables below restrict keto/low_carb/vegetarian/
+ * vegan ONLY — a `balanced` plan (the default) had ZERO token policing, so
+ * a model answering 200 with «لحم خنزير» / «بيكون» / «كأس نبيذ» inside a
+ * balanced plan sailed past checkItemConstraints to the member. The
+ * 2026-11-12 food-base purge (666 pork/alcohol rows deleted) protects the
+ * GROUNDING only — the model's free text was never scanned. For the
+ * platform's Egypt/Gulf audience this is a brand-level incident class.
+ *
+ * THE LAW: the halal table applies to EVERY diet (balanced included) and
+ * runs BEFORE the per-constraint early return — it is a platform law, not
+ * a diet preference. Exceptions ride the SAME TOKEN_MATCH_EXCEPTIONS
+ * mechanism the diet tables use (each entry: the colliding token → the
+ * LONGER halal term that suppresses the hit):
+ *   - «بيكون رومي» / «Turkey bacon» — a real library row
+ *     (foods.ts turkey-bacon-unprepared) — bacon/بيكون/بيكن suppressed
+ *     when the name carries رومي/turkey.
+ *   - «بيكنج بودر» (baking powder) and «بجعة بيكن» (Pekin duck) contain
+ *     the substring بيكن — suppressed by their longer terms.
+ *   - «خل النبيذ» / «wine vinegar» — the cooking-vinegar class (halal in
+ *     practice — the acetic-acid product, not the intoxicant) — wine/
+ *     نبيذ suppressed when the name carries خل/vinegar.
+ *   - «روم» (rum) collides with «رومي» (turkey) — suppressed by رومي.
+ *   - «كحول» inside negation claims («خالٍ من الكحول») never reaches the
+ *     matcher — stripNegationClaims removes parenthetical negations first.
+ */
+const HALAL_FORBIDDEN_TOKENS: string[] = [
+  // ── pork class ──
+  "خنزير", "لحم خنزير", "بيكون", "بيكن", "لحم مقدد", "مقدد",
+  "pork", "bacon", "ham", "lard", "prosciutto", "pancetta", "chorizo",
+  // ── alcohol class (the intoxicant beverages, NOT barley/vinegar) ──
+  "نبيذ", "كحول", "خمر", "بيرة", "جعة", "فودكا", "ويسكي", "شمبانيا",
+  "wine", "beer", "rum", "vodka", "whisky", "whiskey", "gin", "liqueur",
+  "brandy", "champagne", "tequila", "vermouth", "marsala", "mirin", "sake",
+];
+
+/** The halal violation for ONE food name — null when compliant. Runs for
+ *  EVERY diet (balanced included) and on free-text surfaces (alternatives/
+ *  notes/suggestions) via halalTextViolation. Exported for the audit layer
+ *  and the food-search ranking (one law, every surface). */
+export function halalFoodViolation(food: string): string | null {
+  const name = normFood(stripNegationClaims(String(food || "")));
+  if (!name) return null;
+  for (const rawTok of HALAL_FORBIDDEN_TOKENS) {
+    const tok = normFood(rawTok);
+    if (!tok || tok.length < 2) continue;
+    if (name.includes(tok)) {
+      // The halal-only exceptions (see HALAL_TOKEN_EXCEPTIONS — turkey
+      // bacon, wine vinegar, baking powder/Pekin-duck collisions).
+      const longer = HALAL_TOKEN_EXCEPTIONS[tok] ?? HALAL_TOKEN_EXCEPTIONS[rawTok];
+      if (!longer?.some((t) => name.includes(normFood(t)))) {
+        return `الصنف «${food}» غير متوافق مع الحلال (يحتوي «${tok}») — ممنوع على المنصة بغضّ النظر عن نوع النظام`;
+      }
+    }
+  }
+  return null;
+}
+
+/** NUT-7/NUT-4: scan a FREE-TEXT surface (item alternatives, meal notes,
+ *  swap suggestions) for forbidden-food mentions. Negated/avoidance
+ *  clauses («بدون سكر»، «تجنب الأرز»، «خالٍ من الكحول») are stripped
+ *  BEFORE matching — a warning about a forbidden food is advice, not an
+ *  ingredient. Returns the violation message or null. */
+export function constraintsTextViolation(
+  text: string,
+  constraints?: ClientItemConstraints | null,
+): string | null {
+  const raw = String(text || "");
+  if (!raw.trim()) return null;
+  // Strip parenthetical negation claims, then negation/avoidance clauses.
+  const cleaned = stripNegationClaims(raw)
+    .replace(
+      /(?:تجنب|ابتعد عن|استبعد|لا تأكل|لا تاكل|ممنوع|تحريم|بدون|بلا|خال[ٍي]? من|لا يحوي|لا يحتوي|ليس فيه|free|without|avoid)\s+[^،,؛;.()\n]{1,40}/gi,
+      " ",
+    )
+    .replace(/\s+/g, " ")
+    .trim();
+  if (!cleaned) return null;
+  const halal = halalFoodViolation(cleaned);
+  if (halal) return halal;
+  if (!hasItemConstraints(constraints)) return null;
+  // Diet tokens + allergy/banned tokens against the cleaned text (same
+  // exceptions + plant guard as items — one law, two surfaces).
+  const scan = (tokens: string[]): string | null => {
+    for (const rawTok of tokens) {
+      const tok = normFood(rawTok);
+      if (!tok || tok.length < 2) continue;
+      if (VEGAN_DAIRY_TOKENS.includes(rawTok) && PLANT_BASED_GUARD.test(normFood(cleaned))) continue;
+      if (VEGAN_MEAT_TOKENS.includes(rawTok) && PLANT_BASED_GUARD.test(normFood(cleaned))) continue;
+      if (normFood(cleaned).includes(tok)) {
+        const longer = TOKEN_MATCH_EXCEPTIONS[tok] ?? TOKEN_MATCH_EXCEPTIONS[rawTok];
+        if (!longer?.some((t) => normFood(cleaned).includes(normFood(t)))) {
+          return tok;
+        }
+      }
+    }
+    return null;
+  };
+  if (constraints?.dietType) {
+    const hit = scan(DIET_FORBIDDEN_TOKENS[constraints.dietType]);
+    if (hit) return `النص يذكر «${hit}» — مخالف لنظام ${constraints.dietType}`;
+  }
+  if (constraints?.allergyTokens?.length) {
+    const hit = scan(constraints.allergyTokens);
+    if (hit) return `النص يذكر «${hit}» — من ضمن حساسيات العميل المسجلة`;
+  }
+  if (constraints?.bannedTokens?.length) {
+    const hit = scan(constraints.bannedTokens);
+    if (hit) return `النص يذكر «${hit}» — من ضمن الأطعمة الممنوعة/غير المحببة للعميل`;
+  }
+  return null;
+}
+
 /** Per-diet forbidden-token tables (normalized on first use). */
 const DIET_FORBIDDEN_TOKENS: Record<ConstraintDietType, string[]> = {
   keto: [
@@ -290,6 +416,9 @@ const DIET_FORBIDDEN_TOKENS: Record<ConstraintDietType, string[]> = {
   vegetarian: [
     "لحم", "دجاج", "فراخ", "سمك", "سلطات بحريه", "سلمون", "تونه", "تونة", "جمبري", "روبيان", "استاكوزا", "كابوريا",
     "انشوجه", "سردين", "ماكريل", "كفته", "كباب", "برجر", "سجق", "بسطرمه", "مرقه لحم", "مرقه دجاج", "ستيك",
+    // NUT-4 (P1): turkey-bacon wordings are MEAT — the halal exception
+    // (رومي) must never leak into the vegetarian/vegan diet tables.
+    "بيكون", "بيكن", "رومي", "ديك رومي",
     "meat", "beef", "lamb", "mutton", "chicken", "turkey", "fish", "salmon", "tuna", "shrimp", "prawn",
     "crab", "lobster", "anchovy", "sardine", "mackerel", "burger", "sausage", "bacon", "steak", "kebab", "meatball",
   ],
@@ -298,6 +427,8 @@ const DIET_FORBIDDEN_TOKENS: Record<ConstraintDietType, string[]> = {
     // plant-alternative guard below — coconut/soy/oat/almond milks pass)
     "لحم", "دجاج", "فراخ", "سمك", "سلمون", "تونه", "تونة", "جمبري", "روبيان", "استاكوزا", "كابوريا", "انشوجه", "سردين",
     "ماكريل", "كفته", "كباب", "برجر", "سجق", "بسطرمه", "مرقه لحم", "مرقه دجاج", "ستيك",
+    // NUT-4 (P1): same turkey-bacon wordings as the vegetarian table.
+    "بيكون", "بيكن", "رومي", "ديك رومي",
     "بيض", "بيضه", "بيضة", "اومليت", "جلاتين",
     "جبن", "جبنة", "لبنه", "حليب", "زبادي", "قريش", "موزاريلا", "شيدر", "بارميزان",
     "كريمه", "كريمة", "زبده", "زبدة", "سمن", "عسل", "كاسترد", "بوظه", "ايس كريم",
@@ -321,6 +452,18 @@ const VEGAN_DAIRY_TOKENS = [
 ];
 const PLANT_BASED_GUARD = /جوز هند|جوزهند|صويا|نباتي|شوفان|لوز|بذر الكتان|ارز|رز|coconut|almond|soy|soya|oat|rice|plant/;
 
+/** NUT-8 (audit P1 — the false-positive class): the MEAT tokens of the
+ *  vegetarian/vegan tables. A name that itself says it is plant-based
+ *  («برجر نباتي» · «سجق نباتي» · "veggie burger" · "plant-based sausage")
+ *  is a meat SUBSTITUTE, not meat — the PLANT_BASED_GUARD suppresses the
+ *  meat token exactly the way it already suppresses dairy tokens on
+ *  plant milks. The plain meat wordings («برجر لحم» · "beef burger")
+ *  keep matching — the gate is not weakened, only its aim corrected. */
+const VEGAN_MEAT_TOKENS = [
+  "لحم", "دجاج", "فراخ", "كفته", "كباب", "برجر", "سجق", "بسطرمه", "ستيك",
+  "meat", "beef", "lamb", "mutton", "chicken", "turkey", "burger", "sausage", "bacon", "steak", "kebab", "meatball",
+];
+
 /** PLAN-PROBE-ROOTCAUSE-2 (frame 443 — live run 42252228333, the SECOND
  *  root cause the honest-completion law unmasked): a forbidden token must
  *  NOT fire when the name carries a LONGER known food whose spelling
@@ -336,6 +479,40 @@ const PLANT_BASED_GUARD = /جوز هند|جوزهند|صويا|نباتي|شوف
  *  its aim corrected. */
 const TOKEN_MATCH_EXCEPTIONS: Record<string, string[]> = {
   موز: ["موزاريلا"],
+  // NUT-8 (audit P1 — false-positive class): «بلح البحر» (mussels) must
+  // not fire the keto token «بلح» (dates) — the LONGER seafood name
+  // suppresses the date hit (mussels carry ~7g carbs/100g, well inside
+  // the item ceiling; the date keeps matching every other wording).
+  بلح: ["بلح البحر"],
+  // NUT-4 (P1): «بيكنج بودر» (baking powder) contains the meat token
+  // «بيكن» — vegetarian/vegan baking must never false-fire.
+  بيكن: ["بيكنج"],
+  // NUT-8 (P1, exposed by the NUT-7 notes scan): «تين» (figs) is a
+  // SUBSTRING of «بروتين» (protein) and «جلاتين» (gelatin) — the keto
+  // fig token used to reject the local engine's «ركّز على البروتين»
+  // note and any whey-protein food name. The longer words suppress the
+  // hit; actual figs (تين مجفف · تين) keep matching.
+  تين: ["بروتين", "جلاتين"],
+};
+
+/** NUT-4: the HALAL-ONLY exception map — deliberately SEPARATE from
+ *  TOKEN_MATCH_EXCEPTIONS because the halal semantics differ from the
+ *  diet semantics for the same words: «بيكون رومي» (turkey bacon) is
+ *  HALAL but still MEAT (the vegetarian/vegan tables keep blocking it
+ *  via their own turkey/meat tokens — sharing the map would have
+ *  smuggled turkey bacon into vegetarian plans). Same for wine VINEGAR:
+ *  halal as the cooking-vinegar class, irrelevant to the diet tables. */
+const HALAL_TOKEN_EXCEPTIONS: Record<string, string[]> = {
+  bacon: ["رومي", "turkey"],
+  بيكون: ["رومي", "turkey"],
+  بيكن: ["بيكنج", "بجعة", "رومي", "turkey"],
+  روم: ["رومي"],
+  wine: ["خل", "vinegar"],
+  نبيذ: ["خل", "vinegar"],
+  // «جعة» (beer) is a substring of «بجعة» (duck) — a real library food
+  // name (Pekin duck rows). The longer word suppresses the beer token;
+  // actual beer wordings (بيرة · جعة الشعير · beer) keep matching.
+  جعة: ["بجعة"],
 };
 
 /** FRAME 443 (PLAN-PROBE-ROOTCAUSE-3 — live runs 42259406260 + 42261551330,
@@ -530,6 +707,13 @@ export function checkItemConstraints(
   macros: { carbs_g?: number | null },
   constraints?: ClientItemConstraints | null,
 ): string | null {
+  // NUT-4 (audit AI-GENERATION-PIPELINES 2026-11-15, P1 bucket 1): the
+  // halal gate runs for EVERY diet — balanced/unconstrained included —
+  // BEFORE the per-constraint early return. It is a platform law, not a
+  // diet preference: pork/alcohol tokens must never reach a member's
+  // plan regardless of which diet (or none) was committed.
+  const halal = halalFoodViolation(food);
+  if (halal) return halal;
   if (!hasItemConstraints(constraints)) return null;
   // FRAME 443 (PLAN-PROBE-ROOTCAUSE-3): match the FOOD, not the model's
   // parenthetical claims — negation parentheticals are stripped from the
@@ -546,6 +730,12 @@ export function checkItemConstraints(
       // Plant-based guard: dairy tokens never fire on coconut/soy/oat/
       // almond milk or plant-cheese wordings ("حليب جوز الهند" is vegan).
       if (VEGAN_DAIRY_TOKENS.includes(rawTok) && PLANT_BASED_GUARD.test(name)) {
+        continue;
+      }
+      // NUT-8: the SAME guard for meat tokens — "برجر نباتي" is a veggie
+      // burger, not meat (the vegetarian/vegan tables keep blocking every
+      // plain meat wording).
+      if (VEGAN_MEAT_TOKENS.includes(rawTok) && PLANT_BASED_GUARD.test(name)) {
         continue;
       }
       if (name.includes(tok)) {
@@ -768,6 +958,37 @@ function ketoMealCarbViolation(mealName: string, mealItems: AIItemLike[], constr
   return null;
 }
 
+/* ─────────────────── NUT-6: day-budget closure after swaps ───────────────────
+ *
+ * The audit's measured defect (AI-GENERATION-PIPELINES 2026-11-15 NUT-6):
+ * the swap anchor is the meal's CURRENT total (±20%), so every swap can
+ * ratchet the day +20% and the NEXT swap anchors on the inflated total —
+ * unbounded day drift across consecutive swaps. THE FIX (the audit's
+ * named recipe: «إعادة فحص ±25% على مستوى اليوم بعد التجسيد»): every
+ * meal/item-swap apply path (the runner's materialization AND the
+ * member's client-side apply) re-verifies the recomputed DAY total
+ * against the plan's declared daily_calories and REJECTS the swap when
+ * it breaches — a pure, central, one-definition law. */
+export function dayBudgetClosureViolation(
+  dailyCalories: unknown,
+  mealsTotalCalories: number,
+): string | null {
+  const target =
+    typeof dailyCalories === "number" && dailyCalories > 0
+      ? dailyCalories
+      : coerceNumber(dailyCalories) ?? 0;
+  // No declared budget (legacy/edge plans) → honest skip, no enforcement
+  // (same law as the plan gate's targetCalories > 0 guard).
+  if (target <= 0 || mealsTotalCalories <= 0) return null;
+  const drift = Math.abs(mealsTotalCalories - target) / target;
+  if (drift > PLAN_AI_SANITY.dayBudgetDriftTolerance) {
+    return `استبدال الوجبة يُخرج ميزانية اليوم (${Math.round(mealsTotalCalories)} سعرة) عن نطاق ±${Math.round(
+      PLAN_AI_SANITY.dayBudgetDriftTolerance * 100,
+    )}% من الهدف اليومي (${Math.round(target)} سعرة) — مرفوض للحفاظ على اتساق الخطة`;
+  }
+  return null;
+}
+
 /* ─────────────────── Full nutrition plan validation ─────────────────── */
 
 export type NutritionPlanVerdict =
@@ -820,12 +1041,31 @@ export function validateNutritionPlanAIOutput(
       if (!v.ok) return { ok: false, error: `meal "${name}": ${v.error}` };
       const violation = checkItemConstraints(v.value.food, v.value, constraints);
       if (violation) return { ok: false, error: `meal "${name}": ${violation}` };
+      // NUT-7 (audit P1): the free-text ALTERNATIVES of the item ride the
+      // same constraint law — «أو 2 ملاعق زبدة فول سوداني» must never
+      // reach a nut-allergic member, and «أو كأس نبيذ» never reaches
+      // anyone (the halal half of the scan runs for every diet).
+      if (v.value.alternatives) {
+        const altViolation = constraintsTextViolation(v.value.alternatives, constraints);
+        if (altViolation) {
+          return { ok: false, error: `meal "${name}": بدائل الصنف «${v.value.food}» — ${altViolation}` };
+        }
+      }
       items.push(v.value);
     }
     // KETO-LAW 2026-10-25: the meal-level carb ceiling on the FULL plan too
     // (the item ceilings alone let randomized draws accumulate past it).
     const mealCarbs = ketoMealCarbViolation(name, items, constraints);
     if (mealCarbs) return { ok: false, error: `meal "${name}": ${mealCarbs}` };
+    // NUT-7 (audit P1): meal NOTES are a free-text surface too — a note
+    // suggesting a forbidden/haram food rides the same law as the items.
+    const rawNotes = str(meal.notes, 300);
+    if (rawNotes) {
+      const notesViolation = constraintsTextViolation(rawNotes, constraints);
+      if (notesViolation) {
+        return { ok: false, error: `meal "${name}": ملاحظات الوجبة — ${notesViolation}` };
+      }
+    }
     const modelTotalProtein = coerceNumber(meal.total_protein_g ?? meal.total_protein);
     // NUT-1 (audit AI-GENERATION-PIPELINES 2026-11-15, P0-3): the
     // whole-meal alternatives ride the gate instead of being stripped —
@@ -983,6 +1223,12 @@ export function validateRegeneratedMeal(
     if (!v.ok) return { ok: false, error: v.error };
     const violation = checkItemConstraints(v.value.food, v.value, constraints);
     if (violation) return { ok: false, error: violation };
+    // NUT-7: the regenerated item's free-text alternatives ride the same
+    // law (the swap gate already enforces the item itself).
+    if (v.value.alternatives) {
+      const altViolation = constraintsTextViolation(v.value.alternatives, constraints);
+      if (altViolation) return { ok: false, error: `بدائل الصنف — ${altViolation}` };
+    }
     items.push(v.value);
   }
   // KETO-LAW 2026-10-25: the meal-level carb ceiling rides the swap gate
@@ -990,6 +1236,12 @@ export function validateRegeneratedMeal(
   // with the same named reason (the repair directive names the exact meal).
   const mealCarbs = ketoMealCarbViolation(name, items, constraints);
   if (mealCarbs) return { ok: false, error: mealCarbs };
+  // NUT-7: the regenerated meal's notes ride the same free-text law.
+  const regenNotes = str(mealRaw.notes, 300);
+  if (regenNotes) {
+    const notesViolation = constraintsTextViolation(regenNotes, constraints);
+    if (notesViolation) return { ok: false, error: `ملاحظات الوجبة — ${notesViolation}` };
+  }
   const modelTotalProtein = coerceNumber(mealRaw.total_protein_g ?? mealRaw.total_protein);
   const meal = recomputeMealTotals({
     name,
@@ -1039,6 +1291,12 @@ export function validateRegeneratedFoodItem(
   if (!v.ok) return { ok: false, error: v.error };
   const violation = checkItemConstraints(v.value.food, v.value, constraints);
   if (violation) return { ok: false, error: violation };
+  // NUT-7: the replacement item's free-text alternatives ride the same
+  // law (the halal half runs for every diet).
+  if (v.value.alternatives) {
+    const altViolation = constraintsTextViolation(v.value.alternatives, constraints);
+    if (altViolation) return { ok: false, error: `بدائل الصنف — ${altViolation}` };
+  }
   const target = Math.max(1, originalCalories);
   const drift = Math.abs(v.value.calories - target) / target;
   if (drift > PLAN_AI_SANITY.itemDriftTolerance + 1e-9) {
@@ -1121,8 +1379,20 @@ export type WorkoutPlanVerdict =
 /**
  * The FULL-WORKOUT gate for generateWorkoutPlanAI: 3-8 days, training
  * days carrying 3-8 real exercises with bounded sets, rest days emptied.
+ *
+ * WOR-5 (audit AI-GENERATION-PIPELINES 2026-11-15, P1 bucket 4): when the
+ * caller passes the REQUESTED training-day count (the coach/member asked
+ * for N days/week), the plan's TRAINING days (non-rest) must equal it —
+ * the demo planner's own law (ai-workout-planner.ts). A request for 6
+ * days answering 3 training + 3 rest was passing silently; now it is a
+ * named rejection the repair retry can fix (fresh draw carries the same
+ * request). Counting the TRAINING days (not the array length) matches
+ * the demo law and the prompt's «أدخل أيام راحة بين أيام التدريب».
  */
-export function validateWorkoutPlanAIOutput(parsed: unknown): WorkoutPlanVerdict {
+export function validateWorkoutPlanAIOutput(
+  parsed: unknown,
+  expectedTrainingDays?: number,
+): WorkoutPlanVerdict {
   const obj = (parsed && typeof parsed === "object" ? parsed : {}) as Record<string, unknown>;
   const daysRaw = Array.isArray(obj.days) ? obj.days : [];
   if (daysRaw.length < PLAN_AI_SANITY.dayCountMin || daysRaw.length > PLAN_AI_SANITY.dayCountMax) {
@@ -1163,6 +1433,23 @@ export function validateWorkoutPlanAIOutput(parsed: unknown): WorkoutPlanVerdict
   const overview = str(obj.overview, PLAN_AI_SANITY.overviewMax);
   const weekly_volume = str(obj.weekly_volume, PLAN_AI_SANITY.weeklyVolumeMax);
   const progression = str(obj.progression, PLAN_AI_SANITY.progressionMax);
+  // WOR-5: the training-day anchor — enforce the requested count AFTER the
+  // per-day validation loop (rest days detected by isRest/focus wording).
+  const expected =
+    typeof expectedTrainingDays === "number" &&
+    Number.isFinite(expectedTrainingDays) &&
+    expectedTrainingDays > 0
+      ? Math.round(expectedTrainingDays)
+      : null;
+  if (expected !== null) {
+    const trainingDays = days.filter((d) => !d.isRest).length;
+    if (trainingDays !== expected) {
+      return {
+        ok: false,
+        error: `البرنامج يحمل ${trainingDays} يوم تدريب بينما المطلوب ${expected} — يجب أن يتطابق عدد أيام التدريب مع طلب العميل`,
+      };
+    }
+  }
   return {
     ok: true,
     value: {

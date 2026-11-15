@@ -196,6 +196,10 @@ export async function addPlan(plan: PlanInsert): Promise<Plan> {
  notes: plan.notes ?? null,
  file_url: plan.file_url ?? null,
  content: plan.content ?? null,
+ // INF-13 (audit P1): normalize the optional insert field for the local
+ // fallback row (the DB column is NOT NULL DEFAULT-less at the type level
+ // — Row requires the value, Insert only carries it when set).
+ job_id: plan.job_id ?? null,
  status,
  is_current: plan.is_current ?? (status === "approved"),
  approved_at: status === "approved" ? new Date().toISOString() : null,

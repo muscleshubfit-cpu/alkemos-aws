@@ -14,6 +14,16 @@ import {
   updateRecipeQueueItem,
   markRecipeQueueFailed,
 } from "@/lib/recipes-queue";
+// REC-12 (audit P1): the fail-fast deterministic battery INSIDE the R3
+// retry loop — the R5 checks that are pure (no DB, no image): meta-title
+// clamp, meta-description ceiling, N-GATE-4 narrative claims, MSA/latin.
+import { clampMetaTitle } from "@/lib/blog-meta-title";
+import {
+  extractNarrativeNutrientClaims,
+  checkNarrativeAgainstComputed,
+  type NutritionTotals,
+} from "@/lib/recipes-nutrition";
+import { scanArabicDialect, scanLatinContamination } from "@/lib/blog-msa";
 
 export const maxDuration = 300;
 
@@ -47,6 +57,47 @@ type BundleShape = {
   };
   nutrition?: { perServing?: Record<string, number> };
 };
+
+/** REC-12 (audit P1): the R3-EARLY deterministic battery — the cheap
+ *  pure checks the R5 gate runs, evaluated on the authored version
+ *  BEFORE it ever reaches R4/R5. Each message names its R5 gate so the
+ *  repair semantics stay identical (a violation here = a would-be hold
+ *  there). */
+function r3EarlyDeterministicViolations(
+  version: AuthoredVersion,
+  language: "ar" | "en",
+  perServing: { calories: number; protein: number; carbs: number; fat: number; fiber: number },
+): string[] {
+  const violations: string[] = [];
+  // Q-GATE-2 parity: meta title clamp + description ceiling.
+  if (version.metaTitle && clampMetaTitle(version.metaTitle, language) !== version.metaTitle.trim()) {
+    violations.push(`Q-GATE-2: meta title exceeds the ${language === "ar" ? 70 : 60}-char budget`);
+  }
+  if (version.metaDescription && version.metaDescription.trim().length > 160) {
+    violations.push("Q-GATE-2: meta description exceeds 160 chars");
+  }
+  // N-GATE-4 parity: narrative nutrient claims vs the computed truth.
+  const prose = [version.excerpt, ...version.steps, version.tips ?? "", version.storageInfo ?? ""]
+    .filter(Boolean)
+    .join("\n");
+  const claims = extractNarrativeNutrientClaims(prose);
+  const bad = checkNarrativeAgainstComputed(claims, perServing as unknown as NutritionTotals);
+  for (const b of bad.slice(0, 2)) {
+    violations.push(`N-GATE-4: narrative claim "${b.claim.raw.trim().slice(0, 60)}" (${b.reason})`);
+  }
+  // Q-GATE-1 parity (AR only): MSA + no latin contamination.
+  if (language === "ar") {
+    const scan = scanArabicDialect(prose);
+    if (scan.strong >= 1 || scan.weak >= 5) {
+      violations.push(`Q-GATE-1: fails MSA (strong=${scan.strong}, weak=${scan.weak})`);
+    }
+    const latin = scanLatinContamination(prose);
+    if (latin.count > 0) {
+      violations.push(`Q-GATE-1: latin contamination (${latin.count} tokens)`);
+    }
+  }
+  return violations;
+}
 
 export async function GET(request: NextRequest) {
   if (!verifyCronAuth(request)) {
@@ -127,6 +178,23 @@ export async function GET(request: NextRequest) {
             ...authorInput,
             stepsOutline: language === "ar" ? structure.stepsOutlineAr ?? [] : structure.stepsOutlineEn ?? [],
           });
+          // REC-12 (audit AI-GENERATION-PIPELINES 2026-11-15, P1 bucket
+          // 7): the CHEAP deterministic checks used to run ONLY at R5 —
+          // after the image work — so a meta-title overflow, a narrative
+          // number contradiction (N-GATE-4) or an MSA violation cost a
+          // full R4+R5 cycle before its deterministic rejection. They now
+          // run INSIDE the retry loop: a violation rejects THIS attempt
+          // (the loop redraws with fresh model draw) instead of holding
+          // at R5.
+          if (done) {
+            const earlyViolations = r3EarlyDeterministicViolations(done.version, language, computedPerServing);
+            if (earlyViolations.length > 0) {
+              lastErr = earlyViolations.join(" | ");
+              console.warn(`[recipes/r3] REC-12 early gate rejected ${language} attempt ${attempt + 1}: ${lastErr}`);
+              done = null;
+              continue;
+            }
+          }
         } catch (err) {
           lastErr = err instanceof Error ? err.message : "authoring failed";
           console.warn(`[recipes/r3] ${language} attempt ${attempt + 1} failed: ${lastErr}`);

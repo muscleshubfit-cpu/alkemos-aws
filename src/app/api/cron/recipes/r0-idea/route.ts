@@ -7,7 +7,7 @@ import {
   type RecipeIdea,
 } from "@/lib/recipes-pipeline";
 import {
-  findResumableRecipeRow,
+  findResumableRecipeRow, reapStaleRecipeRows,
   countPublishedPairsOnDay,
   consecutiveRecipeFailureDays,
 } from "@/lib/recipes-queue";
@@ -41,6 +41,11 @@ export async function GET(request: NextRequest) {
   const today = new Date().toISOString().slice(0, 10);
 
   try {
+    // REC-11 (audit P1): reap the stale open rows FIRST — rows older than
+    // the 36h resume window are closed honestly + their masters released,
+    // so openRows never grows monotonically and the day-index frees up.
+    await reapStaleRecipeRows();
+
     // RESUME — the open row of the day wins.
     const resumable = await findResumableRecipeRow();
     if (resumable) {
@@ -89,23 +94,47 @@ export async function GET(request: NextRequest) {
     }
     if (!idea) {
       // Honest hold — no idea passed the guards (never a forced publish).
-      const { data: inserted, error: insertErr } = await admin
+      // REC-7 (audit AI-GENERATION-PIPELINES 2026-11-15, P1 bucket 7):
+      // the hold used to answer a body WITHOUT rerunTarget, so the runner
+      // exited 1 (plain failure) and the wrapper's blind ×3 retry inserted
+      // a NEW held row per attempt (~6 wasted minutes + duplicate rows).
+      // Now: (a) the body carries rerunTarget:"r0-idea" → run-step.mts
+      // exits 3 → the repair loop executes the directive (a FRESH r0 row)
+      // instead of blind-retrying the same guards; (b) the insert is
+      // IDEMPOTENT for the day — an existing held-r0 row for today is
+      // reused, never duplicated.
+      const { data: existingHeld } = await admin
         .from("recipe_generation_queue")
-        .insert({
-          status: "held",
-          idea: JSON.stringify({ guardReason: guardReason ?? "idea_guards_failed" }),
-          error_message: `R0: no idea passed the duplication/intent guards — ${guardReason ?? "unknown"}`,
-          rerun_target: "r0-idea",
-          scheduled_for: today,
-        })
         .select("id")
-        .single();
-      if (insertErr || !inserted) throw new Error(insertErr?.message ?? "queue insert failed");
+        .eq("status", "held")
+        .eq("rerun_target", "r0-idea")
+        .eq("scheduled_for", today)
+        .limit(1)
+        .maybeSingle();
+      let heldId = (existingHeld as { id?: string } | null)?.id ?? null;
+      if (!heldId) {
+        const { data: inserted, error: insertErr } = await admin
+          .from("recipe_generation_queue")
+          .insert({
+            status: "held",
+            idea: JSON.stringify({ guardReason: guardReason ?? "idea_guards_failed" }),
+            error_message: `R0: no idea passed the duplication/intent guards — ${guardReason ?? "unknown"}`,
+            rerun_target: "r0-idea",
+            scheduled_for: today,
+          })
+          .select("id")
+          .single();
+        if (insertErr || !inserted) throw new Error(insertErr?.message ?? "queue insert failed");
+        heldId = (inserted as { id: string }).id;
+      } else {
+        console.log(`[recipes/r0] REC-7 idempotent hold: reusing held row ${String(heldId).slice(0, 8)} for ${today}`);
+      }
       return NextResponse.json({
         ok: false,
-        queueId: (inserted as { id: string }).id,
+        queueId: heldId,
         held: true,
         reason: guardReason,
+        rerunTarget: "r0-idea",
       });
     }
 

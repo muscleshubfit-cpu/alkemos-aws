@@ -218,11 +218,21 @@ export function insertToolLinks(
     // link the /ar mirrors so Arabic readers land on Arabic-rendering URLs.
     const target = lang === "ar" ? rule.urlAr ?? rule.url : rule.url;
 
-    // IDEMPOTENCE: this tool is already linked somewhere in the article
-    // (model-added in P4, or a previous run of this function) → skip.
-    // Check BOTH the EN and the AR destination so a mixed-language edit
-    // never double-links the same tool.
-    if (result.includes(`](${rule.url})`) || result.includes(`](${target})`)) continue;
+    // IDEMPOTENCE + ART-5 (audit AI-GENERATION-PIPELINES 2026-11-15, P1):
+    // this tool is already linked at the CORRECT-language destination →
+    // skip. The OLD check accepted the EN URL as "already linked" for an
+    // AR article too — so a review model that obeyed the (previously
+    // EN-only) instruction 8 planted /tools/... EN links inside AR
+    // articles and the deterministic AR mirror NEVER landed (the exact
+    // regression of the 2026-09-14 mirror fix, reopened by the prompt).
+    // Now: an EN link inside an AR article is REWRITTEN to the AR mirror
+    // (same anchor, right destination) instead of suppressing the insert.
+    if (lang === "ar" && target !== rule.url && result.includes(`](${rule.url})`)) {
+      result = result.split(`](${rule.url})`).join(`](${target})`);
+      inserted.push({ tool: rule.id, url: target, anchor: "(mirror rewrite)" });
+      continue;
+    }
+    if (result.includes(`](${target})`)) continue;
 
     const patterns = lang === "ar" ? rule.patternsAr : rule.patternsEn;
     const wrapped = tryWrapFirstOccurrence(result, patterns, target);

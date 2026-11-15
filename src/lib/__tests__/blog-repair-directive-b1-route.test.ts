@@ -21,6 +21,8 @@ import type { NextRequest } from "next/server";
 vi.mock("@/lib/cron-auth", () => ({ verifyCronAuth: vi.fn(() => true) }));
 vi.mock("@/lib/blog-server", () => ({ normalizeCategory: vi.fn((c: string) => c || "training") }));
 vi.mock("@/lib/blog-link-verify", () => ({
+  // ART-7 (P1): the internal-link verify pass — boundary no-op here.
+  verifyInternalLinks: vi.fn(async (md: string) => ({ checked: [], removed: [], md })),
   verifyBodyLinks: vi.fn(async (md: string) => ({
     checked: [],
     dead: [],
@@ -75,6 +77,13 @@ vi.mock("@/lib/supabase/admin", () => {
   const result = (data: unknown) => ({ data, error: null });
   const builder = () => ({
     select: () => builder(),
+    // ART-6 (P1): the publish CAS claim/flip chainables + the
+    // queue-table update path the claim rides.
+    update: () => builder(),
+    in: () => builder(),
+    gte: () => builder(),
+    lt: () => builder(),
+    is: () => builder(),
     eq: () => builder(),
     ilike: () => builder(),
     order: () => builder(),
@@ -99,7 +108,19 @@ vi.mock("@/lib/supabase/admin", () => {
               }),
               update: () => builder(),
             }
-          : builder(),
+          : {
+              // ART-6 (P1): the publish CAS claim/flip chain — the update
+              // terminal resolves the claimed row (the claim WINS in tests).
+              ...builder(),
+              update: () => ({
+                eq: () => ({
+                  eq: () => ({
+                    select: () => ({ maybeSingle: async () => result({ id: "claim-ok" }) }),
+                    maybeSingle: async () => result({ id: "claim-ok" }),
+                  }),
+                }),
+              }),
+            },
       ),
     },
   };

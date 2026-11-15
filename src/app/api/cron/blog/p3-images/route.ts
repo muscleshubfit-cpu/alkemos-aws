@@ -158,19 +158,24 @@ async function sourceImages(
     .map((s) => s.value)
     .filter((v): v is SourcedImage => Boolean(v));
 
-  // Never fewer than MIN images while there are queries left untried.
-  for (let i = queries.length; okImages.length < MIN_IMAGES && i < MAX_IMAGES; i++) {
+  // ART-17 (audit AI-GENERATION-PIPELINES 2026-11-15, P1 bucket 5): the
+  // completion loop used to start at i = queries.length and stop at
+  // MAX_IMAGES — when the planned queries already numbered ≥ MAX (the V2
+  // brief plans 4-6), a failed primary arm left the article starved with
+  // ZERO fallback attempts (the loop body never ran; FALLBACK_QUERIES was
+  // dead code). The loop now draws DIRECTLY from FALLBACK_QUERIES with a
+  // per-run rotation seed, tries every entry once, and stops at MIN.
+  const fallbackSeed = Math.floor(Math.random() * FALLBACK_QUERIES.length);
+  for (let i = 0; okImages.length < MIN_IMAGES && i < FALLBACK_QUERIES.length; i++) {
     try {
-      const fallbackQuery =
-        queries[i % Math.max(queries.length, 1)] ||
-        FALLBACK_QUERIES[Math.floor(Math.random() * FALLBACK_QUERIES.length)];
+      const fallbackQuery = FALLBACK_QUERIES[(fallbackSeed + i) % FALLBACK_QUERIES.length];
       const extra = await fetchFeaturedImage(fallbackQuery, {
         variationKey: `${queueId}-extra-${i}`,
         excludeUrls: [...excludeUrls, ...okImages.map((im) => im!.url)],
       });
       if (extra) okImages.push(extra);
     } catch {
-      break;
+      continue; // try the next fallback — one stock hiccup must not starve the article
     }
   }
   return okImages.slice(0, MAX_IMAGES);

@@ -3493,6 +3493,16 @@ export async function callFreeAIFallbackChain(
   const callerTimeoutMs = options.timeoutMs ?? 60_000;
   // Clamp so that maxModels × effTimeout ≤ budget AND never exceeds caller intent.
   const effTimeoutMs = Math.min(callerTimeoutMs, Math.floor(CHAIN_TOTAL_BUDGET_MS / maxModels));
+  // INF-2 (audit AI-GENERATION-PIPELINES 2026-11-15, P1 bucket 8): the
+  // UNIFIED CHAIN DEADLINE. The old "maxModels × effTimeout ≤ budget"
+  // clamp ignored the inner attempt multipliers (per-entry key fallback ×
+  // 2 keys × 2 empty-retries ⇒ worst case ≈ 4-6× the claimed budget, so
+  // the "≤52s guarantee" in the header was false and Vercel killed the
+  // function mid-chain). A single wall-clock deadline is now checked
+  // before EVERY attempt — model walk, key switch and empty-retry alike
+  // — and each attempt's timeout is clamped to the REMAINING time. The
+  // chain stops honestly with the attempts-so-far error list.
+  const chainDeadlineMs = Date.now() + CHAIN_TOTAL_BUDGET_MS;
 
   const { maxModels: _omit, timeoutMs: _omit2, chain: _omit3, ...callOptions } = options;
 
@@ -3500,7 +3510,7 @@ export async function callFreeAIFallbackChain(
   const looksLikeQuota = (m: string) => /\b(401|402|429|403)\b|quota|rate.?limit|credit|insufficient/i.test(m);
 
   let attempted = 0;
-  for (const { provider, model, maxTokens: entryMaxTokens } of activeChain0) {
+  chain_walk: for (const { provider, model, maxTokens: entryMaxTokens } of activeChain0) {
     if (attempted >= maxModels) break;
 
     // BLOG-PROVIDER-FAILOVER (owner order 2026-10-16 «بحيث تنتقل للمزوّد
@@ -3511,13 +3521,22 @@ export async function callFreeAIFallbackChain(
     // the SAME maxModels budget. Registry is OPT-IN via
     // AI_PROVIDER_COOLDOWN_MS (canary law — absent env = the pre-2026-10-16
     // walk, byte-identical).
-    const cd = cooldownState(`chain:${provider}`);
+    // INF-3 (audit AI-GENERATION-PIPELINES 2026-11-15, P1 bucket 8): the
+    // cooldown SCOPE is now class-aware — a quota/auth/payment failure
+    // (429/402/401) freezes the PROVIDER (the account is dry), but a
+    // GONE failure (404/dead model) freezes only the offending
+    // MODEL-scoped entry. The old provider-wide freeze let ONE dead model
+    // (the measured 404 on a retired id) evict every healthy entry of
+    // the provider for 30 minutes.
+    const cdProvider = cooldownState(`chain:${provider}`);
+    const cdModel = cooldownState(`chain:${provider}:${model}`);
+    const cd = cdProvider ?? cdModel;
     if (cd) {
       errors.push(
-        `${provider}: quota-cooldown until ${new Date(cd.until).toISOString()} (${cd.reason}) — entries skipped, no call made`,
+        `${provider}${cdModel && !cdProvider ? `/${model}` : ""}: quota-cooldown until ${new Date(cd.until).toISOString()} (${cd.reason}) — entries skipped, no call made`,
       );
       console.log(
-        `${LP} ${provider} in quota-cooldown → skipping its entries until ${new Date(cd.until).toISOString()}`,
+        `${LP} ${provider}${cdModel && !cdProvider ? `/${model}` : ""} in quota-cooldown → skipping its entries until ${new Date(cd.until).toISOString()}`,
       );
       continue;
     }
@@ -3560,6 +3579,17 @@ export async function callFreeAIFallbackChain(
     // identical retry very often succeeds. Retry each entry ONCE on empty.
     for (const apiKey of candidateKeys) {
       for (let attemptNo = 0; attemptNo < 2; attemptNo++) {
+        // INF-2: the unified deadline — checked before EVERY attempt
+        // (model walk, key switch, empty-retry). A breach stops the whole
+        // chain honestly (the aggregate error below carries every
+        // attempt so far).
+        if (Date.now() >= chainDeadlineMs) {
+          errors.push(
+            `chain deadline (${Math.round(CHAIN_TOTAL_BUDGET_MS / 1000)}s wall clock) exceeded before ${provider}/${model} attempt — stopping honestly`,
+          );
+          console.warn(`${LP} INF-2 chain deadline exceeded — stopping before ${provider}/${model}`);
+          break chain_walk;
+        }
         // Phase 89 streaming: when the caller passed onDelta, this attempt
         // streams raw deltas through the chain-level callback. attemptStreamed
         // marks that THIS attempt already pushed tokens to the user — after
@@ -3576,18 +3606,26 @@ export async function callFreeAIFallbackChain(
         // (provider×model×function) counters are written at every exit.
         const attemptT0 = Date.now();
         try {
+          // INF-2: the attempt timeout never outlives the remaining
+          // chain budget (a 100ms floor avoids a degenerate zero/negative
+          // timeout — an expired remainder is caught by the pre-check
+          // above before an attempt can start).
+          const attemptTimeoutMs = Math.max(
+            100,
+            Math.min(effTimeoutMs, chainDeadlineMs - Date.now()),
+          );
           const { text } = streamTap
             ? {
                 text: await callAIStream(
                   prompt,
-                  { ...attemptOptions, timeoutMs: effTimeoutMs },
+                  { ...attemptOptions, timeoutMs: attemptTimeoutMs },
                   { provider, apiKey, model, baseUrl },
                   streamTap,
                 ),
               }
             : await callAIWithFallback(
                 prompt,
-                { ...attemptOptions, timeoutMs: effTimeoutMs },
+                { ...attemptOptions, timeoutMs: attemptTimeoutMs },
                 {
                   provider,
                   apiKey,
@@ -3643,10 +3681,12 @@ export async function callFreeAIFallbackChain(
             provider === "groq" && groq429PerMinuteClass(msg);
           const cls = perMinuteGroq429 ? null : classifyForCooldown(msg);
           if (cls) {
-            markCooldown(
-              `chain:${provider}`,
-              `${cls}: ${provider}/${model}: ${msg.slice(0, 120)}`,
-            );
+            // INF-3: quota/auth class → PROVIDER scope (the account is
+            // dry, every entry of the provider will fail alike); gone
+            // class → MODEL scope (the provider's other models are
+            // healthy and keep serving).
+            const scope = cls === "gone" ? `chain:${provider}:${model}` : `chain:${provider}`;
+            markCooldown(scope, `${cls}: ${provider}/${model}: ${msg.slice(0, 120)}`);
           }
           if (attemptStreamed) {
             // Mid-stream failure AFTER user-visible tokens — rethrow so the

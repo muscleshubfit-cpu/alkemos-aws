@@ -345,10 +345,19 @@ export async function GET(request: NextRequest) {
   // PHASE 162: coach-supplied topic (may be null — the automatic runs
   // never send ?topic=, so their behavior is byte-identical to before).
   const coachTopic = getTopicParam(request);
+  // ART-9 (audit AI-GENERATION-PIPELINES 2026-11-15, P1 bucket 5): the
+  // coach's topic free text is UNTRUSTED INPUT — it enters the research
+  // and outline prompts verbatim. Control characters are stripped and the
+  // DATA-boundary directive rides the prompt builds (blog-pipeline's
+  // wrapAsDataBlock consumers); here the sanitizer keeps the raw surface
+  // from smuggling control chars into the queue row itself.
+  const safeCoachTopic = coachTopic
+    ? coachTopic.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, " ").replace(/\s+/g, " ").trim().slice(0, 300) || null
+    : null;
   // PHASE 171 (proposal ج): a run carrying a coach topic OR an ai_jobs
   // receipt is owner-requested — its queue row is exempt from the P5
   // one-automated-article/day law (scheduled runs have neither).
-  const coachRun = !!(coachTopic || getJobIdParam(request));
+  const coachRun = !!(safeCoachTopic || getJobIdParam(request));
 
   try {
     // ── 0) RESUME (BLOG-RECOVERY-3, owner order 2026-10-21 «استكمال دون
@@ -507,19 +516,19 @@ export async function GET(request: NextRequest) {
     // PHASE 162: seal the coach's topic into MY side of the brief (the
     // twin keeps its researched topic — the pair still shares pairId +
     // angle + sealedAt and passes every extractSharedBrief law).
-    if (brief && coachTopic) {
-      brief = withCoachTopic(brief, lang, coachTopic);
+    if (brief && safeCoachTopic) {
+      brief = withCoachTopic(brief, lang, safeCoachTopic);
     }
 
     // MY row first (the pipeline continues on THIS queueId).
     const myTopic = brief
       ? (lang === "ar" ? brief.topicAr : brief.topicEn)
-      : ((coachTopic ?? mineResearch.topics[0]) ||
+      : ((safeCoachTopic ?? mineResearch.topics[0]) ||
         (lang === "ar" ? "مقال لياقة" : "fitness article"));
     const myKeyword = brief
       ? topicToKeyword(lang === "ar" ? brief.topicAr : brief.topicEn)
-      : (coachTopic
-          ? topicToKeyword(coachTopic)
+      : (safeCoachTopic
+          ? topicToKeyword(safeCoachTopic)
           : mineResearch.keywords[0]?.keyword || (lang === "ar" ? "لياقة" : "fitness"));
 
     let inserted = await insertResearchedRow({
@@ -544,10 +553,10 @@ export async function GET(request: NextRequest) {
         brief = null;
         inserted = await insertResearchedRow({
           language: lang,
-          topic: (coachTopic ?? mineResearch.topics[0]) ||
+          topic: (safeCoachTopic ?? mineResearch.topics[0]) ||
             (lang === "ar" ? "مقال لياقة" : "fitness article"),
-          focus_keyword: coachTopic
-            ? topicToKeyword(coachTopic)
+          focus_keyword: safeCoachTopic
+            ? topicToKeyword(safeCoachTopic)
             : mineResearch.keywords[0]?.keyword || (lang === "ar" ? "لياقة" : "fitness"),
           category: mine.category,
           pairId: null,
@@ -602,7 +611,7 @@ export async function GET(request: NextRequest) {
       pairMode: brief ? ("created" as const) : ("legacy" as const),
       pairId: brief?.pairId,
       twinInserted,
-      topicOverride: coachTopic ?? undefined,
+      topicOverride: safeCoachTopic ?? undefined,
       coachRun: coachRun || undefined,
     });
   } catch (e) {

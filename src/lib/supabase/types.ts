@@ -215,6 +215,10 @@ export type Database = {
           is_current: boolean | null;
           approved_at: string | null;
           created_at: string;
+          /** INF-13 (audit AI-GENERATION-PIPELINES 2026-11-15, P1): the
+           *  claiming ai_jobs row's id — the requeue-after-finishJob-failure
+           *  idempotency key (a re-run must never duplicate the draft). */
+          job_id: string | null;
         };
         Insert: {
           id?: string;
@@ -228,10 +232,12 @@ export type Database = {
           is_current?: boolean | null;
           approved_at?: string | null;
           created_at?: string;
+          job_id?: string | null;
         };
         Update: {
           type?: "meal" | "workout";
           title?: string;
+          job_id?: string | null;
           notes?: string | null;
           file_url?: string | null;
           content?: Json | null;
@@ -465,6 +471,11 @@ export type Database = {
           ar_post_id: string | null;
           /** Phase 157: bilingual pair twin link (0076) — NULL = legacy independent run. */
           pair_id: string | null;
+          /** ART-2 (audit AI-GENERATION-PIPELINES 2026-11-15, P1): how many
+           *  times this row was resumed and failed again — the resume cap
+           *  (≤2) excludes a deterministically-failing row from the RESUME
+           *  walk so it can never starve every slot for 144h. */
+          resume_count: number;
           created_at: string;
           generated_at: string | null;
           published_at: string | null;
@@ -485,6 +496,7 @@ export type Database = {
           ar_post_id?: string | null;
           /** Phase 157: set when this row is one side of a bilingual daily pair. */
           pair_id?: string | null;
+          resume_count?: number;
           created_at?: string;
           generated_at?: string | null;
           published_at?: string | null;
@@ -503,6 +515,7 @@ export type Database = {
           en_post_id?: string | null;
           ar_post_id?: string | null;
           pair_id?: string | null;
+          resume_count?: number;
           created_at?: string;
           generated_at?: string | null;
           published_at?: string | null;
@@ -2190,6 +2203,8 @@ export type Database = {
           nutrition_sources: Json;
           calories_kcal_consistency: Json | null;
           sodium_coverage: string;
+          /** REC-8 (audit P1): the same coverage law for saturated fat. */
+          sat_fat_coverage: string;
           cuisines: string[];
           goals: string[];
           diets: string[];
@@ -2220,6 +2235,8 @@ export type Database = {
           nutrition_sources?: Json;
           calories_kcal_consistency?: Json | null;
           sodium_coverage?: string;
+          /** REC-8 (audit P1): the same coverage law for saturated fat. */
+          sat_fat_coverage?: string;
           cuisines?: string[];
           goals?: string[];
           diets?: string[];
@@ -2249,6 +2266,8 @@ export type Database = {
           nutrition_sources?: Json;
           calories_kcal_consistency?: Json | null;
           sodium_coverage?: string;
+          /** REC-8 (audit P1): the same coverage law for saturated fat. */
+          sat_fat_coverage?: string;
           cuisines?: string[];
           goals?: string[];
           diets?: string[];

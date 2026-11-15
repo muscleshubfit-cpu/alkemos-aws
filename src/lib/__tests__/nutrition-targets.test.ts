@@ -138,9 +138,22 @@ describe("diet-aware macro policy (item 4)", () => {
     expect(m.fat_g).toBe(Math.round((2324 * 0.25) / 9));
     expect(macroKcalGap(m, 2324)).toBeLessThanOrEqual(40);
   });
-  it("coach macros always win over every policy", () => {
+  it("coach macros always win over every policy — VERBATIM when they close (NUT-2 ±10%)", () => {
+    // 150/250/70 = 600+1000+630 = 2230 vs 2300 → 3% drift → verbatim win.
+    const coach = { protein_g: 150, carbs_g: 250, fat_g: 70 };
+    expect(computeMacrosForDiet("keto", 2300, 100, coach)).toEqual(coach);
+  });
+
+  it("NUT-2 (audit P1): a NON-closing coach override is ratio-preserving rescaled onto the target", () => {
+    // 180/200/70 = 2150 kcal vs a 2500 target → 14% drift: the P1 closure
+    // law rescales proportionally (the coach's RATIO intent is kept, the
+    // three-contradicting-number-sets defect is killed at the root).
     const coach = { protein_g: 180, carbs_g: 200, fat_g: 70 };
-    expect(computeMacrosForDiet("keto", 2500, 100, coach)).toEqual(coach);
+    const out = computeMacrosForDiet("keto", 2500, 100, coach);
+    const kcal = out.protein_g * 4 + out.carbs_g * 4 + out.fat_g * 9;
+    expect(Math.abs(kcal - 2500)).toBeLessThanOrEqual(40);
+    // the ratio is preserved (protein : carbs : fat order intact)
+    expect(out.protein_g / out.carbs_g).toBeCloseTo(coach.protein_g / coach.carbs_g, 1);
   });
   it("classifyDietText maps the real questionnaire spellings", () => {
     expect(classifyDietText("كيتو")).toBe("keto");

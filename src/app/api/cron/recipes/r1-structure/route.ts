@@ -205,12 +205,29 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ ok: true, step: "r1", queueId, recipeId, source, ingredients: structure.ingredients.length });
   } catch (err) {
-    console.error("[recipes/r1] failed:", err);
-    await markRecipeQueueFailed(queueId, `R1: ${err instanceof Error ? err.message : "unknown"}`);
-    return NextResponse.json(
-      { ok: false, error: err instanceof Error ? err.message : "unknown" },
-      { status: 500 },
-    );
+    const msg = err instanceof Error ? err.message : "unknown";
+    console.error("[recipes/r1] failed:", msg);
+    // REC-9 (audit P1): a duplicate-key death (recipes_pair_slug_uidx /
+    // recipes versions slug index) is DETERMINISTIC — a blind retry hits
+    // the same key byte-identically. It now maps to the repair contract:
+    // hold + rerun r0-idea (a fresh idea draws a fresh slug) instead of
+    // a terminal failed classification.
+    if (/duplicate key|unique constraint|recipes_pair_slug_uidx/i.test(msg)) {
+      await updateRecipeQueueItem(queueId, {
+        status: "held",
+        error_message: `R1: duplicate key — the idea's slug collides with an existing recipe — ${msg.slice(0, 300)}`,
+        rerun_target: "r0-idea",
+      });
+      return NextResponse.json({
+        ok: false,
+        queueId,
+        held: true,
+        rerunTarget: "r0-idea",
+        reason: `duplicate key: ${msg.slice(0, 200)}`,
+      });
+    }
+    await markRecipeQueueFailed(queueId, `R1: ${msg}`);
+    return NextResponse.json({ ok: false, error: msg }, { status: 500 });
   }
 }
 

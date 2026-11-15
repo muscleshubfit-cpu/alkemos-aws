@@ -265,6 +265,29 @@ export function auditNutritionPlan(
 
   // Macro drift vs the plan's declared macros (when both sides exist).
   const declaredMacros = plan.macros ?? {};
+  // NUT-2 (audit AI-GENERATION-PIPELINES 2026-11-15, P1 bucket 3): the
+  // INDEPENDENT macro↔calorie closure comparison the audit was computing
+  // (kcal_from_macros) but never comparing — the declared P/C/F triple
+  // must close on the declared daily_calories within ±10% (the same band
+  // the generator now enforces on coach overrides). A hand-edited or
+  // legacy plan carrying three contradicting number sets surfaces as a
+  // CRITICAL finding (drives the needs_review banner) instead of silently
+  // displaying macros whose sum is ~2× the calorie promise.
+  const declaredProtein = num(declaredMacros.protein_g);
+  const declaredCarbs = num(declaredMacros.carbs_g);
+  const declaredFat = num(declaredMacros.fat_g);
+  if (declaredProtein > 0 && declaredCarbs > 0 && declaredFat > 0 && declaredTarget > 0) {
+    const declaredKcalFromMacros = declaredProtein * 4 + declaredCarbs * 4 + declaredFat * 9;
+    const closureDriftPct =
+      Math.round(((declaredKcalFromMacros - declaredTarget) / declaredTarget) * 1000) / 10;
+    if (Math.abs(closureDriftPct) > PLAN_AI_SANITY.macroClosureTolerance * 100) {
+      findings.push({
+        code: "macro_closure_violation",
+        severity: "critical",
+        message: `الماكروز المعلنة (بروتين ${Math.round(declaredProtein)}جم + كارب ${Math.round(declaredCarbs)}جم + دهون ${Math.round(declaredFat)}جم = ${Math.round(declaredKcalFromMacros)} سعرة بمعاملات 4/4/9) لا تغلق على السعرات المعلنة (${Math.round(declaredTarget)}) — انحراف ${closureDriftPct}%`,
+      });
+    }
+  }
   const macroDrift = (recomputedG: number, declaredG: number): number | null => {
     if (declaredG <= 0 || recomputedG <= 0) return null;
     return Math.round(((recomputedG - declaredG) / declaredG) * 1000) / 10;

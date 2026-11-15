@@ -26,6 +26,11 @@ export type RecipeImageInput = {
   themeAr: string;
   /** the main 2-4 ingredients by weight (name_en) */
   mainIngredientsEn: readonly string[];
+  /** REC-4 (audit AI-GENERATION-PIPELINES 2026-11-15, P1 bucket 6): the
+   *  ARABIC names — the Arabic alt text used to be built from the ENGLISH
+   *  names («دجاج مشوي بـchicken breast وrice»), shipping Latin
+   *  contamination into every published pair's accessibility/SEO text. */
+  mainIngredientsAr?: readonly string[];
   /** the dish family keyword for the match check (soup/salad/curry/…) */
   dishTypeEn: string;
   queueId: string;
@@ -137,7 +142,10 @@ function buildAltEn(input: RecipeImageInput, keyword: string): string {
 }
 
 function buildAltAr(input: RecipeImageInput, keyword: string): string {
-  const mainsAr = input.mainIngredientsEn.slice(0, 2).join(" و");
+  // REC-4 (audit P1): the Arabic alt is built from the ARABIC ingredient
+  // names (selected alongside name_en at R4). Falls back to the theme-only
+  // form when the Arabic names are unavailable (legacy callers).
+  const mainsAr = (input.mainIngredientsAr ?? []).slice(0, 2).join(" و");
   return `${input.themeAr}${mainsAr ? ` بـ${mainsAr}` : ""} — وصفة صحية من ألكيموس`;
 }
 

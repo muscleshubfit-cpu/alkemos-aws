@@ -363,7 +363,18 @@ export function PlansView() {
  setPendingPlans(readPendingPlanJobs());
  await reloadPlans();
  await refreshUsage();
+ // NUT-3 (audit AI-GENERATION-PIPELINES 2026-11-15, P1): a self-service
+ // plan carrying SAFETY-CRITICAL review findings lands as a reviewable
+ // DRAFT (not auto-approved) — the member gets the honest state instead
+ // of an invisible silent failure.
+ const heldForReview = Boolean((job.result as { needs_review?: unknown } | null)?.needs_review);
+ if (heldForReview) {
+ toast.warning(isAr
+ ? "تولّدت الخطة لكن التدقيق المستقل وجد ملاحظات حرجة (إصابات/تجهيزات/أرقام) — حُفظت كمسودة للمراجعة ولم تُعتمد تلقائيًا. أعد التوليد أو تواصل مع مدربك لمراجعتها."
+ : "The plan was generated but the independent audit found critical findings — it is saved as a reviewable draft and NOT auto-approved. Regenerate it or ask your coach to review.");
+ } else {
  toast.success(isAr ? "خطتك الجديدة جاهزة ✅ — تظهر أعلى القائمة." : "Your new plan is ready ✅ — it's at the top of the list.");
+ }
  return;
  }
  if (job?.status === "failed") {
@@ -1140,6 +1151,28 @@ function PlanCard({ plan, onClick }: { plan: Plan; onClick: () => void }) {
  );
 }
 
+/** NUT-3: Arabic labels for the review flags a member can see on his own
+ * plan — the raw codes (missing_gender, minor_client…) would be noise. */
+const REVIEW_FLAG_LABELS_AR: Record<string, string> = {
+ missing_gender: "الجنس غير مُدخل",
+ missing_or_implausible_weight: "الوزن غير مُدخل أو غير منطقي",
+ missing_or_implausible_height: "الطول غير مُدخل أو غير منطقي",
+ missing_or_implausible_age: "العمر غير مُدخل أو غير منطقي",
+ calorie_floor_applied: "طُبّقت الأرضية السعرية (1200 سعرة)",
+ deficit_beyond_25pct: "عجز حراري أعمق من 25%",
+ surplus_beyond_15pct: "فائض حراري أكبر من 15%",
+ minor_client: "العميل قاصر (أقل من 18)",
+ minor_deficit_clamped_to_maintenance: "أُلغي العجز للقاصر (سعرات صيانة)",
+ macro_closure_adjusted: "عُدّلت الماكروز لتغلق على السعرات المستهدفة",
+ macro_closure_violation: "الماكروز لا تغلق على السعرات المستهدفة",
+ ai_output_rejected_local_fallback: "مخرجات الذكاء الاصطناعي رُفضت — استُخدم المحرك المحلي",
+ independent_audit_critical_findings: "التدقيق المستقل وجد ملاحظات حرجة",
+ injury_unsafe: "تمرين غير آمن لإصابة مسجلة",
+ home_equipment_mismatch: "تجهيزات لا تناسب التدريب المنزلي",
+ no_training_days: "لا أيام تدريبية في البرنامج",
+ advanced_for_beginner: "تمرين متقدم لمستوى مبتدئ",
+};
+
 function PlanDetailModal({
  plan,
  onClose,
@@ -1159,7 +1192,7 @@ function PlanDetailModal({
  onPrint: () => void;
  onOpenFile: (path: string) => void;
 }) {
- const { t } = useI18n();
+ const { t, lang: planLang } = useI18n();
  const content = asPlanContent(plan.content);
 
  // PHASE 334 — W1-3b (remediation plan §6.2, audit A-03): the hand-rolled
@@ -1195,6 +1228,42 @@ function PlanDetailModal({
  </>
  }
  >
+ {/* NUT-3 (audit AI-GENERATION-PIPELINES 2026-11-15, P1): the review
+ banner in the MEMBER's plan viewer — needs_review flags and critical
+ independent-audit findings used to render ONLY in the coach view, so a
+ member's plan could carry data-quality/safety flags with zero
+ indication on his own surface. One banner, both plan types. */}
+ {content && typeof content === "object" && (
+ (() => {
+ const c = content as Record<string, unknown>;
+ const nr = c.needs_review as { flags?: unknown[]; note?: unknown } | undefined;
+ const critical = (c.audit as { criticalFindings?: unknown } | undefined)?.criticalFindings;
+ const flags = Array.isArray(nr?.flags) ? (nr!.flags as unknown[]).map(String) : [];
+ if (!nr && !(typeof critical === "number" && critical > 0)) return null;
+ const lang = planLang;
+ return (
+ <div className="mb-4 rounded-xl border border-amber-300 bg-amber-50 p-3 text-sm dark:border-amber-500/40 dark:bg-amber-500/10">
+ <p className="font-semibold text-amber-800 dark:text-amber-300">
+ {lang === "ar" ? "⚠️ هذه الخطة تحمل ملاحظات مراجعة" : "⚠️ This plan carries review notes"}
+ </p>
+ {typeof nr?.note === "string" && nr.note && (
+ <p className="mt-1 text-xs text-amber-700 dark:text-amber-400">{nr.note}</p>
+ )}
+ {flags.length > 0 && (
+ <p className="mt-1 text-xs text-amber-700 dark:text-amber-400">
+ {lang === "ar" ? "الأعلام: " : "Flags: "}
+ {flags.map((f) => REVIEW_FLAG_LABELS_AR[f] ?? f).join(" · ")}
+ </p>
+ )}
+ {typeof critical === "number" && critical > 0 && (
+ <p className="mt-1 text-xs text-amber-700 dark:text-amber-400">
+ {lang === "ar" ? `نتائج تدقيق حرجة: ${critical}` : `Critical audit findings: ${critical}`}
+ </p>
+ )}
+ </div>
+ );
+ })()
+ )}
  {plan.type === "meal" && content && "meals" in content ? (
  <MealContent content={content} onSwap={onSwapMeal} swapLoading={swapLoading} planId={plan.id} isSwapPending={isSwapPending} />
  ) : plan.type === "workout" && content && "days" in content ? (

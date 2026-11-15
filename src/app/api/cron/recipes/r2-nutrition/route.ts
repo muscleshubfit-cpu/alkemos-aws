@@ -129,6 +129,8 @@ export async function GET(request: NextRequest) {
         nutrition_sources: computation.sources,
         calories_kcal_consistency: computation.consistency,
         sodium_coverage: computation.sodiumCoverage,
+        // REC-8 (audit P1): the same coverage record for saturated fat.
+        sat_fat_coverage: computation.satFatCoverage,
         serving_weight_g: computation.servingWeightG,
         diets,
         goals,

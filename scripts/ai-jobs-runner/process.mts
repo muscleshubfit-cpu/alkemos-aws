@@ -228,6 +228,12 @@ async function main(): Promise<void> {
         // write — requested_by rides from the claimed job row.
         const result = await processor(job.payload ?? {}, {
           requestedBy: job.requested_by ?? null,
+          // INF-13 (audit AI-GENERATION-PIPELINES 2026-11-15, P1): the
+          // claiming job's id — the plan-draft materializer stamps it on
+          // the row and skips an already-materialized job (a finishJob
+          // failure after processor success used to requeue and insert a
+          // DUPLICATE draft for the member).
+          jobId: job.id ?? null,
         });
         await finishJob(job.id, result);
         await recordSwapOnSuccess(job);

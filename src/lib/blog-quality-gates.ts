@@ -281,19 +281,27 @@ export function findQuotedSearchPhrases(bodyMd: string, lang: GateLang): string[
   };
 
   if (lang === "en") {
+    // ART-12 (audit AI-GENERATION-PIPELINES 2026-11-15, P1): case-fold
+    // BEFORE judging — the old `q !== q.toLowerCase()` guard treated a
+    // capitalized query ("How to lose belly fat fast") as prose and let
+    // it through (any capital letter bypassed the gate). The fold runs
+    // first; the punctuation and question-word checks see the folded form.
     for (const m of bodyMd.matchAll(/"([^"\n]{8,200})"/g)) {
       const q = m[1].trim();
-      const words = q.split(/\s+/).filter(Boolean);
+      const folded = q.toLowerCase();
+      const words = folded.split(/\s+/).filter(Boolean);
       if (words.length < 4) continue;
-      // ALL-lowercase + no sentence punctuation = a raw pasted query.
-      if (q !== q.toLowerCase()) continue;
-      if (/[.!?;:]/.test(q)) continue;
-      if (/\b(how|what|best|why|when|vs|for|can|should|do)\b/i.test(q)) push(q);
+      // No sentence punctuation = a raw pasted query (folded form).
+      if (/[.!?;:]/.test(folded)) continue;
+      if (/\b(how|what|best|why|when|vs|for|can|should|do)\b/.test(folded)) push(q);
     }
     return violations;
   }
 
-  for (const m of bodyMd.matchAll(/[«"]([^«»"\n]{8,200})[»"]/g)) {
+  // ART-12: the AR regex now includes the CURLY quotes (“…”) — models
+  // raised on typographic quotes planted pasted queries the straight-quote
+  // class never saw.
+  for (const m of bodyMd.matchAll(/[«“"]([^«»”“"\n]{8,200})[»”"]/g)) {
     const q = m[1].trim();
     const words = q.split(/\s+/).filter(Boolean);
     if (words.length < 4) continue;
@@ -315,6 +323,9 @@ export function runP5QualityGates(args: {
   bodyMd: string;
   faqCount: number;
   legalTitles: string[];
+  /** ART-15 (audit P1): the outline's H2 headings — every one must appear
+   *  in the final body (P4 may polish wording but not DROP sections). */
+  outlineHeadings?: string[];
 }): string[] {
   const { lang, bodyMd, faqCount, legalTitles } = args;
   const violations: string[] = [];
@@ -322,6 +333,36 @@ export function runP5QualityGates(args: {
   const h2 = countH2Sections(bodyMd);
   if (h2 < 5) {
     violations.push(`only ${h2} H2 sections (< 5 floor)`);
+  }
+
+  // ART-15 (audit AI-GENERATION-PIPELINES 2026-11-15, P1 bucket 9): the
+  // OUTLINE COMMITMENT check — the review pass could silently drop or
+  // rename sections and nothing verified the delivered body still covers
+  // the outline the article promised. Every outline heading (normalized:
+  // case-folded, punctuation stripped, Arabic diacritics/article removed)
+  // must appear in the normalized body. A missing heading is a battery
+  // violation → p4-review repairs by restoring the section.
+  if (args.outlineHeadings && args.outlineHeadings.length > 0) {
+    const normalizeHeading = (h: string) =>
+      String(h ?? "")
+        .toLowerCase()
+        .replace(/[\u064B-\u065F\u0670\u0640]/g, "")
+        .replace(/[إأآا]/g, "ا")
+        .replace(/ى/g, "ي")
+        .replace(/ة/g, "ه")
+        .replace(/ال(?=\S)/g, "")
+        .replace(/[^\p{L}\p{N}\s]/gu, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+    const bodyNorm = normalizeHeading(bodyMd);
+    const missing = args.outlineHeadings
+      .map(normalizeHeading)
+      .filter((h) => h.length > 2 && !bodyNorm.includes(h));
+    if (missing.length > 0) {
+      violations.push(
+        `${missing.length} outline section heading(s) missing from the final body: ${missing.slice(0, 3).map((h) => `"${h}"`).join(", ")}`,
+      );
+    }
   }
 
   if (faqCount < EDITORIAL_FAQ_COUNT_RANGE.min || faqCount > EDITORIAL_FAQ_COUNT_RANGE.max) {
@@ -461,4 +502,68 @@ export async function runAiDraftPublishBattery(args: {
     unverifiedLinks: linkVerify.unverified,
     wordCount,
   };
+}
+
+
+/* ─────────────────────────────────────────────────────────────────────
+ * ART-15 (audit P1 bucket 9): the 5-gram PROSE-SIMILARITY check. The
+ * topic-level dedup protects TITLES; nothing compared the BODY against
+ * the last published articles — a regenerated article could ship
+ * near-identical prose to last week's. The measure: 5-token shingles
+ * (normalized), CONTAINMENT = |new ∩ published| / |new| against each of
+ * the last N published bodies of the same language; a containment above
+ * the ceiling means a quarter-plus of the new article's sentences already
+ * exist verbatim — regeneration, not review, is the repair.
+ * ───────────────────────────────────────────────────────────────────── */
+
+/** Tokenize + normalize prose into comparable tokens. */
+function shingleTokens(text: string): string[] {
+  return String(text ?? "")
+    .toLowerCase()
+    .replace(/[\u064B-\u065F\u0670\u0640]/g, "")
+    .replace(/[^\p{L}\p{N}\s]/gu, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .split(" ")
+    .filter((t) => t.length > 0);
+}
+
+/** The set of 5-token shingles of a text (fewer tokens → the whole text
+ *  as one shingle; empty for empty input). */
+export function shingle5Grams(text: string): Set<string> {
+  const tokens = shingleTokens(text);
+  const grams = new Set<string>();
+  if (tokens.length === 0) return grams;
+  if (tokens.length < 5) {
+    grams.add(tokens.join(" "));
+    return grams;
+  }
+  for (let i = 0; i + 5 <= tokens.length; i++) {
+    grams.add(tokens.slice(i, i + 5).join(" "));
+  }
+  return grams;
+}
+
+/** The containment ceiling — ≥ this fraction of the NEW body's 5-grams
+ *  appearing inside ONE published body is wholesale prose reuse. */
+export const SHINGLE_CONTAINMENT_CEILING = 0.2;
+
+/** Max 5-gram containment of the new body against each published body.
+ * Returns null when either side carries too little prose to judge. */
+export function maxShingleContainment(
+  newBody: string,
+  publishedBodies: string[],
+): { ratio: number; againstIndex: number } | null {
+  const mine = shingle5Grams(newBody);
+  if (mine.size < 40) return null; // too short to judge honestly
+  let best = { ratio: 0, againstIndex: -1 };
+  publishedBodies.forEach((pub, i) => {
+    const theirs = shingle5Grams(pub);
+    if (theirs.size === 0) return;
+    let hits = 0;
+    for (const g of mine) if (theirs.has(g)) hits++;
+    const ratio = hits / mine.size;
+    if (ratio > best.ratio) best = { ratio, againstIndex: i };
+  });
+  return best.againstIndex >= 0 ? best : null;
 }

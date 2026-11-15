@@ -27,6 +27,7 @@ const planRow = (id: string, status: string): Plan => ({
   status,
   is_current: false,
   approved_at: null,
+    job_id: null,
   created_at: "2026-10-24T00:00:00Z",
 });
 

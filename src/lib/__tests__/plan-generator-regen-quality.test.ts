@@ -173,6 +173,18 @@ describe("generateWorkoutPlanAI — hollow training days are rejected", () => {
         { name: "Row", sets: 3, reps: "10", rest: "60 ثانية", notes: "" },
         { name: "Face Pull", sets: 3, reps: "15", rest: "45 ثانية", notes: "" },
       ] },
+      // WOR-5 (audit P1, same-commit canary update): the ctx requests
+      // 4 training days (fitness.days="4") — the program must MATCH.
+      { day: "الثلاثاء", focus: "أرجل", isRest: false, exercises: [
+        { name: "Barbell Squat", sets: 4, reps: "8-12", rest: "120 ثانية", notes: "" },
+        { name: "Leg Press", sets: 3, reps: "10", rest: "90 ثانية", notes: "" },
+        { name: "Calf Raise", sets: 3, reps: "15", rest: "45 ثانية", notes: "" },
+      ] },
+      { day: "الأربعاء", focus: "أكتاف", isRest: false, exercises: [
+        { name: "Dumbbell Shoulder Press", sets: 4, reps: "8-12", rest: "90 ثانية", notes: "" },
+        { name: "Lateral Raise", sets: 3, reps: "12", rest: "60 ثانية", notes: "" },
+        { name: "Shrug", sets: 3, reps: "12", rest: "60 ثانية", notes: "" },
+      ] },
     ],
   });
 
@@ -180,7 +192,11 @@ describe("generateWorkoutPlanAI — hollow training days are rejected", () => {
     chainState.responses.push({ text: JSON.stringify(validWorkout()), model: "m", provider: "nvidia" });
     const res = await generateWorkoutPlanAI(ctx);
     expect(res.source).toBe("nvidia:m");
-    expect((res.content as { days: unknown[] }).days).toHaveLength(3);
+    // 4 training days + 1 rest day (the request's 4-day anchor matched).
+    expect((res.content as { days: unknown[] }).days).toHaveLength(5);
+    // WOR-5: the TRAINING days match the requested count exactly.
+    const training = ((res.content as { days: Array<{ isRest?: boolean }> }).days).filter((d) => !d.isRest);
+    expect(training).toHaveLength(4);
   });
 
   it("hollow days rejected twice → local fallback", async () => {
@@ -558,6 +574,18 @@ describe("WOR-1 — overview/weekly_volume/progression survive generation (audit
           { name: "Row", sets: 3, reps: "10", rest: "60 \u062b\u0627\u0646\u064a\u0629", notes: "" },
           { name: "Face Pull", sets: 3, reps: "15", rest: "45 \u062b\u0627\u0646\u064a\u0629", notes: "" },
         ] },
+        // WOR-5 (audit P1, same-commit canary update): ctx requests 4
+        // training days — the program must MATCH the request.
+        { day: "\u0627\u0644\u062b\u0644\u0627\u062b\u0627\u0621", focus: "\u0623\u0631\u062c\u0644", isRest: false, exercises: [
+          { name: "Barbell Squat", sets: 4, reps: "8-12", rest: "120 \u062b\u0627\u0646\u064a\u0629", notes: "" },
+          { name: "Leg Press", sets: 3, reps: "10", rest: "90 \u062b\u0627\u0646\u064a\u0629", notes: "" },
+          { name: "Calf Raise", sets: 3, reps: "15", rest: "45 \u062b\u0627\u0646\u064a\u0629", notes: "" },
+        ] },
+        { day: "\u0627\u0644\u0623\u0631\u0628\u0639\u0627\u0621", focus: "\u0623\u0643\u062a\u0627\u0641", isRest: false, exercises: [
+          { name: "Dumbbell Shoulder Press", sets: 4, reps: "8-12", rest: "90 \u062b\u0627\u0646\u064a\u0629", notes: "" },
+          { name: "Lateral Raise", sets: 3, reps: "12", rest: "60 \u062b\u0627\u0646\u064a\u0629", notes: "" },
+          { name: "Shrug", sets: 3, reps: "12", rest: "60 \u062b\u0627\u0646\u064a\u0629", notes: "" },
+        ] },
       ],
     };
     chainState.responses.push({ text: JSON.stringify(plan), model: "m", provider: "nvidia" });
@@ -590,6 +618,18 @@ describe("WOR-2 — critical workout-audit findings stamp needs_review (audit P0
           { name: "Bench Press", sets: 4, reps: "8-12", rest: "90 \u062b\u0627\u0646\u064a\u0629", notes: "" },
           { name: "Incline Press", sets: 3, reps: "10", rest: "60 \u062b\u0627\u0646\u064a\u0629", notes: "" },
           { name: "Cable Fly", sets: 3, reps: "12", rest: "60 \u062b\u0627\u0646\u064a\u0629", notes: "" },
+        ] },
+        // WOR-5 (audit P1, same-commit canary update): ctx requests 4
+        // training days — the program must MATCH (2 original + 2 added).
+        { day: "\u0627\u0644\u062b\u0644\u0627\u062b\u0627\u0621", focus: "\u0638\u0647\u0631", isRest: false, exercises: [
+          { name: "Lat Pulldown", sets: 4, reps: "8-12", rest: "90 \u062b\u0627\u0646\u064a\u0629", notes: "" },
+          { name: "Row", sets: 3, reps: "10", rest: "60 \u062b\u0627\u0646\u064a\u0629", notes: "" },
+          { name: "Face Pull", sets: 3, reps: "15", rest: "45 \u062b\u0627\u0646\u064a\u0629", notes: "" },
+        ] },
+        { day: "\u0627\u0644\u0623\u0631\u0628\u0639\u0627\u0621", focus: "\u0623\u0643\u062a\u0627\u0641", isRest: false, exercises: [
+          { name: "Dumbbell Shoulder Press", sets: 4, reps: "8-12", rest: "90 \u062b\u0627\u0646\u064a\u0629", notes: "" },
+          { name: "Lateral Raise", sets: 3, reps: "12", rest: "60 \u062b\u0627\u0646\u064a\u0629", notes: "" },
+          { name: "Shrug", sets: 3, reps: "12", rest: "60 \u062b\u0627\u0646\u064a\u0629", notes: "" },
         ] },
       ],
     };

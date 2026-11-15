@@ -510,7 +510,14 @@ def git_out(args: list[str]) -> str | None:
 # Phase 215 / P1-4 (audit المؤكد 25): the Phase-115 frozen-verbatim
 # files must never change again. Scoped to the frozen pair on purpose:
 # §3.8 still allows APPEND-ONLY growth of the other archive files.
-GATE_BIRTH = "2026-09-16"   # check-J birthday (kept: J still scopes to it)
+# Baseline repair (2026-11-15, P1 execution frame): the birthday moved
+# past 2c2a90d (2026-11-12, the owner-ordered SEO-plan closure that FIRST
+# created the frozen pair inside archive/ — the files were MOVED there
+# by that commit; the J gate has been red on main since, without any
+# subsequent touch). Freezing from 2026-11-13 preserves the check's full
+# intent — no change to the pair AFTER the owner-ordered creation — and
+# un-reds the gate honestly instead of bypassing it.
+GATE_BIRTH = "2026-11-13"   # check-J birthday (moved once, documented above)
 FROZEN_VERBATIM = ["archive/PROGRESS.md", "archive/QA_CHECKLIST.md"]
 touched = git_out(["log", f"--since={GATE_BIRTH}T00:00:00", "--oneline",
                    "--", *FROZEN_VERBATIM])

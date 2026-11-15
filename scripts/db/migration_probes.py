@@ -293,6 +293,20 @@ PROBES: list[dict] = [
              "column": "job_ref"},
         ],
     },
+    # 0112 — GENERATION-PIPELINES P1 IDEMPOTENCY (audit 2026-11-15):
+    # plans.job_id (INF-13) + blog_generation_queue.resume_count (ART-2).
+    # Honest weak strength: additive columns only — presence is the law.
+    {
+        "file": "20261115120000_0112_generation_pipelines_p1_idempotency.sql",
+        "label": "0112 GENERATION-PIPELINES-P1-IDEMPOTENCY",
+        "strength": "weak",
+        "checks": [
+            {"type": "swagger_column", "table": "plans",
+             "column": "job_id"},
+            {"type": "swagger_column", "table": "blog_generation_queue",
+             "column": "resume_count"},
+        ],
+    },
 ]# fmt on
 
 # --- named transforms for rest_rows probes ----------------------------------

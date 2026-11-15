@@ -304,7 +304,11 @@ describe("MEMBER-SWAP-DURABILITY 4 — the runner ownership defense", () => {
       type: "meal",
       content: {
         overview: "خطة",
-        daily_calories: 1500,
+        // NUT-6 (audit P1, same-commit canary update): the day-budget
+        // closure now rejects a swap that leaves the day outside ±25% of
+        // daily_calories — the fixture's day sums to its declared budget
+        // so the ownership test exercises the happy path as intended.
+        daily_calories: 233,
         meals: [
           {
             name: "الفطار",

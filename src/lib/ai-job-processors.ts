@@ -25,11 +25,14 @@ import {
   regenerateWorkoutDay,
   substituteExercise,
 } from "@/lib/plan-generator";
-import { DIET_TYPES, type DietType } from "@/lib/diet-types";
+import { DIET_TYPES, classifyDietText, resolvePlanDietType, type DietType } from "@/lib/diet-types";
 import type { ClientContext } from "@/lib/ai-local";
 import { generateSocialPost } from "@/lib/social-posts";
 import { pickSmartTopic } from "@/lib/blog-topics";
 import { supabaseAdmin, isSupabaseAdminConfigured } from "@/lib/supabase/admin";
+// NUT-6: the day-budget closure law shared by the runner's materialization
+// and the member's client-side apply — one definition, every swap surface.
+import { dayBudgetClosureViolation } from "@/lib/plan-ai-validation";
 import { decideSwapPlanOwnership } from "@/lib/plan-swap-ownership";
 
 import { weeksUnitAr } from "@/lib/utils";
@@ -100,6 +103,12 @@ const SWAP_UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{
  *  verify the requester against the plan BEFORE any service-role write. */
 export type ProcessorCtx = {
   requestedBy?: string | null;
+  /** INF-13 (audit AI-GENERATION-PIPELINES 2026-11-15, P1 bucket 7): the
+   *  claiming job's id — the plan-draft materializer stamps it on the row
+   *  and skips an already-materialized job (a processor success followed
+   *  by a finishJob failure requeues the job, and the re-run used to
+   *  insert a DUPLICATE draft for the member). */
+  jobId?: string | null;
 };
 
 /** Pure MEAL-swap content transform — the editor's exact semantics
@@ -186,7 +195,7 @@ async function materializeSwapIntoPlan(
   kind: "meal" | "item" | "exercise",
   replacement: Record<string, unknown> | null,
   ctx?: ProcessorCtx,
-): Promise<{ materialized: boolean; plan_id?: string }> {
+): Promise<{ materialized: boolean; plan_id?: string; rejected?: string }> {
   if (!isSupabaseAdminConfigured || !supabaseAdmin) return { materialized: false };
   if (!replacement || typeof replacement !== "object") return { materialized: false };
   const planId = String(payload?.planId ?? "");
@@ -268,6 +277,25 @@ async function materializeSwapIntoPlan(
   if (!next) {
     console.warn(`[swap-durability] content shape/index mismatch — materialization skipped (plan ${planId.slice(0, 8)})`);
     return { materialized: false };
+  }
+  // NUT-6 (audit AI-GENERATION-PIPELINES 2026-11-15, P1 bucket 3): the
+  // DAY-BUDGET closure re-verification — the swap anchor is the meal's
+  // CURRENT total (±20%), so consecutive swaps could ratchet the day
+  // total unboundedly. After the apply, the recomputed DAY total must
+  // stay within ±25% of the plan's declared daily_calories; a breach
+  // REJECTS the materialization with the named reason and the CALLER
+  // fails the job honestly (success-only quota: a rejected swap never
+  // burns the member's entitlement). Exercise swaps carry no calorie
+  // math — exempt.
+  if (kind !== "exercise") {
+    const dayViolation = dayBudgetClosureViolation(
+      (next as Record<string, unknown>).daily_calories,
+      Number((next as Record<string, unknown>).meals_total_calories ?? 0),
+    );
+    if (dayViolation) {
+      console.warn(`[swap-durability] NUT-6 day-budget rejection (plan ${planId.slice(0, 8)}): ${dayViolation}`);
+      return { materialized: false, rejected: dayViolation };
+    }
   }
 
   const { error: updateError } = await supabaseAdmin
@@ -675,15 +703,122 @@ async function runSocialPost(payload: Record<string, unknown>) {
  */
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+/** NUT-10: resolve the diet family from the client context the same way
+ *  computeNutritionTargets does (coach override was already handled by the
+ *  caller — here we classify the questionnaire's free-text diet answer). */
+function classifyDietTextFromContext(ctx: ClientContext | undefined): DietType | null {
+  const raw = (ctx?.nutrition as Record<string, unknown> | null | undefined)?.diet;
+  return raw ? classifyDietText(String(raw)) : null;
+}
+
+/** NUT-10 (audit P1 bucket 9): the PLATFORM-LEVEL avoidance set — food
+ *  names from the newest APPROVED meal plans of the SAME diet family
+ *  (across ALL clients, newest first). The generation prompt's avoid-block
+ *  already carries the client's OWN previous foods; this adds the
+ *  platform's recent answers so consecutive members with identical
+ *  profiles get genuinely different draws. Best-effort + bounded: any DB
+ *  error returns [] (the pre-P1 behavior); at most 5 plans × 8 foods. */
+async function collectPlatformAvoidNames(dietType: DietType | null): Promise<string[]> {
+  if (!isSupabaseAdminConfigured || !supabaseAdmin || !dietType) return [];
+  try {
+    const { data, error } = await supabaseAdmin
+      .from("plans")
+      .select("content")
+      .eq("type", "meal")
+      .eq("status", "approved")
+      .order("created_at", { ascending: false })
+      .limit(12);
+    if (error || !Array.isArray(data)) return [];
+    const names: string[] = [];
+    for (const row of data) {
+      const content = (row as { content?: unknown }).content as Record<string, unknown> | null;
+      if (!content || typeof content !== "object") continue;
+      // Diet-family filter: only plans whose content resolves to the SAME
+      // diet contribute their foods (a keto avoid-list must not push a
+      // balanced plan away from rice).
+      const resolved = resolvePlanDietType(content as Parameters<typeof resolvePlanDietType>[0]);
+      if (resolved !== dietType) continue;
+      const meals = Array.isArray(content.meals) ? (content.meals as Array<Record<string, unknown>>) : [];
+      for (const meal of meals) {
+        const items = Array.isArray(meal.items) ? (meal.items as Array<Record<string, unknown>>) : [];
+        for (const it of items) {
+          const food = typeof it.food === "string" ? it.food.trim() : "";
+          if (food.length > 1) names.push(food);
+        }
+      }
+      if (names.length >= 40) break;
+    }
+    return [...new Set(names)].slice(0, 40);
+  } catch {
+    return []; // best-effort by contract
+  }
+}
+
+/** NUT-3 (audit AI-GENERATION-PIPELINES 2026-11-15, P1 bucket 10): the
+ *  SAFETY-CRITICAL review-flag class that BLOCKS the self-service
+ *  auto-approval. A self-service plan carrying any of these lands as a
+ *  DRAFT (not current) with needs_review surfaced in the job result —
+ *  the honest «راجِع/أعد التوليد» state. Data-quality flags
+ *  (missing_gender / calorie_floor_applied / minor_client /
+ *  ai_output_rejected_local_fallback / macro_closure_adjusted …) do NOT
+ *  block: the local fallback passed the SAME gate, and blocking on every
+ *  data-quality flag would kill the paid self-service flow outright —
+ *  those ride the member-side banner instead (PlansView). */
+const SELF_SERVICE_BLOCKING_REVIEW_FLAGS = new Set([
+  "independent_audit_critical_findings",
+  "injury_unsafe",
+  "home_equipment_mismatch",
+  "no_training_days",
+  "macro_closure_violation",
+]);
+
+/** NUT-3: does this plan content carry a BLOCKING review state? */
+function selfServicePlanNeedsReviewHold(content: PlanContent | null): boolean {
+  if (!content || typeof content !== "object") return false;
+  const c = content as Record<string, unknown>;
+  const flags = Array.isArray((c.needs_review as { flags?: unknown } | undefined)?.flags)
+    ? ((c.needs_review as { flags: unknown[] }).flags as unknown[]).map(String)
+    : [];
+  if (flags.some((f) => SELF_SERVICE_BLOCKING_REVIEW_FLAGS.has(f))) return true;
+  const criticalFindings = (c.audit as { criticalFindings?: unknown } | undefined)?.criticalFindings;
+  return typeof criticalFindings === "number" && criticalFindings > 0;
+}
+
 async function materializePlanDraftRow(
   payload: Record<string, unknown>,
   title: string,
   content: PlanContent | null,
   planType: "meal" | "workout",
+  ctx?: ProcessorCtx,
 ): Promise<string | null> {
   if (!isSupabaseAdminConfigured || !supabaseAdmin) return null;
   const clientId = String(payload?.clientId ?? "");
   if (!UUID_RE.test(clientId)) return null; // no target client → browser fallback only
+  // INF-13 (audit AI-GENERATION-PIPELINES 2026-11-15, P1 bucket 7):
+  // IDEMPOTENT MATERIALIZATION — a processor success followed by a
+  // finishJob failure requeues the job, and the re-run used to insert a
+  // SECOND draft row for the same member (the measured duplicate-draft
+  // class). The plans row now carries the claiming job's id; a row that
+  // already exists for THIS job is returned as-is — the re-run is a
+  // no-op. Older jobs without a jobId (and the browser fallback path)
+  // keep the legacy insert behavior.
+  const jobId = typeof ctx?.jobId === "string" && UUID_RE.test(ctx.jobId) ? ctx.jobId : null;
+  if (jobId) {
+    try {
+      const { data: existing } = await supabaseAdmin
+        .from("plans")
+        .select("id")
+        .eq("job_id", jobId)
+        .limit(1)
+        .maybeSingle();
+      if (existing?.id) {
+        console.log(`[plan job] INF-13 idempotent skip: plans#${existing.id} already materialized for job ${jobId.slice(0, 8)}`);
+        return existing.id as string;
+      }
+    } catch {
+      /* column-not-yet-applied / transient error → legacy insert path */
+    }
+  }
   // AI-QUOTAS 2026-11-14 — MEMBER SELF-SERVICE: the dashboard Plans-section
   // generation lands APPROVED + CURRENT (the member auto-save law of the
   // demo routes — /api/ai/meal-plan-demo inserts approved/is_current for
@@ -692,18 +827,30 @@ async function materializePlanDraftRow(
   // enqueue route only stamps selfService after verifying
   // clientId === requester, so the flag can never upgrade a coach flow.
   const selfService = payload?.selfService === true;
+  // NUT-3 (audit P1): the self-service approval is BLOCKED for the
+  // safety-critical review class — the plan lands as a reviewable draft
+  // (coach-visible via listAllClientPlans) and the job result carries
+  // needs_review so the member's watcher explains exactly what happened
+  // instead of an invisible silent failure.
+  const holdForReview = selfService && selfServicePlanNeedsReviewHold(content);
   const { data, error } = await supabaseAdmin
     .from("plans")
     .insert({
       client_id: clientId,
       type: planType,
       title,
-      notes: selfService ? "Generated by AI — self service" : "Generated by AI",
+      notes: holdForReview
+        ? "Generated by AI — self service (held for review: critical audit findings)"
+        : selfService
+          ? "Generated by AI — self service"
+          : "Generated by AI",
       file_url: null,
       content,
-      status: selfService ? "approved" : "draft",
-      is_current: selfService,
-      ...(selfService ? { approved_at: new Date().toISOString() } : {}),
+      status: selfService && !holdForReview ? "approved" : "draft",
+      is_current: selfService && !holdForReview,
+      ...(selfService && !holdForReview ? { approved_at: new Date().toISOString() } : {}),
+      // INF-13: the claiming job's id — the re-run idempotency key above.
+      ...(jobId ? { job_id: jobId } : {}),
     })
     .select("id")
     .single();
@@ -765,8 +912,14 @@ async function materializePlanDraftRow(
  * The full policy contract is unit-pinned in plan-pool-billing.test.ts.
  */
 
-async function runPlanNutrition(payload: Record<string, unknown>) {
-  const ctx = pickClientContext(payload.clientContext);
+async function runPlanNutrition(payload: Record<string, unknown>, jobCtx?: ProcessorCtx) {
+  const baseCtx = pickClientContext(payload.clientContext);
+  // NUT-10 (audit AI-GENERATION-PIPELINES 2026-11-15, P1 bucket 9): the
+  // PLATFORM-LEVEL avoidance set — the newest approved meal plans of the
+  // SAME diet family (any client) contribute their food names to the
+  // avoid list, so two members with identical profiles no longer receive
+  // byte-similar plans from the same model draw. Best-effort: a DB hiccup
+  // degrades to the client's own avoid list (the pre-P1 behavior).
   const overrides = (payload.overrides ?? {}) as {
     targetCalories?: number;
     macros?: { protein_g: number; carbs_g: number; fat_g: number };
@@ -775,6 +928,17 @@ async function runPlanNutrition(payload: Record<string, unknown>) {
     notes?: string;
     dietType?: string;
   };
+  const platformAvoid = await collectPlatformAvoidNames(
+    (DIET_TYPES as readonly string[]).includes(String(overrides.dietType))
+      ? (overrides.dietType as DietType)
+      : classifyDietTextFromContext(baseCtx),
+  );
+  const ctx: ClientContext = platformAvoid.length
+    ? {
+        ...baseCtx,
+        recent_plan_names: [...(baseCtx.recent_plan_names ?? []), ...platformAvoid].slice(0, 60),
+      }
+    : baseCtx;
   // EVO-4 (W4): anonymized platform knowledge (E1 aggregates + E2 exemplar)
   // steers the generation — fail-open to "" when the knowledge base is
   // empty or unreadable (generation never depends on learning).
@@ -795,7 +959,7 @@ async function runPlanNutrition(payload: Record<string, unknown>) {
     },
     knowledgeBlock,
   );
-  const plan_id = await materializePlanDraftRow(payload, res.title, res.content, "meal");
+  const plan_id = await materializePlanDraftRow(payload, res.title, res.content, "meal", jobCtx);
   if (plan_id) console.log(`[plan_nutrition] draft materialized: plans#${plan_id}`);
   return {
     title: res.title,
@@ -806,24 +970,29 @@ async function runPlanNutrition(payload: Record<string, unknown>) {
     // watcher/recovery card must NOT insert it again.
     materialized: Boolean(plan_id),
     ...(plan_id ? { plan_id } : {}),
+    // NUT-3: the member's watcher explains a held-for-review plan instead
+    // of showing an invisible silent failure.
+    ...(plan_id && payload?.selfService === true && selfServicePlanNeedsReviewHold(res.content)
+      ? { needs_review: true }
+      : {}),
   };
 }
 
-async function runPlanWorkout(payload: Record<string, unknown>) {
-  const ctx = pickClientContext(payload.clientContext);
+async function runPlanWorkout(payload: Record<string, unknown>, jobCtx?: ProcessorCtx) {
+  const clientCtx = pickClientContext(payload.clientContext);
   const overrides = (payload.overrides ?? {}) as {
     mealsCount?: number;
     foods?: string[];
     notes?: string;
   };
-  const res = await generateWorkoutPlanAI(ctx, {
+  const res = await generateWorkoutPlanAI(clientCtx, {
     mealsCount: overrides.mealsCount, // legacy reuse → daysPerWeek
     foods: overrides.foods,
     notes: overrides.notes
       ? `${overrides.notes}${payload.durationWeeks ? ` — مدة البرنامج المستهدفة: ${payload.durationWeeks} ${weeksUnitAr(Number(payload.durationWeeks))}` : ""}`
       : undefined,
   });
-  const plan_id = await materializePlanDraftRow(payload, res.title, res.content, "workout");
+  const plan_id = await materializePlanDraftRow(payload, res.title, res.content, "workout", jobCtx);
   if (plan_id) console.log(`[plan_workout] draft materialized: plans#${plan_id}`);
   return {
     title: res.title,
@@ -832,6 +1001,9 @@ async function runPlanWorkout(payload: Record<string, unknown>) {
     source: res.source,
     materialized: Boolean(plan_id),
     ...(plan_id ? { plan_id } : {}),
+    ...(plan_id && payload?.selfService === true && selfServicePlanNeedsReviewHold(res.content)
+      ? { needs_review: true }
+      : {}),
   };
 }
 
@@ -861,6 +1033,10 @@ async function runMealRegenerate(payload: Record<string, unknown>, ctx?: Process
   // MEMBER-SWAP-DURABILITY 2026-10-26: ctx.requestedBy feeds the ownership
   // defense (member swaps now carry plan targets too — unified law).
   const mat = await materializeSwapIntoPlan(payload, "meal", out.meal as unknown as Record<string, unknown>, ctx);
+  // NUT-6: a day-budget rejection is an HONEST JOB FAILURE — the member's
+  // watcher shows the named reason, the plan stays untouched, and the
+  // success-only quota never burns for a rejected swap.
+  if (mat.rejected) throw new Error(mat.rejected);
   return {
     replacement: out.meal,
     suggestions: out.suggestions,
@@ -917,6 +1093,8 @@ async function runFoodItemRegenerate(payload: Record<string, unknown>, ctx?: Pro
   // persists the ±15% gated replacement into the owning plan row.
   // MEMBER-SWAP-DURABILITY 2026-10-26: ctx.requestedBy → ownership defense.
   const mat = await materializeSwapIntoPlan(payload, "item", out.item as unknown as Record<string, unknown>, ctx);
+  // NUT-6: same honest-failure law as the meal swap.
+  if (mat.rejected) throw new Error(mat.rejected);
   return {
     replacement: out.item,
     source: out.source,

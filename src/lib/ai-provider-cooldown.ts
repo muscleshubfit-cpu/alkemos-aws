@@ -90,8 +90,14 @@ function cooldownStateFile(): string {
  *  to new users» (2026-10-16 round-2 probe). */
 const QUOTA_CLASS_RE =
   /\b(401|402|403|429|410)\b|quota|rate.?limit|credit|insufficient|resource.?exhausted|payment|billing/i;
+// INF-3 (audit P1): word boundaries on «not found» — the unbounded form
+// matched unrelated message text («user not found» in a 400 body) and
+// wrongly froze a healthy provider for 30 minutes. «degraded» STAYS (the
+// measured live signature «DEGRADED function cannot be invoked», run
+// 38847288514 — a permanent function-level failure, not a transient
+// 5xx): with the scope fix below it now freezes only the ONE model.
 const GONE_CLASS_RE =
-  /\b404\b|no longer available|not found|decommissioned|retired|degraded/i;
+  /\b404\b|no longer available|\bnot found\b|decommissioned|retired|degraded/i;
 
 /** Classify a failure message for cooldown purposes.
  *  "quota" = exhaustion/auth/payment · "gone" = dead model/endpoint ·

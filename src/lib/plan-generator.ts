@@ -44,6 +44,15 @@ import {
   type ClientContext,
 } from "@/lib/ai-local";
 import { EXERCISES, CATEGORY_LABELS, EQUIPMENT_LABELS, LEVEL_LABELS, type Exercise } from "@/lib/exercises";
+// WOR-4 (audit AI-GENERATION-PIPELINES 2026-11-15, P1 bucket 4): the coach
+// path's matcher is now the RECORDED DEMO MATCHER — honest token evidence
+// (coverage ≥0.6), equipment pinning, Arabic lexicon, and deterministic
+// tie-breaks. The old findExerciseInLibrary's first-substring-hit produced
+// wrong-version matches ("Deadlift" → Axle Deadlift, "Pull-Up" → Band
+// Assisted Pull-Up) and cross-muscle Arabic hits (press → chest press for
+// a shoulder day). One matcher, every surface.
+import { matchWorkoutExercise } from "./ai-workout-exercise-match";
+import type { WorkoutEquipment } from "./ai-workout-planner";
 import type { PlanContent } from "@/lib/data/plans";
 // NOTIF→PLAN 2026-10-24: the diet contract's single source (re-exported
 // below for server callers); imported here for this module's own use.
@@ -59,7 +68,9 @@ import {
   validateRegeneratedWorkoutDay,
   validateWorkoutPlanAIOutput,
   buildClientConstraints,
+  constraintsTextViolation,
   hasItemConstraints,
+  PLAN_AI_SANITY,
   type AIMealLike,
   type ClientItemConstraints,
   type GroundItemFn,
@@ -445,7 +456,13 @@ function constraintsFromContext(
 
 /** The explicit prompt block carrying the constraints to the model. */
 function constraintPromptBlock(constraints?: ClientItemConstraints | null): string {
-  if (!hasItemConstraints(constraints)) return "";
+  // NUT-4: the halal law is PLATFORM-WIDE — the block renders even for an
+  // unconstrained (balanced) client so the model's FIRST attempt already
+  // complies (the gate would reject the violation either way; the prompt
+  // saves the repair cycle).
+  if (!hasItemConstraints(constraints)) {
+    return `\n⚠ قانون الحلال العالمي (كل الأنظمة بلا استثناء — حتى balanced): ممنوع نهائيًا أي صنف أو بديل أو اقتراح يتضمن لحم الخنزير أو مشتقاته (بيكون/لحم مقدد/هام) أو أي مشروب كحولي (نبيذ/بيرة/كحول). الاستثناءان الوحيدان: «بيكون رومي» (ديك رومي) و«خل النبيذ/خل التفاح» للطبخ.\n⚠ قانون البدائل والاقتراحات: نصوص alternatives وnotes وsuggestions تخضع لنفس القيد — لا تذكر فيها صنفًا ممنوعًا حتى كخيار بديل.\n`;
+  }
   const lines: string[] = [];
   if (constraints?.dietType) {
     const label =
@@ -490,7 +507,7 @@ function constraintPromptBlock(constraints?: ClientItemConstraints | null): stri
   if (constraints?.bannedTokens?.length) {
     lines.push(`- أطعمة ممنوعة/غير محببة للعميل (تجنبها كليًا): ${[...new Set(constraints.bannedTokens)].slice(0, 25).join("، ")}.`);
   }
-  return `\n⚠ قيود إلزامية على هذا العميل — تُفحص آليًا بوابة جودة المنصة قبل قبول نتيجتك، وأي خرق يُرفض ويُعاد الطلب:\n${lines.join("\n")}\n`;
+  return `\n⚠ قيود إلزامية على هذا العميل — تُفحص آليًا بوابة جودة المنصة قبل قبول نتيجتك، وأي خرق يُرفض ويُعاد الطلب:\n${lines.join("\n")}\n⚠ قانون الحلال العالمي (كل الأنظمة بلا استثناء — حتى balanced): ممنوع نهائيًا أي صنف أو بديل أو اقتراح يتضمن لحم الخنزير أو مشتقاته (بيكون/لحم مقدد/هام) أو أي مشروب كحولي (نبيذ/بيرة/كحول). الاستثناءان الوحيدان: «بيكون رومي» (ديك رومي) و«خل النبيذ/خل التفاح» للطبخ.\n⚠ قانون البدائل والاقتراحات: نصوص alternatives وnotes وsuggestions تخضع لنفس القيود أعلاه — لا تذكر فيها أي صنف ممنوع حتى كخيار بديل.\n`;
 }
 
 /** One chain call + parse + validate, with ONE repair retry on gate
@@ -711,6 +728,18 @@ export async function generateWorkoutPlanAI(
   // Randomization seed for variety
   const seed = Math.floor(Math.random() * 1000000);
   const basePrompt = `${buildWorkoutPrompt(ctx, name, overrides)}${buildVarietyBlock("workout", seed, ctx.recent_plan_names ?? [])}`;
+  // WOR-5 (audit P1): the requested training-day count — the coach/member
+  // asked for N days/week (mealsCount legacy reuse > fitness.days), and the
+  // gate now ENFORCES it on the plan's training days (the demo planner's
+  // own law). Parsed defensively: garbage/absent input → no anchor (legacy
+  // behavior, the shape bounds still apply).
+  const fitnessCtx = loose(ctx.fitness);
+  const rawDays = Number(overrides?.mealsCount ?? fitnessCtx.days ?? NaN);
+  const expectedTrainingDays =
+    Number.isFinite(rawDays) && rawDays >= PLAN_AI_SANITY.dayCountMin && rawDays <= PLAN_AI_SANITY.dayCountMax
+      ? Math.round(rawDays)
+      : null;
+  const trainingLocation = fitnessCtx.location;
 
   try {
     // OpenRouter + Groq only (owner directive) — clamped ≤ 52s.
@@ -718,7 +747,7 @@ export async function generateWorkoutPlanAI(
       "plan:workout",
       (repairNote) => basePrompt + repairNote,
       { systemPrompt: WORKOUT_SYSTEM_PROMPT },
-      (parsed) => validateWorkoutPlanAIOutput(parsed),
+      (parsed) => validateWorkoutPlanAIOutput(parsed, expectedTrainingDays ?? undefined),
     );
     if (value.days.length > 0) {
       // WOR-1 (audit AI-GENERATION-PIPELINES 2026-11-15, P0-4): the
@@ -726,22 +755,24 @@ export async function generateWorkoutPlanAI(
       // normalizer — previously the gate returned days ONLY, so the
       // plan's "brain" (asked for by both prompts) was dropped between
       // generation and save and every AI workout plan shipped hollow.
-      const content = normalizeWorkoutPlan({
-        days: value.days,
-        ...(value.overview ? { overview: value.overview } : {}),
-        ...(value.weekly_volume ? { weekly_volume: value.weekly_volume } : {}),
-        ...(value.progression ? { progression: value.progression } : {}),
-      } as unknown as Record<string, unknown>);
+      const content = normalizeWorkoutPlan(
+        {
+          days: value.days,
+          ...(value.overview ? { overview: value.overview } : {}),
+          ...(value.weekly_volume ? { weekly_volume: value.weekly_volume } : {}),
+          ...(value.progression ? { progression: value.progression } : {}),
+        } as unknown as Record<string, unknown>,
+        trainingLocation,
+      );
       // PLAN-REGEN-CONSTRAINTS: the independent workout audit — suitability
       // axes (home equipment, beginner level, recorded injuries) recomputed
       // from the final saved shape against the exercise library.
-      const fitnessCtx = loose(ctx.fitness);
       content.audit = auditWorkoutPlan(content, {
         location: fitnessCtx.location,
         experience: fitnessCtx.experience,
         injuries: fitnessCtx.injuries,
         lookupExercise: (n) => {
-          const hit = findExerciseInLibrary(n);
+          const hit = findExerciseInLibrary(n, fitnessCtx.location);
           return hit ? { equipment: hit.equipment, level: hit.level, slug: hit.slug } : null;
         },
       });
@@ -779,7 +810,7 @@ export async function generateWorkoutPlanAI(
   const local = generateWorkoutPlan(ctx);
   return {
     title: `برنامج تمارين - ${name}`,
-    content: normalizeWorkoutPlan(local),
+    content: normalizeWorkoutPlan(local as unknown as Record<string, unknown>, loose(ctx.fitness).location),
     source: "local-fallback",
   };
 }
@@ -917,7 +948,7 @@ ${coachNote ? `تعليمات المدرب: ${coachNote}` : ""}
     // Suggestions ride the SAME parsed payload — best-effort normalization
     // (coerce calories, recompute totals, drop unusable entries). They are
     // display-level extras; the gated meal above is the contract.
-    const suggestions = normalizeSuggestions(rawParsedRef);
+    const suggestions = normalizeSuggestions(rawParsedRef, constraints);
 
     // TITLES LAW 2026-10-25: the replacement's name is CANONICAL — a
     // slot keyword from the ORIGINAL meal's name, never the model's
@@ -990,6 +1021,11 @@ function detectSlotIndex(mealName: string | undefined | null): number {
  * no usable items dropped. Never throws. */
 function normalizeSuggestions(
   rawParsed: Record<string, unknown> | null,
+  // NUT-7 (audit P1): the suggestions are free-text surfaces — a
+  // suggestion naming a forbidden/haram/allergen food is DROPPED here
+  // (optional enrichment never overrides safety; the gated meal above
+  // remains the contract). Null constraints → halal scan still runs.
+  constraints?: ClientItemConstraints | null,
 ): Array<Record<string, unknown>> {
   if (!rawParsed) return [];
   const list = Array.isArray(rawParsed.suggestions) ? rawParsed.suggestions : [];
@@ -1008,6 +1044,15 @@ function normalizeSuggestions(
       })
       .filter((v): v is { food: string; amount: string; calories: number } => v !== null);
     if (items.length === 0) continue;
+    // NUT-7: every suggestion item + the why-text ride the same constraint
+    // law as the plan's items — a violating suggestion is dropped, not
+    // shipped (and never fails the gated meal that already passed).
+    const suggestionText = [
+      String(sug.name ?? ""),
+      String(sug.why ?? ""),
+      ...items.map((i) => `${i.food} ${i.amount}`),
+    ].join(" · ");
+    if (constraintsTextViolation(suggestionText, constraints)) continue;
     out.push({
       name: typeof sug.name === "string" ? sug.name.trim().slice(0, 60) : "بديل",
       items,
@@ -1159,10 +1204,22 @@ export function computeMacrosForDiet(
     coachMacros.carbs_g > 0 &&
     coachMacros.fat_g > 0
   ) {
+    // NUT-2 (audit AI-GENERATION-PIPELINES 2026-11-15, P1 bucket 3): the
+    // coach override used to ride VERBATIM — a 3000g-protein typo or a
+    // 1200-kcal keto target for a 200kg client shipped macros whose
+    // Atwater sum (P×4+C×4+F×9) reached ~2.5× the declared calories, and
+    // the plan card then showed three contradicting number sets (the
+    // exact class the gate killed for meals). THE LAW: the coach's RATIO
+    // is authoritative, but the macros must CLOSE on the target within
+    // ±10% — on breach they are rescaled proportionally (ratio kept,
+    // closure enforced). The caller (computeNutritionTargets) stamps the
+    // macro_closure_adjusted review flag so the coach SEES the adjustment
+    // instead of wondering where his numbers went.
+    const rescaled = enforceMacroClosure(coachMacros, dailyCalories);
     return {
-      protein_g: Math.round(coachMacros.protein_g),
-      carbs_g: Math.round(coachMacros.carbs_g),
-      fat_g: Math.round(coachMacros.fat_g),
+      protein_g: Math.round(rescaled.protein_g),
+      carbs_g: Math.round(rescaled.carbs_g),
+      fat_g: Math.round(rescaled.fat_g),
     };
   }
   const proteinG = Math.round(2.0 * weightKg);
@@ -1184,6 +1241,46 @@ export function computeMacrosForDiet(
   const carbsFromProteinFat = dailyCalories - proteinG * 4 - fatG * 9;
   const carbsG = Math.max(50, Math.round(carbsFromProteinFat / 4));
   return { protein_g: proteinG, carbs_g: carbsG, fat_g: fatG };
+}
+
+/** NUT-2: proportional Atwater rescale of a macro triple onto a calorie
+ *  target — keeps the ratio, enforces closure (the round-trip lands within
+ *  a fraction of a percent of target). Pure + total. */
+export function enforceMacroClosure(
+  macros: { protein_g: number; carbs_g: number; fat_g: number },
+  dailyCalories: number,
+): { protein_g: number; carbs_g: number; fat_g: number } {
+  const kcalFromMacros = macros.protein_g * 4 + macros.carbs_g * 4 + macros.fat_g * 9;
+  if (
+    !Number.isFinite(kcalFromMacros) ||
+    kcalFromMacros <= 0 ||
+    !Number.isFinite(dailyCalories) ||
+    dailyCalories <= 0
+  ) {
+    return macros;
+  }
+  const drift = Math.abs(kcalFromMacros - dailyCalories) / dailyCalories;
+  if (drift <= PLAN_AI_SANITY.macroClosureTolerance) return macros;
+  const k = dailyCalories / kcalFromMacros;
+  return {
+    protein_g: Math.max(1, Math.round(macros.protein_g * k)),
+    carbs_g: Math.max(1, Math.round(macros.carbs_g * k)),
+    fat_g: Math.max(1, Math.round(macros.fat_g * k)),
+  };
+}
+
+/** NUT-2: the closure drift of a macro triple vs a calorie target (the
+ *  audit's independent-comparison number — reused by plan-audit findings
+ *  and the review-flag decision). */
+export function macroClosureDriftPct(
+  macros: { protein_g: number; carbs_g: number; fat_g: number },
+  dailyCalories: number,
+): number | null {
+  const kcalFromMacros = macros.protein_g * 4 + macros.carbs_g * 4 + macros.fat_g * 9;
+  if (!Number.isFinite(kcalFromMacros) || kcalFromMacros <= 0 || !Number.isFinite(dailyCalories) || dailyCalories <= 0) {
+    return null;
+  }
+  return Math.round(((kcalFromMacros - dailyCalories) / dailyCalories) * 1000) / 10;
 }
 
 export function computeNutritionTargets(ctx: ClientContext, overrides?: PlanOverrides): NutritionTargets {
@@ -1213,6 +1310,19 @@ export function computeNutritionTargets(ctx: ClientContext, overrides?: PlanOver
   if (!hasNumInput(weightInput) || weightKg < 30 || weightKg > 350) reviewFlags.push("missing_or_implausible_weight");
   if (!hasNumInput(heightInput) || heightCm < 100 || heightCm > 250) reviewFlags.push("missing_or_implausible_height");
   if (!hasNumInput(ageInput) || ageYears < 10 || ageYears > 100) reviewFlags.push("missing_or_implausible_age");
+  // NUT-5 (audit AI-GENERATION-PIPELINES 2026-11-15, P1 bucket 2): the
+  // MINORS gate. A 12-year-old used to sail through with an adult 1200-
+  // kcal deficit plan + model-generated supplement doses. THREE laws now
+  // fire for a plausible age under 18 (10–17 — the <10 band is already
+  // flagged implausible above):
+  //   1. the minor_client review flag (needs_review banner on every
+  //      surface that consumes targets);
+  //   2. NO DEFICIT: a growing body gets maintenance calories, never a
+  //      fat-loss cut (the audit's «أرضية عمرية مقيّسة — لا عجز تحت 18»);
+  //   3. supplement suppression in the prompt + the saved content
+  //      (see buildNutritionPrompt + normalizeNutritionPlan).
+  const isMinor = hasNumInput(ageInput) && ageYears >= 10 && ageYears < 18;
+  if (isMinor) reviewFlags.push("minor_client");
 
   // Diet type: explicit coach selection wins; else classify the
   // questionnaire's free-text diet answer.
@@ -1240,6 +1350,13 @@ export function computeNutritionTargets(ctx: ClientContext, overrides?: PlanOver
 
   let dailyCalories =
     overrideCalories > 0 ? Math.round(overrideCalories) : Math.round(tdee * (1 + goalAdjustmentPct / 100));
+  // NUT-5: a minor gets MAINTENANCE — no fat-loss deficit under 18 (the
+  // coach override may still sit above maintenance; only the computed
+  // deficit path is clamped, and the flag documents the decision).
+  if (isMinor && !overrideCalories && goalAdjustmentPct < 0) {
+    dailyCalories = Math.round(tdee);
+    reviewFlags.push("minor_deficit_clamped_to_maintenance");
+  }
   // Safety floor: never below 1200 kcal (medical minimum).
   const floorHit = dailyCalories < 1200;
   if (floorHit) {
@@ -1256,8 +1373,25 @@ export function computeNutritionTargets(ctx: ClientContext, overrides?: PlanOver
   }
 
   // 4. Macros — diet-aware policy (keto / low_carb / default), coach
-  // macros always win.
+  // macros always win (NUT-2: rescaled to closure when they breach).
   const macros = computeMacrosForDiet(dietType, dailyCalories, weightKg, overrides?.macros);
+  // NUT-2 (audit P1): the closure verdict on the FINAL macros — a coach
+  // override that was rescaled stamps macro_closure_adjusted (the coach
+  // sees his numbers were ratio-preserved onto the target); a
+  // deterministic path that still cannot close (the keto fat-floor /
+  // low-carb floor corner cases where 2g/kg protein alone exceeds the
+  // whole budget) stamps macro_closure_violation — the plan ships with
+  // the needs_review banner instead of three contradicting numbers.
+  if (overrides?.macros && hasNumInput(overrides.macros.protein_g) && hasNumInput(overrides.macros.carbs_g) && hasNumInput(overrides.macros.fat_g)) {
+    const drift = macroClosureDriftPct(overrides.macros, dailyCalories);
+    if (drift !== null && Math.abs(drift) > PLAN_AI_SANITY.macroClosureTolerance * 100) {
+      reviewFlags.push("macro_closure_adjusted");
+    }
+  }
+  const finalClosure = macroClosureDriftPct(macros, dailyCalories);
+  if (finalClosure !== null && Math.abs(finalClosure) > PLAN_AI_SANITY.macroClosureTolerance * 100) {
+    reviewFlags.push("macro_closure_violation");
+  }
 
   // 5. Body fat — US Navy (optional inputs).
   let bodyFatPct: number | null = null;
@@ -1404,10 +1538,31 @@ function buildNutritionPrompt(
   const weight = String(nutrition.weight || measurements?.weight || "80");
   const height = nutrition.height || "175";
   const age = nutrition.age || "25";
+  // NUT-11 (audit P1): silent defaults must be LABELED as defaults — the
+  // model presents them as the client's real numbers otherwise. The same
+  // three fields computeNutritionTargets already flags in reviewFlags.
+  const defaultsUsed: string[] = [];
+  if (!hasNumInput(nutrition.weight ?? measurements?.weight)) defaultsUsed.push("الوزن");
+  if (!hasNumInput(nutrition.height)) defaultsUsed.push("الطول");
+  if (!hasNumInput(nutrition.age)) defaultsUsed.push("العمر");
+  const defaultsLine =
+    defaultsUsed.length > 0
+      ? `\n⚠ قيم تقريبية افتراضية (غير مؤكدة من العميل) استُخدمت لـ: ${defaultsUsed.join("، ")} — اذكر في overview أن هذه القيم تقديرية ويجب تأكيدها مع العميل.`
+      : "";
   const target = nutrition.target || nutrition.target_weight || weight;
   const goal = fitness.goal || "general fitness";
   const activity = fitness.activity || "moderate";
-  const meals = overrides?.mealsCount || nutrition.meals || "4";
+  // NUT-11: the meal-count band is UNIFIED with the gate's own law
+  // (PLAN_AI_SANITY.mealCountMin..Max = 2-8). The raw questionnaire value
+  // rides the prompt unclamped — a «9 وجبات» answer burned the whole
+  // generation cycle on a guaranteed gate rejection (>8). One clamp, one
+  // place, both surfaces agree.
+  const rawMeals = Number(overrides?.mealsCount ?? nutrition.meals ?? 4);
+  const meals = String(
+    Number.isFinite(rawMeals)
+      ? Math.min(PLAN_AI_SANITY.mealCountMax, Math.max(PLAN_AI_SANITY.mealCountMin, Math.round(rawMeals)))
+      : 4,
+  );
   const diet = nutrition.diet || "balanced";
   const allergies = nutrition.allergies || "";
   const disliked = nutrition.disliked || "";
@@ -1426,6 +1581,14 @@ ${overrides.foods && overrides.foods.length > 0 ? `- الأطعمة المطلو
 ${overrides.notes ? `- ملاحظات إضافية: ${overrides.notes}` : ""}
 `
     : "";
+
+  // NUT-5: minors never receive supplement recommendations — the model is
+  // told to omit the supplements array entirely for under-18 clients (and
+  // normalizeNutritionPlan strips any that slip through as the belt).
+  const minorNoSupplementsLine =
+    targets?.reviewFlags?.includes("minor_client")
+      ? "\n⚠ العميل قاصر (أقل من 18 سنة): أعد مصفوفة \"supplements\" فارغة [] — ممنوع أي مكمل أو جرعة مكملة لقاصر. ركّز على أغذية كاملة متنوعة مناسبة للنمو."
+      : "";
 
   // #3 FIX — deterministic server-computed targets are MANDATORY.
   const targetsText = targets
@@ -1450,6 +1613,7 @@ ${targets.bodyFatPct !== null ? `- body_fat_pct (US Navy): ~${targets.bodyFatPct
 - الوزن: ${weight} كجم
 - الطول: ${height} سم
 - العمر: ${age} سنة
+${defaultsLine}
 ${neck ? `- محيط الرقبة: ${neck} سم` : ""}
 ${waist ? `- محيط الخصر: ${waist} سم` : ""}
 ${hip ? `- محيط الورك: ${hip} سم` : ""}
@@ -1469,7 +1633,7 @@ ${overridesText}
 وزّع السعرات على ${meals} وجبات بشكل مناسب (الفطور أكبر من الوجبة الخفيفة).
 لكل صنف: اذكر الكمية بالجرام والسعرات التقديرية بحيث يقترب مجموع الوجبة من حصتها.
 اذكر بدائل لكل صنف رئيسي.
-${targetsText}
+${targetsText}${minorNoSupplementsLine}
 
 أعد النتيجة بصيغة JSON صالحة فقط (بدون نص إضافي، بدون أسوار markdown) بالتنسيق المحدد في تعليمات النظام.`;
 }
@@ -1483,7 +1647,7 @@ const WORKOUT_SYSTEM_PROMPT = `أنت مدرب لياقة محترف يعمل ف
 - أدخل أيام راحة بين أيام التدريب.
 - لكل يوم تدريبي: 4-6 تمارين مناسبة للعضلة المستهدفة.
 - اجعل البرنامج متنوعًا — لا تكرر نفس التمارين في كل مرة.
-- استخدم أسماء تمارين مطابقة لمكتبة التمارين لدينا بالإنجليزية (Bench Press, Squat, Deadlift, etc.) لتظهر صورها تلقائيًا.
+- استخدم أسماء تمارين مطابقة لمكتبة التمارين لدينا بالإنجليزية — بأسمائها الحرفية الكاملة من المكتبة، مثل: "Barbell Bench Press - Medium Grip"، "Barbell Squat"، "Barbell Deadlift"، "Dumbbell Shoulder Press"، "Full Range-Of-Motion Lat Pulldown"، "Leg Press"، "Dumbbell Bicep Curl"، "Triceps Pushdown"، "Pullups"، "Plank" — لتظهر صورها تلقائيًا (الأسماء المجردة مثل "Bench Press" أو "Deadlift" أو "Lat Pulldown" وحدها لا تطابق أي صف في المكتبة).
 - لا تضع حقل image — الصور تُولّد تلقائيًا من اسم التمرين.
 
 ⚠ قانون التنويع الإلزامي (PHASE 62):
@@ -1504,7 +1668,7 @@ const WORKOUT_SYSTEM_PROMPT = `أنت مدرب لياقة محترف يعمل ف
  "isRest": false,
  "exercises": [
  {
- "name": "Bench Press",
+ "name": "Barbell Bench Press - Medium Grip",
  "sets": 4,
  "reps": "6-8",
  "rest": "2-3 دقائق",
@@ -1808,7 +1972,13 @@ export function normalizeNutritionPlan(
       carbs_cal: carbs_g * 4,
       fat_cal: fat_g * 9,
     },
-    supplements: plan.supplements as NutritionPlanContent["supplements"],
+    // NUT-5 (audit P1): minors never receive supplements — the prompt
+    // instructed the model to return an empty array; any dose that slipped
+    // through is stripped here (the belt under the prompt). An adult plan
+    // keeps its supplements verbatim.
+    ...(!targets?.reviewFlags?.includes("minor_client")
+      ? { supplements: plan.supplements as NutritionPlanContent["supplements"] }
+      : {}),
     health_notes: plan.health_notes as string[] | undefined,
     water_target: plan.water_target as string | undefined,
     meals: titledMeals,
@@ -1862,7 +2032,13 @@ function buildDeterministicOverview(
   return lines.join("\n");
 }
 
-function normalizeWorkoutPlan(plan: Record<string, unknown>): WorkoutPlanContent {
+function normalizeWorkoutPlan(
+  plan: Record<string, unknown>,
+  // WOR-4: the demo matcher is equipment-aware — the training location
+  // (home → dumbbell/bodyweight world) rides every lookup so a home
+  // client's plan never links barbell/cable/machine library pages.
+  location?: unknown,
+): WorkoutPlanContent {
   return {
     overview: String(plan.overview || ""),
     weekly_volume: plan.weekly_volume as string | undefined,
@@ -1876,7 +2052,7 @@ function normalizeWorkoutPlan(plan: Record<string, unknown>): WorkoutPlanContent
       exercises: ((d.exercises as unknown[] | undefined) || []).map((rawEx) => {
         const ex = (rawEx ?? {}) as Record<string, unknown>;
         const name = String(ex.name || "");
-        const matched = findExerciseInLibrary(name);
+        const matched = findExerciseInLibrary(name, location);
         return {
           name: matched ? matched.nameEn : name,
           sets: typeof ex.sets === "number" ? ex.sets : parseInt(String(ex.sets ?? "")) || 0,
@@ -1892,65 +2068,30 @@ function normalizeWorkoutPlan(plan: Record<string, unknown>): WorkoutPlanContent
   };
 }
 
+/** WOR-4: derive the equipment WORLD for the demo matcher from the
+ *  training location — home → dumbbell/bodyweight/band honesty (the same
+ *  world the WOR-3/P0-8 swap filters use), anything else → full gym. */
+function equipmentWorldFor(location: unknown): WorkoutEquipment {
+  return /home|منزل|بيت/i.test(String(location ?? "")) ? "home-dumbbells" : "full-gym";
+}
+
 /**
- * Find an exercise in our library by name (fuzzy match).
- * The AI generates Arabic or English exercise names — we try to match them
- * to our 547-exercise library.
+ * WOR-4 (audit AI-GENERATION-PIPELINES 2026-11-15, P1 bucket 4): find an
+ * exercise in our 868-entry library — now via the RECORDED DEMO MATCHER
+ * (matchWorkoutExercise: token coverage ≥0.6 + explicit-equipment pin +
+ * Arabic lexicon + deterministic tie-breaks). The old first-substring
+ * matcher produced wrong-version picks ("Deadlift" → Axle Deadlift,
+ * "Pull-Up" → Band Assisted Pull-Up — neither bare name exists in the
+ * library) and cross-muscle Arabic hits (the generic «press» keyword sent
+ * a chest press to a shoulder day). No evidence → null (honest — the
+ * row renders without an image/link instead of a wrong one).
  */
-function findExerciseInLibrary(name: string): Exercise | null {
+function findExerciseInLibrary(name: string, location?: unknown): Exercise | null {
   if (!name) return null;
-  const q = name.toLowerCase().trim();
-
-  // Direct name match
-  let match = EXERCISES.find((e) => e.nameEn.toLowerCase() === q);
-  if (match) return match;
-
-  // Partial name match
-  match = EXERCISES.find(
-    (e) =>
-      e.nameEn.toLowerCase().includes(q) || q.includes(e.nameEn.toLowerCase()),
-  );
-  if (match) return match;
-
-  // Arabic keyword matching
-  const arabicMap: Array<{ keywords: string[]; enName: string }> = [
-    { keywords: ["بنش بريس", "bench press"], enName: "Bench Press" },
-    { keywords: ["سكوات", "squat"], enName: "Barbell Squat" },
-    { keywords: ["ديدليفت", "deadlift"], enName: "Deadlift" },
-    { keywords: ["عقلة", "pull-up", "pull up"], enName: "Pull-Up" },
-    { keywords: ["ضغط أرضي", "push-up", "push up"], enName: "Push-Up" },
-    { keywords: ["بلانك", "plank"], enName: "Plank" },
-    { keywords: ["كرنش", "crunch"], enName: "Crunches" },
-    { keywords: ["لانجز", "lunge"], enName: "Lunges" },
-    { keywords: ["بايسبس", "bicep", "curl"], enName: "Dumbbell Bicep Curl" },
-    { keywords: ["ترايسبس", "tricep", "pushdown"], enName: "Triceps Pushdown" },
-    {
-      keywords: ["كتف", "shoulder", "press"],
-      enName: "Dumbbell Shoulder Press",
-    },
-    { keywords: ["تجديف", "row"], enName: "Bent Over Row" },
-    { keywords: ["هيب ثرست", "hip thrust"], enName: "Barbell Hip Thrust" },
-    { keywords: ["كاف", "calf"], enName: "Standing Calf Raises" },
-    { keywords: ["ليج بريس", "leg press"], enName: "Leg Press" },
-    { keywords: ["ليج كيرل", "leg curl"], enName: "Lying Leg Curls" },
-    { keywords: ["ليج اكستنشن", "leg extension"], enName: "Leg Extensions" },
-  ];
-
-  for (const { keywords, enName } of arabicMap) {
-    for (const kw of keywords) {
-      if (q.includes(kw.toLowerCase())) {
-        match = EXERCISES.find((e) => e.nameEn === enName);
-        if (match) return match;
-        // Fuzzy: find any exercise whose name contains the English keyword
-        match = EXERCISES.find((e) =>
-          e.nameEn.toLowerCase().includes(kw.toLowerCase()),
-        );
-        if (match) return match;
-      }
-    }
-  }
-
-  return null;
+  const hit = matchWorkoutExercise(name, equipmentWorldFor(location));
+  if (!hit) return null;
+  const entry = EXERCISES.find((e) => e.slug === hit.slug);
+  return entry ?? null;
 }
 
 /**
@@ -2156,7 +2297,7 @@ function buildCandidatePool(input: SubstituteExerciseInput): Exercise[] {
   const { exercise, reason = "", location = "" } = input;
 
   // 1. Resolve the current exercise in the library → inherit its category.
-  const current = findExerciseInLibrary(exercise.name);
+  const current = findExerciseInLibrary(exercise.name, location);
   let category: string | null =
     current?.category ??
     (() => {
@@ -2224,7 +2365,7 @@ export async function substituteExercise(
   input: SubstituteExerciseInput,
 ): Promise<SubstituteExerciseResult> {
   const pool = buildCandidatePool(input);
-  const current = findExerciseInLibrary(input.exercise.name);
+  const current = findExerciseInLibrary(input.exercise.name, input.location);
   const fallbackSets = input.exercise.sets ?? 3;
   const fallbackReps = input.exercise.reps || "10-12";
   const fallbackRest = input.exercise.rest || "90 ثانية";
@@ -2510,10 +2651,10 @@ ${avoid.length > 0 ? `تمارين باقي أيام الخطة (ممنوع تك
 - نفس يوم الأسبوع «${day.day}» ونفس التركيز العضلي «${day.focus}».
 - 4-6 تمارين مختلفة تمامًا عن الحالية وعن باقي الأيام.
 - لكل تمرين: sets (رقم بين 1 و12)، reps، rest، و notes نصيحة قصيرة بالعربية.
-- استخدم أسماء تمارين إنجليزية مطابقة لمكتبتنا (Bench Press, Squat, Lat Pulldown, Dumbbell Row…) لتظهر صورها تلقائيًا.
+- استخدم أسماء تمارين إنجليزية مطابقة لمكتبتنا بأسمائها الحرفية (Barbell Bench Press - Medium Grip, Barbell Squat, Full Range-Of-Motion Lat Pulldown, Dumbbell Shoulder Press…) لتظهر صورها تلقائيًا.
 
 أعد JSON فقط (بدون أسوار markdown):
-{ "focus": "${day.focus}", "exercises": [ { "name": "Bench Press", "sets": 4, "reps": "6-8", "rest": "90 ثانية", "notes": "نصيحة بالعربية" } ] }`;
+{ "focus": "${day.focus}", "exercises": [ { "name": "Barbell Bench Press - Medium Grip", "sets": 4, "reps": "6-8", "rest": "90 ثانية", "notes": "نصيحة بالعربية" } ] }`;
 
   // AI-PLAN-QUALITY 2026-10-24: the day is GATED — 3-8 exercises, every
   // one with a real name and bounded sets. One repair retry; a second
@@ -2529,7 +2670,7 @@ ${avoid.length > 0 ? `تمارين باقي أيام الخطة (ممنوع تك
   );
 
   const shaped = value.exercises.map((ex) => {
-    const matched = findExerciseInLibrary(ex.name);
+    const matched = findExerciseInLibrary(ex.name, fitness.location);
     return {
       name: matched ? matched.nameEn : ex.name,
       sets: ex.sets,

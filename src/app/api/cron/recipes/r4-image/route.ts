@@ -56,19 +56,27 @@ export async function GET(request: NextRequest) {
     const bundle = qi.bundle ?? {};
 
     // The main ingredients by weight (the composite query's substance).
+    // REC-4 (audit P1): select the ARABIC names alongside the English —
+    // the Arabic alt text is built from them (the old English-only select
+    // forced Latin contamination into every AR alt).
     const { data: ingData, error: ingErr } = await supabaseAdmin
       .from("recipe_ingredients")
-      .select("name_en, amount_g")
+      .select("name_en, name_ar, amount_g")
       .eq("recipe_id", qi.recipe_id)
       .order("amount_g", { ascending: false })
       .limit(4);
     if (ingErr) throw new Error(ingErr.message);
     const mains = (ingData ?? []).map((r) => String((r as { name_en: string }).name_en));
+    const mainsAr = (ingData ?? [])
+      .map((r) => String((r as { name_ar?: string }).name_ar ?? ""))
+      .filter(Boolean);
 
     const input: RecipeImageInput = {
       themeEn: String(idea?.themeEn ?? "healthy recipe"),
       themeAr: String(idea?.themeAr ?? "وصفة صحية"),
       mainIngredientsEn: mains,
+      // REC-4: the Arabic names ride the input for buildAltAr.
+      mainIngredientsAr: mainsAr,
       dishTypeEn: String((bundle as { structure?: { mealType?: string } }).structure?.mealType ?? ""),
       queueId,
     };

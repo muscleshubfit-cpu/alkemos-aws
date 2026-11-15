@@ -325,6 +325,42 @@ export async function POST(request: NextRequest) {
       // enqueues can race past by a 1-off (same documented parity as
       // the weekly swaps).
       const clientQuota = await checkUnifiedPlanQuota({ userId: clientId });
+      // NUT-9 (audit AI-GENERATION-PIPELINES 2026-11-15, P1 bucket 9):
+      // the quota check counts SUCCESS rows only, so N parallel enqueues
+      // all passed and each later burned quota on success (the member
+      // double-clicked and paid twice for one plan). The IN-FLIGHT count
+      // (queued/processing plan jobs for THIS client) now rides the
+      // verdict — a remaining quota of 1 with 1 job already in the air
+      // blocks the second click with the same honest message. Best-effort
+      // read: an error degrades to the legacy success-only convention.
+      if (!clientQuota.unlimited && clientQuota.allowed) {
+        try {
+          const { count: inflight, error: inflightErr } = await supabaseAdmin
+            .from("ai_jobs")
+            .select("id", { count: "exact", head: true })
+            .in("job_type", ["plan_nutrition", "plan_workout"])
+            .in("status", ["queued", "processing"])
+            .eq("payload->>clientId", clientId);
+          if (!inflightErr && (inflight ?? 0) > 0 && clientQuota.remaining <= (inflight ?? 0)) {
+            const renewsOn = clientQuota.renewsAt
+              ? new Date(clientQuota.renewsAt).toLocaleDateString("ar-EG")
+              : "";
+            return NextResponse.json(
+              {
+                error: `لديك بالفعل توليد خطة قيد التنفيذ الآن — انتظر اكتماله قبل طلب توليد آخر (تُخصم الحصة عند النجاح فقط، وتتجدد في ${renewsOn}).`,
+                code: "client_plan_generation_inflight",
+                rateLimited: true,
+                used: clientQuota.used,
+                limit: clientQuota.limit,
+                inflight: inflight ?? 0,
+              },
+              { status: 429, headers: { "Retry-After": "600" } },
+            );
+          }
+        } catch {
+          /* best-effort — the legacy success-only convention stays */
+        }
+      }
       if (!clientQuota.unlimited && !clientQuota.allowed) {
         const renewsOn = clientQuota.renewsAt
           ? new Date(clientQuota.renewsAt).toLocaleDateString("ar-EG")
