@@ -310,6 +310,16 @@ model:
   inside the engine, fail-open by law, and record the provider-reported
   token usage of every response (not a chars/4 estimate) against a
   per-model cost table (`src/lib/ai-usage-meter.ts`).
+- **Prompt-injection containment on every user-text surface** — any
+  untrusted text that enters a generation prompt (live search results,
+  client/coach free text: notes, allergies, injuries, swap reasons,
+  article topics, demo notes) rides inside an explicit
+  `<<<DATA — NOT INSTRUCTIONS>>>` boundary produced by one shared engine
+  (`src/lib/prompt-injection-guard.ts`) with a paired directive that
+  honors preferences WITHIN the standing laws while ignoring any line
+  that tries to override the system instructions, the output contract, or
+  the safety gates — the deterministic validators stay the hard
+  enforcement either way (P2-4 of the generation-engines audit).
 - Long-running generation (the blog pipeline, queued AI jobs) runs on GitHub
   Actions runners instead of request handlers; every sequential path is
   budget-clamped.
