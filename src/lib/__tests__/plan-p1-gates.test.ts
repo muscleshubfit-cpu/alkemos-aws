@@ -63,6 +63,31 @@ describe("NUT-4 — the GLOBAL halal gate (every diet, balanced included)", () =
     expect(halalFoodViolation("صدور ديك رومي")).toBeNull();
   });
 
+  it("«كبيرة» no longer false-fires the beer token — the LIVE probe phrase (P2-3 discovery, runs 43759110897 + 43759773547)", () => {
+    // LIVE-MEASURED 2026-11-15: «ملعقة كبيرة» (tablespoon) contains the
+    // normalized substring «بيره» ← «بيرة» (beer). BOTH the tail model
+    // (qwen-3.8-27b) AND the strong model (gpt-oss-120b) wrote the phrase
+    // inside meal ALTERNATIVES and the gate rejected the whole plan twice
+    // → local fallback → probe RED. The suppression entry (بيرة → كبيرة)
+    // keeps every innocent tablespoon passing.
+    expect(halalFoodViolation("أو 1 ملعقة كبيرة زبدة")).toBeNull();
+    expect(halalFoodViolation("زيت جوز الهند 1 ملعقة كبيرة")).toBeNull();
+    expect(halalFoodViolation("1 ملعقة كبيرة زيت زيتون بكر")).toBeNull();
+    expect(halalFoodViolation("قطعة كبيرة من صدر الدجاج")).toBeNull();
+    // The full item-constraints path (alternatives ride it) stays clean too.
+    expect(checkItemConstraints("أو 1 ملعقة كبيرة زبدة", {}, null)).toBeNull();
+  });
+
+  it("actual beer wordings stay blocked — the «كبيرة» exception does not weaken the gate", () => {
+    expect(halalFoodViolation("زجاجة بيرة")).toContain("الحلال");
+    expect(halalFoodViolation("بيرة الشعير")).toContain("الحلال");
+    expect(checkItemConstraints("كوب بيرة", {}, null)).toContain("الحلال");
+    // «كبيرة» suppresses ONLY the beer token — another alcohol token in the
+    // SAME string still fires (the exception is token-scoped, not blanket).
+    expect(halalFoodViolation("ملعقة كبيرة مع كأس نبيذ")).toContain("الحلال");
+    expect(halalFoodViolation("ملعقة كبيرة مع مشروب ويسكي")).toContain("الحلال");
+  });
+
   it("the halal gate rides the FULL plan gate (a pork item fails the plan)", () => {
     const plan = {
       meals: [

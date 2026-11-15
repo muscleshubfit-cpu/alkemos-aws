@@ -513,6 +513,18 @@ const HALAL_TOKEN_EXCEPTIONS: Record<string, string[]> = {
   // name (Pekin duck rows). The longer word suppresses the beer token;
   // actual beer wordings (بيرة · جعة الشعير · beer) keep matching.
   جعة: ["بجعة"],
+  // P2-3 LIVE VERIFICATION DISCOVERY (probe runs 43759110897 + 43759773547,
+  // 2026-11-15): «بيرة» (beer) is a substring of «كبيرة» (large) — the
+  // ubiquitous cooking phrase «ملعقة كبيرة» (tablespoon) inside a meal
+  // ALTERNATIVE killed the whole plan twice in a row: BOTH the tail model
+  // (qwen-3.8-27b: «أو 1 ملعقة كبيرة زبدة») AND the strong model
+  // (gpt-oss-120b: «زيت جوز الهند 1 ملعقة كبيرة») wrote it and the gate
+  // rejected both attempts → local fallback → probe RED. The longer word
+  // suppresses the hit; actual beer wordings (بيرة · بيرة الشعير · زجاجة
+  // بيرة) keep matching — the same measured tradeoff as جعة→بجعة above
+  // (a beer phrasing that also carries «كبيرة» is suppressed; that rare
+  // miss is the price of not rejecting every tablespoon in Arabic).
+  بيرة: ["كبيرة"],
 };
 
 /** FRAME 443 (PLAN-PROBE-ROOTCAUSE-3 — live runs 42259406260 + 42261551330,
