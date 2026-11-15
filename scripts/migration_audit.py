@@ -316,7 +316,10 @@ ACCEPTED_PHANTOM_COLS = {
     # became parser-visible and was pruned from this baseline — only
     # the DO-block/dynamic-SQL blind spots remain below.
     "coach_pages": {"bio_en", "specialties_en"},
-    "plans": {"approved_at", "is_current", "status"},
+    # plans pruned with 0113 (GENERATION-PIPELINES-P1 CLEAN-STACK GUARD):
+    # its create-table-if-not-exists re-asserts the manual-era workflow
+    # columns (status/is_current/approved_at) in the measured production
+    # shape, making them parser-visible — the same-commit prune law.
     # the USD side of the parser-blind 0038 DO-block rename documented
     # above — the final live name types.ts correctly carries
     "coach_ads": {"price_usd"},

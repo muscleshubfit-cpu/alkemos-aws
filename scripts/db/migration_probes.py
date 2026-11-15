@@ -307,6 +307,28 @@ PROBES: list[dict] = [
              "column": "resume_count"},
         ],
     },
+    # 0113 — GENERATION-PIPELINES P1 CLEAN-STACK GUARD (the 0109/0111
+    # precedent class, 2c8b1f48 CI evidence): on production a verified
+    # NO-OP (0112 already applied — its probe row covers the two columns);
+    # on a clean test stack it recreates plans + lands 0112's three
+    # columns + re-asserts plans' RLS posture so the chain is
+    # self-sufficient. Honest weak strength: the same columns remain
+    # present after it, which is exactly what these checks pin. Carries
+    # recipes.sat_fat_coverage (REC-8) — closing the gap 0112's own row
+    # left (it pinned only two of the three columns it created).
+    {
+        "file": "20261116090000_0113_generation_pipelines_p1_clean_stack_guard.sql",
+        "label": "0113 GENERATION-PIPELINES-P1-CLEAN-STACK-GUARD",
+        "strength": "weak",
+        "checks": [
+            {"type": "swagger_column", "table": "plans",
+             "column": "job_id"},
+            {"type": "swagger_column", "table": "blog_generation_queue",
+             "column": "resume_count"},
+            {"type": "swagger_column", "table": "recipes",
+             "column": "sat_fat_coverage"},
+        ],
+    },
 ]# fmt on
 
 # --- named transforms for rest_rows probes ----------------------------------
