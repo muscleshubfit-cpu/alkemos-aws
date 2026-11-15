@@ -337,9 +337,10 @@ export const AI_FUNCTION_REGISTRY: Record<string, AIFunctionSpec> = {
     },
     knobs: ["AI_CHAIN_TOTAL_BUDGET_MS"],
     doc: {
-      since: "2026-08-28 (4 buckets) · window fix 2026-09 (26s→35s)",
-      rationale: "Multi-week program JSON; 35s per-model window for slow strong models.",
-      evidence: "plan-generator.ts:715 option block (audit §3-ب row 23)",
+      since: "2026-08-28 (4 buckets) · window fix 2026-09 (26s→35s) · WOR-7/P2-1 2026-11-15 (deterministic multi-week stamp)",
+      rationale:
+        "Weekly-split JSON authored by the model + the deterministic 4-week periodization stamp (progression deltas + week-4 deload + goal-keyed cardio — src/lib/workout-periodization.ts, WOR-7): the saved plan is genuinely multi-week on the AI path AND the local fallback; 35s per-model window for slow strong models.",
+      evidence: "plan-generator.ts:715 option block (audit §3-ب row 23) · workout-periodization.ts (WOR-7/P2-1)",
     },
   },
 

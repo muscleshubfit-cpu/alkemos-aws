@@ -112,7 +112,13 @@ a 7-day conditional refund (no-features-used, ledger-based —
   two validated whole-meal alternatives (owner directive #2 — same item
   constraints and keto laws as the primary meal, recomputed totals), shown
   in the member plan view, the coach editor and the print export; workout
-  plans keep their AI-written overview / weekly volume / progression, and a
+  plans keep their AI-written overview / weekly volume / progression, ship
+  a deterministic multi-week training-intelligence stamp (WOR-7: a 4-week
+  periodization wave — base / loading / peak / week-4 deload — per-muscle
+  weekly volume bands, warm-up & cool-down contract, and a goal-keyed
+  cardio prescription; server math via `src/lib/workout-periodization.ts`,
+  attached to every AI and local-fallback generation, rendered in the
+  member plan view, the coach editor and both print exports), and a
   critical independent-audit finding (injury-unsafe pick, home-equipment
   mismatch) raises a needs-review banner on the plan instead of being saved
   silently

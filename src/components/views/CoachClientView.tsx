@@ -2187,6 +2187,25 @@ function PlanViewerModal({
  if (c.weekly_volume) html += `<p><strong>الحجم الأسبوعي:</strong> ${c.weekly_volume}</p>`;
  if (c.progression) html += `<p><strong>طريقة التقدم:</strong> ${c.progression}</p>`;
  }
+ // WOR-7 / P2-1: the deterministic 4-week training-intelligence stamp
+ // rides the coach print/PDF export too (server constants — the same
+ // block the modal renders, so the coach's printed handout carries the
+ // full multi-week program).
+ const per = c.periodization;
+ if (per && Array.isArray(per.weeks) && per.weeks.length > 0) {
+ html += `<h2> التدرج عبر 4 أسابيع</h2>`;
+ html += `<table><tr><th style="width:110px">الأسبوع</th><th>التوجيه</th></tr>`;
+ for (const w of per.weeks) {
+ html += `<tr><td><strong>${w.label}${w.isDeload ? " — استشفاء" : ""}</strong><br><span style="font-size:11px;color:#666">${w.intent}</span></td><td style="font-size:12px">${w.prescription}</td></tr>`;
+ }
+ html += `</table>`;
+ if (per.volumeNote) html += `<p><strong>نطاقات الحجم:</strong> ${per.volumeNote}</p>`;
+ if (per.warmUp) html += `<p><strong>الإحماء:</strong> ${per.warmUp}</p>`;
+ if (per.coolDown) html += `<p><strong>التهدئة:</strong> ${per.coolDown}</p>`;
+ if (per.cardio) {
+ html += `<p><strong>الكارديو حسب الهدف:</strong> ${per.cardio.sessionsPerWeek} × ${per.cardio.minutesPerSession} دقيقة · ${per.cardio.modality} · ${per.cardio.placement}</p>`;
+ }
+ }
  // Days
  html += `<h2> البرنامج الأسبوعي</h2>`;
  for (const d of c.days) {
@@ -3332,6 +3351,49 @@ function PlanViewerModal({
  <p className="mt-1 text-sm">{content.progression}</p>
  )}
  </div>
+ )}
+ </div>
+ )}
+
+ {/* WOR-7 / P2-1 (audit AI-GENERATION-PIPELINES-2026-11-15): the
+     deterministic 4-week training-intelligence stamp — read-only display
+     (server math, like the audit block): the wave (base → loading → peak
+     → deload), the per-muscle volume bands, warm-up/cooldown and the
+     goal-keyed cardio prescription. Regenerating the plan refreshes it
+     server-side; it never blocks the coach's edits. */}
+ {isWorkout && content && "days" in content && content.periodization && (
+ <div className="rounded-xl border border-border bg-muted/30 p-4">
+ <h4 className="mb-2 text-sm font-bold">التدرج عبر 4 أسابيع (تُكرَّر الدورة)</h4>
+ <div className="space-y-2">
+ {content.periodization.weeks.map((w) => (
+ <div key={w.week} className="rounded-lg border border-border bg-background p-2 text-xs">
+ <div className="flex flex-wrap items-center gap-1.5 font-semibold">
+ <span>{w.label}</span>
+ {w.isDeload && (
+ <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-primary">أسبوع استشفاء (Deload)</span>
+ )}
+ <span className="font-normal text-muted-foreground">{w.intent}</span>
+ </div>
+ <p className="mt-0.5 leading-relaxed text-muted-foreground">{w.prescription}</p>
+ </div>
+ ))}
+ </div>
+ {content.periodization.volumeNote && (
+ <p className="mt-2 text-xs"><span className="font-semibold">نطاقات الحجم: </span><span className="text-muted-foreground">{content.periodization.volumeNote}</span></p>
+ )}
+ {content.periodization.warmUp && (
+ <p className="mt-1 text-xs"><span className="font-semibold">الإحماء: </span><span className="text-muted-foreground">{content.periodization.warmUp}</span></p>
+ )}
+ {content.periodization.coolDown && (
+ <p className="mt-1 text-xs"><span className="font-semibold">التهدئة: </span><span className="text-muted-foreground">{content.periodization.coolDown}</span></p>
+ )}
+ {content.periodization.cardio && (
+ <p className="mt-1 text-xs">
+ <span className="font-semibold">الكارديو حسب الهدف: </span>
+ <span className="text-muted-foreground">
+ {content.periodization.cardio.sessionsPerWeek} × {content.periodization.cardio.minutesPerSession} دقيقة · {content.periodization.cardio.modality} · {content.periodization.cardio.placement}
+ </span>
+ </p>
  )}
  </div>
  )}

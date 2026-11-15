@@ -53,6 +53,16 @@ import { EXERCISES, CATEGORY_LABELS, EQUIPMENT_LABELS, LEVEL_LABELS, type Exerci
 // a shoulder day). One matcher, every surface.
 import { matchWorkoutExercise } from "./ai-workout-exercise-match";
 import type { WorkoutEquipment } from "./ai-workout-planner";
+// WOR-7 / P2-1 (audit AI-GENERATION-PIPELINES-2026-11-15): the deterministic
+// multi-week training-intelligence layer — the 4-week wave (progression +
+// deload), per-muscle volume bands, warm-up/cooldown and goal-keyed cardio
+// stamped by SERVER MATH on every AI workout plan (never model prose, never
+// optional — see workout-periodization.ts for the laws).
+import {
+  buildWorkoutPeriodization,
+  classifyPeriodizationGoal,
+  type WorkoutPeriodization,
+} from "@/lib/workout-periodization";
 import type { PlanContent } from "@/lib/data/plans";
 // NOTIF→PLAN 2026-10-24: the diet contract's single source (re-exported
 // below for server callers); imported here for this module's own use.
@@ -229,6 +239,14 @@ export type WorkoutPlanContent = {
   // New optional fields for the richer format
   weekly_volume?: string; // e.g. "20 مجموعة أسبوعيًا، 8 تمارين رئيسية"
   progression?: string; // how to progress week-over-week
+  /** WOR-7 / P2-1 (audit AI-GENERATION-PIPELINES-2026-11-15): the
+   *  deterministic multi-week training-intelligence stamp — the 4-week
+   *  wave (progression deltas + week-4 deload), per-muscle weekly volume
+   *  bands, warm-up/cooldown and the goal-keyed cardio prescription,
+   *  computed by buildWorkoutPeriodization (server math) and attached to
+   *  EVERY AI-generated workout plan so the saved product is what the
+   *  registry row always claimed: a multi-week program. */
+  periodization?: WorkoutPeriodization;
   /** WOR-2 (audit AI-GENERATION-PIPELINES 2026-11-15, P0-9): critical
    *  independent-audit findings (injury_unsafe, home_equipment_mismatch…)
    *  now stamp the review flag on workout plans too — same contract as
@@ -740,6 +758,16 @@ export async function generateWorkoutPlanAI(
       ? Math.round(rawDays)
       : null;
   const trainingLocation = fitnessCtx.location;
+  // WOR-7 / P2-1 (audit AI-GENERATION-PIPELINES-2026-11-15): the
+  // deterministic training-intelligence stamp — built ONCE from the same
+  // client context the prompt steers on, so the AI path and the local
+  // fallback path both save a genuine multi-week program (the registry
+  // row's claim becomes true on EVERY source, not just the lucky one).
+  const periodization = buildWorkoutPeriodization({
+    goal: fitnessCtx.goal,
+    level: fitnessCtx.experience,
+    language: "ar",
+  });
 
   try {
     // OpenRouter + Groq only (owner directive) — clamped ≤ 52s.
@@ -763,6 +791,11 @@ export async function generateWorkoutPlanAI(
           ...(value.progression ? { progression: value.progression } : {}),
         } as unknown as Record<string, unknown>,
         trainingLocation,
+        // WOR-7: server math rides the normalized content — the 4-week wave
+        // exists even when the model's own narrative is thin, and NEVER
+        // depends on the model emitting a new field (the WOR-1 lesson:
+        // whatever the gate forgets to pass, the plan loses).
+        periodization,
       );
       // PLAN-REGEN-CONSTRAINTS: the independent workout audit — suitability
       // axes (home equipment, beginner level, recorded injuries) recomputed
@@ -810,7 +843,14 @@ export async function generateWorkoutPlanAI(
   const local = generateWorkoutPlan(ctx);
   return {
     title: `برنامج تمارين - ${name}`,
-    content: normalizeWorkoutPlan(local as unknown as Record<string, unknown>, loose(ctx.fitness).location),
+    content: normalizeWorkoutPlan(
+      local as unknown as Record<string, unknown>,
+      loose(ctx.fitness).location,
+      // WOR-7: the local fallback ships the SAME multi-week stamp — the
+      // fallback used to look RICHER than the paid path (audit WOR-1's
+      // original observation); now both carry the identical structure.
+      periodization,
+    ),
     source: "local-fallback",
   };
 }
@@ -1656,6 +1696,13 @@ const WORKOUT_SYSTEM_PROMPT = `أنت مدرب لياقة محترف يعمل ف
 - غيّر ترتيب التمارين وأسلوب التنفيذ (دمبل مقابل بار مقابل جهاز مقابل وزن الجسم) بين خطة وأخرى.
 - إذا توفرت قائمة "تمارين استُخدمت سابقًا" في التعليمات فاختر بدائل مختلفة عنها قدر الإمكان مع الحفاظ على نفس الوظيفة العضلية.
 
+⚠ قانون الذكاء التدريبي (WOR-7 — تدقيق محركات التوليد 2026-11-15):
+- الترتيب داخل كل يوم: التمارين المركّبة متعددة المفاصل أولًا (سكوات/ديدليفت/بنش/تجديف/ضغط كتف) ثم تمارين العزل — لا تبدأ يومًا تدريبيًا بتمرين عزل أبدًا.
+- نطاقات الحجم الأسبوعي لكل عضلة: 10-20 مجموعة للعضلات الكبيرة (صدر/ظهر/أرجل/أكتاف) و6-12 للعضلات الصغيرة (ذراعان/سمانة/كور) — واذكر نطاقك الفعلي في حقل weekly_volume.
+- الإحماء والتهدئة: أول تمرين مركّب في اليوم يبدأ بمجموعتين تصاعديتين خفيفتين (اذكرها في notes)، واليوم ينتهي بتهدئة قصيرة — الجدول نفسه يبقى 4-6 تمارين بلا عدّ الإحماء منها.
+- الكارديو حسب الهدف: اذكر في حقل overview كيف يُدمج الكارديو — لخسارة الدهون: 3-4 جلسات × 25-40 دقيقة مشي مائل/دراجة بعد الأوزان أو بأيام منفصلة؛ لبناء العضلات أو القوة: لا كارديو إلزامي (الاستشفاء أولوية)؛ للياقة/التحمل: 2-3 جلسات هوائية معتدلة.
+- التدرج: حقل progression يجب أن يصف موجة 4 أسابيع فعلًا: أسبوع 1 تأسيس أوزان صادقة (RIR 1-2)، أسبوع 2 زيادة حجم (+1 مجموعة للمركّب الأول)، أسبوع 3 ذروة (حمل +2.5-5%)، أسبوع 4 تفريغ/استشفاء (المجموعات نصفها والأحمال −10%) — وتُعاد الدورة بعد الأسبوع 4 من أسبوع 2 بأوزان الأسبوع 3.
+
 تنسيق JSON:
 {
  "overview": "نظرة عامة على البرنامج",
@@ -1762,6 +1809,32 @@ function buildWorkoutPrompt(
     ? `\n تعليمات خاصة من المدرب: ${overrides.notes}\n`
     : "";
 
+  // WOR-7 (audit AI-GENERATION-PIPELINES-2026-11-15): the goal used to be
+  // a label in the first sentence ONLY — no goal-aware rule followed it.
+  // The training-intelligence block below keys the composition on the
+  // SAME server-side classification the deterministic periodization stamp
+  // uses (classifyPeriodizationGoal), so the model's split and the plan's
+  // 4-week wave can never disagree about the client's goal.
+  const goalClass = classifyPeriodizationGoal(goal);
+  const cardioLine =
+    goalClass === "fat-loss"
+      ? "الكارديو لهذا الهدف: 3-4 جلسات × 25-40 دقيقة مشي مائل/دراجة بعد الأوزان أو بأيام منفصلة — واذكرها في overview."
+      : goalClass === "muscle" || goalClass === "strength"
+        ? "لا كارديو إلزامي لهذا الهدف (الاستشفاء أولوية) — إن ذكرته في overview فاجعله مشيًا خفيفًا اختياريًا فقط."
+        : goalClass === "endurance"
+          ? "الكارديو لهذا الهدف: 2-3 جلسات هوائية معتدلة (20-40 دقيقة) + جلسة فواصل واحدة أسبوعيًا — واذكرها في overview."
+          : "الكارديو لهذا الهدف: جلسات نشاط معتدل مرتين أسبوعيًا (20-30 دقيقة) — واذكرها في overview.";
+
+  const trainingIntelBlock = `
+
+ قانون الذكاء التدريبي (إلزامي):
+- الترتيب داخل اليوم: المركّبات متعددة المفاصل أولًا ثم تمارين العزل — لا تبدأ يومًا بتمرين عزل.
+- نطاقات الحجم الأسبوعي لكل عضلة: 10-20 مجموعة للعضلات الكبيرة (صدر/ظهر/أرجل/أكتاف) و6-12 للصغيرة (ذراعان/سمانة/كور) — واذكر نطاقك في weekly_volume.
+- الإحماء: مجموعتان تصاعديتان خفيفتان على أول تمرين مركّب باليوم (تُذكر في notes لا في عدّ التمارين)، والتهدئة قصيرة آخر اليوم.
+- ${cardioLine}
+- التدرج (وصفه في progression): موجة 4 أسابيع — أسبوع 1 تأسيس أوزان صادقة (RIR 1-2) · أسبوع 2 +1 مجموعة للمركّب الأول · أسبوع 3 ذروة (حمل +2.5-5%) · أسبوع 4 تفريغ: المجموعات نصفها والأحمال −10%${isBeginner ? " · المبتدئ يتدرّج بالتكرارات (+2 أسبوعيًا) لا بالحمل قبل إتقان الأداء" : ""}.
+`;
+
   return `صمّم برنامج تمارين أسبوعي مخصص باللغة العربية لعميل اسمه ${name}.
 
  بيانات العميل:
@@ -1773,7 +1846,7 @@ function buildWorkoutPrompt(
 - مستوى الخبرة: ${experience} ${isBeginner ? "(مبتدئ — تجنب التمارين المتقدمة)" : ""}
 - إصابات: ${injuries || "لا يوجد"}
 ${overridesText}
-${splitDescription}${safetyRules}
+${splitDescription}${safetyRules}${trainingIntelBlock}
 
 قواعد إضافية:
 - صمّم برنامج لـ ${days} أيام تدريب مع إدراج أيام راحة بينها.
@@ -2038,11 +2111,20 @@ function normalizeWorkoutPlan(
   // (home → dumbbell/bodyweight world) rides every lookup so a home
   // client's plan never links barbell/cable/machine library pages.
   location?: unknown,
+  // WOR-7 / P2-1 (audit AI-GENERATION-PIPELINES-2026-11-15): the
+  // deterministic training-intelligence stamp — the caller (AI path or
+  // local-fallback path) builds it from the same client context the
+  // prompt steered on, and it rides the SAVED content verbatim. Optional
+  // only so legacy/shape callers (none today) stay type-compatible.
+  periodization?: WorkoutPeriodization,
 ): WorkoutPlanContent {
   return {
     overview: String(plan.overview || ""),
     weekly_volume: plan.weekly_volume as string | undefined,
     progression: plan.progression as string | undefined,
+    // WOR-7: present ⇒ stamped verbatim (server math, already bounded by
+    // construction); absent ⇒ absent (never a fabricated structure).
+    ...(periodization ? { periodization } : {}),
     days: ((plan.days as unknown[] | undefined) || []).map((rawDay) => {
       const d = (rawDay ?? {}) as Record<string, unknown>;
       return {

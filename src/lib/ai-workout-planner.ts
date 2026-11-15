@@ -173,10 +173,26 @@ export function buildWorkoutPrompt(req: WorkoutPlanRequest): string {
       ? `\nقيود خاصة يجب احترامها: ${req.notes}`
       : `\nSpecial constraints to respect: ${req.notes}`
     : "";
+  // WOR-7 (audit AI-GENERATION-PIPELINES-2026-11-15): goal-aware
+  // conditioning density — the fat-loss trial now steers the composition
+  // (compound-first, short rests) instead of naming the goal once and
+  // hoping. The full cardio prescription + 4-week periodization wave are
+  // the paid plan:workout product (src/lib/workout-periodization.ts);
+  // the trial keeps its fixed lean JSON contract (validator + persistence
+  // + page are all pinned on this shape).
+  const conditioningLine =
+    req.goal === "fat-loss"
+      ? req.language === "ar"
+        ? "اجعل الكثافة شرطًا تصميميًا: تمارين مركّبة كبيرة أولًا وراحة قصيرة (45-60 ثانية) بين المجموعات — بنية حارقة للسعرات لا جلسة قوة هادئة."
+        : "Make conditioning a design constraint: big compound lifts first and short rests (45-60 seconds) between sets — a calorie-burning structure, not a quiet strength session."
+      : "";
   if (req.language === "ar") {
     return [
       `أنت مدرب قوة ولياقة. ولّد نظامًا تدريبيًا أسبوعيًا من ${req.days} أيام تمرين لهدف ${GOAL_LABELS[req.goal].ar}، لمتدرب ${LEVEL_LABELS[req.level].ar}، يتدرب بتجهيزة ${EQUIPMENT_LABELS[req.equipment].ar}.`,
       "اختر تمارين معروفة من عائلاتها الأساسية (سكوات، رفعة ميتة، بنش برس، تجديف، ضغط كتف، سحب، دفع، ثني، بسط...) بحيث تناسب التجهيزة المتاحة، ووزّع عضلات الجسم عبر الأسبوع بتوازن — لا تكرر العضلة الكبيرة في يومين متتاليين.",
+      "قانون الترتيب: التمارين المركّبة متعددة المفاصل أولًا في كل يوم ثم تمارين العزل — لا يبدأ يوم تمرين بتمرين عزل أبدًا.",
+      `قانون الحجم: اجمع 10-20 مجموعة أسبوعيًا لكل عضلة كبيرة (صدر/ظهر/أرجل/أكتاف) و6-12 لكل عضلة صغيرة (ذراعان/سمانة/كور) — مجموعات اليوم تشترك في تحقيق هذه النطاقات.${conditioningLine}`,
+      "اختر تكرارات تترك مجالًا للتدرج عبر 4 أسابيع (أسبوع رابع خفيف/استشفاء) — لا تداور على حد أقصى من أول أسبوع.",
       `اكتب اسم كل يوم وعضلاته المستهدفة وأسماء التمارين بالعربية.${notesLine}`,
       `أعد JSON فقط بهذا الشكل: {"days":[{"name":"اليوم الأول","focus":"صدر وترايسبس","exercises":[{"name":"بنش برس بار مستوي","sets":4,"reps":8}]}]}`,
       `قواعد صارمة: مصفوفة الأيام تحمل ${req.days} أيام بالضبط؛ 4 إلى 6 تمارين لكل يوم؛ كل تمرين 2 إلى 6 مجموعات بتكرارات 5 إلى 20 (رقم واحد أو مدى مثل "8-12")؛ لا نص خارج JSON.`,
@@ -185,6 +201,9 @@ export function buildWorkoutPrompt(req: WorkoutPlanRequest): string {
   return [
     `You are a strength and conditioning coach. Generate a ${req.days}-day weekly workout split for ${GOAL_LABELS[req.goal].en}, for a ${LEVEL_LABELS[req.level].en} trainee, training with ${EQUIPMENT_LABELS[req.equipment].en}.`,
     'Pick well-known exercises from the basic families (squat, deadlift, bench press, rows, overhead press, pull-downs/pull-ups, lunges, curls, extensions...) that match the available equipment, and distribute muscle groups across the week in balance — never the same big muscle group on back-to-back days.',
+    "Ordering law: multi-joint compound movements FIRST in every day, isolation movements after — a training day never opens with an isolation move.",
+    `Volume law: land inside 10-20 weekly sets per large muscle (chest/back/legs/shoulders) and 6-12 per small one (arms/calves/core) — the day's sets contribute to those bands.${conditioningLine}`,
+    "Pick rep ranges that leave headroom for a 4-week progression (a light deload week four) — never program the ceiling from week one.",
     `Write every day name, its target muscles, and every exercise name in English.${notesLine}`,
     `Return JSON only, exactly this shape: {"days":[{"name":"Day 1","focus":"chest and triceps","exercises":[{"name":"Barbell bench press","sets":4,"reps":8}]}]}`,
     `Hard rules: the days array carries exactly ${req.days} days; 4 to 6 exercises per day; every exercise 2 to 6 sets of 5 to 20 reps (a single number or a range like "8-12"); no text outside the JSON.`,
