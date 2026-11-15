@@ -95,6 +95,10 @@ import {
 // arms (never at call sites). Fire-and-forget by law: a metering outage
 // must NEVER delay or disable generation (a 3s Upstash bound awaited per
 // failed attempt would otherwise stack inside tight Vercel budgets).
+// P2-3 (audit AI-GENERATION-PIPELINES 2026-11-15, INF-19): the same
+// import now carries the REAL-usage types — the converters read the
+// provider-reported `usage` block and feed it to the meter (replacing
+// the chars/4 estimate whenever the provider actually reported).
 import {
   trackAIMeterAttempt,
   trackTavilyCredits,
@@ -103,10 +107,16 @@ import {
   tavilyExtractCredits,
   EXA_SEARCH_CENTS,
   EXA_CONTENTS_CENTS,
+  type AIUsageSnapshot,
 } from "./ai-usage-meter";
 
 /** Fire-and-forget meter tap — never throws, never awaits at the call
- *  site (the module itself swallows everything; this is belt+suspenders). */
+ *  site (the module itself swallows everything; this is belt+suspenders).
+ *  INF-19: `usage` = the REAL provider-reported token counts for the
+ *  attempt; when present it is recorded as tokens_prompt/completion/
+ *  total + the per-model cost, and the chars/4 `tokensEst` estimate is
+ *  passed only as the FALLBACK for attempts whose provider did not
+ *  report usage. */
 function meterTap(
   fn: string | undefined,
   provider: string,
@@ -114,6 +124,7 @@ function meterTap(
   outcome: "ok" | "empty" | "fail" | "quota",
   latencyMs: number,
   tokensEst?: number,
+  usage?: AIUsageSnapshot,
 ): void {
   void trackAIMeterAttempt({
     fn: fn || "direct",
@@ -122,7 +133,40 @@ function meterTap(
     outcome,
     latencyMs,
     ...(tokensEst !== undefined ? { tokensEst } : {}),
+    ...(usage !== undefined ? { usage } : {}),
   }).catch(() => {});
+}
+
+/** INF-19 — the REAL-usage tap emitter shared by every converter: calls
+ *  the caller's onUsage callback with the normalized snapshot. Swallowed
+ *  by construction (the metering laws: a usage tap can never break the
+ *  call it observes) and fires only when at least one real count was
+ *  reported — an absent usage block stays absent (no phantom zeros).
+ *  total falls back to prompt+completion when the provider omitted it
+ *  (OpenRouter always sends total_tokens; Groq/NIM send all three). */
+function emitUsageTap(
+  options: CallAIOptions,
+  raw: { promptTokens?: unknown; completionTokens?: unknown; totalTokens?: unknown } | null | undefined,
+): void {
+  try {
+    if (!options.onUsage || !raw) return;
+    const n = (v: unknown): number => (typeof v === "number" && Number.isFinite(v) && v >= 0 ? v : NaN);
+    const promptTokens = n(raw.promptTokens);
+    const completionTokens = n(raw.completionTokens);
+    const totalTokens = n(raw.totalTokens);
+    if (Number.isNaN(promptTokens) && Number.isNaN(completionTokens) && Number.isNaN(totalTokens)) {
+      return; // nothing real was reported — keep the estimate fallback
+    }
+    const p = Number.isNaN(promptTokens) ? 0 : promptTokens;
+    const c = Number.isNaN(completionTokens) ? 0 : completionTokens;
+    options.onUsage({
+      promptTokens: p,
+      completionTokens: c,
+      totalTokens: Number.isNaN(totalTokens) ? p + c : totalTokens,
+    });
+  } catch {
+    /* THE LAW: never propagate — metering must not break generation */
+  }
 }
 
 /** Quota-class detection for the meter (mirrors the chain's own
@@ -467,6 +511,14 @@ export type CallAIOptions = {
    *  ([gemini-usage] logs + Upstash → weekly report). NEVER changes model
    *  ordering or fallback policy. */
   tag?: string;
+  /** INF-19 (audit AI-GENERATION-PIPELINES 2026-11-15, P2-3): REAL-usage
+   *  observation tap — the OpenAI-compatible and native converters call
+   *  it with the usage block the PROVIDER reported on the response
+   *  (`data.usage` / Gemini `usageMetadata`). Purely observational (the
+   *  meter laws): it never alters the call, and its failure is swallowed
+   *  by the emitter. The chain wires it per attempt to feed the central
+   *  meter; direct callers may wire it for their own accounting. */
+  onUsage?: (usage: AIUsageSnapshot) => void;
   /** GOOGLE SEARCH GROUNDING (Phase 344, owner order «بحث خارجي حقيقي"):
    *  honored ONLY by the gemini native arm — the request then carries
    *  tools:[{googleSearch:{}}] so the answer is grounded in LIVE Google
@@ -769,12 +821,15 @@ async function callCloudflareGenerate(
 }
 
 /** Non-streaming: POST /models/{model}:generateContent → joined text +
- *  (Phase 344) normalized grounding evidence when the request was grounded. */
+ *  (Phase 344) normalized grounding evidence when the request was grounded.
+ *  INF-19 (P2-3): the response's usageMetadata now ALSO rides the return
+ *  (`usage`) — the native-shape token counts the meter needs — and the
+ *  observation tap fires when the caller asked for one. */
 async function callGeminiGenerate(
   cfg: AIConfig,
   prompt: string,
   options: CallAIOptions,
-): Promise<{ text: string; grounding: GeminiGrounding }> {
+): Promise<{ text: string; grounding: GeminiGrounding; usage?: AIUsageSnapshot }> {
   const started = Date.now();
   const controller = new AbortController();
   const timeoutMs = options.timeoutMs ?? 60_000;
@@ -847,7 +902,21 @@ async function callGeminiGenerate(
       completionTokens: data.usageMetadata?.candidatesTokenCount,
     }).catch(() => {});
     tracked = true;
-    return { text: text.trim(), grounding };
+    // INF-19: the REAL native usage block — normalized once, returned to
+    // the caller (the grounded arm feeds the central meter with it) and
+    // pushed through the observation tap when present.
+    const usageMeta = data.usageMetadata;
+    const gemUsage: AIUsageSnapshot | undefined = usageMeta
+      ? {
+          promptTokens: Number(usageMeta.promptTokenCount) || 0,
+          completionTokens: Number(usageMeta.candidatesTokenCount) || 0,
+          totalTokens:
+            Number(usageMeta.totalTokenCount) ||
+            (Number(usageMeta.promptTokenCount) || 0) + (Number(usageMeta.candidatesTokenCount) || 0),
+        }
+      : undefined;
+    if (gemUsage) emitUsageTap(options, gemUsage);
+    return { text: text.trim(), grounding, ...(gemUsage ? { usage: gemUsage } : {}) };
   } catch (e) {
     if (!tracked) {
       const abort = isAbortError(e);
@@ -982,6 +1051,15 @@ async function callGeminiStream(
       completionTokens: usage?.candidatesTokenCount,
     }).catch(() => {});
     tracked = true;
+    // INF-19: the REAL native usage block of the streamed attempt → the
+    // observation tap (normalized; absent when the stream carried none).
+    if (usage) {
+      emitUsageTap(options, {
+        promptTokens: usage.promptTokenCount,
+        completionTokens: usage.candidatesTokenCount,
+        totalTokens: usage.totalTokenCount,
+      });
+    }
     return text;
   } catch (e) {
     if (!tracked) {
@@ -1138,7 +1216,7 @@ export async function callGeminiGroundedSearch(
       // R2 meter: t0 per key×model grounded attempt.
       const armT0 = Date.now();
       try {
-        const { text, grounding } = await callGeminiGenerate(cfg, prompt, {
+        const { text, grounding, usage } = await callGeminiGenerate(cfg, prompt, {
           ...options,
           googleSearch: true,
         });
@@ -1149,8 +1227,19 @@ export async function callGeminiGroundedSearch(
         }
         // R2 meter: the dormant arm's successful googleSearch-grounded
         // call (the standing per-tag gemini counters stay untouched —
-        // different key family, different report).
-        meterTap(options.tag, "gemini", `${model}+googleSearch`, "ok", Date.now() - armT0);
+        // different key family, different report). INF-19: the REAL
+        // usageMetadata rides the attempt — the meter records the native
+        // token counts (and the family's known free-tier cost) instead of
+        // the chars/4 estimate whenever the API reported them.
+        meterTap(
+          options.tag,
+          "gemini",
+          `${model}+googleSearch`,
+          "ok",
+          Date.now() - armT0,
+          usage ? undefined : Math.ceil(prompt.length / 4) + Math.ceil(text.length / 4),
+          usage,
+        );
         return { text, provider: "gemini", model, grounding };
       } catch (e) {
         const msg = e instanceof Error ? e.message : String(e);
@@ -2470,6 +2559,9 @@ export async function callGroqGroundedSearch(
         // arrays — the extractor accepts every documented location so a
         // live shape change degrades to an honest gate failure, never a
         // fake pass.
+        // INF-19 (P2-3): the OpenAI-compatible `usage` block rides the
+        // same response (Groq reports prompt/completion/total tokens on
+        // every chat/completions call) — captured for the central meter.
         const data = (await res.json()) as {
           choices?: Array<{
             message?: {
@@ -2484,7 +2576,21 @@ export async function callGroqGroundedSearch(
           citations?: unknown;
           annotations?: unknown;
           x_groq?: { citations?: unknown } | null;
+          usage?: {
+            prompt_tokens?: number | null;
+            completion_tokens?: number | null;
+            total_tokens?: number | null;
+          } | null;
         } | null;
+        const armUsage: AIUsageSnapshot | undefined = data?.usage
+          ? {
+              promptTokens: Number(data.usage.prompt_tokens) || 0,
+              completionTokens: Number(data.usage.completion_tokens) || 0,
+              totalTokens:
+                Number(data.usage.total_tokens) ||
+                (Number(data.usage.prompt_tokens) || 0) + (Number(data.usage.completion_tokens) || 0),
+            }
+          : undefined;
         const msg = data?.choices?.[0]?.message;
         // Content fallbacks (the OR-arm content→reasoning law, mirrored for
         // Groq — LIVE-MEASURED on the 20b+parsed flip path, blog run
@@ -2544,13 +2650,17 @@ export async function callGroqGroundedSearch(
           );
         }
         // R2 meter: the agentic browser_search arm's successful walk.
+        // INF-19: the REAL usage Groq reported for this walk rides the
+        // attempt — recorded (with the free-tier cost) instead of the
+        // chars/4 estimate whenever it was present.
         meterTap(
           options.tag,
           "groq",
           `${model}+browser_search`,
           "ok",
           Date.now() - t0,
-          Math.ceil(prompt.length / 4) + Math.ceil(content.length / 4),
+          armUsage ? undefined : Math.ceil(prompt.length / 4) + Math.ceil(content.length / 4),
+          armUsage,
         );
         return {
           text: content.trim(),
@@ -2848,6 +2958,10 @@ export async function callAI(
 
     // Typed view of the OpenAI-compatible chat-completions response (only
     // the fields we consume — reasoning-model extras included).
+    // INF-19 (P2-3): `usage` is part of the view — every OpenAI-compatible
+    // provider (OpenRouter · Groq · NVIDIA NIM) reports it on non-streaming
+    // responses; the tap below feeds the central meter with the REAL
+    // counts instead of the chars/4 estimate.
     const data = (await res.json()) as {
       choices?: Array<{
         finish_reason?: string | null;
@@ -2857,6 +2971,11 @@ export async function callAI(
           reasoning_details?: Array<{ text?: unknown } | null> | null;
         } | null;
       }> | null;
+      usage?: {
+        prompt_tokens?: number | null;
+        completion_tokens?: number | null;
+        total_tokens?: number | null;
+      } | null;
     } | null;
     const choice = data?.choices?.[0];
     const msg = choice?.message;
@@ -2899,6 +3018,13 @@ export async function callAI(
         `${cfg.provider}/${cfg.model} spent the completion budget on reasoning and hit max_tokens before any final answer (finish_reason=length, no content) — honest failure, the chain moves to the next entry`,
       );
     }
+    // INF-19: the REAL usage block of this attempt → the observation tap
+    // (swallowed; absent when the provider did not report one).
+    emitUsageTap(options, {
+      promptTokens: data?.usage?.prompt_tokens,
+      completionTokens: data?.usage?.completion_tokens,
+      totalTokens: data?.usage?.total_tokens,
+    });
     return content.trim();
   } finally {
     clearTimeout(timer);
@@ -2964,12 +3090,23 @@ export async function callAIStream(
   }
   messages.push({ role: "user", content: prompt });
 
-  const body = {
+  const body: Record<string, unknown> = {
     model: cfg.model,
     messages,
     temperature: options.temperature ?? 0.7,
     max_tokens: options.maxTokens ?? 4096,
     stream: true,
+    // INF-19 (P2-3): request the usage block in the stream. OpenAI's SSE
+    // contract: with stream_options.include_usage the FINAL chunk carries
+    // `usage` (and empty choices). OpenRouter and Groq document exactly
+    // this flag; NVIDIA NIM (vLLM-based) also accepts OpenAI-standard
+    // stream_options — but to keep the request surface strictly to
+    // documented behavior the flag rides only for providers with an
+    // officially documented `include_usage` (the SSE parser below reads
+    // `usage` opportunistically from ANY provider's chunk regardless).
+    ...(cfg.provider === "openrouter" || cfg.provider === "groq"
+      ? { stream_options: { include_usage: true } }
+      : {}),
   };
 
   const controller = new AbortController();
@@ -3009,6 +3146,15 @@ export async function callAIStream(
     let full = "";
     let reasoning = "";
     let finishReason: string | null = null;
+    // INF-19 (P2-3): the usage block rides the FINAL SSE chunk when the
+    // request asked for it (stream_options.include_usage) — or whenever a
+    // provider sends it anyway. Captured here, emitted through the tap at
+    // the successful return below.
+    let usageBlock: {
+      prompt_tokens?: number | null;
+      completion_tokens?: number | null;
+      total_tokens?: number | null;
+    } | null = null;
 
     for (;;) {
       const { done, value } = await reader.read();
@@ -3029,6 +3175,9 @@ export async function callAIStream(
           const delta = choice?.delta;
           if (typeof choice?.finish_reason === "string" && choice.finish_reason) {
             finishReason = choice.finish_reason;
+          }
+          if (evt?.usage && typeof evt.usage === "object") {
+            usageBlock = evt.usage;
           }
           if (typeof delta?.content === "string" && delta.content.length > 0) {
             full += delta.content;
@@ -3061,6 +3210,13 @@ export async function callAIStream(
         `${cfg.provider}/${cfg.model} stream spent the completion budget on reasoning and hit max_tokens before any final answer (finish_reason=length, content never started) — honest failure`,
       );
     }
+    // INF-19: the REAL usage block of this streamed attempt → the
+    // observation tap (swallowed; absent when none was reported).
+    emitUsageTap(options, {
+      promptTokens: usageBlock?.prompt_tokens,
+      completionTokens: usageBlock?.completion_tokens,
+      totalTokens: usageBlock?.total_tokens,
+    });
     return text;
   } finally {
     clearTimeout(timer);
@@ -3528,7 +3684,7 @@ export async function callFreeAIFallbackChain(
   // chain stops honestly with the attempts-so-far error list.
   const chainDeadlineMs = Date.now() + CHAIN_TOTAL_BUDGET_MS;
 
-  const { maxModels: _omit, timeoutMs: _omit2, chain: _omit3, ...callOptions } = options;
+  const { maxModels: _omit, timeoutMs: _omit2, chain: _omit3, onUsage: _omit4, ...callOptions } = options;
 
   /** Quota/auth-style failures justify burning another KEY on the SAME model. */
   const looksLikeQuota = (m: string) => /\b(401|402|429|403)\b|quota|rate.?limit|credit|insufficient/i.test(m);
@@ -3629,6 +3785,18 @@ export async function callFreeAIFallbackChain(
         // R2 meter: one t0 per attempt — the [ai-meter] line + daily
         // (provider×model×function) counters are written at every exit.
         const attemptT0 = Date.now();
+        // INF-19 (P2-3): the REAL-usage observation tap for THIS attempt —
+        // the converter calls it with the provider-reported usage block of
+        // the response that actually answered (absent ⇒ the provider did
+        // not report one and the meter falls back to the chars/4 estimate,
+        // the pre-P2-3 behavior). The chain owns the tap (a caller's own
+        // onUsage is stripped from callOptions above — two taps would race
+        // on the same callback slot).
+        let attemptUsage: AIUsageSnapshot | undefined;
+        const usageTap = (u: AIUsageSnapshot) => {
+          attemptUsage = u;
+        };
+        const meteredOptions = { ...attemptOptions, onUsage: usageTap };
         try {
           // INF-2: the attempt timeout never outlives the remaining
           // chain budget (a 100ms floor avoids a degenerate zero/negative
@@ -3642,14 +3810,14 @@ export async function callFreeAIFallbackChain(
             ? {
                 text: await callAIStream(
                   prompt,
-                  { ...attemptOptions, timeoutMs: attemptTimeoutMs },
+                  { ...meteredOptions, timeoutMs: attemptTimeoutMs },
                   { provider, apiKey, model, baseUrl },
                   streamTap,
                 ),
               }
             : await callAIWithFallback(
                 prompt,
-                { ...attemptOptions, timeoutMs: attemptTimeoutMs },
+                { ...meteredOptions, timeoutMs: attemptTimeoutMs },
                 {
                   provider,
                   apiKey,
@@ -3672,7 +3840,14 @@ export async function callFreeAIFallbackChain(
               model,
               "ok",
               Date.now() - attemptT0,
-              Math.ceil(prompt.length / 4) + Math.ceil(text.length / 4),
+              // INF-19: REAL usage replaces the chars/4 estimate whenever
+              // the provider reported it — exactly one token metric family
+              // per attempt (no double counting: usage present ⇒ the
+              // estimate is not passed).
+              attemptUsage
+                ? undefined
+                : Math.ceil(prompt.length / 4) + Math.ceil(text.length / 4),
+              attemptUsage,
             );
             return { text: text.trim(), model, provider, qualityTier };
           }

@@ -316,6 +316,13 @@ export async function GET(request: NextRequest) {
       fail: number;
       quota: number;
       tokensEst: number;
+      /** INF-19 (P2-3): the REAL provider-reported usage counters + the
+       *  per-model cost — surfaced by the meter when the provider
+       *  actually reported usage (0 = the estimate-only legacy rows). */
+      tokensPrompt: number;
+      tokensCompletion: number;
+      tokensTotal: number;
+      costUsdCents: number;
     }>;
   } | null = null;
   try {

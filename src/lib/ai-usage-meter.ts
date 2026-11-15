@@ -65,6 +65,20 @@ export type AIMeterProvider =
 
 export type AIMeterOutcome = "ok" | "empty" | "fail" | "quota";
 
+/** P2-3 (audit AI-GENERATION-PIPELINES 2026-11-15, INF-19): the REAL
+ *  provider-reported usage of one attempt — the token counts the
+ *  converter read off the actual response (OpenAI-compatible
+ *  `data.usage` · Gemini `usageMetadata`), NOT a chars/4 estimate.
+ *  The under-counting complaint of the audit (chars/4 structurally
+ *  under-counts Arabic) is closed here: the meter prefers these numbers
+ *  whenever the provider reported them, and falls back to the estimate
+ *  only when it did not. */
+export interface AIUsageSnapshot {
+  promptTokens: number;
+  completionTokens: number;
+  totalTokens: number;
+}
+
 export interface AIMeterEvent {
   /** The chain tag / function id (e.g. "plan:nutrition", "blog:pairing"). */
   fn: string;
@@ -72,8 +86,110 @@ export interface AIMeterEvent {
   model: string;
   outcome: AIMeterOutcome;
   latencyMs?: number;
-  /** Token estimate (chars/4 in + chars/4 out) — best-effort. */
+  /** Token estimate (chars/4 in + chars/4 out) — best-effort FALLBACK
+   *  only (recorded when the provider did not report real usage). */
   tokensEst?: number;
+  /** INF-19: the REAL provider-reported usage (preferred — recorded
+   *  as tokens_prompt/tokens_completion/tokens_total + cost when the
+   *  model's price is known). */
+  usage?: AIUsageSnapshot;
+}
+
+/* ─────────────────── Per-model cost table (P2-3 / INF-19) ───────────────────
+ *
+ * The audit's finding: «لا حساب تكلفة لكل موديل إطلاقًا» — no cost
+ * calculation per model at all. This table is the remedy's data half
+ * (the meter applies it per attempt below).
+ *
+ * HONEST-ACCOUNTING LAWS (binding):
+ *   1. Every price is USD per 1M tokens, prompt/completion — the only
+ *      unit the table stores. Nothing else is invented.
+ *   2. Every model the platform actually walks TODAY is on a FREE tier
+ *      (OpenRouter `:free` variants are $0 by definition · Groq free
+ *      TPM bucket · NVIDIA NIM free credits · Gemini free tier) — so
+ *      its true current price IS 0.0/0.0 with `freeTier: true`. The
+ *      zero is a MEASURED fact of today's deployment, not a placeholder:
+ *      recording `cost_usd_cents = 0` for these models is honest cost
+ *      accounting (the call cost nothing), and the flag documents WHY.
+ *   3. A paid price row is added ONLY with its official published rate
+ *      at the moment that model enters a chain — never guessed here.
+ *   4. UNKNOWN models get NO cost row → the meter records no
+ *      `cost_usd_cents` key and prints `cost_cents=?` — an honest
+ *      "unknown", never a fabricated number.
+ *   5. Cloudflare Workers AI bills by NEURONS, not tokens (its neurons
+ *      meter — ai-cf-usage.ts — already exists); token-price rows are
+ *      therefore meaningless for @cf models and none is listed.
+ *   6. Lookup is suffix-tolerant: the grounded arms meter decorated
+ *      labels (`openai/gpt-oss-120b+browser_search`, `gemini-3.5-flash
+ *      +googleSearch`) — the `+…` arm decoration is stripped before
+ *      the lookup so the same price row serves the plain chain entry
+ *      and its grounded arm.
+ */
+
+export interface AIModelPrice {
+  /** USD per 1M prompt tokens. */
+  promptUsdPerMillion: number;
+  /** USD per 1M completion tokens. */
+  completionUsdPerMillion: number;
+  /** Documented free-tier entry (price 0.0 within the current grant). */
+  freeTier?: boolean;
+}
+
+/** Keyed `${provider}:${model}` — the chains' own model ids, verbatim. */
+export const AI_MODEL_COST_TABLE: Record<string, AIModelPrice> = {
+  // ── INTERLEAVED_STRONGEST_CHAIN (ai-provider.ts) ──
+  "openrouter:nvidia/nemotron-3-ultra-550b-a55b:free": { promptUsdPerMillion: 0, completionUsdPerMillion: 0, freeTier: true },
+  "groq:openai/gpt-oss-120b": { promptUsdPerMillion: 0, completionUsdPerMillion: 0, freeTier: true },
+  "groq:openai/gpt-oss-20b": { promptUsdPerMillion: 0, completionUsdPerMillion: 0, freeTier: true },
+  "nvidia:nvidia/nemotron-3-ultra-550b-a55b": { promptUsdPerMillion: 0, completionUsdPerMillion: 0, freeTier: true },
+  "groq:qwen/qwen3.8-27b": { promptUsdPerMillion: 0, completionUsdPerMillion: 0, freeTier: true },
+  // ── INTERLEAVED_FAST_CHAIN tail ──
+  "nvidia:nvidia/nemotron-3.5-lightning-30b-a3b": { promptUsdPerMillion: 0, completionUsdPerMillion: 0, freeTier: true },
+  // ── the gemini tail + grounded ladder (free tier — one bucket per family) ──
+  "gemini:gemini-3.5-flash": { promptUsdPerMillion: 0, completionUsdPerMillion: 0, freeTier: true },
+  "gemini:gemini-3.8-flash": { promptUsdPerMillion: 0, completionUsdPerMillion: 0, freeTier: true },
+  "gemini:gemini-3.5-flash-lite": { promptUsdPerMillion: 0, completionUsdPerMillion: 0, freeTier: true },
+};
+
+/** OpenRouter `:free` variants are $0 BY DEFINITION (law 2's catch-all
+ *  rule — a free id not explicitly listed still prices at zero). */
+function openRouterFreeRule(provider: string, model: string): AIModelPrice | null {
+  if (provider === "openrouter" && /:free$/i.test(model)) {
+    return { promptUsdPerMillion: 0, completionUsdPerMillion: 0, freeTier: true };
+  }
+  return null;
+}
+
+/** Price lookup — exact row first, then the `+arm` decoration stripped,
+ *  then the OpenRouter `:free` rule. Null = unknown (no cost accounting). */
+export function lookupModelPrice(provider: string, model: string): AIModelPrice | null {
+  const prov = String(provider || "").toLowerCase();
+  const raw = String(model || "");
+  const exact = AI_MODEL_COST_TABLE[`${prov}:${raw}`];
+  if (exact) return exact;
+  const base = raw.includes("+") ? raw.slice(0, raw.indexOf("+")) : raw;
+  if (base !== raw) {
+    const stripped = AI_MODEL_COST_TABLE[`${prov}:${base}`];
+    if (stripped) return stripped;
+  }
+  return openRouterFreeRule(prov, base);
+}
+
+/** The cost of one REAL-usage attempt, in USD cents — null when the
+ *  model's price is unknown (no fabricated accounting; law 4). */
+export function modelCostUsdCents(
+  provider: string,
+  model: string,
+  usage: AIUsageSnapshot,
+): number | null {
+  const price = lookupModelPrice(provider, model);
+  if (!price) return null;
+  const usd =
+    (usage.promptTokens / 1_000_000) * price.promptUsdPerMillion +
+    (usage.completionTokens / 1_000_000) * price.completionUsdPerMillion;
+  const cents = usd * 100;
+  // Keep the float sane for INCRBYFLOAT (6 decimals of a cent ≪ 1e-6¢ error).
+  return Number.isFinite(cents) ? Math.round(cents * 1e6) / 1e6 : null;
 }
 
 /* ─────────────────────── Key shape (stable contract) ─────────────────────── */
@@ -180,7 +296,18 @@ export async function trackAIMeterAttempt(evt: AIMeterEvent): Promise<void> {
     console.log(
       `[ai-meter] fn=${fn} provider=${provider} model=${model}` +
         ` outcome=${evt.outcome} latency=${evt.latencyMs ?? "-"}ms` +
-        ` tokens_est=${evt.tokensEst ?? "-"}`,
+        ` tokens_est=${evt.tokensEst ?? "-"}` +
+        // INF-19: the REAL provider-reported usage + the per-model cost.
+        // `cost_cents=?` = price unknown for this model (honest unknown —
+        // never fabricated); absent fields = the provider did not report
+        // usage (the chars/4 estimate above remains the fallback metric).
+        (evt.usage
+          ? ` tokens_in=${evt.usage.promptTokens} tokens_out=${evt.usage.completionTokens}` +
+            ` tokens_total=${evt.usage.totalTokens}` +
+            ` cost_cents=${
+              modelCostUsdCents(evt.provider, evt.model, evt.usage) ?? "?"
+            }`
+          : ""),
     );
 
     const cmds: string[][] = [];
@@ -192,8 +319,28 @@ export async function trackAIMeterAttempt(evt: AIMeterEvent): Promise<void> {
     };
     bump("calls", 1);
     bump(evt.outcome, 1);
-    if (typeof evt.tokensEst === "number" && evt.tokensEst > 0) {
+    // INF-19: REAL usage REPLACES the estimate — exactly one token-metric
+    // family per attempt (usage present ⇒ the chars/4 estimate is not
+    // recorded even if a caller passed one; the audit's complaint was
+    // the estimate DISPLACING the real numbers, not accompanying them).
+    if (
+      !evt.usage &&
+      typeof evt.tokensEst === "number" &&
+      evt.tokensEst > 0
+    ) {
       bump("tokens_est", Math.round(evt.tokensEst * 100) / 100, true);
+    }
+    // INF-19: the REAL usage metrics (integer token counters) + the cost
+    // (float cents, only when the model's price is KNOWN — unknown prices
+    // record nothing rather than fabricate a number).
+    if (evt.usage && Number.isFinite(evt.usage.totalTokens)) {
+      if (evt.usage.promptTokens > 0) bump("tokens_prompt", Math.round(evt.usage.promptTokens));
+      if (evt.usage.completionTokens > 0) bump("tokens_completion", Math.round(evt.usage.completionTokens));
+      if (evt.usage.totalTokens > 0) bump("tokens_total", Math.round(evt.usage.totalTokens));
+      const costCents = modelCostUsdCents(evt.provider, evt.model, evt.usage);
+      if (costCents !== null) {
+        bump("cost_usd_cents", costCents === 0 ? "0" : String(costCents), true);
+      }
     }
     for (const key of touched) cmds.push(["EXPIRE", key, TTL_SECONDS, "NX"]);
 
@@ -295,6 +442,15 @@ export interface AIMeterDayRow {
   fail: number;
   quota: number;
   tokensEst: number;
+  /** INF-19: REAL provider-reported usage counters (0 when the provider
+   *  did not report usage that day — the tokensEst fallback stays). */
+  tokensPrompt: number;
+  tokensCompletion: number;
+  tokensTotal: number;
+  /** INF-19: accumulated USD cents for the model's KNOWN price (0 when
+   *  every priced call was free-tier; NOT an unknown marker — a model
+   *  with an unknown price simply never touches this counter). */
+  costUsdCents: number;
 }
 
 /**
@@ -365,6 +521,10 @@ export async function readAIMeterDay(date = utcDateKey()): Promise<AIMeterDayRow
           fail: 0,
           quota: 0,
           tokensEst: 0,
+          tokensPrompt: 0,
+          tokensCompletion: 0,
+          tokensTotal: 0,
+          costUsdCents: 0,
         };
         rows.set(rowKey, row);
       }
@@ -374,6 +534,10 @@ export async function readAIMeterDay(date = utcDateKey()): Promise<AIMeterDayRow
       else if (metric === "fail") row.fail = num;
       else if (metric === "quota") row.quota = num;
       else if (metric === "tokens_est") row.tokensEst = Math.round(num);
+      else if (metric === "tokens_prompt") row.tokensPrompt = Math.round(num);
+      else if (metric === "tokens_completion") row.tokensCompletion = Math.round(num);
+      else if (metric === "tokens_total") row.tokensTotal = Math.round(num);
+      else if (metric === "cost_usd_cents") row.costUsdCents = Math.round(num * 1e4) / 1e4;
     });
     return [...rows.values()].sort(
       (a, b) => b.calls - a.calls || a.fn.localeCompare(b.fn) || a.provider.localeCompare(b.provider),

@@ -307,7 +307,9 @@ model:
 - **Quality is gated, not hoped for** — plan generation and regeneration
   outputs pass the mandatory validator with food-library grounding; usage
   meters (provider × model × function, plus search-credit counters) ride
-  inside the engine, fail-open by law.
+  inside the engine, fail-open by law, and record the provider-reported
+  token usage of every response (not a chars/4 estimate) against a
+  per-model cost table (`src/lib/ai-usage-meter.ts`).
 - Long-running generation (the blog pipeline, queued AI jobs) runs on GitHub
   Actions runners instead of request handlers; every sequential path is
   budget-clamped.
