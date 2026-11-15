@@ -108,11 +108,21 @@ a 7-day conditional refund (no-features-used, ledger-based —
   an honest fallback (`src/lib/plan-ai-validation.ts`,
   `src/lib/plan-food-grounding.ts`). The coach picks the diet type
   (balanced / keto / low-carb / vegetarian / vegan) before generating —
-  `src/lib/diet-types.ts` is the shared contract
+  `src/lib/diet-types.ts` is the shared contract. Every meal may carry up to
+  two validated whole-meal alternatives (owner directive #2 — same item
+  constraints and keto laws as the primary meal, recomputed totals), shown
+  in the member plan view, the coach editor and the print export; workout
+  plans keep their AI-written overview / weekly volume / progression, and a
+  critical independent-audit finding (injury-unsafe pick, home-equipment
+  mismatch) raises a needs-review banner on the plan instead of being saved
+  silently
 - **Durable swaps** — every swap kind (meal / item / exercise) on every
   surface survives a closed tab: the queue runner materializes the gated
   replacement straight into the plan row, with enqueue-time and runner-time
-  ownership verification
+  ownership verification. Exercise swaps honor the client's training
+  location and experience level (from the fitness questionnaire) — home
+  clients get home-equipment substitutes and beginners never draw advanced
+  moves
 - **Plan editor** — a food-library combobox over `/api/food-search`, one pure
   recompute chain for every edit (`src/lib/nutrition-totals.ts`), a separate
   calorie-target control that regenerates the plan when the change exceeds

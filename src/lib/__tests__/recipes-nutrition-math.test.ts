@@ -255,4 +255,50 @@ describe("narrative number extraction (N-GATE-4 input)", () => {
     });
     expect(bad.filter((b) => b.claim.kind === "calories")).toHaveLength(0);
   });
+
+  // REC-6 canaries (audit AI-GENERATION-PIPELINES 2026-11-15, P0-7): the
+  // two Arabic extraction defects — «غرامًا من البروتين» (tanween + من +
+  // definite article) invisible to the extractor, and the «مشبع» typo
+  // (مشت?ع) that compared Arabic SATURATED-fat claims against TOTAL fat.
+  it("REC-6: extracts «45 غرامًا من البروتين» as a protein-grams claim (tanween + من + ال)", () => {
+    const claims = extractNarrativeNutrientClaims("كل حصة توفر حوالي 45 غرامًا من البروتين عالي الجودة.");
+    const protein = claims.find((c) => c.kind === "grams" && /بروتين/.test(c.raw));
+    expect(protein).toBeDefined();
+    expect(protein!.value).toBe(45);
+    // …and it is actually CHECKED: a contradicting value is flagged (45 vs
+    // 27.6 is far outside the ±15%/±2g band; 31 would sit INSIDE it).
+    const bad = checkNarrativeAgainstComputed([protein!], {
+      calories: 413, protein_g: 27.6, carbs_g: 54.6, fat_g: 8.1, fiber_g: 3.3, sat_fat_g: 1.2, sodium_mg: 210,
+    });
+    expect(bad).toHaveLength(1);
+    expect(bad[0].reason).toMatch(/macro claim 45g vs computed 27\.6g/);
+  });
+
+  it("REC-6: a saturated-fat Arabic claim is NOT compared against total fat (المشبعة skip)", () => {
+    // computed: 20g total fat, 4g saturated — the narrative claims only
+    // the SATURATED slice (4g); before the fix this fired a false
+    // violation (4 vs 20 with tol ±3) because «مشبعة» never matched.
+    const computed = {
+      calories: 413, protein_g: 27.6, carbs_g: 54.6, fat_g: 20, fiber_g: 3.3, sat_fat_g: 4, sodium_mg: 210,
+    };
+    const claims1 = extractNarrativeNutrientClaims("تحتوي الحصة على 10 جم دهون مشبعة فقط.");
+    const bad1 = checkNarrativeAgainstComputed(claims1, computed);
+    expect(bad1).toHaveLength(0);
+    // Same for the definite-article + من phrasing «من الدهون المشبعة».
+    const claims2 = extractNarrativeNutrientClaims("لا تتجاوز الحصة 5 غرامات من الدهون المشبعة.");
+    const grams2 = claims2.filter((c) => c.kind === "grams" && /مشبع/.test(c.raw));
+    expect(grams2.length).toBeGreaterThan(0);
+    const bad2 = checkNarrativeAgainstComputed(claims2, computed);
+    expect(bad2).toHaveLength(0);
+  });
+
+  it("REC-6: a TOTAL-fat Arabic claim (no مشبع) is still checked against fat_g", () => {
+    const claims = extractNarrativeNutrientClaims("كل حصة بها 45 جم دهون.");
+    const fat = claims.find((c) => c.kind === "grams" && /دهون/.test(c.raw) && !/مشبع/.test(c.raw));
+    expect(fat).toBeDefined();
+    const bad = checkNarrativeAgainstComputed([fat!], {
+      calories: 413, protein_g: 27.6, carbs_g: 54.6, fat_g: 20, fiber_g: 3.3, sat_fat_g: 4, sodium_mg: 210,
+    });
+    expect(bad).toHaveLength(1); // 45 vs 20 — a REAL violation still fires
+  });
 });

@@ -487,3 +487,146 @@ describe("REGEN-RELIABILITY — the live-measured payload classes pass the real 
     expect(out.item.calories).toBe(190);
   });
 });
+
+/* ── P0 EXECUTION FRAME canaries (audit AI-GENERATION-PIPELINES
+ * 2026-11-15 — NUT-1 / WOR-1 / WOR-2): end-to-end proof that the fields
+ * the prompts demand SURVIVE the whole generation path into the saved
+ * content shape the UI reads, and that critical workout-audit findings
+ * surface as a review flag instead of dying inside content.audit. ── */
+
+describe("NUT-1 — meal_alternatives survive generation into the saved content (audit P0-3)", () => {
+  it("the paid whole-meal alternatives ride gate → normalizer → content", async () => {
+    const per = 660;
+    const plan = {
+      overview: "\u0646\u0637\u0631\u0629 \u0639\u0627\u0645\u0629",
+      meals: [
+        {
+          ...modelMeal("\u0627\u0644\u0641\u0637\u0648\u0631", per),
+          meal_alternatives: [
+            {
+              name: "\u0641\u0637\u0648\u0631 \u0628\u062f\u064a\u0644 \u0628\u0627\u0644\u0628\u064a\u0636",
+              items: [
+                { food: "\u0628\u064a\u0636 \u0645\u0633\u0644\u0648\u0642", amount: "3 \u062d\u0628\u0629", calories: 210, protein_g: 18 },
+                { food: "\u062c\u0628\u0646 \u0642\u0631\u064a\u0634", amount: "100 \u062c\u0645", calories: 98, protein_g: 11 },
+                { food: "\u0639\u0631\u064a\u0633", amount: "\u0631\u063a\u064a\u0641", calories: 150 },
+              ],
+            },
+            {
+              name: "\u0641\u0637\u0648\u0631 \u0628\u062f\u064a\u0644 \u0628\u0627\u0644\u0632\u0628\u0627\u062f\u064a",
+              items: [
+                { food: "\u0632\u0628\u0627\u062f\u064a \u064a\u0648\u0646\u0627\u0646\u064a", amount: "200 \u062c\u0645", calories: 120, protein_g: 20 },
+                { food: "\u0641\u0627\u0643\u0647\u0629", amount: "\u0631\u063a\u064a\u0641", calories: 180 },
+              ],
+            },
+          ],
+        },
+        modelMeal("\u0627\u0644\u063a\u062f\u0627\u0621", per),
+        modelMeal("\u0627\u0644\u0639\u0634\u0627\u0621", per),
+      ],
+    };
+    chainState.responses.push({ text: JSON.stringify(plan), model: "m", provider: "groq" });
+    const res = await generateNutritionPlanAI(ctx);
+    expect(res.source).toBe("groq:m");
+    const content = res.content as {
+      meals: Array<{ meal_alternatives?: Array<{ name: string; items: unknown[]; total_calories: number }> }>;
+    };
+    const alts = content.meals[0].meal_alternatives;
+    expect(alts).toBeDefined();
+    expect(alts!).toHaveLength(2);
+    // totals recomputed from items (210+98+150 = 458 / 120+180 = 300)
+    expect(alts![0].total_calories).toBe(458);
+    expect(alts![1].total_calories).toBe(300);
+    expect(alts![0].items).toHaveLength(3);
+  });
+});
+
+describe("WOR-1 — overview/weekly_volume/progression survive generation (audit P0-4)", () => {
+  it("the plan's brain is saved, not dropped between gate and content", async () => {
+    const plan = {
+      overview: "\u0628\u0631\u0646\u0627\u0645\u062c 4 \u0623\u0633\u0627\u0628\u064a\u0639 \u0644\u0641\u0642\u062f\u0627\u0646 \u0627\u0644\u0648\u0632\u0646",
+      weekly_volume: "18 \u0645\u062c\u0645\u0648\u0639\u0629 \u0623\u0633\u0628\u0648\u0639\u064a\u064b\u0627",
+      progression: "\u0632\u0648\u062f \u0627\u0644\u0623\u0628\u0639\u0627\u0631 2.5 \u0643\u062c\u0645 \u0643\u0644 \u0623\u0633\u0628\u0648\u0639\u064a\u0646",
+      days: [
+        { day: "\u0627\u0644\u0633\u0628\u062a", focus: "\u0635\u062f\u0631", isRest: false, exercises: [
+          { name: "Bench Press", sets: 4, reps: "8-12", rest: "90 \u062b\u0627\u0646\u064a\u0629", notes: "" },
+          { name: "Incline Press", sets: 3, reps: "10", rest: "60 \u062b\u0627\u0646\u064a\u0629", notes: "" },
+          { name: "Cable Fly", sets: 3, reps: "12", rest: "60 \u062b\u0627\u0646\u064a\u0629", notes: "" },
+        ] },
+        { day: "\u0627\u0644\u0623\u062d\u062f", focus: "\u0631\u0627\u062d\u0629", isRest: true, exercises: [] },
+        { day: "\u0627\u0644\u0627\u062b\u0646\u064a\u0646", focus: "\u0638\u0647\u0631", isRest: false, exercises: [
+          { name: "Lat Pulldown", sets: 4, reps: "8-12", rest: "90 \u062b\u0627\u0646\u064a\u0629", notes: "" },
+          { name: "Row", sets: 3, reps: "10", rest: "60 \u062b\u0627\u0646\u064a\u0629", notes: "" },
+          { name: "Face Pull", sets: 3, reps: "15", rest: "45 \u062b\u0627\u0646\u064a\u0629", notes: "" },
+        ] },
+      ],
+    };
+    chainState.responses.push({ text: JSON.stringify(plan), model: "m", provider: "nvidia" });
+    const res = await generateWorkoutPlanAI(ctx);
+    expect(res.source).toBe("nvidia:m");
+    const content = res.content as {
+      overview: string; weekly_volume?: string; progression?: string;
+    };
+    expect(content.overview).toBe("\u0628\u0631\u0646\u0627\u0645\u062c 4 \u0623\u0633\u0627\u0628\u064a\u0639 \u0644\u0641\u0642\u062f\u0627\u0646 \u0627\u0644\u0648\u0632\u0646");
+    expect(content.weekly_volume).toBe("18 \u0645\u062c\u0645\u0648\u0639\u0629 \u0623\u0633\u0628\u0648\u0639\u064a\u064b\u0627");
+    expect(content.progression).toBe("\u0632\u0648\u062f \u0627\u0644\u0623\u0628\u0639\u0627\u0631 2.5 \u0643\u062c\u0645 \u0643\u0644 \u0623\u0633\u0628\u0648\u0639\u064a\u0646");
+  });
+});
+
+describe("WOR-2 — critical workout-audit findings stamp needs_review (audit P0-9)", () => {
+  it("an injury-unsafe pick (knee + squat) surfaces the review flag, not a silent audit row", async () => {
+    const injuredCtx = {
+      ...ctx,
+      fitness: { ...((ctx.fitness ?? {}) as Record<string, unknown>), injuries: "\u0625\u0635\u0627\u0628\u0629 \u0641\u064a \u0627\u0644\u0631\u0643\u0628\u0629" },
+    };
+    const plan = {
+      days: [
+        { day: "\u0627\u0644\u0633\u0628\u062a", focus: "\u0623\u0631\u062c\u0644", isRest: false, exercises: [
+          { name: "Barbell Squat", sets: 4, reps: "8-12", rest: "90 \u062b\u0627\u0646\u064a\u0629", notes: "" },
+          { name: "Leg Press", sets: 3, reps: "10", rest: "60 \u062b\u0627\u0646\u064a\u0629", notes: "" },
+          { name: "Lunge", sets: 3, reps: "12", rest: "60 \u062b\u0627\u0646\u064a\u0629", notes: "" },
+        ] },
+        { day: "\u0627\u0644\u0623\u062d\u062f", focus: "\u0631\u0627\u062d\u0629", isRest: true, exercises: [] },
+        { day: "\u0627\u0644\u0627\u062b\u0646\u064a\u0646", focus: "\u0635\u062f\u0631", isRest: false, exercises: [
+          { name: "Bench Press", sets: 4, reps: "8-12", rest: "90 \u062b\u0627\u0646\u064a\u0629", notes: "" },
+          { name: "Incline Press", sets: 3, reps: "10", rest: "60 \u062b\u0627\u0646\u064a\u0629", notes: "" },
+          { name: "Cable Fly", sets: 3, reps: "12", rest: "60 \u062b\u0627\u0646\u064a\u0629", notes: "" },
+        ] },
+      ],
+    };
+    chainState.responses.push({ text: JSON.stringify(plan), model: "m", provider: "groq" });
+    const res = await generateWorkoutPlanAI(injuredCtx);
+    const content = res.content as {
+      needs_review?: { flags: string[]; note?: string };
+      audit?: { findings: Array<{ code: string; severity: string }> };
+    };
+    // the audit row exists AND the review banner contract is satisfied
+    expect(content.audit?.findings.some((f) => f.code === "injury_unsafe" && f.severity === "critical")).toBe(true);
+    expect(content.needs_review?.flags).toContain("independent_audit_critical_findings");
+    expect(content.needs_review?.flags).toContain("injury_unsafe");
+  });
+
+  it("a CLEAN workout plan ships with NO review flag (no false positives)", async () => {
+    chainState.responses.push({
+      text: JSON.stringify({
+        days: [
+          { day: "\u0627\u0644\u0633\u0628\u062a", focus: "\u0635\u062f\u0631", isRest: false, exercises: [
+            { name: "Bench Press", sets: 4, reps: "8-12", rest: "90 \u062b\u0627\u0646\u064a\u0629", notes: "" },
+            { name: "Incline Press", sets: 3, reps: "10", rest: "60 \u062b\u0627\u0646\u064a\u0629", notes: "" },
+            { name: "Cable Fly", sets: 3, reps: "12", rest: "60 \u062b\u0627\u0646\u064a\u0629", notes: "" },
+          ] },
+          { day: "\u0627\u0644\u0623\u062d\u062f", focus: "\u0631\u0627\u062d\u0629", isRest: true, exercises: [] },
+          { day: "\u0627\u0644\u0627\u062b\u0646\u064a\u0646", focus: "\u0638\u0647\u0631", isRest: false, exercises: [
+            { name: "Lat Pulldown", sets: 4, reps: "8-12", rest: "90 \u062b\u0627\u0646\u064a\u0629", notes: "" },
+            { name: "Row", sets: 3, reps: "10", rest: "60 \u062b\u0627\u0646\u064a\u0629", notes: "" },
+            { name: "Face Pull", sets: 3, reps: "15", rest: "45 \u062b\u0627\u0646\u064a\u0629", notes: "" },
+          ] },
+        ],
+      }),
+      model: "m",
+      provider: "groq",
+    });
+    const res = await generateWorkoutPlanAI(ctx);
+    const content = res.content as { needs_review?: { flags: string[] } };
+    expect(content.needs_review).toBeUndefined();
+  });
+});

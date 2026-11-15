@@ -302,6 +302,132 @@ describe("validateWorkoutPlanAIOutput", () => {
     expect(validateWorkoutPlanAIOutput({ days: [day("أ", 1), day("ب", 2), day("ج", 3)] }).ok).toBe(false);
     expect(validateWorkoutPlanAIOutput({ days: [day("أ", 3), day("ب", 3)] }).ok).toBe(false);
   });
+
+  // WOR-1 (audit AI-GENERATION-PIPELINES 2026-11-15, P0-4): the plan's
+  // "brain" — overview/weekly_volume/progression are prompted for by BOTH
+  // workout prompts, then were dropped by this gate, so every AI workout
+  // plan shipped with an empty overview and no progression. They now ride
+  // the verdict (bounded, coerced, absent-when-empty).
+  it("WOR-1: overview/weekly_volume/progression ride the verdict into normalization", () => {
+    const raw = {
+      overview: "برنامج 4 أسابيع لبناء العضل",
+      weekly_volume: "20 مجموعة أسبوعيًا",
+      progression: "زود الوزن 2.5 كجم أسبوعيًا",
+      days: [day("السبت", 4), day("الأحد", 5), day("الاثنين", 3)],
+    };
+    const v = validateWorkoutPlanAIOutput(raw);
+    expect(v.ok).toBe(true);
+    if (v.ok) {
+      expect(v.value.overview).toBe("برنامج 4 أسابيع لبناء العضل");
+      expect(v.value.weekly_volume).toBe("20 مجموعة أسبوعيًا");
+      expect(v.value.progression).toBe("زود الوزن 2.5 كجم أسبوعيًا");
+    }
+  });
+
+  it("WOR-1: absent narrative fields stay ABSENT (never blank strings), oversized ones are clamped", () => {
+    const v = validateWorkoutPlanAIOutput({ days: [day("أ", 4), day("ب", 4), day("ج", 4)] });
+    expect(v.ok).toBe(true);
+    if (v.ok) {
+      expect(v.value.overview).toBeUndefined();
+      expect(v.value.weekly_volume).toBeUndefined();
+      expect(v.value.progression).toBeUndefined();
+    }
+    const fat = validateWorkoutPlanAIOutput({
+      overview: "x".repeat(5000),
+      days: [day("أ", 4), day("ب", 4), day("ج", 4)],
+    });
+    expect(fat.ok).toBe(true);
+    if (fat.ok) expect(fat.value.overview!.length).toBe(PLAN_AI_SANITY.overviewMax);
+  });
+});
+
+describe("NUT-1 — meal_alternatives ride the full-plan gate (audit P0-3)", () => {
+  const alt = (name: string, cals: number) => ({
+    name,
+    items: [
+      { food: "تونة مسحورة", amount: "150 جم", calories: cals },
+      { food: "سلطة", amount: "طبق", calories: 80 },
+    ],
+  });
+
+  it("valid alternatives pass through with RECOMPUTED totals (the paid feature is alive)", () => {
+    const plan = {
+      meals: [
+        { ...goodMeal("الفطور", 200), meal_alternatives: [alt("بديل الفطور", 300), alt("بديل ثانٍ", 250)] },
+        goodMeal("الغداء", 300),
+        goodMeal("العشاء", 250),
+      ],
+    };
+    const v = validateNutritionPlanAIOutput(plan, 2000);
+    expect(v.ok).toBe(true);
+    if (v.ok) {
+      const alts = v.value.meals[0].meal_alternatives;
+      expect(alts).toBeDefined();
+      expect(alts!).toHaveLength(2);
+      // totals recomputed from items — the model's own numbers never trusted
+      expect(alts![0].total_calories).toBe(300 + 80);
+      expect(alts![1].total_calories).toBe(250 + 80);
+    }
+  });
+
+  it("capped at TWO per meal (owner directive #2) and more than 12 items per alternative are dropped", () => {
+    const fat = { ...alt("بديل منتفخ", 100), items: Array.from({ length: 13 }, () => ({ food: "صنف", amount: "1 جم", calories: 10 })) };
+    const plan = {
+      meals: [
+        { ...goodMeal("الفطور", 200), meal_alternatives: [alt("بديل 1", 300), alt("بديل 2", 250), alt("بديل 3", 260), fat] },
+        goodMeal("الغداء", 300),
+        goodMeal("العشاء", 250),
+      ],
+    };
+    const v = validateNutritionPlanAIOutput(plan, 2000);
+    expect(v.ok).toBe(true);
+    if (v.ok) {
+      const alts = v.value.meals[0].meal_alternatives;
+      expect(alts!).toHaveLength(2); // the third + the malformed one never ship
+      expect(alts!.every((a) => a.items.length <= 12)).toBe(true);
+    }
+  });
+
+  it("a violating alternative (forbidden token) is DROPPED, the plan still passes", () => {
+    // keto-clean primary meals (goodMeal carries rice — keto-forbidden —
+    // so this fixture swaps the starch side for a keto-safe one).
+    const ketoMeal = (name: string, cals: number) => ({
+      name,
+      items: [
+        { food: "صدور دجاج مشوية", amount: "150 جم", calories: cals, protein_g: 45, fat_g: 8 },
+        { food: "بيض مسلق", amount: "حبة", calories: 70, protein_g: 6, fat_g: 5 },
+        { food: "سلطة خضراء", amount: "طبق", calories: 80 },
+      ],
+    });
+    const badAlt = {
+      name: "بديل مخالف",
+      items: [{ food: "أرز أبيض", amount: "200 جم", calories: 260 }],
+    };
+    const goodAlt = {
+      name: "بديل سليم",
+      items: [
+        { food: "تونة مسحورة", amount: "150 جم", calories: 180, protein_g: 40, fat_g: 2 },
+        { food: "سلطة خضراء", amount: "طبق", calories: 80 },
+      ],
+    };
+    const plan = {
+      meals: [
+        { ...ketoMeal("الفطور", 200), meal_alternatives: [goodAlt, badAlt] },
+        ketoMeal("الغداء", 300),
+        ketoMeal("العشاء", 250),
+      ],
+    };
+    // keto constraints: rice is a forbidden token class for a keto plan —
+    // the PRIMARY meals are clean, only the second alternative violates.
+    // meals sum 1200 kcal — a keto-cut target that stays inside ±25%
+    const v = validateNutritionPlanAIOutput(plan, 1400, undefined, { dietType: "keto" });
+    expect(v.ok).toBe(true);
+    if (v.ok) {
+      const alts = v.value.meals[0].meal_alternatives!;
+      expect(alts).toHaveLength(1);
+      expect(alts[0].name).toBe("بديل سليم");
+    }
+  });
 });
 
 /* ── REGEN-RELIABILITY 2026-10-24 (owner order item 2 — the LIVE measured

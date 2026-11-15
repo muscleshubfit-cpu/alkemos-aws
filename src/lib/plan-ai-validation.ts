@@ -46,6 +46,19 @@ export type AIMealLike = {
   items: AIItemLike[];
   total_calories: number;
   total_protein_g?: number;
+  /** NUT-1 (audit AI-GENERATION-PIPELINES 2026-11-15, P0-3): up to TWO
+   *  complete replacement meals per meal (owner directive #2 — the paid
+   *  feature the gate used to strip silently). Validated + normalized by
+   *  the same laws as the primary meal's items. */
+  meal_alternatives?: AIMealAlternativeLike[];
+};
+
+/** NUT-1: one whole-meal alternative — a name, a bounded item list and a
+ *  recomputed total (model totals never trusted, same law as meals). */
+export type AIMealAlternativeLike = {
+  name: string;
+  items: AIItemLike[];
+  total_calories: number;
 };
 
 export type AIWorkoutExerciseLike = {
@@ -137,6 +150,12 @@ export const PLAN_AI_SANITY = {
   foodNameMax: 80,
   amountMax: 80,
   mealNameMax: 60,
+  /** NUT-1: whole-meal alternatives per meal — owner directive #2 caps
+   *  them at exactly two («بالضبط وجبتين بديلتين كاملتين»). */
+  alternativesPerMealMax: 2,
+  /** NUT-1: items inside one whole-meal alternative (mirrors the
+   *  normalizer's per-alternative item slice in plan-generator.ts). */
+  alternativeItemsMax: 12,
   /** Workout day bounds. */
   dayExerciseMin: 3,
   dayExerciseMax: 8,
@@ -144,6 +163,10 @@ export const PLAN_AI_SANITY = {
   dayCountMax: 8,
   setsMin: 1,
   setsMax: 12,
+  /** WOR-1: workout plan narrative-field ceilings (display safety). */
+  overviewMax: 600,
+  weeklyVolumeMax: 200,
+  progressionMax: 400,
 } as const;
 
 /* ─────────────────────────── Coercion helpers ─────────────────────────── */
@@ -804,6 +827,58 @@ export function validateNutritionPlanAIOutput(
     const mealCarbs = ketoMealCarbViolation(name, items, constraints);
     if (mealCarbs) return { ok: false, error: `meal "${name}": ${mealCarbs}` };
     const modelTotalProtein = coerceNumber(meal.total_protein_g ?? meal.total_protein);
+    // NUT-1 (audit AI-GENERATION-PIPELINES 2026-11-15, P0-3): the
+    // whole-meal alternatives ride the gate instead of being stripped —
+    // the prompt demands them (owner directive #2's paid feature), the
+    // normalizer normalizes them, and until now NOTHING arrived because
+    // this gate rebuilt each meal without them. Validation law: every
+    // alternative's items pass the SAME normalizeAIItem + constraint +
+    // keto checks as the primary meal's; a violating alternative is
+    // DROPPED (an honest skip — the violating content never reaches the
+    // member) rather than shipped or allowed to fail the whole plan,
+    // because alternatives are optional enrichment capped at two while
+    // the primary meal remains the gate's product.
+    const rawAlts = Array.isArray(meal.meal_alternatives) ? meal.meal_alternatives : [];
+    const meal_alternatives: AIMealAlternativeLike[] = [];
+    for (const rawAlt of rawAlts.slice(0, PLAN_AI_SANITY.alternativesPerMealMax)) {
+      const alt = (rawAlt && typeof rawAlt === "object" ? rawAlt : {}) as Record<string, unknown>;
+      const altItemsRaw = Array.isArray(alt.items)
+        ? alt.items
+        : Array.isArray(alt.foods)
+          ? alt.foods
+          : [];
+      if (
+        altItemsRaw.length < PLAN_AI_SANITY.itemsPerMealMin ||
+        altItemsRaw.length > PLAN_AI_SANITY.alternativeItemsMax
+      ) {
+        continue; // drop the malformed alternative
+      }
+      const altItems: AIItemLike[] = [];
+      let altViolated = false;
+      for (const rawItem of altItemsRaw) {
+        const v = normalizeAIItem(rawItem, groundItem);
+        if (!v.ok) {
+          altViolated = true;
+          break;
+        }
+        const violation = checkItemConstraints(v.value.food, v.value, constraints);
+        if (violation) {
+          altViolated = true;
+          break;
+        }
+        altItems.push(v.value);
+      }
+      if (altViolated || altItems.length === 0) continue; // dropped, not shipped
+      const altCarbs = ketoMealCarbViolation(name, altItems, constraints);
+      if (altCarbs) continue; // a keto plan's alternative may not spend past the ceiling either
+      meal_alternatives.push(
+        recomputeMealTotals({
+          name: str(alt.name, PLAN_AI_SANITY.mealNameMax) || "بديل",
+          items: altItems,
+          total_calories: 0,
+        }) as AIMealAlternativeLike,
+      );
+    }
     meals.push(
       recomputeMealTotals({
         name,
@@ -814,6 +889,9 @@ export function validateNutritionPlanAIOutput(
         ...(modelTotalProtein !== null && modelTotalProtein > 0
           ? { total_protein_g: modelTotalProtein }
           : {}),
+        // NUT-1: the validated alternatives ride the meal into the
+        // normalizer (absent when the model sent none / all were dropped).
+        ...(meal_alternatives.length > 0 ? { meal_alternatives } : {}),
       }),
     );
   }
@@ -1023,7 +1101,21 @@ export function validateRegeneratedWorkoutDay(
 }
 
 export type WorkoutPlanVerdict =
-  | { ok: true; value: { days: AIWorkoutDayLike[] } }
+  | {
+      ok: true;
+      value: {
+        days: AIWorkoutDayLike[];
+        /** WOR-1 (audit AI-GENERATION-PIPELINES 2026-11-15, P0-4): the
+         *  plan's "brain" — overview / weekly_volume / progression were
+         *  generated and prompted for, then DROPPED here, so every AI
+         *  workout plan shipped with an empty overview and no progression
+         *  (the local fallback looked richer than the paid path). They now
+         *  ride the gate (bounded + coerced) into the normalizer. */
+        overview?: string;
+        weekly_volume?: string;
+        progression?: string;
+      };
+    }
   | { ok: false; error: string };
 
 /**
@@ -1065,5 +1157,19 @@ export function validateWorkoutPlanAIOutput(parsed: unknown): WorkoutPlanVerdict
     }
     days.push({ day: name, focus, isRest: false, exercises });
   }
-  return { ok: true, value: { days } };
+  // WOR-1: the plan-level narrative fields ride the verdict — bounded by
+  // the display-safety ceilings, kept only when non-empty (absent fields
+  // stay absent, never blank strings on the wire).
+  const overview = str(obj.overview, PLAN_AI_SANITY.overviewMax);
+  const weekly_volume = str(obj.weekly_volume, PLAN_AI_SANITY.weeklyVolumeMax);
+  const progression = str(obj.progression, PLAN_AI_SANITY.progressionMax);
+  return {
+    ok: true,
+    value: {
+      days,
+      ...(overview ? { overview } : {}),
+      ...(weekly_volume ? { weekly_volume } : {}),
+      ...(progression ? { progression } : {}),
+    },
+  };
 }

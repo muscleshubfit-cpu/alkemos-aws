@@ -226,6 +226,10 @@ describe("Phase 177 — dead-model purge (14-day live audit, owner order «ال�
     "google/gemma-4-31b-it:free",
     "google/gemma-4-26b-a4b-it:free",
     "nvidia/nemotron-3.5-lightning:free",
+    // INF-5 (audit AI-GENERATION-PIPELINES 2026-11-15, P0-5): the OpenRouter
+    // twin of the 2026-10-21 double-404 — it rode the fast chain and the
+    // grounded default until this purge; the canary keeps it out.
+    "nvidia/nemotron-3-super-120b-a12b:free",
   ];
 
   describe("INTERLEAVED_STRONGEST_CHAIN (now exported for regression guarding)", () => {

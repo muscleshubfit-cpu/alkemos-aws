@@ -73,6 +73,21 @@ jobs:
       # caller-bound (45/60/70s).
       AI_CHAIN_TOTAL_BUDGET_MS: "480000"
 
+      # ── INF-1 (audit AI-GENERATION-PIPELINES 2026-11-15, P0-1): the
+      # provider-exhaustion circuit breaker — SAME 30-minute window the
+      # blog/recipes workers already run (blog-post-ar.yml / blog-post-en.yml
+      # / recipe-post.yml). This worker serves EVERY queued generation
+      # (plan_nutrition/plan_workout/meal_regenerate/exercise_regenerate/
+      # article_tool): without the cooldown, a 429/402/401 provider is
+      # re-walked on every call inside the run (ai-provider.ts:3503-3511),
+      # burning timeouts and pushing jobs to the 3-attempt ceiling — the
+      # in-memory cooldown map works in this single-process worker, it was
+      # simply never enabled. With it ON, an exhausted provider is skipped
+      # instantly for 30 minutes and the next healthy provider takes the
+      # slot. Rollback (zero code): remove this env line, or set
+      # AI_PROVIDER_COOLDOWN=0.
+      AI_PROVIDER_COOLDOWN_MS: "1800000"
+
       # ── Required secrets (preflight fails fast naming missing ones) ──
       NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
       SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}

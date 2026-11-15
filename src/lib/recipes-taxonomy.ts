@@ -83,13 +83,25 @@ export const FLAG_DIET_RULES: readonly FlagDietRule[] = [
   },
   {
     diet: "vegetarian",
-    forbiddenFlags: ["meat", "fish", "shellfish", "animal", "organ"],
+    // REC-1 (audit AI-GENERATION-PIPELINES 2026-11-15, P0-2): `animal` is
+    // REMOVED — the seed (migration 0108) stamps `animal` on EVERY
+    // animal-DERIVED row (dairy/egg/fish carry it alongside their specific
+    // flag), so forbidding it here rejected any dish with eggs/dairy and
+    // hollowed the diet to vegan-only, contradicting its own description
+    // «dairy and eggs allowed». The real bans — meat/fish/shellfish/organ —
+    // are covered by their SPECIFIC flags ({meat,…,animal} on flesh rows).
+    forbiddenFlags: ["meat", "fish", "shellfish", "organ"],
     describeAr: "بلا لحوم أو أسماك (يسمح بالألبان والبيض)",
     describeEn: "No meat or fish (dairy and eggs allowed)",
   },
   {
     diet: "pescatarian",
-    forbiddenFlags: ["meat", "animal", "organ"],
+    // REC-1: same fix — fish rows carry {fish,animal}, so forbidding
+    // `animal` rejected every fish dish and hollowed the diet to
+    // vegetarian-only. Land meat and organs stay banned via their specific
+    // flags; fish/shellfish (allowed by the diet's own rule) ride
+    // {fish,…}/{shellfish,…} which are NOT in this list.
+    forbiddenFlags: ["meat", "organ"],
     describeAr: "بلا لحوم برية (يسمح بالأسماك)",
     describeEn: "No land meat (fish allowed)",
   },

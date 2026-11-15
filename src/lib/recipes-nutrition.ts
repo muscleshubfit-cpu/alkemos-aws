@@ -287,12 +287,29 @@ export type NarrativeNutrientClaim = {
 
 const NUM_RE_SRC = "(\\d+(?:[.,]\\d+)?)";
 
+// REC-6 (audit AI-GENERATION-PIPELINES 2026-11-15, P0-7): the Arabic gram
+// unit family must accept the tanween + alif accusative («غرامًا من
+// البروتين»), the «من» connector and the plural («غرامات») — the previous
+// pattern matched only the bare forms (غرام/جرام/جم), so the most natural
+// Arabic phrasing («31 غرامًا من البروتين») was silently invisible to
+// N-GATE-4. Covers: جم · جرام · غرام · غرامًا · جرامًا · غرامٌ · غرامات ·
+// جرامات · غرامة (any tanween mark U+064B-064D + ة/ا endings).
+const AR_UNIT_SRC = "(?:جم|جرام|غرام)(?:ات)?[\\u064B-\\u064D]?[اة]?";
+// REC-6 (cont.): Arabic macro keywords may carry the definite article
+// («من البروتين») and the fat keyword a trailing saturated adjective
+// («دهون مشبعة» / «الدهون المشبعة») — the adjective rides INSIDE the
+// match so the total-fat guard in checkNarrativeAgainstComputed can see
+// it in `claim.raw` and skip the claim (it is NOT a total-fat number).
+const AR_KEYWORD_SRC = "(?:ال)?(?:بروتين|كارب|كربوهيدرات|دهون|ألياف)";
+const AR_SAT_SUFFIX_SRC = "(?:\\s*(?:ال)?مشبع[ةه]?)?";
+
 const CLAIM_PATTERNS: Array<{ re: RegExp; kind: NarrativeNutrientClaim["kind"] }> = [
   // calories: "250 kcal" / "250 calories" / "250 سعرة" / "٢٥٠ سعرة حرارية"
   { re: new RegExp(`${NUM_RE_SRC}\\s*(?:kcal|kilocalories|calories|سعرة|سعرات|سعره)`, "gi"), kind: "calories" },
   // macro grams: "31 g protein" / "31g of protein" / "31 جم بروتين" / "بروتين 31 جم"
-  { re: new RegExp(`${NUM_RE_SRC}\\s*(?:g|gr|gram|grams|جم|جرام|غرام)\\s*(?:of\\s*)?(?:protein|carbs?|carbohydrates?|fat|fiber|fibre|بروتين|كارب|كربوهيدرات|دهون|ألياف)`, "gi"), kind: "grams" },
-  { re: new RegExp(`(?:protein|carbs?|carbohydrates?|fat|fiber|fibre|بروتين|كارب|كربوهيدرات|دهون|ألياف)\\s*[:\\/]?\\s*${NUM_RE_SRC}\\s*(?:g|gr|gram|grams|جم|جرام|غرام)`, "gi"), kind: "grams" },
+  // / "31 غرامًا من البروتين" (REC-6: tanween unit + من connector + ال)
+  { re: new RegExp(`${NUM_RE_SRC}\\s*(?:g|gr|gram|grams|${AR_UNIT_SRC})\\s*(?:(?:of|من)\\s*)?(?:protein|carbs?|carbohydrates?|fat|fiber|fibre|${AR_KEYWORD_SRC})${AR_SAT_SUFFIX_SRC}`, "gi"), kind: "grams" },
+  { re: new RegExp(`(?:protein|carbs?|carbohydrates?|fat|fiber|fibre|${AR_KEYWORD_SRC})${AR_SAT_SUFFIX_SRC}\\s*[:\\/]?\\s*${NUM_RE_SRC}\\s*(?:g|gr|gram|grams|${AR_UNIT_SRC})`, "gi"), kind: "grams" },
   // percent energy: "30% of calories from protein"
   { re: new RegExp(`${NUM_RE_SRC}\\s*%\\s*(?:of\\s*(?:the\\s*)?calories|from|من\\s*السعرات|من\\s*السعرات الحرارية)`, "gi"), kind: "percent" },
 ];
@@ -349,7 +366,13 @@ export function checkNarrativeAgainstComputed(
       const lowered = claim.raw.toLowerCase();
       const isProtein = /protein|بروتين/.test(lowered);
       const isCarbs = /carb|كارب|كربوهيدرات/.test(lowered);
-      const isFat = /fat|دهون/.test(lowered) && !/sat|مشت?ع/.test(lowered);
+      // REC-6 (audit AI-GENERATION-PIPELINES 2026-11-15, P0-7): the
+      // saturated-fat exclusion regex was a TYPO (`مشت?ع` — matches
+      // nothing useful) for «مشبع», so an Arabic claim like «10 جم دهون
+      // مشبعة» was compared against TOTAL fat and fired false N-GATE-4
+      // violations. `مشبع` now joins the EN `sat` guard: a saturated-fat
+      // claim is NOT a total-fat claim (same honest-skip as English).
+      const isFat = /fat|دهون/.test(lowered) && !/sat|مشبع/.test(lowered);
       const isFiber = /fiber|fibre|ألياف/.test(lowered);
       const truth = isProtein
         ? computed.protein_g

@@ -128,6 +128,56 @@ describe("flag diets — containment over ALL ingredients (optional included)", 
     expect(evaluateDiets({ perServing: per({}), sodiumCoverage: NO_SODIUM, ingredientFlags: withMeat })).not.toContain("pescatarian");
   });
 
+  // REC-1 canaries (audit AI-GENERATION-PIPELINES 2026-11-15, P0-2): the
+  // seed (migration 0108) stamps `animal` on EVERY animal-derived row —
+  // milk-whole → {dairy,animal}, egg-whole → {egg,animal},
+  // salmon-raw → {fish,animal}. The tests above used bare flags and so
+  // never caught the real-world rejection: `animal` in the
+  // vegetarian/pescatarian ban lists rejected every egg/dairy/fish dish.
+  // These canaries pin the SEED-SHAPED flag sets (the ones R2 actually
+  // reads from recipe_ingredients → foods.flags).
+  it("REC-1: an omelet (egg + cheese, seed-shaped flags) IS vegetarian", () => {
+    const omelet = [
+      ["egg", "animal"], // egg-whole (0108:417)
+      ["dairy", "animal"], // feta/cheddar (0108:408/411)
+      ["vegetable"], ["oil"],
+    ] as const;
+    const diets = evaluateDiets({ perServing: per({}), sodiumCoverage: NO_SODIUM, ingredientFlags: omelet });
+    expect(diets).toContain("vegetarian");
+    // …and it is NOT vegan (the `animal`/dairy/egg bans still hold there).
+    expect(diets).not.toContain("vegan");
+  });
+
+  it("REC-1: a salmon dish (seed-shaped {fish,animal}) IS pescatarian and is NOT vegetarian", () => {
+    const salmonDish = [
+      ["fish", "animal"], // salmon-raw (0108:433)
+      ["vegetable"], ["grain"],
+    ] as const;
+    const diets = evaluateDiets({ perServing: per({}), sodiumCoverage: NO_SODIUM, ingredientFlags: salmonDish });
+    expect(diets).toContain("pescatarian");
+    expect(diets).not.toContain("vegetarian");
+    expect(diets).not.toContain("vegan");
+  });
+
+  it("REC-1: meat and organ rows (seed-shaped) still reject BOTH diets — the bans are intact", () => {
+    // chicken-breast-raw → {meat,poultry,animal} (0108:420)
+    const withChicken = [["meat", "poultry", "animal"], ["vegetable"], ["oil"]] as const;
+    const chickenDiets = evaluateDiets({ perServing: per({}), sodiumCoverage: NO_SODIUM, ingredientFlags: withChicken });
+    expect(chickenDiets).not.toContain("vegetarian");
+    expect(chickenDiets).not.toContain("pescatarian");
+    // chicken-liver-raw → {meat,poultry,organ,animal} (0108:425)
+    const withLiver = [["meat", "poultry", "organ", "animal"], ["vegetable"]] as const;
+    const liverDiets = evaluateDiets({ perServing: per({}), sodiumCoverage: NO_SODIUM, ingredientFlags: withLiver });
+    expect(liverDiets).not.toContain("vegetarian");
+    expect(liverDiets).not.toContain("pescatarian");
+    // shrimp-raw → {fish,shellfish,animal} (0108:437) — rejects
+    // vegetarian (fish) but NOT pescatarian (seafood allowed)
+    const withShrimp = [["fish", "shellfish", "animal"], ["vegetable"]] as const;
+    const shrimpDiets = evaluateDiets({ perServing: per({}), sodiumCoverage: NO_SODIUM, ingredientFlags: withShrimp });
+    expect(shrimpDiets).not.toContain("vegetarian");
+    expect(shrimpDiets).toContain("pescatarian");
+  });
+
   it("gluten-free / dairy-free: single-flag rejection", () => {
     const withGluten = [["grain", "gluten"]] as const;
     expect(evaluateDiets({ perServing: per({}), sodiumCoverage: NO_SODIUM, ingredientFlags: withGluten })).not.toContain("gluten-free");

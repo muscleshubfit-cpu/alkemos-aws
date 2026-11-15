@@ -618,10 +618,29 @@ export function PlansView() {
  if (!planContent || !("days" in planContent) || !planContent.days[dayIndex]?.exercises?.[exIndex]) throw new Error("Exercise not found");
  const exercise = planContent.days[dayIndex].exercises[exIndex];
  const focus = planContent.days[dayIndex].focus;
+ // WOR-3 (audit AI-GENERATION-PIPELINES 2026-11-15, P0-8): the member
+ // swap now carries the SAME context the coach path sends and the
+ // full-plan generator already reads (the fitness questionnaire) —
+ // location feeds the equipment whitelist (a home trainee was getting
+ // barbell/cable/machine picks) and experience gates advanced moves for
+ // beginners. Fetched fresh per swap exactly like the generate flow
+ // above reads it; absent questionnaire degrades to the old blind
+ // payload for legacy plans.
+ const fitQ = await getQuestionnaire(profile.id, "fitness").catch(() => null);
+ const fitnessData =
+ fitQ?.data && typeof fitQ.data === "object" && !Array.isArray(fitQ.data) ? fitQ.data : null;
+ const swapLocation =
+ typeof (fitnessData as { location?: unknown } | null)?.location === "string"
+ ? String((fitnessData as { location?: unknown }).location)
+ : "";
  // Library-filtered, injury-safe substitution on GitHub Actions.
  const jobId = await enqueueAiJobClient("exercise_regenerate", {
  exercise: { ...exercise, focus },
- clientContext: { name: profile?.full_name },
+ ...(swapLocation ? { location: swapLocation } : {}),
+ clientContext: {
+ name: profile?.full_name,
+ ...(fitnessData ? { fitness: fitnessData } : {}),
+ },
  // MEMBER-SWAP-DURABILITY 2026-10-26: the exercise swap rides the same
  // plan-target law (sanitizer + ownership gate + runner materialization
  // added in this frame) — previously exercise swaps had NO server-side
@@ -774,6 +793,12 @@ export function PlansView() {
  }
  html += `</table>`;
  if (m.notes) html += `<p style="font-size:12px;color:#666"> ${m.notes}</p>`;
+ // NUT-1: the whole-meal alternatives ride the print export too.
+ if (Array.isArray(m.meal_alternatives) && m.meal_alternatives.length > 0) {
+ html += `<p style="font-size:12px;color:#666">بدائل الوجبة الكاملة: ${m.meal_alternatives
+ .map((a) => `${escapeHtml(a.name || "بديل")}${typeof a.total_calories === "number" && a.total_calories > 0 ? ` (~${a.total_calories} سعرة)` : ""}`)
+ .join(" • ")}</p>`;
+ }
  }
  }
  } else if (isWorkout && content && "days" in content) {
@@ -1343,6 +1368,25 @@ function MealContent({ content, onSwap, swapLoading, planId, isSwapPending }: { 
  </table>
  </div>
  {m.notes && <p className="mt-1 text-xs text-muted-foreground"> {m.notes}</p>}
+ {/* NUT-1 (audit AI-GENERATION-PIPELINES 2026-11-15, P0-3): the paid
+     whole-meal alternatives finally SURFACE — the gate used to strip
+     them silently, so this block never had anything to render. */}
+ {m.meal_alternatives && m.meal_alternatives.length > 0 && (
+ <div className="mt-2 rounded-lg border border-dashed border-border bg-muted/30 p-2">
+ <p className="mb-1 text-xs font-semibold text-muted-foreground">
+ {isAr ? "بدائل الوجبة الكاملة (تقديمًا متكافئًا):" : "Full-meal alternatives:"}
+ </p>
+ <ul className="space-y-0.5">
+ {m.meal_alternatives.map((alt: { name?: string; total_calories?: number; items?: Array<{ food?: string }> }, k: number) => (
+ <li key={k} className="text-xs text-muted-foreground">
+ • {alt.name || (isAr ? "بديل" : "Alternative")}
+ {typeof alt.total_calories === "number" && alt.total_calories > 0 ? ` (~${alt.total_calories} ${isAr ? "سعرة" : "kcal"})` : ""}
+ {alt.items && alt.items.length > 0 ? ` — ${alt.items.map((it) => it.food).filter(Boolean).join(isAr ? "، " : ", ")}` : ""}
+ </li>
+ ))}
+ </ul>
+ </div>
+ )}
  </div>
  ))}
  </div>

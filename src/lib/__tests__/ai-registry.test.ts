@@ -459,6 +459,24 @@ describe("registerFunction — the one-step future path (§6-ج)", () => {
       registerFunction({ ...validSpec, id: "test:x", family: "nope" as never }),
     ).toThrow(/unknown family/);
   });
+
+  // INF-8 (audit AI-GENERATION-PIPELINES 2026-11-15, P0-6): "recipes" is a
+  // FIRST-CLASS family — the seven static recipe:* specs carry it, but the
+  // hand-maintained KNOWN_FAMILIES whitelist omitted it, so the
+  // registerFunction() path (the one-step future path §6-ج) threw
+  // "unknown family" for any recipes spec. The whitelist is now derived
+  // from the AIFunctionFamily union; this canary pins the fix.
+  it("INF-8: a recipes-family spec registers through registerFunction (no unknown-family throw)", () => {
+    expect(() =>
+      registerFunction({
+        ...validSpec,
+        id: "test:recipes-family-registration",
+        family: "recipes",
+      }),
+    ).not.toThrow();
+    const resolved = resolveFunction("test:recipes-family-registration");
+    expect(resolved.options.tag).toBe("test:recipes-family-registration");
+  });
 });
 
 /* ── helpers ── */

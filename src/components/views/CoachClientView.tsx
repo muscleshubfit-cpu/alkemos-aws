@@ -125,6 +125,13 @@ const REVIEW_FLAG_LABELS_AR: Record<string, string> = {
  calorie_floor_applied: "السعرات الناتجة تحت الحد الأدنى (1200) — تم تقييدها",
  deficit_beyond_25pct: "عجز حراري أعمق من 25% من TDEE — قيمة متطرفة",
  surplus_beyond_15pct: "فائض حراري يتجاوز 15% من TDEE — قيمة متطرفة",
+ // WOR-2 (audit AI-GENERATION-PIPELINES 2026-11-15, P0-9): the workout
+ // audit's critical codes + the shared umbrella flag now reach this list.
+ independent_audit_critical_findings: "التدقيق المستقل وجد ملاحظات حرجة",
+ injury_unsafe: "تمرين غير آمن لإصابة مسجلة للعميل",
+ home_equipment_mismatch: "التمرين يحتاج تجهيزات غير متوفرة في مكان تدريب العميل",
+ advanced_for_beginner: "تمرين متقدم لعميل مبتدئ",
+ no_training_days: "البرنامج كله أيام راحة — لا أيام تدريبية",
 };
 
 /** Narrow questionnaire `data: Json` into a plain editable record. */
@@ -2165,6 +2172,12 @@ function PlanViewerModal({
  }
  html += `</table>`;
  if (m.notes) html += `<p style="font-size:12px;color:#666"> ${m.notes}</p>`;
+ // NUT-1: the whole-meal alternatives ride the coach print export too.
+ if (Array.isArray(m.meal_alternatives) && m.meal_alternatives.length > 0) {
+ html += `<p style="font-size:12px;color:#666">بدائل الوجبة الكاملة: ${m.meal_alternatives
+ .map((a) => `${a.name || "بديل"}${typeof a.total_calories === "number" && a.total_calories > 0 ? ` (~${a.total_calories} سعرة)` : ""}`)
+ .join(" • ")}</p>`;
+ }
  }
  }
  } else if (isWorkout && c && "days" in c) {
@@ -2687,7 +2700,12 @@ function PlanViewerModal({
  {/* NOTIF→PLAN 2026-10-24 (owner order items 5+7): the review banner —
      missing basic data / extreme values must STOP silent approval; the
      coach sees exactly WHY the plan needs his eyes before اعتماد. */}
- {!isWorkout && content && "meals" in content && content.needs_review && (
+ {/* WOR-2 (audit AI-GENERATION-PIPELINES 2026-11-15, P0-9): the banner
+     now covers WORKOUT plans too — critical injury/equipment audit
+     findings used to be saved with the plan yet never surfaced anywhere
+     (the !isWorkout guard hid them). Both content types carry
+     needs_review; the "meals" membership check is gone with it. */}
+ {content && content.needs_review && (
  <div className="rounded-xl border border-amber-500/40 bg-amber-500/10 p-3 text-xs text-amber-700 dark:text-amber-400">
  <div className="flex items-center gap-1.5 font-bold">
  <AlertTriangle className="h-4 w-4" />
@@ -3261,6 +3279,23 @@ function PlanViewerModal({
  placeholder="ملاحظات الوجبة..."
  className="mt-2 h-8 text-xs"
  />
+ )}
+ {/* NUT-1 (audit AI-GENERATION-PIPELINES-2026-11-15, P0-3): the paid
+     whole-meal alternatives surface in the coach editor too (read-only
+     display — regenerating the meal refreshes them server-side). */}
+ {!editMode && Array.isArray(m.meal_alternatives) && m.meal_alternatives.length > 0 && (
+  <div className="mt-2 rounded-lg border border-dashed border-border bg-muted/30 p-2">
+   <p className="mb-1 text-xs font-semibold text-muted-foreground">بدائل الوجبة الكاملة (تقديمًا متكافئًا):</p>
+   <ul className="space-y-0.5">
+    {m.meal_alternatives.map((alt: { name?: string; total_calories?: number; items?: Array<{ food?: string }> }, k: number) => (
+     <li key={k} className="text-xs text-muted-foreground">
+      • {alt.name || "بديل"}
+      {typeof alt.total_calories === "number" && alt.total_calories > 0 ? ` (~${alt.total_calories} سعرة)` : ""}
+      {alt.items && alt.items.length > 0 ? ` — ${alt.items.map((it) => it.food).filter(Boolean).join("، ")}` : ""}
+     </li>
+    ))}
+   </ul>
+  </div>
  )}
  </div>
  ))}

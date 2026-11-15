@@ -1300,9 +1300,14 @@ const OPENROUTER_WEB_PLUGIN = { id: "web", max_results: 5 } as const;
 
 /** Default model for the OpenRouter grounded arm (an existing live-verified
  *  free-chain id — balanced quality/latency for search-grounded JSON).
- *  Ops knob: OPENROUTER_GROUNDED_MODEL swaps it without a deploy. */
+ *  Ops knob: OPENROUTER_GROUNDED_MODEL swaps it without a deploy.
+ *  INF-5 (audit AI-GENERATION-PIPELINES 2026-11-15, P0-5): the previous
+ *  pinned default `nvidia/nemotron-3-super-120b-a12b:free` is PURGED — the
+ *  id is ABSENT from the live catalog (404 before the credit point,
+ *  measured twice 2026-10-21 — see the REMOVED-FROM-LADDER note above) —
+ *  and replaced with the strongest chain's live lead. */
 export const OPENROUTER_GROUNDED_DEFAULT_MODEL =
-  "nvidia/nemotron-3-super-120b-a12b:free";
+  "nvidia/nemotron-3-ultra-550b-a55b:free";
 
 export function getOpenRouterGroundedModel(): string {
   return (
@@ -3287,7 +3292,13 @@ export const INTERLEAVED_FAST_CHAIN: Array<{ provider: AIProvider; model: string
   { provider: "groq", model: "openai/gpt-oss-20b" }, // smallest — usually <1s TTFT (82.6% live)
   { provider: "groq", model: "openai/gpt-oss-120b" }, // quality slot, still LPU-fast (85.3% live)
   { provider: "nvidia", model: "nvidia/nemotron-3.5-lightning-30b-a3b" }, // NIM fast (3B active — 33.3% live)
-  { provider: "openrouter", model: "nvidia/nemotron-3-super-120b-a12b:free" }, // provider diversity tail (47.9% live)
+  // INF-5 (audit AI-GENERATION-PIPELINES 2026-11-15, P0-5): the OpenRouter
+  // `nvidia/nemotron-3-super-120b-a12b:free` tail entry is PURGED — the id
+  // answered 404 «Not found for account» measured twice 2026-10-21 (16:28 +
+  // 16:32 UTC, run 39632881785 — the same evidence that removed it from the
+  // strongest chain at BLOG-RECOVERY-3 round-3). A dead slot here burned a
+  // timeout on every fast-chain walk before the gemini tail. The id stays
+  // out until a live probe measures it answering again (the 161.2 law).
   // The gemini tail (post-5-A position — SSE streaming-capable last resort).
   { provider: "gemini", model: "gemini-3.5-flash" },
 ];

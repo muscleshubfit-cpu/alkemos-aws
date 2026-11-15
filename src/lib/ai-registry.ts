@@ -245,14 +245,11 @@ const FAST_CHAIN_LADDER: AILadderEntry[] = [
       status: "measured",
     },
   },
-  {
-    provider: "openrouter",
-    model: "nvidia/nemotron-3-super-120b-a12b:free",
-    evidence: {
-      source: "Provider-diversity tail — 47.9% live",
-      status: "measured",
-    },
-  },
+  // INF-5 (audit AI-GENERATION-PIPELINES 2026-11-15, P0-5): the OpenRouter
+  // `nvidia/nemotron-3-super-120b-a12b:free` mirror entry is PURGED with the
+  // engine's INTERLEAVED_FAST_CHAIN entry it mirrors — the id 404'd twice
+  // 2026-10-21 (run 39632881785); this ladder must stay byte-identical to
+  // the engine chain (the T3 canary pins the parity).
   GEMINI_TAIL,
 ];
 
@@ -1470,7 +1467,24 @@ export function assertValidRegistration(spec: AIFunctionSpec): void {
   if (spec.id !== spec.id.trim() || /\s/.test(spec.id)) {
     throw new Error(`[ai-registry] registerFunction: id must be trimmed and whitespace-free ("${spec.id}")`);
   }
-  const KNOWN_FAMILIES: AIFunctionFamily[] = ["plans", "blog", "evo", "social", "demo", "tools"];
+  // INF-8 (audit AI-GENERATION-PIPELINES 2026-11-15, P0-6): the family
+  // whitelist is now DERIVED from the AIFunctionFamily union — a
+  // Record<AIFunctionFamily, true> makes adding a family to the type
+  // without whitelisting it a COMPILE error. The hand-maintained array
+  // had drifted: "recipes" existed in the type (HEALTHY-RECIPES-PLATFORM
+  // 2026-11-10) but not here, so registerFunction() on any recipe:*
+  // spec threw "unknown family" — undetected because the static specs
+  // bypass this checker and no test registered a recipes spec.
+  const KNOWN_FAMILY_FLAGS: Record<AIFunctionFamily, true> = {
+    plans: true,
+    blog: true,
+    evo: true,
+    social: true,
+    recipes: true,
+    demo: true,
+    tools: true,
+  };
+  const KNOWN_FAMILIES = Object.keys(KNOWN_FAMILY_FLAGS) as AIFunctionFamily[];
   if (!KNOWN_FAMILIES.includes(spec.family)) {
     throw new Error(`[ai-registry] registerFunction: unknown family "${String(spec.family)}"`);
   }

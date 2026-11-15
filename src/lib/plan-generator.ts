@@ -218,6 +218,11 @@ export type WorkoutPlanContent = {
   // New optional fields for the richer format
   weekly_volume?: string; // e.g. "20 مجموعة أسبوعيًا، 8 تمارين رئيسية"
   progression?: string; // how to progress week-over-week
+  /** WOR-2 (audit AI-GENERATION-PIPELINES 2026-11-15, P0-9): critical
+   *  independent-audit findings (injury_unsafe, home_equipment_mismatch…)
+   *  now stamp the review flag on workout plans too — same contract as
+   *  the nutrition content's field. */
+  needs_review?: { flags: string[]; note?: string };
 };
 
 export type GeneratePlanResult = {
@@ -716,7 +721,17 @@ export async function generateWorkoutPlanAI(
       (parsed) => validateWorkoutPlanAIOutput(parsed),
     );
     if (value.days.length > 0) {
-      const content = normalizeWorkoutPlan({ days: value.days } as unknown as Record<string, unknown>);
+      // WOR-1 (audit AI-GENERATION-PIPELINES 2026-11-15, P0-4): the
+      // validated overview/weekly_volume/progression ride into the
+      // normalizer — previously the gate returned days ONLY, so the
+      // plan's "brain" (asked for by both prompts) was dropped between
+      // generation and save and every AI workout plan shipped hollow.
+      const content = normalizeWorkoutPlan({
+        days: value.days,
+        ...(value.overview ? { overview: value.overview } : {}),
+        ...(value.weekly_volume ? { weekly_volume: value.weekly_volume } : {}),
+        ...(value.progression ? { progression: value.progression } : {}),
+      } as unknown as Record<string, unknown>);
       // PLAN-REGEN-CONSTRAINTS: the independent workout audit — suitability
       // axes (home equipment, beginner level, recorded injuries) recomputed
       // from the final saved shape against the exercise library.
@@ -730,6 +745,27 @@ export async function generateWorkoutPlanAI(
           return hit ? { equipment: hit.equipment, level: hit.level, slug: hit.slug } : null;
         },
       });
+      // WOR-2 (audit AI-GENERATION-PIPELINES 2026-11-15, P0-9): the
+      // nutrition law now applies to workout plans too — a CRITICAL
+      // audit finding (injury_unsafe / home_equipment_mismatch /
+      // no_training_days…) stamps needs_review instead of being saved
+      // silently. The specific finding codes ride the flags so the
+      // review banner lists exactly WHAT to look at.
+      if (content.audit.findings.some((f) => f.severity === "critical")) {
+        const criticalCodes = Array.from(
+          new Set(content.audit.findings.filter((f) => f.severity === "critical").map((f) => f.code)),
+        );
+        content.needs_review = {
+          flags: [
+            ...(content.needs_review?.flags ?? []),
+            "independent_audit_critical_findings",
+            ...criticalCodes,
+          ],
+          note:
+            content.needs_review?.note ??
+            "تدقيق التمارين المستقل وجد ملاحظات جوهرية (إصابات / تجهيزات) — راجع الخطة قبل الاعتماد.",
+        };
+      }
       return {
         title: `برنامج تمارين - ${name}`,
         content,
