@@ -320,6 +320,9 @@ describe("PHASE 5-E — runResumePairingSelection (the constrained resume pair)"
       text: answer,
       model: "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
       provider: "cloudflare",
+      // INF-4 / P2-2: the chain result carries qualityTier — the measured
+      // CF role lead serves tier "strong" (untagged engine default).
+      qualityTier: "strong",
     });
     try {
       return await fn();

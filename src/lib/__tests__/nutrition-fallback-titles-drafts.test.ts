@@ -40,7 +40,10 @@ vi.mock("@/lib/ai-provider", async (importOriginal) => {
       const next = chainState.responses.shift();
       if (!next) throw new Error("no scripted response");
       if (next instanceof Error) throw next;
-      return next;
+      // INF-4 / P2-2: the engine's result carries qualityTier (untagged
+      // entries default "strong") — the mock mirrors the engine default so
+      // the plan generators' generation stamp stays well-formed.
+      return { qualityTier: "strong" as const, ...next };
     }),
   };
 });

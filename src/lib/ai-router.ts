@@ -45,6 +45,7 @@ import {
   INTERLEAVED_FAST_CHAIN,
   INTERLEAVED_STRONGEST_CHAIN,
   type AIProvider,
+  type AIQualityTier,
   type FallbackChainOptions,
   type GroundedSearchOptions,
   type GroundedSearchResult,
@@ -67,6 +68,14 @@ export function aiRouterMode(): AIRouterMode {
  * pin registry≡legacy per function; this map is what AI_ROUTER_MODE=legacy
  * serves, so a future registry change can never silently alter the
  * pre-migration measured behavior.
+ *
+ * INF-9 / P2-2 (audit AI-GENERATION-PIPELINES 2026-11-15 — the FIRST
+ * designed use of that path): the plans family's temperatures were aligned
+ * in the REGISTRY (0.7/0.8 → 0.5/0.6 — structured-task band) while this
+ * snapshot stays FROZEN at the pre-alignment values on purpose:
+ * AI_ROUTER_MODE=legacy is the one-env-var rollback to the old sampling
+ * behavior. The registry canaries pin the divergence EXACTLY (temperature
+ * field only — everything else must stay byte-identical).
  *
  * FRAME 443: the grounded SEARCH ladder joins the rollback snapshot — the
  * frozen pre-unification §6-أ walk (the engine's former hardcoded split,
@@ -235,12 +244,14 @@ function legacyPolicyFor(effectiveId: string, spec: AIFunctionSpec): LegacyPolic
 /* ─────────────────────── dispatch (thin pass-through) ─────────────────────── */
 
 /** Dispatch a generation call through the central router — a literal
- *  pass-through to the engine with the resolved options. */
+ *  pass-through to the engine with the resolved options. INF-4 (P2-2):
+ *  the engine's qualityTier ("strong" | "tail") rides the result so
+ *  callers can persist/surface observable degradation. */
 export async function dispatchAI(
   id: string,
   prompt: string,
   overrides?: AICallOverrides,
-): Promise<{ text: string; model: string; provider: string }> {
+): Promise<{ text: string; model: string; provider: string; qualityTier: AIQualityTier }> {
   const { options } = resolveFunction(id, overrides);
   return callFreeAIFallbackChain(prompt, options);
 }
@@ -311,7 +322,7 @@ export interface EffectiveChainContext {
 
 export interface EffectiveChainResult {
   /** The ordered entries the engine will walk (post rotation/clamp/CF). */
-  entries: Array<{ provider: AIProvider; model: string; maxTokens?: number }>;
+  entries: Array<{ provider: AIProvider; model: string; maxTokens?: number; tier?: AIQualityTier }>;
   /** maxModels after engine clamping (≥1, ≤ entries). */
   maxModels: number;
   /** Per-model effective timeout (caller timeout ∧ budget/maxModels). */
@@ -342,7 +353,7 @@ export function resolveEffectiveChain(
   const chain: "strongest" | "fast" = spec.policy.chain ?? "strongest";
   const configured = new Set(ctx.configuredProviders);
 
-  type ChainEntry = { provider: AIProvider; model: string; maxTokens?: number };
+  type ChainEntry = { provider: AIProvider; model: string; maxTokens?: number; tier?: AIQualityTier };
   let active: ChainEntry[] = chain === "fast" ? [...INTERLEAVED_FAST_CHAIN] : [...INTERLEAVED_STRONGEST_CHAIN];
 
   // R3 payload estimate + per-entry clamp decision (engine law).

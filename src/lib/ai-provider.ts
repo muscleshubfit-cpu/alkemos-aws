@@ -3218,7 +3218,23 @@ const GROQ_CLAMP_FLOOR = 3_800; // min output room a clamped groq entry must kee
  * meta/llama-3.1-8b-instruct) went END-OF-LIFE 2026-08-26 (HTTP 410 Gone) —
  * catalog ids can retire at any time; verify by LIVE CALL, never by name.
  */
-export const INTERLEAVED_STRONGEST_CHAIN: Array<{ provider: AIProvider; model: string }> = [
+/** INF-4 (audit AI-GENERATION-PIPELINES 2026-11-15, P2-2 — observable
+ *  quality tier): every chain entry declares the QUALITY CLASS of the
+ *  answers it can serve. "strong" = the measured big/verified performers
+ *  (550B nemotron twins, gpt-oss 120B/20B — live-measured survivors).
+ *  "tail" = the degradation tail the audit named (qwen-3.8-27b at 27B and
+ *  gemini-3.5-flash at 24.4% weekly availability): after the strong head
+ *  is exhausted, a 7,000-token Arabic JSON plan may be answered by one of
+ *  these — a "correctly-shaped but thin" plan that passed every gate.
+ *  The tier rides the chain RESULT (qualityTier) so callers can persist
+ *  and surface it; it NEVER blocks the walk (tagging, not restriction —
+ *  the P2-2 chosen remedy). Default for untagged entries (the CF agile
+ *  role leads — measured-stable for their roles) is "strong". */
+export type AIQualityTier = "strong" | "tail";
+
+export type AIChainEntry = { provider: AIProvider; model: string; tier?: AIQualityTier };
+
+export const INTERLEAVED_STRONGEST_CHAIN: AIChainEntry[] = [
   // GEMINI-FIRST LAW (343) — CANCELLED (owner order 2026-10-31, Phase 5-A
   // «إلغاء قانون Gemini-First نهائيًا، بما يشمل السلاسل الثقيلة»): the
   // gemini entry no longer leads — the pre-343 ladder below is restored as
@@ -3244,9 +3260,11 @@ export const INTERLEAVED_STRONGEST_CHAIN: Array<{ provider: AIProvider; model: s
   // it answering again.
   { provider: "groq", model: "openai/gpt-oss-20b" },
   { provider: "nvidia", model: "nvidia/nemotron-3-ultra-550b-a55b" },
-  { provider: "groq", model: "qwen/qwen3.8-27b" },
+  // INF-4 tail entry #1 (27B — small-model degradation slot).
+  { provider: "groq", model: "qwen/qwen3.8-27b", tier: "tail" },
   // The gemini tail (post-5-A position — see the law note above).
-  { provider: "gemini", model: "gemini-3.5-flash" },
+  // INF-4 tail entry #2 (24.4% weekly availability — last-resort lottery).
+  { provider: "gemini", model: "gemini-3.5-flash", tier: "tail" },
 ];
 
 /** Alternating-lead rotation counter (see callFreeAIFallbackChain below). */
@@ -3282,7 +3300,7 @@ export function __resetChainRotationForTests(): void {
  * relief valve. Small chat payloads fit Groq's 8k TPM easily, so two
  * consecutive Groq entries up front are safe (a 429 falls through fast).
  */
-export const INTERLEAVED_FAST_CHAIN: Array<{ provider: AIProvider; model: string }> = [
+export const INTERLEAVED_FAST_CHAIN: AIChainEntry[] = [
   // GEMINI-FIRST LAW (343) — CANCELLED (owner order 2026-10-31, Phase 5-A):
   // the pre-343 speed ladder is restored as the head (groq-first speed
   // law intact — gpt-oss-20b leads) and gemini rides as the ordinary TAIL
@@ -3291,7 +3309,9 @@ export const INTERLEAVED_FAST_CHAIN: Array<{ provider: AIProvider; model: string
   // PHASE 344's model choice (3.5-flash) and the GEMINI_MODEL knob stay.
   { provider: "groq", model: "openai/gpt-oss-20b" }, // smallest — usually <1s TTFT (82.6% live)
   { provider: "groq", model: "openai/gpt-oss-120b" }, // quality slot, still LPU-fast (85.3% live)
-  { provider: "nvidia", model: "nvidia/nemotron-3.5-lightning-30b-a3b" }, // NIM fast (3B active — 33.3% live)
+  // INF-4 tail entry (3B active params — the small-model degradation slot
+  // of the speed ladder; fine for chat, thin for structured depth).
+  { provider: "nvidia", model: "nvidia/nemotron-3.5-lightning-30b-a3b", tier: "tail" }, // NIM fast (3B active — 33.3% live)
   // INF-5 (audit AI-GENERATION-PIPELINES 2026-11-15, P0-5): the OpenRouter
   // `nvidia/nemotron-3-super-120b-a12b:free` tail entry is PURGED — the id
   // answered 404 «Not found for account» measured twice 2026-10-21 (16:28 +
@@ -3300,14 +3320,15 @@ export const INTERLEAVED_FAST_CHAIN: Array<{ provider: AIProvider; model: string
   // timeout on every fast-chain walk before the gemini tail. The id stays
   // out until a live probe measures it answering again (the 161.2 law).
   // The gemini tail (post-5-A position — SSE streaming-capable last resort).
-  { provider: "gemini", model: "gemini-3.5-flash" },
+  // INF-4 tail entry (last-resort lottery — same class as the strong chain's).
+  { provider: "gemini", model: "gemini-3.5-flash", tier: "tail" },
 ];
 
 export async function callFreeAIFallbackChain(
   prompt: string,
   options: FallbackChainOptions = {},
   _maxOpenRouterModels?: number, // DEPRECATED third arg — superseded by options.maxModels; still honored if provided for backward compat
-): Promise<{ text: string; model: string; provider: string }> {
+): Promise<{ text: string; model: string; provider: string; qualityTier: AIQualityTier }> {
   const errors: string[] = [];
 
   // Log prefix carrying the calling subsystem's tag (universal coverage).
@@ -3367,7 +3388,10 @@ export async function callFreeAIFallbackChain(
     );
   }
 
-  type ChainEntry = { provider: AIProvider; model: string; maxTokens?: number };
+  // INF-4: the local walk entry carries the chain entry's quality tier so
+  // the winning attempt can tag the result (untagged → "strong" — the CF
+  // agile-role leads' measured default).
+  type ChainEntry = { provider: AIProvider; model: string; maxTokens?: number; tier?: AIQualityTier };
   let activeChain0: ChainEntry[] =
     options.chain === "fast" ? INTERLEAVED_FAST_CHAIN : INTERLEAVED_STRONGEST_CHAIN;
   // Unconditional (pre-343 verbatim): the counter advances on EVERY chain
@@ -3510,7 +3534,7 @@ export async function callFreeAIFallbackChain(
   const looksLikeQuota = (m: string) => /\b(401|402|429|403)\b|quota|rate.?limit|credit|insufficient/i.test(m);
 
   let attempted = 0;
-  chain_walk: for (const { provider, model, maxTokens: entryMaxTokens } of activeChain0) {
+  chain_walk: for (const { provider, model, maxTokens: entryMaxTokens, tier } of activeChain0) {
     if (attempted >= maxModels) break;
 
     // BLOG-PROVIDER-FAILOVER (owner order 2026-10-16 «بحيث تنتقل للمزوّد
@@ -3634,8 +3658,13 @@ export async function callFreeAIFallbackChain(
                 },
               );
           if (text && text.trim().length > 0) {
+            // INF-4: the observable quality tier of the WINNING entry rides
+            // the result (untagged entries — the measured CF agile-role
+            // leads — default "strong"). The log line carries it too so the
+            // degradation is visible in run logs without any caller change.
+            const qualityTier: AIQualityTier = tier ?? "strong";
             console.log(
-              `${LP} ${provider}/${model} succeeded${attemptNo ? " (after empty-retry)" : ""}${streamTap ? " (streamed)" : ""}`,
+              `${LP} ${provider}/${model} succeeded (tier=${qualityTier})${attemptNo ? " after empty-retry" : ""}${streamTap ? " (streamed)" : ""}`,
             );
             meterTap(
               options.tag,
@@ -3645,7 +3674,7 @@ export async function callFreeAIFallbackChain(
               Date.now() - attemptT0,
               Math.ceil(prompt.length / 4) + Math.ceil(text.length / 4),
             );
-            return { text: text.trim(), model, provider };
+            return { text: text.trim(), model, provider, qualityTier };
           }
           meterTap(options.tag, provider, model, "empty", Date.now() - attemptT0);
           throw new Error(`${model}: empty response`);

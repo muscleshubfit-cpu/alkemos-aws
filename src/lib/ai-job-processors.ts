@@ -966,6 +966,10 @@ async function runPlanNutrition(payload: Record<string, unknown>, jobCtx?: Proce
     plan_type: "nutrition",
     content: res.content, // includes meals[].meal_alternatives (≤2 per meal)
     source: res.source,
+    // INF-4 / P2-2: the chain tier that served the plan — mirrors the
+    // persisted content.generation.qualityTier (queue-side observability;
+    // the coach-side badge reads the plan content).
+    quality_tier: (res.content.generation?.qualityTier ?? "local") as string,
     // Phase 79: the draft row already exists on the server — the browser
     // watcher/recovery card must NOT insert it again.
     materialized: Boolean(plan_id),
@@ -999,6 +1003,9 @@ async function runPlanWorkout(payload: Record<string, unknown>, jobCtx?: Process
     plan_type: "workout",
     content: res.content,
     source: res.source,
+    // INF-4 / P2-2: the chain tier that served the plan (queue-side
+    // observability — same mirror as the nutrition processor).
+    quality_tier: (res.content.generation?.qualityTier ?? "local") as string,
     materialized: Boolean(plan_id),
     ...(plan_id ? { plan_id } : {}),
     ...(plan_id && payload?.selfService === true && selfServicePlanNeedsReviewHold(res.content)

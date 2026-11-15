@@ -290,7 +290,13 @@ export const AI_FUNCTION_REGISTRY: Record<string, AIFunctionSpec> = {
     role: { json: true, streaming: false, language: "both", payloadClass: "heavy" },
     ladder: [...ROTATED_LEADS, GEMINI_TAIL],
     policy: {
-      temperature: 0.7,
+      // INF-9 / P2-2 (audit AI-GENERATION-PIPELINES 2026-11-15): 0.7 → 0.5
+      // — structured JSON tasks ran at creative temperatures (malformed/
+      // truncated output risk, amplified by the INF-4 tail). 0.5 = the top
+      // of the audit's 0.4-0.5 alignment band: intra-plan variety across
+      // meals survives (the variety block + randomization seed carry it),
+      // structure comes first. AI_ROUTER_MODE=legacy restores 0.7 (rollback).
+      temperature: 0.5,
       maxTokens: 7000,
       jsonMode: true,
       timeoutMs: 70_000,
@@ -307,10 +313,10 @@ export const AI_FUNCTION_REGISTRY: Record<string, AIFunctionSpec> = {
     },
     knobs: ["AI_CHAIN_TOTAL_BUDGET_MS"],
     doc: {
-      since: "2026-08-28 (quality-first ladder) · 2026-08-28i (5 buckets)",
+      since: "2026-08-28 (quality-first ladder) · 2026-08-28i (5 buckets) · INF-9/P2-2 2026-11-15 (temperature 0.7→0.5 — structured-task alignment)",
       rationale:
-        "Heaviest Arabic JSON ask on the platform (7000 tokens — full plans with 2 structured alternatives per meal; GHA-native budget workflow sets AI_CHAIN_TOTAL_BUDGET_MS=180000).",
-      evidence: "plan-generator.ts:553 option block (audit §3-ب row 22)",
+        "Heaviest Arabic JSON ask on the platform (7000 tokens — full plans with 2 structured alternatives per meal; GHA-native budget workflow sets AI_CHAIN_TOTAL_BUDGET_MS=180000). Temperature aligned to the structured band (INF-9): deterministic variety comes from the seed + avoid-lists, not from sampling heat.",
+      evidence: "plan-generator.ts:553 option block (audit §3-ب row 22) · INF-9 row (audit §3)",
     },
   },
 
@@ -320,7 +326,9 @@ export const AI_FUNCTION_REGISTRY: Record<string, AIFunctionSpec> = {
     role: { json: true, streaming: false, language: "both", payloadClass: "heavy" },
     ladder: [...ROTATED_LEADS, GEMINI_TAIL],
     policy: {
-      temperature: 0.7,
+      // INF-9 / P2-2: 0.7 → 0.5 — same structured-task alignment as
+      // plan:nutrition (see that row). AI_ROUTER_MODE=legacy restores 0.7.
+      temperature: 0.5,
       maxTokens: 4000,
       jsonMode: true,
       // QUALITY-FIRST LAW: 4 buckets + a humane 35s window (was 26s — too
@@ -337,10 +345,10 @@ export const AI_FUNCTION_REGISTRY: Record<string, AIFunctionSpec> = {
     },
     knobs: ["AI_CHAIN_TOTAL_BUDGET_MS"],
     doc: {
-      since: "2026-08-28 (4 buckets) · window fix 2026-09 (26s→35s) · WOR-7/P2-1 2026-11-15 (deterministic multi-week stamp)",
+      since: "2026-08-28 (4 buckets) · window fix 2026-09 (26s→35s) · WOR-7/P2-1 2026-11-15 (deterministic multi-week stamp) · INF-9/P2-2 2026-11-15 (temperature 0.7→0.5)",
       rationale:
-        "Weekly-split JSON authored by the model + the deterministic 4-week periodization stamp (progression deltas + week-4 deload + goal-keyed cardio — src/lib/workout-periodization.ts, WOR-7): the saved plan is genuinely multi-week on the AI path AND the local fallback; 35s per-model window for slow strong models.",
-      evidence: "plan-generator.ts:715 option block (audit §3-ب row 23) · workout-periodization.ts (WOR-7/P2-1)",
+        "Weekly-split JSON authored by the model + the deterministic 4-week periodization stamp (progression deltas + week-4 deload + goal-keyed cardio — src/lib/workout-periodization.ts, WOR-7): the saved plan is genuinely multi-week on the AI path AND the local fallback; 35s per-model window for slow strong models. Temperature aligned to the structured band (INF-9).",
+      evidence: "plan-generator.ts:715 option block (audit §3-ب row 23) · workout-periodization.ts (WOR-7/P2-1) · INF-9 row (audit §3)",
     },
   },
 
@@ -350,7 +358,13 @@ export const AI_FUNCTION_REGISTRY: Record<string, AIFunctionSpec> = {
     role: { json: true, streaming: false, language: "ar", payloadClass: "medium" },
     ladder: [...ROTATED_LEADS, GEMINI_TAIL],
     policy: {
-      temperature: 0.8,
+      // INF-9 / P2-2: 0.8 → 0.6 — out of the creative tier (the audit's
+      // «إبقاء 0.8 فقط حيث التنويع هدف صريح»): the swap's DIFFERENCE goal
+      // is served by the avoid-lists + variety seed, not sampling heat,
+      // but it keeps a small premium over the deterministic band so a
+      // regenerated meal is never a near-copy of the rejected one.
+      // AI_ROUTER_MODE=legacy restores 0.8.
+      temperature: 0.6,
       maxTokens: 2600,
       jsonMode: true,
       timeoutMs: 60_000,
@@ -362,9 +376,9 @@ export const AI_FUNCTION_REGISTRY: Record<string, AIFunctionSpec> = {
     entry: { surface: "ai_jobs", trigger: "member/coach meal swap → weekly quota gate → queue" },
     knobs: ["AI_CHAIN_TOTAL_BUDGET_MS"],
     doc: {
-      since: "swap durability frames (0102/0103)",
-      rationale: "Single-meal regeneration JSON — one equivalent meal with constraints.",
-      evidence: "plan-generator.ts:880 option block (audit §3-ب row 24)",
+      since: "swap durability frames (0102/0103) · INF-9/P2-2 2026-11-15 (temperature 0.8→0.6)",
+      rationale: "Single-meal regeneration JSON — one equivalent meal with constraints. Temperature out of the creative tier (INF-9); swap variety rides the avoid-lists + seed.",
+      evidence: "plan-generator.ts:880 option block (audit §3-ب row 24) · INF-9 row (audit §3)",
     },
   },
 
@@ -374,7 +388,8 @@ export const AI_FUNCTION_REGISTRY: Record<string, AIFunctionSpec> = {
     role: { json: true, streaming: false, language: "ar", payloadClass: "light" },
     ladder: [...ROTATED_LEADS, GEMINI_TAIL],
     policy: {
-      temperature: 0.7,
+      // INF-9 / P2-2: 0.7 → 0.5 — structured-task alignment. Legacy: 0.7.
+      temperature: 0.5,
       maxTokens: 400,
       jsonMode: true,
       timeoutMs: 30_000,
@@ -386,9 +401,9 @@ export const AI_FUNCTION_REGISTRY: Record<string, AIFunctionSpec> = {
     entry: { surface: "ai_jobs", trigger: "member/coach food-item swap → weekly quota gate → queue" },
     knobs: ["AI_CHAIN_TOTAL_BUDGET_MS"],
     doc: {
-      since: "swap durability frames",
-      rationale: "Tiny JSON (one food item + grams) — light call, deep walk 3.",
-      evidence: "plan-generator.ts:2425 option block (audit §3-ب row 25)",
+      since: "swap durability frames · INF-9/P2-2 2026-11-15 (temperature 0.7→0.5)",
+      rationale: "Tiny JSON (one food item + grams) — light call, deep walk 3. Temperature aligned to the structured band (INF-9).",
+      evidence: "plan-generator.ts:2425 option block (audit §3-ب row 25) · INF-9 row (audit §3)",
     },
   },
 
@@ -398,7 +413,10 @@ export const AI_FUNCTION_REGISTRY: Record<string, AIFunctionSpec> = {
     role: { json: true, streaming: false, language: "ar", payloadClass: "medium" },
     ladder: [...ROTATED_LEADS, GEMINI_TAIL],
     policy: {
-      temperature: 0.7,
+      // INF-9 / P2-2: 0.7 → 0.5 — structured-task alignment (the day's
+      // exercises feed the WOR-4 library matcher — shape fidelity first).
+      // Legacy: 0.7.
+      temperature: 0.5,
       maxTokens: 1200,
       jsonMode: true,
       timeoutMs: 45_000,
@@ -410,8 +428,8 @@ export const AI_FUNCTION_REGISTRY: Record<string, AIFunctionSpec> = {
     entry: { surface: "ai_jobs", trigger: "member/coach day regeneration → weekly quota gate → queue" },
     knobs: ["AI_CHAIN_TOTAL_BUDGET_MS"],
     doc: {
-      since: "swap durability frames",
-      rationale: "One training-day JSON (1200 tokens — exercises with sets/reps).",
+      since: "swap durability frames · INF-9/P2-2 2026-11-15 (temperature 0.7→0.5)",
+      rationale: "One training-day JSON (1200 tokens — exercises with sets/reps). Temperature aligned to the structured band (INF-9).",
       evidence: "plan-generator.ts:2522 option block (audit §3-ب row 26)",
     },
   },

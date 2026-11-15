@@ -109,9 +109,11 @@ describe("Phase 344/5-A — default gemini model 3.5-flash + the CANCELLED gemin
   it("GEMINI-FIRST CANCELLED (Phase 5-A, owner order 2026-10-31 «إلغاء قانون Gemini-First نهائيًا») — both chain gemini entries ride the TAIL, none leads", () => {
     // Both chain gemini entries (strongest + fast) are 3.5-flash — the
     // behavioral chain-lead pins live in ai-provider.test.ts ([0] and
-    // [last]).
+    // [last]). INF-4 / P2-2 (audit AI-GENERATION-PIPELINES 2026-11-15):
+    // both gemini entries now carry tier:"tail" (the observable quality
+    // tag — pinned structurally in ai-p2-2-quality-tier.test.ts).
     const switched = providerSrc.match(
-      /\{ provider: "gemini", model: "gemini-3\.5-flash" \}/g,
+      /\{ provider: "gemini", model: "gemini-3\.5-flash", tier: "tail" \}/g,
     );
     expect(switched?.length).toBe(2);
     expect(providerSrc).not.toContain('{ provider: "gemini", model: "gemini-3.8-flash" }');

@@ -161,6 +161,23 @@ export type NutritionPlanContent = {
    */
   needs_review?: { flags: string[]; note?: string };
   /**
+   * INF-4 / P2-2 (audit AI-GENERATION-PIPELINES 2026-11-15): AI generation
+   * provenance — which CHAIN TIER served the call. "tail" = the answer
+   * came from the chain's small/last-resort models (qwen-3.8-27b ·
+   * gemini-3.5-flash): a correctly-shaped but potentially thin plan. The
+   * coach's viewer shows an explicit review badge for tail-tier plans
+   * (observable degradation — never silent). Local-fallback plans carry
+   * NO generation block (they are deterministic server math, not a model
+   * draw — their provenance is already the review flag + source field).
+   */
+  generation?: {
+    qualityTier: "strong" | "tail";
+    /** The serving model id (transient provenance, now persisted). */
+    model?: string;
+    /** The serving provider. */
+    provider?: string;
+  };
+  /**
    * PLAN-REGEN-CONSTRAINTS 2026-10-24: the INDEPENDENT audit's recomputed
    * truth (totals from the raw items, drift vs the declared target and
    * macros, per-item findings). Attached server-side at generation; the
@@ -252,6 +269,16 @@ export type WorkoutPlanContent = {
    *  now stamp the review flag on workout plans too — same contract as
    *  the nutrition content's field. */
   needs_review?: { flags: string[]; note?: string };
+  /** INF-4 / P2-2 (audit AI-GENERATION-PIPELINES 2026-11-15): AI
+   *  generation provenance — the chain tier that served the call
+   *  ("tail" = small/last-resort model; the coach sees a review badge).
+   *  Same contract as the nutrition content's field; local-fallback
+   *  plans carry NO generation block. */
+  generation?: {
+    qualityTier: "strong" | "tail";
+    model?: string;
+    provider?: string;
+  };
 };
 
 export type GeneratePlanResult = {
@@ -538,18 +565,21 @@ async function callValidatedChain<T>(
   buildPrompt: (repairNote: string) => string,
   overrides: AICallOverrides,
   validate: (parsed: unknown, rawText: string) => { ok: true; value: T } | { ok: false; error: string },
-): Promise<{ value: T; model: string; provider: string; repaired: boolean }> {
+): Promise<{ value: T; model: string; provider: string; qualityTier: "strong" | "tail"; repaired: boolean }> {
   const firstErrorHolder: string[] = [];
   for (let attempt = 0; attempt < 2; attempt++) {
     const repairNote = attempt === 0 ? "" : repairDirective(firstErrorHolder[0] ?? "مخرجات غير مطابقة للمخطط");
-    const { text, model, provider } = await dispatchAI(
+    // INF-4 / P2-2: the chain result's qualityTier rides through — the
+    // LAST attempt's tier is what the plan records (a repair retry served
+    // by a tail model is still a tail-served plan).
+    const { text, model, provider, qualityTier } = await dispatchAI(
       fnId,
       buildPrompt(repairNote),
       overrides,
     );
     const parsed = parseJSON<unknown>(text);
     const verdict = validate(parsed, text);
-    if (verdict.ok) return { value: verdict.value, model, provider, repaired: attempt > 0 };
+    if (verdict.ok) return { value: verdict.value, model, provider, qualityTier, repaired: attempt > 0 };
     firstErrorHolder[0] = verdict.error;
     console.warn(`[plan-generator] quality gate rejected attempt ${attempt + 1}: ${verdict.error}`);
   }
@@ -598,7 +628,7 @@ export async function generateNutritionPlanAI(
   try {
     // Use callFreeAIFallbackChain — OpenRouter + Groq interleaved (owner
     // directive). Chain self-clamps maxModels × timeoutMs ≤ 52s (Vercel Hobby).
-    const { value, model, provider } = await callValidatedChain(
+    const { value, model, provider, qualityTier } = await callValidatedChain(
       "plan:nutrition",
       (repairNote) => basePrompt + repairNote,
       { systemPrompt: NUTRITION_SYSTEM_PROMPT },
@@ -635,6 +665,13 @@ export async function generateNutritionPlanAI(
           note: content.needs_review?.note ?? "التدقيق المستقل وجد ملاحظات جوهرية — راجع الأرقام قبل الاعتماد.",
         };
       }
+      // INF-4 / P2-2: the generation provenance stamp — the chain tier that
+      // served THIS plan rides the saved content (jsonb — no migration):
+      // "tail" answers surface as an explicit coach-side review badge
+      // (observable degradation — the audit's named fix), and the serving
+      // model/provider are persisted for the first time (previously the
+      // source string lived only in the transient job result).
+      content.generation = { qualityTier, model, provider };
       return {
         title: `خطة تغذية - ${name}`,
         content,
@@ -771,7 +808,7 @@ export async function generateWorkoutPlanAI(
 
   try {
     // OpenRouter + Groq only (owner directive) — clamped ≤ 52s.
-    const { value, model, provider } = await callValidatedChain(
+    const { value, model, provider, qualityTier } = await callValidatedChain(
       "plan:workout",
       (repairNote) => basePrompt + repairNote,
       { systemPrompt: WORKOUT_SYSTEM_PROMPT },
@@ -830,6 +867,10 @@ export async function generateWorkoutPlanAI(
             "تدقيق التمارين المستقل وجد ملاحظات جوهرية (إصابات / تجهيزات) — راجع الخطة قبل الاعتماد.",
         };
       }
+      // INF-4 / P2-2: the generation provenance stamp — same contract as
+      // the nutrition path (chain tier + serving model persisted on the
+      // saved content; tail answers surface as the coach review badge).
+      content.generation = { qualityTier, model, provider };
       return {
         title: `برنامج تمارين - ${name}`,
         content,

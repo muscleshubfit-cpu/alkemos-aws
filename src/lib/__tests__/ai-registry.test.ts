@@ -45,14 +45,21 @@ import {
 
 /* ─────────────── ت2 — the golden policy table (verbatim call sites) ───────────────
  * {tag defaults to the key; absent fields mean the call site does NOT
- * pass them (engine defaults rule — e.g. meal-demo has NO maxModels). */
+ * pass them (engine defaults rule — e.g. meal-demo has NO maxModels).
+ *
+ * INF-9 / P2-2 (audit AI-GENERATION-PIPELINES 2026-11-15): the plans
+ * family temperatures were ALIGNED to the structured band (0.7/0.8 →
+ * 0.5/0.6 — see P2_2_LEGACY_TEMPERATURES below). The GOLDEN table pins
+ * the REGISTRY (what production serves today); the frozen LEGACY snapshot
+ * keeps the PRE-change values — the one-env-var rollback path
+ * (AI_ROUTER_MODE=legacy), pinned separately by design. */
 const GOLDEN: Record<string, Record<string, unknown>> = {
-  // plans — plan-generator.ts:553/715/880/2425/2522/2299/2027
-  "plan:nutrition": { temperature: 0.7, maxTokens: 7000, jsonMode: true, timeoutMs: 70_000, maxModels: 5 },
-  "plan:workout": { temperature: 0.7, maxTokens: 4000, jsonMode: true, timeoutMs: 35_000, maxModels: 4 },
-  "plan:nutrition-alt": { temperature: 0.8, maxTokens: 2600, jsonMode: true, timeoutMs: 60_000, maxModels: 3 },
-  "plan:item-regen": { temperature: 0.7, maxTokens: 400, jsonMode: true, timeoutMs: 30_000, maxModels: 3 },
-  "plan:day-regen": { temperature: 0.7, maxTokens: 1200, jsonMode: true, timeoutMs: 45_000, maxModels: 3 },
+  // plans — plan-generator.ts:553/715/880/2425/2522/2299/2027 (INF-9/P2-2 temperatures)
+  "plan:nutrition": { temperature: 0.5, maxTokens: 7000, jsonMode: true, timeoutMs: 70_000, maxModels: 5 },
+  "plan:workout": { temperature: 0.5, maxTokens: 4000, jsonMode: true, timeoutMs: 35_000, maxModels: 4 },
+  "plan:nutrition-alt": { temperature: 0.6, maxTokens: 2600, jsonMode: true, timeoutMs: 60_000, maxModels: 3 },
+  "plan:item-regen": { temperature: 0.5, maxTokens: 400, jsonMode: true, timeoutMs: 30_000, maxModels: 3 },
+  "plan:day-regen": { temperature: 0.5, maxTokens: 1200, jsonMode: true, timeoutMs: 45_000, maxModels: 3 },
   "plan:exercise-corrective": { temperature: 0.4, maxTokens: 900, jsonMode: true, timeoutMs: 45_000, maxModels: 2 },
   "plan:json-normalize": { temperature: 0.3, maxTokens: 4000, jsonMode: true, timeoutMs: 26_000, maxModels: 2 },
   // blog — blog-research.ts:511 · blog-pairing.ts:301 · blog-pipeline.ts:213/314/545/1010/1364/1420 · blog-topics.ts:657
@@ -106,6 +113,18 @@ const LIVE_TAGS = [
 
 const ENV_KEYS = ["AI_ROUTER_MODE", "GEMINI_GROUNDED_ENABLED", "GROUNDED_ARM_ORDER", "GEMINI_MODEL"];
 
+/** INF-9 / P2-2: the FROZEN pre-alignment temperatures — the legacy
+ *  snapshot keeps serving these for the plans family (AI_ROUTER_MODE=legacy
+ *  = the one-env-var rollback to pre-P2-2 sampling behavior). Pinned here
+ *  so the divergence can never silently drift in either direction. */
+const P2_2_LEGACY_TEMPERATURES: Record<string, number> = {
+  "plan:nutrition": 0.7,
+  "plan:workout": 0.7,
+  "plan:nutrition-alt": 0.8,
+  "plan:item-regen": 0.7,
+  "plan:day-regen": 0.7,
+};
+
 describe("ت2 — golden canaries: registry ≡ legacy snapshot ≡ live call-site values", () => {
   beforeEach(() => {
     for (const k of ENV_KEYS) delete process.env[k];
@@ -123,30 +142,52 @@ describe("ت2 — golden canaries: registry ≡ legacy snapshot ≡ live call-si
     }
   });
 
-  it("the legacy snapshot (AI_ROUTER_MODE=legacy) serves the SAME values for every tag", () => {
+  it("the legacy snapshot (AI_ROUTER_MODE=legacy) serves the registry values EXCEPT the frozen P2-2 temperatures (the rollback path)", () => {
     process.env.AI_ROUTER_MODE = "legacy";
     expect(aiRouterMode()).toBe("legacy");
     for (const [id, policy] of Object.entries(GOLDEN)) {
+      const legacyTemperature = P2_2_LEGACY_TEMPERATURES[id];
+      const expected =
+        legacyTemperature !== undefined
+          ? { tag: id, ...policy, temperature: legacyTemperature }
+          : { tag: id, ...policy };
       const resolved = resolveFunction(id);
-      expect(resolved.options, `legacy options for ${id}`).toEqual({ tag: id, ...policy });
+      expect(resolved.options, `legacy options for ${id}`).toEqual(expected);
     }
   });
 
-  it("legacySnapshotFor exposes the frozen map for every base id", () => {
+  it("legacySnapshotFor exposes the frozen map for every base id (P2-2 temperatures stay pre-alignment)", () => {
     for (const [id, policy] of Object.entries(GOLDEN)) {
-      expect(legacySnapshotFor(id), `snapshot for ${id}`).toEqual(policy);
+      const legacyTemperature = P2_2_LEGACY_TEMPERATURES[id];
+      const expected =
+        legacyTemperature !== undefined
+          ? { ...policy, temperature: legacyTemperature }
+          : policy;
+      expect(legacySnapshotFor(id), `snapshot for ${id}`).toEqual(expected);
     }
   });
 
-  it("registry policy and snapshot agree — a future registry change cannot silently drift from pre-migration behavior", () => {
+  it("registry ≡ snapshot for every UNCHANGED tag — and the P2-2 divergence is EXACTLY the temperature field (the designed policy-change path)", () => {
     for (const id of LIVE_TAGS) {
       const registryOptions = resolveFunction(id).options;
       delete process.env.AI_ROUTER_MODE;
       const snap = legacySnapshotFor(id) ?? {};
-      expect(
-        { ...registryOptions, tag: undefined },
-        `registry≡snapshot for ${id}`,
-      ).toEqual({ tag: undefined, ...snap });
+      if (P2_2_LEGACY_TEMPERATURES[id] !== undefined) {
+        // the deliberate P2-2 divergence: temperature ONLY — every other
+        // field must still match byte-for-byte, and the registry value must
+        // be the aligned band (a drift in anything else is a bug).
+        expect(snap.temperature, `legacy temperature for ${id}`).toBe(P2_2_LEGACY_TEMPERATURES[id]);
+        expect(registryOptions.temperature, `registry temperature for ${id}`).not.toBe(snap.temperature);
+        expect(
+          { ...registryOptions, tag: undefined, temperature: undefined },
+          `registry≡snapshot (except temperature) for ${id}`,
+        ).toEqual({ ...snap, tag: undefined, temperature: undefined });
+      } else {
+        expect(
+          { ...registryOptions, tag: undefined },
+          `registry≡snapshot for ${id}`,
+        ).toEqual({ tag: undefined, ...snap });
+      }
     }
   });
 

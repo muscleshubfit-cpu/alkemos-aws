@@ -121,7 +121,13 @@ a 7-day conditional refund (no-features-used, ledger-based —
   member plan view, the coach editor and both print exports), and a
   critical independent-audit finding (injury-unsafe pick, home-equipment
   mismatch) raises a needs-review banner on the plan instead of being saved
-  silently
+  silently. AI plans also carry observable generation provenance (INF-4):
+  the provider chain tags every answer with a quality tier, and a plan
+  answered by the chain's small/last-resort tail models is badged
+  «موديل ذيل — راجع العمق» in the coach's plan modal (the serving
+  model/provider are persisted on the plan content) — plus the structured
+  plan tasks sample at aligned low temperatures (INF-9: 0.5-0.6, rollback
+  via `AI_ROUTER_MODE=legacy`)
 - **Durable swaps** — every swap kind (meal / item / exercise) on every
   surface survives a closed tab: the queue runner materializes the gated
   replacement straight into the plan row, with enqueue-time and runner-time

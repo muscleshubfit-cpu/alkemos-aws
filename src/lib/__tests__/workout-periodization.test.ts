@@ -57,7 +57,10 @@ vi.mock("@/lib/ai-provider", async (importOriginal) => {
       const next = chainState.responses.shift();
       if (!next) throw new Error("no scripted response");
       if (next instanceof Error) throw next;
-      return next;
+      // INF-4 / P2-2: the engine's result carries qualityTier (untagged
+      // entries default "strong") — the mock mirrors the engine default so
+      // the plan generators' generation stamp stays well-formed.
+      return { qualityTier: "strong" as const, ...next };
     }),
   };
 });
@@ -329,9 +332,12 @@ describe("WOR-7 — the registry row tells the truth about Multi-week", () => {
     expect(spec.doc.rationale).toContain("workout-periodization.ts");
     expect(spec.doc.rationale).toContain("deload");
     expect(spec.doc.rationale).toContain("goal-keyed cardio");
-    // Policy numbers unchanged (the ai-registry golden canary pins these
-    // too — no drift introduced by the description fix).
-    expect(spec.policy.temperature).toBe(0.7);
+    // Policy numbers (the ai-registry golden canary pins these too — no
+    // drift). temperature: INF-9/P2-2 (audit AI-GENERATION-PIPELINES
+    // 2026-11-15) aligned the plans family 0.7 → 0.5 (structured-task
+    // band); AI_ROUTER_MODE=legacy restores 0.7 — pinned in
+    // ai-registry.test.ts (P2_2_LEGACY_TEMPERATURES).
+    expect(spec.policy.temperature).toBe(0.5);
     expect(spec.policy.maxTokens).toBe(4000);
     expect(spec.policy.timeoutMs).toBe(35_000);
     expect(spec.policy.maxModels).toBe(4);
