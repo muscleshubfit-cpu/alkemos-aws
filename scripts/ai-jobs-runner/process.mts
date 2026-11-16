@@ -67,8 +67,16 @@ async function main(): Promise<void> {
   const { PROCESSORS } = await import("../../src/lib/ai-job-processors");
 
   // 0. Recover jobs orphaned by a previous crashed run.
+  // INF-12 (fix order 2026-11-16 — gap-register GAP-2): the reaper's
+  // verdict is SPLIT — below-cap stale rows requeue (recovery semantics
+  // unchanged), at-cap stale rows fail PERMANENTLY (the old blind requeue
+  // is what handed a collapsed job its 4th attempt: the poison pill).
   const reaped = await reapStaleJobs(30);
-  if (reaped > 0) console.log(`[ai-jobs] ↩︎ reaped ${reaped} stale processing job(s)`);
+  if (reaped.requeued > 0 || reaped.failedFinal > 0) {
+    console.log(
+      `[ai-jobs] ↩︎ reaper: ${reaped.requeued} stale job(s) requeued (below attempts cap) · ${reaped.failedFinal} at-cap job(s) failed PERMANENTLY (INF-12 — no automatic re-enqueue)`,
+    );
+  }
 
   let done = 0;
   let failed = 0;

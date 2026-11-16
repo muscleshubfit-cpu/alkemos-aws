@@ -26,6 +26,7 @@ import {
  Search,
  Target,
  X,
+ Stethoscope,
 } from "lucide-react";
 // #5 fix: lazy-load recharts (~600KB) — only loaded when progress tab is opened
 import dynamic from "next/dynamic";
@@ -440,7 +441,14 @@ export function CoachClientView({ clientId }: { clientId: string }) {
  if (job?.status === "failed") {
  removePendingPlanJob(entry.id);
  setPendingPlanJobs(readPendingPlanJobs());
- toast.error(job.error_message || (isAr ? "فشل توليد الخطة. حاول مرة أخرى." : "Plan generation failed. Please try again."));
+ // NUT-12/INF-12 follow-up (fix order 2026-11-16, item 3): a FINAL
+ // generation failure never auto-retries (queue law) — the COACH
+ // himself re-requests through this same unified path; the toast says
+ // so explicitly (the client's quota is success-only — untouched).
+ const failBase = job.error_message || (isAr ? "فشل توليد الخطة." : "Plan generation failed.");
+ toast.error(isAr
+ ? `${failBase} — لم تُخصم حصة العميل (تُخصم عند النجاح فقط): أعد طلب التوليد الآن من زر التوليد نفسه.`
+ : `${failBase} — the client's quota was NOT charged (success-only): re-request now from the same generate button.`);
  return;
  }
  }
@@ -2733,6 +2741,33 @@ function PlanViewerModal({
  )}
  </div>
 
+ {/* NUT-12 (fix order 2026-11-16 — gap-register GAP-1): the medical
+     disclosure banner — the SAME warning the member sees on his own plan
+     (content.medical_disclosure), rendered for the coach too: review with
+     a doctor / qualified nutritionist before the client applies it. Not
+     a review hold — the owner's order explicitly rules out requiring a
+     trainer or an in-platform review; the plan still lands normally. */}
+ {!isWorkout && content && typeof content === "object" && "medical_disclosure" in content && (
+ (() => {
+ const md = (content as unknown as Record<string, unknown>).medical_disclosure as { conditions?: unknown; warning?: unknown } | undefined;
+ if (!md || typeof md.warning !== "string") return null;
+ const conds = Array.isArray(md.conditions) ? (md.conditions as unknown[]).map(String).filter(Boolean) : [];
+ return (
+ <div className="rounded-xl border border-rose-300 bg-rose-50 p-3 text-xs text-rose-700 dark:border-rose-500/40 dark:bg-rose-500/10 dark:text-rose-400">
+ <div className="flex items-center gap-1.5 font-bold text-rose-800 dark:text-rose-300">
+ <Stethoscope className="h-4 w-4" />
+ {isAr ? "تنبيه طبي — قبل تطبيق العميل لهذه الخطة" : "Medical notice — before the client applies this plan"}
+ </div>
+ <p className="mt-1 leading-relaxed">{md.warning}</p>
+ {conds.length > 0 && (
+ <p className="mt-1 font-medium text-rose-800 dark:text-rose-300">
+ {isAr ? `الحالات الصحية المعلنة المرصودة بالخطة: ${conds.join("، ")}` : `Declared conditions addressed: ${conds.join(", ")}`}
+ </p>
+ )}
+ </div>
+ );
+ })()
+ )}
  {/* NOTIF→PLAN 2026-10-24 (owner order items 5+7): the review banner —
      missing basic data / extreme values must STOP silent approval; the
      coach sees exactly WHY the plan needs his eyes before اعتماد. */}

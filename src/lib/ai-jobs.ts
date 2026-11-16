@@ -573,6 +573,15 @@ export async function enqueueAiJob(opts: {
  * in the past (the scheduled backoff has been served). A row waiting out
  * its backoff does not occupy a claim slot and cannot be re-burned by the
  * same run that just failed it.
+ *
+ * INF-12 (fix order 2026-11-16 — gap-register GAP-2, the measured poison
+ * pill): a queued row ALREADY at the attempts cap is never claimed — the
+ * claim FINALIZES it as `failed` instead of granting an attempt beyond
+ * MAX_JOB_ATTEMPTS. This also heals legacy rows the old reaper re-enqueued
+ * at cap (the live evidence: job 3a65f8d1 received attempt=4). Retry
+ * after a final failure is a FRESH request through the unified
+ * generation paths (member self-service / coach console) — never an
+ * automatic queue resurrection.
  */
 export async function claimQueuedJobs(limit = 10): Promise<AiJobRow[]> {
   if (!isSupabaseAdminConfigured || !supabaseAdmin) throw new Error("admin client missing");
@@ -586,6 +595,29 @@ export async function claimQueuedJobs(limit = 10): Promise<AiJobRow[]> {
     .limit(limit);
   const claimed: AiJobRow[] = [];
   for (const row of (candidates as unknown as AiJobRow[]) || []) {
+    // INF-12: the cap guard — a queued row at/above MAX_JOB_ATTEMPTS is
+    // poison (the old reaper's re-enqueue class). Finalize, never claim.
+    if ((row.attempts || 0) >= MAX_JOB_ATTEMPTS) {
+      const priorError = row.error_message ? `${String(row.error_message).slice(0, 300)} — ` : "";
+      const { data: finalized } = await supabaseAdmin
+        .from("ai_jobs")
+        .update({
+          status: "failed",
+          error_message:
+            `${priorError}INF-12: attempts cap (${MAX_JOB_ATTEMPTS}/${MAX_JOB_ATTEMPTS}) reached — failed permanently, no automatic re-enqueue; retry requires a fresh request through the unified generation paths`.slice(0, 2000),
+          finished_at: new Date().toISOString(),
+          next_attempt_at: null,
+        })
+        .eq("id", row.id)
+        .eq("status", "queued")
+        .select("id");
+      if (finalized && finalized.length > 0) {
+        console.log(
+          `[ai-jobs] INF-12 cap guard: queued job ${row.id.slice(0, 8)} at attempts ${row.attempts}/${MAX_JOB_ATTEMPTS} finalized as failed (no claim granted)`,
+        );
+      }
+      continue;
+    }
     const { data } = await supabaseAdmin
       .from("ai_jobs")
       .update({
@@ -595,7 +627,7 @@ export async function claimQueuedJobs(limit = 10): Promise<AiJobRow[]> {
         // INF-14: the backoff gate is served — clear it so a later
         // requeue/reap starts from a clean slate (and a stuck `processing`
         // row reaped by reapStaleJobs goes back to immediately claimable,
-        // preserving the reaper's recovery semantics).
+        // preserving the reaper's recovery semantics BELOW the cap).
         next_attempt_at: null,
       })
       .eq("id", row.id)
@@ -677,11 +709,26 @@ export async function failJob(
     : { outcome: "requeued", nextAttemptAt };
 }
 
-/** Jobs stuck in `processing` > 30 min (runner crash mid-job) → requeue. */
-export async function reapStaleJobs(staleMinutes = 30): Promise<number> {
-  if (!isSupabaseAdminConfigured || !supabaseAdmin) return 0;
+/** What the reaper did to the stale rows it visited (INF-12: the split
+ * verdict is reported honestly — requeued vs finalized). */
+export type ReapOutcome = { requeued: number; failedFinal: number };
+
+/**
+ * Jobs stuck in `processing` > `staleMinutes` (runner crash mid-job):
+ * BELOW the attempts cap → requeue (the historic recovery semantics,
+ * unchanged). AT/ABOVE the cap → **failed, PERMANENTLY** (INF-12 fix
+ * order 2026-11-16 — gap-register GAP-2): the old code requeued these
+ * blind and the claim then granted a 4th+ attempt (the live poison-pill
+ * evidence: «reaped 1 stale…» → attempt=4 on job 3a65f8d1, run
+ * 43926112257). A cap-exhausted job never re-enters the queue from the
+ * reaper; its retry is a fresh member/coach request through the unified
+ * generation paths.
+ */
+export async function reapStaleJobs(staleMinutes = 30): Promise<ReapOutcome> {
+  if (!isSupabaseAdminConfigured || !supabaseAdmin) return { requeued: 0, failedFinal: 0 };
   const cutoff = new Date(Date.now() - staleMinutes * 60_000).toISOString();
-  const { data } = await supabaseAdmin
+  // (a) below-cap stale rows keep the recovery semantics: back to queued.
+  const { data: requeuedRows } = await supabaseAdmin
     .from("ai_jobs")
     .update({
       status: "queued",
@@ -689,6 +736,20 @@ export async function reapStaleJobs(staleMinutes = 30): Promise<number> {
     })
     .eq("status", "processing")
     .lt("started_at", cutoff)
+    .lt("attempts", MAX_JOB_ATTEMPTS)
     .select("id");
-  return data?.length ?? 0;
+  // (b) at-cap stale rows are poison — finalize them (no re-enqueue).
+  const { data: failedRows } = await supabaseAdmin
+    .from("ai_jobs")
+    .update({
+      status: "failed",
+      error_message: `reaped: processing exceeded time limit — attempts cap (${MAX_JOB_ATTEMPTS}/${MAX_JOB_ATTEMPTS}) reached, failed permanently (INF-12 — no automatic re-enqueue)`,
+      finished_at: new Date().toISOString(),
+      next_attempt_at: null,
+    })
+    .eq("status", "processing")
+    .lt("started_at", cutoff)
+    .gte("attempts", MAX_JOB_ATTEMPTS)
+    .select("id");
+  return { requeued: requeuedRows?.length ?? 0, failedFinal: failedRows?.length ?? 0 };
 }

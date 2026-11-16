@@ -122,6 +122,16 @@ import {
  */
 export { DIET_TYPES, DIET_TYPE_LABELS_AR, classifyDietText } from "@/lib/diet-types";
 export type { DietType } from "@/lib/diet-types";
+// NUT-12 (fix order 2026-11-16 — gap-register GAP-1): the deterministic
+// clinical safety layer — detection, prompt steering, item-gate tokens and
+// the client-facing medical disclosure every generated plan now carries.
+import {
+  detectClinicalConditions,
+  clinicalPromptBlock,
+  clinicalForbiddenTokens,
+  medicalDisclosureFor,
+  type ClinicalConditionKey,
+} from "./plan-clinical-safety";
 
 export type PlanOverrides = {
   targetCalories?: number;
@@ -219,6 +229,23 @@ export type NutritionPlanContent = {
   }>;
   health_notes?: string[]; // specific recommendations (e.g. iron for anemia)
   water_target?: string; // e.g. "2.5 - 3 لتر يوميًا"
+  /**
+   * NUT-12 (fix order 2026-11-16 — gap-register GAP-1): the mandatory
+   * client-facing medical disclosure. EVERY AI/local-fallback generated
+   * nutrition plan carries it — the general review-with-a-professional
+   * warning, upgraded to the condition-aware form when the member's
+   * questionnaire declares a clinical condition. Deliberately NOT a
+   * needs_review flag and NOT in the self-service blocking set: the
+   * owner's order rules out requiring a trainer or an in-platform
+   * review — the member receives the plan WITH the warning.
+   */
+  medical_disclosure?: {
+    flag: "medical_review_advised";
+    /** Arabic labels of the detected declared conditions (may be empty). */
+    conditions: string[];
+    /** The client-facing warning text. */
+    warning: string;
+  };
   meals: Array<{
     name: string;
     time?: string; // e.g. "بعد الاستيقاظ" or "قبل النوم بـ 45 دقيقة"
@@ -503,10 +530,18 @@ function constraintsFromContext(
   dietType?: DietType | null,
 ): ClientItemConstraints | undefined {
   const nutrition = ctx ? loose(ctx.nutrition) : {};
+  // NUT-12: the clinical condition tokens ride the SAME gate bundle the
+  // allergens use — a diabetic member's plan is rejected (and repaired)
+  // when it names a concentrated-sugar item, exactly like a nut-allergic
+  // member's plan is rejected on a nut item.
+  const clinical = detectClinicalConditions({
+    healthText: String(nutrition.health || nutrition.medical_conditions || ""),
+  });
   const c = buildClientConstraints({
     dietType: dietType ?? undefined,
     allergyText: nutrition.allergies,
     dislikedText: nutrition.disliked,
+    clinicalTokens: clinicalForbiddenTokens(clinical),
   });
   return hasItemConstraints(c) ? c : undefined;
 }
@@ -560,6 +595,12 @@ function constraintPromptBlock(constraints?: ClientItemConstraints | null): stri
   }
   if (constraints?.allergyTokens?.length) {
     lines.push(`- حساسيات العميل (ممنوع نهائيًا أي صنف يحتويها): ${[...new Set(constraints.allergyTokens)].slice(0, 25).join("، ")}.`);
+  }
+  // NUT-12: the clinically prohibited family — rendered with its own
+  // wording so the model knows the reason is a HEALTH CONDITION, not a
+  // taste preference (and the repair directive stays truthful on a hit).
+  if (constraints?.clinicalTokens?.length) {
+    lines.push(`- أصناف ممنوعة إكلينيكيًا بحالة العميل الصحية المعلنة (ممنوع نهائيًا أي صنف أو بديل يحتويها — البديل المتوافق إلزامي): ${[...new Set(constraints.clinicalTokens)].slice(0, 30).join("، ")}.`);
   }
   if (constraints?.bannedTokens?.length) {
     lines.push(`- أطعمة ممنوعة/غير محببة للعميل (تجنبها كليًا): ${[...new Set(constraints.bannedTokens)].slice(0, 25).join("، ")}.`);
@@ -635,7 +676,14 @@ export async function generateNutritionPlanAI(
   // Add a randomization seed to the prompt so each generation produces
   // different meal/exercise choices even for the same client.
   const seed = Math.floor(Math.random() * 1000000);
-  const basePrompt = `${buildNutritionPrompt(ctx, name, overrides, targets)}${constraintPromptBlock(constraints)}${buildVarietyBlock("nutrition", seed, ctx.recent_plan_names ?? [], { dietType: targets.dietType, constraintTokens: constraintTokensOf(constraints) })}${platformKnowledge ?? ""}`;
+  // NUT-12: the deterministic clinical layer — detected conditions steer
+  // the prompt (carb distribution for diabetes, sodium for hypertension…)
+  // BEFORE the generic constraint/variety blocks; the same detection
+  // stamps the medical disclosure on the saved content at normalize time.
+  const clinicalKeys: ClinicalConditionKey[] = detectClinicalConditions({
+    healthText: String(loose(ctx.nutrition).health || loose(ctx.nutrition).medical_conditions || ""),
+  });
+  const basePrompt = `${buildNutritionPrompt(ctx, name, overrides, targets)}${clinicalPromptBlock(clinicalKeys)}${constraintPromptBlock(constraints)}${buildVarietyBlock("nutrition", seed, ctx.recent_plan_names ?? [], { dietType: targets.dietType, constraintTokens: constraintTokensOf(constraints) })}${platformKnowledge ?? ""}`;
 
   try {
     // Use callFreeAIFallbackChain — OpenRouter + Groq interleaved (owner
@@ -1200,6 +1248,10 @@ export type NutritionTargets = {
    * overview so the member sees what was excluded. */
   allergyText: string;
   dislikedText: string;
+  /** NUT-12 (fix order 2026-11-16): the member's declared health text
+   * (questionnaire truth) — drives clinical detection, the data_analysis
+   * echo and the medical disclosure stamped on the saved content. */
+  healthText: string;
   /**
    * Plausibility flags (owner order item 5: «عند نقص البيانات الأساسية أو
    * اكتشاف نتيجة متطرفة، أوقف اعتماد الخطة واطلب مراجعة المدرب»). The
@@ -1512,7 +1564,7 @@ export function computeNutritionTargets(ctx: ClientContext, overrides?: PlanOver
     }
   }
 
-  return { gender, weightKg, heightCm, ageYears, bmr, tdee, dailyCalories, goalAdjustmentPct, macros: { protein_g: macros.protein_g, carbs_g: macros.carbs_g, fat_g: macros.fat_g }, bodyFatPct, dietType, targetWeightKg, allergyText: String(nutrition.allergies || "").trim(), dislikedText: String(nutrition.disliked || "").trim(), reviewFlags };
+  return { gender, weightKg, heightCm, ageYears, bmr, tdee, dailyCalories, goalAdjustmentPct, macros: { protein_g: macros.protein_g, carbs_g: macros.carbs_g, fat_g: macros.fat_g }, bodyFatPct, dietType, targetWeightKg, allergyText: String(nutrition.allergies || "").trim(), dislikedText: String(nutrition.disliked || "").trim(), healthText: String(nutrition.health || nutrition.medical_conditions || "").trim(), reviewFlags };
 }
 
 const ACTIVITY_AR: Record<string, string> = {
@@ -2084,6 +2136,12 @@ export function normalizeNutritionPlan(
         weight: `${targets.weightKg} كجم`,
         height: `${targets.heightCm} سم`,
         age: `${targets.ageYears} سنة`,
+        // NUT-12 (fix order 2026-11-16): the questionnaire's health answer
+        // is the COMMITTED truth — the model's echo (planAnalysis.health)
+        // never overrides it, and a model omission can no longer erase the
+        // member's declared condition from the saved plan (the measured
+        // GAP-1: data_analysis.health=None for a type-2 diabetic).
+        health: targets.healthText || String(planAnalysis?.health ?? ""),
         body_fat_pct:
           targets.bodyFatPct !== null ? `~${targets.bodyFatPct}%` : String(planAnalysis?.body_fat_pct ?? ""),
         bmr: targets.bmr,
@@ -2127,6 +2185,13 @@ export function normalizeNutritionPlan(
     daily_calories,
     meals_total_calories,
     ...(needs_review ? { needs_review } : {}),
+    // NUT-12 (fix order 2026-11-16): the mandatory medical disclosure —
+    // stamped on EVERY targets-carrying generation (AI path AND local
+    // fallback path — both flow through here), general form when nothing
+    // is declared, condition-aware form when detection fired. NOT a
+    // needs_review flag: no trainer/in-platform review is required by the
+    // owner's order — the member sees the warning on his own plan.
+    ...(targets ? { medical_disclosure: medicalDisclosureFor(detectClinicalConditions({ healthText: targets.healthText })) } : {}),
     macros: {
       protein_g,
       carbs_g,

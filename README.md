@@ -370,7 +370,32 @@ model:
   errors, the 30-minute provider-cooldown window for quota-class ones,
   classified by the terminal error line) with processing-only CAS writes,
   so a failed job is never re-burned immediately and a late writer can
-  never stamp over a row that changed state underneath it.
+  never stamp over a row that changed state underneath it. A job that
+  exhausts its attempts ceiling (`MAX_JOB_ATTEMPTS`) fails **permanently**:
+  the stale-row reaper's verdict is split by the cap (below-cap rows
+  requeue; at-cap rows are finalized as `failed`) and the claim itself
+  refuses to grant an attempt beyond the cap — a collapsed job can never
+  re-enter the queue automatically (INF-12 of the operational test plan).
+  Retry after a final failure is a fresh request through the same unified
+  generation paths (the member's own Plans section for site memberships,
+  the coach's client page for trainer memberships); quota is success-only,
+  so a failed attempt never burns the requester's balance.
+- **Nutrition plans carry a clinical-safety layer and a medical disclosure**
+  (`src/lib/plan-clinical-safety.ts`, NUT-12 of the operational test plan) —
+  the member's declared health conditions (diabetes, hypertension, thyroid,
+  pregnancy, celiac, … Arabic + English, spelling-drift tolerant) are
+  classified deterministically from the questionnaire and steer generation
+  three ways: a mandatory clinical block in the prompt (carb distribution
+  for diabetes, sodium for hypertension, …), a hard item gate that rejects
+  clinically prohibited foods exactly like allergens (the
+  concentrated-sugar family for diabetics, the gluten family for celiacs),
+  and a client-facing **medical disclosure** stamped on EVERY generated
+  plan — the clear warning to review the plan with a doctor or a qualified
+  nutritionist BEFORE applying it, rendered on both the member's plan
+  viewer and the coach's, with `data_analysis.health` echoing the
+  questionnaire truth. Deliberately NOT a review hold: no trainer or
+  in-platform approval is required — the member receives the plan with the
+  warning.
 
 ### Automated content pipeline
 The bilingual blog is generated end-to-end — research → outline → article →

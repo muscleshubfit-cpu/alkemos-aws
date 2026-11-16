@@ -250,6 +250,13 @@ export type ClientItemConstraints = {
   allergyTokens?: string[];
   /** Disliked / banned food tokens from the questionnaire. */
   bannedTokens?: string[];
+  /** NUT-12 (fix order 2026-11-16): clinically PROHIBITED food tokens
+   * derived from the member's declared health conditions (e.g. the
+   * concentrated-sugar family for a diabetic member) — gated exactly like
+   * allergens: a plan carrying one is REJECTED and repaired, never saved.
+   * Built by the caller from plan-clinical-safety's fixed tables (never
+   * from raw model output). */
+  clinicalTokens?: string[];
 };
 
 /** Normalize a food name / token for matching: lowercase Latin, strip
@@ -683,11 +690,15 @@ export function tokenizeConstraintText(raw: unknown): string[] {
   return [...tokens].filter(Boolean);
 }
 
-/** Build the constraint bundle from the raw client fields (pure). */
+/** Build the constraint bundle from the raw client fields (pure). The
+ * NUT-12 clinical tokens ride a fixed allowlist — pass the arrays from
+ * plan-clinical-safety.clinicalForbiddenTokens verbatim; they are NOT
+ * free-text derived. */
 export function buildClientConstraints(opts: {
   dietType?: unknown;
   allergyText?: unknown;
   dislikedText?: unknown;
+  clinicalTokens?: string[];
 }): ClientItemConstraints {
   const dietRaw = String(opts.dietType ?? "").trim().toLowerCase();
   const dietType = (["keto", "low_carb", "vegetarian", "vegan"] as const).includes(
@@ -697,16 +708,24 @@ export function buildClientConstraints(opts: {
     : null;
   const allergyTokens = tokenizeConstraintText(opts.allergyText);
   const bannedTokens = tokenizeConstraintText(opts.dislikedText);
+  const clinicalTokens = (Array.isArray(opts.clinicalTokens) ? opts.clinicalTokens : []).map(String).filter(Boolean);
   return {
     ...(dietType ? { dietType } : {}),
     ...(allergyTokens.length > 0 ? { allergyTokens } : {}),
     ...(bannedTokens.length > 0 ? { bannedTokens } : {}),
+    ...(clinicalTokens.length > 0 ? { clinicalTokens } : {}),
   };
 }
 
 /** True when the constraints carry anything enforceable. */
 export function hasItemConstraints(c?: ClientItemConstraints | null): boolean {
-  return Boolean(c && (c.dietType || (c.allergyTokens?.length ?? 0) > 0 || (c.bannedTokens?.length ?? 0) > 0));
+  return Boolean(
+    c &&
+      (c.dietType ||
+        (c.allergyTokens?.length ?? 0) > 0 ||
+        (c.bannedTokens?.length ?? 0) > 0 ||
+        (c.clinicalTokens?.length ?? 0) > 0),
+  );
 }
 
 /**
@@ -794,6 +813,16 @@ export function checkItemConstraints(
     const banned = hits(constraints.bannedTokens);
     if (banned) {
       return `الصنف «${food}» يحتوي «${banned}» — من ضمن الأطعمة الممنوعة/غير المحببة للعميل`;
+    }
+  }
+  // NUT-12 (fix order 2026-11-16): the clinical gate — a food PROHIBITED by
+  // the member's declared health condition (concentrated sugars for a
+  // diabetic, …) is rejected exactly like an allergen. Same hits() matcher,
+  // its own wording so the repair directive tells the model the TRUE reason.
+  if (constraints?.clinicalTokens?.length) {
+    const clinical = hits(constraints.clinicalTokens);
+    if (clinical) {
+      return `الصنف «${food}» يحتوي «${clinical}» — ممنوع إكلينيكيًا بحالة العميل الصحية المعلنة (استبدله بخيار متوافق)`;
     }
   }
   return null;

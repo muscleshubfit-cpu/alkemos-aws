@@ -383,13 +383,22 @@ export function PlansView() {
  // Success-only law: a failed job never burned the quota — the meter
  // reconcile is just bookkeeping hygiene.
  void refreshUsage();
- toast.error(job.error_message || (isAr ? "فشل توليد الخطة." : "The plan generation failed."));
+ // NUT-12/INF-12 follow-up (fix order 2026-11-16, item 3): a FINAL
+ // generation failure never auto-retries (queue law) — the member
+ // HIMSELF re-requests through this same unified path; the toast says
+ // so explicitly (quota untouched: success-only billing).
+ const failBase = job.error_message || (isAr ? "فشل توليد الخطة." : "The plan generation failed.");
+ toast.error(isAr
+ ? `${failBase} — لم تُخصم حصتك (تُخصم عند النجاح فقط): أعد المحاولة الآن من زر التوليد نفسه.`
+ : `${failBase} — your quota was NOT charged (success-only): retry now from the same generate button.`);
  return;
  }
  }
  removePendingPlanJob(jobId);
  setPendingPlans(readPendingPlanJobs());
- toast.error(isAr ? "انتهت مهلة انتظار التوليد — تابع لاحقًا من قسم الخطط." : "The generation wait timed out — check back later in the Plans section.");
+ toast.error(isAr
+ ? "انتهت مهلة انتظار التوليد — راجع قسم الخطط لاحقًا وأعد المحاولة من زر التوليد عند الحاجة (لا تُخصم الحصة إلا عند النجاح)."
+ : "The generation wait timed out — check back in the Plans section and retry from the generate button when needed (quota is success-only).");
  } finally {
  activePlanWatchers.current.delete(jobId);
  }
@@ -1246,6 +1255,34 @@ function PlanDetailModal({
  </>
  }
  >
+ {/* NUT-12 (fix order 2026-11-16 — gap-register GAP-1): the client-facing
+ MEDICAL DISCLOSURE banner. Every generated nutrition plan carries
+ content.medical_disclosure — the clear warning to review the plan with a
+ doctor or a qualified nutritionist BEFORE applying it, condition-aware
+ when the questionnaire declares a condition. Deliberately NOT a review
+ hold: the owner's order rules out requiring a trainer or an in-platform
+ review — the member keeps the plan and sees the warning. */}
+ {content && typeof content === "object" && plan.type === "meal" && (
+ (() => {
+ const c = content as Record<string, unknown>;
+ const md = c.medical_disclosure as { conditions?: unknown; warning?: unknown } | undefined;
+ if (!md || typeof md.warning !== "string") return null;
+ const conds = Array.isArray(md.conditions) ? (md.conditions as unknown[]).map(String).filter(Boolean) : [];
+ return (
+ <div className="mb-4 rounded-xl border border-rose-300 bg-rose-50 p-3 text-sm dark:border-rose-500/40 dark:bg-rose-500/10">
+ <p className="font-semibold text-rose-800 dark:text-rose-300">
+ {planLang === "ar" ? "⚕️ تنبيه طبي — قبل تطبيق هذه الخطة" : "⚕️ Medical notice — before applying this plan"}
+ </p>
+ <p className="mt-1 text-xs leading-relaxed text-rose-700 dark:text-rose-400">{md.warning}</p>
+ {conds.length > 0 && (
+ <p className="mt-1 text-xs font-medium text-rose-800 dark:text-rose-300">
+ {planLang === "ar" ? `الحالات الصحية المعلنة المرصودة بالخطة: ${conds.join("، ")}` : `Declared conditions addressed: ${conds.join(", ")}`}
+ </p>
+ )}
+ </div>
+ );
+ })()
+ )}
  {/* NUT-3 (audit AI-GENERATION-PIPELINES 2026-11-15, P1): the review
  banner in the MEMBER's plan viewer — needs_review flags and critical
  independent-audit findings used to render ONLY in the coach view, so a
