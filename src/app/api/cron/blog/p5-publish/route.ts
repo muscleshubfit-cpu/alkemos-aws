@@ -6,7 +6,7 @@ import { countWords, splitFaqSection, filterFaqsByRelevance, clampMetaTitle, cla
 import { countProseWords } from "@/lib/blog-word-count";
 // ART-7: deterministic internal-link verification (slug exists + language rule).
 import { verifyInternalLinks } from "@/lib/blog-link-verify";
-import { scanLatinContamination } from "@/lib/blog-msa";
+import { scanLatinContamination, scanArabicDialect, needsMsaRepair } from "@/lib/blog-msa";
 import { runP5QualityGates, completeTitlePrefixAnchors, maxShingleContainment, SHINGLE_CONTAINMENT_CEILING } from "@/lib/blog-quality-gates";
 import { verifyBodyLinks } from "@/lib/blog-link-verify";
 import { EDITORIAL_FAQ_COUNT_RANGE, EDITORIAL_AUTHORITY_DOMAINS, EDITORIAL_SEED_AUTHORITY_LINKS } from "@/lib/blog-editorial-law";
@@ -566,6 +566,26 @@ export async function GET(request: NextRequest) {
       if (bodyLatin.count > 0) {
         throw new Error(
           `p5: latin contamination in final body (${bodyLatin.count} tokens: ${bodyLatin.tokens.slice(0, 10).join(", ")}) — rerun p4-review`,
+        );
+      }
+      // AI-QUALITY-REPAIR-LOOP (owner order 2026-11-16) — the final
+      // DIALECT gate (publish-layer law): the published-corpus MSA law
+      // (needsMsaRepair — any STRONG marker OR ≥5 weak) is now enforced
+      // at publish for AR bodies, mirroring the Phase-176 Latin gate.
+      // WHY IT WAS MISSING: dialect detection lived ONLY inside the P4
+      // latin-repair validator, so an AR body with dialect markers but
+      // ZERO Latin tokens sailed through P4/P5 and could publish with
+      // strong colloquial prose. The P4 dialect repair pass now fixes
+      // the markers upstream (dictionary + AI tokens); this gate is the
+      // deterministic backstop — a NEW gate, zero loosening anywhere.
+      const bodyDialect = scanArabicDialect(gateMd);
+      if (needsMsaRepair(gateMd)) {
+        const hits = [...bodyDialect.strongHits, ...bodyDialect.weakHits]
+          .map(([m, c]) => `${m}×${c}`)
+          .slice(0, 8)
+          .join(", ");
+        throw new Error(
+          `p5: dialect contamination in final body (strong=${bodyDialect.strong}, weak=${bodyDialect.weak}: ${hits}) — rerun p4-review`,
         );
       }
     }

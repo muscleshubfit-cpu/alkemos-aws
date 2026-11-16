@@ -690,6 +690,40 @@ export const AI_FUNCTION_REGISTRY: Record<string, AIFunctionSpec> = {
     },
   },
 
+  // AI-QUALITY-REPAIR-LOOP (owner order 2026-11-16): the dialect twin
+  // of blog:latin-tokens-ar — the context-aware conversion call for
+  // ARABIC dialect markers the deterministic dictionary cannot fix
+  // position-safely (عشان/عايز/مش…). Mirrors the latin-tokens policy
+  // exactly (same payload class, same ladder, same per-value gate).
+  "blog:dialect-tokens-ar": {
+    id: "blog:dialect-tokens-ar",
+    family: "blog",
+    role: { json: true, streaming: false, language: "ar", payloadClass: "light" },
+    ladder: [CF_SCOUT_LEAD, ...ROTATED_LEADS, GEMINI_TAIL],
+    policy: {
+      temperature: 0.2,
+      maxTokens: 1200,
+      jsonMode: true,
+      timeoutMs: 60_000,
+      maxModels: 3,
+      budgetEnv: "AI_CHAIN_TOTAL_BUDGET_MS",
+    },
+    gates: [
+      "isValidArabicTermValue (per value — pure MSA only)",
+      "deterministic-dialect-dictionary pass first (position-safe swaps only)",
+      "validateDialectRepair (blog-msa — strong=0, weak strictly improved, no NEW latin, preservation family)",
+    ],
+    metering: { scope: "blog:dialect-tokens-ar" },
+    entry: { surface: "gha-workflow", trigger: "P4 localized dialect repair (marker+context conversion call)" },
+    knobs: ["CF_ARM_ENABLED"],
+    doc: {
+      since: "AI-QUALITY-REPAIR-LOOP 2026-11-16",
+      rationale:
+        "Token-only {marker→MSA} JSON with each marker's sentence for disambiguation (est <1.5k tokens ⇒ groq-eligible); repairs the live «حاجة» failure class (the 2026-11-16 scheduled AR run + 8/13 AR runs).",
+      evidence: "blog-pipeline.ts translateDialectTokens + blog-msa.ts validateDialectRepair",
+    },
+  },
+
   "blog:latin-repair-ar": {
     id: "blog:latin-repair-ar",
     family: "blog",

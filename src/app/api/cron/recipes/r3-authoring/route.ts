@@ -133,6 +133,19 @@ export async function GET(request: NextRequest) {
     const per = bundle.nutrition?.perServing ?? {};
     const idea = qi.idea as unknown as Partial<RecipeIdea>;
     if (!idea?.themeAr || !idea?.themeEn) throw new Error("idea artifact missing — rerun r0-idea");
+    // AI-QUALITY-REPAIR-LOOP (owner order 2026-11-16): the ONE-SHOT
+    // repair directive the runner reset preserved from the R5 hold
+    // (bundle.repair.directive — previously the reset WIPED the
+    // diagnostics so the repair re-run was a blind redraw). Consumed
+    // ONLY by the first authoring attempt of this run; the success-path
+    // bundle write below drops the stamp (one-shot law — the B1
+    // precedent from the blog p4-review loop).
+    const stampedDirective =
+      typeof (qi.bundle ?? {}).repair === "object" &&
+      (qi.bundle ?? {}).repair !== null &&
+      typeof ((qi.bundle ?? {}).repair as { directive?: unknown }).directive === "string"
+        ? String(((qi.bundle ?? {}).repair as { directive?: string }).directive).slice(0, 1500)
+        : undefined;
 
     const computedPerServing = {
       calories: Math.round(Number(per.calories ?? 0)),
@@ -172,11 +185,17 @@ export async function GET(request: NextRequest) {
     for (const language of ["ar", "en"] as const) {
       let done: { version: AuthoredVersion; source: string } | null = null;
       let lastErr = "";
+      // AI-QUALITY-REPAIR-LOOP: the R1-stamped directive rides ONLY the
+      // first attempt of this run (one-shot law); in-loop early-gate
+      // rejections feed the NEXT attempt their OWN violations — the
+      // redraw is now directed instead of blind.
+      let loopDirective = stampedDirective;
       for (let attempt = 0; attempt <= MAX_AUTHOR_REPAIRS && !done; attempt++) {
         try {
           done = await authorRecipeVersion(language, {
             ...authorInput,
             stepsOutline: language === "ar" ? structure.stepsOutlineAr ?? [] : structure.stepsOutlineEn ?? [],
+            repairDirective: loopDirective,
           });
           // REC-12 (audit AI-GENERATION-PIPELINES 2026-11-15, P1 bucket
           // 7): the CHEAP deterministic checks used to run ONLY at R5 —
@@ -191,6 +210,11 @@ export async function GET(request: NextRequest) {
             if (earlyViolations.length > 0) {
               lastErr = earlyViolations.join(" | ");
               console.warn(`[recipes/r3] REC-12 early gate rejected ${language} attempt ${attempt + 1}: ${lastErr}`);
+              // AI-QUALITY-REPAIR-LOOP: the next attempt carries THESE
+              // violations as its repair directive (B1-style — the model
+              // learns what failed instead of re-reading the identical
+              // prompt and reproducing the identical defect).
+              loopDirective = lastErr.slice(0, 1500);
               done = null;
               continue;
             }
@@ -245,6 +269,10 @@ export async function GET(request: NextRequest) {
       ...(qi.bundle ?? {}),
       versions: Object.fromEntries(versions.map(({ language, version, source }) => [language, { ...version, source }])),
       pairSlug: finalSlug,
+      // AI-QUALITY-REPAIR-LOOP: the one-shot directive is CONSUMED —
+      // a successful re-authoring never carries a stale repair stamp
+      // forward (the B1 one-shot law).
+      repair: undefined,
     };
     const qErr = await updateRecipeQueueItem(queueId, {
       status: "authored",

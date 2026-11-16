@@ -4,10 +4,12 @@ import {
   ensureFaqSection,
   countWords,
   repairArabicLatinContamination,
+  repairArabicDialectContamination,
   type OutlinePlan,
   type ReviewReport,
 } from "@/lib/blog-pipeline";
-import { scanLatinContamination } from "@/lib/blog-msa";
+import { scanLatinContamination, scanArabicDialect } from "@/lib/blog-msa";
+import { UnfixableDefectError } from "@/lib/quality-repair/repair-ledger";
 import { verifyCronAuth } from "@/lib/cron-auth";
 import { cronBlogQueueQuerySchema } from "@/lib/validation/schemas";
 import type { LanguageResearch } from "@/lib/blog-research";
@@ -18,6 +20,7 @@ import {
   requireRowLang,
   updateQueueItem,
   markQueueItemFailed,
+  stampQueueRowRepairDirective,
   type QueueItem,
 } from "@/lib/blog-queue";
 import { isSupabaseAdminConfigured } from "@/lib/supabase/admin";
@@ -147,9 +150,29 @@ export async function GET(request: NextRequest) {
     // images/length preserved + zero dialect + zero Latin). A failing
     // repair THROWS → markQueueItemFailed → the runner's ×3 retry re-runs
     // P4 on a fresh model draw. EN articles skip (Latin is their prose).
+    //
+    // AI-QUALITY-REPAIR-LOOP (owner order 2026-11-16): the DIALECT pass
+    // now runs FIRST — the live failure class (run التشغيلة العربية المجدولة (16 نوفمبر 2026) + 8 of
+    // the last 13 AR runs before 2026-11-16) died because «حاجة»×1 was
+    // detected, no repairer existed for Arabic dialect words, and the
+    // validator demanded an improvement nothing could produce. The
+    // dialect pass (dictionary + context-aware AI tokens + the shared
+    // repair loop) fixes the markers BEFORE the Latin pass runs, so
+    // validateMsaConversion's weak-improvement clause judges an output
+    // that genuinely improved. NO gate changed — a repairer was added.
     let finalMd = withFaq.md;
     let latinRepairNote: string | null = null;
+    let dialectRepairNote: string | null = null;
     if (lang === "ar") {
+      const dialect = scanArabicDialect(finalMd);
+      if (dialect.strong > 0 || dialect.weak > 0) {
+        console.log(
+          `[blog/p4-review] dialect markers detected (strong=${dialect.strong}, weak=${dialect.weak}) — dialect repair pass engaged`,
+        );
+        const repaired = await repairArabicDialectContamination(finalMd);
+        finalMd = repaired.out;
+        dialectRepairNote = `dialect-repair: ${repaired.ledgerSummary}`;
+      }
       const latin = scanLatinContamination(finalMd);
       if (latin.count > 0) {
         console.log(
@@ -169,6 +192,7 @@ export async function GET(request: NextRequest) {
           ...(withFaq.appended
             ? [`appended ${withFaq.appendedCount} topic-relevant FAQ item(s) from P0 answers`]
             : []),
+          ...(dialectRepairNote ? [dialectRepairNote] : []),
           ...(latinRepairNote ? [latinRepairNote] : []),
         ],
       },
@@ -192,12 +216,63 @@ export async function GET(request: NextRequest) {
       coverage: review.report.keywordCoverage,
       source: review.source,
       ...(repairDiagnostics ? { repairDirected: true } : {}),
+      ...(dialectRepairNote ? { dialectRepair: dialectRepairNote } : {}),
       ...(latinRepairNote ? { latinRepair: latinRepairNote } : {}),
     });
   } catch (e) {
-    const msg = e instanceof Error ? e.message : String(e);
+    const err = e instanceof Error ? e : new Error(String(e));
+    const msg = err.message || "Unknown";
     console.error("[blog/p4-review] Error:", msg);
-    if (queueId) await markQueueItemFailed(queueId, `p4: ${msg || "Unknown"}`);
-    return NextResponse.json({ error: msg || "Failed" }, { status: 500 });
+    if (queueId) await markQueueItemFailed(queueId, `p4: ${msg}`);
+    // AI-QUALITY-REPAIR-LOOP (owner order 2026-11-16): a DETERMINISTIC
+    // quality-gate failure at P4 (the dialect/Latin repair validators —
+    // the exact class that killed run التشغيلة العربية المجدولة (16 نوفمبر 2026)) is a REPAIR
+    // DIRECTIVE, not a transient error: the blind ×3 runner retry
+    // re-reads the IDENTICAL prompt on the IDENTICAL draft and
+    // reproduces the identical defect. The 500 body now carries the
+    // SAME machine-readable contract P5 emits (blog-repair-target's
+    // closed set — p4-review is already a member) plus the gate
+    // violations as repairDiagnostics, so run-step.sh's repair chain
+    // re-runs P4 with a ONE-SHOT directed repair directive (the B1
+    // law, now self-referential for P4's own gate failures). The
+    // UnfixableDefectError ledger rides the diagnostics so the
+    // directed re-review knows every strategy already tried and why
+    // each failed. Parse/length failures stay the plain ×3 fresh-draw
+    // class (no content exists to direct a repair at). No gate or
+    // threshold changed — only WHO recovers the row and WHEN.
+    const rerunTarget =
+      /^(dialect|latin)-repair failed|quality-repair unfixable/i.test(msg) ? "p4-review" : null;
+    const repairDiag =
+      rerunTarget === "p4-review"
+        ? buildP4RepairDiagnostics(msg, err instanceof UnfixableDefectError ? err.ledger : null)
+        : undefined;
+    if (rerunTarget && queueId) {
+      await stampQueueRowRepairDirective(queueId, rerunTarget);
+    }
+    return NextResponse.json(
+      rerunTarget
+        ? {
+            error: msg,
+            rerunTarget,
+            ...(repairDiag ? { repairDiagnostics: repairDiag } : {}),
+          }
+        : { error: msg },
+      { status: 500 },
+    );
   }
+}
+
+/**
+ * B1 twin for P4's own gate failures (the P5 buildRepairDiagnostics
+ * law, scoped to what P4 knows): the violation text (minus the p4:
+ * prefix) plus — when the shared repair loop exhausted its strategies —
+ * the honest ledger summary (defects that remained, every strategy
+ * tried, why each failed). Capped by the same sanitize law the P4
+ * prompt applies to incoming directives (1,500 chars, control chars
+ * stripped upstream by sanitizeRepairDirective).
+ */
+function buildP4RepairDiagnostics(msg: string, ledger: { unfixableReason?: string } | null): string {
+  const base = msg.replace(/^p4:\s*/, "").trim();
+  const ledgerLine = ledger?.unfixableReason ? ` ${ledger.unfixableReason}` : "";
+  return `${base}${ledgerLine}`.replace(/\s+/g, " ").slice(0, 1500);
 }

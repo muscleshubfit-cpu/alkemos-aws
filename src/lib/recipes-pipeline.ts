@@ -421,6 +421,14 @@ export async function authorRecipeVersion(
     ingredients: ReadonlyArray<{ nameAr: string; nameEn: string; amountG: number; weightState: string }>;
     stepsOutline: readonly string[];
     computedPerServing: { calories: number; protein: number; carbs: number; fat: number; fiber: number };
+    /** AI-QUALITY-REPAIR-LOOP (owner order 2026-11-16): the ONE-SHOT
+     * repair directive — the exact deterministic gate violations the
+     * previous authoring attempt (or the R5 hold the runner reset)
+     * produced, threaded into the prompt as a B1-style REPAIR note so
+     * the model fixes the NAMED causes instead of re-reading the
+     * identical prompt and reproducing the identical violations. Absent
+     * on every normal run (byte-identical prompt). */
+    repairDirective?: string;
   },
 ): Promise<{ version: AuthoredVersion; source: string }> {
   const ar = language === "ar";
@@ -431,6 +439,17 @@ export async function authorRecipeVersion(
         : `- ${i.nameEn}: ${i.amountG} g (${i.weightState})`,
     )
     .join("\n");
+
+  // AI-QUALITY-REPAIR-LOOP: the sanitized one-shot repair block (the
+  // B1 sanitize law — control chars stripped, single line, ≤1500 chars).
+  // Absent ⇒ the prompt array is byte-identical to the pre-2026-11-16
+  // authoring prompt (normal runs never see it).
+  const repairBlock = (() => {
+    const raw = input.repairDirective;
+    if (!raw) return null;
+    const cleaned = raw.replace(/[\u0000-\u001f\u007f]+/g, " ").replace(/\s+/g, " ").trim();
+    return cleaned ? cleaned.slice(0, 1500) : null;
+  })();
 
   const prompt = ar
     ? [
@@ -453,6 +472,14 @@ export async function authorRecipeVersion(
         `قانون تماسك الخطوات (تُفحص آليًّا): كل خطوة تذكر فقط مكونات القائمة الفعلية — لا تذكر مكوّنًا غير موجود بالقائمة (ولا حتى كريمات/أجبانًا غير مدرجة)، وكل مكوّن غير اختياري يجب أن يظهر في خطوة واحدة على الأقل.`,
         `مخطط الخطوات المقترح:`,
         input.stepsOutline.map((s, i) => `${i + 1}. ${s}`).join("\n"),
+        ...((repairBlock
+          ? [
+              ``,
+              `إعادة إصلاح موجّهة — النسخة السابقة رُفضت بوابات الجودة الحتمية لهذه المخالفات بالضبط (أصلح كل واحدة عند سببها الحقيقي؛ التعليمات أعلاه كلها سارية كاملة):`,
+              repairBlock,
+              `إصلاح المخالفة يعني تصحيح سببها — ممنوع التغطية بحشو أو تكرار أو اختلاق معلومات.`,
+            ]
+          : []) as string[]),
         ``,
         `أخرج JSON صارمًا فقط بالحقول:`,
         `{"title":"...","excerpt":"...","steps":["..."],"tips":"...","storageInfo":"...","substitutions":[{"from":"...","to":"...","note":"..."}],"metaTitle":"...","metaDescription":"..."}`,
@@ -475,6 +502,14 @@ export async function authorRecipeVersion(
         `STEPS COHERENCE (gate-enforced): steps mention ONLY ingredients from the actual list — never a listed-nowhere ingredient (not even creams/cheeses absent from the list), and every non-optional ingredient must appear in at least one step.`,
         `Suggested steps outline:`,
         input.stepsOutline.map((s, i) => `${i + 1}. ${s}`).join("\n"),
+        ...((repairBlock
+          ? [
+              ``,
+              `DIRECTED REPAIR RETRY — the previous version of this recipe was REJECTED by the deterministic quality gates for EXACTLY these violations (fix every one at its actual cause; all the standing instructions above still apply in full):`,
+              repairBlock,
+              `Fixing a violation means correcting its cause — NEVER mask it with filler, repetition, or invented facts.`,
+            ]
+          : []) as string[]),
         ``,
         `Respond with STRICT JSON only:`,
         `{"title":"...","excerpt":"...","steps":["..."],"tips":"...","storageInfo":"...","substitutions":[{"from":"...","to":"...","note":"..."}],"metaTitle":"...","metaDescription":"..."}`,

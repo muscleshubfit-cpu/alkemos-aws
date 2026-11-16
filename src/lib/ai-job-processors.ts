@@ -1416,40 +1416,100 @@ async function runArticleGenerate(payload: Record<string, unknown>) {
   // (ai-job:article-generate) — this single-shot generator is the FALLBACK
   // engine of the Phase-162 pipeline-first twin; the blog:draft-generate
   // spec documents the pairing and ت4 pins ladder identity.
-  const { text, model } = await dispatchAI("ai-job:article-generate", lines.join("\n\n"), {
-    // P2-4 (INF-20): the user-text DATA-block directive rides the system
-    // prompt — per-language (the sys law above is already bilingual).
-    systemPrompt: `${sys}\n\n${isAr ? USER_TEXT_DATA_DIRECTIVE_AR : USER_TEXT_DATA_DIRECTIVE_EN}`,
-  });
+  //
+  // AI-QUALITY-REPAIR-LOOP (owner order 2026-11-16): the DIRECTED REPAIR
+  // RETRY — the plan-family callValidatedChain law (plan-generator.ts
+  // 575-599), ported to the single-shot generator. The pre-2026-11-16
+  // path threw the QUALITY FLOOR violations straight into the job
+  // requeue, whose retry re-ran the same prompt family on a fresh
+  // archetype — a BLIND redraw that could reproduce the identical
+  // shallow draft. The retry now carries the EXACT violation text as a
+  // one-shot repair directive (B1 semantics: the model learns which
+  // floor rejected it); only when the directed retry ALSO fails does
+  // the honest throw fire (naming BOTH attempts) and the job requeue
+  // stands as the final recourse. No gate weakened — the floor values
+  // are byte-identical.
+  const attemptGeneration = async (
+    repairDirective: string | null,
+  ): Promise<
+    | { ok: false; violation: string }
+    | { ok: true; parsed: Record<string, unknown>; model: string; wordCount: number; sectionCount: number }
+  > => {
+    // NOTE (guard law, scripts/check-ai-router-guard.sh): the role id
+    // rides INLINE as the first argument so the guard's token scan sees
+    // the literal — the repair directive rides the PROMPT argument.
+    const { text, model } = await dispatchAI("ai-job:article-generate", repairDirective ? `${repairDirective}\n\n${lines.join("\n\n")}` : lines.join("\n\n"), {
+        // P2-4 (INF-20): the user-text DATA-block directive rides the system
+        // prompt — per-language (the sys law above is already bilingual).
+        systemPrompt: `${sys}\n\n${isAr ? USER_TEXT_DATA_DIRECTIVE_AR : USER_TEXT_DATA_DIRECTIVE_EN}`,
+      },
+    );
 
-  const parsed = parseJSON<Record<string, unknown>>(text);
-  if (!parsed || typeof parsed !== "object") {
-    throw new Error("فشل تحليل نتيجة التوليد (JSON غير صالح).");
+    const parsed = parseJSON<Record<string, unknown>>(text);
+    if (!parsed || typeof parsed !== "object") {
+      return { ok: false, violation: "فشل تحليل نتيجة التوليد (JSON غير صالح)." };
+    }
+    const title = String(parsed.title || "").slice(0, 200).trim();
+    const markdown = String(parsed.markdown || "").slice(0, 60_000).trim();
+    if (!title || markdown.length < 200) {
+      return { ok: false, violation: "النموذج لم يُرجع مقالًا كاملًا — حاول مرة أخرى." };
+    }
+
+    // QUALITY FLOOR (2026-08-28e, tightened 2026-08-28g; recalibrated
+    // 2026-08-28h after run 33176102145: gpt-oss-120b hovers 728-880 words,
+    // so the 800 floor was a coin-flip that burned the final attempt at 728
+    // while rate limits ate attempts 1-2). Floor 750 + STRUCTURE floor
+    // (≥ 5 "## " sections); the PROMPT demands 900+ so accepted drafts
+    // stay deep while the floor tolerates honest model variance.
+    const wordCount = markdown.split(/\s+/).filter(Boolean).length;
+    const sectionCount = (markdown.match(/^##\s+/gm) || []).length;
+    if (wordCount < 750) {
+      return {
+        ok: false,
+        violation: `QUALITY FLOOR: draft too shallow (${wordCount} words < 750 required) - requeueing for a deeper rewrite`,
+      };
+    }
+    if (sectionCount < 5) {
+      return {
+        ok: false,
+        violation: `QUALITY FLOOR: draft under-sectioned (${sectionCount} "## " sections < 5 required) - requeueing`,
+      };
+    }
+    return { ok: true, parsed, model, wordCount, sectionCount };
+  };
+
+  const first = await attemptGeneration(null);
+  let parsed: Record<string, unknown> | null = null;
+  let model = "";
+  let wordCount = 0;
+  let sectionCount = 0;
+  if (!first.ok) {
+    console.warn(`[article_generate] first attempt failed the quality gate: ${first.violation} — ONE directed repair retry`);
+    const directive = isAr
+      ? `إعادة إصلاح موجّهة — المحاولة السابقة رُفضت بوابات الجودة الحتمية لهذه المخالفة بالضبط (أصلح سببها الحقيقي هذه المرة؛ كل التعليمات أدناه سارية كاملة): ${first.violation}`
+      : `DIRECTED REPAIR RETRY — the previous attempt was REJECTED by the deterministic quality gates for EXACTLY this violation (fix its actual cause this time; every instruction below still applies in full): ${first.violation}`;
+    const second = await attemptGeneration(directive.slice(0, 1500));
+    if (!second.ok) {
+      throw new Error(
+        `QUALITY FLOOR unfixable after the directed repair retry — first attempt: ${first.violation} | repair retry: ${second.violation}`,
+      );
+    }
+    console.log("[article_generate] directed repair retry succeeded — the defect was actually repaired, not re-drawn");
+    parsed = second.parsed;
+    model = second.model;
+    wordCount = second.wordCount;
+    sectionCount = second.sectionCount;
+  } else {
+    parsed = first.parsed;
+    model = first.model;
+    wordCount = first.wordCount;
+    sectionCount = first.sectionCount;
   }
+  if (!parsed) throw new Error("فشل تحليل نتيجة التوليد (JSON غير صالح).");
+  // The attempt's own gates validated these shapes; re-derive for the
+  // bundle materialization below.
   const title = String(parsed.title || "").slice(0, 200).trim();
   const markdown = String(parsed.markdown || "").slice(0, 60_000).trim();
-  if (!title || markdown.length < 200) {
-    throw new Error("النموذج لم يُرجع مقالًا كاملًا — حاول مرة أخرى.");
-  }
-
-  // QUALITY FLOOR (2026-08-28e, tightened 2026-08-28g; recalibrated
-  // 2026-08-28h after run 33176102145: gpt-oss-120b hovers 728-880 words,
-  // so the 800 floor was a coin-flip that burned the final attempt at 728
-  // while rate limits ate attempts 1-2). Floor 750 + STRUCTURE floor
-  // (≥ 5 "## " sections); the PROMPT demands 900+ so accepted drafts
-  // stay deep while the floor tolerates honest model variance.
-  const wordCount = markdown.split(/\s+/).filter(Boolean).length;
-  const sectionCount = (markdown.match(/^##\s+/gm) || []).length;
-  if (wordCount < 750) {
-    throw new Error(
-      `QUALITY FLOOR: draft too shallow (${wordCount} words < 750 required) - requeueing for a deeper rewrite`,
-    );
-  }
-  if (sectionCount < 5) {
-    throw new Error(
-      `QUALITY FLOOR: draft under-sectioned (${sectionCount} "## " sections < 5 required) - requeueing`,
-    );
-  }
   const faqOut = Array.isArray(parsed.faq)
     ? (parsed.faq as unknown[])
         .map((f) => {

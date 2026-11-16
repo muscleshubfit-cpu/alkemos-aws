@@ -562,3 +562,114 @@ export function validateMsaConversion(
     },
   };
 }
+
+// ═══════════════════════════════════════════════════════════════
+// AI-QUALITY-REPAIR-LOOP (owner order 2026-11-16) — the dialect
+// repair's OWN pre-write gate. THE LIVE FAILURE CLASS IT CLOSES:
+// scheduled AR run التشغيلة العربية المجدولة (16 نوفمبر 2026) (and 8 of the last 13 AR runs before
+// 2026-11-16) died at `weak markers did not improve (1 → 1: حاجة×1)`
+// because the ONLY repair pass was the Latin-token repairer — it can
+// never touch an Arabic dialect word, so the validator demanded an
+// improvement no existing tool could produce, and the ×3 blind retry
+// re-read the identical prompt and reproduced the identical marker.
+//
+// The DIALECT repair pass (blog-pipeline.ts, dictionary + localized
+// AI tokens) now runs FIRST and is graded by THIS dialect-scoped
+// validator — same law text, same preservation family, scoped to the
+// dimensions the dialect repairer can actually be held accountable
+// for:
+//   1. zero STRONG markers remain (unambiguous dialect never ships)
+//   2. weak markers strictly improved when the input carried any —
+//      the EXACT clause that killed the live runs, now judging a
+//      repairer that CAN fix it
+//   3. no NEW Latin tokens (latinAfter ≤ latinBefore — the Latin
+//      repair pass runs AFTER and owns the pre-existing tokens; a
+//      dialect→MSA swap must never introduce a bare Latin token)
+//   4. Arabic word-count ratio within [0.55, 1.60]
+//   5. image URLs byte-identical
+//   6. link URLs exactly preserved (a word-level swap never
+//      legitimately deletes content)
+//   7. heading count identical (word-level swaps never merge or add
+//      a heading)
+//   8. no NEW banned session-service wording
+// Every gate in validateMsaConversion above stays byte-identical —
+// this is an ADDITION, not a loosening.
+// ═══════════════════════════════════════════════════════════════
+
+export function validateDialectRepair(before: string, after: string): MsaValidation {
+  const violations: string[] = [];
+
+  const sb = scanArabicDialect(before);
+  const sa = scanArabicDialect(after);
+  if (sa.strong > 0) {
+    violations.push(
+      `strong dialect markers remain: ${sa.strongHits.map(([m, c]) => `${m}×${c}`).join(", ")}`,
+    );
+  }
+  // Same live clause as validateMsaConversion: weak must STRICTLY
+  // improve when the input carried any (0→0 passes for clean chunks).
+  if (before.trim() && sb.weak > 0 && sa.weak >= sb.weak) {
+    violations.push(
+      `weak markers did not improve (${sb.weak} → ${sa.weak}: ${sa.weakHits.map(([m, c]) => `${m}×${c}`).join(", ")})`,
+    );
+  }
+
+  // No NEW Latin — the dialect repair must not introduce tokens the
+  // Latin pass did not already have to fix.
+  const lb = scanLatinContamination(before);
+  const la = scanLatinContamination(after);
+  if (la.count > lb.count) {
+    violations.push(
+      `latin contamination grew (${lb.count} → ${la.count}: ${la.tokens.slice(0, 10).join(", ")})`,
+    );
+  }
+
+  const wb = countArabicWords(before);
+  const wa = countArabicWords(after);
+  const ratio = wb > 0 ? wa / wb : 0;
+  if (wb > 0 && (ratio < 0.55 || ratio > 1.6)) {
+    violations.push(`arabic word-count ratio out of bounds: ${ratio.toFixed(2)} (${wb} → ${wa})`);
+  }
+
+  const imgsB = extractImageUrls(before);
+  const imgsA = extractImageUrls(after);
+  if (imgsB.join("\n") !== imgsA.join("\n")) {
+    violations.push(`image URLs changed (${imgsB.length} → ${imgsA.length})`);
+  }
+
+  const linksB = [...new Set(extractLinkUrls(before))].sort();
+  const linksA = [...new Set(extractLinkUrls(after))].sort();
+  if (linksB.join("\n") !== linksA.join("\n")) {
+    violations.push(
+      `link URLs not preserved (lost: ${linksB.filter((l) => !linksA.includes(l)).join(", ") || "none"}; added: ${linksA.filter((l) => !linksB.includes(l)).join(", ") || "none"})`,
+    );
+  }
+
+  const hb = countHeadings(before);
+  const ha = countHeadings(after);
+  if (ha !== hb) {
+    violations.push(`heading count changed (${hb} → ${ha})`);
+  }
+
+  const banB = countBannedPhrases(before);
+  const banA = countBannedPhrases(after);
+  if (banA > banB) {
+    violations.push(`banned session-service wording added (${banB} → ${banA})`);
+  }
+
+  return {
+    ok: violations.length === 0,
+    violations,
+    metrics: {
+      strongBefore: sb.strong,
+      strongAfter: sa.strong,
+      weakBefore: sb.weak,
+      weakAfter: sa.weak,
+      latinBefore: lb.count,
+      latinAfter: la.count,
+      wordsBefore: wb,
+      wordsAfter: wa,
+      ratio,
+    },
+  };
+}

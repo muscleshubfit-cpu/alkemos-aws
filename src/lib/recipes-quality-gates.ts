@@ -183,17 +183,27 @@ export function runRecipeQualityGates(input: RecipeGateInput): GateViolation[] {
     });
   }
 
-  /* ── N-GATE-3: calorie consistency (4/4/9) within the declared band. ── */
+  /* ── N-GATE-3: calorie consistency (4/4/9) within the declared band.
+     AI-QUALITY-REPAIR-LOOP (owner order 2026-11-16): the R5 rerun
+     target moved r2-nutrition → r1-structure. R2 is PURE computation —
+     re-running it on the same ingredients/refs reproduces the identical
+     inconsistency deterministically and burns the whole repair budget
+     on a no-op loop (the exact class the owner banned: «منع حلقات
+     إعادة المحاولة التي تعيد النتيجة نفسها دون تقدم»). The root cause
+     of a consistency miss is the structure/reference COMBO, which only
+     r1 can change — the same target R2's own in-stage hold already uses
+     (r2-nutrition/route.ts maps its N-GATE-3 hold to r1-structure).
+     Same-commit canary law: recipes-gates-hold.test.ts updated. ── */
   if (!input.consistency.total.pass) {
     violations.push({
       gate: "N-GATE-3",
-      message: `N-GATE-3: total calories ${input.consistency.total.computed} vs macros-derived ${input.consistency.total.fromMacros} outside tolerance — rerun r2-nutrition`,
+      message: `N-GATE-3: total calories ${input.consistency.total.computed} vs macros-derived ${input.consistency.total.fromMacros} outside tolerance — rerun r1-structure`,
     });
   }
   if (!input.consistency.perServing.pass) {
     violations.push({
       gate: "N-GATE-3",
-      message: `N-GATE-3: per-serving calories ${input.consistency.perServing.computed} vs macros-derived ${input.consistency.perServing.fromMacros} outside tolerance — rerun r2-nutrition`,
+      message: `N-GATE-3: per-serving calories ${input.consistency.perServing.computed} vs macros-derived ${input.consistency.perServing.fromMacros} outside tolerance — rerun r1-structure`,
     });
   }
 

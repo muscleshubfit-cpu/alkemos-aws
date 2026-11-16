@@ -287,6 +287,16 @@ export async function requeueRecipeRow(queueId: string): Promise<{ ok: boolean; 
  * step IS r1-structure) skip this reset entirely and re-run R1 on the
  * held row directly — the route accepts "held" and reads its own
  * error_message as the one-shot repair directive.
+ *
+ * AI-QUALITY-REPAIR-LOOP (owner order 2026-11-16): the reset now
+ * PRESERVES the gate violations as a structured `repair` stamp inside
+ * the bundle before clearing error_message — the pre-2026-11-16 reset
+ * wiped the diagnostics, so every r3/r4-targeted repair re-run was a
+ * BLIND regeneration that could reproduce the identical violations
+ * (the blog's B1 precedent, ported: the directive names what failed).
+ * The stamp is consumed by the targeted stage (r3-authoring threads
+ * it into the authoring prompt; r1's self-hold keeps its own
+ * error_message path untouched by law).
  */
 export async function resetRecipeRowForRepair(
   queueId: string,
@@ -303,8 +313,24 @@ export async function resetRecipeRowForRepair(
   };
   const status = before[target];
   if (!status) return { ok: false, reset: false, error: `unknown rerun_target: ${target}` };
+  // Preserve the gate violations as the bundle's one-shot repair
+  // directive (blank when there was nothing to preserve — a plain
+  // transient failure — so the re-run stays the fresh draw it always
+  // was for that class).
+  const directive = (qi.error_message ?? "").slice(0, 2000) || "";
+  const nextBundle = directive
+    ? {
+        ...(qi.bundle ?? {}),
+        repair: {
+          directive,
+          target,
+          stampedAt: new Date().toISOString(),
+        },
+      }
+    : (qi.bundle ?? {});
   const err = await updateRecipeQueueItem(queueId, {
     status,
+    bundle: JSON.stringify(nextBundle),
     error_message: null,
     rerun_target: null,
     repair_cycles: (qi.repair_cycles ?? 0) + 1,

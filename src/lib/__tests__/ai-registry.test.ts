@@ -254,15 +254,15 @@ describe("ت3 — specialization canaries (structural laws)", () => {
     for (const k of ENV_KEYS) delete process.env[k];
   });
 
-  it("cloudflare leads ONLY its two measured first-wave roles", () => {
+  it("cloudflare leads ONLY its measured first-wave roles (AI-QUALITY-REPAIR-LOOP: the dialect twin rides the same fixed-lead law)", () => {
     const cfIds = new Set<string>();
     for (const [id, spec] of Object.entries(AI_FUNCTION_REGISTRY)) {
       for (const entry of spec.ladder) {
         if (entry.provider === "cloudflare") cfIds.add(id);
       }
     }
-    expect([...cfIds].sort()).toEqual(["blog:latin-tokens-ar", "blog:pairing"]);
-    // and both are fixed-lead with measured evidence
+    expect([...cfIds].sort()).toEqual(["blog:dialect-tokens-ar", "blog:latin-tokens-ar", "blog:pairing"]);
+    // and every one is fixed-lead with measured evidence
     for (const id of cfIds) {
       const lead = AI_FUNCTION_REGISTRY[id].ladder[0];
       expect(lead.role, `${id} lead role`).toBe("fixed-lead");

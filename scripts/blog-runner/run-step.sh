@@ -21,9 +21,18 @@
 #     the SAME queue row (status gates advance: p2 → p3 → p4 → p5),
 #     then re-attempts P5. Budget: ≤ MAX_REPAIRS (2) repair cycles,
 #     then the honest markFailed of today. No gate/threshold changed.
-#   • steps P0–P4 keep their plain ×3 transient retry (they never
-#     exit 3 — the contract is emitted only by P5's deterministic
-#     gates; quota/duplicate skips are 200s and never reach here).
+#   • steps P0–P3 keep their plain ×3 transient retry (they never
+#     emit the contract — see the P4 exception below).
+#   • AI-QUALITY-REPAIR-LOOP (owner order 2026-11-16): P4-review itself
+#     now emits the SAME contract for its OWN deterministic quality-gate
+#     failures (dialect/Latin repair validators — the exact class that
+#     killed AR run 43875066747: «weak markers did not improve (1 → 1:
+#     حاجة×1)» ×3 blind retries). A p4-review exit-3 carrying
+#     rerunTarget=p4-review re-runs P4 with P4_REPAIR_DIAGNOSTICS (the
+#     B1 directive law, self-referential); when the directed re-review
+#     succeeds the wrapper exits 0 (P5 is the NEXT workflow step — it
+#     never runs inside this one); a failing chain falls back to the
+#     plain ×3 fresh-draw retry and the honest markFailed stands.
 #   • p2-content repair re-runs with P2_FORCE_REGENERATE=1 (the
 #     ?force=1 contract — regenerate content over the draft while
 #     research0/outline/images stay in the bundle).
@@ -141,9 +150,14 @@ while :; do
         ;;
     esac
     if [ "$STEP" != "p5-publish" ]; then
-      # P0–P4 routes never emit rerunTarget; guard the contract anyway.
-      echo "❌ [$STEP] repair contract from a non-P5 step — honest failure"
-      exit 1
+      # AI-QUALITY-REPAIR-LOOP: p4-review may emit its OWN repair
+      # contract (rerunTarget=p4-review, self-repair). Every other
+      # non-P5 step — and a p4-review failure naming a DIFFERENT
+      # target — stays the honest exit-1 failure (closed-set law).
+      if [ "$STEP" != "p4-review" ] || [ "$TARGET" != "p4-review" ]; then
+        echo "❌ [$STEP] repair contract from a non-P5 step — honest failure"
+        exit 1
+      fi
     fi
     if [ -z "${QUEUE_ID:-}" ]; then
       echo "❌ [$STEP] repair contract without QUEUE_ID — honest failure"
@@ -182,31 +196,46 @@ while :; do
     fi
 
     i="$CHAIN_FROM"
+    chain_failed=0
     while [ "$i" -le "$P4_INDEX" ]; do
       RS="${PIPELINE_STEPS[$i]}"
       echo "   └─ repair step: $RS"
       if [ "$RS" = "p2-content" ]; then
         if ! MAX_REPAIRS=0 P2_FORCE_REGENERATE=1 bash "$0" "$RS" "$MAX_ATTEMPTS"; then
           echo "   └─ repair step $RS failed — chain stops (P5 re-evaluates next)"
+          chain_failed=1
           break
         fi
-      elif [ "$RS" = "p4-review" ] && [ -n "$REPAIR_DIAG" ]; then
+      elif [ "$RS" = "p4-review" ] && { [ -n "$REPAIR_DIAG" ] || [ "$STEP" = "p4-review" ]; }; then
         # B1: the violations ride THIS p4-review re-run only (inline env —
         # the recursive child pins MAX_REPAIRS=0 so the directive can
-        # never cascade into a nested loop; next P5 failure re-captures
-        # fresh diagnostics for cycle 2).
+        # never cascade into a nested loop; next P5/P4 failure re-captures
+        # fresh diagnostics for cycle 2). The p4 self-repair chain rides
+        # the same branch: its own captured diagnostics (or a plain
+        # directed re-review when none survived capture).
         if ! MAX_REPAIRS=0 P4_REPAIR_DIAGNOSTICS="$REPAIR_DIAG" bash "$0" "$RS" "$MAX_ATTEMPTS"; then
-          echo "   └─ repair step $RS failed — chain stops (P5 re-evaluates next)"
+          echo "   └─ repair step $RS failed — chain stops (the failing step re-evaluates next)"
+          chain_failed=1
           break
         fi
       else
         if ! MAX_REPAIRS=0 bash "$0" "$RS" "$MAX_ATTEMPTS"; then
           echo "   └─ repair step $RS failed — chain stops (P5 re-evaluates next)"
+          chain_failed=1
           break
         fi
       fi
       i=$((i + 1))
     done
+
+    # AI-QUALITY-REPAIR-LOOP: a p4-review SELF-repair that succeeded has
+    # completed this step's job — the row is reviewed and P5 is the next
+    # WORKFLOW step (never re-attempted inside this wrapper). Exit 0 so
+    # the workflow advances to P5 instead of re-reviewing a clean row.
+    if [ "$STEP" = "p4-review" ] && [ "$chain_failed" -eq 0 ]; then
+      echo "✓ $STEP repaired (directed re-review succeeded — P5 runs as the next workflow step)"
+      exit 0
+    fi
 
     # Re-attempt the failed step immediately — the repair IS the
     # strategy change; no backoff sleep between repair cycles (audit:

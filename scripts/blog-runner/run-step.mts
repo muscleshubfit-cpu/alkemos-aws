@@ -37,12 +37,17 @@
  *   repair chain after a P5 battery/latin failure; never by workflows).
  *
  * EXIT CODES: 0 = ok:true · 1 = step reported failure · 2 = misconfig
- *             3 = R1 REPAIR CONTRACT — deterministic P5 gate failure
- *                 carrying a machine-readable rerunTarget (stdout line
- *                 `RERUN_TARGET=<step>`, plus `RERUN_DIAGNOSTICS_B64=`
- *                 when the body carries B1 repairDiagnostics); run-step.sh
- *                 executes the repair in-run instead of blind-retrying
- *                 (audit §8.2 A2 + B1)
+ *             3 = R1 REPAIR CONTRACT — deterministic quality-gate
+ *                 failure carrying a machine-readable rerunTarget
+ *                 (stdout line `RERUN_TARGET=<step>`, plus
+ *                 `RERUN_DIAGNOSTICS_B64=` when the body carries B1
+ *                 repairDiagnostics); run-step.sh executes the repair
+ *                 in-run instead of blind-retrying (audit §8.2 A2 +
+ *                 B1). Emitted by P5's deterministic gates AND — since
+ *                 AI-QUALITY-REPAIR-LOOP (owner order 2026-11-16) — by
+ *                 P4-review's own dialect/Latin repair validators
+ *                 (rerunTarget=p4-review self-repair; the exact class
+ *                 that killed AR run 43875066747)
  */
 import { NextRequest } from "next/server";
 import { P5_RERUN_TARGETS } from "../../src/lib/blog-repair-target";
@@ -195,11 +200,13 @@ async function main(): Promise<void> {
   try {
     const parsedBody = JSON.parse(text);
     ok = ok && parsedBody?.ok === true;
-    // R1 REPAIR CONTRACT (audit §8.2 A2): a deterministic P5 gate
+    // R1 REPAIR CONTRACT (audit §8.2 A2): a deterministic quality-gate
     // failure returns { error, rerunTarget } — translate it to exit
     // code 3 + a machine-readable stdout line for run-step.sh's
     // repair loop. Only the closed-set contract targets are honored;
-    // anything else stays a plain exit-1 failure.
+    // anything else stays a plain exit-1 failure. (P5's gates and,
+    // since AI-QUALITY-REPAIR-LOOP, P4-review's repair validators both
+    // ride this contract.)
     if (
       !ok &&
       typeof parsedBody?.rerunTarget === "string" &&

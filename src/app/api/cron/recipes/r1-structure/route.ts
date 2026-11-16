@@ -93,9 +93,22 @@ export async function GET(request: NextRequest) {
 
     // Structure with the inline N-GATE-1 repair ladder.
     const bundle = qi.bundle ?? {};
+    // AI-QUALITY-REPAIR-LOOP (owner order 2026-11-16): a row the repair
+    // chain reset carries the preserved gate violations as
+    // bundle.repair.directive (the reset's B1 stamp). R1's OWN
+    // missing-refs self-hold feedback (error_message, the pre-existing
+    // law) keeps priority; the stamp covers the chain-reset class
+    // (R5/R2 holds targeting r1) whose diagnostics the reset used to
+    // wipe — the re-run is now directed, not a blind redraw.
+    const stampedDirective = (() => {
+      const repair = (bundle as { repair?: unknown })["repair"];
+      if (typeof repair !== "object" || repair === null) return undefined;
+      const directive = (repair as { directive?: unknown }).directive;
+      return typeof directive === "string" ? directive.slice(0, 1500) : undefined;
+    })();
     const priorFeedback = typeof qi.error_message === "string" && qi.error_message.includes("missing nutrient refs")
       ? qi.error_message
-      : undefined;
+      : stampedDirective;
 
     let structure: RecipeStructure | null = null;
     let source = "";

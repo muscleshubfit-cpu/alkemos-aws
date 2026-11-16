@@ -84,6 +84,35 @@ describe("mapP5FailureToRerunTarget — latin body gate → p4-review (AR)", () 
   });
 });
 
+describe("mapP5FailureToRerunTarget — dialect body gate → p4-review (AR, AI-QUALITY-REPAIR-LOOP 2026-11-16)", () => {
+  it("maps the strong-marker shape (any STRONG dialect marker at publish)", () => {
+    expect(
+      mapP5FailureToRerunTarget(
+        "p5: dialect contamination in final body (strong=1, weak=0: عشان×1) — rerun p4-review",
+      ),
+    ).toBe("p4-review");
+  });
+
+  it("maps the published-corpus weak ceiling shape (weak ≥ 5)", () => {
+    expect(
+      mapP5FailureToRerunTarget(
+        "p5: dialect contamination in final body (strong=0, weak=6: حاجة×2, زي×2, كمان×2) — rerun p4-review",
+      ),
+    ).toBe("p4-review");
+  });
+
+  it("the message pattern is disjoint from the latin gate (no cross-matching)", () => {
+    // The latin pattern must NOT match the dialect message and vice
+    // versa — the two gates stay independently recognizable.
+    expect(
+      mapP5FailureToRerunTarget("p5: dialect contamination in final body (strong=2, weak=0: عشان×2) — rerun p4-review"),
+    ).toBe("p4-review");
+    expect(
+      mapP5FailureToRerunTarget("p5: latin contamination in final body (3 tokens: whey, iso) — rerun p4-review"),
+    ).toBe("p4-review");
+  });
+});
+
 describe("mapP5FailureToRerunTarget — missing artifacts → p4-review", () => {
   it("maps the pre-P4 bundle guard (route line: missing reviewed artifacts)", () => {
     expect(

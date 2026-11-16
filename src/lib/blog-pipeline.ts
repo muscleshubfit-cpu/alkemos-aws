@@ -34,8 +34,16 @@ import {
   scanArabicDialect,
   scanLatinContamination,
   validateMsaConversion,
+  validateDialectRepair,
   countArabicWords,
 } from "./blog-msa";
+// AI-QUALITY-REPAIR-LOOP (owner order 2026-11-16): the shared,
+// engine-agnostic repair-loop core — the dialect pass below is its
+// first production rider (blog domain), built on the same defect
+// contract every generation domain will report through.
+import { runTargetedRepairLoop, type RepairStrategy } from "./quality-repair/repair-loop";
+import { dialectDefectsFromScan } from "./quality-repair/defect-report";
+import { ledgerSummary } from "./quality-repair/repair-ledger";
 // AUDIT_REPORT §9-المرحلة 1, item 2 (2026-09-29) — the editorial
 // constitution now lives in ONE module (blog-editorial-law.ts) and is
 // imported byte-exact by P1/P2/P4 here AND the fallback generator in
@@ -1595,4 +1603,308 @@ export async function repairArabicLatinContamination(
       `${dictPass.applied.length} dictionary + ${modelAppliedCount} model token(s) arabized`,
   );
   return out;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// AI-QUALITY-REPAIR-LOOP (owner order 2026-11-16) — the ARABIC
+// DIALECT repair pass. THE GAP IT CLOSES (live evidence — scheduled
+// AR run التشغيلة العربية المجدولة (16 نوفمبر 2026) on c286e06e and 8 of the last 13 AR runs
+// before 2026-11-16): the review model occasionally keeps a dialect
+// marker («حاجة»×1 — WEAK set) in the P4 output; the only repair
+// pass was the Latin-token repairer whose scope is Latin tokens
+// ONLY, so the deterministic validator `weak markers did not
+// improve (1 → 1)` demanded an improvement NO tool could produce,
+// the ×3 blind retry re-read the identical prompt and reproduced the
+// identical marker, and the row failed honestly with a ~95%-complete
+// article. Detection existed; REPAIR did not.
+//
+// THE PASS (mirrors the R2 Latin-repair architecture — same
+// escalation ladder, same deterministic-judges philosophy):
+//   (a) a fully DETERMINISTIC dictionary pass first — position-safe
+//       single-token MSA swaps on the scanner's own word-boundary
+//       semantics, riding the SAME protected-span engine (images /
+//       URLs / link targets / code fences untouched — ART-22 NUL
+//       guard inherited);
+//   (b) what remains (context-dependent markers: عشان/عايز/مش…)
+//       goes to a SMALL context-aware token conversion call — the
+//       model sees the marker + its sentence ONLY (never the
+//       article), per-value-accepted via isValidArabicTermValue;
+//   (c) the DETERMINISTIC judges — validateDialectRepair (blog-msa,
+//       single MSA source): strong=0, weak strictly improved, no NEW
+//       latin, and the full preservation family (links/images/
+//       headings/ratio/banned wording).
+// The whole pass rides the shared runTargetedRepairLoop engine
+// (src/lib/quality-repair/) — no-progress cycles escalate instead of
+// repeating, and exhaustion throws UnfixableDefectError carrying the
+// honest ledger (defects + strategies + why each failed). No gate,
+// threshold, or editorial rule is weakened anywhere.
+// ═══════════════════════════════════════════════════════════════
+
+/**
+ * The deterministic dialect→MSA replacement table. PROVENANCE LAW:
+ * every entry is a marker from AR_DIALECT_STRONG_MARKERS /
+ * AR_DIALECT_WEAK_MARKERS whose MSA equivalent is position-safe as a
+ * SINGLE-TOKEN swap in any sentence slot (the live corpus's own
+ * usage). Context-dependent markers (عشان، عايز، مش، بعدين، خلاص،
+ * تمام، ينفع، بتاع، الهـ-prefix futures…) are DELIBERATELY ABSENT —
+ * they belong to the context-aware AI pass; a wrong single-token
+ * swap would trade a dialect defect for a grammar defect. Multi-word
+ * keys are matched before their word fragments (حاجات before حاجة).
+ */
+export const AR_DIALECT_REPAIR_DICTIONARY: Record<string, string> = {
+  // ── STRONG markers with position-safe swaps ──
+  "دلوقتي": "الآن",
+  "إمتى": "متى",
+  "امتى": "متى",
+  "إيه": "ماذا",
+  "ازاي": "كيف",
+  "إزاي": "كيف",
+  "فين": "أين",
+  "مفيش": "لا يوجد",
+  "كتير": "كثير",
+  "شوية": "قليل",
+  "شويه": "قليل",
+  "أوي": "جدًّا",
+  "اوى": "جدًّا",
+  "كده": "هكذا",
+  "كدة": "هكذا",
+  "برضه": "أيضًا",
+  "برضو": "أيضًا",
+  "يلا": "هيا",
+  "يللا": "هيا",
+  // ── WEAK markers with position-safe swaps ──
+  "حاجات": "أشياء",
+  "حاجة": "شيء", // THE live reference case (run التشغيلة العربية المجدولة (16 نوفمبر 2026))
+  "زي": "مثل",
+  "ليه": "لماذا",
+  "كمان": "أيضًا",
+  "كويس": "جيد",
+  "ده": "هذا",
+  "دي": "هذه",
+  "انت": "أنت",
+  "إنت": "أنت",
+  "انك": "أنك",
+  "انه": "أنه",
+  "طب": "حسنًا",
+  "المفروض": "من المفترض",
+};
+
+/** The dictionary sub-map that applies to the markers actually present
+ * (cheap `applies` for the loop strategy). */
+function dialectDictionarySubMap(markers: string[]): Map<string, string> {
+  const sub = new Map<string, string>();
+  for (const m of markers) {
+    const rep = AR_DIALECT_REPAIR_DICTIONARY[m];
+    if (rep) sub.set(m, rep);
+  }
+  return sub;
+}
+
+/**
+ * Apply an Arabic token→MSA map with the EXACT scanning semantics of
+ * countDialectMarker (blog-msa.ts) — the repair only ever touches
+ * what the detector counts. Same protected-span machinery as the
+ * Latin engine (applyLatinTokenMap): fenced code blocks verbatim,
+ * images / bare URLs / link TARGETS protected, anchors (visible
+ * prose) repaired in place, ART-22 NUL-strip inherited. Arabic word
+ * boundaries (ARABIC_LETTER_CLASS) on both sides — «المشكلة» never
+ * counts as «مش» and is never touched.
+ */
+function applyArabicTokenMap(md: string, map: Map<string, string>): LatinTokenMapResult {
+  if (!md || map.size === 0) return { out: md, applied: [] };
+  const applied = new Set<string>();
+
+  const keys = [...map.keys()].sort((a, b) => b.length - a.length);
+  const bareRules = keys.map((k) => ({
+    re: new RegExp(`(?<![\\u0621-\\u0652])${escapeRegExp(k)}(?![\\u0621-\\u0652])`, "g"),
+    rep: map.get(k) as string,
+    key: k,
+  }));
+
+  const segments = md.split(/(```[\s\S]*?```)/g);
+  const out = segments.map((seg, i) => (i % 2 === 1 ? seg : repairProse(seg))).join("");
+  return { out, applied: [...applied] };
+
+  function repairProse(seg: string): string {
+    return seg
+      .split("\n")
+      .map((line) => repairLine(line))
+      .join("\n");
+  }
+
+  function repairLine(rawLine: string): string {
+    // ART-22 (P2-8): strip NUL from the INPUT before building
+    // \u0000N\u0000 placeholders — same collision-proofing as the
+    // Latin engine (a corrupted line can never ride the restore
+    // regex and substitute a protected span).
+    const line = rawLine.replace(/\u0000/g, "");
+    const kept: string[] = [];
+    const keep = (s: string): string => {
+      kept.push(s);
+      return `\u0000${kept.length - 1}\u0000`;
+    };
+    // 1) protect images / bare URLs / link targets (anchors stay
+    //    visible prose — dialect inside an anchor is a real defect)
+    let work = line
+      .replace(/!\[[^\]]*\]\([^)]*\)/g, (m) => keep(m))
+      .replace(/https?:\/\/\S+/g, (m) => keep(m))
+      .replace(/\]\([^)]*\)/g, (m) => keep(m));
+    // 2) bare replacement on Arabic-letter boundaries
+    for (const { re, rep, key } of bareRules) {
+      work = work.replace(re, () => {
+        applied.add(key);
+        return rep;
+      });
+    }
+    // 3) restore protected spans
+    return work.replace(/\u0000(\d+)\u0000/g, (_m, i: string) => kept[Number(i)]);
+  }
+}
+
+/** Gather the FIRST-occurrence sentence context for each remaining
+ * marker — the AI pass needs it because dialect→MSA is
+ * context-sensitive («عشان» → كي/لأن، «مش» → ليس/لا). */
+function findDialectMarkerContexts(
+  md: string,
+  markers: string[],
+): Array<{ token: string; context: string }> {
+  const out: Array<{ token: string; context: string }> = [];
+  for (const token of markers.slice(0, 40)) {
+    let context = "";
+    for (const line of md.split("\n")) {
+      const idx = line.indexOf(token);
+      if (idx >= 0) {
+        context = line.trim().slice(0, 160);
+        break;
+      }
+    }
+    out.push({ token, context });
+  }
+  return out;
+}
+
+/**
+ * The SMALL context-aware conversion call (mirror of
+ * translateLatinTokens): the model sees the marker + its sentence
+ * ONLY — never the article — so the payload stays tiny and the
+ * strongest free models stay eligible. Per-value acceptance rides
+ * isValidArabicTermValue (pure MSA term, zero Latin, zero markdown,
+ * ≤8 words) plus a not-identical-to-token guard.
+ */
+export async function translateDialectTokens(
+  tokens: Array<{ token: string; context: string }>,
+): Promise<{ map: Map<string, string>; provider: string; model: string }> {
+  const map = new Map<string, string>();
+  if (tokens.length === 0) return { map, provider: "none", model: "none" };
+
+  const prompt = `علامات لهجة عامية ظهرت داخل نص عربي عن اللياقة والتغذية. مهمتك تحويل العلامات فقط إلى الفصحى الحديثة — لا يوجد نص كامل هنا.
+
+لكل علامة: جملتها الأصلية مرفقة لتفهم السياق، والمطلوب مقابل واحد بالفصحى الحديثة السهلة يحفظ المعنى في ذلك السياق تحديدًا.
+
+أعد كائن JSON فقط، دون أي شرح أو نص خارجه، بهذا الشكل الحرفي:
+{"<العلامة العامية>": "<المقابل بالفصحى>"}
+
+قواعد صارمة:
+1. كل قيمة عربية خالصة بالفصحى الحديثة السهلة — لا حرف لاتيني واحد.
+2. القيمة مقابل مباشر للعلامة في سياق جملتها (كلمة إلى بضع كلمات) — ليست جملة كاملة.
+3. ممنوع أي لهجة عامية داخل القيمة (عشان، مش، إيه…).
+4. لا تضف أي مفتاح لم يُطلب.
+5. إذا تعذّر مقابل سليم فأعد المفتاح بقيمة فارغة "".
+
+العلامات مع سياقها:
+${tokens.map((t) => `- ${t.token}${t.context ? ` | سياقها: ${t.context}` : ""}`).join("\n")}`;
+
+  // Policy mirrors blog:latin-tokens-ar (0.2 · 1200 · json · 60s ·
+  // depth 3) — the registry spec blog:dialect-tokens-ar.
+  const { text, model, provider } = await dispatchAI("blog:dialect-tokens-ar", prompt, {
+    systemPrompt: AR_MSA_EDITOR_LAW,
+  });
+
+  const parsed = parseJSON<Record<string, unknown>>(text);
+  if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+    for (const [k, v] of Object.entries(parsed)) {
+      const key = k.trim();
+      if (!tokens.some((t) => t.token === key)) continue; // only what we asked
+      if (typeof v !== "string") continue;
+      const val = v.trim();
+      if (!val || val === key) continue; // empty = honest "no equivalent"
+      if (!isValidArabicTermValue(val)) continue; // junk/dialect rejected
+      map.set(key, val);
+    }
+  }
+  return { map, provider, model };
+}
+
+/** Present-marker list from a dialect scan (strong first — the
+ * blocking class). */
+function presentMarkers(scan: { strongHits: Array<[string, number]>; weakHits: Array<[string, number]> }): string[] {
+  return [...scan.strongHits, ...scan.weakHits].map(([m]) => m);
+}
+
+/**
+ * The dialect repair pass itself — rides the SHARED
+ * runTargetedRepairLoop engine (the owner's unified mechanism):
+ *
+ *   strategy 1 "deterministic-dialect-dictionary" — position-safe
+ *       single-token swaps, ZERO AI calls;
+ *   strategy 2 "ai-dialect-tokens" — context-aware small conversion
+ *       call for the context-dependent markers.
+ *
+ * finalValidate = validateDialectRepair against the ORIGINAL input
+ * (the no-new-defect + preservation check). Exhaustion throws
+ * UnfixableDefectError carrying the ledger — the caller surfaces the
+ * honest record and the row NEVER passes as success.
+ */
+export async function repairArabicDialectContamination(markdown: string): Promise<{
+  out: string;
+  ledgerSummary: string;
+}> {
+  const initial = scanArabicDialect(markdown);
+  if (initial.strong === 0 && initial.weak === 0) {
+    return { out: markdown, ledgerSummary: "dialect-repair: clean input (0 defects)" };
+  }
+
+  // `assess` runs on every candidate BEFORE a strategy is picked, so
+  // this ref always holds the CURRENT input the strategies must
+  // consult (their `applies` gets the defect list; the input rides
+  // this closure).
+  let current = markdown;
+
+  const strategies: RepairStrategy[] = [
+    {
+      name: "deterministic-dialect-dictionary",
+      applies: () => dialectDictionarySubMap(presentMarkers(scanArabicDialect(current))).size > 0,
+      apply: async (input) => {
+        const sub = dialectDictionarySubMap(presentMarkers(scanArabicDialect(input)));
+        return applyArabicTokenMap(input, sub).out;
+      },
+    },
+    {
+      name: "ai-dialect-tokens",
+      applies: () => true, // any remaining dialect defect is addressable
+      apply: async (input) => {
+        const markers = presentMarkers(scanArabicDialect(input));
+        const { map } = await translateDialectTokens(findDialectMarkerContexts(input, markers));
+        if (map.size === 0) {
+          throw new Error("ai-dialect-tokens: لم يُعد الموديل أي مقابل مقبول للعلامات المتبقية");
+        }
+        return applyArabicTokenMap(input, map).out;
+      },
+    },
+  ];
+
+  const { output, ledger } = await runTargetedRepairLoop({
+    input: markdown,
+    assess: (text) => {
+      current = text;
+      return dialectDefectsFromScan(scanArabicDialect(text));
+    },
+    strategies,
+    finalValidate: (candidate) => validateDialectRepair(markdown, candidate).violations,
+    maxCycles: 3,
+  });
+
+  const summary = ledgerSummary(ledger);
+  console.log(`[blog-pipeline] dialect-repair ar done — ${summary}`);
+  return { out: output, ledgerSummary: summary };
 }

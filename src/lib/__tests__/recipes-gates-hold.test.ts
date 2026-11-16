@@ -102,7 +102,7 @@ describe("each failing gate produces its violation + rerun directive", () => {
     expect(v.find((x) => x.gate === "N-GATE-2")!.message).toContain("rerun r1-structure");
   });
 
-  it("N-GATE-3: out-of-band consistency → rerun r2-nutrition", () => {
+  it("N-GATE-3: out-of-band consistency → rerun r1-structure (AI-QUALITY-REPAIR-LOOP: r2 is pure computation — a deterministic no-op loop; the structure/refs combo is the root cause only r1 can change)", () => {
     const v = runRecipeQualityGates(
       baseInput({
         consistency: {
@@ -112,7 +112,7 @@ describe("each failing gate produces its violation + rerun directive", () => {
       }),
     );
     expect(v.filter((x) => x.gate === "N-GATE-3")).toHaveLength(2);
-    expect(v.find((x) => x.gate === "N-GATE-3")!.message).toContain("rerun r2-nutrition");
+    expect(v.find((x) => x.gate === "N-GATE-3")!.message).toContain("rerun r1-structure");
   });
 
   it("N-GATE-4: fabricated number in the EN prose → rerun r3-authoring", () => {

@@ -27,6 +27,10 @@ export function mapR5FailureToRerunTarget(message: string): R5RerunTarget | null
   const msg = message ?? "";
   if (msg.includes("rerun r0-idea")) return "r0-idea";
   if (msg.includes("rerun r1-structure")) return "r1-structure";
+  // AI-QUALITY-REPAIR-LOOP (owner order 2026-11-16): N-GATE-3's R5
+  // message now targets r1-structure directly (R2 is pure computation —
+  // a no-op repair loop; the structure/refs combo is the root cause).
+  // The r2-nutrition arm stays for any future in-stage R2 message.
   if (msg.includes("rerun r2-nutrition")) return "r2-nutrition";
   if (msg.includes("rerun r3-authoring")) return "r3-authoring";
   if (msg.includes("rerun r4-image")) return "r4-image";

@@ -332,11 +332,29 @@ export async function GET(request: NextRequest) {
       if (rerunTarget === "r0-idea") {
         await abandonRecipeAttemptMaster(recipeId);
       }
+      // AI-QUALITY-REPAIR-LOOP (owner order 2026-11-16): the hold now
+      // stamps the FULL violation set into the bundle's repair
+      // directive — the runner reset PRESERVES it (resetRecipeRowForRepair)
+      // and the targeted stage (r1/r3) threads it into its prompt, so
+      // the repair re-run is DIRECTED by every gate that failed (the
+      // pre-2026-11-16 loop carried only violations[0]'s target and the
+      // reset then WIPED the diagnostics — secondary violations
+      // resurfaced on later cycles burning the budget).
+      const bundleNow = (qi.bundle ?? {}) as Record<string, unknown>;
+      const bundleWithDirective = {
+        ...bundleNow,
+        repair: {
+          directive: reason,
+          target: rerunTarget ?? "",
+          stampedAt: new Date().toISOString(),
+        },
+      };
       // The runner's repair chain owns the ≤2 cycle budget; the row
       // keeps the target so the admin dashboard can requeue later too.
       await updateRecipeQueueItem(queueId, {
         status: "held",
         error_message: `R5: ${reason}`,
+        bundle: JSON.stringify(bundleWithDirective),
         ...(rerunTarget ? { rerun_target: rerunTarget } : {}),
       });
       return NextResponse.json({

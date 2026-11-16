@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse, after } from "next/server";
 import { createHash } from "crypto";
 import { parseJSON } from "@/lib/ai-provider";
+// AI-QUALITY-REPAIR-LOOP (owner order 2026-11-16): the chat surface's
+// content-quality validation + ONE directed repair (the plan-family
+// named-reason retry law, fitted to the streaming UX).
+import { validateEvoReplyQuality, repairEvoReply } from "@/lib/evo-reply-repair";
 // R5 (AI-Router unification): the EVO family rides the registry — the
 // speed-first fast chain + the streaming contract resolve from
 // ai-registry.ts (chain:"fast" is registry policy; onDelta stays the
@@ -147,6 +151,76 @@ function getAnonKey(request: NextRequest): string {
   // the SAME value for the same client (planner rows and EVO rows from
   // one network collide into ONE unified-pool counter).
   return hashIpKey(clientIp(request));
+}
+
+/**
+ * The deterministic reasoning-artifact cleaning chain (steps 1–6.5
+ * of the old inline block, extracted VERBATIM for the 2026-11-16
+ * AI-QUALITY-REPAIR-LOOP integration — the same law, now reusable by
+ * the chat repair pass so a regenerated reply gets the IDENTICAL
+ * cleaning before its quality check).
+ */
+function cleanEvoReplyText(rawAiReply: string): string {
+  let cleanText = rawAiReply;
+  // 1. Strip the model thinking blocks (think/reasoning/reflection/
+  //    analysis tags) — verbatim from the pre-2026-11-16 inline chain.
+  cleanText = cleanText
+    .replace(/<think>[\s\S]*?<\/think>\s*/gi, "")
+    .replace(/<reasoning>[\s\S]*?<\/reasoning>\s*/gi, "")
+    .replace(/<reflection>[\s\S]*?<\/reflection>\s*/gi, "")
+    .replace(/<analysis>[\s\S]*?<\/analysis>\s*/gi, "");
+  // 2. Strip "Here's a thinking process:" / "Thinking process:" headers
+  cleanText = cleanText
+    .replace(/^Here's a thinking process:?\s*/i, "")
+    .replace(/^Thinking process:?\s*/i, "")
+    .replace(/^Step-by-step thinking:?\s*/i, "")
+    .replace(/^Reasoning:?\s*/i, "")
+    .replace(/^Let me think about this:?\s*/i, "");
+  // 3. Try to extract the final answer if the model wrote reasoning
+  //    steps followed by a "Final Answer:" / "Draft:" / "Response:" marker.
+  const finalAnswerMatch = cleanText.match(
+    /(?:Final Answer|Final answer|Formulate Response|Draft|Response):?\s*:?\s*\n?\s*"([^"]+)"/i,
+  );
+  if (finalAnswerMatch && finalAnswerMatch[1]) {
+    cleanText = finalAnswerMatch[1].trim();
+  } else {
+    // 4. Strip numbered reasoning steps at the start.
+    const lines = cleanText.split("\n");
+    let answerStartIdx = 0;
+    let foundNumberedStep = false;
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (!line) continue;
+      if (/^\d+\.\s+\*\*?[A-Z]/.test(line)) {
+        foundNumberedStep = true;
+        answerStartIdx = i + 1;
+        continue;
+      }
+      if (/^[-*]\s+\*\*?[A-Z]/.test(line) || /^\*\*?[A-Z][a-z]+\s*\*?\*?:\s/.test(line)) {
+        foundNumberedStep = true;
+        answerStartIdx = i + 1;
+        continue;
+      }
+      if (foundNumberedStep && line.length > 20 && !/^(step|draft|formulate|analyze|strategy|determine|response):/i.test(line)) {
+        answerStartIdx = i;
+        break;
+      }
+    }
+    if (answerStartIdx > 0) {
+      cleanText = lines.slice(answerStartIdx).join("\n").trim();
+    }
+  }
+  // 5. Strip leading "**" + numbered thinking steps (legacy cleanup)
+  cleanText = cleanText.replace(/^\*\*\d+\.\s+/m, "").trim();
+  // 6. Strip wrapping quotes (model wrote: "answer here")
+  cleanText = cleanText.replace(/^"([^"]+)"$/, "$1").trim();
+  // 6.5 OWNER 2026-08-27: LATEX→PLAIN + MARKDOWN STRIP sanitizer.
+  // The chat renders plain text only — live evidence showed raw
+  // "\\frac{4}{3}\\pi r^{3}" reaching users verbatim (models ignore
+  // the no-LaTeX law occasionally; this is the guaranteed floor).
+  cleanText = sanitizeLatexToPlain(cleanText);
+  cleanText = stripMarkdownSyntax(cleanText);
+  return cleanText;
 }
 
 export async function POST(request: NextRequest) {
@@ -673,84 +747,62 @@ export async function POST(request: NextRequest) {
           );
 
           if (aiReply && aiReply.trim().length > 5) {
-            // Clean up reasoning artifacts from models that sometimes include
-            // "thinking process" content in the response.
-            let cleanText = aiReply;
-
-            // 1. Strip <think>...</think>, <reasoning>...</reasoning>,
-            //    <reflection>...</reflection>, <analysis>...</analysis> blocks
-            cleanText = cleanText
-              .replace(/<think>[\s\S]*?<\/think>\s*/gi, "")
-              .replace(/<reasoning>[\s\S]*?<\/reasoning>\s*/gi, "")
-              .replace(/<reflection>[\s\S]*?<\/reflection>\s*/gi, "")
-              .replace(/<analysis>[\s\S]*?<\/analysis>\s*/gi, "");
-
-            // 2. Strip "Here's a thinking process:" / "Thinking process:" headers
-            cleanText = cleanText
-              .replace(/^Here's a thinking process:?\s*/i, "")
-              .replace(/^Thinking process:?\s*/i, "")
-              .replace(/^Step-by-step thinking:?\s*/i, "")
-              .replace(/^Reasoning:?\s*/i, "")
-              .replace(/^Let me think about this:?\s*/i, "");
-
-            // 3. Try to extract the final answer if the model wrote reasoning
-            //    steps followed by a "Final Answer:" / "Draft:" / "Response:" marker.
-            const finalAnswerMatch = cleanText.match(
-              /(?:Final Answer|Final answer|Formulate Response|Draft|Response):?\s*:?\s*\n?\s*"([^"]+)"/i,
-            );
-            if (finalAnswerMatch && finalAnswerMatch[1]) {
-              cleanText = finalAnswerMatch[1].trim();
-            } else {
-              // 4. Strip numbered reasoning steps at the start.
-              const lines = cleanText.split("\n");
-              let answerStartIdx = 0;
-              let foundNumberedStep = false;
-              for (let i = 0; i < lines.length; i++) {
-                const line = lines[i].trim();
-                if (!line) continue;
-                if (/^\d+\.\s+\*\*?[A-Z]/.test(line)) {
-                  foundNumberedStep = true;
-                  answerStartIdx = i + 1;
-                  continue;
-                }
-                if (/^[-*]\s+\*\*?[A-Z]/.test(line) || /^\*\*?[A-Z][a-z]+\s*\*?\*?:\s/.test(line)) {
-                  foundNumberedStep = true;
-                  answerStartIdx = i + 1;
-                  continue;
-                }
-                if (foundNumberedStep && line.length > 20 && !/^(step|draft|formulate|analyze|strategy|determine|response):/i.test(line)) {
-                  answerStartIdx = i;
-                  break;
-                }
-              }
-              if (answerStartIdx > 0) {
-                cleanText = lines.slice(answerStartIdx).join("\n").trim();
-              }
-            }
-
-            // 5. Strip leading "**" + numbered thinking steps (legacy cleanup)
-            cleanText = cleanText.replace(/^\*\*\d+\.\s+/m, "").trim();
-
-            // 6. Strip wrapping quotes (model wrote: "answer here")
-            cleanText = cleanText.replace(/^"([^"]+)"$/, "$1").trim();
-
-            // 6.5 OWNER 2026-08-27: LATEX→PLAIN + MARKDOWN STRIP sanitizer.
-            // The chat renders plain text only — live evidence showed raw
-            // "\\frac{4}{3}\\pi r^{3}" reaching users verbatim (models ignore
-            // the no-LaTeX law occasionally; this is the guaranteed floor).
-            cleanText = sanitizeLatexToPlain(cleanText);
-            cleanText = stripMarkdownSyntax(cleanText);
+            // Clean up reasoning artifacts — the extracted law (the same
+            // chain, now one named function reused by the repair pass).
+            const cleanText = cleanEvoReplyText(aiReply);
 
             // 7. Final validation: too-short output falls back to local reply.
             if (cleanText.length < 10 || /^\s*\d+\.\s+\*\*?[A-Z]/.test(cleanText)) {
               console.warn("[api/ai/chat] Cleaned text still looks like reasoning, using local fallback");
               sendFinal(localReplyFallback(), "local");
             } else {
-              // EVO-5 telemetry: a real model answer reached the user.
-              statProvider = aiProvider;
-              statModel = aiModel;
-              statSuccess = true;
-              sendFinal(cleanText, `${aiProvider}:${aiModel}`);
+              // AI-QUALITY-REPAIR-LOOP (owner order 2026-11-16): the chat
+              // surface's content-quality validation + ONE directed repair
+              // (the plan-family named-reason retry law, fitted to the
+              // streaming UX): the first attempt's raw tokens already
+              // streamed and the FINAL event replaces the streamed text
+              // client-side (evo-chat-context "swap in the cleaned final
+              // text"), so the member sees the REPAIRED answer. The repair
+              // call carries NO onDelta (no second stream). A failing repair
+              // keeps the existing local fallback — a wrong-language or
+              // strongly-dialect answer NEVER ships as success.
+              const qualityDefects = validateEvoReplyQuality(cleanText, replyLanguage);
+              if (qualityDefects.length > 0) {
+                console.warn(
+                  `[api/ai/chat] Quality defects in cleaned reply (${qualityDefects.length}) — ONE directed repair attempt`,
+                );
+                const repaired = await repairEvoReply({
+                  prompt: fullPrompt,
+                  firstReply: cleanText,
+                  replyLanguage,
+                  defects: qualityDefects,
+                  dispatch: (repairPrompt: string) => dispatchAI("evo-chat", repairPrompt),
+                  clean: cleanEvoReplyText,
+                });
+                if (repaired.reply) {
+                  console.log(
+                    `[api/ai/chat] Directed repair succeeded (${repaired.attempts
+                      .map((a) => `${a.strategy}:${a.verdict}`)
+                      .join(" | ")})`,
+                  );
+                  // EVO-5 telemetry: a REAL model answer reached the user.
+                  statProvider = aiProvider;
+                  statModel = aiModel;
+                  statSuccess = true;
+                  sendFinal(repaired.reply, `${aiProvider}:${aiModel}+repaired`);
+                } else {
+                  console.warn(
+                    `[api/ai/chat] Directed repair did not resolve (${repaired.violationsAfter.join(" | ")}) — local fallback`,
+                  );
+                  sendFinal(localReplyFallback(), "local");
+                }
+              } else {
+                // EVO-5 telemetry: a real model answer reached the user.
+                statProvider = aiProvider;
+                statModel = aiModel;
+                statSuccess = true;
+                sendFinal(cleanText, `${aiProvider}:${aiModel}`);
+              }
             }
           } else {
             // Model returned an unusably short text → local fallback.

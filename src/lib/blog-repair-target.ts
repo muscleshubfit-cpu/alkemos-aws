@@ -72,6 +72,11 @@ export function mapP5FailureToRerunTarget(message: string): P5RerunTarget | null
   if (msg.includes("quality-gate battery failed")) return "p4-review";
   // Phase-176 final Latin body gate (AR) — review-pass repair territory.
   if (msg.includes("latin contamination in final body")) return "p4-review";
+  // AI-QUALITY-REPAIR-LOOP (owner order 2026-11-16): the final dialect
+  // body gate (AR) — same review-pass repair territory; the P4 dialect
+  // repair pass (dictionary + AI tokens + the shared loop) is the
+  // repairer this directive re-engages.
+  if (msg.includes("dialect contamination in final body")) return "p4-review";
   // bundle.review missing entirely — re-run the review pass.
   if (msg.includes("missing reviewed artifacts")) return "p4-review";
   // Unknown / infra (post insert, queue update, partial publish) — no

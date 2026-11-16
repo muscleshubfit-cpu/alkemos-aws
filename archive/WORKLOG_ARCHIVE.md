@@ -16592,3 +16592,24 @@ Stage Summary:
 - Push status: pushed — **ce95ae92 على main: CI ‏5/5 خضراء** (quality-gate · docs-parity · migration-state · stale-refs · deploy-aws) + **التحقق الحي**: build-info=ce95ae9 · الشروط AR/EN بالقانون الموحد 0/8/16/16 بلا أثر للاثنين/3-6 · بطاقات العضويات AR تعرض 8/16 موحدة بلا 13/26 (زال كاش ‏CF القديم) · JSON-LD ‏EN: 8/16 unified · ميتا المخططين AR/EN «for subscribers/لمشتركي بريميوم وأعلى» بلا Free · EVO ‏AR/EN والأدوات وfor-coaches وdiet-plan حية بالشكل المصحح.
 - Commit SHA: يُوثق بgit log (قانون Phase 288 — كوميت واحد للمهمة + كوميت إغلاق التوثيق هذا).
 
+
+<!-- rotated 2026-11-16 by scripts/worklog_rotate.py (Phase 288, ARCH-REMEDIATION): 1 entries moved verbatim from worklog.md -->
+---
+Task ID: REPO-CLEANUP-2026-11-15
+Agent: Main (Z.ai)
+Task: أمر المالك — تنظيف وإعادة تنظيم المستودع على main مع الحفاظ الكامل على سلامة المشروع: حذف المتراكم (تقارير/خطط/خام أدلة منتهية) وتوحيد الوثائق بمرجعية مركزية، بلا مساس إنتاج/اختبارات/تكوين وبلا إعادة كتابة سجل Git أو Force Push.
+
+Work Log:
+- **التشخيص:** شجرة العمل 139MB مقابل ‎.git 314MB — بُنيت خريطة كاملة (أحجام المجلدات + أكبر النقاط عبر التاريخ: WORKLOG_ARCHIVE ‏613MB/268 نسخة · worklog ‏263MB/1,029 — انتفاخ تاريخي بنيوي موثق بالتقرير §7 بتوصية مالك).
+- **خريطة المراجع:** فحص آلي لكل docs/*.md ولمن يقتبسه من: STATE · AGENTS · الوثائق الخمس الحاكمة · السجل · worklog · سير عمل CI الـ57 · scripts · src · الاختبارات (تحديد 20+ ملفًا تقرأه الاختبارات من القرص) · supabase/migrations · deploy — وقرار الاقتباس الحمّال/السرد التاريخي لكل ملف.
+- **الحذف (194 ملفًا):** 53 تقرير مراحل منتهية بجذر docs (سلاسل AI-PROVIDERS/BILINGUAL/SEO-COLLAPSE/P1/P2/PLAN-Trio...) + تقارير سلسلة الفهرسة 01–12 و14 و15 + 12 مجلد خام لأطوار مغلقة (أُبقي 13/16/17/18/19 + الخام النشط الخمسة — فيها خام أمر B4) + خام حادث الوصفات (42 ملفًا) + 3 أدوات repro + 5 بيانات pipeline قابلة لإعادة التوليد (أُبقي المحرك والمعاجم) + 5 صور عامة متحقق من عدم استخدامها حيًا (كود + PostgREST: محتوى المقالات وfeatured_image وجداول الوصفات — صفر إشارة).
+- **الاستثناءات الخمس:** ARCHITECTURE-AUDIT (مصدر تحصين IV بCI_GATES) · EMERGENCY-RECOVERY-AUDIT (أساس سلسلة الاستعادة ×4 أسطح) · PERFORMANCE-AUDIT-11-08 (المرجع الحاكم الأول لPERF-VERCEL النشط) · BILINGUAL-LANGUAGE-AUDIT-R1 (بروتوكول R2 يلزم قراءته) · CONTENT-QUALITY-SEO-GEO-AUDIT (جدول المقارنة بAUDIT_REPORT الجذري).
+- **تحديث الفهارس والروابط:** 70 صفًا حُذف من سجل docs/README.md + صف التقرير الجديد · فهرس سلسلة الفهرسة أُعيدت كتابته بالخلاصات الحاكمة حرفيًا · 6 إحالات حية صُححت (healthy-recipes/AUDIT · AUTHORITY-ENGINE · growth-README · BACKUP-STRATEGY · QA-TEST-ACCOUNTS) · STATE سطر التحديث + مؤشر خام الوصفات (100 سطر/31,994 بايت — تحت السقف) · التدوير الميكانيكي أدناه.
+- **البوابات:** docs_audit خضراء كاملة (A→T — أبرزها M ثنائي الاتجاه على 55 ملفًا وH5 بعد التدوير وR على الأسطح الخمسة) · docs_parity خضراء · stale-refs أخضر · صفر مساس src/tests/migrations/workflows/تكوين.
+
+Stage Summary:
+- التقرير الحاكم: docs/REPO-CLEANUP-2026-11-15.md (المنهجية + جداول المحذوف/المحتفظ/المحرر بالأسباب + سياسة المراجع التاريخية + توصية سجل Git) + صف بسجل docs/README.md.
+- النتيجة: جذر docs ‏108→55 ملفًا · شجرة العمل 139→~121MB · صفر فقدان قرار/مهمة معلقة (المعلقات النشطة بمواضعها المحتفظ بها) وكل محذوف بالتاريخ.
+- Push status: **دُفع d588419f على main: CI ‏5/5 خضراء** (quality · parity · migration-state · guard · deploy-aws ببطارية verify على الخادم والحافة) + **التحقق الحي**: build-info=d588419 — الإنتاج حي بالتنظيف وصفر أثر سلوكي (صور محذوفة لا يقتبسها أي سطح).
+- Commit SHA: يُوثق بgit log (قانون Phase 288).
+

@@ -310,6 +310,22 @@ model:
   inside the engine, fail-open by law, and record the provider-reported
   token usage of every response (not a chars/4 estimate) against a
   per-model cost table (`src/lib/ai-usage-meter.ts`).
+- **Detected defects get REPAIRED, not just rejected** — a shared
+  quality-repair core (`src/lib/quality-repair/`) turns every generation
+  domain's deterministic gates into a directed repair cycle: defects are
+  reported as structured records (kind + location + cause + actionable fix
+  instruction), repaired by an escalating strategy ladder (deterministic
+  dictionary → localized AI conversion → directed re-review), re-validated
+  with a no-new-defect check, and every cycle must ACTUALLY change the
+  content and strictly reduce the blocking defects — a retry that returns
+  the same result is excluded, never repeated. When a defect cannot be
+  repaired after the studied attempts, the honest ledger (defect, every
+  strategy tried, why each failed) is recorded and the case NEVER passes
+  as success. Live riders: the blog's Arabic dialect + Latin repair passes
+  (the «حاجة» failure class), the P4/P5 repair contracts, the recipes
+  authoring repair directives (preserved through the runner reset), the
+  queued-article directed retry, and EVO chat's language/dialect repair
+  (one directed regeneration, final replaces the streamed text).
 - **Prompt-injection containment on every user-text surface** — any
   untrusted text that enters a generation prompt (live search results,
   client/coach free text: notes, allergies, injuries, swap reasons,
