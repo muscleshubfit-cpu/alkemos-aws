@@ -281,3 +281,36 @@ describe("r1's chain-reset class — the structure re-draw is directed (canary 5
     expect(src).toContain("bundleWithDirective");
   });
 });
+
+// ═══════════════════════════════════════════════════════════════
+// AI-QUALITY-REPAIR-LOOP live-run closure (the 2026-11-16 16:13Z
+// scheduled recipes run): Q-GATE-1 latin contamination (10-14 bare
+// tokens) held through the WHOLE ×2 repair budget with NO repair
+// attempt — the exact class the owner banned («يجب اكتشاف أي مسار
+// يكتفي برصد المشكلة أو رفض المخرجات دون محاولة إصلاحها»). The R3
+// route now rides the SHARED blog repairers in-place, and the early
+// battery's step-visibility bug (steps spread as objects →
+// "[object Object]") is fixed — the scans now see the steps' text.
+// ═══════════════════════════════════════════════════════════════
+
+describe("r3 route — the in-place Q-GATE-1 repair wiring (canaries 10-12)", () => {
+  const ROUTE = readFileSync("src/app/api/cron/recipes/r3-authoring/route.ts", "utf8");
+
+  it("10. the route rides the SHARED blog repairers on the repairable Q-GATE-1 class before rejecting", () => {
+    expect(ROUTE).toContain("repairAuthoredVersionArabic(done.version, done.source)");
+    expect(ROUTE).toContain('import {\n  repairArabicLatinContamination,\n  repairArabicDialectContamination,\n} from "@/lib/blog-pipeline";');
+    expect(ROUTE).toContain('earlyViolations.every((v) => v.startsWith("Q-GATE-1"))');
+    // The repaired version must re-pass the SAME battery (no-new-defect).
+    expect(ROUTE).toContain("r3EarlyDeterministicViolations(repaired.version, language, computedPerServing).length === 0");
+  });
+
+  it("11. only the repairable class rides the repair — non-Q-GATE-1 keeps the directed rejection", () => {
+    // N-GATE-4/Q-GATE-2/zod violations need a redraw, not a token repair.
+    expect(ROUTE).toContain("const repairable =\n                language === \"ar\" && earlyViolations.every((v) => v.startsWith(\"Q-GATE-1\"));");
+  });
+
+  it("12. the early battery now SEES the steps' text (the live-run visibility bug is dead)", () => {
+    expect(ROUTE).toContain("...version.steps.map((s) => s.text)");
+    expect(ROUTE).not.toContain("...version.steps, version.tips ?? \"\"");
+  });
+});

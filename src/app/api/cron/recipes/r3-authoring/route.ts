@@ -24,6 +24,19 @@ import {
   type NutritionTotals,
 } from "@/lib/recipes-nutrition";
 import { scanArabicDialect, scanLatinContamination } from "@/lib/blog-msa";
+// AI-QUALITY-REPAIR-LOOP (owner order 2026-11-16): the SHARED repair
+// passes (the same ones the blog P4 rides — deterministic dictionary +
+// localized AI tokens + the deterministic re-validators) applied to the
+// AR-authored version's TEXT FIELDS. The live scheduled run
+// (2026-11-16 16:13Z) held exactly on this class: Q-GATE-1 latin
+// contamination (10-14 bare tokens) detected and rejected through the
+// whole ×2 repair budget with NO repair attempt — «يجب اكتشاف أي مسار
+// يكتفي برصد المشكلة أو رفض المخرجات دون محاولة إصلاحها، ومعالجته
+// وفق طبيعة المهمة».
+import {
+  repairArabicLatinContamination,
+  repairArabicDialectContamination,
+} from "@/lib/blog-pipeline";
 
 export const maxDuration = 300;
 
@@ -77,7 +90,18 @@ function r3EarlyDeterministicViolations(
     violations.push("Q-GATE-2: meta description exceeds 160 chars");
   }
   // N-GATE-4 parity: narrative nutrient claims vs the computed truth.
-  const prose = [version.excerpt, ...version.steps, version.tips ?? "", version.storageInfo ?? ""]
+  // AI-QUALITY-REPAIR-LOOP (2026-11-16): the steps are OBJECTS
+  // ({position, text}) — the pre-fix spread stringified them as
+  // "[object Object]" so the steps' text NEVER reached this battery's
+  // scans (Q-GATE-1/N-GATE-4 judged excerpt/tips/storage only). The
+  // R5 battery already mapped s.text — now the early twin does too
+  // (REC-12's intent: the R5 semantics, fail-fast).
+  const prose = [
+    version.excerpt,
+    ...version.steps.map((s) => s.text),
+    version.tips ?? "",
+    version.storageInfo ?? "",
+  ]
     .filter(Boolean)
     .join("\n");
   const claims = extractNarrativeNutrientClaims(prose);
@@ -97,6 +121,80 @@ function r3EarlyDeterministicViolations(
     }
   }
   return violations;
+}
+
+/**
+ * AI-QUALITY-REPAIR-LOOP — repair the AR version's text fields with the
+ * SHARED blog repairers (dictionary-first, scanner-mirroring, the SAME
+ * deterministic re-validators). Per-field fail-closed: a field whose
+ * repair cannot pass its validator returns null for the WHOLE version so
+ * the caller keeps the honest directed rejection (never a half-repaired
+ * version). Returns null when nothing needed repair OR any field failed
+ * (the early gate re-judges the ORIGINAL in the null case — same verdict
+ * as pre-2026-11-16).
+ */
+async function repairAuthoredVersionArabic(
+  version: AuthoredVersion,
+  source: string,
+): Promise<{ version: AuthoredVersion; source: string } | null> {
+  const repairField = async (field: string): Promise<string | null> => {
+    if (!field) return field;
+    let out = field;
+    // dialect pass first (same order as the blog P4 route)
+    try {
+      const dscan = scanArabicDialect(out);
+      if (dscan.strong > 0 || dscan.weak > 0) {
+        out = (await repairArabicDialectContamination(out)).out;
+      }
+    } catch {
+      return null; // honest: unrepaired field ⇒ no half-repaired version
+    }
+    // latin pass second
+    try {
+      const lscan = scanLatinContamination(out);
+      if (lscan.count > 0) {
+        out = await repairArabicLatinContamination(out, lscan.tokens);
+      }
+    } catch {
+      return null;
+    }
+    return out;
+  };
+
+  const steps: Array<{ position: number; text: string }> = [];
+  for (const step of version.steps) {
+    const r = await repairField(step.text);
+    if (r === null) return null;
+    steps.push({ ...step, text: r });
+  }
+  const fields = await Promise.all(
+    (
+      [
+        ["title", version.title],
+        ["excerpt", version.excerpt],
+        ["tips", version.tips ?? ""],
+        ["storageInfo", version.storageInfo ?? ""],
+        ["metaTitle", version.metaTitle],
+        ["metaDescription", version.metaDescription],
+      ] as Array<[string, string]>
+    ).map(async ([, v]) => repairField(v)),
+  );
+  if (fields.some((f) => f === null)) return null;
+  const [title, excerpt, tips, storageInfo, metaTitle, metaDescription] = fields as string[];
+
+  return {
+    version: {
+      ...version,
+      title,
+      excerpt,
+      steps,
+      tips,
+      storageInfo,
+      metaTitle,
+      metaDescription,
+    },
+    source: `${source}+repaired`,
+  };
 }
 
 export async function GET(request: NextRequest) {
@@ -208,15 +306,46 @@ export async function GET(request: NextRequest) {
           if (done) {
             const earlyViolations = r3EarlyDeterministicViolations(done.version, language, computedPerServing);
             if (earlyViolations.length > 0) {
-              lastErr = earlyViolations.join(" | ");
-              console.warn(`[recipes/r3] REC-12 early gate rejected ${language} attempt ${attempt + 1}: ${lastErr}`);
-              // AI-QUALITY-REPAIR-LOOP: the next attempt carries THESE
-              // violations as its repair directive (B1-style — the model
-              // learns what failed instead of re-reading the identical
-              // prompt and reproducing the identical defect).
-              loopDirective = lastErr.slice(0, 1500);
-              done = null;
-              continue;
+              // AI-QUALITY-REPAIR-LOOP (owner order 2026-11-16): when the
+              // violations are EXACTLY the repairable Q-GATE-1 class (MSA
+              // dialect + latin contamination — AR only), the SHARED repair
+              // passes (the same ones the blog P4 rides) repair the
+              // version's text fields BEFORE rejecting it: the live
+              // scheduled run (2026-11-16 16:13Z) held through its whole
+              // ×2 repair budget on this class with NO repair attempt.
+              // The repaired version must re-pass the SAME early battery
+              // (no-new-defect check) — otherwise the directed rejection
+              // stands exactly as before. Non-Q-GATE-1 violations (zod
+              // shape, N-GATE-4 numbers, Q-GATE-2 budgets) keep the
+              // directed-rejection path (they need a redraw, not a token
+              // repair).
+              const repairable =
+                language === "ar" && earlyViolations.every((v) => v.startsWith("Q-GATE-1"));
+              if (repairable) {
+                const repaired = await repairAuthoredVersionArabic(done.version, done.source);
+                if (repaired && r3EarlyDeterministicViolations(repaired.version, language, computedPerServing).length === 0) {
+                  console.log(
+                    `[recipes/r3] AI-QUALITY-REPAIR-LOOP repaired ${language} attempt ${attempt + 1} in-place (Q-GATE-1 defects actually fixed: ${earlyViolations.join(" | ")})`,
+                  );
+                  done = repaired;
+                } else {
+                  lastErr = earlyViolations.join(" | ");
+                  console.warn(`[recipes/r3] REC-12 early gate rejected ${language} attempt ${attempt + 1} (repair pass did not resolve): ${lastErr}`);
+                  loopDirective = lastErr.slice(0, 1500);
+                  done = null;
+                  continue;
+                }
+              } else {
+                lastErr = earlyViolations.join(" | ");
+                console.warn(`[recipes/r3] REC-12 early gate rejected ${language} attempt ${attempt + 1}: ${lastErr}`);
+                // AI-QUALITY-REPAIR-LOOP: the next attempt carries THESE
+                // violations as its repair directive (B1-style — the model
+                // learns what failed instead of re-reading the identical
+                // prompt and reproducing the identical defect).
+                loopDirective = lastErr.slice(0, 1500);
+                done = null;
+                continue;
+              }
             }
           }
         } catch (err) {
