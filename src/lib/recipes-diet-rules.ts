@@ -26,8 +26,6 @@ export type DietEvaluationInput = {
   sodiumCoverage: "none" | "partial" | "complete";
   /** per-ingredient flag arrays from the matched nutrient_reference rows */
   ingredientFlags: readonly (readonly string[])[];
-  /** per-ingredient category (from the reference rows) for pattern rules */
-  ingredientCategories?: readonly string[];
   /** per-ingredient weights (grams) for dominance rules */
   ingredientWeights?: readonly number[];
 };

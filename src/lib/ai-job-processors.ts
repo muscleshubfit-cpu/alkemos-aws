@@ -46,7 +46,6 @@ import { supabaseAdmin, isSupabaseAdminConfigured } from "@/lib/supabase/admin";
 import { dayBudgetClosureViolation } from "@/lib/plan-ai-validation";
 import { decideSwapPlanOwnership } from "@/lib/plan-swap-ownership";
 
-import { weeksUnitAr } from "@/lib/utils";
 import type { PlanContent } from "@/lib/data/plans";
 import type { SocialPlatform, SocialTone } from "@/lib/social-posts";
 import { VALID_CATEGORY_IDS } from "@/lib/blog";
@@ -1003,9 +1002,11 @@ async function runPlanWorkout(payload: Record<string, unknown>, jobCtx?: Process
   const res = await generateWorkoutPlanAI(clientCtx, {
     mealsCount: overrides.mealsCount, // legacy reuse → daysPerWeek
     foods: overrides.foods,
-    notes: overrides.notes
-      ? `${overrides.notes}${payload.durationWeeks ? ` — مدة البرنامج المستهدفة: ${payload.durationWeeks} ${weeksUnitAr(Number(payload.durationWeeks))}` : ""}`
-      : undefined,
+    // INF-17 (audit AI-GENERATION-PIPELINES, plan §9 P2 item 8 — executed
+    // 2026-11-16): the payload.durationWeeks template branch was DEAD —
+    // the plan_workout sanitizer allowlist (ai-jobs.ts) never copies
+    // durationWeeks, so the sanitized payload could never carry it.
+    notes: overrides.notes || undefined,
   });
   const plan_id = await materializePlanDraftRow(payload, res.title, res.content, "workout", jobCtx);
   if (plan_id) console.log(`[plan_workout] draft materialized: plans#${plan_id}`);

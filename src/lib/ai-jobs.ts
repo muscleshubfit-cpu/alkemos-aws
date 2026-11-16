@@ -216,9 +216,14 @@ export function isAiJobType(v: unknown): v is AiJobType {
   return typeof v === "string" && (AI_JOB_TYPES as readonly string[]).includes(v);
 }
 
-/** Thrown by sanitizeJobPayload when a REQUIRED field is missing/short —
- * the API route maps this to HTTP 400 (never 500). */
-export class JobPayloadError extends Error {}
+/* INF-16 (audit AI-GENERATION-PIPELINES, plan §9 P2 item 8 — executed
+ * 2026-11-16): JobPayloadError was DEAD CODE with a retired contract —
+ * its doc claimed "thrown by sanitizeJobPayload on missing required
+ * fields" but the sanitizer NEVER throws (it degrades to clamps and
+ * undefined — the whitelist-picker law right below); the route's
+ * instanceof 400-mapping branch was unreachable. Both deleted in the
+ * same frame; every real enqueue error is (and always was) an honest
+ * 500 through the outer catch. */
 
 /* ────────────────── Payload sanitization (server trust boundary) ──────────────────
  * The enqueue route NEVER stores raw body payloads. Every type passes through a

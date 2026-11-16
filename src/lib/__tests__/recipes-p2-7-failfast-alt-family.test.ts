@@ -508,10 +508,6 @@ function baseGateInput(overrides: Partial<RecipeGateInput> = {}): RecipeGateInpu
       ["en", new Set<string>()],
     ]),
     publishedIngredientSets: [],
-    existingSlugsByLang: new Map([
-      ["ar", new Set<string>()],
-      ["en", new Set<string>()],
-    ]),
     ...overrides,
   };
 }

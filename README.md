@@ -333,6 +333,20 @@ model:
   schema mirrors the meta-title budgets per language (70 Arabic / 60
   English) so an over-budget title is rejected at the parse, before the
   image cycle ever runs (P2-7 of the generation-engines audit).
+- **Generation engines stay clean by proof, not by promise** — the dead
+  code and incoherences the 2026-11-15 audit identified were removed in
+  one no-behavior frame (P2-8): the recipes publish battery's stamped
+  gate count now derives from a single `GATE_IDS` list that a canary
+  proves equals the gates the code actually emits; a missing nutrient
+  reference at R2 holds the pair for a grounded R1 rebuild (the
+  route's documented contract) instead of a terminal failure; the R1
+  master slug can never collide on the global unique index; the
+  latin-repair placeholder mechanism is NUL-collision-proof; the blog
+  runner threads the queue id from P0 only; ONE `topicMatchesRecentPost`
+  helper owns the topic-dedup call that used to be copy-pasted five
+  times; the visitor demos' retry reminder speaks the prompt's language
+  and the endurance goal is labeled endurance (`src/lib/recipes-quality-gates.ts`,
+  `src/lib/blog-topics.ts`, P2-8 of the generation-engines audit).
 - Long-running generation (the blog pipeline, queued AI jobs) runs on GitHub
   Actions runners instead of request handlers; every sequential path is
   budget-clamped, and the shared `ai_jobs` queue retries failures on a

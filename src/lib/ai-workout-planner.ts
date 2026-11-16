@@ -88,7 +88,12 @@ const GOAL_LABELS: Record<WorkoutGoal, { ar: string; en: string }> = {
   "fat-loss": { ar: "خسارة الدهون", en: "losing fat" },
   muscle: { ar: "بناء العضلات", en: "building muscle" },
   strength: { ar: "زيادة القوة", en: "getting stronger" },
-  endurance: { ar: "اللياقة العامة", en: "general fitness" },
+  // WOR-17 (audit AI-GENERATION-PIPELINES, plan §9 P2 item 8 — executed
+  // 2026-11-16): "endurance" was mislabeled «اللياقة العامة / general
+  // fitness» — a DIFFERENT training goal. The label feeds BOTH the select
+  // option and the prompt («لهدف …»), so an endurance pick was programmed
+  // as general fitness. The label now names the goal it gates.
+  endurance: { ar: "تحسين التحمل العضلي والقلبي", en: "improving muscular and cardiovascular endurance" },
 };
 
 const LEVEL_LABELS: Record<WorkoutLevel, { ar: string; en: string }> = {

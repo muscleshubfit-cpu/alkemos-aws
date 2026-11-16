@@ -165,20 +165,15 @@ export async function GET(request: NextRequest) {
 
     const { data: pubVersions } = await supabaseAdmin
       .from("recipe_versions")
-      .select("language, title, slug")
+      .select("language, title")
       .eq("is_published", true);
     const titlesByLang = new Map<"ar" | "en", Set<string>>([
       ["ar", new Set()],
       ["en", new Set()],
     ]);
-    const slugsByLang = new Map<"ar" | "en", Set<string>>([
-      ["ar", new Set()],
-      ["en", new Set()],
-    ]);
-    for (const v of ((pubVersions ?? []) as Array<{ language: string; title: string; slug: string }>)) {
+    for (const v of ((pubVersions ?? []) as Array<{ language: string; title: string }>)) {
       const lang = v.language === "ar" ? "ar" : "en";
       titlesByLang.get(lang)?.add(v.title.trim());
-      slugsByLang.get(lang)?.add(v.slug);
     }
 
     const publishedIngredientSets: Array<Set<string>> = [];
@@ -240,7 +235,6 @@ export async function GET(request: NextRequest) {
       existingPairSlugs,
       existingTitlesByLang: titlesByLang,
       publishedIngredientSets,
-      existingSlugsByLang: slugsByLang,
     });
 
     const report = assembleGateReport(violations);

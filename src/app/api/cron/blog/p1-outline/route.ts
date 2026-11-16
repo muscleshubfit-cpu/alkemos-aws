@@ -13,8 +13,7 @@ import {
 import { extractSharedBrief } from "@/lib/blog-pairing";
 import { verifyCronAuth } from "@/lib/cron-auth";
 import { cronBlogQueueQuerySchema } from "@/lib/validation/schemas";
-import { getRecentPostsByLanguage, isDuplicateTopic } from "@/lib/blog-topics";
-import { findSemanticTopicCollision } from "@/lib/blog-semantic";
+import { getRecentPostsByLanguage, topicMatchesRecentPost } from "@/lib/blog-topics";
 import { isSupabaseAdminConfigured } from "@/lib/supabase/admin";
 
 export const maxDuration = 60;
@@ -47,9 +46,9 @@ async function guardDuplicate(
 ): Promise<string> {
   const idx = await pickTopicIndex(lang, candidates);
   let topic = candidates[idx] ?? candidates[0];
-  const isDup = (t: string, p: { title: string; focusKeyword: string }) =>
-    isDuplicateTopic(t, t, [p]).duplicate ||
-    findSemanticTopicCollision(t, t, [p]).collision;
+  // ART-26 (audit plan §9 P2 item 8): the one unified dup test (was a
+  // local copy of the (t, t, [p]) pattern).
+  const isDup = (t: string, p: { title: string; focusKeyword: string }) => topicMatchesRecentPost(t, p);
   try {
     const recent = await getRecentPostsByLanguage(lang, 100);
     if (recent.some((p) => isDup(topic, p))) {

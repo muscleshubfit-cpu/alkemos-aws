@@ -642,16 +642,33 @@ export function parseJsonLoose(text: string): unknown {
 
 /** Latin slug builder (the blog slugifyAscii pattern — lowercase, ascii
  *  letters/digits/hyphens, collapsed). */
+function latinSlug(title: string): string {
+  return title
+    .toLowerCase()
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 60);
+}
+
 export function pairSlugify(title: string): string {
-  return (
-    title
-      .toLowerCase()
-      .normalize("NFKD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-+|-+$/g, "")
-      .slice(0, 60) || "recipe"
-  );
+  return latinSlug(title) || "recipe";
+}
+
+/** REC-19 (audit AI-GENERATION-PIPELINES, plan §9 P2 item 8 — executed
+ *  2026-11-16): the R1 master insert's pair_slug derivation. A title
+ *  with NO latin letters/digits (an Arabic-only or drifted themeEn)
+ *  slugifies to "" and the bare pairSlugify fallback "recipe" is a
+ *  GUARANTEED second-occurrence collision against the GLOBAL unique
+ *  index recipes_pair_slug_uidx. THIS wrapper keeps pairSlugify pure
+ *  (its deterministic "recipe" fallback stays — the dedup comparisons
+ *  in generateRecipeIdea rely on it) and degrades the empty-slug edge
+ *  to a practically-collision-free unique form recipe-<8 hex>.
+ *  Legitimate latin titles are byte-identical to pairSlugify — no
+ *  behavior change on the normal path. */
+export function pairSlugForMasterInsert(title: string): string {
+  return latinSlug(title) || `recipe-${randomUUID().slice(0, 8)}`;
 }
 
 /** Unique slug per language against the recipe_versions table. */

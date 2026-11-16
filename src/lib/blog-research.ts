@@ -48,10 +48,10 @@ import {
   getRecentPostsByLanguage,
   getRecentGeneratedTopics,
   getRecentContentDigests,
-  isDuplicateTopic,
+  topicMatchesRecentPost,
   pickRotationCategory,
 } from "./blog-topics";
-import { buildDiversityDirective, findSemanticTopicCollision } from "./blog-semantic";
+import { buildDiversityDirective } from "./blog-semantic";
 import type { GroundedFullTextPage } from "./ai-provider";
 // R4 (AI-Router unification): P0 research rides the registry through
 // dispatchGrounded — the §6-أ language-split arm ladder stays the engine's
@@ -638,17 +638,13 @@ export async function runPhase0Research(
   // Prefer topics that survived the dup-guard when ranking categories is
   // not applicable here — keep rotation semantics identical, but ALSO
   // pre-flag duplicate topics so P1's guard sees fewer all-dup sets.
-  // BLOG-DIVERSITY-ENGINE (2026-11-13): the pre-filter is now LEXICAL
-  // (isDuplicateTopic) AND SEMANTIC (findSemanticTopicCollision — a
-  // paraphrase of a recent article with zero shared words is dropped
-  // here, before P1 ever ranks it). ≥2 survivors keep the filter; an
-  // all-dup set falls back to the raw 5 (honest — P1 still guards).
-  const survivesDedup = (t: string) =>
-    !recent.some(
-      (p) =>
-        isDuplicateTopic(t, t, [p]).duplicate ||
-        findSemanticTopicCollision(t, t, [p]).collision,
-    );
+  // BLOG-DIVERSITY-ENGINE (2026-11-13): the pre-filter is LEXICAL and
+  // SEMANTIC (a paraphrase of a recent article with zero shared words
+  // is dropped here, before P1 ever ranks it). ≥2 survivors keep the
+  // filter; an all-dup set falls back to the raw 5 (honest — P1 still
+  // guards). ART-26 (audit plan §9 P2 item 8): the one unified dup
+  // test (was a local copy of the (t, t, [p]) pattern).
+  const survivesDedup = (t: string) => !recent.some((p) => topicMatchesRecentPost(t, p));
   const deduped = r.data.topics.filter(survivesDedup);
   const research = {
     ...r.data,

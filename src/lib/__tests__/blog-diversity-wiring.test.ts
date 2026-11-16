@@ -39,7 +39,11 @@ describe("P0 research — the diversity engine rides the topic-discovery path", 
   });
 
   it("pre-filters model topics LEXICALLY and SEMANTICALLY before P1", () => {
-    expect(research).toContain("findSemanticTopicCollision");
+    // ART-26 (audit plan §9 P2 item 8): the lexical+semantic test is the
+    // ONE helper topicMatchesRecentPost — the direct detector calls were
+    // copy-paste removed; the helper itself carries both arms
+    // (pinned in ai-pipelines-p2-8-dead-code-cleanup.test.ts).
+    expect(research).toContain("topicMatchesRecentPost");
     expect(research).toContain("survivesDedup");
   });
 
@@ -54,8 +58,10 @@ describe("P1 outline — semantic dup guard + LRU angle rotation", () => {
   const pipeline = src("src/lib/blog-pipeline.ts");
 
   it("the outline route's duplicate guard is lexical AND semantic", () => {
-    expect(outlineRoute).toContain("findSemanticTopicCollision");
-    expect(outlineRoute).toContain("isDuplicateTopic");
+    // ART-26 (audit plan §9 P2 item 8): the guard routes through the ONE
+    // unified helper (lexical + semantic inside it).
+    expect(outlineRoute).toContain("topicMatchesRecentPost");
+    expect(outlineRoute).toContain("guardDuplicate");
   });
 
   it("pickArticleAngle rotates least-recently-used instead of pure random", () => {

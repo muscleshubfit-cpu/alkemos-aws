@@ -168,10 +168,18 @@ export async function POST(request: NextRequest) {
     }
     if (!plan.ok) {
       // Retry #1 — same request, harder nudge. Still uncounted.
+      // WOR-17 (audit AI-GENERATION-PIPELINES, plan §9 P2 item 8 —
+      // executed 2026-11-16): the reminder speaks the PROMPT's language —
+      // an English reminder riding an Arabic prompt was the audit's
+      // incoherence. The JSON contract example stays verbatim either way.
+      const shapeReminder = `\n\n${
+        req.language === "ar"
+          ? 'تذكير: أعد كائن JSON واحدًا فقط بهذا الشكل بالضبط {"days":[{"name":"اليوم الأول","focus":"صدر وترايسبس","exercises":[{"name":"بنش برس بار مستوي","sets":4,"reps":8}]}]} — لا شيء غيره.'
+          : 'REMINDER: reply with ONE JSON object exactly like {"days":[{"name":"Day 1","focus":"...","exercises":[{"name":"...","sets":4,"reps":8}]}]} — nothing else.'
+      }`;
       const second = await dispatchAI(
         "workout-demo",
-        prompt +
-          '\n\nREMINDER: reply with ONE JSON object exactly like {"days":[{"name":"Day 1","focus":"...","exercises":[{"name":"...","sets":4,"reps":8}]}]} — nothing else.',
+        prompt + shapeReminder,
         demoOverrides,
       ).catch(() => null);
       if (second) {

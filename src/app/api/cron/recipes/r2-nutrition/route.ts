@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyCronAuth } from "@/lib/cron-auth";
 import { supabaseAdmin, isSupabaseAdminConfigured } from "@/lib/supabase/admin";
-import { computeRecipeNutrition, type NutrientRefRow } from "@/lib/recipes-nutrition";
+import { computeRecipeNutrition, isNGate1StructuralViolation, type NutrientRefRow } from "@/lib/recipes-nutrition";
 import { evaluateTaxonomy } from "@/lib/recipes-diet-rules";
 import {
   getRecipeQueueIdParam,
@@ -87,8 +87,29 @@ export async function GET(request: NextRequest) {
       };
     });
 
-    // §5.2 — the computation (throws on N-GATE-1 violations).
-    const computation = computeRecipeNutrition({ servings: master.servings, ingredients: inputs, refs });
+    // §5.2 — the computation. REC-20 (audit plan §9 P2 item 8 — executed
+    // 2026-11-16): an N-GATE-1 structural violation (missing ref /
+    // non-positive amount / bad weight_state) is a HOLD with
+    // rerun_target=r1-structure — the same repair law as N-GATE-3 below
+    // and the R1 route's own grounding failures. The header has always
+    // promised this («a structural failure here … HOLDS the recipe and
+    // returns the pipeline to r1»); the old code let the throw fall into
+    // the general catch and marked the row terminally failed.
+    let computation;
+    try {
+      computation = computeRecipeNutrition({ servings: master.servings, ingredients: inputs, refs });
+    } catch (structural) {
+      if (isNGate1StructuralViolation(structural)) {
+        const reason = structural instanceof Error ? structural.message : "N-GATE-1 structural violation";
+        await updateRecipeQueueItem(queueId, {
+          status: "held",
+          error_message: `R2: ${reason}`.slice(0, 2000),
+          rerun_target: "r1-structure",
+        });
+        return NextResponse.json({ ok: false, queueId, held: true, rerunTarget: "r1-structure", reason });
+      }
+      throw structural;
+    }
 
     // N-GATE-3 — calorie consistency is structural: a failure means the
     // reference data cannot describe this recipe; back to r1, never a

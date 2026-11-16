@@ -79,8 +79,6 @@ export type RecipeGateInput = {
   existingTitlesByLang: ReadonlyMap<"ar" | "en", ReadonlySet<string>>;
   /** ingredient ref-slug sets of published recipes (Jaccard overlap) */
   publishedIngredientSets: ReadonlyArray<ReadonlySet<string>>;
-  /** slug candidates already used per language */
-  existingSlugsByLang: ReadonlyMap<"ar" | "en", ReadonlySet<string>>;
 };
 
 export type GateViolation = {
@@ -94,8 +92,6 @@ export const STEPS_MIN = 3;
 export const STEPS_MAX = 15;
 export const META_DESCRIPTION_MAX = 160;
 export const INGREDIENT_OVERLAP_MAX = 0.7; // Jaccard ceiling vs published
-export const OILY_RECIPE_CARBS_G = 20; // a "needs cooking fat" heuristic input
-export const COOKED_MAIN_DISH_TYPES = new Set(["lunch", "dinner", "breakfast"]);
 
 /* ── REC-3 (audit P1 bucket 6): per-category quantity ceilings (grams per
  * ingredient, per recipe). The audit's measured failure class: «ملح 2,000
@@ -302,14 +298,16 @@ export function runRecipeQualityGates(input: RecipeGateInput): GateViolation[] {
     });
   }
 
-  /* ── D-GATE-1: diets come from the rules engine only. The caller
-     passes derivedDiets (already engine output); this gate re-asserts
-     non-empty input had NO ai-proposed diet list. ── */
-  if (input.derivedDiets.length === 0) {
-    // Not a violation per se — a recipe may match no diet. But the field
-    // must have been ENGINE-derived; the pipeline enforces the wipe
-    // before this battery. Recorded as informational (no violation).
-  }
+  /* ── D-GATE-1 (the diets-provenance law — documentary, not a runtime
+     check): diets come from the rules engine ONLY. The caller passes
+     derivedDiets (already engine output — evaluateDiets at R2), any
+     model-proposed diet list was wiped at R1, and a recipe legitimately
+     matching no diet is NOT a violation. The enforcement lives in the
+     pipeline wiring (the R1 wipe + the R2 derivation), so this battery
+     records no gate here. REC-16/REC-17 (audit plan §9 P2 item 8 —
+     executed 2026-11-16): the former EMPTY if-block was dead code, and
+     the hand-stamped gateCount counted it — both deleted in the same
+     frame; GATE_IDS below is now the single source of the count. ── */
 
   /* ── Q-GATE-1: MSA + no latin contamination (Arabic version only —
      the blog laws reused verbatim). ── */
@@ -582,14 +580,36 @@ export type GateReport = {
   gateCount: number;
 };
 
+/* ── REC-16 (audit AI-GENERATION-PIPELINES, plan §9 P2 item 8 — executed
+ * 2026-11-16): the stamped count had drifted TWICE — the audit caught
+ * "14" over a real battery of 12, and a later frame re-stamped "15"
+ * while counting the empty (now deleted) D-GATE-1 block. The count now
+ * derives from ONE list — the gates this battery can actually emit —
+ * and the canary (ai-pipelines-p2-8-dead-code-cleanup.test.ts) re-reads
+ * THIS source file and fails the push if the list and the emitted
+ * `gate: "…"` literals ever diverge again. */
+export const GATE_IDS = [
+  "N-GATE-1",
+  "N-GATE-2",
+  "N-GATE-3",
+  "N-GATE-4",
+  "N-GATE-5",
+  "P-GATE-1",
+  "P-GATE-2",
+  "P-GATE-3",
+  "Q-GATE-1",
+  "Q-GATE-2",
+  "Q-GATE-3",
+  "Q-GATE-4",
+  "Q-GATE-5",
+  "Q-GATE-6",
+] as const;
+
 export function assembleGateReport(violations: readonly GateViolation[]): GateReport {
   return {
     passed: violations.length === 0,
     violations: [...violations],
     checkedAt: new Date().toISOString(),
-    // REC-16 (audit P1, same line): the count now names the REAL battery —
-    // N1-N5, P1-P3, D1, Q1-Q6 (the old "14" was aspirational: two of the
-    // counted gates did not exist).
-    gateCount: 15,
+    gateCount: GATE_IDS.length,
   };
 }

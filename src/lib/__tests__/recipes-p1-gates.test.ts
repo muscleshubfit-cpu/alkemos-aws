@@ -104,7 +104,6 @@ const baseInput = (over: Partial<RecipeGateInput> = {}): RecipeGateInput => ({
     ["en", new Set(["Healthy Chicken Shawarma"])],
   ]),
   publishedIngredientSets: [],
-  existingSlugsByLang: new Map([["ar", new Set()], ["en", new Set()]]),
   ...over,
 });
 

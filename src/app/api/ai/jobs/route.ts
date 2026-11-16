@@ -7,7 +7,6 @@ import {
   JOB_ETA_MINUTES,
   MAX_PAYLOAD_BYTES,
   enqueueAiJob,
-  JobPayloadError,
 } from "@/lib/ai-jobs";
 import { dispatchAiJobsRunner } from "@/lib/ai-runner-dispatch";
 import { dispatchBlogPipeline, usableCoachTopic } from "@/lib/blog-pipeline-dispatch";
@@ -434,22 +433,15 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // ── Enqueue via service-role (sanitization happens inside). ────────
-    let id: string;
-    try {
-      ({ id } = await enqueueAiJob({
-        type,
-        payload: payload ?? {},
-        requestedBy: userId ?? null,
-      }));
-    } catch (e) {
-      // Required-field violations are client errors, not server faults.
-      // (article_generate no longer requires a topic — empty = smart pick.)
-      if (e instanceof JobPayloadError) {
-        return NextResponse.json({ error: e.message }, { status: 400 });
-      }
-      throw e;
-    }
+    // ── Enqueue via service-role (sanitization happens inside —
+    // clamps/undefined degradation, never throws: the INF-16 dead
+    // JobPayloadError branch was removed 2026-11-16; real errors are
+    // honest 500s through the outer catch). ──
+    const { id } = await enqueueAiJob({
+      type,
+      payload: payload ?? {},
+      requestedBy: userId ?? null,
+    });
 
     // ── COACH PIPELINE PARITY (Phase 162, owner directive 2026-09-10
     // «مطلوب مسار الكوتش للتوليد يكون نفس مسار التوليد الالى دون تعطيل

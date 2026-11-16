@@ -91,11 +91,25 @@ while :; do
   set -u
 
   if [ "$CODE" -eq 0 ]; then
-    # Capture queueId once (step1 only — uuid v4 quoted string).
-    QID="$(grep -o '"queueId":"[^"]*"' /tmp/"$STEP".out | head -1 | cut -d'"' -f4)"
-    if [ -n "$QID" ] && [ -n "${GITHUB_ENV:-}" ]; then
-      echo "QUEUE_ID=$QID" >> "$GITHUB_ENV"
-      echo "[$STEP] captured QUEUE_ID=$QID"
+    # ART-24 (audit AI-GENERATION-PIPELINES, plan §9 P2 item 8 —
+    # executed 2026-11-16): capture queueId from P0 ONLY — the step that
+    # CREATES the queue row (uuid v4 quoted string). The old code grepped
+    # + re-appended QUEUE_ID after EVERY successful step (and every
+    # recursive repair child), so any later step whose output happened to
+    # carry a different/stale "queueId" string would clobber the id for
+    # the steps after it. P1-P5 only echo back the id they were GIVEN
+    # (run-step.mts exits hard without --queueId), so a p0-only capture
+    # is the documented design ("threads queueId automatically from P0's
+    # response") with zero legitimate-path change. The recipes twin
+    # (scripts/recipes-runner/run-step.sh) deliberately keeps its
+    # any-step capture: its RC4 fresh-r0 repair chain creates NEW rows
+    # mid-run and later steps must pick the new id up.
+    if [ "$STEP" = "p0-research" ]; then
+      QID="$(grep -o '"queueId":"[^"]*"' /tmp/"$STEP".out | head -1 | cut -d'"' -f4)"
+      if [ -n "$QID" ] && [ -n "${GITHUB_ENV:-}" ]; then
+        echo "QUEUE_ID=$QID" >> "$GITHUB_ENV"
+        echo "[$STEP] captured QUEUE_ID=$QID"
+      fi
     fi
     echo "✓ $STEP succeeded"
     exit 0

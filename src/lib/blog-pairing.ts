@@ -40,9 +40,9 @@ import { parseJSON } from "./ai-provider";
 import { dispatchAI } from "./ai-router";
 import { type LanguageResearch } from "./blog-research";
 import { ARTICLE_ANGLES } from "./blog-pipeline";
-// ART-10: the same lexical+semantic topic dedup the walks use.
-import { getRecentPostsByLanguage, isDuplicateTopic } from "./blog-topics";
-import { findSemanticTopicCollision } from "./blog-semantic";
+// ART-10: the same lexical+semantic topic dedup the walks use
+// (ART-26, audit plan §9 P2 item 8: the one unified helper).
+import { getRecentPostsByLanguage, topicMatchesRecentPost } from "./blog-topics";
 // PHASE 171 (blog-audit proposal ب): parsePairingJSON rides the
 // 161.5-hardened parseJSON from ai-provider (was the weak parseJSONLoose —
 // strict-only, no truncation repair / control-char escaping).
@@ -340,11 +340,7 @@ Return STRICT JSON only:
         const arIsLiteral = arResearch.topics.some((c) => c.trim() === choice.topicAr);
         if (!arIsLiteral) {
           const recentArTitles = await getRecentPostsByLanguage("ar", 100).catch(() => []);
-          const arDup = recentArTitles.some(
-            (rt) =>
-              isDuplicateTopic(choice.topicAr, choice.topicAr, [rt]).duplicate ||
-              findSemanticTopicCollision(choice.topicAr, choice.topicAr, [rt]).collision,
-          );
+          const arDup = recentArTitles.some((rt) => topicMatchesRecentPost(choice.topicAr, rt));
           if (arDup) {
             lastError = new Error(`pairing: new Arabic topic duplicates a recent AR article`);
             console.warn(`[blog-pairing] attempt ${attempt} AR-topic duplicate — retrying`);

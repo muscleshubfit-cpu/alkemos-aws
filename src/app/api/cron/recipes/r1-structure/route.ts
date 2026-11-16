@@ -5,7 +5,11 @@ import {
   generateRecipeStructure,
   groundStructure,
   loadNutrientCatalog,
-  pairSlugify,
+  // REC-19 (audit plan §9 P2 item 8): the master insert's pair_slug
+  // derives through the collision-proof wrapper — a latin-free themeEn
+  // (model drift) can never burn the GLOBAL recipes_pair_slug_uidx a
+  // second time with the bare "recipe" fallback.
+  pairSlugForMasterInsert,
   type RecipeIdea,
   type RecipeStructure,
 } from "@/lib/recipes-pipeline";
@@ -134,7 +138,10 @@ export async function GET(request: NextRequest) {
     // Create the master record (in_production) + the shared ingredients.
     const totalWeight = structure.ingredients.reduce((s, i) => s + i.amountG, 0);
     const servingWeightG = Math.max(1, Math.round(totalWeight / structure.servings));
-    const pairSlug = pairSlugify(idea.themeEn);
+    // REC-19 (audit plan §9 P2 item 8): unique on the empty-slug edge —
+    // the bare pairSlugify fallback "recipe" guaranteed a duplicate-key
+    // failure against recipes_pair_slug_uidx on its second occurrence.
+    const pairSlug = pairSlugForMasterInsert(idea.themeEn);
 
     let recipeId: string;
     if (qi.recipe_id) {

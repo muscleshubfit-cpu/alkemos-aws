@@ -5,6 +5,10 @@ import { dispatchAI } from "@/lib/ai-router";
 import { supabaseAdmin, isSupabaseAdminConfigured } from "@/lib/supabase/admin";
 import type { Json } from "@/lib/supabase/types";
 import { findBlogIntentCollision } from "@/lib/intent-map";
+// ART-26 (audit plan §9 P2 item 8): the unified topic-vs-recent-post
+// duplicate test needs the semantic arm; blog-semantic has no imports
+// (no cycle possible).
+import { findSemanticTopicCollision } from "@/lib/blog-semantic";
 
 /**
  * Smart topic picker for the automated blog pipeline.
@@ -291,6 +295,25 @@ export function isDuplicateTopic(
     }
   }
   return { duplicate: false };
+}
+
+/* ── ART-26 (audit AI-GENERATION-PIPELINES, plan §9 P2 item 8 — executed
+ *  2026-11-16): the ONE topic-vs-recent-post duplicate test. The literal
+ *  `(topic, topic, [post])` call — the topic doubling as its own focus
+ *  keyword — was copy-pasted at FIVE call sites (pickTopicIndex's
+ *  deterministic fallback, the ART-10 generated-title check, P1's
+ *  guardDuplicate, P0's survivesDedup pre-filter, and the pairing AR
+ *  topic guard). One definition here; the detectors below it unchanged
+ *  (byte-identical semantics — pure extraction, the audit's «استخراج
+ *  مساعد واحد»). */
+export function topicMatchesRecentPost(
+  topic: string,
+  recent: { title: string; focusKeyword: string },
+): boolean {
+  return (
+    isDuplicateTopic(topic, topic, [recent]).duplicate ||
+    findSemanticTopicCollision(topic, topic, [recent]).collision
+  );
 }
 
 /**

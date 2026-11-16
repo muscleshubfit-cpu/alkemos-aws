@@ -19,14 +19,13 @@ import { dispatchAI } from "./ai-router";
 // serving provider's chain scope so the step retry walks to a healthy entry.
 import { markCooldown } from "./ai-provider-cooldown";
 import { type LanguageResearch } from "./blog-research";
-import { getRecentPostsByLanguage, getRecentContentDigests, isDuplicateTopic } from "./blog-topics";
+import { getRecentPostsByLanguage, getRecentContentDigests, topicMatchesRecentPost } from "./blog-topics";
 // ART-4: the shared prose word counter (one law, P2 floor + P5 + manual battery).
 import { countProseWords } from "./blog-word-count";
-// BLOG-DIVERSITY-ENGINE (2026-11-13): semantic dedup + LRU angle rotation.
-import {
-  findSemanticTopicCollision,
-  pickLeastRecentlyUsedAngle,
-} from "./blog-semantic";
+// BLOG-DIVERSITY-ENGINE (2026-11-13): LRU angle rotation (the semantic
+// dedup arm moved into topicMatchesRecentPost — ART-26, audit plan §9
+// P2 item 8).
+import { pickLeastRecentlyUsedAngle } from "./blog-semantic";
 import { getRecentAngleIds } from "./blog-queue";
 import { sanitizeModelSlug } from "./slug";
 import {
@@ -272,15 +271,9 @@ export async function pickTopicIndex(
   // Deterministic fallback: first non-duplicate suggestion (LRU-friendly).
   // BLOG-DIVERSITY-ENGINE (2026-11-13): the dup test is LEXICAL and
   // SEMANTIC — a paraphrased repeat of a recent article is skipped too.
+  // ART-26 (audit plan §9 P2 item 8): the one unified dup test.
   for (let i = 0; i < topics.length; i++) {
-    if (
-      !recent.some(
-        (p) =>
-          isDuplicateTopic(topics[i], topics[i], [p]).duplicate ||
-          findSemanticTopicCollision(topics[i], topics[i], [p]).collision,
-      )
-    )
-      return i;
+    if (!recent.some((p) => topicMatchesRecentPost(topics[i], p))) return i;
   }
   return 0;
 }
@@ -424,11 +417,7 @@ Create the detailed article blueprint. Return STRICT JSON only:
   // sailed through. A collision throws → the ×3 retry redraws.
   {
     const recentTitles = await getRecentPostsByLanguage(lang, 100).catch(() => []);
-    const dup = recentTitles.some(
-      (rt) =>
-        isDuplicateTopic(String(parsed.title), String(parsed.title), [rt]).duplicate ||
-        findSemanticTopicCollision(String(parsed.title), String(parsed.title), [rt]).collision,
-    );
+    const dup = recentTitles.some((rt) => topicMatchesRecentPost(String(parsed.title), rt));
     if (dup) {
       throw new Error(
         `P1 ${lang}: generated outline title duplicates a recent published article from ${provider}:${model} — retrying draws a fresh angle`,
@@ -1355,7 +1344,18 @@ function applyLatinTokenMap(md: string, map: Map<string, string>): LatinTokenMap
       .join("\n");
   }
 
-  function repairLine(line: string): string {
+  function repairLine(rawLine: string): string {
+    // ART-22 (audit AI-GENERATION-PIPELINES, plan §9 P2 item 8 —
+    // executed 2026-11-16): the \u0000N\u0000 placeholder sentinel is
+    // collision-proofed by stripping NUL from the INPUT first. A
+    // corrupted/attacker line carrying a literal "\u00003\u0000" used to
+    // ride the final restore regex and get substituted with kept[3] (a
+    // protected URL/image of this very line — placeholder injection).
+    // NUL is a control character that can never legally appear in blog
+    // markdown prose (the sanitizer law at line ~972 strips the whole
+    // control range), so every legitimate line is byte-identical —
+    // only the pathological payload changes, from corruption to clean.
+    const line = rawLine.replace(/\u0000/g, "");
     const kept: string[] = [];
     const keep = (s: string): string => {
       kept.push(s);

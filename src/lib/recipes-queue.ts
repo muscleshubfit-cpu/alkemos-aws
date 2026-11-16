@@ -122,24 +122,6 @@ export async function markRecipeQueueFailed(queueId: string, errorMessage: strin
   }
 }
 
-/** Held with a rerun target (the R5 gate verdict — «حجز» not «فشل»
- *  while repair budget remains). */
-export async function markRecipeQueueHeld(
-  queueId: string,
-  reason: string,
-  rerunTarget: string | null,
-): Promise<void> {
-  try {
-    await updateRecipeQueueItem(queueId, {
-      status: "held",
-      error_message: reason.slice(0, 2000),
-      ...(rerunTarget ? { rerun_target: rerunTarget } : {}),
-    });
-  } catch {
-    /* never throws */
-  }
-}
-
 /** RC4 (forensics 2026-11-12): an R5 hold whose rerun target is r0-idea
  *  ABANDONS this attempt — demote the recipes master out of the live set
  *  ('in_production') so the partial unique index recipes_one_per_day_uidx

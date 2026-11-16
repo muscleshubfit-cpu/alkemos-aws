@@ -145,6 +145,20 @@ function round2(n: number): number {
  *  6. sodium coverage: complete only when EVERY ingredient carries a
  *     sodium datum (optional enrichment — never blocks a gate).
  */
+
+/* ── REC-20 (audit AI-GENERATION-PIPELINES, plan §9 P2 item 8 — executed
+ *  2026-11-16): the STRUCTURAL-violation marker thrown by
+ *  computeRecipeNutrition. R2 maps this class to a HOLD with
+ *  rerun_target=r1-structure (the pipeline's documented repair law —
+ *  the R1 route itself holds with the same target when it cannot ground
+ *  a structure) instead of the general catch's terminal failed. The
+ *  route header has always promised this; the code now honors it. */
+export const N_GATE1_VIOLATION_PREFIX = "[recipes-nutrition] N-GATE-1 violation:";
+
+export function isNGate1StructuralViolation(error: unknown): boolean {
+  return error instanceof Error && error.message.startsWith(N_GATE1_VIOLATION_PREFIX);
+}
+
 export function computeRecipeNutrition(input: {
   servings: number;
   ingredients: readonly IngredientInput[];

@@ -167,10 +167,17 @@ export async function POST(request: NextRequest) {
     }
     if (!plan.ok) {
       // Retry #1 — same request, harder nudge. Still uncounted.
+      // WOR-17 (audit plan §9 P2 item 8 — the workout twin's law): the
+      // reminder speaks the PROMPT's language; the JSON contract example
+      // stays verbatim either way.
+      const shapeReminder = `\n\n${
+        req.language === "ar"
+          ? 'تذكير: أعد كائن JSON واحدًا فقط بهذا الشكل بالضبط {"meals":[{"name":"الفطور","items":[{"food":"…","grams":150,"kcal":230}]}]} — لا شيء غيره.'
+          : 'REMINDER: reply with ONE JSON object exactly like {"meals":[{"name":"…","items":[{"food":"…","grams":120,"kcal":180}]}]} — nothing else.'
+      }`;
       const second = await dispatchAI(
         "meal-demo",
-        prompt +
-          '\n\nREMINDER: reply with ONE JSON object exactly like {"meals":[{"name":"…","items":[{"food":"…","grams":120,"kcal":180}]}]} — nothing else.',
+        prompt + shapeReminder,
         demoOverrides,
       ).catch(() => null);
       if (second) {

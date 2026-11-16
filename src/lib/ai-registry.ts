@@ -1133,7 +1133,11 @@ export const AI_FUNCTION_REGISTRY: Record<string, AIFunctionSpec> = {
   "meal-demo": {
     id: "meal-demo",
     family: "demo",
-    role: { json: true, streaming: false, language: "en", payloadClass: "medium" },
+    // WOR-17 (audit AI-GENERATION-PIPELINES, plan §9 P2 item 8 — executed
+    // 2026-11-16): the demo surfaces are BILINGUAL (meal-plan-demo/route.ts
+    // branches on req.language ar|en for prompt + copy + locale) — the old
+    // "en" stamp was metadata drift, never read by the engine.
+    role: { json: true, streaming: false, language: "both", payloadClass: "medium" },
     ladder: [...ROTATED_LEADS, GEMINI_TAIL],
     policy: {
       temperature: 0.4,
@@ -1158,7 +1162,8 @@ export const AI_FUNCTION_REGISTRY: Record<string, AIFunctionSpec> = {
   "workout-demo": {
     id: "workout-demo",
     family: "demo",
-    role: { json: true, streaming: false, language: "en", payloadClass: "medium" },
+    // WOR-17 (audit plan §9 P2 item 8): bilingual surface — see meal-demo.
+    role: { json: true, streaming: false, language: "both", payloadClass: "medium" },
     ladder: [...ROTATED_LEADS, GEMINI_TAIL],
     policy: {
       temperature: 0.4,
