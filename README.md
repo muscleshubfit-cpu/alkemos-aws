@@ -355,12 +355,20 @@ truthful `lastmod` anchors, a `robots.txt` that welcomes AI crawlers,
 `llms.txt` + `llms-full.txt` for generative engines, bilingual RSS feeds,
 IndexNow + Bing submission, and dedicated Open Graph cards per surface
 family. The internal-linking net is deliberate: generated articles get
-deterministic tool links (`src/lib/blog-tool-links.ts`), the eight tool
+deterministic tool links (`src/lib/blog-tool-links.ts` — Arabic articles link
+the `/ar/` mirrors, and any EN tool URL a review model plants inside an AR
+article is rewritten to the mirror), the eight tool
 pages carry contextual article links and every paired article carries the
 reverse tool link — one pair source, both directions
 (`src/lib/tool-article-links.ts`). Citations in generated articles are allowed only as links to
 whitelisted health authorities, and every external link is verified live at
-publish. A scheduled GEO probe measures how often Alkemos appears in AI
+publish. Internal `/blog/` links are verified deterministically at publish too
+(`src/lib/blog-link-verify.ts`): each must resolve to a published slug of the
+article's own language, and a dead or wrong-language link is unwrapped to its
+anchor text. The article writer itself is grounded on the research stage's
+extracted evidence — the top full-text pages (≤3 excerpts) ride the writing
+prompt inside a data boundary, so body facts follow the live evidence instead
+of model memory. A scheduled GEO probe measures how often Alkemos appears in AI
 answers (`.github/workflows/geo-answer-visibility.yml`).
 
 ### Automated quality gates
