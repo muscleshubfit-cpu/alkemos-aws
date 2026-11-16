@@ -1,0 +1,43 @@
+-- ============================================================================
+-- 20261116140000_0114_ai_jobs_retry_backoff.sql
+-- 0114 — AI-GENERATION-PIPELINES P2-5 (audit 2026-11-15, owner execution
+--        order «نفّذ البند التالي غير المنفّذ بالكامل»): one additive column.
+-- ============================================================================
+-- WHY (the audit's measured findings, verbatim references):
+--   * INF-14 [منخفضة]: ai-jobs.ts:480-491 — the queue requeue is IMMEDIATE
+--     with no real backoff: a requeued job can be re-claimed by the same
+--     40-minute run within seconds, and the only spacing mechanism was the
+--     runner's blind 70s sleep whose regex (/429|rate.?limit|TPM|quota/i)
+--     matches the "Active quota-cooldowns" preamble that EVERY aggregated
+--     chain error carries — so even a parse-failure requeue paid 70s, while
+--     a genuinely quota-drained provider was retried only 70s later.
+--     → ai_jobs.next_attempt_at: failJob schedules the retry (short window
+--       for transient failures; the 30-minute provider-cooldown window for
+--       quota-class terminal errors) and claimQueuedJobs only claims rows
+--       whose next_attempt_at is NULL or past — the DB is the enforcer, so
+--       the blind in-run sleep is retired.
+--   * INF-15 [منخفضة]: ai-jobs.ts:467-491 — finishJob/failJob wrote with NO
+--     status precondition: a late writer could stamp `done` over a row the
+--     reaper had already requeued (or another run had re-claimed). The GHA
+--     concurrency group made this unlikely, not impossible.
+--     → both writers now carry status='processing' CAS guards (the code
+--       change; this migration only funds the backoff column).
+--
+-- WHAT THIS FILE DOES (additive + idempotent — the 0109/0111/0112 pattern):
+--   1. ai_jobs.next_attempt_at timestamptz NULL — the scheduled retry gate.
+--      NULL = claimable now (every existing row: zero behavior change at
+--      migration time); a future timestamp = the job waits out its backoff.
+--
+-- No index is added: the claim path (status='queued' + created_at order)
+-- is already served by idx_ai_jobs_status_created (0024), and the new
+-- claimable filter (next_attempt_at IS NULL OR <= now()) is a cheap
+-- post-filter over the queued slice of a queue table that holds hours of
+-- rows, not years. No data is modified. RLS posture untouched (the column
+-- carries no PII and browsers keep their SELECT-own-row policy only).
+-- Applied by the repo-owned pipeline (deploy-aws.yml migrate job).
+-- ============================================================================
+
+alter table public.ai_jobs
+  add column if not exists next_attempt_at timestamptz;
+
+-- Verification probe: scripts/db/migration_probes.py (0114 row).

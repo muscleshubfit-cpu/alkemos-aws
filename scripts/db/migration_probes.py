@@ -329,6 +329,23 @@ PROBES: list[dict] = [
              "column": "sat_fat_coverage"},
         ],
     },
+    # 0114 — AI-JOBS RETRY BACKOFF (audit AI-GENERATION-PIPELINES 2026-11-15,
+    # P2-5 / INF-14): ai_jobs.next_attempt_at — the scheduled retry gate.
+    # failJob stamps it on requeue (short window for transient failures,
+    # the 30-minute provider-cooldown window for quota-class terminal
+    # errors) and claimQueuedJobs only claims rows whose value is NULL or
+    # past. Honest weak strength: additive column only — presence is the
+    # law. INF-15's status-CAS writers (finishJob/failJob) are pure code,
+    # pinned by the ai-jobs-p2-5-retry-backoff canaries instead.
+    {
+        "file": "20261116140000_0114_ai_jobs_retry_backoff.sql",
+        "label": "0114 AI-JOBS-RETRY-BACKOFF",
+        "strength": "weak",
+        "checks": [
+            {"type": "swagger_column", "table": "ai_jobs",
+             "column": "next_attempt_at"},
+        ],
+    },
 ]# fmt on
 
 # --- named transforms for rest_rows probes ----------------------------------

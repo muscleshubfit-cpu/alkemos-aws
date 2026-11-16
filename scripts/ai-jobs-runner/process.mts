@@ -235,33 +235,60 @@ async function main(): Promise<void> {
           // DUPLICATE draft for the member).
           jobId: job.id ?? null,
         });
-        await finishJob(job.id, result);
+        // INF-15 (P2-5): finishJob is a processing-only CAS — it returns
+        // whether the write LANDED. When it did not (the row was reaped
+        // mid-run and requeued, or re-claimed by a later run), the result
+        // is NOT resurrected over the row's new state; the usage ledgers
+        // still run below (the work was real, and 0110's UNIQUE job_ref
+        // makes a double record impossible when the re-run finishes).
+        const finishLanded = await finishJob(job.id, result);
         await recordSwapOnSuccess(job);
         await recordPlanPoolOnSuccess(job);
         done++;
+        if (!finishLanded) {
+          console.warn(
+            `[ai-jobs] ⚠︎ ${label} processed, but finishJob did NOT land (row no longer processing — reaped/re-claimed underneath); result discarded, the queue row heals via its own state. Usage recording ran (job_ref dedup protects the re-run).`,
+          );
+          console.log(
+            `::notice::AI job ${job.job_type} finished processing but its row changed state underneath (CAS miss) — honest discard`,
+          );
+        }
         console.log(`[ai-jobs] ✓ ${label} done in ${Math.round((Date.now() - startedAt) / 1000)}s`);
         console.log(`::notice::AI job ${job.job_type} completed`);
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
         const outcome = await failJob(job.id, Number(job.attempts || 1), message);
-        if (outcome === "failed") {
+        if (outcome.outcome === "failed") {
           failed++;
           failedLabels.push(label);
           console.error(`[ai-jobs] ✗ ${label} FAILED permanently: ${message}`);
           console.log(`::error::AI job ${job.job_type} failed permanently: ${message.slice(0, 180)}`);
+        } else if (outcome.outcome === "lost") {
+          // INF-15 (P2-5): the row stopped being `processing` underneath us
+          // (reaped mid-catch / re-claimed). Never counted as a permanent
+          // failure — the row's own state (queued by the reaper) governs
+          // what happens next, and blind overwriting is banned.
+          console.warn(
+            `[ai-jobs] ⚠︎ ${label} failure NOT recorded (row no longer processing — reaped/re-claimed underneath); the queue row keeps its own state. Original error: ${message}`,
+          );
+          console.log(
+            `::notice::AI job ${job.job_type} failure discarded honestly (CAS miss — row state changed underneath)`,
+          );
         } else {
-          console.warn(`[ai-jobs] ⚠︎ ${label} failed, requeued for retry: ${message}`);
-          // RATE-LIMIT COOLDOWN LAW (2026-08-28h): a requeue caused by
-          // 429/TPM/quota pressure MUST outlive the per-minute window
-          // before the next claim — back-to-back retries re-burn the same
-          // bucket and turn a transient limit into a permanent failure
-          // (run 33176102145: attempts 1-2 died 90s apart to Groq TPM).
-          if (/429|rate.?limit|TPM|quota/i.test(message)) {
-            console.log(`[ai-jobs] ⏳ rate-limited — cooling down 70s before the next claim (window reset)`);
-            await new Promise((r) => setTimeout(r, 70_000));
-          } else {
-            await new Promise((r) => setTimeout(r, 3_000));
-          }
+          // INF-14 (P2-5): the requeue carries a SCHEDULED retry —
+          // claimQueuedJobs will not touch this row until next_attempt_at
+          // passes, so the OLD blind in-run sleeps are retired: the 70s
+          // nap fired on nearly every failure because its regex matched the
+          // "Active quota-cooldowns" preamble that every aggregated chain
+          // error carries, while a genuinely quota-drained provider got
+          // only 70s of mercy. The DB now spaces the retry (short window
+          // for transient tails, the 30-minute provider-cooldown window
+          // for quota-class terminal errors — isQuotaClassFailure reads
+          // only the terminal error line), and this run moves on to the
+          // next claimable job instead of sleeping on the clock.
+          console.warn(
+            `[ai-jobs] ⚠︎ ${label} failed, requeued with scheduled backoff — next attempt ≥ ${outcome.nextAttemptAt}: ${message}`,
+          );
         }
       }
     }

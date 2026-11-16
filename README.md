@@ -322,7 +322,12 @@ model:
   enforcement either way (P2-4 of the generation-engines audit).
 - Long-running generation (the blog pipeline, queued AI jobs) runs on GitHub
   Actions runners instead of request handlers; every sequential path is
-  budget-clamped.
+  budget-clamped, and the shared `ai_jobs` queue retries failures on a
+  DB-scheduled backoff (`next_attempt_at` — a short window for transient
+  errors, the 30-minute provider-cooldown window for quota-class ones,
+  classified by the terminal error line) with processing-only CAS writes,
+  so a failed job is never re-burned immediately and a late writer can
+  never stamp over a row that changed state underneath it.
 
 ### Automated content pipeline
 The bilingual blog is generated end-to-end — research → outline → article →

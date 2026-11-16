@@ -1342,6 +1342,11 @@ export type Database = {
           created_at: string;
           started_at: string | null;
           finished_at: string | null;
+          // 0114 AI-JOBS-RETRY-BACKOFF (P2-5 / INF-14): the scheduled
+          // retry gate — NULL = claimable now, a future timestamp = the
+          // job waits out its backoff (set by failJob, cleared on claim
+          // and on finish).
+          next_attempt_at: string | null;
         };
         Insert: {
           id?: string;
@@ -1355,6 +1360,7 @@ export type Database = {
           created_at?: string;
           started_at?: string | null;
           finished_at?: string | null;
+          next_attempt_at?: string | null;
         };
         Update: {
           job_type?: string;
@@ -1366,6 +1372,7 @@ export type Database = {
           attempts?: number;
           started_at?: string | null;
           finished_at?: string | null;
+          next_attempt_at?: string | null;
         };
         Relationships: [
           { foreignKeyName: "ai_jobs_requested_by_fkey"; columns: ["requested_by"]; isOneToOne: false; referencedRelation: "users"; referencedColumns: ["id"] },

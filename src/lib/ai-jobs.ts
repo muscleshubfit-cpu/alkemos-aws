@@ -38,7 +38,10 @@
  *
  * RUNNER CONTRACT (scripts/ai-jobs-runner/process.mts):
  *   reapStaleJobs() → claimQueuedJobs() → PROCESSORS[type](payload)
- *   → finishJob()/failJob(); failJob requeues until MAX_ATTEMPTS.
+ *   → finishJob()/failJob(); failJob requeues until MAX_ATTEMPTS —
+ *   with a SCHEDULED retry (next_attempt_at, INF-14/P2-5) that
+ *   claimQueuedJobs respects; both writers are processing-only CAS
+ *   (INF-15/P2-5).
  */
 import type { Json } from "@/lib/supabase/types";
 import { DIET_TYPES } from "@/lib/diet-types";
@@ -73,6 +76,89 @@ export type AiJobStatus = (typeof AI_JOB_STATUSES)[number];
 /** Hard retry ceiling per job before it lands in `failed`. */
 export const MAX_JOB_ATTEMPTS = 3;
 
+/* ──────────── P2-5 scheduled retry backoff (INF-14, audit 2026-11-15) ────────────
+ * The requeue used to be IMMEDIATE: a failed job went straight back to
+ * `queued` and could be re-claimed by the same 40-minute run within
+ * seconds — the only spacing was the runner's blind 70s sleep whose regex
+ * matched the "Active quota-cooldowns" preamble EVERY aggregated chain
+ * error carries (so a parse failure paid 70s while a drained provider got
+ * only 70s of mercy). The DB is now the enforcer:
+ *   · failJob stamps next_attempt_at on requeue — SHORT window for
+ *     transient failures (parse/validation/5xx/empty/per-minute TPM —
+ *     the window resets in ≤60s, 3 minutes is real mercy),
+ *     COOLDOWN window (30 min, = AI_PROVIDER_COOLDOWN_MS in the worker)
+ *     for quota-class terminal errors (a dry account/daily bucket does
+ *     not refill in 3 minutes — burning attempts 2 and 3 on it 6 minutes
+ *     apart is the self-DoS the measured 33176102145 run documented).
+ *   · claimQueuedJobs only claims rows with next_attempt_at NULL or past
+ *     (the same `.or()` shape referral.ts uses for available_at).
+ *   · the blind in-run sleep is RETIRED (process.mts) — the schedule is
+ *     durable state, so it survives run boundaries and the every-10-minute
+ *     cron backstop picks the job up on the first run after the gate opens.
+ * ────────────────────────────────────────────────────────────────────── */
+
+/** Short backoff for transient failures — parse/validation/5xx/empty/
+ * per-minute TPM windows (reset ≤60s; 3 minutes outlives them honestly). */
+export const AI_RETRY_BACKOFF_MS = 3 * 60_000;
+
+/** Backoff for quota-class terminal errors — aligned with the provider
+ * cooldown window the worker already runs (AI_PROVIDER_COOLDOWN_MS=
+ * 1800000, P0-1): by the time the gate opens, the provider freeze has
+ * expired too, so attempt 2 walks a live ladder instead of re-burning
+ * the same dry entries. */
+export const AI_RETRY_BACKOFF_COOLDOWN_MS = 30 * 60_000;
+
+/**
+ * Is the failure's TERMINAL cause a quota/account-exhaustion error?
+ *
+ * INF-14's measured defect: the old runner regex (/429|rate.?limit|TPM|
+ * quota/i) ran over the WHOLE aggregated chain message, and every such
+ * message carries the "Active quota-cooldowns: …" preamble (listed skips)
+ * plus config lines — so a JSON-parse requeue was classified as a rate
+ * limit and paid the 70s sleep. This classifier looks ONLY at the
+ * terminal error line (the last "- " entry of the "Errors:" section —
+ * the same line the chain itself treats as the cause via errors[last]):
+ * a parse/empty/validation tail ⇒ transient (short window) even when
+ * earlier lines or the preamble mention cooldowns; a quota tail ⇒ the
+ * cooldown window. Vocabulary mirrors the provider layer's own
+ * looksLikeQuota/meterQuotaClass (401/402/403/429|quota|rate limit|
+ * credit|insufficient) — the account-dry family that outlives any
+ * per-minute window — EXCEPT the per-minute TPM/RPM class (groq's
+ * "try again in 12s" / "tokens per minute" wording, the P2-3 provider
+ * law that lifted the 30-min provider freeze for it): a hiccup that
+ * self-resets in ≤60s takes the short window, same reasoning as the
+ * provider-side decision not to evict a live survivor for half an hour.
+ */
+export function isQuotaClassFailure(message: string): boolean {
+  if (!message) return false;
+  const marker = "Errors:";
+  const idx = message.lastIndexOf(marker);
+  const tail = idx >= 0 ? message.slice(idx + marker.length) : message;
+  const lines = tail.split("\n").filter((l) => l.trim().startsWith("-"));
+  const last = (lines.length ? lines[lines.length - 1] : tail).trim();
+  if (!last) return false;
+  // Per-minute transient class FIRST (mirrors groq429PerMinuteClass — a
+  // daily marker or a per-minute wording veto decides the family):
+  const perMinute =
+    /try again in [0-9]+(?:\.[0-9]+)?\s*s/i.test(last) ||
+    /tokens per minute|\bTPM\b|requests per minute|\bRPM\b/i.test(last);
+  if (perMinute) return false;
+  return /\b(401|402|403|429)\b|quota|rate.?limit|credit|insufficient/i.test(last);
+}
+
+/** The scheduled retry gate for a requeue — short window for transient
+ * failures, the cooldown window for quota-class terminal errors. */
+export function retryBackoffMs(message: string): number {
+  return isQuotaClassFailure(message)
+    ? AI_RETRY_BACKOFF_COOLDOWN_MS
+    : AI_RETRY_BACKOFF_MS;
+}
+
+/** The ISO timestamp failJob stamps as next_attempt_at (now + backoff). */
+export function nextAttemptAtISO(message: string): string {
+  return new Date(Date.now() + retryBackoffMs(message)).toISOString();
+}
+
 /** Typical end-to-end latency = poll interval + generation time. */
 export const JOB_ETA_MINUTES = 10;
 
@@ -91,6 +177,8 @@ export type AiJobRow = {
   created_at?: string;
   started_at?: string | null;
   finished_at?: string | null;
+  /** INF-14 (P2-5): NULL = claimable now; future = wait out the backoff. */
+  next_attempt_at?: string | null;
 };
 
 /** How a job is authorized at enqueue time. */
@@ -474,13 +562,21 @@ export async function enqueueAiJob(opts: {
  * GHA runner side — atomically claim up to `limit` oldest queued jobs.
  * Optimistic UPDATE … WHERE status='queued' keeps a single winner even if
  * two workflow runs overlap (concurrency group also guards this).
+ *
+ * INF-14 (P2-5): only CLAIMABLE rows are candidates — next_attempt_at
+ * NULL (never failed / freshly enqueued / cleared on a previous claim) or
+ * in the past (the scheduled backoff has been served). A row waiting out
+ * its backoff does not occupy a claim slot and cannot be re-burned by the
+ * same run that just failed it.
  */
 export async function claimQueuedJobs(limit = 10): Promise<AiJobRow[]> {
   if (!isSupabaseAdminConfigured || !supabaseAdmin) throw new Error("admin client missing");
+  const claimableFrom = new Date().toISOString();
   const { data: candidates } = await supabaseAdmin
     .from("ai_jobs")
     .select("*")
     .eq("status", "queued")
+    .or(`next_attempt_at.is.null,next_attempt_at.lte.${claimableFrom}`)
     .order("created_at", { ascending: true })
     .limit(limit);
   const claimed: AiJobRow[] = [];
@@ -491,6 +587,11 @@ export async function claimQueuedJobs(limit = 10): Promise<AiJobRow[]> {
         status: "processing",
         started_at: new Date().toISOString(),
         attempts: (row.attempts || 0) + 1,
+        // INF-14: the backoff gate is served — clear it so a later
+        // requeue/reap starts from a clean slate (and a stuck `processing`
+        // row reaped by reapStaleJobs goes back to immediately claimable,
+        // preserving the reaper's recovery semantics).
+        next_attempt_at: null,
       })
       .eq("id", row.id)
       .eq("status", "queued")
@@ -500,30 +601,75 @@ export async function claimQueuedJobs(limit = 10): Promise<AiJobRow[]> {
   return claimed;
 }
 
-export async function finishJob(jobId: string, result: unknown): Promise<void> {
-  await supabaseAdmin!
+/**
+ * INF-15 (P2-5): the writer is a CAS — it only transitions a row that is
+ * STILL `processing` (this run's claim). A late finisher can no longer
+ * stamp `done` over a row the reaper requeued or a later run re-claimed.
+ * Returns whether the write LANDED — the runner logs honestly when it
+ * did not (previously the unconditional write silently resurrected rows).
+ */
+export async function finishJob(jobId: string, result: unknown): Promise<boolean> {
+  const { data } = await supabaseAdmin!
     .from("ai_jobs")
     .update({
       status: "done",
       result: result as Json,
       error_message: null,
       finished_at: new Date().toISOString(),
+      next_attempt_at: null,
     })
-    .eq("id", jobId);
+    .eq("id", jobId)
+    .eq("status", "processing")
+    .select("id");
+  return Array.isArray(data) && data.length > 0;
 }
 
-/** Retry-aware failure: back to `queued` until attempts hit the ceiling. */
-export async function failJob(jobId: string, currentAttempts: number, message: string): Promise<"requeued" | "failed"> {
+/** What failJob did to the row — the runner logs each outcome honestly. */
+export type FailJobOutcome =
+  | { outcome: "requeued"; nextAttemptAt: string }
+  | { outcome: "failed" }
+  | { outcome: "lost" };
+
+/**
+ * Retry-aware failure: back to `queued` until attempts hit the ceiling.
+ *
+ * INF-14 (P2-5): a requeue now carries a SCHEDULED retry — next_attempt_at
+ * is stamped (short window for transient failures, the 30-minute provider
+ * cooldown window for quota-class terminal errors) and claimQueuedJobs
+ * respects the gate, so the retry is spaced in DURABLE state instead of
+ * the retired in-run 70s/3s sleeps whose regex over-matched the aggregated
+ * chain error (see isQuotaClassFailure).
+ *
+ * INF-15 (P2-5): same processing-only CAS as finishJob — a row that was
+ * reaped/re-claimed underneath us is reported as "lost" instead of being
+ * blindly overwritten.
+ */
+export async function failJob(
+  jobId: string,
+  currentAttempts: number,
+  message: string,
+): Promise<FailJobOutcome> {
   const exhausted = (currentAttempts || 1) >= MAX_JOB_ATTEMPTS;
-  await supabaseAdmin!
+  const nextAttemptAt = nextAttemptAtISO(message);
+  const { data } = await supabaseAdmin!
     .from("ai_jobs")
     .update({
       status: exhausted ? "failed" : "queued",
       error_message: message.slice(0, 2000),
       finished_at: exhausted ? new Date().toISOString() : null,
+      next_attempt_at: exhausted ? null : nextAttemptAt,
     })
-    .eq("id", jobId);
-  return exhausted ? "failed" : "requeued";
+    .eq("id", jobId)
+    .eq("status", "processing")
+    .select("id");
+  if (!Array.isArray(data) || data.length === 0) {
+    // The row is no longer `processing` (reaped mid-catch / re-claimed by
+    // a later run): report the loss honestly — never blind-write over it.
+    return { outcome: "lost" };
+  }
+  return exhausted
+    ? { outcome: "failed" }
+    : { outcome: "requeued", nextAttemptAt };
 }
 
 /** Jobs stuck in `processing` > 30 min (runner crash mid-job) → requeue. */
