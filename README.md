@@ -320,6 +320,19 @@ model:
   that tries to override the system instructions, the output contract, or
   the safety gates — the deterministic validators stay the hard
   enforcement either way (P2-4 of the generation-engines audit).
+- **The daily recipes pipeline verifies its images by DISH FAMILY, not by
+  meal slot** — the recipe pair's cover image is searched and matched
+  against a family keyword derived from the dish's own bilingual theme
+  (`src/lib/recipes-images.ts`: soup/salad/curry/… via a fixed
+  dictionary, Arabic arms included), never against mealType
+  (lunch/dinner), and a stock photo whose alt carries only generic
+  food words is rejected — the walk continues, then an honest hold. The
+  Arabic alt text is built from the Arabic ingredient names, and the
+  publish battery scans that alt with the same MSA/no-latin law as the
+  prose (holding with a rerun-r4-image directive), while the authoring
+  schema mirrors the meta-title budgets per language (70 Arabic / 60
+  English) so an over-budget title is rejected at the parse, before the
+  image cycle ever runs (P2-7 of the generation-engines audit).
 - Long-running generation (the blog pipeline, queued AI jobs) runs on GitHub
   Actions runners instead of request handlers; every sequential path is
   budget-clamped, and the shared `ai_jobs` queue retries failures on a

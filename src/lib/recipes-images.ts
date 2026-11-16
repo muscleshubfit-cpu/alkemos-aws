@@ -12,6 +12,14 @@
  *  - Post-selection visual MATCH check: the dish's food-type keyword must
  *    appear in the result's alt text; failures walk to the next
  *    query/provider, then the recipe is honestly held.
+ *  - REC-2 (audit AI-GENERATION-PIPELINES 2026-11-15, plan §9 P2 item 7 —
+ *    executed 2026-11-16): the family keyword is DERIVED from the dish's
+ *    own theme via DISH_TYPE_KEYWORDS. The R4 route used to pass mealType
+ *    (lunch/dinner/…) as the "dish family" — so the dictionary was never
+ *    consulted, the query degraded ("شوربة عدس lunch") and the match check
+ *    accepted any alt containing food/dish/meal/plate (words in almost
+ *    every stock alt). The generic plea words are GONE: the specific family
+ *    evidence (the EN key or the family's own AR/EN patterns) is required.
  */
 
 import {
@@ -31,8 +39,11 @@ export type RecipeImageInput = {
    *  names («دجاج مشوي بـchicken breast وrice»), shipping Latin
    *  contamination into every published pair's accessibility/SEO text. */
   mainIngredientsAr?: readonly string[];
-  /** the dish family keyword for the match check (soup/salad/curry/…) */
-  dishTypeEn: string;
+  /* REC-2 (plan §9 P2 item 7): NO dishTypeEn field anymore — the R4 route
+   *  used to pass mealType (lunch/dinner/…) here as the "dish family",
+   *  which bypassed DISH_TYPE_KEYWORDS entirely. The family keyword is now
+   *  DERIVED from themeEn/themeAr inside dishKeyword() — the dish's own
+   *  name is the only honest source of its family. */
   queueId: string;
 };
 
@@ -47,10 +58,16 @@ export type RecipeImageResult = {
 
 /** Dish-family keywords used for BOTH query enrichment and the post-pick
  *  match verification (plan §7-3 — the image must represent the actual
- *  dish, not a generic food photo). */
+ *  dish, not a generic food photo).
+ *  REC-2 (plan §9 P2 item 7): soup/salad were ANCHORED (^) — but the
+ *  probe concatenates `${themeEn} ${themeAr}`, so the Arabic arms
+ *  (شوربة/سلطة) could never match at position 0 behind an English theme:
+ *  «شوربة عدس» derived NO family. Unanchored: the family belongs to the
+ *  dish wherever it appears in its own name (same form the unanchored
+ *  entries already used). */
 const DISH_TYPE_KEYWORDS: ReadonlyArray<{ key: string; patterns: RegExp }> = [
-  { key: "soup", patterns: /^(soup|شوربة|شوربه)/i },
-  { key: "salad", patterns: /^(salad|سلطة|سلطه)/i },
+  { key: "soup", patterns: /(soup|شوربة|شوربه)/i },
+  { key: "salad", patterns: /(salad|سلطة|سلطه)/i },
   { key: "curry", patterns: /curry|كاري/i },
   { key: "stew", patterns: /stew|طاجن|tagine/i },
   { key: "stir-fry", patterns: /stir.?fry|ووك/i },
@@ -61,8 +78,12 @@ const DISH_TYPE_KEYWORDS: ReadonlyArray<{ key: string; patterns: RegExp }> = [
   { key: "smoothie", patterns: /smoothie|سموذي/i },
 ];
 
+/** REC-2 (plan §9 P2 item 7): the family keyword is derived from the
+ *  dish's OWN theme (EN + AR) through the dictionary — mealType
+ *  (lunch/dinner/breakfast) is a serving slot, NOT a dish family, and was
+ *  never a valid match keyword. No caller-provided keyword: the theme is
+ *  the only honest source. */
 function dishKeyword(input: RecipeImageInput): string {
-  if (input.dishTypeEn) return input.dishTypeEn.toLowerCase();
   const probe = `${input.themeEn} ${input.themeAr}`;
   for (const d of DISH_TYPE_KEYWORDS) {
     if (d.patterns.test(probe)) return d.key;
@@ -70,11 +91,22 @@ function dishKeyword(input: RecipeImageInput): string {
   return "";
 }
 
-/** Does the picked image's alt text actually describe this dish family? */
+/** Does the picked image's alt text actually describe this dish family?
+ *  REC-2 (plan §9 P2 item 7): the generic plea words (food/dish/meal/
+ *  plate) are GONE — they appear in almost every stock alt, so the old
+ *  check passed any food photo for any dish. The SPECIFIC family evidence
+ *  is required: the family key (EN) as a substring, or any of the
+ *  family's own patterns (AR stems + EN variants) as substring evidence —
+ *  a stock alt may carry the Arabic family word without the EN key. */
 function altMatchesDish(alt: string, keyword: string): boolean {
   if (!keyword) return true; // no family keyword → no family claim to verify
   const a = alt.toLowerCase();
-  return a.includes(keyword) || a.includes("food") || a.includes("dish") || a.includes("meal") || a.includes("plate");
+  if (a.includes(keyword)) return true;
+  // the family's own patterns (AR stems + EN variants) as substring
+  // evidence — a stock alt may carry the Arabic family word without the
+  // EN key («صحن شوربة عدس» with no "soup").
+  const family = DISH_TYPE_KEYWORDS.find((d) => d.key === keyword);
+  return family ? family.patterns.test(a) : false;
 }
 
 export async function fetchRecipeImage(input: RecipeImageInput): Promise<RecipeImageResult | null> {

@@ -95,6 +95,9 @@ const baseInput = (over: Partial<RecipeGateInput> = {}): RecipeGateInput => ({
   derivedDiets: ["high-protein"],
   imageUrl: "https://x.com/i.jpg",
   imageVerified: true,
+  // REC-4 second half (P2-7): the alt scan field — null keeps this
+  // battery's semantics identical to its pre-P2-7 form.
+  imageAltAr: null,
   existingPairSlugs: new Set(),
   existingTitlesByLang: new Map([
     ["ar", new Set(["شاورما دجاج صحية"])],

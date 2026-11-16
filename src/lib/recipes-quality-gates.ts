@@ -63,6 +63,16 @@ export type RecipeGateInput = {
   derivedDiets: readonly RecipeDiet[];
   imageUrl: string | null;
   imageVerified: boolean;
+  /** REC-4 second half (audit AI-GENERATION-PIPELINES, plan §9 P2 item 7 —
+   *  executed 2026-11-16): the ARABIC image alt joins the Q-GATE-1 scan.
+   *  The alt is an Arabic accessibility/SEO text surface written at R4 —
+   *  the original audit found it built from ENGLISH ingredient names
+   *  («دجاج مشوي بـchicken breast وrice») and Q-GATE-1 never scanned it.
+   *  The P1 sweep fixed the BUILD (name_ar at R4); THIS frame adds the
+   *  deterministic SCAN: latin contamination or dialect inside the alt
+   *  holds the pair. The alt is REBUILT at R4, so its violations carry
+   *  the r4-image repair target (not r3-authoring). */
+  imageAltAr: string | null;
   /** existing published pair_slugs (dup guard) */
   existingPairSlugs: ReadonlySet<string>;
   /** existing published titles per language (dup guard) */
@@ -320,6 +330,25 @@ export function runRecipeQualityGates(input: RecipeGateInput): GateViolation[] {
         gate: "Q-GATE-1",
         message: `Q-GATE-1: Arabic version has latin contamination (${latin.count} tokens) — rerun r3-authoring`,
       });
+    }
+    // REC-4 second half (plan §9 P2 item 7): the image ALT inside the
+    // same Q-GATE-1 law — an Arabic text surface the battery never
+    // scanned. The r4-image repair target: the alt is REBUILT at R4.
+    if (input.imageAltAr) {
+      const altScan = scanArabicDialect(input.imageAltAr);
+      if (altScan.strong >= 1 || altScan.weak >= 5) {
+        violations.push({
+          gate: "Q-GATE-1",
+          message: `Q-GATE-1: Arabic image alt fails MSA (strong=${altScan.strong}, weak=${altScan.weak}) — rerun r4-image`,
+        });
+      }
+      const altLatin = scanLatinContamination(input.imageAltAr);
+      if (altLatin.count > 0) {
+        violations.push({
+          gate: "Q-GATE-1",
+          message: `Q-GATE-1: Arabic image alt has latin contamination (${altLatin.count} tokens) — rerun r4-image`,
+        });
+      }
     }
   }
 

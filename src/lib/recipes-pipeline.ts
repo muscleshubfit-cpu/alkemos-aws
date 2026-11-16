@@ -381,19 +381,32 @@ export type AuthoredVersion = {
   metaDescription: string;
 };
 
-const authoredSchema = z.object({
-  title: z.string().trim().min(5).max(110),
-  excerpt: z.string().trim().min(40).max(400),
-  steps: z.array(z.string().trim().min(15).max(700)).min(3).max(15),
-  tips: z.string().trim().max(800).default(""),
-  storageInfo: z.string().trim().max(500).default(""),
-  substitutions: z
-    .array(z.object({ from: z.string().trim().min(2), to: z.string().trim().min(2), note: z.string().trim().max(300) }))
-    .max(6)
-    .default([]),
-  metaTitle: z.string().trim().min(5).max(90),
-  metaDescription: z.string().trim().min(50).max(160),
-});
+/* REC-12 (audit AI-GENERATION-PIPELINES, plan §9 P2 item 7 — executed
+ * 2026-11-16): the zod ceilings MIRROR the GATE ceilings. The audit's
+ * fail-fast pillar demanded the cheap deterministic checks run at R3
+ * (done by the P1 sweep — r3EarlyDeterministicViolations inside the
+ * retry loop); the sweep left the shared schema allowing metaTitle up
+ * to 90 while clampMetaTitle rejects at 70 (ar) / 60 (en) — a draw the
+ * battery ALWAYS rejected at the schema's door would still burn the
+ * parse. Same law, now FOUR aligned layers: prompt (≤70/≤60) → zod
+ * (70/60) → the R3 early battery → R5 Q-GATE-2. metaDescription was
+ * already aligned (50-160 both sides). */
+const AUTHORED_META_TITLE_MAX: Record<"ar" | "en", number> = { ar: 70, en: 60 };
+
+const authoredSchemaFor = (language: "ar" | "en") =>
+  z.object({
+    title: z.string().trim().min(5).max(110),
+    excerpt: z.string().trim().min(40).max(400),
+    steps: z.array(z.string().trim().min(15).max(700)).min(3).max(15),
+    tips: z.string().trim().max(800).default(""),
+    storageInfo: z.string().trim().max(500).default(""),
+    substitutions: z
+      .array(z.object({ from: z.string().trim().min(2), to: z.string().trim().min(2), note: z.string().trim().max(300) }))
+      .max(6)
+      .default([]),
+    metaTitle: z.string().trim().min(5).max(AUTHORED_META_TITLE_MAX[language]),
+    metaDescription: z.string().trim().min(50).max(160),
+  });
 
 export async function authorRecipeVersion(
   language: "ar" | "en",
@@ -480,7 +493,7 @@ export async function authorRecipeVersion(
         : "You are a strict JSON API endpoint. Output ONE valid JSON object and nothing else.",
     },
   );
-  const parsed = authoredSchema.parse(parseJsonLoose(text));
+  const parsed = authoredSchemaFor(language).parse(parseJsonLoose(text));
 
   const version: AuthoredVersion = {
     language,

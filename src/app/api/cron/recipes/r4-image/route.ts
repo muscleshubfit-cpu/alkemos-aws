@@ -77,7 +77,13 @@ export async function GET(request: NextRequest) {
       mainIngredientsEn: mains,
       // REC-4: the Arabic names ride the input for buildAltAr.
       mainIngredientsAr: mainsAr,
-      dishTypeEn: String((bundle as { structure?: { mealType?: string } }).structure?.mealType ?? ""),
+      // REC-2 (audit AI-GENERATION-PIPELINES, plan §9 P2 item 7 — executed
+      // 2026-11-16): NO dishTypeEn here anymore. This route used to pass
+      // structure.mealType (lunch/dinner/…) as the "dish family", which
+      // bypassed DISH_TYPE_KEYWORDS entirely — the family keyword is now
+      // DERIVED from the pair's own theme inside recipes-images
+      // (dishKeyword) and the alt match requires the specific family
+      // evidence (the generic food/dish/meal/plate plea words are gone).
       queueId,
     };
 

@@ -78,7 +78,7 @@ export async function GET(request: NextRequest) {
     // ── The pair's own truth ──
     const { data: masterData, error: masterErr } = await supabaseAdmin
       .from("recipes")
-      .select("pair_slug, servings, serving_weight_g, prep_minutes, cook_minutes, image_url, image_verified, nutrition_per_serving, calories_kcal_consistency, diets")
+      .select("pair_slug, servings, serving_weight_g, prep_minutes, cook_minutes, image_url, image_verified, image_alt_ar, nutrition_per_serving, calories_kcal_consistency, diets")
       .eq("id", recipeId)
       .maybeSingle();
     if (masterErr || !masterData) throw new Error(masterErr?.message ?? "recipe master not found");
@@ -90,6 +90,9 @@ export async function GET(request: NextRequest) {
       cook_minutes: number;
       image_url: string | null;
       image_verified: boolean;
+      // REC-4 second half (plan §9 P2 item 7): the Arabic alt rides the
+      // gate battery (Q-GATE-1 scans it — MSA + no latin contamination).
+      image_alt_ar: string | null;
       nutrition_per_serving: unknown;
       calories_kcal_consistency: unknown;
       diets: string[];
@@ -233,6 +236,7 @@ export async function GET(request: NextRequest) {
       derivedDiets: (master.diets ?? []) as RecipeDiet[],
       imageUrl: master.image_url,
       imageVerified: master.image_verified,
+      imageAltAr: master.image_alt_ar,
       existingPairSlugs,
       existingTitlesByLang: titlesByLang,
       publishedIngredientSets,
