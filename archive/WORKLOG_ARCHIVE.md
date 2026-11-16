@@ -16613,3 +16613,23 @@ Stage Summary:
 - Push status: **دُفع d588419f على main: CI ‏5/5 خضراء** (quality · parity · migration-state · guard · deploy-aws ببطارية verify على الخادم والحافة) + **التحقق الحي**: build-info=d588419 — الإنتاج حي بالتنظيف وصفر أثر سلوكي (صور محذوفة لا يقتبسها أي سطح).
 - Commit SHA: يُوثق بgit log (قانون Phase 288).
 
+
+<!-- rotated 2026-11-16 by scripts/worklog_rotate.py (Phase 288, ARCH-REMEDIATION): 1 entries moved verbatim from worklog.md -->
+---
+Task ID: AI-GENERATION-PIPELINES-AUDIT-2026-11-15
+Agent: Main (Z.ai)
+Task: أمر المالك — فحص أوامر التوليد فقط (المقالات والوصفات وخطط التغذية والتمرين): تدقيق مشاكل واقتراحات جودة بدون أي تعديل، وتقرير بالمشاكل وخطة التحسينات مرفوع على المستودع الرئيسي في المكان المناسب.
+
+Work Log:
+- **النطاق والمنهجية:** قراءة كاملة (~21,800 سطرًا) لمحركات التوليد الأربعة + طبقة الذكاء الاصطناعي المشتركة (blog p0→p5 · recipes r0→r5 · plan-generator/validation/grounding/jobs/persistence/audit · مطابقا التمارين ومسارا demo/المدرب · ai-provider/ai-registry/ai-jobs/ai-job-processors/cooldown/usage-meter · العاملان process.mts وrun-step) عبر 5 مسارات تدقيق متوازية مستقلة (مجال لكل مسار) + تحقق شخصي من العينات الحرجة.
+- **التحقق الشخصي (خمس نتائج حاسمة بالبايت):** علم animal على صفوف بيض/ألبان/سمك بميجريشن 0108 (النتيجة الحرجة REC-1) · تجريد meal_alternatives ببوابة plan-ai-validation:806-818 · غياب AI_PROVIDER_COOLDOWN_MS عن process-ai-jobs.yml مقابل وجوده بسير المدونة/الوصفات · بقاء النموذج الميت nemotron بالسلسلة السريعة ai-provider:3290 · clampMetaDescription("") تعيد فارغًا بلا أي بوابة.
+- **النتائج الموثقة:** 115 نتيجة بمرجع ملف:سطر (1 حرجة · 20 عالية · 48 متوسطة · 46 منخفضة) + 10 نقاط قوة مثبتة — أبرزها: REC-1 (vegetarian/pescatarian غير قابلتين للإسناد بنيويًّا) · meal_alternatives ميزة مدفوعة ميتة · لا إغلاق ماكرو↔سعرات · لا حارس حلال صلب · قاصرون بخطط بالغين · مطابق تمارين المدرب يخطئ النسخة/العضلة (Deadlift→Axle Deadlift) · cooldown معطل بعامل الطابور · metaDescription بلا بوابة.
+- **صفر تعديل بأمر المالك:** لا كود/اختبار/تكوين/ميجريشن/سير عمل — الأثر الوحيد: التقرير docs/AI-GENERATION-PIPELINES-AUDIT-2026-11-15.md + صفه بسجل docs/README.md + هذه المدخلة (قوانين §3.8/§12.5.1).
+- **البوابات المحلية (docs-only frame):** docs_parity ✓ · docs_audit خضراء كاملة (بعد إضافة الصف والمدخلة).
+
+Stage Summary:
+- التقرير الحاكم: docs/AI-GENERATION-PIPELINES-AUDIT-2026-11-15.md (115 نتيجة موثقة + 10 نقاط قوة + خطة تحسينات P0/P1/P2 بجدول أثر×جهد وجدول زمني استرشادي) + صف بسجل docs/README.md.
+- كل الاقتراحات وصفية تنتظر قرار المالك — المقترح المرفق: بدء P0 (9 بنود رخيصة عالية الأثر، أغلبها أسطر معدودة) كإطار فوري واحد بعد الموافقة.
+- Push status: pushed — الكوميت على main (docs-only: التقرير + صف السجل + مدخلة worklog فقط؛ مسارات paths-ignore تستثني البوابات الثقيلة بحكم القانون).
+- Commit SHA (optional, post-push): يُوثق بgit log (قانون Phase 288).
+
