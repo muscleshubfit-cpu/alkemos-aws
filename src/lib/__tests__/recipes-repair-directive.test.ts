@@ -19,23 +19,17 @@ import { readFileSync } from "fs";
  *      (previously: wiped) — the structure re-draw is directed (canary 5).
  */
 
-vi.mock("@/lib/supabase/admin", () => ({
-  isSupabaseAdminConfigured: true,
-  supabaseAdmin: {
-    from: vi.fn(() => {
-      const builder = () => ({
-        select: () => builder(),
-        update: () => builder(),
-        eq: () => builder(),
-        order: () => builder(),
-        limit: () => builder(),
-        maybeSingle: async () => ({ data: null, error: null }),
-        single: async () => ({ data: { id: "r" }, error: null }),
-      });
-      return { ...builder(), insert: () => ({ select: () => ({ single: async () => ({ data: { id: "r" }, error: null }) }) }) };
-    }),
-  },
-}));
+// DEPLOY-GATE FLAKE FIX (2026-11-18): this file used to register TWO
+// vi.mock factories for "@/lib/supabase/admin" — the first (deleted)
+// returned maybeSingle data:null, the second (below, the authoritative
+// capture seam) returns fetchCalls.row. Duplicate vi.mock on the same
+// path is not a documented contract, and in the 165fdb5 deploy's
+// embedded gate the FIRST registration won: every canary-1 reset read
+// a null row → reset:false + empty updateCaptures → 3 red tests —
+// while the SAME commit's quality-gate run (and 8 local re-runs at
+// 2/4/8 workers) stayed green. ONE factory (the superset below — it
+// also covers the authoring canaries' insert chain) removes the
+// non-determinism; no assertion depended on the deleted shape.
 
 import {
   resetRecipeRowForRepair,
