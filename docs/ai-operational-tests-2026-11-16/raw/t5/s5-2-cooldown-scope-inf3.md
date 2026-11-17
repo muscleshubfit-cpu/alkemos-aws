@@ -107,4 +107,13 @@ GET https://alkemos.com/blog/best-injury-prevention-strategies-home-workouts →
 
 `tsc --noEmit` صفر · `eslint` صفر (التحذيران الموروثان نفسياهما بملفات أخرى) · **vitest 261 ملفًا / 6,604 من 6,604** (كانت 6,600 — +4 كناريّات INF-3 بلا سقوط أي اختبار) · `build` exit 0 بـ2,323 صفحة.
 
-**نتائج كوميت الدفع الفعلية (main):** تُحدَّث بهذا الإطار بعد الدفع (البوابات الخمس + beacon) — انظر تحديث هذا القسم بكوميت الإغلاق إن لزم، والنتائج النهائية موثقة بمدخلة worklog و§جدول الخطة.
+**نتائج كوميت الدفع الفعلية (main — 0cf410f):**
+| البوابة | التشغيلة | النتيجة |
+|---|---|---|
+| Quality gate (tsc · eslint · vitest) | [44180981662](https://github.com/muscleshubfit-cpu/alkemos-aws/actions/runs/44180981662) | ✅ success |
+| Deploy to AWS origin | [44180981770](https://github.com/muscleshubfit-cpu/alkemos-aws/actions/runs/44180981770) | ✅ success |
+| Docs & schema parity gate | [44180981836](https://github.com/muscleshubfit-cpu/alkemos-aws/actions/runs/44180981836) | ✅ success |
+| Anti-regression guard (stale refs) | [44180981695](https://github.com/muscleshubfit-cpu/alkemos-aws/actions/runs/44180981695) | ✅ success |
+| Migration state audit | [44180981798](https://github.com/muscleshubfit-cpu/alkemos-aws/actions/runs/44180981798) | ✅ success |
+
+**beacon الإنتاج بعد النشر:** `GET /api/build-info` (2026-11-17T21:42:40Z) → `{"ok":true,"service":"alkemos","commit":"0cf410f7701694e03aeb1d780b4bf1a0d9aef05c","commitShort":"0cf410f","branch":"main"}` — الإنتاج يخدم كوميت التنفيذ الحامل لكناريّات INF-3 الأربع. **دخان ما بعد النشر:** الجذر · /ar · /api/build-info · /exercises · /recipes · /ar/recipes كلها **200**.
