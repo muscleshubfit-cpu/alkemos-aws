@@ -90,6 +90,11 @@ type StoredPlanEnvelope = {
   plan: unknown;
   /** The inputs snapshot (form state) so the user sees what produced it. */
   inputs?: Record<string, unknown>;
+  /** GAP-18 completion (owner clarification 2026-11-17): the medical
+   * disclosure stamped at generation time (the page re-renders the
+   * warning for the restored copy). Optional + loosely validated so
+   * older envelopes keep loading. */
+  disclosure?: { flag?: unknown; conditions?: unknown; warning: string };
 };
 
 function isRecord(v: unknown): v is Record<string, unknown> {
@@ -140,6 +145,7 @@ export function saveGuestPlan(
   kind: PlanKind,
   plan: DemoPlan | WorkoutPlan,
   inputs?: Record<string, unknown>,
+  disclosure?: { flag?: unknown; conditions?: unknown; warning: string },
 ): void {
   if (typeof window === "undefined") return;
   try {
@@ -149,6 +155,7 @@ export function saveGuestPlan(
       generatedAt: new Date().toISOString(),
       plan,
       inputs,
+      ...(disclosure ? { disclosure } : {}),
     };
     window.localStorage.setItem(planKey(kind), JSON.stringify(envelope));
   } catch {
@@ -157,11 +164,11 @@ export function saveGuestPlan(
 }
 
 /** Load + validate the stored plan of one kind (null when absent/corrupt). */
-export function loadGuestPlan(kind: "nutrition"): { plan: DemoPlan; generatedAt: string; inputs?: Record<string, unknown> } | null;
-export function loadGuestPlan(kind: "workout"): { plan: WorkoutPlan; generatedAt: string; inputs?: Record<string, unknown> } | null;
+export function loadGuestPlan(kind: "nutrition"): { plan: DemoPlan; generatedAt: string; inputs?: Record<string, unknown>; disclosure?: { flag?: unknown; conditions?: unknown; warning: string } } | null;
+export function loadGuestPlan(kind: "workout"): { plan: WorkoutPlan; generatedAt: string; inputs?: Record<string, unknown>; disclosure?: { flag?: unknown; conditions?: unknown; warning: string } } | null;
 export function loadGuestPlan(
   kind: PlanKind,
-): { plan: DemoPlan | WorkoutPlan; generatedAt: string; inputs?: Record<string, unknown> } | null {
+): { plan: DemoPlan | WorkoutPlan; generatedAt: string; inputs?: Record<string, unknown>; disclosure?: { flag?: unknown; conditions?: unknown; warning: string } } | null {
   if (typeof window === "undefined") return null;
   try {
     const raw = window.localStorage.getItem(planKey(kind));
@@ -179,6 +186,15 @@ export function loadGuestPlan(
       plan: parsed.plan as DemoPlan | WorkoutPlan,
       generatedAt: typeof parsed.generatedAt === "string" ? parsed.generatedAt : "",
       inputs: isRecord(parsed.inputs) ? parsed.inputs : undefined,
+      // GAP-18 completion: the stored disclosure survives only when its
+      // warning is a real string (a corrupt/partial shape is dropped,
+      // never rendered).
+      disclosure:
+        parsed.disclosure &&
+        isRecord(parsed.disclosure) &&
+        typeof parsed.disclosure.warning === "string"
+          ? (parsed.disclosure as { flag?: unknown; conditions?: unknown; warning: string })
+          : undefined,
     };
   } catch {
     return null;

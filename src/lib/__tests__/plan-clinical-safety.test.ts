@@ -5,6 +5,7 @@ import {
   clinicalConditionLabels,
   clinicalForbiddenTokens,
   medicalDisclosureFor,
+  allClinicalConditionKeys,
 } from "@/lib/plan-clinical-safety";
 import {
   checkItemConstraints,
@@ -13,6 +14,7 @@ import {
 } from "@/lib/plan-ai-validation";
 import {
   normalizeNutritionPlan,
+  normalizeCoachPlanText,
   computeNutritionTargets,
   declaredHealthText,
   constraintsFromContext,
@@ -480,5 +482,255 @@ describe("GAP-18 — specialist review: the disclosure's glucose-monitoring + st
     expect(d.warning).toBe(
       "تنبيه صحي: هذه الخطة أُنتجت بالذكاء الاصطناعي لأغراض معلوماتية عامة وليست وصفة طبية أو استشارة تغذية علاجية. قبل البدء في تطبيقها راجعها مع طبيبك أو مع أخصائي تغذية مؤهل — خاصة إذا كنت تتناول أدوية أو تعاني من أي حالة صحية.",
     );
+  });
+});
+
+/* ═══════════════ GAP-18 COMPLETION CANARIES (owner clarification
+ * 2026-11-17 — «افحص تنفيذ GAP-18 الحالي وتأكد من وجود هذا التحذير
+ * فعلًا لكل الحالات الطبية المكتشفة، وليس السكري والسيلياك فقط… تأكد
+ * من ظهوره في جميع مسارات توليد الخطط، سواء AI أو Local، وعلى القنوات
+ * والواجهات التي تعرض الخطة… لا تشترط إضافة قواعد غذائية تفصيلية لكل
+ * مرض حتى يظهر التحذير العام») ═══════════════
+ *
+ * THE LAW THESE CANARIES PIN:
+ *   · EVERY classified condition (the LIVE table — 13 today, more
+ *     tomorrow) yields the condition-aware warning: the label rides the
+ *     warning, professional review is demanded BEFORE applying, and the
+ *     plan is explicitly not a medical prescription.
+ *   · A declared condition OUTSIDE the table (thalassemia, IBD,
+ *     cancer…) still gets the EXPLICIT warning — consult a qualified
+ *     specialist before following the plan; the plan does not replace
+ *     medical consultation. Detection/gates stay table-bound; the
+ *     WARNING never does (the ordered warning does not depend on
+ *     per-disease rules).
+ *   · NEGATIVE declarations («لا يوجد»…) are NOT conditions — the
+ *     healthy member keeps the general form (no false scare).
+ *   · The disclosure FLOOR: normalizeNutritionPlan stamps a disclosure
+ *     on EVERY nutrition content it returns — targets path (AI +
+ *     local), targets-less path (coach-paste / external floor) — no
+ *     diet plan leaves the normalizer without the warning. */
+
+describe("GAP-18 completion — the explicit warning fires for EVERY classified condition (the live table, not just diabetes/celiac)", () => {
+  it("every condition key in the LIVE table yields the condition-aware warning (label + review-before-applying + not-a-prescription)", () => {
+    const keys = allClinicalConditionKeys();
+    expect(keys.length).toBeGreaterThanOrEqual(13);
+    for (const key of keys) {
+      const d = medicalDisclosureFor([key]);
+      expect(d.flag).toBe("medical_review_advised");
+      expect(d.conditions.length).toBe(1);
+      // The condition's own label rides the warning text:
+      expect(d.warning).toContain(d.conditions[0]);
+      // Consult a professional BEFORE applying the plan:
+      expect(d.warning).toContain("راجع الخطة مع طبيبك أو مع أخصائي تغذية مؤهل قبل تطبيقها");
+      // The plan is explicitly NOT a medical consultation:
+      expect(d.warning).toContain("ليست وصفة طبية أو استشارة تغذية علاجية");
+      // The stop-on-symptoms safety valve rides every condition-aware form:
+      expect(d.warning).toContain("توقف عن الخطة وراجع طبيبك");
+    }
+  });
+
+  it("the live-table keys each classify their canonical keyword (the sweep is not vacuous)", () => {
+    const probes: Partial<Record<string, string>> = {
+      diabetes: "سكري",
+      hypertension: "ضغط الدم مرتفع",
+      cardiac: "قلب",
+      kidney: "كلى",
+      liver: "كبد",
+      thyroid: "غدة درقية",
+      pregnancy: "حامل",
+      breastfeeding: "بترضع",
+      anemia: "انيميا",
+      gout: "نقرس",
+      celiac: "سيلياك",
+      cholesterol: "كوليسترول",
+      pcos: "تكييس",
+    };
+    for (const key of allClinicalConditionKeys()) {
+      const probe = probes[key];
+      expect(probe, `probe for ${key}`).toBeDefined();
+      expect(detectClinicalConditions({ healthText: probe })).toContain(key);
+    }
+  });
+
+  it("a multi-condition declaration renders ALL labels in the warning (table order)", () => {
+    const keys: ReturnType<typeof allClinicalConditionKeys> = ["hypertension", "diabetes", "celiac"];
+    const d = medicalDisclosureFor(keys);
+    expect(d.conditions).toEqual(["ارتفاع ضغط الدم", "سكري", "سيلياك / حساسية جلوتين"]);
+    for (const label of d.conditions) expect(d.warning).toContain(label);
+  });
+});
+
+describe("GAP-18 completion — declared-but-unclassified: the explicit warning WITHOUT per-disease rules", () => {
+  it("a declared condition OUTSIDE the table (thalassemia) gets the EXPLICIT warning — not the general form", () => {
+    const text = "عندي تلاسيميا وأتناول نقل دم منتظم";
+    const keys = detectClinicalConditions({ healthText: text });
+    expect(keys).toEqual([]); // genuinely outside the 13-condition table
+    const d = medicalDisclosureFor(keys, text);
+    expect(d.flag).toBe("medical_review_advised");
+    expect(d.conditions).toEqual([]);
+    // The explicit consult-a-qualified-specialist warning (the owner's ordered wording):
+    expect(d.warning).toContain("حالة صحية معلنة");
+    expect(d.warning).toContain("استشر طبيبك أو متخصصًا مؤهلًا في التغذية العلاجية قبل اتباع هذه الخطة");
+    // The plan does NOT replace medical consultation:
+    expect(d.warning).toContain("هذه الخطة لا تغني عن الاستشارة الطبية");
+    // The stop-on-symptoms valve rides this form too:
+    expect(d.warning).toContain("توقف عن الخطة وراجع طبيبك");
+    // NOT the general form (the general-only conditional phrasing is absent):
+    expect(d.warning).not.toContain("خاصة إذا كنت تتناول أدوية");
+  });
+
+  it("more unclassified declarations (IBD · cancer · bariatric) — the same explicit warning, no per-disease rules needed", () => {
+    for (const text of [
+      "عندي كرونز (التهاب أمعاء) من 3 سنين",
+      "سرطان قولون تحت علاج كيماوي",
+      "عاملة تحويل مسار معدة قبل سنتين",
+    ]) {
+      expect(detectClinicalConditions({ healthText: text })).toEqual([]);
+      const d = medicalDisclosureFor([], text);
+      expect(d.warning).toContain("استشر طبيبك أو متخصصًا مؤهلًا في التغذية العلاجية");
+      expect(d.warning).toContain("لا تغني عن الاستشارة الطبية");
+    }
+  });
+
+  it("NEGATIVE declarations keep the general form — «لا يوجد» is not a condition (no false scare on a healthy member)", () => {
+    for (const negative of [
+      "لا يوجد",
+      "لا يوجد لدي أمراض",
+      "لا أعاني من شيء",
+      "الحمد لله",
+      "الحمد لله سليم",
+      "سليم",
+      "بصحة جيدة",
+      "لا",
+      "none",
+      "Nothing",
+    ]) {
+      expect(detectClinicalConditions({ healthText: negative })).toEqual([]);
+      const d = medicalDisclosureFor([], negative);
+      expect(d.warning).toContain("قبل البدء في تطبيقها"); // the general form
+      expect(d.warning).not.toContain("حالة صحية معلنة"); // never the explicit-declared form
+    }
+  });
+
+  it("a REAL declaration that merely starts with «لا» never misclassifies as negative", () => {
+    const text = "لا أستطيع المشي كثيرًا بسبب مشكلة في الركبة والحوض";
+    expect(detectClinicalConditions({ healthText: text })).toEqual([]);
+    const d = medicalDisclosureFor([], text);
+    expect(d.warning).toContain("حالة صحية معلنة"); // the explicit form — it IS a declaration
+  });
+});
+
+describe("GAP-18 completion — normalizeNutritionPlan: the disclosure floor on EVERY generation path", () => {
+  const modelPlan = {
+    overview: "خطة تغذية مخصصة.",
+    daily_calories: 1800,
+    macros: { protein_g: 130, carbs_g: 180, fat_g: 60 },
+    meals: [
+      { name: "الفطار", total_calories: 500, items: [{ food: "بيض مسلوق", amount: "3 بيضات", calories: 230 }] },
+      { name: "الغداء", total_calories: 700, items: [{ food: "دجاج مشوي", amount: "200 جم", calories: 330 }] },
+    ],
+    supplements: [],
+    health_notes: [],
+  };
+
+  it("targets path (AI + local): an UNCLASSIFIED declared condition stamps the explicit warning (the GAP-18 completion state)", () => {
+    const targets = computeNutritionTargets({
+      ...cleanCtx,
+      nutrition: {
+        gender: "ذكر",
+        weight: "85",
+        height: "178",
+        age: "30",
+        activity: "متوسط",
+        health: "عندي تلاسيميا",
+        goal: "خسارة الوزن",
+        diet: "balanced",
+        meals: 4,
+      },
+    });
+    const content = normalizeNutritionPlan(modelPlan, undefined, targets);
+    expect(content.medical_disclosure?.conditions).toEqual([]);
+    expect(content.medical_disclosure?.warning).toContain("استشر طبيبك أو متخصصًا مؤهلًا في التغذية العلاجية");
+    expect(content.medical_disclosure?.warning).toContain("لا تغني عن الاستشارة الطبية");
+    expect(content.data_analysis?.health).toBe("عندي تلاسيميا");
+  });
+
+  it("targets path: the real form's `medical` key with a NEGATIVE answer keeps the general disclosure (healthy member)", () => {
+    const targets = computeNutritionTargets({
+      ...cleanCtx,
+      nutrition: {
+        gender: "ذكر",
+        weight: "85",
+        height: "178",
+        age: "30",
+        activity: "متوسط",
+        medical: "لا يوجد",
+        goal: "خسارة الوزن",
+        diet: "balanced",
+        meals: 4,
+      },
+    });
+    const content = normalizeNutritionPlan(modelPlan, undefined, targets);
+    expect(content.medical_disclosure?.conditions).toEqual([]);
+    expect(content.medical_disclosure?.warning).toContain("قبل البدء في تطبيقها");
+    expect(content.medical_disclosure?.warning).not.toContain("حالة صحية معلنة");
+  });
+
+  it("targets-LESS path (coach-paste): the client's declaredHealthText stamps the condition-aware disclosure", () => {
+    const content = normalizeNutritionPlan(modelPlan, undefined, undefined, DIABETIC_EVIDENCE_TEXT);
+    expect(content.medical_disclosure?.conditions).toContain("سكري");
+    expect(content.medical_disclosure?.warning).toContain("راجع الخطة مع طبيبك أو مع أخصائي تغذية مؤهل قبل تطبيقها");
+  });
+
+  it("targets-LESS path with NO declared text (external-plans floor): the GENERAL warning still stamps — no diet plan leaves the normalizer without a disclosure", () => {
+    const content = normalizeNutritionPlan(modelPlan, undefined, undefined);
+    expect(content.medical_disclosure).toBeDefined();
+    expect(content.medical_disclosure?.flag).toBe("medical_review_advised");
+    expect(content.medical_disclosure?.conditions).toEqual([]);
+    expect(content.medical_disclosure?.warning).toContain("أخصائي تغذية مؤهل");
+  });
+
+  it("targets-LESS path with an unclassified declared text stamps the explicit warning too (the three states hold on every path)", () => {
+    const content = normalizeNutritionPlan(modelPlan, undefined, undefined, "عندي تلاسيميا");
+    expect(content.medical_disclosure?.warning).toContain("لا تغني عن الاستشارة الطبية");
+  });
+});
+
+describe("GAP-18 completion — normalizeCoachPlanText (the coach-paste path): the SAME disclosure, no alternative warning path", () => {
+  const pastedPlanJson = JSON.stringify({
+    overview: "خطة لصق مدرب.",
+    daily_calories: 1600,
+    macros: { protein_g: 120, carbs_g: 160, fat_g: 53 },
+    meals: [
+      { name: "الفطار", total_calories: 400, items: [{ food: "شوفان", amount: "60 جم", calories: 220 }] },
+      { name: "العشاء", total_calories: 500, items: [{ food: "سمك مشوي", amount: "200 جم", calories: 300 }] },
+    ],
+    supplements: [],
+    health_notes: [],
+  });
+
+  it("JSON-direct: a pasted diet plan for a diabetic client carries the condition-aware disclosure", async () => {
+    const { content, source } = await normalizeCoachPlanText(pastedPlanJson, "nutrition", DIABETIC_EVIDENCE_TEXT);
+    expect(source).toBe("json-direct");
+    const md = (content as unknown as { medical_disclosure?: { conditions?: string[]; warning?: string } }).medical_disclosure;
+    expect(md?.conditions).toContain("سكري");
+    expect(md?.warning).toContain("قبل تطبيقها");
+  });
+
+  it("JSON-direct: a pasted diet plan with NO declared text still carries the GENERAL floor", async () => {
+    const { content } = await normalizeCoachPlanText(pastedPlanJson, "nutrition");
+    const md = (content as unknown as { medical_disclosure?: { flag?: string; conditions?: string[]; warning?: string } }).medical_disclosure;
+    expect(md?.flag).toBe("medical_review_advised");
+    expect(md?.conditions).toEqual([]);
+    expect(md?.warning).toContain("أخصائي تغذية مؤهل");
+  });
+
+  it("a pasted WORKOUT plan never carries the nutrition disclosure (the owner's order names the diet plan)", async () => {
+    const { content } = await normalizeCoachPlanText(
+      JSON.stringify({ overview: "", days: [] }),
+      "workout",
+      DIABETIC_EVIDENCE_TEXT,
+    );
+    expect(content && typeof content === "object" && "medical_disclosure" in content).toBe(false);
   });
 });

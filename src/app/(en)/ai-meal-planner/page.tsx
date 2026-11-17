@@ -60,6 +60,12 @@ export default function AiMealPlannerPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [plan, setPlan] = useState<DemoPlan | null>(null);
+  // GAP-18 completion (owner clarification 2026-11-17 — the explicit
+  // medical warning on every plan-display surface): the disclosure
+  // stamped by the generation route rides the response, the account
+  // hydration and the localStorage envelope — the banner renders on
+  // this page for guests AND members, exactly like the /plans viewer.
+  const [disclosure, setDisclosure] = useState<{ flag?: unknown; conditions?: unknown; warning: string } | null>(null);
   const [model, setModel] = useState<string | null>(null);
   const [quota, setQuota] = useState<QuotaInfo | null>(null);
   const [accountSaved, setAccountSaved] = useState(false);
@@ -94,6 +100,13 @@ export default function AiMealPlannerPage() {
             if (!cancelled && data?.plan) {
               setPlan(data.plan as DemoPlan);
               setAccountSaved(true);
+              // GAP-18 completion: the account copy's disclosure (stamped
+              // at generation time) re-renders the warning banner.
+              if (data?.disclosure && typeof data.disclosure.warning === "string") {
+                setDisclosure(data.disclosure);
+              } else {
+                setDisclosure(null);
+              }
               // I-4: the hydration response carries the saved row's id +
               // title — the rename field pre-fills from the account copy.
               if (typeof data.planId === "string") setSavedPlanId(data.planId);
@@ -120,6 +133,7 @@ export default function AiMealPlannerPage() {
         const stored = loadGuestPlan("nutrition");
         if (stored) {
           setPlan(stored.plan);
+          setDisclosure(stored.disclosure ?? null);
           const inputs = stored.inputs ?? null;
           if (inputs) {
             if (typeof inputs.calories === "number") setCalories(String(inputs.calories));
@@ -195,6 +209,13 @@ export default function AiMealPlannerPage() {
       }
       const newPlan = data.plan as DemoPlan;
       setPlan(newPlan);
+      // GAP-18 completion: the generation response carries the medical
+      // disclosure computed from the visitor's own notes text.
+      setDisclosure(
+        data?.disclosure && typeof data.disclosure.warning === "string"
+          ? data.disclosure
+          : null,
+      );
       setModel(data.model ?? null);
       setAccountSaved(Boolean(data?.saved));
       // I-4: the auto-save returns the row id + the auto title it wrote —
@@ -212,12 +233,20 @@ export default function AiMealPlannerPage() {
         });
       }
       // LocalStorage mirror — guests' primary copy, members' offline
-      // cache. Storage failures are swallowed by the lib.
-      saveGuestPlan("nutrition", newPlan, {
-        calories: Number(calories),
-        system,
-        notes,
-      });
+      // cache. Storage failures are swallowed by the lib. The disclosure
+      // rides the envelope so the restored copy keeps the warning (GAP-18).
+      saveGuestPlan(
+        "nutrition",
+        newPlan,
+        {
+          calories: Number(calories),
+          system,
+          notes,
+        },
+        data?.disclosure && typeof data.disclosure.warning === "string"
+          ? data.disclosure
+          : undefined,
+      );
     } catch {
       setError(isAr ? "تعذّر التوليد — حاول مرة أخرى." : "Generation failed — try again.");
     } finally {
@@ -490,6 +519,34 @@ export default function AiMealPlannerPage() {
                     ? isAr ? "جارٍ الحفظ…" : "Saving…"
                     : isAr ? "حفظ الاسم" : "Save name"}
                 </button>
+              </div>
+            )}
+            {/* GAP-18 completion (owner clarification 2026-11-17 — «إضافة
+                تحذير صريح… لكل مريض لديه حالة طبية معلنة، يوصيه
+                باستشارة متخصص مؤهل قبل اتباع الخطة الغذائية، ويوضح أن
+                الخطة لا تغني عن الاستشارة الطبية»): the SAME medical
+                disclosure banner the /plans viewer renders — the
+                disclosure the route computed from the visitor's notes
+                (condition-aware / declared-but-unclassified / general).
+                Renders for guests AND members, right above the plan. */}
+            {disclosure && typeof disclosure.warning === "string" && (
+              <div
+                data-testid="medical-disclosure-banner"
+                className="mt-4 rounded-2xl border border-rose-300 bg-rose-50 p-4 dark:border-rose-500/40 dark:bg-rose-500/10"
+              >
+                <p className="text-sm font-semibold text-rose-800 dark:text-rose-300">
+                  {isAr ? "⚕️ تنبيه طبي — قبل تطبيق هذه الخطة" : "⚕️ Medical notice — before applying this plan"}
+                </p>
+                <p className="mt-1 text-xs leading-relaxed text-rose-700 dark:text-rose-400">
+                  {disclosure.warning}
+                </p>
+                {Array.isArray(disclosure.conditions) && disclosure.conditions.length > 0 && (
+                  <p className="mt-1 text-xs font-medium text-rose-800 dark:text-rose-300">
+                    {isAr
+                      ? `الحالات الصحية المعلنة المرصودة بالخطة: ${(disclosure.conditions as unknown[]).map(String).join("، ")}`
+                      : `Declared conditions addressed: ${(disclosure.conditions as unknown[]).map(String).join(", ")}`}
+                  </p>
+                )}
               </div>
             )}
             <div className="mt-4 space-y-4">

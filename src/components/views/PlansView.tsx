@@ -741,6 +741,31 @@ export function PlansView() {
  </div>
 </div>
 <h1>${escapeHtml(plan.title)}</h1>`;
+ // GAP-18 completion (owner clarification 2026-11-17 — «وعلى القنوات
+ // والواجهات التي تعرض الخطة»): the printed/PDF copy is the plan the
+ // member carries to his kitchen and his doctor — the medical disclosure
+ // banner rendered on screen now rides the print export too (condition-
+ // aware / declared-but-unclassified / general — the stamped
+ // content.medical_disclosure, never re-invented here). Meal plans only:
+ // the owner's order names the diet plan.
+ if (
+ content &&
+ !isWorkout &&
+ typeof content === "object" &&
+ "medical_disclosure" in content
+ ) {
+ const md = (content as unknown as Record<string, unknown>).medical_disclosure as
+ | { conditions?: unknown; warning?: unknown }
+ | undefined;
+ if (md && typeof md.warning === "string") {
+ const conds = Array.isArray(md.conditions) ? (md.conditions as unknown[]).map(String).filter(Boolean) : [];
+ html += `<div style="border:2px solid #e11d48;background:#fff1f2;border-radius:10px;padding:14px 16px;margin:16px 0">
+ <div style="font-weight:800;color:#9f1239;font-size:14px">⚕️ تنبيه طبي — قبل تطبيق هذه الخطة</div>
+ <p style="margin:8px 0 0;font-size:12.5px;line-height:1.8;color:#9f1239">${escapeHtml(md.warning)}</p>
+ ${conds.length > 0 ? `<p style="margin:8px 0 0;font-size:12px;font-weight:700;color:#9f1239">الحالات الصحية المعلنة المرصودة بالخطة: ${escapeHtml(conds.join("، "))}</p>` : ""}
+ </div>`;
+ }
+ }
  if (content) {
  if (content.overview) html += `<p style="white-space:pre-line">${escapeHtml(content.overview)}</p>`;
 

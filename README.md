@@ -417,7 +417,18 @@ model:
   diabetes×celiac merge line, and glucose-monitoring + stop-on-symptoms
   sentences in the condition-aware disclosure). Deliberately NOT a review
   hold: no trainer or in-platform approval is required — the member
-  receives the plan with the warning.
+  receives the plan with the warning. The warning itself (owner
+  clarification 2026-11-17) does NOT depend on the 13-condition table:
+  any NON-EMPTY declared health text that the table cannot classify
+  (thalassemia, IBD, cancer…) still receives the EXPLICIT warning —
+  consult a qualified specialist in clinical nutrition before following
+  the plan; the plan does not replace medical consultation — while
+  negative answers («لا يوجد», "none"…) keep the general form, and the
+  same single `medicalDisclosureFor` builds it on every surface: the AI +
+  local generation paths, the AI meal planner (/ai-meal-planner, its
+  saved account copy and its on-page banner), coach-pasted plans (from
+  the client's questionnaire), the member's print/PDF export, EVO-saved
+  diet plans, and the admin external-plans text export.
 
 ### Automated content pipeline
 The bilingual blog is generated end-to-end — research → outline → article →

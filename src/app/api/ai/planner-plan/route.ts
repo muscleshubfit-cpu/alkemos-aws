@@ -66,6 +66,7 @@ export async function GET(request: NextRequest) {
   const content = (data.content ?? {}) as {
     source?: string;
     inputs?: Record<string, unknown>;
+    medical_disclosure?: unknown;
     plan?: unknown;
   };
 
@@ -99,6 +100,15 @@ export async function GET(request: NextRequest) {
     plan,
     title: data.title,
     inputs: content.inputs ?? null,
+    // GAP-18 completion: the disclosure stamped at generation time rides
+    // the hydration response so the planner page renders the SAME
+    // medical warning for the restored account copy (persisted rows —
+    // legacy rows without one render no banner: no invented warnings).
+    disclosure:
+      content.medical_disclosure &&
+      typeof (content.medical_disclosure as { warning?: unknown }).warning === "string"
+        ? content.medical_disclosure
+        : null,
     generatedAt: data.created_at,
     planId: data.id,
   });

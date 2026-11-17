@@ -2120,6 +2120,12 @@ export function normalizeNutritionPlan(
   plan: Record<string, unknown>,
   overrides?: PlanOverrides,
   targets?: NutritionTargets,
+  /** GAP-18 completion (owner clarification 2026-11-17): the declared
+   * health text for targets-less callers (the coach-paste normalizer —
+   * the route fetches the client's questionnaire). Detection + the
+   * disclosure floor both consume it; ignored when targets carry their
+   * own healthText (the generation paths). */
+  declaredHealthText?: string,
 ): NutritionPlanContent {
   // AI-PLAN-QUALITY 2026-10-24: item numbers are COERCED (strings →
   // numbers — the old `typeof number ? : 0` zeroed string calories)
@@ -2275,12 +2281,29 @@ export function normalizeNutritionPlan(
     meals_total_calories,
     ...(needs_review ? { needs_review } : {}),
     // NUT-12 (fix order 2026-11-16): the mandatory medical disclosure —
-    // stamped on EVERY targets-carrying generation (AI path AND local
-    // fallback path — both flow through here), general form when nothing
-    // is declared, condition-aware form when detection fired. NOT a
-    // needs_review flag: no trainer/in-platform review is required by the
-    // owner's order — the member sees the warning on his own plan.
-    ...(targets ? { medical_disclosure: medicalDisclosureFor(detectClinicalConditions({ healthText: targets.healthText })) } : {}),
+    // stamped on EVERY nutrition content this normalizer returns (the
+    // owner's clarification 2026-11-17 removed the targets condition:
+    // the AI path, the local fallback path, the coach-paste normalizer
+    // and the external-plans floor ALL flow through here, so NONE of
+    // them may save a diet plan without the warning). Condition-aware
+    // when detection fired; declared-but-unclassified when the member
+    // declared a text the table cannot classify; the general form for a
+    // clean member. NOT a needs_review flag: no trainer/in-platform
+    // review is required by the owner's order — the member sees the
+    // warning on his own plan.
+    ...(targets
+      ? {
+          medical_disclosure: medicalDisclosureFor(
+            detectClinicalConditions({ healthText: targets.healthText }),
+            targets.healthText,
+          ),
+        }
+      : {
+          medical_disclosure: medicalDisclosureFor(
+            detectClinicalConditions({ healthText: declaredHealthText ?? "" }),
+            declaredHealthText ?? "",
+          ),
+        }),
     macros: {
       protein_g,
       carbs_g,
@@ -2452,6 +2475,13 @@ function getExerciseImageFromLibrary(exercise: Exercise): string | undefined {
 export async function normalizeCoachPlanText(
   rawText: string,
   planType: "nutrition" | "workout",
+  /** GAP-18 completion (owner clarification 2026-11-17): the client's
+   * declared health text (the route fetches the latest nutrition
+   * questionnaire) so a coach-pasted diet plan carries the SAME
+   * medical disclosure the generated paths stamp — condition-aware when
+   * detection fires, declared-but-unclassified/explicit otherwise. No
+   * alternative warning path: the same medicalDisclosureFor builds it. */
+  declaredHealthText?: string,
 ): Promise<{ content: PlanContent | null; source: string }> {
   if (!rawText || !rawText.trim()) {
     return { content: null, source: "empty" };
@@ -2463,7 +2493,7 @@ export async function normalizeCoachPlanText(
       const parsed = JSON.parse(rawText);
       const normalized =
         planType === "nutrition"
-          ? normalizeNutritionPlan(parsed)
+          ? normalizeNutritionPlan(parsed, undefined, undefined, declaredHealthText)
           : normalizeWorkoutPlan(parsed);
       return { content: normalized, source: "json-direct" };
     } catch {
@@ -2532,7 +2562,7 @@ ${
     if (parsed && (parsed.meals || parsed.days)) {
       const normalized =
         planType === "nutrition"
-          ? normalizeNutritionPlan(parsed)
+          ? normalizeNutritionPlan(parsed, undefined, undefined, declaredHealthText)
           : normalizeWorkoutPlan(parsed);
       return { content: normalized, source: `${provider}:${model}` };
     }
@@ -2543,12 +2573,17 @@ ${
   // Last-resort fallback: wrap the raw text in a minimal structure
   if (planType === "nutrition") {
     return {
-      content: normalizeNutritionPlan({
-        overview: rawText.slice(0, 500),
-        daily_calories: 0,
-        macros: { protein_g: 0, carbs_g: 0, fat_g: 0 },
-        meals: [],
-      }),
+      content: normalizeNutritionPlan(
+        {
+          overview: rawText.slice(0, 500),
+          daily_calories: 0,
+          macros: { protein_g: 0, carbs_g: 0, fat_g: 0 },
+          meals: [],
+        },
+        undefined,
+        undefined,
+        declaredHealthText,
+      ),
       source: "raw-text-fallback",
     };
   }

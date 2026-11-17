@@ -128,7 +128,36 @@ export async function POST(request: NextRequest) {
  }
  }
 
- const result = await normalizeCoachPlanText(text, planType);
+ // ── GAP-18 completion (owner clarification 2026-11-17 — «تأكد من ظهوره
+ // في جميع مسارات توليد الخطط… وعلى القنوات والواجهات التي تعرض الخطة»):
+ // the coach-paste path knows the client (ownership/activation gates
+ // above), so the client's DECLARED health answer rides the normalizer —
+ // a pasted diet plan carries the SAME medical disclosure the generated
+ // paths stamp (condition-aware / declared-but-unclassified / general —
+ // the one medicalDisclosureFor). Best-effort by design: a fetch failure
+ // degrades to the general warning (the floor), never blocks the coach's
+ // normalize.
+ let declaredHealthText: string | undefined;
+ if (planType === "nutrition" && clientId) {
+   const { supabaseAdmin, isSupabaseAdminConfigured } = await import(
+     "@/lib/supabase/admin"
+   );
+   if (isSupabaseAdminConfigured && supabaseAdmin) {
+     const { data: nutriQ } = await supabaseAdmin
+       .from("nutrition_questionnaires")
+       .select("data")
+       .eq("client_id", clientId)
+       .order("updated_at", { ascending: false })
+       .limit(1)
+       .maybeSingle();
+     const qData = (nutriQ?.data ?? null) as Record<string, unknown> | null;
+     declaredHealthText = qData
+       ? String(qData.medical || qData.health || qData.medical_conditions || "").trim() || undefined
+       : undefined;
+   }
+ }
+
+ const result = await normalizeCoachPlanText(text, planType, declaredHealthText);
  return NextResponse.json(result);
  } catch (e) {
  const msg = e instanceof Error ? e.message : String(e);

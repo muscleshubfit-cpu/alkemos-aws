@@ -168,6 +168,41 @@ export async function POST(request: NextRequest) {
     }
 
     const planType = kind === "nutrition" ? "meal" : "workout";
+    // ── GAP-18 completion (owner clarification 2026-11-17 — «تأكد من
+    // ظهوره في جميع مسارات توليد الخطط… وعلى القنوات والواجهات التي
+    // تعرض الخطة»): an EVO-saved diet plan lands in /plans beside the
+    // generated ones, so it carries the SAME medical disclosure —
+    // computed from the member's own latest nutrition questionnaire
+    // (condition-aware / declared-but-unclassified / general — the one
+    // medicalDisclosureFor; no alternative warning path). Best-effort: a
+    // fetch failure degrades to the general floor, never blocks the save.
+    let evoDisclosure: Json | undefined;
+    if (planType === "meal") {
+      const declaredText = await (async () => {
+        try {
+          const { data: nutriQ } = await supabaseAdmin
+            .from("nutrition_questionnaires")
+            .select("data")
+            .eq("client_id", auth.id)
+            .order("updated_at", { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          const qData = (nutriQ?.data ?? null) as Record<string, unknown> | null;
+          return qData
+            ? String(qData.medical || qData.health || qData.medical_conditions || "").trim()
+            : "";
+        } catch {
+          return "";
+        }
+      })();
+      const { detectClinicalConditions, medicalDisclosureFor } = await import(
+        "@/lib/plan-clinical-safety"
+      );
+      evoDisclosure = medicalDisclosureFor(
+        detectClinicalConditions({ healthText: declaredText }),
+        declaredText,
+      ) as unknown as Json;
+    }
     const { data: plan, error } = await supabaseAdmin
       .from("plans")
       .insert({
@@ -176,7 +211,7 @@ export async function POST(request: NextRequest) {
         title,
         notes: null,
         file_url: null,
-        content: { text: text.trim(), source: "evo" },
+        content: { text: text.trim(), source: "evo", ...(evoDisclosure ? { medical_disclosure: evoDisclosure } : {}) },
         status: "approved",
         is_current: true,
         approved_at: new Date().toISOString(),

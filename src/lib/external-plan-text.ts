@@ -21,6 +21,11 @@ export type ExternalMealPlan = {
   data_analysis?: Record<string, unknown>;
   daily_calories: number;
   macros: { protein_g: number; carbs_g: number; fat_g: number };
+  /** GAP-18 completion (owner clarification 2026-11-17): the medical
+   * disclosure the unified normalizer stamps on every nutrition content
+   * — rendered into the admin's copyable text so the exported plan
+   * carries the same warning the platform surfaces. */
+  medical_disclosure?: { flag?: string; conditions?: string[]; warning: string };
   supplements?: Array<{ name: string; dose: string; timing: string; purpose: string }>;
   health_notes?: string[];
   water_target?: string;
@@ -60,6 +65,22 @@ export function renderMealPlanText(p: ExternalMealPlan): string {
   out.push(
     `الماكروز: بروتين ${m.protein_g ?? 0} جم • كربوهيدرات ${m.carbs_g ?? 0} جم • دهون ${m.fat_g ?? 0} جم`,
   );
+  // GAP-18 completion: the medical disclosure rides the exported text
+  // FIRST — the person the admin hands this plan to sees the warning
+  // before anything else (the same stamped warning, never re-worded).
+  if (p.medical_disclosure && typeof p.medical_disclosure.warning === "string") {
+    out.push(
+      "",
+      "⚠ تنبيه طبي — قبل تطبيق هذه الخطة",
+      p.medical_disclosure.warning,
+    );
+    if (
+      Array.isArray(p.medical_disclosure.conditions) &&
+      p.medical_disclosure.conditions.length > 0
+    ) {
+      out.push(`الحالات الصحية المعلنة المرصودة بالخطة: ${p.medical_disclosure.conditions.join("، ")}`);
+    }
+  }
   if (p.water_target) out.push(`الماء: ${p.water_target}`);
   if (p.overview) {
     out.push("", LINE, "نظرة عامة", LINE, p.overview);

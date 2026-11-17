@@ -40,8 +40,16 @@
  *     diabetes is detected) and the stop-on-symptoms safety valve.
  * The specialist's further recommendations (new condition families —
  * bariatric/IBD/chemo/eating-disorders/G6PD…, a structured pregnancy
- * field, thalassemia split…) are DOCUMENTED AS RESIDUALS for the owner —
- * deliberately NOT implemented here (scope: GAP-18/GAP-19 only).
+ * field, thalassemia split…) are ADDITIONAL CLINICAL EXPANSIONS the
+ * consultation proposed BEYOND the owner's order — the owner neither
+ * requested nor deferred them; they are documented as reference
+ * residuals (implementation would be a separate owner decision). They
+ * are NOT a prerequisite for the ordered warning: the
+ * DECLARED-BUT-UNCLASSIFIED disclosure state below guarantees that ANY
+ * non-empty declared health text receives the explicit
+ * consult-a-qualified-specialist warning, even when the table cannot
+ * classify it (owner clarification 2026-11-17: «لا تشترط إضافة قواعد
+ * غذائية تفصيلية لكل مرض حتى يظهر التحذير العام»).
  *
  * THE LAW THIS MODULE PINS (deterministic, server-side, both generation
  * paths — AI chain AND local fallback):
@@ -63,12 +71,19 @@
  *   3. DISCLOSE: every generated plan content carries a
  *      `medical_disclosure` block — a clear client-facing WARNING to
  *      review the plan with a doctor or a qualified nutritionist BEFORE
- *      applying it. Condition-aware (names the detected conditions) when
- *      detected; the general form otherwise. This is deliberately NOT a
- *      needs_review flag and NOT in SELF_SERVICE_BLOCKING_REVIEW_FLAGS:
- *      the owner's order explicitly rules OUT requiring a trainer or an
- *      in-platform review — the member receives the plan WITH the
- *      warning, never held hostage to a review step.
+ *      applying it. THREE states, never fewer than the general form:
+ *      (a) condition-aware (names the detected conditions) when the
+ *      table classifies the declaration; (b) DECLARED-BUT-UNCLASSIFIED
+ *      (owner clarification 2026-11-17) when the member declared a
+ *      NON-EMPTY health text the table cannot classify — the explicit
+ *      consult-a-qualified-specialist warning fires regardless, because
+ *      the ordered warning does not depend on per-disease rules; (c) the
+ *      general form only when nothing at all is declared. This is
+ *      deliberately NOT a needs_review flag and NOT in
+ *      SELF_SERVICE_BLOCKING_REVIEW_FLAGS: the owner's order explicitly
+ *      rules OUT requiring a trainer or an in-platform review — the
+ *      member receives the plan WITH the warning, never held hostage to
+ *      a review step.
  *
  * Pure module — no I/O, no env, unit-testable in isolation.
  */
@@ -242,6 +257,14 @@ const CLINICAL_CONDITIONS: ClinicalConditionDef[] = [
 const MATCHERS: Array<{ def: ClinicalConditionDef; words: string[] }> =
   CLINICAL_CONDITIONS.map((def) => ({ def, words: def.keywords.map(clinNorm).filter(Boolean) }));
 
+/** GAP-18 completion (owner clarification 2026-11-17): every condition key
+ * in the table — exported so the regression sweep canaries iterate the
+ * LIVE table (a newly added condition family is automatically covered by
+ * «لكل الحالات الطبية المكتشفة، وليس السكري والسيلياك فقط»). */
+export function allClinicalConditionKeys(): ClinicalConditionKey[] {
+  return CLINICAL_CONDITIONS.map((d) => d.key);
+}
+
 /**
  * Detect clinical conditions from the questionnaire's health text (the
  * member's declared conditions). Deterministic, order-stable: conditions
@@ -321,8 +344,58 @@ const GENERAL_WARNING_AR =
 const CONDITION_WARNING_AR =
   "تنبيه صحي مهم: هذه الخطة أُنتجت بالذكاء الاصطناعي لأغراض معلوماتية عامة وليست وصفة طبية أو استشارة تغذية علاجية. حالتك الصحية المعلنة ({conditions}) تستلزم توخي الحذر: راجع الخطة مع طبيبك أو مع أخصائي تغذية مؤهل قبل تطبيقها، وأخبره بأدويتك وجرعاتها، ولا تغيّر نظامك الدوائي أو جرعاته بناءً عليها.";
 
+/** GAP-18 completion (owner clarification 2026-11-17: «افحص تنفيذ GAP-18
+ * الحالي وتأكد من وجود هذا التحذير فعلًا لكل الحالات الطبية المكتشفة،
+ * وليس السكري والسيلياك فقط… لا تشترط إضافة قواعد غذائية تفصيلية لكل
+ * مرض حتى يظهر التحذير العام»): a member who declared a NON-EMPTY health
+ * text the 13-condition table cannot classify (thalassemia, IBD, cancer,
+ * bariatric surgery…) still gets the EXPLICIT warning the owner ordered —
+ * consult a qualified specialist before following the plan; the plan does
+ * not replace medical consultation. Detection (prompt rules / forbidden
+ * tokens) stays table-bound by design; the WARNING never does. */
+const DECLARED_UNCLASSIFIED_WARNING_AR =
+  "تنبيه صحي مهم: هذه الخطة أُنتجت بالذكاء الاصطناعي لأغراض معلوماتية عامة وليست وصفة طبية أو استشارة تغذية علاجية. أخبرتنا في استبيانك بحالة صحية معلنة تستلزم توخي الحذر: استشر طبيبك أو متخصصًا مؤهلًا في التغذية العلاجية قبل اتباع هذه الخطة، وأخبره بحالتك وأدويتك وجرعاتها. هذه الخطة لا تغني عن الاستشارة الطبية، ولا تغيّر نظامك الدوائي أو جرعاته بناءً عليها.";
+
 const CONDITION_WARNING_TAIL_AR =
   "توقف عن الخطة وراجع طبيبك عند أي أعراض غير معتادة (دوخة، رعشة، غثيان، ضيق تنفس).";
+
+/* ── GAP-18 completion: NEGATIVE declarations ─────────────────────────
+ * The real form's `medical` field is FREE TEXT (QuestionnairesView
+ * nutritionFields), so a healthy member's answer is typically a
+ * "nothing" phrasing — «لا يوجد»، «لا أعاني من شيء»، «سليم»، «الحمد
+ * لله»، "none"… These are NOT declared conditions: they map to the
+ * GENERAL disclosure, never the declared-but-unclassified warning (a
+ * false "you declared a condition" scare on a healthy member is the
+ * mirror image of the harm this layer exists to kill).
+ *
+ * Conservative on purpose: UNAMBIGUOUS exact forms and prefixes only —
+ * a real declaration that merely STARTS with «لا» («لا أستطيع المشي
+ * كثيرًا») never matches, because the allowlist names the full negative
+ * constructs, not the bare particle. */
+const PRAISE_PREFIX_RE = /^(الحمد لله|الحمدلله|حمد لله|thank god|alhamdulillah)\s*/;
+const NEGATIVE_DECLARATION_EXACT = new Set([
+  // Arabic negatives (clinNorm shape: ة→ه · ى→ي · ال-dropped)
+  "لا", "لا شي", "لا شيء", "لاشئ", "لا يوجد", "لايوجد",
+  "سليم", "بصحه جيده", "صحتي جيده", "صحه جيده", "تمام", "جيد",
+  "لا اعاني", "لا اعاني من شي", "لا اعاني من شيء", "لا اعاني من اي شي", "لا اعاني من اي شيء",
+  // English negatives (clinNorm lowercases)
+  "none", "nothing", "no", "not applicable", "n a", "na", "nope", "healthy", "normal", "nothing at all",
+]);
+const NEGATIVE_DECLARATION_PREFIXES = [
+  "لا يوجد", "لايوجد", "لا شي", "لا شيء", "لاشئ", "لا اعاني", "لا يوجد لدي",
+  "none", "nothing", "not applicable",
+];
+
+/** Is this declared text a NEGATIVE declaration (nothing is wrong)?
+ * Package-private (unit-tested via medicalDisclosureFor's three states). */
+function isNegativeDeclaration(raw: string): boolean {
+  let t = clinNorm(String(raw ?? ""));
+  if (!t) return false;
+  t = t.replace(PRAISE_PREFIX_RE, "").trim();
+  if (!t) return true; // bare praise («الحمد لله») = nothing declared
+  if (NEGATIVE_DECLARATION_EXACT.has(t)) return true;
+  return NEGATIVE_DECLARATION_PREFIXES.some((p) => t.startsWith(p));
+}
 
 /** GAP-18 (specialist review): blood-glucose monitoring rides the
  * condition-aware disclosure when diabetes is among the detected
@@ -334,13 +407,35 @@ const DIABETES_MONITORING_AR =
 
 /**
  * Build the medical disclosure for a generated plan. ALWAYS returns a
- * disclosure (the general warning when nothing is detected) — the owner's
- * fix order demands a clear review-with-a-professional warning on the
- * client's plan, unconditionally.
+ * disclosure — the owner's fix order demands a clear
+ * review-with-a-professional warning on the client's plan,
+ * unconditionally. Three states:
+ *   · keys non-empty            → condition-aware (names the conditions);
+ *   · keys empty + declaredText → DECLARED-BUT-UNCLASSIFIED (the explicit
+ *                                 consult-a-specialist warning — the
+ *                                 ordered warning does not depend on the
+ *                                 table classifying the condition);
+ *   · keys empty + no text      → the general form (clean member).
  */
-export function medicalDisclosureFor(keys: ClinicalConditionKey[]): MedicalDisclosure {
+export function medicalDisclosureFor(
+  keys: ClinicalConditionKey[],
+  declaredText?: string | null,
+): MedicalDisclosure {
   const conditions = clinicalConditionLabels(keys);
   if (conditions.length === 0) {
+    const declared = String(declaredText ?? "").trim();
+    // GAP-18 completion: declared-but-unclassified — the explicit
+    // warning + the stop-on-symptoms safety valve (same tail as the
+    // condition-aware form; no glucose sentence — no diabetes was
+    // detected). A NEGATIVE declaration ("لا يوجد"…) is NOT a condition:
+    // the healthy member keeps the general form.
+    if (declared && !isNegativeDeclaration(declared)) {
+      return {
+        flag: "medical_review_advised",
+        conditions,
+        warning: `${DECLARED_UNCLASSIFIED_WARNING_AR} ${CONDITION_WARNING_TAIL_AR}`,
+      };
+    }
     return { flag: "medical_review_advised", conditions, warning: GENERAL_WARNING_AR };
   }
   // GAP-18 (specialist review): the condition-aware form gains the

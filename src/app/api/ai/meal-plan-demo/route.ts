@@ -18,6 +18,13 @@ import {
   validateDemoRequest,
   type DemoPlanVerdict,
 } from "@/lib/ai-meal-planner";
+// GAP-18 completion (owner clarification 2026-11-17 — «تأكد من ظهوره في
+// جميع مسارات توليد الخطط، سواء AI أو Local»): the planner's notes field
+// is free visitor text that routinely carries declared conditions — the
+// SAME clinical detection + medical disclosure the questionnaire paths
+// use now rides this generation surface too (one canonical module, no
+// alternative warning path).
+import { detectClinicalConditions, medicalDisclosureFor } from "@/lib/plan-clinical-safety";
 
 /**
  * POST /api/ai/meal-plan-demo — the AI meal-planner generation endpoint
@@ -219,6 +226,18 @@ export async function POST(request: NextRequest) {
       surface: "planner",
     });
 
+    // ── GAP-18 completion: the medical disclosure for THIS generation —
+    // computed from the visitor's own notes text (the only declared-
+    // conditions surface this tool has). Condition-aware when the table
+    // classifies, declared-but-unclassified/explicit when it cannot, the
+    // general form when no notes — the one medicalDisclosureFor law. It
+    // rides BOTH the response (the page renders it for guests AND
+    // members) and the saved account copy (the /plans banner renders it).
+    const disclosure = medicalDisclosureFor(
+      detectClinicalConditions({ healthText: req.notes ?? "" }),
+      req.notes ?? "",
+    );
+
     // ── MEMBER AUTO-SAVE (spec: plans always saved to the account). ──
     // I-4: the title rides the response so the page can offer its
     // editable rename field pre-filled with the auto name.
@@ -244,6 +263,7 @@ export async function POST(request: NextRequest) {
               notes: req.notes ?? null,
               language: req.language,
             },
+            medical_disclosure: disclosure,
             plan: plan.value,
           } as unknown as Json,
           status: "approved",
@@ -265,6 +285,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       plan: plan.value,
       model,
+      disclosure,
       quota: {
         used: quota.used + 1,
         limit: quota.limit,
