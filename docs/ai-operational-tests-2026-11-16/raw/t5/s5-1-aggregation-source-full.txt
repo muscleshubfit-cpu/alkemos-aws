@@ -1,0 +1,133 @@
+# S5-1 مصدر التجميع الكامل — كل أسطر [ai-meter] بالنافذة (54 صفًا fn|provider|model) + المجاميع اليومية — مخرجات سكربت التجميع حرفيًا (inf7-extract.py)
+
+```
+## SECTION A — est ↔ real pairs (INF-7)
+| run | fn | est(t) | decision | real_total | real_in | real_out | dev = (est-real)/real | within ±25% |
+|---|---|---|---|---|---|---|---|---|
+| 43759110897 | plan_nutrition | 8698 | clamp→5502 | 5943 | 3092 | 2851 | +46.4% | NO |
+| 43759110897 | plan_nutrition | 8787 | clamp→5413 | 5565 | 3216 | 2349 | +57.9% | NO |
+| 43759773547 | plan_nutrition | 8696 | clamp→5504 | 5919 | 3090 | 2829 | +46.9% | NO |
+| 43759773547 | plan_nutrition | 8783 | clamp→5417 | 8571 | 3154 | 5417 | +2.5% | YES |
+| 43762292188 | plan_nutrition | 8699 | clamp→5501 | 5932 | 3097 | 2835 | +46.6% | NO |
+| 43875066747 | blog_research_tavily-synth | 11731 | skip | 12283 | 9488 | 2795 | -4.5% | YES |
+| 43875066747 | blog_research_tavily-synth | 12460 | skip | 10404 | 7622 | 2782 | +19.8% | YES |
+| 43875066747 | blog_outline-ar | 8623 | skip | 7197 | 5413 | 1784 | +19.8% | YES |
+| 43875066747 | blog_content-ar | 10456 | skip | 7078 | 4655 | 2423 | +47.7% | NO |
+| 43875066747 | blog_content-ar | 10454 | skip | 8824 | 4651 | 4173 | +18.5% | YES |
+| 43875066747 | blog_review-ar | 11810 | skip | 12428 | 6028 | 6400 | -5.0% | YES |
+| 43875066747 | blog_review-ar | 11810 | skip | 12428 | 6028 | 6400 | -5.0% | YES |
+| 43875066747 | blog_review-ar | 11810 | skip | 11441 | 6028 | 5413 | +3.2% | YES |
+| 43925398597 | blog_research_tavily-synth | 11726 | skip | 13243 | 10074 | 3169 | -11.5% | YES |
+| 43925398597 | blog_research_tavily-synth | 11726 | skip | 9417 | 5417 | 4000 | +24.5% | YES |
+| 43925398597 | blog_outline-ar | 8635 | skip | 7811 | 5375 | 2436 | +10.5% | YES |
+| 43925398597 | blog_content-ar | 10409 | skip | 8561 | 4537 | 4024 | +21.6% | YES |
+| 43925398597 | blog_review-ar | 11426 | skip | 11104 | 5516 | 5588 | +2.9% | YES |
+| 43925615337 | plan_nutrition | 9170 | clamp→5030 | 7614 | 3928 | 3686 | +20.4% | YES |
+| 43928255597 | blog_outline-en | 8309 | skip | 5753 | 3598 | 2155 | +44.4% | NO |
+| 43928255597 | blog_content-en | 10157 | skip | 6382 | 2984 | 3398 | +59.2% | NO |
+| 43928255597 | blog_review-en | 11051 | skip | 9184 | 3917 | 5267 | +20.3% | YES |
+| 43928255597 | blog_content-en | 10156 | skip | 6133 | 2986 | 3147 | +65.6% | NO |
+| 43928255597 | blog_review-en | 11427 | skip | 9531 | 4363 | 5168 | +19.9% | YES |
+| 43928255597 | blog_review-en | 11751 | skip | 9682 | 4645 | 5037 | +21.4% | YES |
+| 43943421512 | plan_nutrition | 9428 | clamp→4772 | 7865 | 4271 | 3594 | +19.9% | YES |
+| 43943421512 | plan_nutrition | 9506 | clamp→4694 | 11597 | 4601 | 1265 | -18.0% | YES |
+| 43944757410 | plan_nutrition | 9430 | clamp→4770 | 11485 | 4489 | 3710 | -17.9% | YES |
+| 43954016076 | blog_outline-en | 8136 | skip | 6239 | 3497 | 2742 | +30.4% | NO |
+| 43954016076 | blog_content-en | 9979 | skip | 5644 | 2858 | 2786 | +76.8% | NO |
+| 43954016076 | blog_review-en | 11011 | skip | 7143 | 3721 | 3422 | +54.2% | NO |
+| 43954016076 | blog_content-en | 9979 | skip | 7172 | 2858 | 4314 | +39.1% | NO |
+| 43954016076 | blog_review-en | 11763 | skip | 9876 | 4529 | 5347 | +19.1% | YES |
+| 43954016076 | blog_review-en | 12253 | skip | 11395 | 4995 | 6400 | +7.5% | YES |
+| 43956033837 | blog_research_tavily-synth | 12460 | skip | 11622 | 7622 | 4000 | +7.2% | YES |
+| 43956033837 | blog_research_exa-synth | 9114 | skip | 8473 | 4473 | 4000 | +7.6% | YES |
+| 43956033837 | blog_research_tavily-synth | 12460 | skip | 13784 | 9845 | 3939 | -9.6% | YES |
+| 43956033837 | blog_outline-en | 7260 | clamp→3940 | 5989 | 2475 | 3514 | +21.2% | YES |
+| 43956033837 | blog_content-en | 9090 | clamp→4510 | 5044 | 1845 | 3199 | +80.2% | NO |
+| 43956033837 | blog_review-en | 11270 | skip | 7792 | 4191 | 3601 | +44.6% | NO |
+| 43956033837 | blog_review-en | 11824 | skip | 9990 | 4737 | 5253 | +18.4% | YES |
+| 43956033837 | blog_review-en | 11774 | skip | 9588 | 4670 | 4918 | +22.8% | YES |
+| 44066950985 | plan_nutrition | 9058 | clamp→5142 | 6820 | 3746 | 3074 | +32.8% | NO |
+| 44069109588 | plan_nutrition | 9078 | clamp→5122 | 6349 | 3817 | 2532 | +43.0% | NO |
+| 44069109588 | plan_nutrition | 9155 | clamp→5045 | 6666 | 3929 | 2737 | +37.3% | NO |
+| 44069109588 | plan_nutrition | 9104 | clamp→5096 | 7680 | 3899 | 3781 | +18.5% | YES |
+| 44069109588 | plan_nutrition | 9102 | clamp→5098 | 7305 | 4013 | 3292 | +24.6% | YES |
+| 44082125752 | plan_nutrition | 8752 | clamp→5448 | 6311 | 3286 | 3025 | +38.7% | NO |
+| 44082125752 | plan_nutrition | 8822 | clamp→5378 | 6342 | 3384 | 2958 | +39.1% | NO |
+| 44083095937 | plan_nutrition | 8750 | clamp→5450 | 6190 | 3279 | 2911 | +41.4% | NO |
+| 44110982069 | plan_nutrition | 9554 | clamp→4646 | 8038 | 4501 | 3537 | +18.9% | YES |
+| 44110982069 | plan_nutrition | 9629 | clamp→4571 | 7902 | 4604 | 3298 | +21.9% | YES |
+| 44150986424 | plan_nutrition | 8752 | clamp→5448 | 6425 | 3329 | 3096 | +36.2% | NO |
+| 44150986424 | plan_nutrition | 8817 | clamp→5383 | 5994 | 3417 | 2577 | +47.1% | NO |
+| 44155420852 | plan_nutrition | 8752 | clamp→5448 | 6456 | 3329 | 3127 | +35.6% | NO |
+| 44155420852 | plan_nutrition | 8824 | clamp→5376 | 6209 | 3429 | 2780 | +42.1% | NO |
+
+pairs=56  within25=32  outside25=24
+
+## SECTION B — [ai-meter] real-usage aggregation (INF-19)
+| fn | provider | model | calls | ok | fail | quota | real_usage_lines | tokens_in | tokens_out | tokens_total | cost_cents |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| blog_research | groq | openai_gpt-oss-120b_browser_search | 2 | 1 | 0 | 1 | 1 | 279858 | 6440 | 286298 | 0.0000 |
+| plan_nutrition | groq | qwen_qwen3.8-27b | 26 | 22 | 0 | 4 | 20 | 72656 | 60869 | 133525 | 0.0000 |
+| blog_review-en | openrouter | nvidia_nemotron-3-ultra-550b-a55b_free | 9 | 9 | 0 | 0 | 9 | 39768 | 44413 | 84181 | 0.0000 |
+| blog_research_tavily-synth | openrouter | nvidia_nemotron-3-ultra-550b-a55b_free | 8 | 4 | 4 | 0 | 4 | 34577 | 13516 | 48093 | 0.0000 |
+| blog_review-ar | openrouter | nvidia_nemotron-3-ultra-550b-a55b_free | 4 | 4 | 0 | 0 | 4 | 23600 | 23801 | 47401 | 0.0000 |
+| blog_content-en | openrouter | nvidia_nemotron-3-ultra-550b-a55b_free | 5 | 5 | 0 | 0 | 5 | 13531 | 16844 | 30375 | 0.0000 |
+| recipe_structure | groq | openai_gpt-oss-120b | 9 | 6 | 0 | 3 | 5 | 16864 | 8372 | 25236 | 0.0000 |
+| plan_workout | groq | openai_gpt-oss-120b | 4 | 4 | 0 | 0 | 4 | 9540 | 15412 | 24952 | 0.0000 |
+| blog_content-ar | openrouter | nvidia_nemotron-3-ultra-550b-a55b_free | 3 | 3 | 0 | 0 | 3 | 13843 | 10620 | 24463 | 0.0000 |
+| plan_nutrition | gemini | gemini-3.5-flash | 2 | 2 | 0 | 0 | 2 | 9090 | 4975 | 23082 | 0.0000 |
+| blog_research_tavily-synth | nvidia | nvidia_nemotron-3-ultra-550b-a55b | 3 | 2 | 1 | 0 | 2 | 15491 | 7169 | 22660 | 0.0000 |
+| blog_outline-en | openrouter | nvidia_nemotron-3-ultra-550b-a55b_free | 3 | 3 | 0 | 0 | 3 | 9570 | 8411 | 17981 | 0.0000 |
+| blog_outline-ar | openrouter | nvidia_nemotron-3-ultra-550b-a55b_free | 2 | 2 | 0 | 0 | 2 | 10788 | 4220 | 15008 | 0.0000 |
+| recipe_structure | openrouter | nvidia_nemotron-3-ultra-550b-a55b_free | 6 | 2 | 4 | 0 | 2 | 6929 | 4664 | 11593 | 0.0000 |
+| plan_nutrition-alt | groq | openai_gpt-oss-120b | 7 | 2 | 4 | 1 | 2 | 6215 | 4580 | 10795 | 0.0000 |
+| recipe_author-ar | openrouter | nvidia_nemotron-3-ultra-550b-a55b_free | 5 | 5 | 0 | 0 | 4 | 2764 | 7831 | 10595 | 0.0000 |
+| recipe_author-en | openrouter | nvidia_nemotron-3-ultra-550b-a55b_free | 3 | 3 | 0 | 0 | 3 | 1802 | 7531 | 9333 | 0.0000 |
+| recipe_author-ar | nvidia | nvidia_nemotron-3-ultra-550b-a55b | 3 | 3 | 0 | 0 | 3 | 2128 | 6892 | 9020 | 0.0000 |
+| plan_nutrition | groq | openai_gpt-oss-120b | 29 | 1 | 20 | 8 | 1 | 3154 | 5417 | 8571 | 0.0000 |
+| recipe_structure | groq | openai_gpt-oss-20b | 3 | 2 | 1 | 0 | 2 | 6754 | 1748 | 8502 | 0.0000 |
+| blog_research_exa-synth | nvidia | nvidia_nemotron-3-ultra-550b-a55b | 2 | 1 | 1 | 0 | 1 | 4473 | 4000 | 8473 | 0.0000 |
+| recipe_author-ar | groq | openai_gpt-oss-120b | 3 | 3 | 0 | 0 | 3 | 2244 | 4583 | 6827 | 0.0000 |
+| recipe_author-en | groq | openai_gpt-oss-120b | 4 | 4 | 0 | 0 | 3 | 1650 | 4089 | 5739 | 0.0000 |
+| recipe_idea | groq | openai_gpt-oss-120b | 5 | 5 | 0 | 0 | 5 | 1495 | 2589 | 4084 | 0.0000 |
+| recipe_author-en | nvidia | nvidia_nemotron-3-ultra-550b-a55b | 2 | 2 | 0 | 0 | 1 | 516 | 3000 | 3516 | 0.0000 |
+| blog_visual-brief-en | openrouter | nvidia_nemotron-3-ultra-550b-a55b_free | 5 | 2 | 3 | 0 | 2 | 1520 | 1800 | 3320 | 0.0000 |
+| recipe_idea | openrouter | nvidia_nemotron-3-ultra-550b-a55b_free | 8 | 4 | 3 | 1 | 3 | 783 | 1350 | 2133 | 0.0000 |
+| blog_visual-brief-en | groq | openai_gpt-oss-120b | 3 | 1 | 1 | 1 | 1 | 735 | 900 | 1635 | 0.0000 |
+| plan_day-regen | openrouter | nvidia_nemotron-3-ultra-550b-a55b_free | 1 | 1 | 0 | 0 | 1 | 605 | 886 | 1491 | 0.0000 |
+| plan_exercise-corrective | openrouter | nvidia_nemotron-3-ultra-550b-a55b_free | 1 | 1 | 0 | 0 | 1 | 635 | 730 | 1365 | 0.0000 |
+| ai-job_paraphrase | nvidia | nvidia_nemotron-3-ultra-550b-a55b | 1 | 1 | 0 | 0 | 1 | 428 | 297 | 725 | 0.0000 |
+| plan_nutrition | openrouter | nvidia_nemotron-3-ultra-550b-a55b_free | 28 | 0 | 28 | 0 | 0 | 0 | 0 | 0 | 0.0000 |
+| plan_nutrition | groq | openai_gpt-oss-20b | 26 | 0 | 24 | 2 | 0 | 0 | 0 | 0 | 0.0000 |
+| plan_nutrition | nvidia | nvidia_nemotron-3-ultra-550b-a55b | 28 | 0 | 28 | 0 | 0 | 0 | 0 | 0 | 0.0000 |
+| plan_nutrition-alt | openrouter | nvidia_nemotron-3-ultra-550b-a55b_free | 6 | 0 | 6 | 0 | 0 | 0 | 0 | 0 | 0.0000 |
+| plan_nutrition-alt | nvidia | nvidia_nemotron-3-ultra-550b-a55b | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 0.0000 |
+| blog_research | tavily | search-api | 9 | 9 | 0 | 0 | 0 | 0 | 0 | 0 | 0.0000 |
+| blog_research | exa | search-api | 7 | 7 | 0 | 0 | 0 | 0 | 0 | 0 | 0.0000 |
+| blog_research | exa | contents-api | 7 | 7 | 0 | 0 | 0 | 0 | 0 | 0 | 0.0000 |
+| blog_research_exa-synth | openrouter | nvidia_nemotron-3-ultra-550b-a55b_free | 7 | 0 | 7 | 0 | 0 | 0 | 0 | 0 | 0.0000 |
+| blog_pairing | cloudflare | cf_meta_llama-3.3-70b-instruct-fp8-fast | 5 | 5 | 0 | 0 | 0 | 0 | 0 | 0 | 0.0000 |
+| blog_visual-brief-ar | openrouter | nvidia_nemotron-3-ultra-550b-a55b_free | 2 | 0 | 2 | 0 | 0 | 0 | 0 | 0 | 0.0000 |
+| blog_visual-brief-ar | groq | openai_gpt-oss-120b | 2 | 0 | 2 | 0 | 0 | 0 | 0 | 0 | 0.0000 |
+| blog_visual-brief-ar | groq | openai_gpt-oss-20b | 2 | 0 | 2 | 0 | 0 | 0 | 0 | 0 | 0.0000 |
+| blog_latin-tokens-ar | cloudflare | cf_meta_llama-4-scout-17b-16e-instruct | 3 | 3 | 0 | 0 | 0 | 0 | 0 | 0 | 0.0000 |
+| blog_research | groq | openai_gpt-oss-20b_browser_search | 2 | 0 | 1 | 1 | 0 | 0 | 0 | 0 | 0.0000 |
+| blog_research | gemini | gemini-3.5-flash_googlesearch | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 0.0000 |
+| blog_research | gemini | gemini-3.8-flash_googlesearch | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 0.0000 |
+| blog_research | gemini | gemini-3.5-flash-lite_googlesearch | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 0.0000 |
+| ai-job_paraphrase | openrouter | nvidia_nemotron-3-ultra-550b-a55b_free | 2 | 0 | 2 | 0 | 0 | 0 | 0 | 0 | 0.0000 |
+| ai-job_paraphrase | groq | openai_gpt-oss-120b | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 0.0000 |
+| blog_visual-brief-en | groq | openai_gpt-oss-20b | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 0.0000 |
+| plan_workout | openrouter | nvidia_nemotron-3-ultra-550b-a55b_free | 2 | 0 | 2 | 0 | 0 | 0 | 0 | 0 | 0.0000 |
+| plan_nutrition-alt | groq | openai_gpt-oss-20b | 3 | 0 | 3 | 0 | 0 | 0 | 0 | 0 | 0.0000 |
+
+## SECTION C — per-day totals
+| day | meter_lines | real_usage_lines | est_only_lines | tokens_in | tokens_out | tokens_total |
+|---|---|---|---|---|---|---|
+| 2026-11-15 | 48 | 6 | 42 | 18878 | 18261 | 37139 |
+| 2026-11-16 | 162 | 72 | 90 | 504534 | 201343 | 714894 |
+| 2026-11-17 | 108 | 25 | 83 | 70594 | 68345 | 138939 |
+
+total_meter_lines=318  real_usage=103  est_only=215
+
+```
