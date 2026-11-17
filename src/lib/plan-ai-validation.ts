@@ -500,6 +500,20 @@ const TOKEN_MATCH_EXCEPTIONS: Record<string, string[]> = {
   // note and any whey-protein food name. The longer words suppress the
   // hit; actual figs (تين مجفف · تين) keep matching.
   تين: ["بروتين", "جلاتين"],
+  // GAP-18 (specialist review 2026-11-17 — the dates token enters the
+  // DIABETES clinical gate): «تمر» is a SUBSTRING of «تمرين/تمارين/
+  // يتمرن» (exercise wordings) — a note or alternative saying «قبل
+  // تمارين الصباح» must never fire the diabetes (or keto) date token.
+  // The longer words suppress the hit; actual dates (تمر · تمر مجفف ·
+  // بلح) keep matching on every surface that rides hits().
+  تمر: ["تمرين", "تمارين", "يتمرن"],
+  // GAP-18 (specialist review): «عصير ليمون» is the default Egyptian
+  // salad-dressing phrase (a culinary acid, not a sugary drink) — a
+  // diabetic/keto plan with «سلطة بعصير ليمون» must not be rejected.
+  // The longer term suppresses the hit; every other juice wording
+  // (عصير برتقال · عصائر…) keeps matching — the same measured tradeoff
+  // as بيرة→كبيرة above.
+  عصير: ["عصير ليمون"],
 };
 
 /** NUT-4: the HALAL-ONLY exception map — deliberately SEPARATE from

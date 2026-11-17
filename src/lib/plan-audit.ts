@@ -344,6 +344,51 @@ export type WorkoutAuditFinding = {
   severity: "critical" | "warning";
 };
 
+/* GAP-19 (fix order 2026-11-17 — gap-register GAP-19, the belt under the
+ * world-agnostic library lookup): gym-only equipment words an exercise
+ * NAME can carry — the SAME families the library-based check uses
+ * (/barbell|cable|machine/i) plus smith, with the Arabic forms from the
+ * matcher's EXPLICIT_EQUIPMENT vocabulary (بار/كابل/بولي/ماكينة/جهاز/
+ * سميث). WORD-LEVEL tokens only: substring matching would burn «بارفيكس»
+ * (pull-up — bodyweight) on «بار». */
+const GYM_EQUIPMENT_NAME_TOKENS = new Set([
+  "barbell", "cable", "machine", "smith",
+  "بار", "كابل", "بولي", "ماكينه", "جهاز", "سميث",
+]);
+
+/** Normalize one Arabic/Latin token for the belt comparison (the same
+ * letter unification the matcher's lexicon applies — ة→ه، أ/إ/آ→ا). */
+function beltNormToken(t: string): string {
+  return t
+    .toLowerCase()
+    .replace(/[\u064B-\u065F\u0670\u0640]/g, "")
+    .replace(/[أإآ]/g, "ا")
+    .replace(/ى/g, "ي")
+    .replace(/ة/g, "ه");
+}
+
+/** True when the exercise NAME names gym-only equipment (word level —
+ * the attached Arabic article/prepositions بال/وال/لل/ال are stripped
+ * the same way the matcher's lexicon strips them). */
+function namesGymEquipment(rawName: string): boolean {
+  const tokens = String(rawName || "")
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}]+/gu, " ")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .map(beltNormToken);
+  for (const t of tokens) {
+    if (GYM_EQUIPMENT_NAME_TOKENS.has(t)) return true;
+    if (/[\u0600-\u06FF]/.test(t)) {
+      for (const p of ["بال", "وال", "لل", "ال"]) {
+        if (t.startsWith(p) && GYM_EQUIPMENT_NAME_TOKENS.has(t.slice(p.length))) return true;
+      }
+    }
+  }
+  return false;
+}
+
 export type WorkoutAuditReport = {
   findings: WorkoutAuditFinding[];
   stats: { days: number; trainingDays: number; exercises: number; totalSets: number };
@@ -423,6 +468,7 @@ export function auditWorkoutPlan(
         });
       }
       // Suitability axes — library-matched exercises only.
+      let libHomeMismatchFired = false;
       if (opts.lookupExercise) {
         let lib: { equipment: string; level: string; slug: string } | null = null;
         try {
@@ -432,6 +478,7 @@ export function auditWorkoutPlan(
         }
         if (lib) {
           if (isHome && /barbell|cable|machine/i.test(lib.equipment)) {
+            libHomeMismatchFired = true;
             findings.push({
               code: "home_equipment_mismatch",
               severity: "critical",
@@ -470,6 +517,22 @@ export function auditWorkoutPlan(
             }
           }
         }
+      }
+      // GAP-19 (fix order 2026-11-17): the NAME-LEVEL gym-equipment belt —
+      // an exercise whose NAME itself names gym-only equipment (Barbell/
+      // Cable/Machine/Smith — Arabic or Latin, word level) is flagged for
+      // a home client EVEN WHEN the library lookup matched nothing (an
+      // unmatched/unmapped name must not slip the audit — the measured
+      // defect: a published home plan carrying 6+ gym-named exercises with
+      // audit.findings=0). Same finding code, deduped against the
+      // library-based hit above; a false positive costs the coach-review
+      // banner (safe direction).
+      if (isHome && !libHomeMismatchFired && namesGymEquipment(name)) {
+        findings.push({
+          code: "home_equipment_mismatch",
+          severity: "critical",
+          message: `التمرين «${name}» يسمّي تجهيز صالة (بار/كابل/ماكينة) بينما مكان تدريب العميل منزلي`,
+        });
       }
     }
   }

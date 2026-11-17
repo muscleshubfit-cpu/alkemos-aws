@@ -11,6 +11,38 @@
  * card presented as safe. The health answer rode the prompt only as inert
  * DATA; nothing deterministic classified it, nothing surfaced it.
  *
+ * GAP-18 (fix order 2026-11-17 — owner remediation order «إصلاح ربط حقل
+ * medical في الاستبيان الحقيقي بطبقة الكشف الإكلينيكي… استشر متخصصًا
+ * في التغذية العلاجية عند مراجعة منطق السلامة»): the layer was
+ * structurally blind to the REAL form's field name — the linkage fix
+ * lives in plan-generator.declaredHealthText (the single canonical
+ * extraction feeding every consumer). The safety-logic review below was
+ * performed with an independent clinical-dietitian consultation
+ * (2026-11-17 — documented in raw/t4/gap-18-19-fix-verification.md) and
+ * hardened this module where the review found directional harm or
+ * detection holes for the EXISTING conditions:
+ *   · keyword extensions for the documented Egyptian-context wording gaps
+ *     (فيروس سي للكبد · غدة للدرقية · حصوات/غسيل للكلى · سلفونيل يوريا
+ *     للسكري · جلطة/سكتة للقلب · sugar بالإنجليزية…) — detection only,
+ *     same conditions, same rules;
+ *   · a DIRECTIONAL GUARD on hypertension: «ضغط منخفض» must never receive
+ *     the low-sodium rule (the one false-positive class with real harm);
+ *   · the diabetes item gate now covers the WHOLE concentrated-sugar
+ *     family the live evidence exposed (تمر/بلح/زبيب/دبس/قمر الدين/
+ *     حلاوة/مشروبات الطاقة…) with the تمرين and عصير-ليمون guards;
+ *   · the celiac gate covers the unambiguous gluten family it missed
+ *     (شعرية/بسكويت/بيتزا/بقلاوة/بقسماط/فطير…);
+ *   · the diabetes prompt rule now addresses fasting (Ramadan/intermittent
+ *     — consult the treating doctor first) and hypoglycemia-prone
+ *     medication, and a diabetes×celiac merge line resolves the
+ *     whole-grains push conflict;
+ *   · the condition-aware disclosure adds blood-glucose monitoring (when
+ *     diabetes is detected) and the stop-on-symptoms safety valve.
+ * The specialist's further recommendations (new condition families —
+ * bariatric/IBD/chemo/eating-disorders/G6PD…, a structured pregnancy
+ * field, thalassemia split…) are DOCUMENTED AS RESIDUALS for the owner —
+ * deliberately NOT implemented here (scope: GAP-18/GAP-19 only).
+ *
  * THE LAW THIS MODULE PINS (deterministic, server-side, both generation
  * paths — AI chain AND local fallback):
  *   1. DETECT: the questionnaire's health text is classified against a
@@ -18,7 +50,12 @@
  *      tolerant). Detection is conservative keyword containment over
  *      normalized text — a false positive costs a caution banner (safe
  *      direction); a false negative is the hazard this module exists to
- *      kill, so keywords err on the sensitive side.
+ *      kill, so keywords err on the sensitive side. The ONE exception is
+ *      the hypertension directional guard: an explicitly OPPOSITE
+ *      declaration («ضغط منخفض») is suppressed — injecting the
+ *      low-sodium rule into a hypotensive member's plan is the single
+ *      false-positive class with directional harm, so it never fires
+ *      unless an affirmative wording is also present.
  *   2. STEER: detected conditions render a MANDATORY clinical block in
  *      the generation prompt (carb distribution for diabetes, sodium for
  *      hypertension, …) — prompt-level instruction, on top of the
@@ -59,6 +96,12 @@ type ClinicalConditionDef = {
   keywords: string[];
   /** The mandatory generation-prompt rule for this condition. */
   promptRuleAr: string;
+  /** GAP-18 (specialist review 2026-11-17): the DIRECTIONAL GUARD — when
+   * the declaration names the OPPOSITE of this condition and never
+   * affirms it, detection is suppressed. Only hypertension carries one
+   * today («ضغط منخفض» → the low-sodium rule would be directional harm);
+   * every other condition keeps the unguarded sensitive-side law. */
+  suppressWhen?: { opposite: RegExp; affirmative: RegExp };
 };
 
 /** Normalize Arabic/Latin text the same way the constraint gate does —
@@ -81,42 +124,64 @@ const CLINICAL_CONDITIONS: ClinicalConditionDef[] = [
   {
     key: "diabetes",
     labelAr: "سكري",
-    keywords: ["سكري", "سكر", "ميتفورمين", "جلوكوفاج", "انسولين", "diabetes", "diabetic", "metformin", "insulin", "prediabetes"],
+    // GAP-18 (specialist review): += English "sugar/blood sugar" wording
+    // ("high blood sugar" passed undetected) and the Egyptian
+    // sulfonylurea drug names — they are diabetes medications exactly
+    // like metformin, and their hypoglycemia risk rides the prompt rule.
+    keywords: ["سكري", "سكر", "ميتفورمين", "جلوكوفاج", "انسولين", "داونيل", "اماريل", "جلينيز", "دياميكرون", "diabetes", "diabetic", "metformin", "insulin", "prediabetes", "sugar", "blood sugar", "glimepiride", "gliclazide", "glibenclamide", "sulfonylurea"],
     promptRuleAr:
-      "سكري: وزّع الكربوهيدرات بالتساوي على الوجبات مع ثبات مواعيد الطعام؛ ممنوع نهائيًا السكريات المركزة والعصائر والحلويات والمشروبات المحلاة؛ اختر الحبوب الكاملة والألياف العالية؛ لا تقترح صيامًا طويلًا ولا تخطي وجبات.",
+      "سكري: وزّع الكربوهيدرات بالتساوي على وجبات ثابتة المواعيد؛ ممنوع نهائيًا السكريات المركزة والعصائر والحلويات والمشروبات المحلاة (بما فيها التمر والرطب وقمر الدين والدبس)؛ فضّل الحبوب الكاملة والألياف العالية؛ لا تقترح صيامًا ولا تخطي وجبات — وإن أشار العميل إلى صيام (رمضان أو متقطع) فاذكر صراحة: استشر طبيبك قبل الصيام لتقييم ملاءمته وتعديل دوائك، ووزّع الكربوهيدرات بين الإفطار والسحور، وتجنب الحلويات الرمضانية والمقليات، وراقب سكرتك وأفطر فورًا عند أي هبوط؛ وإن كان العميل على إنسولين أو أدوية محفزة للإفراز (سلفونيل يوريا كداونيل/أماريل/دياميكرون): لا تتخطى الوجبات إطلاقًا، ونبّه على أعراض هبوط السكر (رعشة/تعرق/دوخة) وعلاجها الفوري، وراجع الطبيب عند تغيير نمط الأكل.",
   },
   {
     key: "hypertension",
     labelAr: "ارتفاع ضغط الدم",
     keywords: ["ضغط", "hypertension", "blood pressure", "htn"],
+    // GAP-18 (specialist review): «ضغطي منخفض» / "low blood pressure" is
+    // the ONE false-positive class with directional harm — the low-sodium
+    // rule would act against a hypotensive member. Suppressed unless an
+    // affirmative wording (مرتفع/عالي/high…) is also present (mixed
+    // declarations like «منخفض أحيانًا ومرتفع أحيانًا» still detect).
+    suppressWhen: {
+      opposite: /منخفض|واطي|هبوط|hypotension|\blow\b/,
+      affirmative: /مرتفع|عالي|عالية|\bhigh\b|hypertension|\bhtn\b/,
+    },
     promptRuleAr:
       "ارتفاع ضغط الدم: قلل الصوديوم — لا مزيدة ملح على المائدة، وتجنب المخللات والأطعمة المصنعة عالية الملح والمرق الجاهز المركز.",
   },
   {
     key: "cardiac",
     labelAr: "حالة قلبية",
-    keywords: ["قلب", "ذبحة", "شرايين", "cardiac", "heart failure", "heart disease", "angina"],
+    // GAP-18 (specialist review): += the common Egyptian cardiac-event
+    // wordings (جلطة/سكتة/قسطرة/دعامة) — same condition, same rule.
+    keywords: ["قلب", "ذبحة", "شرايين", "جلطه", "سكتة", "قسطره", "دعامه", "cardiac", "heart failure", "heart disease", "angina", "stroke", "stent"],
     promptRuleAr:
       "حالة قلبية: دهون مشبعة منخفضة (لا زبدة/سمن/لحوم دهنية مكررة)، أسماك دهنية باعتدال، وممنوع نهائيًا أي مكملات منشطة أو مشروبات طاقة.",
   },
   {
     key: "kidney",
     labelAr: "حالة كلوية",
-    keywords: ["كلى", "كلوي", "kidney", "renal", "ckd"],
+    // GAP-18 (specialist review): += dialysis and stone wordings — the
+    // bare «عندي حصوات» passed undetected (حصوة في الكلى caught only via
+    // «كلى»; the abstract forms never did).
+    keywords: ["كلى", "كلوي", "كلاوي", "غسيل", "ديلزه", "ديال", "حصوه", "حصوات", "حصى", "kidney", "renal", "ckd", "dialysis", "hemodialysis", "stone", "stones"],
     promptRuleAr:
       "حالة كلوية: بروتين معتدل (لا مرتفع)، وتجنب الإفراط في البوتاسيوم والفوسفور (قلل الموز/البرتقال/البطاطس/المكسرات/البقوليات الكثيفة) — الكميات النهائية تبقى لقرار الطبيب المتابع.",
   },
   {
     key: "liver",
     labelAr: "حالة كبدية",
-    keywords: ["كبد", "كبدي", "liver", "hepatic", "fatty liver"],
+    // GAP-18 (specialist review): += hepatitis B/C — the top Egyptian
+    // priority («حامل فيروس سي» passed undetected).
+    keywords: ["كبد", "كبدي", "فيروس سي", "فيروس ب", "التهاب كبدي", "liver", "hepatic", "fatty liver", "hepatitis", "hcv", "hbv"],
     promptRuleAr:
       "حالة كبدية: دهون مضافة وسكريات مضافة منخفضة، غذاء متوازن خفيف، وممنوع نهائيًا أي كحول.",
   },
   {
     key: "thyroid",
     labelAr: "حالة الغدة الدرقية",
-    keywords: ["درقي", "thyroid", "hypothyroid", "hyperthyroid"],
+    // GAP-18 (specialist review): += «غدة» — the most common Egyptian
+    // phrasing of a thyroid condition («عندي غدة»)."تكييس" unaffected.
+    keywords: ["درقي", "غده", "thyroid", "hypothyroid", "hyperthyroid"],
     promptRuleAr:
       "حالة الغدة الدرقية: ثبات مواعيد الوجبات مع دواء الغدة، ولا تضع فول الصويا أو مكملات الحديد/الكالسيوم في نفس توقيت جرعة الدواء.",
   },
@@ -130,7 +195,9 @@ const CLINICAL_CONDITIONS: ClinicalConditionDef[] = [
   {
     key: "breastfeeding",
     labelAr: "رضاعة",
-    keywords: ["رضاع", "مرضع", "breastfeeding", "lactating", "lactation"],
+    // GAP-18 (specialist review): += «رضع» so the attached verb forms
+    // (بترضع/أرضع) land — «رضاع» alone never caught them.
+    keywords: ["رضاع", "رضع", "مرضع", "breastfeeding", "lactating", "lactation"],
     promptRuleAr:
       "رضاعة: عجز حراري محدود جدًا إن وُجد، ترطيب مرتفع، وسعرات إضافية وفق إرشاد مختص.",
   },
@@ -178,14 +245,25 @@ const MATCHERS: Array<{ def: ClinicalConditionDef; words: string[] }> =
 /**
  * Detect clinical conditions from the questionnaire's health text (the
  * member's declared conditions). Deterministic, order-stable: conditions
- * return in table order, each at most once.
+ * return in table order, each at most once. GAP-18: a directional guard
+ * (suppressWhen) can suppress a condition whose declaration names the
+ * OPPOSITE — only hypertension carries one today (the hypotension harm).
  */
 export function detectClinicalConditions(input: { healthText?: string | null }): ClinicalConditionKey[] {
   const hay = clinNorm(String(input?.healthText ?? ""));
   if (!hay) return [];
   const hits: ClinicalConditionKey[] = [];
   for (const { def, words } of MATCHERS) {
-    if (words.some((w) => hay.includes(w))) hits.push(def.key);
+    if (words.some((w) => hay.includes(w))) {
+      // GAP-18 directional guard: an explicitly-opposite declaration
+      // suppresses the condition UNLESS an affirmative wording is also
+      // present (mixed «منخفض أحيانًا ومرتفع أحيانًا» still detects).
+      const guard = def.suppressWhen;
+      if (guard && guard.opposite.test(hay) && !guard.affirmative.test(hay)) {
+        continue;
+      }
+      hits.push(def.key);
+    }
   }
   return hits;
 }
@@ -207,6 +285,15 @@ export function clinicalPromptBlock(keys: ClinicalConditionKey[]): string {
     .map((k) => byKey.get(k))
     .filter((d): d is ClinicalConditionDef => Boolean(d))
     .map((d) => `- ${d.labelAr}: ${d.promptRuleAr}`);
+  // GAP-18 (specialist review): the diabetes rule PUSHES whole grains while
+  // the celiac rule BANS the classic whole-grain carriers — the two rules
+  // rode adjacent and tense with no mediator. The merge line resolves the
+  // push conflict explicitly when BOTH conditions are declared.
+  if (keys.includes("diabetes") && keys.includes("celiac")) {
+    rules.push(
+      "- سكري + سيلياك (قاعدة دمج): الحبوب الكاملة المسموحة خالية من الجلوتين حصرًا (أرز أسمر، كينوا، ذرة، بطاطا حلوة) — لا قمح/شعير/برغل/شوفان مطلقًا.",
+    );
+  }
   return [
     "",
     "⚠ الحالات الصحية المعلنة لهذا العميل — قيود إكلينيكية إلزامية على هذا التوليد (احترمها في كل صنف وكل بديل وكل اقتراح):",
@@ -234,6 +321,17 @@ const GENERAL_WARNING_AR =
 const CONDITION_WARNING_AR =
   "تنبيه صحي مهم: هذه الخطة أُنتجت بالذكاء الاصطناعي لأغراض معلوماتية عامة وليست وصفة طبية أو استشارة تغذية علاجية. حالتك الصحية المعلنة ({conditions}) تستلزم توخي الحذر: راجع الخطة مع طبيبك أو مع أخصائي تغذية مؤهل قبل تطبيقها، وأخبره بأدويتك وجرعاتها، ولا تغيّر نظامك الدوائي أو جرعاته بناءً عليها.";
 
+const CONDITION_WARNING_TAIL_AR =
+  "توقف عن الخطة وراجع طبيبك عند أي أعراض غير معتادة (دوخة، رعشة، غثيان، ضيق تنفس).";
+
+/** GAP-18 (specialist review): blood-glucose monitoring rides the
+ * condition-aware disclosure when diabetes is among the detected
+ * conditions — the first practical interaction between the plan and a
+ * glucose-lowering medication (the readings may warrant a dose change,
+ * which is the doctor's call, never the plan's). */
+const DIABETES_MONITORING_AR =
+  "بما أنك تعاني حالة سكرية: راقب سكر دمك عند بدء الخطة واعرض القراءات على طبيبك — فقد يحتاج علاجك تعديلًا.";
+
 /**
  * Build the medical disclosure for a generated plan. ALWAYS returns a
  * disclosure (the general warning when nothing is detected) — the owner's
@@ -242,13 +340,17 @@ const CONDITION_WARNING_AR =
  */
 export function medicalDisclosureFor(keys: ClinicalConditionKey[]): MedicalDisclosure {
   const conditions = clinicalConditionLabels(keys);
+  if (conditions.length === 0) {
+    return { flag: "medical_review_advised", conditions, warning: GENERAL_WARNING_AR };
+  }
+  // GAP-18 (specialist review): the condition-aware form gains the
+  // diabetes-conditional blood-glucose monitoring sentence and the general
+  // stop-on-symptoms safety valve.
+  const diabetesNote = keys.includes("diabetes") ? ` ${DIABETES_MONITORING_AR}` : "";
   return {
     flag: "medical_review_advised",
     conditions,
-    warning:
-      conditions.length > 0
-        ? CONDITION_WARNING_AR.replace("{conditions}", conditions.join("، "))
-        : GENERAL_WARNING_AR,
+    warning: `${CONDITION_WARNING_AR.replace("{conditions}", conditions.join("، "))}${diabetesNote} ${CONDITION_WARNING_TAIL_AR}`,
   };
 }
 
@@ -262,19 +364,40 @@ export function medicalDisclosureFor(keys: ClinicalConditionKey[]): MedicalDiscl
  */
 const CLINICAL_FORBIDDEN_TOKENS: Partial<Record<ClinicalConditionKey, string[]>> = {
   // Concentrated-sugar family: juices, sodas, sweets, spreads, honey.
+  // GAP-18 (specialist review 2026-11-17 — the live evidence named dates):
+  // the family now covers the WHOLE unambiguous concentrated-sugar class —
+  // dates (تمر/بلح), raisins (زبيب), dibs/molasses, قمر الدين, حلاوة,
+  // energy drinks — the same class the platform's own keto/low_carb tables
+  // already ban (تمر/بلح/زبيب literally ride the keto list). Two guards
+  // ride the shared TOKEN_MATCH_EXCEPTIONS mechanism in plan-ai-validation
+  // (تمر→تمرين/تمارين · عصير→عصير ليمون) so the additions cannot
+  // false-fire on exercise wordings or the default Egyptian salad
+  // dressing. «غازي» (normalized) subsumes غازي/غازية/الغازي — the old
+  // feminine-only tokens missed «مشروب غازي».
   diabetes: [
-    "عصير", "عصائر", "غازيه", "مشروبات غازيه", "حلويات", "حلوى", "شوكولاته", "شوكولا",
+    "عصير", "عصائر", "غازي", "حلويات", "حلوى", "شوكولاته", "شوكولا",
     "ايس كريم", "مثلجات", "مربي", "عسل", "كنافه", "بسبوسه", "جاتو", "كيك", "كراميل",
-    "سكاكر", "juice", "soda", "cake", "chocolate", "ice cream", "jam", "honey", "candy",
+    "سكاكر", "تمر", "بلح", "زبيب", "دبس", "قمر الدين", "حلاوه", "مشروب طاقه", "ريد بول", "مشروب سكري",
+    "juice", "soda", "cake", "chocolate", "ice cream", "jam", "honey", "candy",
+    "dates", "raisins", "syrup", "molasses", "sweets", "dessert", "energy drink", "red bull",
   ],
   // Zero-tolerance gluten family (cross-listed with the allergy gate, but
   // a declared celiac condition gates it even when the allergy field is
   // empty) — the same grain family DIET_FORBIDDEN_TOKENS uses for keto,
   // plus the wheat/couscous/oats names.
+  // GAP-18 (specialist review): += the unambiguous gluten carriers the
+  // list missed — شعرية (Egyptian rice-vermicelli staple; the letters
+  // differ from شعير so the old token never caught it), بسكويت/بسكوت،
+  // بيتزا، بقلاوة، بقسماط، فطير، and the English couscous/cookies/
+  // crackers/noodles/semolina (كسكسي covered only the Arabic spelling).
+  // Deliberately NOT added: دقيق/طحين/نشا (rice/corn flours and corn
+  // starch are gluten-free and legitimate) — same conservative law.
   celiac: [
     "قمح", "شعير", "برغل", "فريك", "كسكسي", "خبز", "عيش", "توست", "مكرونه", "مكرونة",
     "سباجيتي", "باستا", "شوفان", "سيمولينا", "جريش",
+    "شعريه", "بسكويت", "بسكوت", "بيتزا", "بقلاوه", "بقسماط", "فطير", "كيك",
     "gluten", "wheat", "barley", "bulgur", "bread", "pasta", "spaghetti", "toast", "oats",
+    "couscous", "cookies", "crackers", "noodles", "semolina",
   ],
 };
 

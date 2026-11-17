@@ -121,9 +121,18 @@ a 7-day conditional refund (no-features-used, ledger-based —
   member plan view, the coach editor and both print exports), and a
   critical independent-audit finding (injury-unsafe pick, home-equipment
   mismatch) raises a needs-review banner on the plan instead of being saved
-  silently. AI plans also carry observable generation provenance (INF-4):
-  the provider chain tags every answer with a quality tier, and a plan
-  answered by the chain's small/last-resort tail models is badged
+  silently. The audit's exercise lookup is world-agnostic (it resolves every
+  exercise in the full library to learn its TRUE equipment, level and slug —
+  so a barbell/cable/machine exercise inside a HOME client's plan surfaces
+  as a critical finding instead of silently passing, GAP-19 of the
+  operational test plan), rides BOTH generation paths (AI chain and local
+  fallback — one attachment, `attachIndependentWorkoutAudit`), and a
+  word-level gym-equipment name belt (Barbell/Cable/Machine/Smith —
+  Arabic or Latin) fires the same finding even when no library entry
+  matches, while the image/link enrichment keeps its client-world
+  equipment honesty. AI plans also carry observable generation provenance
+  (INF-4): the provider chain tags every answer with a quality tier, and a
+  plan answered by the chain's small/last-resort tail models is badged
   «موديل ذيل — راجع العمق» in the coach's plan modal (the serving
   model/provider are persisted on the plan content) — plus the structured
   plan tasks sample at aligned low temperatures (INF-9: 0.5-0.6, rollback
@@ -388,14 +397,27 @@ model:
   three ways: a mandatory clinical block in the prompt (carb distribution
   for diabetes, sodium for hypertension, …), a hard item gate that rejects
   clinically prohibited foods exactly like allergens (the
-  concentrated-sugar family for diabetics, the gluten family for celiacs),
-  and a client-facing **medical disclosure** stamped on EVERY generated
-  plan — the clear warning to review the plan with a doctor or a qualified
-  nutritionist BEFORE applying it, rendered on both the member's plan
-  viewer and the coach's, with `data_analysis.health` echoing the
-  questionnaire truth. Deliberately NOT a review hold: no trainer or
-  in-platform approval is required — the member receives the plan with the
-  warning.
+  concentrated-sugar family for diabetics — dates/raisins/dibs included,
+  with exercise-wording and lemon-juice dressing guards — and the gluten
+  family for celiacs), and a client-facing **medical disclosure** stamped
+  on EVERY generated plan — the clear warning to review the plan with a
+  doctor or a qualified nutritionist BEFORE applying it, rendered on both
+  the member's plan viewer and the coach's, with `data_analysis.health`
+  echoing the questionnaire truth. The declared text is extracted through
+  ONE canonical helper (`declaredHealthText`) that reads the REAL form's
+  `medical` field (the live questionnaire key) with `health`/
+  `medical_conditions` as legacy fallbacks — every clinical consumer
+  (detection, prompt steering, item gate, disclosure) shares the same
+  extraction, so a condition declared in the actual form can never again
+  ride the payload invisible (GAP-18 of the operational test plan,
+  hardened by an independent clinical-dietitian review: Egyptian-context
+  keywords — hepatitis C/غدة/حصوات/جلطة… — a hypotension directional
+  guard so «ضغط منخفض» never receives the low-sodium rule, a
+  fasting/Ramadan-aware diabetes rule with hypoglycemia guidance, a
+  diabetes×celiac merge line, and glucose-monitoring + stop-on-symptoms
+  sentences in the condition-aware disclosure). Deliberately NOT a review
+  hold: no trainer or in-platform approval is required — the member
+  receives the plan with the warning.
 
 ### Automated content pipeline
 The bilingual blog is generated end-to-end — research → outline → article →

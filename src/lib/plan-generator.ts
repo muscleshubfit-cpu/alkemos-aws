@@ -524,8 +524,38 @@ function repairDirective(error: string): string {
  * diet-types.resolvePlanDietType), never a guess.
  * ──────────────────────────────────────────────────────────────────────────────── */
 
-/** Extract the constraint bundle from a ClientContext + resolved diet. */
-function constraintsFromContext(
+/**
+ * GAP-18 (fix order 2026-11-17 — gap-register GAP-18, owner remediation
+ * order «إصلاح ربط حقل medical في الاستبيان الحقيقي بطبقة الكشف
+ * الإكلينيكي»): the REAL questionnaire form writes the health-conditions
+ * answer under `medical` (QuestionnairesView nutritionFields — verified
+ * live: the diabetic member's row carries ONLY that key and no `health`
+ * key), while the clinical safety layer (44d0c9c0) read
+ * `health`/`medical_conditions` — keys the live form never writes — so
+ * declared conditions rode the questionnaire into generation invisible to
+ * detection, the clinical prompt block, the clinical item gate and the
+ * medical disclosure (live evidence: plans#c2a952fc on beacon 44d0c9c0 —
+ * medical_disclosure.conditions=[] and data_analysis.health="" for a
+ * member declaring type-2 diabetes on metformin; the T1 verification
+ * fixture used the `health` key, which is why it passed).
+ *
+ * ONE canonical extraction for EVERY consumer site (constraintsFromContext
+ * · generateNutritionPlanAI · computeNutritionTargets · buildNutritionPrompt)
+ * — no per-site key lists, no alternative paths. Precedence: `medical`
+ * (the live form's key — the committed truth surface), then `health`
+ * (the T1 fixture/legacy key), then `medical_conditions` (the
+ * originally-audited guess).
+ */
+export function declaredHealthText(nutrition: unknown): string {
+  const n = loose(nutrition);
+  return String(n.medical || n.health || n.medical_conditions || "").trim();
+}
+
+/** Extract the constraint bundle from a ClientContext + resolved diet.
+ * GAP-18: exported so the regression canary pins the REAL form's `medical`
+ * key reaching the gate bundle (pure, deterministic — same inputs, same
+ * bundle). */
+export function constraintsFromContext(
   ctx: ClientContext | undefined,
   dietType?: DietType | null,
 ): ClientItemConstraints | undefined {
@@ -534,8 +564,10 @@ function constraintsFromContext(
   // allergens use — a diabetic member's plan is rejected (and repaired)
   // when it names a concentrated-sugar item, exactly like a nut-allergic
   // member's plan is rejected on a nut item.
+  // GAP-18: the extraction is the ONE canonical declaredHealthText — the
+  // real form's `medical` key reaches the gate like `health` always did.
   const clinical = detectClinicalConditions({
-    healthText: String(nutrition.health || nutrition.medical_conditions || ""),
+    healthText: declaredHealthText(nutrition),
   });
   const c = buildClientConstraints({
     dietType: dietType ?? undefined,
@@ -681,7 +713,9 @@ export async function generateNutritionPlanAI(
   // BEFORE the generic constraint/variety blocks; the same detection
   // stamps the medical disclosure on the saved content at normalize time.
   const clinicalKeys: ClinicalConditionKey[] = detectClinicalConditions({
-    healthText: String(loose(ctx.nutrition).health || loose(ctx.nutrition).medical_conditions || ""),
+    // GAP-18: the canonical extraction — the real form's `medical` key
+    // steers the prompt exactly like the fixture's `health` key did.
+    healthText: declaredHealthText(ctx.nutrition),
   });
   const basePrompt = `${buildNutritionPrompt(ctx, name, overrides, targets)}${clinicalPromptBlock(clinicalKeys)}${constraintPromptBlock(constraints)}${buildVarietyBlock("nutrition", seed, ctx.recent_plan_names ?? [], { dietType: targets.dietType, constraintTokens: constraintTokensOf(constraints) })}${platformKnowledge ?? ""}`;
 
@@ -894,39 +928,12 @@ export async function generateWorkoutPlanAI(
         // whatever the gate forgets to pass, the plan loses).
         periodization,
       );
-      // PLAN-REGEN-CONSTRAINTS: the independent workout audit — suitability
-      // axes (home equipment, beginner level, recorded injuries) recomputed
-      // from the final saved shape against the exercise library.
-      content.audit = auditWorkoutPlan(content, {
-        location: fitnessCtx.location,
-        experience: fitnessCtx.experience,
-        injuries: fitnessCtx.injuries,
-        lookupExercise: (n) => {
-          const hit = findExerciseInLibrary(n, fitnessCtx.location);
-          return hit ? { equipment: hit.equipment, level: hit.level, slug: hit.slug } : null;
-        },
-      });
-      // WOR-2 (audit AI-GENERATION-PIPELINES 2026-11-15, P0-9): the
-      // nutrition law now applies to workout plans too — a CRITICAL
-      // audit finding (injury_unsafe / home_equipment_mismatch /
-      // no_training_days…) stamps needs_review instead of being saved
-      // silently. The specific finding codes ride the flags so the
-      // review banner lists exactly WHAT to look at.
-      if (content.audit.findings.some((f) => f.severity === "critical")) {
-        const criticalCodes = Array.from(
-          new Set(content.audit.findings.filter((f) => f.severity === "critical").map((f) => f.code)),
-        );
-        content.needs_review = {
-          flags: [
-            ...(content.needs_review?.flags ?? []),
-            "independent_audit_critical_findings",
-            ...criticalCodes,
-          ],
-          note:
-            content.needs_review?.note ??
-            "تدقيق التمارين المستقل وجد ملاحظات جوهرية (إصابات / تجهيزات) — راجع الخطة قبل الاعتماد.",
-        };
-      }
+      // PLAN-REGEN-CONSTRAINTS + GAP-19 (fix order 2026-11-17): the
+      // independent workout audit — suitability axes (home equipment,
+      // beginner level, recorded injuries) recomputed from the final saved
+      // shape against the exercise library — now rides the ONE shared
+      // attachment (world-agnostic lookup + BOTH generation paths).
+      attachIndependentWorkoutAudit(content, fitnessCtx);
       // INF-4 / P2-2: the generation provenance stamp — same contract as
       // the nutrition path (chain tier + serving model persisted on the
       // saved content; tail answers surface as the coach review badge).
@@ -942,18 +949,98 @@ export async function generateWorkoutPlanAI(
   }
 
   const local = generateWorkoutPlan(ctx);
+  // GAP-19 (fix order 2026-11-17): the local fallback rides the SAME
+  // independent audit + WOR-2 stamp — same law as the nutrition path
+  // (owner order P0-1: «وأخضع مخرجاته لبوابة الجودة والتدقيق المستقل» —
+  // both paths, never only the lucky one).
+  const localContent = normalizeWorkoutPlan(
+    local as unknown as Record<string, unknown>,
+    loose(ctx.fitness).location,
+    // WOR-7: the local fallback ships the SAME multi-week stamp — the
+    // fallback used to look RICHER than the paid path (audit WOR-1's
+    // original observation); now both carry the identical structure.
+    periodization,
+  );
+  attachIndependentWorkoutAudit(localContent, fitnessCtx);
   return {
     title: `برنامج تمارين - ${name}`,
-    content: normalizeWorkoutPlan(
-      local as unknown as Record<string, unknown>,
-      loose(ctx.fitness).location,
-      // WOR-7: the local fallback ships the SAME multi-week stamp — the
-      // fallback used to look RICHER than the paid path (audit WOR-1's
-      // original observation); now both carry the identical structure.
-      periodization,
-    ),
+    content: localContent,
     source: "local-fallback",
   };
+}
+
+/**
+ * GAP-19 (fix order 2026-11-17 — gap-register GAP-19, owner remediation
+ * order «إصلاح تدقيق توافق التمارين مع تجهيزات العضو الفعلية، بحيث لا
+ * تمر تمارين الجيم ضمن الخطط المنزلية دون كشف أو معالجة»): ONE audit
+ * attachment for BOTH workout generation paths (the AI chain and the
+ * local fallback — the fallback previously shipped unaudited), stamped
+ * with the WOR-2 needs_review flag on critical findings.
+ *
+ * THE STRUCTURAL BLINDNESS THIS KILLS (live evidence: published home plan
+ * plans#78080a96 on beacon 44d0c9c0 — a home/beginner client whose plan
+ * carries Barbell Squat · Cable Row · Full Range-Of-Motion Lat Pulldown ·
+ * Triceps Pushdown ×2 · Chain Press ×2 with audit.findings=0 and
+ * needs_review=None): the pre-fix lookup passed the CLIENT'S LOCATION into
+ * findExerciseInLibrary, which filtered the matcher to the client's
+ * EQUIPMENT WORLD — a barbell/cable/machine exercise matches NOTHING in
+ * the home world (EQUIP_COMPAT: home = dumbbell/bodyweight only), so
+ * lookupExercise returned null, so the suitability checks never ran for
+ * exactly the exercises the gate exists to catch.
+ *
+ * THE FIX: the audit lookup is WORLD-AGNOSTIC — findExerciseInLibrary
+ * with NO location resolves in the full-gym world, learning the
+ * exercise's TRUE library equipment/level/slug regardless of the client's
+ * world. The ENRICHMENT path (normalizeWorkoutPlan's images/links) keeps
+ * its world-respecting matcher untouched — equipment honesty for links
+ * is a DIFFERENT concern from audit detection, and both keep one matcher
+ * (matchWorkoutExercise). Belt under the lookup (plan-audit.ts): the
+ * exercise NAME itself naming gym equipment (Barbell/Cable/Machine/Smith
+ * — Arabic or Latin, word-level) fires the same finding even when no
+ * library entry matches.
+ *
+ * Exported so the regression canary pins the REAL wiring with the REAL
+ * 868-exercise library (plan-gap19-workout-audit.test.ts — the exact
+ * live-evidence plan).
+ */
+export function attachIndependentWorkoutAudit(
+  content: WorkoutPlanContent,
+  fitnessCtx: Record<string, unknown>,
+): void {
+  content.audit = auditWorkoutPlan(content, {
+    location: fitnessCtx.location,
+    experience: fitnessCtx.experience,
+    injuries: fitnessCtx.injuries,
+    lookupExercise: (n) => {
+      // GAP-19: WORLD-AGNOSTIC — no location, so equipmentWorldFor
+      // resolves the full-gym world and the exercise's TRUE equipment
+      // reaches the suitability checks below even when it does not
+      // exist in the client's home world.
+      const hit = findExerciseInLibrary(n);
+      return hit ? { equipment: hit.equipment, level: hit.level, slug: hit.slug } : null;
+    },
+  });
+  // WOR-2 (audit AI-GENERATION-PIPELINES 2026-11-15, P0-9): the
+  // nutrition law now applies to workout plans too — a CRITICAL
+  // audit finding (injury_unsafe / home_equipment_mismatch /
+  // no_training_days…) stamps needs_review instead of being saved
+  // silently. The specific finding codes ride the flags so the
+  // review banner lists exactly WHAT to look at.
+  if (content.audit.findings.some((f) => f.severity === "critical")) {
+    const criticalCodes = Array.from(
+      new Set(content.audit.findings.filter((f) => f.severity === "critical").map((f) => f.code)),
+    );
+    content.needs_review = {
+      flags: [
+        ...(content.needs_review?.flags ?? []),
+        "independent_audit_critical_findings",
+        ...criticalCodes,
+      ],
+      note:
+        content.needs_review?.note ??
+        "تدقيق التمارين المستقل وجد ملاحظات جوهرية (إصابات / تجهيزات) — راجع الخطة قبل الاعتماد.",
+    };
+  }
 }
 
 /**
@@ -1564,7 +1651,7 @@ export function computeNutritionTargets(ctx: ClientContext, overrides?: PlanOver
     }
   }
 
-  return { gender, weightKg, heightCm, ageYears, bmr, tdee, dailyCalories, goalAdjustmentPct, macros: { protein_g: macros.protein_g, carbs_g: macros.carbs_g, fat_g: macros.fat_g }, bodyFatPct, dietType, targetWeightKg, allergyText: String(nutrition.allergies || "").trim(), dislikedText: String(nutrition.disliked || "").trim(), healthText: String(nutrition.health || nutrition.medical_conditions || "").trim(), reviewFlags };
+  return { gender, weightKg, heightCm, ageYears, bmr, tdee, dailyCalories, goalAdjustmentPct, macros: { protein_g: macros.protein_g, carbs_g: macros.carbs_g, fat_g: macros.fat_g }, bodyFatPct, dietType, targetWeightKg, allergyText: String(nutrition.allergies || "").trim(), dislikedText: String(nutrition.disliked || "").trim(), healthText: declaredHealthText(nutrition), reviewFlags };
 }
 
 const ACTIVITY_AR: Record<string, string> = {
@@ -1724,7 +1811,9 @@ function buildNutritionPrompt(
   const neck = nutrition.neck || "";
   const waist = String(nutrition.waist || measurements?.waist || "");
   const hip = nutrition.hip || "";
-  const health = nutrition.health || nutrition.medical_conditions || "";
+  // GAP-18: the canonical health extraction — the real form's `medical`
+  // answer rides the prompt's DATA block like `health` always did.
+  const health = declaredHealthText(nutrition);
 
   // P2-4 (INF-20): the client/coach FREE TEXT (health, allergies,
   // disliked, questionnaire notes, coach notes + requested foods) enters
@@ -2322,6 +2411,14 @@ function equipmentWorldFor(location: unknown): WorkoutEquipment {
  * library) and cross-muscle Arabic hits (the generic «press» keyword sent
  * a chest press to a shoulder day). No evidence → null (honest — the
  * row renders without an image/link instead of a wrong one).
+ *
+ * GAP-19 (fix order 2026-11-17): `location` is OPTIONAL BY DESIGN — the
+ * ENRICHMENT callers pass it (world-respecting links: a home client's
+ * plan never links barbell/cable/machine pages), while the AUDIT caller
+ * (attachIndependentWorkoutAudit) deliberately OMITS it so the lookup
+ * resolves in the full-gym world and learns the exercise's TRUE
+ * equipment — filtering the audit by the client's world was the measured
+ * GAP-19 blindness (gym exercises matched nothing → never audited).
  */
 function findExerciseInLibrary(name: string, location?: unknown): Exercise | null {
   if (!name) return null;
