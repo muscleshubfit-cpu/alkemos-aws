@@ -526,15 +526,15 @@ describe("NUT-1 — meal_alternatives survive generation into the saved content 
               name: "\u0641\u0637\u0648\u0631 \u0628\u062f\u064a\u0644 \u0628\u0627\u0644\u0628\u064a\u0636",
               items: [
                 { food: "\u0628\u064a\u0636 \u0645\u0633\u0644\u0648\u0642", amount: "3 \u062d\u0628\u0629", calories: 210, protein_g: 18 },
-                { food: "\u062c\u0628\u0646 \u0642\u0631\u064a\u0634", amount: "100 \u062c\u0645", calories: 98, protein_g: 11 },
-                { food: "\u0639\u0631\u064a\u0633", amount: "\u0631\u063a\u064a\u0641", calories: 150 },
+                { food: "\u062c\u0628\u0646 \u0642\u0631\u064a\u0634", amount: "100 \u062c\u0645", calories: 198, protein_g: 11 },
+                { food: "\u0639\u0631\u064a\u0633", amount: "\u0631\u063a\u064a\u0641", calories: 250 },
               ],
             },
             {
               name: "\u0641\u0637\u0648\u0631 \u0628\u062f\u064a\u0644 \u0628\u0627\u0644\u0632\u0628\u0627\u062f\u064a",
               items: [
-                { food: "\u0632\u0628\u0627\u062f\u064a \u064a\u0648\u0646\u0627\u0646\u064a", amount: "200 \u062c\u0645", calories: 120, protein_g: 20 },
-                { food: "\u0641\u0627\u0643\u0647\u0629", amount: "\u0631\u063a\u064a\u0641", calories: 180 },
+                { food: "\u0632\u0628\u0627\u062f\u064a \u064a\u0648\u0646\u0627\u0646\u064a", amount: "200 \u062c\u0645", calories: 320, protein_g: 20 },
+                { food: "\u0641\u0627\u0643\u0647\u0629", amount: "\u0631\u063a\u064a\u0641", calories: 330 },
               ],
             },
           ],
@@ -552,9 +552,10 @@ describe("NUT-1 — meal_alternatives survive generation into the saved content 
     const alts = content.meals[0].meal_alternatives;
     expect(alts).toBeDefined();
     expect(alts!).toHaveLength(2);
-    // totals recomputed from items (210+98+150 = 458 / 120+180 = 300)
-    expect(alts![0].total_calories).toBe(458);
-    expect(alts![1].total_calories).toBe(300);
+    // totals recomputed from items (210+198+250 = 658 / 320+330 = 650)
+    // GAP-21: both totals sit inside the ±10% band of the 660-kcal primary
+    expect(alts![0].total_calories).toBe(658);
+    expect(alts![1].total_calories).toBe(650);
     expect(alts![0].items).toHaveLength(3);
   });
 });

@@ -278,6 +278,118 @@ function searchPrograms(query: string): SearchResult[] {
   return results.sort((a, b) => b.relevance - a.relevance).slice(0, 3);
 }
 
+/* ────────────────────────────────────────────────────────────────────────
+ * GAP-20 (S4-6 live measurement 2026-11-17): tool anchors appeared ONLY
+ * on the LITERAL tool-name phrasing — «أعرض علي حاسبة السعرات» scored
+ * 0.75 (name match) while the common natural request shapes scored ZERO
+ * («عايز أحسب احتياجي اليومي من السعرات» · «إحسبلي سعراتي» · «إحسبلي
+ * سعراتي ومؤشر كتلة جسمي»): scoreMatch needs ≥50% of the QUERY's words
+ * to appear inside the short keyword/name text, and natural requests
+ * carry intent verbs (احسب/إحسبلي), attached clitics (سعراتي/احتياجي)
+ * and the «ال» prefix (السعرات) that never appear in the keywords — so
+ * the ratio collapses below 0.5 and no anchor ever renders.
+ *
+ * THE FIX — a tool-INTENT layer (this block ONLY; the generic scoreMatch
+ * and the exercises/foods/programs search are untouched, so existing
+ * behavior cannot shift): each tool declares intent VERBS and DOMAIN
+ * NOUNS (prefix-matched on a lightly-normalized token view) plus
+ * high-precision STRONG phrases. A verb+noun pair (or a strong phrase)
+ * fires at relevance 0.7 — BELOW the literal name match (0.75+) so a
+ * direct name mention still outranks it, comfortably ABOVE the 0.3
+ * anchor threshold in /api/ai/chat.
+ * ──────────────────────────────────────────────────────────────────────── */
+
+/** GAP-20: light normalization for intent matching — NO stop-word removal
+ * (intent verbs ARE the signal scoreMatch's stop list deletes) and no
+ * aggressive clitic surgery; just shape unification + punctuation strip. */
+function intentNormalize(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[\u064B-\u065F\u0670\u0640]/g, "") // diacritics + tatweel
+    .replace(/[إأآ]/g, "ا")
+    .replace(/ى/g, "ي")
+    .replace(/ة/g, "ه")
+    .replace(/[؟?!.،,؛:()«»"'`\-\u2013\u2014]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+/** GAP-20: the token view — word-level «ال» prefix strip so «السعرات»
+ * matches the «سعرات» noun (the measured breaker), keeping every token
+ * that survives normalization. */
+function intentTokens(text: string): string[] {
+  return intentNormalize(text)
+    .split(" ")
+    .map((w) => (w.length > 3 && w.startsWith("ال") ? w.slice(2) : w))
+    .filter(Boolean);
+}
+
+/** True when any token equals/starts-with a signal prefix (≥3 chars so
+ * Arabic clitics like «سعراتي» and «احسبلي» still prefix-match their
+ * nouns/verbs: احسبلي ⊃ احسب، سعراتي ⊃ سعرات). Multi-word signals
+ * ("body fat", "figure out") match the joined token stream instead. */
+function hasSignal(tokens: string[], prefixes: string[]): boolean {
+  const flat = tokens.join(" ");
+  for (const p of prefixes) {
+    if (p.includes(" ")) {
+      if (flat.includes(p)) return true;
+      continue;
+    }
+    for (const t of tokens) {
+      if (t === p || (p.length >= 3 && t.startsWith(p))) return true;
+    }
+  }
+  return false;
+}
+
+/** GAP-20: the per-tool intent table (bilingual, Egyptian-tolerant). */
+const TOOL_INTENTS: Record<string, { verbs: string[]; nouns: string[]; strong: string[] }> = {
+  "calorie-calculator": {
+    verbs: ["احسب", "حساب", "هحسب", "نحسب", "ا حسب", "calculate", "calc", "compute", "determine", "figure out", "work out"],
+    nouns: ["سعر", "كالوري", "احتياج", "calorie", "calories", "kcal", "tdee", "bmr"],
+    strong: ["احتياجي اليومي", "احتياج اليومي", "احتياجك اليومي", "daily calories", "my calories", "calorie needs", "my tdee", "my bmr", "maintenance calories"],
+  },
+  "bmi-calculator": {
+    verbs: ["احسب", "حساب", "هحسب", "نحسب", "calculate", "calc", "compute", "determine"],
+    nouns: ["كتله", "bmi", "mass index"],
+    strong: ["مؤشر كتله", "وزني المثالي", "وزني مثالي", "وزنك المثالي", "ideal weight", "my bmi", "bmi بتاعي"],
+  },
+  "macro-calculator": {
+    verbs: ["احسب", "حساب", "هحسب", "نحسب", "وزع", "قسم", "وزّع", "calculate", "calc", "compute", "split", "distribute"],
+    nouns: ["ماكرو", "macro", "macros", "بروتين وكارب"],
+    strong: ["توزيع ماكرو", "تقسيم سعرات", "توزيع سعرات", "توزيع الماكرو", "split my macros", "macro split", "macro distribution", "my macros"],
+  },
+  "body-fat-calculator": {
+    verbs: ["احسب", "حساب", "هحسب", "نحسب", "قيس", "calculate", "calc", "compute", "measure", "determine"],
+    nouns: ["نسبه دهون", "دهون الجسم", "body fat", "bodyfat", "adipos"],
+    strong: ["نسبه الدهون", "نسبة الدهون", "دهون الجسم", "body fat percentage", "my body fat", "نسبه دهوني"],
+  },
+};
+
+/** The relevance a fired intent carries — below the literal name match,
+ * above the anchor threshold (see the GAP-20 block comment). */
+const TOOL_INTENT_RELEVANCE = 0.7;
+
+/** GAP-20: the intent verdict for one tool — 0 when the message shows no
+ * tool-intent shape. Fires on (verb AND domain noun) OR a strong phrase
+ * (strong phrases match the FLAT normalized text — the «ال» strip is a
+ * token-level aid for the verb/noun signals, not for exact phrases). */
+function toolIntentScore(message: string, slug: string): number {
+  const intent = TOOL_INTENTS[slug];
+  if (!intent) return 0;
+  const flat = intentNormalize(message);
+  if (!flat) return 0;
+  if (intent.strong.some((phrase) => flat.includes(intentNormalize(phrase)))) {
+    return TOOL_INTENT_RELEVANCE;
+  }
+  const tokens = intentTokens(message);
+  if (tokens.length === 0) return 0;
+  if (hasSignal(tokens, intent.verbs) && hasSignal(tokens, intent.nouns)) {
+    return TOOL_INTENT_RELEVANCE;
+  }
+  return 0;
+}
+
 /**
  * Search tools by name or keywords.
  */
@@ -292,7 +404,11 @@ function searchTools(query: string): SearchResult[] {
       scoreMatch(query, tool.nameAr),
       scoreMatch(query, tool.nameEn),
     );
-    const score = Math.max(keywordScore, nameScore);
+    // GAP-20: the natural-phrasing intent layer — ADDITIVE only (the
+    // literal keyword/name matching above is untouched), so a tool whose
+    // name is mentioned verbatim still outranks an intent-shaped ask.
+    const intentScore = toolIntentScore(query, tool.slug);
+    const score = Math.max(keywordScore, nameScore, intentScore);
 
     if (score > 0.3) {
       results.push({

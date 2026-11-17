@@ -156,6 +156,15 @@ export const PLAN_AI_SANITY = {
   /** NUT-1: items inside one whole-meal alternative (mirrors the
    *  normalizer's per-alternative item slice in plan-generator.ts). */
   alternativeItemsMax: 12,
+  /** GAP-21 (S4-1/NUT-1 live 2026-11-17, plan a2fc0c91): a whole-meal
+   *  alternative must close within ±10% of its PRIMARY meal's recomputed
+   *  calories — the prompt's own promise («كل بديل بحصة سعرات مكافئة
+   *  ±10%»), now a GATE LAW checked on every alternative's recomputed
+   *  total instead of trusted from the model's instructions. The live
+   *  measured breach: a 1257-kcal substitute for a 345-kcal meal (+264%)
+   *  and a 100-kcal one for a 365-kcal meal (−73%) — 6/8 substitutes
+   *  outside even ±25%. */
+  alternativeCalorieTolerance: 0.1,
   /** Workout day bounds. */
   dayExerciseMin: 3,
   dayExerciseMax: 8,
@@ -179,6 +188,64 @@ export const PLAN_AI_SANITY = {
    * design (one day band, every surface). */
   dayBudgetDriftTolerance: 0.25,
 } as const;
+
+/* ─────────────── NUT-2/GAP-22: macro↔calorie closure law (SHARED) ───────────────
+ *
+ * GAP-22 (S4-1 wave-2 live 2026-11-17, plan 347c88c4): the LOCAL
+ * generation path consumed the coach's macro override VERBATIM
+ * (ai-local.ts «coach override WIN»), so a {3000g protein, 0, 0} payload
+ * shipped macros whose Atwater sum (12,000 kcal) was 575.6% off the
+ * 1957-kcal day — while the AI path's computeMacrosForDiet enforced the
+ * ±10% closure on the very same numbers. The law below now lives in
+ * THIS pure module so BOTH paths import the SAME implementation (one
+ * law, every engine — the platform's unification discipline).
+ * ──────────────────────────────────────────────────────────────────────── */
+
+/**
+ * NUT-2/GAP-22: proportional Atwater rescale of a macro triple onto a
+ * calorie target — keeps the ratio, enforces closure (the round-trip
+ * lands within a fraction of a percent of target). Pure + total:
+ * unusable inputs (non-finite / non-positive) return the input verbatim
+ * (the caller's validity checks decide what happens then).
+ */
+export function enforceMacroClosure(
+  macros: { protein_g: number; carbs_g: number; fat_g: number },
+  dailyCalories: number,
+): { protein_g: number; carbs_g: number; fat_g: number } {
+  const kcalFromMacros = macros.protein_g * 4 + macros.carbs_g * 4 + macros.fat_g * 9;
+  if (
+    !Number.isFinite(kcalFromMacros) ||
+    kcalFromMacros <= 0 ||
+    !Number.isFinite(dailyCalories) ||
+    dailyCalories <= 0
+  ) {
+    return macros;
+  }
+  const drift = Math.abs(kcalFromMacros - dailyCalories) / dailyCalories;
+  if (drift <= PLAN_AI_SANITY.macroClosureTolerance) return macros;
+  const k = dailyCalories / kcalFromMacros;
+  return {
+    protein_g: Math.max(1, Math.round(macros.protein_g * k)),
+    carbs_g: Math.max(1, Math.round(macros.carbs_g * k)),
+    fat_g: Math.max(1, Math.round(macros.fat_g * k)),
+  };
+}
+
+/**
+ * NUT-2/GAP-22: the closure drift of a macro triple vs a calorie target
+ * (the audit's independent-comparison number — reused by plan-audit
+ * findings and the review-flag decision). Null when no verdict exists.
+ */
+export function macroClosureDriftPct(
+  macros: { protein_g: number; carbs_g: number; fat_g: number },
+  dailyCalories: number,
+): number | null {
+  const kcalFromMacros = macros.protein_g * 4 + macros.carbs_g * 4 + macros.fat_g * 9;
+  if (!Number.isFinite(kcalFromMacros) || kcalFromMacros <= 0 || !Number.isFinite(dailyCalories) || dailyCalories <= 0) {
+    return null;
+  }
+  return Math.round(((kcalFromMacros - dailyCalories) / dailyCalories) * 1000) / 10;
+}
 
 /* ─────────────────────────── Coercion helpers ─────────────────────────── */
 
@@ -981,6 +1048,41 @@ function recomputeMealTotals(meal: AIMealLike): AIMealLike {
   };
 }
 
+/**
+ * GAP-21 (S4-1/NUT-1 live 2026-11-17): the ±10% calorie-equivalence
+ * verdict for ONE whole-meal alternative vs its primary meal — both
+ * sides are RECOMPUTED integer totals (model-provided totals are never
+ * trusted anywhere in this gate).
+ *
+ * Edge cases (the gap's «عالج القيم المفقودة والحالات الحدّية دون
+ * قبول بدائل غير صالحة»):
+ *   - a missing/non-finite value on either side can never PROVE
+ *     equivalence → NOT equivalent (dropped, never accepted);
+ *   - a non-positive total (a primary the gate cannot price, or an
+ *     alternative whose items carried no usable calories) → NOT
+ *     equivalent — an unpriced substitute is an invalid substitute;
+ *   - the 0.01 kcal slack is float-artifact headroom ONLY (the compared
+ *     values are integers; exactly ±10.0% passes, anything beyond it
+ *     fails — mirroring the keto gate's 0.05g rounding pin).
+ */
+export function alternativeCaloriesEquivalent(
+  primaryTotalCalories: number,
+  alternativeTotalCalories: number,
+): boolean {
+  if (
+    !Number.isFinite(primaryTotalCalories) ||
+    !Number.isFinite(alternativeTotalCalories) ||
+    primaryTotalCalories <= 0 ||
+    alternativeTotalCalories <= 0
+  ) {
+    return false;
+  }
+  return (
+    Math.abs(alternativeTotalCalories - primaryTotalCalories) <=
+    primaryTotalCalories * PLAN_AI_SANITY.alternativeCalorieTolerance + 0.01
+  );
+}
+
 /** Unwrap common model wrappers ({plan:{meals}}, {day_plan:{meals}}…). */
 function unwrapMeals(raw: unknown): unknown[] | null {
   if (!raw || typeof raw !== "object") return null;
@@ -1133,6 +1235,21 @@ export function validateNutritionPlanAIOutput(
     // member) rather than shipped or allowed to fail the whole plan,
     // because alternatives are optional enrichment capped at two while
     // the primary meal remains the gate's product.
+    //
+    // GAP-21 (2026-11-18): the equivalence verdict needs the PRIMARY
+    // meal's own recomputed total, so the primary is rebuilt FIRST and
+    // every surviving alternative is compared against it (±10% — see
+    // alternativeCaloriesEquivalent).
+    const primaryMeal = recomputeMealTotals({
+      name,
+      time: str(meal.time, 60) || undefined,
+      notes: str(meal.notes, 300) || undefined,
+      items,
+      total_calories: 0,
+      ...(modelTotalProtein !== null && modelTotalProtein > 0
+        ? { total_protein_g: modelTotalProtein }
+        : {}),
+    });
     const rawAlts = Array.isArray(meal.meal_alternatives) ? meal.meal_alternatives : [];
     const meal_alternatives: AIMealAlternativeLike[] = [];
     for (const rawAlt of rawAlts.slice(0, PLAN_AI_SANITY.alternativesPerMealMax)) {
@@ -1166,28 +1283,27 @@ export function validateNutritionPlanAIOutput(
       if (altViolated || altItems.length === 0) continue; // dropped, not shipped
       const altCarbs = ketoMealCarbViolation(name, altItems, constraints);
       if (altCarbs) continue; // a keto plan's alternative may not spend past the ceiling either
-      meal_alternatives.push(
-        recomputeMealTotals({
-          name: str(alt.name, PLAN_AI_SANITY.mealNameMax) || "بديل",
-          items: altItems,
-          total_calories: 0,
-        }) as AIMealAlternativeLike,
-      );
+      const altMeal = recomputeMealTotals({
+        name: str(alt.name, PLAN_AI_SANITY.mealNameMax) || "بديل",
+        items: altItems,
+        total_calories: 0,
+      }) as AIMealAlternativeLike;
+      // GAP-21: the calorie-equivalence gate — an alternative outside
+      // ±10% of the primary meal's recomputed total is DROPPED, exactly
+      // like a constraint-violating one (an honest skip, never an
+      // out-of-band substitute shipped to the member). A non-positive
+      // total on either side can never PROVE equivalence → dropped too.
+      if (!alternativeCaloriesEquivalent(primaryMeal.total_calories, altMeal.total_calories)) {
+        continue;
+      }
+      meal_alternatives.push(altMeal);
     }
     meals.push(
-      recomputeMealTotals({
-        name,
-        time: str(meal.time, 60) || undefined,
-        notes: str(meal.notes, 300) || undefined,
-        items,
-        total_calories: 0,
-        ...(modelTotalProtein !== null && modelTotalProtein > 0
-          ? { total_protein_g: modelTotalProtein }
-          : {}),
-        // NUT-1: the validated alternatives ride the meal into the
-        // normalizer (absent when the model sent none / all were dropped).
-        ...(meal_alternatives.length > 0 ? { meal_alternatives } : {}),
-      }),
+      // NUT-1: the validated alternatives ride the meal into the
+      // normalizer (absent when the model sent none / all were dropped).
+      meal_alternatives.length > 0
+        ? { ...primaryMeal, meal_alternatives }
+        : primaryMeal,
     );
   }
 

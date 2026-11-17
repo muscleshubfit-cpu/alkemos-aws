@@ -149,7 +149,11 @@ describe("P0-1 — the local engine is diet/targets/constraints aware", () => {
     });
     const plan = generateNutritionPlan(ketoCtx, {
       dailyCalories: 1800,
-      macros: { protein_g: 190, carbs_g: 36, fat_g: 130 },
+      // GAP-22: the passed triple must CLOSE on the 1800-kcal target
+      // (±10%) to ride verbatim — {190, 36, 111} is the actual
+      // computeMacrosForDiet keto output for this shape (2074-kcal
+      // non-closing triples are now ratio-rescaled by the unified law).
+      macros: { protein_g: 190, carbs_g: 36, fat_g: 111 },
       dietType: "keto",
       mealsCount: 3,
       constraints: ketoConstraints,

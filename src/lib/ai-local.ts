@@ -15,6 +15,7 @@ import { classifyDietText, type DietType } from "@/lib/diet-types";
 import {
   buildClientConstraints,
   checkItemConstraints,
+  enforceMacroClosure,
   PLAN_AI_SANITY,
   type ClientItemConstraints,
 } from "@/lib/plan-ai-validation";
@@ -730,6 +731,37 @@ function passesArabContext(food: FoodItem, dietType?: DietType | null): boolean 
  return dietType === "vegan" || dietType === "vegetarian";
 }
 
+/**
+ * GAP-22 (S4-1 wave-2 live 2026-11-17): validate + calibrate a passed
+ * macro override for the LOCAL engine — returns null when the override is
+ * not a usable COMPLETE triple (partial / non-finite / non-positive
+ * values are NEVER accepted — the engine's diet-aware defaults take
+ * over, exactly like the AI path's computeMacrosForDiet). A complete
+ * triple is calibrated onto the day's calorie target with the SHARED
+ * closure law (enforceMacroClosure from plan-ai-validation — the same
+ * function the AI path uses; ratio preserved, ±10% closure enforced).
+ */
+function calibrateLocalMacroOverride(
+ macros: { protein_g: number; carbs_g: number; fat_g: number } | undefined,
+ dailyCalories: number,
+): { protein_g: number; carbs_g: number; fat_g: number } | null {
+ if (!macros) return null;
+ const p = Number(macros.protein_g);
+ const c = Number(macros.carbs_g);
+ const f = Number(macros.fat_g);
+ if (!Number.isFinite(p) || !Number.isFinite(c) || !Number.isFinite(f)) return null;
+ if (p <= 0 || c <= 0 || f <= 0) return null;
+ // No valid calorie target to close on → the override cannot be
+ // calibrated, so it is not accepted (the diet-aware defaults answer).
+ if (!Number.isFinite(dailyCalories) || dailyCalories <= 0) return null;
+ const closed = enforceMacroClosure({ protein_g: p, carbs_g: c, fat_g: f }, dailyCalories);
+ return {
+ protein_g: Math.max(1, Math.round(closed.protein_g)),
+ carbs_g: Math.max(1, Math.round(closed.carbs_g)),
+ fat_g: Math.max(1, Math.round(closed.fat_g)),
+ };
+}
+
 export function generateNutritionPlan(ctx: ClientContext, opts?: LocalNutritionOptions): NutritionContent {
  const nutrition = loose(ctx.nutrition);
  const fitness = loose(ctx.fitness);
@@ -786,11 +818,22 @@ export function generateNutritionPlan(ctx: ClientContext, opts?: LocalNutritionO
  }
 
  let proteinG: number, fatG: number, carbsG: number;
- if (opts?.macros && opts.macros.protein_g > 0) {
- // The server's diet-aware macros (coach override > computeMacrosForDiet) WIN.
- proteinG = Math.round(opts.macros.protein_g);
- carbsG = Math.round(opts.macros.carbs_g);
- fatG = Math.round(opts.macros.fat_g);
+ // GAP-22 (S4-1 wave-2/NUT-2 live 2026-11-17, plan 347c88c4): the local
+ // engine used to take the passed macro override VERBATIM («coach
+ // override WIN» — ai-local took any positive protein with no questions),
+ // so the measured {protein_g:3000, carbs_g:0, fat_g:0} payload shipped
+ // macros summing 12,000 kcal against a 1957-kcal day. THE LAW (unified
+ // with the AI path's computeMacrosForDiet, the very same closure
+ // function): a macro override is honored ONLY as a COMPLETE triple
+ // (all three finite and > 0 — partial/non-finite/non-positive values
+ // fall through to the diet-aware defaults, never accepted), and a
+ // complete triple is CALIBRATED onto the day's calorie target — the
+ // coach's RATIO is authoritative, closure within ±10% is enforced.
+ const calibratedOverride = calibrateLocalMacroOverride(opts?.macros, dailyCalories);
+ if (calibratedOverride) {
+ proteinG = calibratedOverride.protein_g;
+ carbsG = calibratedOverride.carbs_g;
+ fatG = calibratedOverride.fat_g;
  } else if (dietType === "keto") {
  // Standalone keto band — mirrors plan-generator.computeMacrosForDiet
  // (single-source note: the resolved path always passes opts.macros).
@@ -850,9 +893,12 @@ export function generateNutritionPlan(ctx: ClientContext, opts?: LocalNutritionO
  // veg/dairy draws accumulate past it (measured worst draw: 79g). The
  // budget = the server-resolved macro target when provided (clamped to
  // the published band), spent ACROSS meals as items are built.
+ // GAP-22: the budget now consumes the RESOLVED carbsG (calibrated
+ // override > diet-aware default) — the raw opts value (a partial
+ // override's 0g) must never set the day's band.
  const dayCarbBudget =
  dietType === "keto"
- ? Math.max(20, Math.min(50, Math.round(opts?.macros?.carbs_g ?? (dailyCalories * 0.08) / 4)))
+ ? Math.max(20, Math.min(50, Math.round(Number.isFinite(carbsG) && carbsG > 0 ? carbsG : (dailyCalories * 0.08) / 4)))
  : Number.POSITIVE_INFINITY;
 
  // Shuffle the SAFE pools for variety — different each generation, but

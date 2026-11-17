@@ -119,10 +119,57 @@ describe("normalizeNutritionPlan — server numbers win EVERYWHERE (item 7)", ()
     const noTotals = {
       ...modelPlan,
       meals: [
-        { name: "الفطار", items: [{ food: "بيض", amount: "3", calories: 300 }, { food: "شوفان", amount: "40 جم", calories: 150 }] },
+        { name: "الفطور", items: [{ food: "بيض", amount: "3", calories: 300 }, { food: "شوفان", amount: "40 جم", calories: 150 }] },
       ],
     };
     const out = normalizeNutritionPlan(noTotals, undefined, targets);
     expect(out.meals_total_calories).toBe(450);
+  });
+
+  /* ── GAP-21 (S4-1/NUT-1 live 2026-11-17): the ±10% calorie-equivalence
+   * law rides the SINGLE save-shaping chokepoint — the AI gate enforces it
+   * on generated output, and the normalizer enforces it on EVERY surface
+   * it shapes (coach-pasted json-direct, legacy re-normalization). ── */
+
+  it("GAP-21: an out-of-band substitute is dropped at the normalize chokepoint too (the live 1257-for-345 class)", () => {
+    const pasted = {
+      ...modelPlan,
+      meals: [
+        {
+          name: "الفطار",
+          items: [{ food: "بيض", amount: "3 بيضات", calories: 305 }, { food: "جبن قريش", amount: "50 جم", calories: 40 }],
+          meal_alternatives: [
+            // 305 + 40 = 345 primary → ±10% band [310.5, 379.5]:
+            // 360 rides, 1257 and 100 drop (the live incident's numbers).
+            { name: "بديل متكافئ", items: [{ food: "زبادي يوناني", amount: "200 جم", calories: 360 }] },
+            { name: "سموذي متضخم", items: [{ food: "موز", amount: "3", calories: 300 }, { food: "عسل", amount: "ملعقتان", calories: 170 }, { food: "زبدة فول سوداني", amount: "ملعقتان", calories: 380 }, { food: "شوفان", amount: "80 جم", calories: 300 }, { food: "حليب كامل الدسم", amount: "كوبان", calories: 107 }] },
+            { name: "بديل منهار", items: [{ food: "خيار", amount: "2", calories: 100 }] },
+          ],
+        },
+      ],
+    };
+    const out = normalizeNutritionPlan(pasted);
+    const alts = (out.meals[0] as { meal_alternatives?: Array<{ name: string; total_calories: number }> }).meal_alternatives;
+    expect(alts).toBeDefined();
+    expect(alts!).toHaveLength(1);
+    expect(alts![0].name).toBe("بديل متكافئ");
+    expect(alts![0].total_calories).toBe(360);
+  });
+
+  it("GAP-21: a meal the normalizer cannot price (total ≤ 0) keeps NO alternatives", () => {
+    const unpriced = {
+      ...modelPlan,
+      meals: [
+        {
+          name: "الفطار",
+          items: [{ food: "صنف مجهول", amount: "كمية", calories: 0 }],
+          meal_alternatives: [
+            { name: "بديل", items: [{ food: "زبادي", amount: "200 جم", calories: 320 }] },
+          ],
+        },
+      ],
+    };
+    const out = normalizeNutritionPlan(unpriced);
+    expect((out.meals[0] as { meal_alternatives?: unknown }).meal_alternatives).toBeUndefined();
   });
 });

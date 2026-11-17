@@ -92,6 +92,9 @@ import {
   buildClientConstraints,
   constraintsTextViolation,
   hasItemConstraints,
+  alternativeCaloriesEquivalent,
+  enforceMacroClosure,
+  macroClosureDriftPct,
   PLAN_AI_SANITY,
   type AIMealLike,
   type ClientItemConstraints,
@@ -1482,45 +1485,11 @@ export function computeMacrosForDiet(
   return { protein_g: proteinG, carbs_g: carbsG, fat_g: fatG };
 }
 
-/** NUT-2: proportional Atwater rescale of a macro triple onto a calorie
- *  target — keeps the ratio, enforces closure (the round-trip lands within
- *  a fraction of a percent of target). Pure + total. */
-export function enforceMacroClosure(
-  macros: { protein_g: number; carbs_g: number; fat_g: number },
-  dailyCalories: number,
-): { protein_g: number; carbs_g: number; fat_g: number } {
-  const kcalFromMacros = macros.protein_g * 4 + macros.carbs_g * 4 + macros.fat_g * 9;
-  if (
-    !Number.isFinite(kcalFromMacros) ||
-    kcalFromMacros <= 0 ||
-    !Number.isFinite(dailyCalories) ||
-    dailyCalories <= 0
-  ) {
-    return macros;
-  }
-  const drift = Math.abs(kcalFromMacros - dailyCalories) / dailyCalories;
-  if (drift <= PLAN_AI_SANITY.macroClosureTolerance) return macros;
-  const k = dailyCalories / kcalFromMacros;
-  return {
-    protein_g: Math.max(1, Math.round(macros.protein_g * k)),
-    carbs_g: Math.max(1, Math.round(macros.carbs_g * k)),
-    fat_g: Math.max(1, Math.round(macros.fat_g * k)),
-  };
-}
-
-/** NUT-2: the closure drift of a macro triple vs a calorie target (the
- *  audit's independent-comparison number — reused by plan-audit findings
- *  and the review-flag decision). */
-export function macroClosureDriftPct(
-  macros: { protein_g: number; carbs_g: number; fat_g: number },
-  dailyCalories: number,
-): number | null {
-  const kcalFromMacros = macros.protein_g * 4 + macros.carbs_g * 4 + macros.fat_g * 9;
-  if (!Number.isFinite(kcalFromMacros) || kcalFromMacros <= 0 || !Number.isFinite(dailyCalories) || dailyCalories <= 0) {
-    return null;
-  }
-  return Math.round(((kcalFromMacros - dailyCalories) / dailyCalories) * 1000) / 10;
-}
+/** NUT-2/GAP-22: the closure law moved to the PURE shared module
+ * (plan-ai-validation.ts) so the LOCAL engine (ai-local.ts) imports the
+ * SAME implementation — one law, both generation paths. Re-exported here
+ * to keep this module's public surface identical (tests + callers). */
+export { enforceMacroClosure, macroClosureDriftPct };
 
 export function computeNutritionTargets(ctx: ClientContext, overrides?: PlanOverrides): NutritionTargets {
   const nutrition = loose(ctx.nutrition);
@@ -1621,9 +1590,24 @@ export function computeNutritionTargets(ctx: ClientContext, overrides?: PlanOver
   // low-carb floor corner cases where 2g/kg protein alone exceeds the
   // whole budget) stamps macro_closure_violation — the plan ships with
   // the needs_review banner instead of three contradicting numbers.
-  if (overrides?.macros && hasNumInput(overrides.macros.protein_g) && hasNumInput(overrides.macros.carbs_g) && hasNumInput(overrides.macros.fat_g)) {
-    const drift = macroClosureDriftPct(overrides.macros, dailyCalories);
-    if (drift !== null && Math.abs(drift) > PLAN_AI_SANITY.macroClosureTolerance * 100) {
+  // GAP-22 (2026-11-18): a PARTIAL override (any positive component with
+  // a non-positive sibling — the live measured {3000,0,0}) can never ride
+  // verbatim (the engines only honor COMPLETE triples), so it stamps the
+  // same macro_closure_adjusted flag — the coach SEES that his sent
+  // numbers were adjusted instead of wondering where they went (the
+  // evidence's «بلا قياس/علم» complaint).
+  if (overrides?.macros) {
+    const sentProtein = hasNumInput(overrides.macros.protein_g);
+    const sentCarbs = hasNumInput(overrides.macros.carbs_g);
+    const sentFat = hasNumInput(overrides.macros.fat_g);
+    const complete = sentProtein && sentCarbs && sentFat;
+    const partial = !complete && (sentProtein || sentCarbs || sentFat);
+    if (complete) {
+      const drift = macroClosureDriftPct(overrides.macros, dailyCalories);
+      if (drift !== null && Math.abs(drift) > PLAN_AI_SANITY.macroClosureTolerance * 100) {
+        reviewFlags.push("macro_closure_adjusted");
+      }
+    } else if (partial) {
       reviewFlags.push("macro_closure_adjusted");
     }
   }
@@ -1686,7 +1670,7 @@ const NUTRITION_SYSTEM_PROMPT = `أنت أخصائي تغذية رياضية م�
 - لكل صنف: اذكر الكمية بالجرام (مثلًا "150 جم") والسعرات بدقة.
 - استبدل العناصر غير المرغوبة ببدائل مناسبة.
 - اذكر بدائل لكل صنف رئيسي (protein/carb) ليختار منها العميل.
-- لكل وجبة: أضف حقل "meal_alternatives" يحتوي بالضبط على وجبتين بديلتين كاملتين (كل بديل بحصة سعرات مكافئة ±10%).
+- لكل وجبة: أضف حقل "meal_alternatives" يحتوي بالضبط على وجبتين بديلتين كاملتين (كل بديل بحصة سعرات مكافئة ±10% — حدود مفروضة آليًا: البوابة تعيد حساب سعرات كل بديل من أصنافه وتُسقط أي بديل خارج ±10% من سعرات الوجبة الأصلية).
 - احسب المجموع الكلي للسعرات والبروتين لكل وجبة.
 
 ⚠ قانون التنويع الإلزامي (PHASE 62، كما عُدّل بأمر المالك 2026-10-25):
@@ -2161,8 +2145,16 @@ export function normalizeNutritionPlan(
         : items.reduce((s, i) => s + (i.protein_g || 0), 0);
     // Owner directive #2: keep up to TWO structured whole-meal alternatives,
     // normalizing each alternative's totals exactly like top-level meals.
+    // GAP-21 (2026-11-18): the ±10% calorie-equivalence law rides the
+    // SINGLE save-shaping chokepoint too — the AI gate already enforces it
+    // on generated output, but this normalizer also shapes coach-pasted
+    // JSON (json-direct) and legacy re-normalization, so an out-of-band
+    // substitute (the live class: 1257 kcal for a 345-kcal meal) is
+    // DROPPED here as well, never persisted. A meal the normalizer cannot
+    // price (total ≤ 0) keeps NO alternatives — an unpriced primary cannot
+    // prove any equivalence.
     const meal_alternatives = Array.isArray(m.meal_alternatives)
-      ? (m.meal_alternatives as unknown[]).slice(0, 2).map((rawAlt) => {
+      ? (m.meal_alternatives as unknown[]).slice(0, 2).flatMap((rawAlt) => {
           const alt = (rawAlt ?? {}) as Record<string, unknown>;
           const altItems = Array.isArray(alt.items)
             ? (alt.items as unknown[]).slice(0, 12).map((rawIt) => {
@@ -2175,11 +2167,13 @@ export function normalizeNutritionPlan(
                 };
               })
             : [];
-          return {
+          const altTotal = altItems.reduce((s, i) => s + i.calories, 0);
+          if (!alternativeCaloriesEquivalent(total_calories, altTotal)) return [];
+          return [{
             name: String(alt.name || "بديل"),
             items: altItems,
-            total_calories: altItems.reduce((s, i) => s + i.calories, 0),
-          };
+            total_calories: altTotal,
+          }];
         })
       : undefined;
     return {
@@ -2215,13 +2209,28 @@ export function normalizeNutritionPlan(
       typeof plan.daily_calories === "number" ? plan.daily_calories : 0;
   }
 
+  // GAP-22 (S4-1 wave-2 live 2026-11-17, plan 347c88c4): the raw coach
+  // override used to ride VERBATIM into the saved card here (per-field
+  // ||-chains) — the measured incident: overrides.macros={3000,0,0} saved
+  // protein 3000g (12,000 kcal by Atwater) against daily_calories 1957,
+  // silently overwriting the closure rescale computeMacrosForDiet had
+  // ALREADY applied to targets.macros. THE LAW (unified with the AI
+  // path): when server targets exist, the saved macros ARE the closed
+  // targets.macros — the override already entered computeMacrosForDiet
+  // (rescaled when it breached ±10% closure, ignored when partial /
+  // non-positive), and the raw values never re-enter the saved card.
+  // Targets-less callers (legacy / coach-paste echo) keep the per-field
+  // pass-through exactly as before.
   const planMacros = (plan.macros ?? {}) as Record<string, unknown>;
-  const protein_g =
-    (overrides?.macros?.protein_g || targets?.macros.protein_g || numOr(planMacros.protein_g, 0)) || 0;
-  const carbs_g =
-    (overrides?.macros?.carbs_g || targets?.macros.carbs_g || numOr(planMacros.carbs_g, 0)) || 0;
-  const fat_g =
-    (overrides?.macros?.fat_g || targets?.macros.fat_g || numOr(planMacros.fat_g, 0)) || 0;
+  const protein_g = targets
+    ? targets.macros.protein_g
+    : (numOr(overrides?.macros?.protein_g, 0) || numOr(planMacros.protein_g, 0) || 0);
+  const carbs_g = targets
+    ? targets.macros.carbs_g
+    : (numOr(overrides?.macros?.carbs_g, 0) || numOr(planMacros.carbs_g, 0) || 0);
+  const fat_g = targets
+    ? targets.macros.fat_g
+    : (numOr(overrides?.macros?.fat_g, 0) || numOr(planMacros.fat_g, 0) || 0);
 
   const planAnalysis = (plan.data_analysis ?? null) as Record<string, unknown> | null;
   const data_analysis = targets

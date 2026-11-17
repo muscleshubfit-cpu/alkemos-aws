@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
+  alternativeCaloriesEquivalent,
   coerceNumber,
   normalizeAIItem,
   validateNutritionPlanAIOutput,
@@ -351,9 +352,11 @@ describe("NUT-1 — meal_alternatives ride the full-plan gate (audit P0-3)", () 
   });
 
   it("valid alternatives pass through with RECOMPUTED totals (the paid feature is alive)", () => {
+    // goodMeal("الفطور", 200) → primary total = 200 + 260 + 80 = 540;
+    // the ±10% band (GAP-21) is [486, 594] — 530 and 500 ride.
     const plan = {
       meals: [
-        { ...goodMeal("الفطور", 200), meal_alternatives: [alt("بديل الفطور", 300), alt("بديل ثانٍ", 250)] },
+        { ...goodMeal("الفطور", 200), meal_alternatives: [alt("بديل الفطور", 450), alt("بديل ثانٍ", 420)] },
         goodMeal("الغداء", 300),
         goodMeal("العشاء", 250),
       ],
@@ -365,16 +368,16 @@ describe("NUT-1 — meal_alternatives ride the full-plan gate (audit P0-3)", () 
       expect(alts).toBeDefined();
       expect(alts!).toHaveLength(2);
       // totals recomputed from items — the model's own numbers never trusted
-      expect(alts![0].total_calories).toBe(300 + 80);
-      expect(alts![1].total_calories).toBe(250 + 80);
+      expect(alts![0].total_calories).toBe(450 + 80);
+      expect(alts![1].total_calories).toBe(420 + 80);
     }
   });
 
   it("capped at TWO per meal (owner directive #2) and more than 12 items per alternative are dropped", () => {
-    const fat = { ...alt("بديل منتفخ", 100), items: Array.from({ length: 13 }, () => ({ food: "صنف", amount: "1 جم", calories: 10 })) };
+    const fat = { ...alt("بديل منتفخ", 450), items: Array.from({ length: 13 }, () => ({ food: "صنف", amount: "1 جم", calories: 50 })) };
     const plan = {
       meals: [
-        { ...goodMeal("الفطور", 200), meal_alternatives: [alt("بديل 1", 300), alt("بديل 2", 250), alt("بديل 3", 260), fat] },
+        { ...goodMeal("الفطور", 200), meal_alternatives: [alt("بديل 1", 450), alt("بديل 2", 420), alt("بديل 3", 430), fat] },
         goodMeal("الغداء", 300),
         goodMeal("العشاء", 250),
       ],
@@ -399,6 +402,8 @@ describe("NUT-1 — meal_alternatives ride the full-plan gate (audit P0-3)", () 
         { food: "سلطة خضراء", amount: "طبق", calories: 80 },
       ],
     });
+    // ketoMeal("الفطور", 200) → primary total 350; the ±10% band (GAP-21)
+    // is [315, 385] — the good alternative totals 240 + 80 = 320 and rides.
     const badAlt = {
       name: "بديل مخالف",
       items: [{ food: "أرز أبيض", amount: "200 جم", calories: 260 }],
@@ -406,7 +411,7 @@ describe("NUT-1 — meal_alternatives ride the full-plan gate (audit P0-3)", () 
     const goodAlt = {
       name: "بديل سليم",
       items: [
-        { food: "تونة مسحورة", amount: "150 جم", calories: 180, protein_g: 40, fat_g: 2 },
+        { food: "تونة مسحورة", amount: "150 جم", calories: 240, protein_g: 40, fat_g: 2 },
         { food: "سلطة خضراء", amount: "طبق", calories: 80 },
       ],
     };
@@ -427,6 +432,88 @@ describe("NUT-1 — meal_alternatives ride the full-plan gate (audit P0-3)", () 
       expect(alts).toHaveLength(1);
       expect(alts[0].name).toBe("بديل سليم");
     }
+  });
+});
+
+/* ── GAP-21 (S4-1/NUT-1 live 2026-11-17, plan a2fc0c91): the ±10%
+ * calorie-equivalence gate for whole-meal alternatives — the prompt always
+ * promised «حصة سعرات مكافئة ±10%» but NOTHING checked it; the live plan
+ * shipped a 1257-kcal substitute for a 345-kcal meal (+264%) and a
+ * 100-kcal one for a 365-kcal meal (−73%). These canaries pin the gate
+ * law on both sides of the band and every edge case. ── */
+
+describe("GAP-21 — meal_alternatives calorie equivalence (±10%)", () => {
+  /** A single-protein meal priced at `cals` (items ≥1 kcal each). */
+  const mealOf = (name: string, cals: number) => ({
+    name,
+    items: [
+      { food: "صدور دجاج مشوية", amount: "200 جم", calories: cals, protein_g: 40 },
+      { food: "سلطة خضراء", amount: "طبق", calories: 40 },
+    ],
+  });
+  const altOf = (name: string, cals: number) => ({
+    name,
+    items: [{ food: "سمك مشوي", amount: "180 جم", calories: cals, protein_g: 38 }],
+  });
+  const planWith = (altCals: number[]) => ({
+    meals: [
+      // primary total = 345 + 40 = 385 (the live incident's meal class)
+      { ...mealOf("الفطور", 345), meal_alternatives: altCals.map((c, i) => altOf(`بديل ${i + 1}`, c)) },
+      mealOf("الغداء", 500),
+      mealOf("العشاء", 450),
+    ],
+  });
+
+  it("alternativeCaloriesEquivalent — the pure ±10% verdict, edge cases included", () => {
+    // exactly ±10.0% passes on both sides
+    expect(alternativeCaloriesEquivalent(500, 550)).toBe(true);
+    expect(alternativeCaloriesEquivalent(500, 450)).toBe(true);
+    // one kcal beyond the band fails
+    expect(alternativeCaloriesEquivalent(500, 551)).toBe(false);
+    expect(alternativeCaloriesEquivalent(500, 449)).toBe(false);
+    // the live incident's magnitudes
+    expect(alternativeCaloriesEquivalent(345, 1257)).toBe(false);
+    expect(alternativeCaloriesEquivalent(365, 100)).toBe(false);
+    // missing / unpriceable values can never prove equivalence
+    expect(alternativeCaloriesEquivalent(0, 500)).toBe(false);
+    expect(alternativeCaloriesEquivalent(500, 0)).toBe(false);
+    expect(alternativeCaloriesEquivalent(Number.NaN, 500)).toBe(false);
+    expect(alternativeCaloriesEquivalent(500, Number.NaN)).toBe(false);
+  });
+
+  it("an in-band substitute rides, an out-of-band one is DROPPED (the live incident class)", () => {
+    // primary 385 → band [346.5, 423.5]: 420 rides, 1257 and 100 drop.
+    const v = validateNutritionPlanAIOutput(planWith([1257, 420, 100]), 1600);
+    expect(v.ok).toBe(true);
+    if (v.ok) {
+      const alts = v.value.meals[0].meal_alternatives!;
+      expect(alts).toHaveLength(1);
+      expect(alts[0].total_calories).toBe(420);
+      expect(Math.abs(alts[0].total_calories - 385) / 385).toBeLessThanOrEqual(0.1);
+    }
+  });
+
+  it("boundary values: exactly ±10% rides, one kcal beyond drops", () => {
+    // primary 385 → 10% = 38.5 → band [346.5, 423.5] → integers 347..423.
+    const pass = validateNutritionPlanAIOutput(planWith([423, 347]), 1600);
+    expect(pass.ok).toBe(true);
+    if (pass.ok) expect(pass.value.meals[0].meal_alternatives!).toHaveLength(2);
+    const failHigh = validateNutritionPlanAIOutput(planWith([424]), 1600);
+    expect(failHigh.ok).toBe(true);
+    if (failHigh.ok) expect(failHigh.value.meals[0].meal_alternatives).toBeUndefined();
+    const failLow = validateNutritionPlanAIOutput(planWith([346]), 1600);
+    expect(failLow.ok).toBe(true);
+    if (failLow.ok) expect(failLow.value.meals[0].meal_alternatives).toBeUndefined();
+  });
+
+  it("a substitute with missing/zero-priced items never ships (normalizeAIItem rejects, then the equivalence gate)", () => {
+    const broken = {
+      name: "بديل بلا سعرات",
+      items: [{ food: "سمك مشوي", amount: "180 جم", calories: 0 }],
+    };
+    const v = validateNutritionPlanAIOutput({ meals: [{ ...mealOf("الفطور", 345), meal_alternatives: [broken] }, mealOf("الغداء", 500), mealOf("العشاء", 450)] }, 1600);
+    expect(v.ok).toBe(true);
+    if (v.ok) expect(v.value.meals[0].meal_alternatives).toBeUndefined();
   });
 });
 
