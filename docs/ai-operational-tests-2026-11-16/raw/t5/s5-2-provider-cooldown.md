@@ -111,4 +111,15 @@ GET /rest/v1/ai_jobs?job_type=eq.plan_nutrition&select=id,status,attempts&order=
 
 ## 8) التحقق البرمجي المرافق (البطارية — ليس دليلًا بذاته بقانون §الحاكم)
 
-`tsc --noEmit` صفر · `eslint` (الملف الجديد) صفر · **vitest 260 ملفًا / 6,600 من 6,600** (كانت 6,596 — +4 كناريّات INF-1 بلا سقوط أي اختبار) · `build` ‏2,323 صفحة — بوابات CI الخمس تُتابع بكوميت الدفع (توثَّق بنتائجها الفعلية بالسجلات).
+`tsc --noEmit` صفر · `eslint` (الملف الجديد) صفر · **vitest 260 ملفًا / 6,600 من 6,600** (كانت 6,596 — +4 كناريّات INF-1 بلا سقوط أي اختبار) · `build` ‏2,323 صفحة.
+
+**نتائج كوميت الدفع 97926ca الفعلية (main):**
+| البوابة | التشغيلة | النتيجة |
+|---|---|---|
+| Quality gate (tsc · eslint · vitest) | [44168154969](https://github.com/muscleshubfit-cpu/alkemos-aws/actions/runs/44168154969) | ✅ success |
+| Deploy to AWS origin | [44168154931](https://github.com/muscleshubfit-cpu/alkemos-aws/actions/runs/44168154931) | ✅ success |
+| Docs & schema parity gate | [44168154983](https://github.com/muscleshubfit-cpu/alkemos-aws/actions/runs/44168154983) | ✅ success |
+| Anti-regression guard (stale refs) | [44168154935](https://github.com/muscleshubfit-cpu/alkemos-aws/actions/runs/44168154935) | ✅ success |
+| Migration state audit | [44168154956](https://github.com/muscleshubfit-cpu/alkemos-aws/actions/runs/44168154956) | ✅ success |
+
+**beacon الإنتاج بعد النشر:** `GET /api/build-info` (2026-11-17T20:30:50Z) → `{"ok":true,"service":"alkemos","commit":"97926ca794a5c2519d7d6aa3cc9ad83e165a59ea","commitShort":"97926ca","branch":"main"}` — الإنتاج يخدم كوميت التنفيذ الحامل للكناريّات الأربع.
