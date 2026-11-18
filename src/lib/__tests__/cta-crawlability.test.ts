@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync, existsSync } from "node:fs";
 
 /**
  * CTA-CRAWLABILITY canary (site-wide audit 2026-11-19 — owner order «تدقيق
@@ -252,7 +252,6 @@ describe("CTA-CRAWLABILITY — converted hrefs resolve to real routes", () => {
   const routes = new Set<string>();
   {
     // build the real route map from the app tree (en + app groups)
-    const { readdirSync, statSync, existsSync } = require("node:fs") as typeof import("node:fs");
     const walk = (dir: string, prefix: string) => {
       if (!existsSync(dir)) return;
       for (const e of readdirSync(dir, { withFileTypes: true })) {
