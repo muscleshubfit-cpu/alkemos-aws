@@ -1,8 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
 import { useI18n } from "@/lib/i18n";
-import { useNav } from "@/hooks/use-nav";
 import { EgpTwin } from "@/components/egp/EgpTwin";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -38,7 +38,8 @@ type AdsData = {
 export function CoachAdsView() {
   const { lang } = useI18n();
   const isAr = lang === "ar";
-  const { navigate } = useNav();
+  // CTA-CRAWLABILITY (2026-11-19): navigate() retired — both CTA targets
+  // are real <Link>s now. useNav import removed with the last consumer.
   const [data, setData] = useState<AdsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [buying, setBuying] = useState<string | null>(null);
@@ -166,12 +167,13 @@ export function CoachAdsView() {
             {balance.toLocaleString(isAr ? "ar-EG" : "en-US")}$
           </p>
         </div>
-        <button
-          onClick={() => navigate("coach-wallet")}
+        {/* CTA-CRAWLABILITY (2026-11-19): pure navigation → real <Link>. */}
+        <Link
+          href="/coach/wallet"
           className="rounded-full border border-[#d2d2d7] bg-white px-5 py-2.5 text-sm font-normal transition-opacity hover:opacity-70"
         >
           {isAr ? "شحن المحفظة" : "Top up wallet"}
-        </button>
+        </Link>
       </div>
 
       {/* Packages */}
@@ -222,12 +224,13 @@ export function CoachAdsView() {
             ? "يعرض الكارت صورتك واسمك وعنوان تعريفك من صفحتك العامة — وضغطة واحدة تنقل الزائر إليها. أكمل بيانات صفحتك العامة أولًا ليحقق الإعلان أقصى نتيجة."
             : "The card shows your photo, name and headline from your public page — one tap takes the visitor there. Fill in your public page first for maximum impact."}
         </p>
-        <button
-          onClick={() => navigate("coach-landing")}
+        {/* CTA-CRAWLABILITY (2026-11-19): pure navigation → real <Link>. */}
+        <Link
+          href="/coach/landing"
           className="mt-4 rounded-full border border-[#d2d2d7] bg-white px-5 py-2.5 text-sm font-normal transition-opacity hover:opacity-70"
         >
           {isAr ? "تعديل صفحتي العامة" : "Edit my public page"}
-        </button>
+        </Link>
       </div>
 
       {/* History */}

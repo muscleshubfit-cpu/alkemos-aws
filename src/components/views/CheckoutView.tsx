@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
+import Link from "next/link";
 import { ArrowRight, Upload, Loader2, ShieldCheck, CheckCircle2, XCircle } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
@@ -303,12 +304,14 @@ export function CheckoutView({ tier, months }: { tier: TierId | MembershipTier; 
   if (!plan) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <button
-          onClick={() => navigate("memberships")}
+        {/* CTA-CRAWLABILITY (2026-11-19): pure navigation → real
+            language-aware <Link> (cookie-resolved isAr at SSR). */}
+        <Link
+          href={isAr ? "/ar/memberships" : "/memberships"}
           className="text-sm text-[var(--muted-2)] hover:underline"
         >
           {isAr ? "← العودة للعضويات" : "← Back to memberships"}
-        </button>
+        </Link>
       </div>
     );
   }
@@ -365,13 +368,16 @@ export function CheckoutView({ tier, months }: { tier: TierId | MembershipTier; 
   return (
     <div className="flex min-h-screen flex-col bg-[var(--bg)] text-[var(--text)]">
       <header className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-4">
-        <button
+        {/* CTA-CRAWLABILITY (2026-11-19): checkout logo → real
+            language-aware <Link> (the exact URL navigate("memberships")
+            mirrored to — cookie-resolved isAr at SSR). */}
+        <Link
           className="text-lg font-semibold tracking-tight"
-          onClick={() => navigate("memberships")}
+          href={isAr ? "/ar/memberships" : "/memberships"}
         >
           Alkemos
           <span className="chrome-text font-semibold">EG</span>
-        </button>
+        </Link>
         <LanguageToggle />
       </header>
 
@@ -397,12 +403,14 @@ export function CheckoutView({ tier, months }: { tier: TierId | MembershipTier; 
                 ? "تم تفعيل اشتراكك تلقائيًا. جارٍ تحويلك إلى لوحة التحكم..."
                 : "Your subscription is now active. Redirecting to dashboard..."}
             </p>
-            <button
-              onClick={() => navigate("dashboard")}
+            {/* CTA-CRAWLABILITY (2026-11-19): pure navigation → real
+                <Link> (same route the auto-redirect targets). */}
+            <Link
+              href="/dashboard"
               className="btn-chrome mt-8 px-6 py-3 text-base"
             >
               {isAr ? "العودة للوحة التحكم" : "Go to dashboard"}
-            </button>
+            </Link>
           </div>
         ) : done ? (
           /* I-3 (UX-TEST-REPORT-2026-09-21 §5-3): the manual-payment
@@ -494,12 +502,14 @@ export function CheckoutView({ tier, months }: { tier: TierId | MembershipTier; 
             </div>
 
             <div className="mt-8 text-center">
-              <button
-                onClick={() => navigate("dashboard")}
+              {/* CTA-CRAWLABILITY (2026-11-19): pure navigation → real
+                  <Link>. */}
+              <Link
+                href="/dashboard"
                 className="btn-chrome px-6 py-3 text-base"
               >
                 {isAr ? "العودة للوحة التحكم" : "Back to dashboard"}
-              </button>
+              </Link>
             </div>
           </div>
         ) : (
@@ -795,12 +805,14 @@ export function CheckoutView({ tier, months }: { tier: TierId | MembershipTier; 
               </div>
             </div>
 
-            <button
+            {/* CTA-CRAWLABILITY (2026-11-19): pure navigation → real
+                language-aware <Link>. */}
+            <Link
               className="mt-6 text-sm text-muted-foreground hover:text-foreground"
-              onClick={() => navigate("memberships")}
+              href={isAr ? "/ar/memberships" : "/memberships"}
             >
               {isAr ? "← العودة للعضويات" : "← Back to memberships"}
-            </button>
+            </Link>
           </>
         )}
       </main>

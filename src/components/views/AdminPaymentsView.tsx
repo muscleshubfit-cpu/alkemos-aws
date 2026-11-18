@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useI18n } from "@/lib/i18n";
 import { useNav } from "@/hooks/use-nav";
 import { cn } from "@/lib/utils";
@@ -280,13 +281,15 @@ export function AdminPaymentsView() {
                       {t("admin.viewReceipt")} ›
                     </button>
                   )}
-                  {/* Direct link to manage this client */}
-                  <button
-                    onClick={() => navigate("coach-client", { clientId: r.user_id })}
+                  {/* Direct link to manage this client
+                      CTA-CRAWLABILITY (2026-11-19): pure navigation → real
+                      <Link> (the exact URL navigate("coach-client") built). */}
+                  <Link
+                    href={`/coach/${r.user_id}`}
                     className="text-sm font-normal text-[#6e6e73] transition-opacity hover:opacity-70"
                   >
                     {isAr ? "إدارة العميل ›" : "Manage client ›"}
-                  </button>
+                  </Link>
                   {r.status === "pending" && (
                     <div className="ms-auto flex gap-2">
                       <button

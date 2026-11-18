@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useI18n } from "@/lib/i18n";
 import { Input } from "@/components/ui/input";
@@ -262,16 +263,16 @@ export function AuthView({ mode, next, coach }: { mode: "login" | "signup"; next
           {/* RECOVERY-OTP MODE (owner order «نفذ خيار otp» 2026-09-22): the
               code path works from ANY browser/device — the honest rescue
               when the link path fails (verifier cookie, one-time code). */}
-          <button
-            onClick={() =>
-              router.push(
-                `/auth/reset?mode=code&email=${encodeURIComponent(email.trim())}`,
-              )
-            }
+          {/* CTA-CRAWLABILITY (2026-11-19): pure navigation to the OTP
+              reset screen → a real <Link> with the exact querystring the
+              router.push() built (dynamic email param, href computed at
+              render — identical destination). */}
+          <Link
+            href={`/auth/reset?mode=code&email=${encodeURIComponent(email.trim())}`}
             className="mt-4 text-sm font-normal text-[var(--muted-2)] underline-offset-4 transition-opacity hover:opacity-70 hover:underline"
           >
             {isAr ? "لديك رمز في البريد؟ أدخله هنا" : "Have a code in your email? Enter it here"}
-          </button>
+          </Link>
           <button
             onClick={() => {
               setForgotSent(false);
@@ -293,9 +294,14 @@ export function AuthView({ mode, next, coach }: { mode: "login" | "signup"; next
     return (
       <div className="flex min-h-screen flex-col bg-[var(--bg)] text-[var(--text)]">
         <header className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-4">
-          <button className="text-lg font-semibold tracking-tight" onClick={() => navigate("landing")}>
+          {/* CTA-CRAWLABILITY (2026-11-19): the recovery-screen logo is pure
+              navigation → a real language-aware <Link>. isAr here is
+              cookie-resolved at SSR (the (app) group reads mhe:lang
+              server-side) — the href matches what navigate("landing")
+              mirrored to for every visitor, choice-holders included. */}
+          <Link className="text-lg font-semibold tracking-tight" href={isAr ? "/ar" : "/"}>
             Alkemos
-          </button>
+          </Link>
           <LanguageToggle />
         </header>
         <main className="flex flex-1 items-center justify-center px-4 py-10">
@@ -404,12 +410,11 @@ export function AuthView({ mode, next, coach }: { mode: "login" | "signup"; next
   return (
     <div className="flex min-h-screen flex-col bg-[var(--bg)] text-[var(--text)]">
       <header className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-4">
-        <button
-          className="text-lg font-semibold tracking-tight"
-          onClick={() => navigate("landing")}
-        >
+        {/* CTA-CRAWLABILITY (2026-11-19): main-screen logo → real
+            language-aware <Link> (cookie-resolved isAr at SSR). */}
+        <Link className="text-lg font-semibold tracking-tight" href={isAr ? "/ar" : "/"}>
           Alkemos
-        </button>
+        </Link>
         <LanguageToggle />
       </header>
 
@@ -600,13 +605,16 @@ export function AuthView({ mode, next, coach }: { mode: "login" | "signup"; next
 
             <p className="mt-8 text-center text-sm font-normal text-[var(--muted-foreground)]">
               {isSignup ? t("auth.haveAccount") : t("auth.noAccount")}{" "}
-              <button
-                type="button"
+              {/* CTA-CRAWLABILITY (2026-11-19): the login↔signup toggle is a
+                  pure same-route navigation (URL query change — the view
+                  switches through the mode prop) → a real <Link> to the
+                  exact querystring navigate() built. */}
+              <Link
+                href={isSignup ? "/auth?mode=login" : "/auth?mode=signup"}
                 className="font-normal text-[var(--muted-2)] underline-offset-4 transition-opacity hover:opacity-70 hover:underline"
-                onClick={() => navigate("auth", { mode: isSignup ? "login" : "signup" })}
               >
                 {isSignup ? t("auth.toLogin") : t("auth.toSignup")}
-              </button>
+              </Link>
             </p>
 
             {/* Continue as guest — login is optional, not a wall */}
@@ -629,13 +637,12 @@ export function AuthView({ mode, next, coach }: { mode: "login" | "signup"; next
                 >
                   {isAr ? "المدونة" : "Blog"}
                 </a>
-                <button
-                  type="button"
-                  onClick={() => navigate("landing")}
+                <Link
+                  href={isAr ? "/ar" : "/"}
                   className="rounded-full border border-[var(--edge)] bg-[var(--tint)] px-5 py-2 text-sm font-normal text-[var(--text)] transition-opacity hover:opacity-90"
                 >
                   {isAr ? "العودة للرئيسية" : "Back to home"}
-                </button>
+                </Link>
               </div>
             </div>
           </div>

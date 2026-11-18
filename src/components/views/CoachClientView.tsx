@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { ImageWithFallback } from "@/components/ui/image-with-fallback";
 import { useEffect, useState, useMemo, useRef, useCallback } from "react";
 import {
@@ -37,7 +38,6 @@ const ClientWeightChart = dynamic(
   { ssr: false, loading: () => null },
 );
 import { useI18n } from "@/lib/i18n";
-import { useNav } from "@/hooks/use-nav";
 import { useAuth } from "@/hooks/use-auth";
 import { EgpTwin, EgpPriceText } from "@/components/egp/EgpTwin";
 import { Modal } from "@/components/ui/modal";
@@ -47,7 +47,7 @@ import { Popover, PopoverAnchor, PopoverContent } from "@/components/ui/popover"
 import { Dialog, DialogContent, DialogClose, DialogTitle } from "@/components/ui/dialog";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -166,7 +166,8 @@ const ALL_TIERS: Array<{ id: string; nameAr: string; nameEn: string }> = [
 export function CoachClientView({ clientId }: { clientId: string }) {
  const { t, dir, lang } = useI18n();
  const isAr = lang === "ar";
- const { navigate } = useNav();
+ // CTA-CRAWLABILITY (2026-11-19): useNav retired — its one consumer (the
+ // back-to-list button) is a real <Link> now.
  // OWNER BOUNDARY (2026-08-30): admins manage everything; coaches must
  // NEVER see site memberships (premium/pro) — only their coaching product.
  const { isAdmin, isSiteCoach } = useAuth();
@@ -863,10 +864,15 @@ export function CoachClientView({ clientId }: { clientId: string }) {
  return (
  <div className="space-y-6">
  <div className="flex items-center gap-3">
- <Button variant="ghost" size="sm" className="gap-1" onClick={() => navigate("coach")}>
+ {/* CTA-CRAWLABILITY (2026-11-19): pure navigation → real <Link>;
+     same ghost button styling via Link + buttonClass passthrough. */}
+ <Link
+ href="/coach"
+ className={buttonVariants({ variant: "ghost", size: "sm", className: "gap-1" })}
+ >
  <ArrowLeft className="h-4 w-4 rtl:rotate-180" />
  {t("coach.backToList")}
- </Button>
+ </Link>
  </div>
 
  <div>

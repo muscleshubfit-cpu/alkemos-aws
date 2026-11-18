@@ -1,10 +1,10 @@
 "use client";
 
 import { useI18n } from "@/lib/i18n";
+import Link from "next/link";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { ShareButtons } from "@/components/ShareButtons";
-import { useNav, type View } from "@/hooks/use-nav";
 import { CONSENT_REOPEN_EVENT } from "@/components/CookieConsent";
 // P3-10/م4 (Phase 217): the About page's library sizes derive from the
 // shared count constants (client-safe slices — never the giant arrays),
@@ -32,7 +32,6 @@ export function StaticPageView({
   content?: SiteCopyMap;
 }) {
   const { t, lang } = useI18n();
-  const { navigate } = useNav();
   const isAr = lang === "ar";
 
   // SITE-CONTENT-281: admin overrides (fetched by the server route and
@@ -146,12 +145,15 @@ export function StaticPageView({
             <p className="text-base font-normal text-[var(--muted-foreground)]">
               {isAr ? "لديك سؤال آخر؟" : "Have another question?"}
             </p>
-            <button
-              onClick={() => navigate("contact")}
+            {/* CTA-CRAWLABILITY (2026-11-19): the FAQ tail CTA is pure
+                navigation → a real language-aware <Link> (the exact URL
+                navigate("contact") resolved to — access-point law). */}
+            <Link
+              href={isAr ? "/ar/contact" : "/contact"}
               className="btn-outline mt-4 px-6 py-2.5 text-sm"
             >
               {isAr ? "تواصل معنا" : "Contact us"}
-            </button>
+            </Link>
           </div>
         )}
 

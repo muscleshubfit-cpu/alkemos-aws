@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import dynamic from "next/dynamic";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/hooks/use-auth";
@@ -182,13 +183,17 @@ export function DashboardView() {
     navigate("progress");
   };
 
+  // CTA-CRAWLABILITY (2026-11-19): every attention CTA was pure
+  // navigation → the list now carries the REAL href and renders <Link>s
+  // (language-aware for the public memberships target — the exact URL
+  // navigate() mirrored to). Byte-faithful behavior, crawlable surface.
   const attentionItems: Array<{
     key: string;
     emoji: string;
     title: string;
     sub: string;
     cta: string;
-    action: () => void;
+    href: string;
   }> = [];
   if (expiringSoon && soonestDays !== null) {
     attentionItems.push({
@@ -204,7 +209,7 @@ export function DashboardView() {
             : `Your subscription ends in ${soonestDays} day${soonestDays === 1 ? "" : "s"}`,
       sub: isAr ? "جدّد الآن للحفاظ على خططك ومتابعتك" : "Renew now to keep your plans and tracking",
       cta: t("dash.renewNow"),
-      action: () => navigate("memberships"),
+      href: isAr ? "/ar/memberships" : "/memberships",
     });
   }
   if (expiredOnly) {
@@ -214,7 +219,7 @@ export function DashboardView() {
       title: isAr ? "انتهى اشتراكك" : "Your subscription has expired",
       sub: isAr ? "جدّد لاستعادة خططك ومتابعة نتائجك" : "Renew to restore your plans and tracking",
       cta: t("dash.renewNow"),
-      action: () => navigate("memberships"),
+      href: isAr ? "/ar/memberships" : "/memberships",
     });
   }
   if (needsInfo) {
@@ -226,7 +231,7 @@ export function DashboardView() {
         ? "مدربك طلب تعديلًا على إجاباتك — حدِّثها ليكتمل إعداد خطتك"
         : "Your coach asked for edits — update your answers so your plan can be finalized",
       cta: t("dash.openQuestionnaires"),
-      action: () => navigate("questionnaires"),
+      href: "/questionnaires",
     });
   }
 
@@ -238,19 +243,26 @@ export function DashboardView() {
     return tier;
   };
 
-  const quickActions: Array<{ label: string; onClick: () => void }> = [
+  // CTA-CRAWLABILITY (2026-11-19): quick actions split — the weight-log
+  // entry keeps its <button> (it writes sessionStorage then navigates —
+  // functional), the pure-navigation entries carry real hrefs → <Link>s.
+  const quickActions: Array<{
+    label: string;
+    href?: string;
+    onClick?: () => void;
+  }> = [
     { label: t("dash.logWeightToday"), onClick: openWeightAdd },
     // The questionnaires entry is daily-use only while something is still
     // open (draft / needs_info / never filled) — the Phase 142 law keeps the
     // full navigation map in the sidebar.
     ...(questionnairePending
-      ? [{ label: t("dash.fillQuestionnaires"), onClick: () => navigate("questionnaires") }]
+      ? [{ label: t("dash.fillQuestionnaires"), href: "/questionnaires" }]
       : []),
-    { label: t("dash.viewPlans"), onClick: () => navigate("plans") },
+    { label: t("dash.viewPlans"), href: "/plans" },
     // Phase 246 (owner: dashboards of ALL account types): support stays —
     // a member with a billing or coaching question must not need to know
     // /support exists.
-    { label: t("nav.support"), onClick: () => navigate("support") },
+    { label: t("nav.support"), href: "/support" },
   ];
 
   return (
@@ -269,9 +281,9 @@ export function DashboardView() {
       {attentionItems.length > 0 && (
         <div className="grid gap-3 sm:grid-cols-2">
           {attentionItems.map((item) => (
-            <button
+            <Link
               key={item.key}
-              onClick={item.action}
+              href={item.href}
               className="group flex items-center justify-between gap-3 rounded-2xl border border-[#ff9500]/30 bg-[#ff9503]/[0.06] p-4 text-start transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-black/5"
             >
               <span className="flex items-center gap-3">
@@ -284,7 +296,7 @@ export function DashboardView() {
               <span className="shrink-0 text-sm font-medium text-[#c77700] transition-transform group-hover:translate-x-0.5 rtl:rotate-180">
                 {item.cta} ›
               </span>
-            </button>
+            </Link>
           ))}
         </div>
       )}
@@ -315,12 +327,12 @@ export function DashboardView() {
             ))}
           </ol>
           {!questionnaireDone && (
-            <button
-              onClick={() => navigate("questionnaires")}
+            <Link
+              href="/questionnaires"
               className="mt-5 rounded-full bg-[#0071e3] px-5 py-2.5 text-sm font-normal text-white transition-opacity hover:opacity-90"
             >
               {t("dash.startCta")}
-            </button>
+            </Link>
           )}
         </div>
       )}
@@ -372,12 +384,12 @@ export function DashboardView() {
                           {pay.amount != null ? ` · ${Number(pay.amount).toLocaleString()} ${pay.currency || "USD"}` : ""}
                         </p>
                       )}
-                      <button
-                        onClick={() => navigate("memberships")}
+                      <Link
+                        href={isAr ? "/ar/memberships" : "/memberships"}
                         className="mt-1 text-[10px] font-normal text-[#0071e3] transition-opacity hover:opacity-70"
                       >
                         {t("dash.renew")} ›
-                      </button>
+                      </Link>
                     </div>
                     {s.end_date && (
                       <p className="text-[10px] text-[#6e6e73]">
@@ -390,12 +402,12 @@ export function DashboardView() {
             ) : (
               <>
                 <p className="text-lg font-semibold">{t("dash.notSet")}</p>
-                <button
-                  onClick={() => navigate("memberships")}
+                <Link
+                  href={isAr ? "/ar/memberships" : "/memberships"}
                   className="mt-3 rounded-full bg-[#0071e3] px-4 py-2 text-xs font-normal text-white transition-opacity hover:opacity-90"
                 >
                   {t("pricing.cta")}
-                </button>
+                </Link>
               </>
             )}
           </div>
@@ -439,12 +451,12 @@ export function DashboardView() {
             {formatNumberFor(plans.filter((p) => p.type === "meal").length, lang)}
           </p>
           {plans.some((p) => p.type === "meal") && (
-            <button
-              onClick={() => navigate("plans")}
+            <Link
+              href="/plans"
               className="mt-2 text-xs font-normal text-[#0071e3] transition-opacity hover:opacity-70"
             >
               {t("dash.viewPlans")} ›
-            </button>
+            </Link>
           )}
         </div>
 
@@ -457,12 +469,12 @@ export function DashboardView() {
             {formatNumberFor(plans.filter((p) => p.type === "workout").length, lang)}
           </p>
           {plans.some((p) => p.type === "workout") && (
-            <button
-              onClick={() => navigate("plans")}
+            <Link
+              href="/plans"
               className="mt-2 text-xs font-normal text-[#0071e3] transition-opacity hover:opacity-70"
             >
               {t("dash.viewPlans")} ›
-            </button>
+            </Link>
           )}
         </div>
       </div>
@@ -488,16 +500,27 @@ export function DashboardView() {
           {t("dash.quickActions")}
         </h2>
         <div className="divide-y divide-[#d2d2d7] rounded-2xl bg-[#f5f5f7]">
-          {quickActions.map((action) => (
-            <button
-              key={action.label}
-              onClick={action.onClick}
-              className="flex w-full items-center justify-between px-6 py-5 text-start transition-colors hover:bg-[#ececf0]"
-            >
-              <span className="text-base font-normal md:text-lg">{action.label}</span>
-              <span className="text-[#6e6e73]">›</span>
-            </button>
-          ))}
+          {quickActions.map((action) =>
+            action.href ? (
+              <Link
+                key={action.label}
+                href={action.href}
+                className="flex w-full items-center justify-between px-6 py-5 text-start transition-colors hover:bg-[#ececf0]"
+              >
+                <span className="text-base font-normal md:text-lg">{action.label}</span>
+                <span className="text-[#6e6e73]">›</span>
+              </Link>
+            ) : (
+              <button
+                key={action.label}
+                onClick={action.onClick}
+                className="flex w-full items-center justify-between px-6 py-5 text-start transition-colors hover:bg-[#ececf0]"
+              >
+                <span className="text-base font-normal md:text-lg">{action.label}</span>
+                <span className="text-[#6e6e73]">›</span>
+              </button>
+            ),
+          )}
         </div>
       </div>
     </div>

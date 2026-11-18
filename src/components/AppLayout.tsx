@@ -1,6 +1,7 @@
 "use client";
 
 import { type ReactNode } from "react";
+import Link from "next/link";
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/lib/i18n";
 import { SiteHeader } from "@/components/SiteHeader";
@@ -41,7 +42,9 @@ import { ShieldCheck, Users } from "lucide-react";
 export function AppLayout({ children }: { children: ReactNode }) {
   const { t, lang } = useI18n();
   const { profile, isCoach, isAdmin, isSiteCoach } = useAuth();
-  const { view, navigate } = useNav();
+  // CTA-CRAWLABILITY (2026-11-19): navigate() retired here — every nav entry
+  // now renders as a real <Link> (view stays: active-tab highlighting).
+  const { view } = useNav();
   const isAr = lang === "ar";
 
   type NavItem = { to: View; label: string; emoji: string; action?: "evo-chat" };
@@ -211,12 +214,53 @@ export function AppLayout({ children }: { children: ReactNode }) {
               {isCoach && sectionLabel(isAr ? "العملاء والخدمة" : "Clients & service")}
               {(isCoach ? staffNav : nav).map((item) => {
                 const active = view === item.to;
-                return (
+                // CTA-CRAWLABILITY (2026-11-19): the sidebar's nav entries are
+                // pure navigation → real <Link>s with the exact hrefs
+                // navigate() resolved (language-aware for the ONE public
+                // target — memberships; plain paths for the app surfaces).
+                // The EVO chat entry keeps its <button> (it OPENS the chat
+                // widget — functional, never a navigation).
+                const itemHref =
+                  item.action === "evo-chat"
+                    ? undefined
+                    : item.to === "memberships"
+                      ? isAr ? "/ar/memberships" : "/memberships"
+                      : item.to === "admin-payments"
+                        ? "/admin/payments"
+                        : item.to === "coach-wallet"
+                          ? "/coach/wallet"
+                          : item.to === "coach-affiliate"
+                            ? "/coach/affiliate"
+                            : item.to === "coach-ads"
+                              ? "/coach/ads"
+                              : item.to === "coach-help"
+                                ? "/coach/help"
+                                : item.to === "coach-support"
+                                  ? "/coach/support"
+                                  : item.to === "coach-landing"
+                                    ? "/coach/landing"
+                                    : item.to === "coach-client"
+                                      ? "/coach"
+                                      : `/${item.to}`;
+                return itemHref ? (
+                  <Link
+                    key={item.to}
+                    href={itemHref}
+                    className={cn(
+                      "block w-full rounded-lg px-3 py-2 text-start text-sm font-normal transition-colors",
+                      active
+                        ? isCoach
+                          ? cn(consoleMeta.activeCls, "font-medium")
+                          : "bg-[#f5f5f7] font-medium text-[#1d1d1f]"
+                        : "text-[#6e6e73] hover:text-[#1d1d1f]",
+                    )}
+                  >
+                    {item.label}
+                  </Link>
+                ) : (
                   <button
                     key={item.to}
-                    onClick={() =>
-                      item.action === "evo-chat" ? openEvoFloatingChat() : navigate(item.to)
-                    }
+                    onClick={() => openEvoFloatingChat()}
                     className={cn(
                       "block w-full cursor-pointer rounded-lg px-3 py-2 text-start text-sm font-normal transition-colors",
                       active
@@ -264,12 +308,35 @@ export function AppLayout({ children }: { children: ReactNode }) {
               <div className="grid grid-cols-2 gap-3 overflow-x-auto pb-2">
                 {nav.map((item) => {
                   const active = view === item.to;
-                  return (
+                  // CTA-CRAWLABILITY (2026-11-19): mobile nav buttons — same
+                  // law as the sidebar: pure navigation → real <Link>s; the
+                  // EVO chat entry keeps its <button> (opens the widget).
+                  const mobileHref =
+                    item.action === "evo-chat"
+                      ? undefined
+                      : item.to === "memberships"
+                        ? isAr ? "/ar/memberships" : "/memberships"
+                        : `/${item.to}`;
+                  return mobileHref ? (
+                    <Link
+                      key={item.to}
+                      href={mobileHref}
+                      className={cn(
+                        "flex cursor-pointer items-center gap-2 rounded-2xl px-4 py-3 text-sm font-medium transition-colors",
+                        active
+                          ? isCoach
+                            ? consoleMeta.activeCls
+                            : "bg-[#0071e3] text-white"
+                          : "bg-[#f5f5f7] text-[#1d1d1f]",
+                      )}
+                    >
+                      <span className="text-base">{item.emoji}</span>
+                      <span className="truncate">{item.label}</span>
+                    </Link>
+                  ) : (
                     <button
                       key={item.to}
-                      onClick={() =>
-                        item.action === "evo-chat" ? openEvoFloatingChat() : navigate(item.to)
-                      }
+                      onClick={() => openEvoFloatingChat()}
                       className={cn(
                         "flex cursor-pointer items-center gap-2 rounded-2xl px-4 py-3 text-sm font-medium transition-colors",
                         active

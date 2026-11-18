@@ -1,5 +1,6 @@
 "use client";
 import { SiteHeader } from "@/components/SiteHeader";
+import Link from "next/link";
 import { SiteFooter } from "@/components/SiteFooter";
 
 /**
@@ -112,13 +113,10 @@ export function AffiliateProgramView() {
     }
   };
 
-  // Secondary CTA: "START SHARING"
-  // - Logged-in user → go to /referral dashboard (where the share buttons live)
-  // - Logged-out visitor → go to /auth?mode=signup
-  const secondaryCta = () => {
-    if (profile) navigate("referral");
-    else navigate("auth", { mode: "signup" });
-  };
+  // CTA-CRAWLABILITY (2026-11-19): secondaryCta() was retired — its two
+  // navigate() targets (referral / auth?mode=signup) now live as the
+  // state-dependent href of the hero's real <Link> above. Behavior is
+  // byte-faithful (same routes, same soft navigation via next/link).
 
   return (
     <div
@@ -162,12 +160,17 @@ export function AffiliateProgramView() {
                 {c.hero.ctaPrimary}
                 <ArrowRight className={`h-5 w-5 ${isAr ? "rotate-180" : ""}`} aria-hidden="true" />
               </button>
-              <button
-                onClick={secondaryCta}
+              {/* CTA-CRAWLABILITY (2026-11-19): the hero secondary CTA is
+                  pure navigation (dashboard for members / signup for guests)
+                  → a real <Link> with the exact state-dependent href the
+                  navigate() call produced; SSR renders the guest default
+                  (/auth?mode=signup) — the crawler-facing href. */}
+              <Link
+                href={profile ? "/referral" : "/auth?mode=signup"}
                 className="btn-outline inline-flex min-h-[52px] w-full items-center justify-center gap-2 px-8 text-base font-semibold sm:w-auto"
               >
                 {c.hero.ctaSecondary}
-              </button>
+              </Link>
             </div>
 
             {/* Hero stat strip */}
@@ -420,13 +423,13 @@ export function AffiliateProgramView() {
                     ? "القوالب والبانرات والرابط الشخصي كلها جاهزة ليك بعد التسجيل — خلال دقايق."
                     : "Templates, banners and your personal link are all ready minutes after you sign up."}
                 </p>
-                <button
-                  onClick={() => navigate("auth", { mode: "signup" })}
+                <Link
+                  href="/auth?mode=signup"
                   className="btn-chrome mt-6 inline-flex items-center gap-2 px-8 py-3 text-sm font-medium"
                 >
                   {isAr ? "ابدأ الآن مجانًا" : "START NOW — FREE"}
                   <ArrowRight className="h-4 w-4 rtl:rotate-180" aria-hidden="true" />
-                </button>
+                </Link>
               </div>
             )}
           </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useMemo, useRef } from "react";
+import Link from "next/link";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/hooks/use-auth";
 import { useNav } from "@/hooks/use-nav";
@@ -870,12 +871,14 @@ export function CoachView() {
                   : "Clients who uploaded payment receipts and await activation"}
               </p>
             </div>
-            <button
-              onClick={() => navigate("admin-payments")}
+            {/* CTA-CRAWLABILITY (2026-11-19): pure navigation → real
+                <Link> (the exact route navigate("admin-payments") built). */}
+            <Link
+              href="/admin/payments"
               className="shrink-0 rounded-full bg-[#0071e3] px-5 py-2.5 text-sm font-normal text-white transition-opacity hover:opacity-90"
             >
               {isAr ? "مراجعة الطلبات ›" : "Review requests ›"}
-            </button>
+            </Link>
           </div>
         </div>
       )}
@@ -1468,15 +1471,16 @@ export function CoachView() {
                         {c.sub?.end_date ? new Date(c.sub.end_date).toLocaleDateString() : "—"}
                       </td>
                       <td className="p-3">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            navigate("coach-client", { clientId: c.id });
-                          }}
-                          className="text-sm font-normal text-[#0071e3] transition-opacity hover:opacity-70"
-                        >
-                          {t("coach.manage")} ›
-                        </button>
+                      {/* CTA-CRAWLABILITY (2026-11-19): pure navigation →
+                          real <Link> — stopPropagation preserved (the row
+                          keeps its own click affordance). */}
+                      <Link
+                        href={`/coach/${c.id}`}
+                        onClick={(e) => e.stopPropagation()}
+                        className="text-sm font-normal text-[#0071e3] transition-opacity hover:opacity-70"
+                      >
+                        {t("coach.manage")} ›
+                      </Link>
                         {/* I-1 (UX-TEST-REPORT-2026-09-21 §5-1): the pending
                             invite row gets a re-notify action — the resend
                             gate re-checks the 0092 law server-side, so the

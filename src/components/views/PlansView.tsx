@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { Salad, Dumbbell, FileText, Download, Printer, RefreshCw, Loader2, Info, Sparkles, Plus } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/hooks/use-auth";
@@ -1151,19 +1152,19 @@ export function PlansView() {
 function EmptyCard({ text }: { text: string }) {
  const { t, lang } = useI18n();
  const isAr = lang === "ar";
- const { navigate } = useNav();
  return (
  <div className="rounded-2xl bg-[#f5f5f7] p-12 text-center">
  <p className="text-base font-normal text-[#6e6e73]">{text}</p>
  <p className="mt-2 text-sm font-normal text-[#6e6e73]">
  {isAr ? "املأ استبيانك ليتمكن المدرب من تجهيز خطتك المخصصة." : "Fill out your questionnaire so the coach can prepare your personalized plan."}
  </p>
- <button
- onClick={() => navigate("questionnaires")}
+ {/* CTA-CRAWLABILITY (2026-11-19): pure navigation → real <Link>. */}
+ <Link
+ href="/questionnaires"
  className="mt-4 rounded-full bg-[#0071e3] px-5 py-2 text-sm font-normal text-white transition-opacity hover:opacity-90"
  >
  {isAr ? "املأ الاستبيان ›" : "Fill questionnaire ›"}
- </button>
+ </Link>
  </div>
  );
 }

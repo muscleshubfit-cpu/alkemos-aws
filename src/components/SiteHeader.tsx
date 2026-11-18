@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo, useRef } from "react";
+import Link from "next/link";
 import { openEvoFloatingChat } from "@/lib/evo-chat-events";
 import {
   Menu,
@@ -566,9 +567,43 @@ export function SiteHeader({ variant = "landing" }: { variant?: "landing" | "app
     });
   };
 
+  // ─── CTA-CRAWLABILITY (2026-11-19): map a navigate() View target to its
+  // real crawlable href — the drawer's nav-only items become real <Link>s.
+  // PUBLIC view targets (landing only, here) resolve through the SAME
+  // language-aware rule every converted CTA uses (isAr tree → /ar tree —
+  // access-point law); APP-surface targets (dashboard/plans/…/coach*) carry
+  // no language dimension and keep their plain paths (useNav pathForView +
+  // isSpecialSurface mirrorPath behavior, byte-faithful).
+  const navItemHref = (nav: View): string => {
+    switch (nav) {
+      case "landing":
+        return isAr ? "/ar" : "/";
+      case "admin-payments":
+        return "/admin/payments";
+      case "coach-client":
+        return "/coach";
+      case "coach-wallet":
+        return "/coach/wallet";
+      case "coach-affiliate":
+        return "/coach/affiliate";
+      case "coach-ads":
+        return "/coach/ads";
+      case "coach-help":
+        return "/coach/help";
+      case "coach-support":
+        return "/coach/support";
+      case "coach-landing":
+        return "/coach/landing";
+      default:
+        return `/${nav}`;
+    }
+  };
+
   // W1-4a (audit P-01): items carry DATA (nav view / evo flag) instead of
   // closures — resolved here at click time against the CURRENT navigate
   // (identical behavior: the old closures captured the same fresh value).
+  // CTA-CRAWLABILITY: the nav branch is now dead-by-render (nav items render
+  // as <Link> below); the handler stays for the evo flag + drawer close.
   const handleItemClick = (item: MenuItem) => {
     setOpen(false);
     if (item.nav) navigate(item.nav);
@@ -642,8 +677,8 @@ export function SiteHeader({ variant = "landing" }: { variant?: "landing" | "app
             >
               <Menu className="h-5 w-5" />
             </button>
-            <button
-              onClick={() => navigate("landing")}
+            <Link
+              href={isAr ? "/ar" : "/"}
               className="flex h-10 w-10 items-center justify-center rounded-lg transition-colors hover:bg-[var(--tint)]"
               aria-label="Alkemos"
             >
@@ -659,7 +694,7 @@ export function SiteHeader({ variant = "landing" }: { variant?: "landing" | "app
                 eager
                 className="h-9 w-9 object-contain"
               />
-            </button>
+            </Link>
 
             {/* DESKTOP SERVICE NAV (Phase 202): the five core services —
                 Training / Nutrition / Tools / AI / Coaching — visible
@@ -785,13 +820,13 @@ export function SiteHeader({ variant = "landing" }: { variant?: "landing" | "app
                 )}
               </a>
             ) : (
-              <button
-                onClick={() => navigate("auth", { mode: "login" })}
+              <Link
+                href="/auth?mode=login"
                 className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--tint)] text-[var(--text)] transition-colors hover:bg-[var(--edge)]"
                 aria-label={isAr ? "تسجيل الدخول" : "Log in"}
               >
                 <User className="h-4 w-4" />
-              </button>
+              </Link>
             )}
           </div>
         </div>
@@ -837,11 +872,9 @@ export function SiteHeader({ variant = "landing" }: { variant?: "landing" | "app
           {/* Drawer header — Phase 138: helmet MARK (same as the navbar bar,
               no wordmark), tap → home. */}
           <div className="flex h-16 items-center justify-between border-b border-[var(--edge)] px-4">
-            <button
-              onClick={() => {
-                setOpen(false);
-                navigate("landing");
-              }}
+            <Link
+              href={isAr ? "/ar" : "/"}
+              onClick={() => setOpen(false)}
               className="flex h-10 w-10 items-center justify-center rounded-lg transition-colors hover:bg-[var(--tint)]"
               aria-label="Alkemos"
             >
@@ -860,7 +893,7 @@ export function SiteHeader({ variant = "landing" }: { variant?: "landing" | "app
                     The always-visible header instance above keeps eager. */
                 className="h-9 w-9 object-contain"
               />
-            </button>
+            </Link>
             <button
               onClick={() => setOpen(false)}
               className="flex h-10 w-10 items-center justify-center rounded-lg text-[var(--text)] transition-colors hover:bg-[var(--tint)]"
@@ -901,18 +934,24 @@ export function SiteHeader({ variant = "landing" }: { variant?: "landing" | "app
                   {(!canCollapse || isExpanded) && (
                     <ul className="space-y-0.5">
                       {group.items.map((item, i) => {
+                        // CTA-CRAWLABILITY: nav-only items render as real
+                        // <Link>s (crawlable hrefs); evo items keep the
+                        // button (it OPENS the chat widget — functional,
+                        // never a navigation). href items keep their <a>.
+                        const itemHref =
+                          item.href ?? (item.nav && !item.evo ? navItemHref(item.nav) : undefined);
                         return (
                           <li key={`${group.id}-${i}`}>
-                            {item.href ? (
-                              <a
-                                href={item.href}
+                            {itemHref ? (
+                              <Link
+                                href={itemHref}
                                 onClick={() => setOpen(false)}
                                 className={"flex items-center gap-3 rounded-lg px-3 py-2.5 text-start text-sm font-normal transition-colors text-[var(--text)] hover:bg-[var(--tint)] " + (canCollapse ? "ps-6" : "")}
                               >
                                 <item.icon className="h-4 w-4 shrink-0 text-[var(--muted-foreground)]" aria-hidden="true" />
                                 <span className="flex-1">{item.label}</span>
                                 <ChevronRight className="h-4 w-4 shrink-0 opacity-30 rtl:rotate-180" aria-hidden="true" />
-                              </a>
+                              </Link>
                             ) : (
                               <button
                                 onClick={() => handleItemClick(item)}
@@ -972,16 +1011,14 @@ export function SiteHeader({ variant = "landing" }: { variant?: "landing" | "app
                 </button>
               </>
             ) : (
-              <button
-                onClick={() => {
-                  navigate("auth", { mode: "login" });
-                  setOpen(false);
-                }}
+              <Link
+                href="/auth?mode=login"
+                onClick={() => setOpen(false)}
                 className="flex w-full items-center gap-3 rounded-lg px-3 py-3 text-start text-sm font-normal transition-colors text-[var(--text)] hover:bg-[var(--tint)]"
               >
                 <LogIn className="h-4 w-4" />
                 <span>{isAr ? "تسجيل الدخول" : "Log in"}</span>
-              </button>
+              </Link>
             )}
           </div>
 

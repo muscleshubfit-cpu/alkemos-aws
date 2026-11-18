@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { useI18n } from "@/lib/i18n";
 import { useRouter } from "next/navigation";
 import { getBlogStats, adminListPosts, adminDeletePost, adminDuplicatePost, type AdminBlogPost } from "@/lib/blog-admin";
@@ -456,13 +457,15 @@ export function BlogAdminView() {
             <RefreshCw className="h-3.5 w-3.5" />
             {isAr ? "تنظيف النصوص" : "Cleanup"}
           </button>
-          <button
-            onClick={() => router.push("/admin/blog/new")}
+          {/* CTA-CRAWLABILITY (2026-11-19): pure navigation → real
+              <Link> (same route router.push targeted). */}
+          <Link
+            href="/admin/blog/new"
             className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-xs font-medium text-primary-foreground transition-opacity hover:opacity-90 shadow-2xs"
           >
             <Plus className="h-4 w-4" />
             {isAr ? "مقال جديد" : "New Article"}
-          </button>
+          </Link>
         </div>
       </div>
 
@@ -682,14 +685,16 @@ export function BlogAdminView() {
                     </td>
                     <td className="p-3">
                       <div className="flex items-center justify-center gap-1.5">
-                        <button
-                          onClick={() => router.push(`/admin/blog/${post.id}`)}
+                        {/* CTA-CRAWLABILITY (2026-11-19): pure navigation →
+                            real <Link> (dynamic post id href). */}
+                        <Link
+                          href={`/admin/blog/${post.id}`}
                           title={isAr ? "تعديل" : "Edit"}
                           className="inline-flex h-7 items-center gap-1 rounded-md bg-primary/10 px-2 text-[11px] font-medium text-primary hover:bg-primary/20 transition-colors"
                         >
                           <FileEdit className="h-3 w-3" />
                           {isAr ? "تعديل" : "Edit"}
-                        </button>
+                        </Link>
                         <button
                           onClick={() => handleDuplicate(post.id)}
                           title={isAr ? "نسخ" : "Copy"}

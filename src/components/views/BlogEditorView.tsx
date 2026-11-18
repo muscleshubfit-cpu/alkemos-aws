@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useState, useCallback, useRef } from "react";
 import { Save, Eye, Code, Sparkles, Loader2, ArrowLeft, Plus, X, CheckCircle, AlertCircle, Clock, Wand2, Settings2, ImagePlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -658,12 +659,13 @@ useEffect(() => {
  {/* Header — Apple-style */}
  <div className="flex flex-wrap items-center justify-between gap-4">
  <div className="flex items-center gap-4">
- <button
- onClick={() => router.push("/admin/blog")}
+ {/* CTA-CRAWLABILITY (2026-11-19): pure navigation → real <Link>. */}
+ <Link
+ href="/admin/blog"
  className="text-sm font-normal text-[#0071e3] transition-opacity hover:opacity-70"
  >
  ‹ {isAr ? "رجوع" : "Back"}
- </button>
+ </Link>
  <h1 className="text-2xl font-semibold tracking-tight md:text-3xl">
  {mode === "new" ? (isAr ? "مقال جديد" : "New Article") : (isAr ? "تعديل المقال" : "Edit Article")}
  </h1>
