@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useI18n } from "@/lib/i18n";
-import { useNav } from "@/hooks/use-nav";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { AdSenseAd } from "@/components/AdSenseAd";
@@ -22,7 +22,6 @@ type Unit = "metric" | "imperial";
 
 export default function BMICalculatorPage() {
   const { lang } = useI18n();
-  const { navigate } = useNav();
   const isAr = lang === "ar";
 
   const [unit, setUnit] = useState<Unit>("metric");
@@ -237,22 +236,33 @@ export default function BMICalculatorPage() {
                 </p>
               </div>
             </div>
+          </div>
+        )}
 
-            {/* CTA */}
-            <div className="rounded-3xl border border-[var(--edge)] bg-[var(--tint)] p-6 text-center">
-              <p className="text-base font-normal text-[var(--text)]">
-                {isAr
-                  ? "تحتاج خطة مخصصة للوصول إلى وزنك الصحي؟"
-                  : "Need a personalized plan to reach a healthy weight?"}
-              </p>
-              <button
-                onClick={() => navigate("memberships")}
-                className="mt-4 btn-chrome px-6 py-2.5 text-sm"
-              >
-                {isAr ? "احصل على خطة مخصصة ›" : "Get a personalized plan ›"}
-              </button>
-            </div>
+        {/* CTA — ORGANIC-GROWTH-P0-A (docs/organic-growth-system-2026-11-18
+            /10-prioritized-execution-roadmap.md): the commercial bridge to
+            /memberships is now a REAL crawlable <a> that ships in the server
+            HTML. It was a result-gated JS button (F-1) — invisible to
+            crawlers until a visitor calculated. Same card, same texts, same
+            classes; the results container is split AROUND it so the visual
+            order after a calculation is unchanged (value first — law 413). */}
+        <div className="mt-6 rounded-3xl border border-[var(--edge)] bg-[var(--tint)] p-6 text-center">
+          <p className="text-base font-normal text-[var(--text)]">
+            {isAr
+              ? "تحتاج خطة مخصصة للوصول إلى وزنك الصحي؟"
+              : "Need a personalized plan to reach a healthy weight?"}
+          </p>
+          <Link
+            href={isAr ? "/ar/memberships" : "/memberships"}
+            className="mt-4 btn-chrome px-6 py-2.5 text-sm"
+          >
+            {isAr ? "احصل على خطة مخصصة ›" : "Get a personalized plan ›"}
+          </Link>
+        </div>
 
+        {/* Result follow-ups (save/lead/share) — result-gated as before */}
+        {result && (
+          <div className="mt-6 space-y-6">
             {/* Save + Download */}
             <SaveResultButton
               toolSlug="bmi-calculator"

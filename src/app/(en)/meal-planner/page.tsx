@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import Link from "next/link";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/hooks/use-auth";
 import { useNav } from "@/hooks/use-nav";
@@ -440,6 +441,27 @@ export default function MealPlannerPage() {
         {/* Shopping list — §12.30: the tool that fulfills the written
             grocery-list promise, derived live from the plan above. */}
         <ShoppingListCard meals={meals} />
+
+        {/* CTA — ORGANIC-GROWTH-P0-A (docs/organic-growth-system-2026-11-18
+            /10-prioritized-execution-roadmap.md): this page's ONLY commercial
+            bridge to /memberships was the Premium+ toast gate inside
+            handleDownloadJson — a JS-only path crawlers can never see (F-1).
+            The roadmap's 12/12 acceptance demands a crawlable <a> here too,
+            so the SAME unified CTA card as the calculators ships in the server
+            HTML (one contextual commercial CTA per tool page — law 07-§4.2). */}
+        <div className="mt-6 rounded-3xl border border-[var(--edge)] bg-[var(--tint)] p-6 text-center">
+          <p className="text-base font-normal text-[var(--text)]">
+            {isAr
+              ? "تحتاج خطة مخصصة يبنيها لك الذكاء الاصطناعي بناءً على أرقامك؟"
+              : "Need a personalized plan built for you by AI based on your numbers?"}
+          </p>
+          <Link
+            href={isAr ? "/ar/memberships" : "/memberships"}
+            className="mt-4 btn-chrome px-6 py-2.5 text-sm"
+          >
+            {isAr ? "احصل على خطة مخصصة ›" : "Get a personalized plan ›"}
+          </Link>
+        </div>
 
         {/* Save + Download */}
         <div className="mt-6 flex flex-wrap gap-2">
