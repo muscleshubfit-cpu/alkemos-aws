@@ -1,0 +1,8 @@
+Reason,Source,Validation,Pages
+Excluded by ‘noindex’ tag,Website,Failed,163
+Not found (404),Website,Failed,5
+Alternate page with proper canonical tag,Website,Started,203
+Page with redirect,Website,Started,4
+Blocked by robots.txt,Website,Started,1
+Crawled - currently not indexed,Google systems,Started,1823
+Discovered - currently not indexed,Google systems,Started,943

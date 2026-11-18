@@ -1,0 +1,125 @@
+{
+ "foods-en": {
+  "n": 8,
+  "fails": 0,
+  "median_words": 525.0,
+  "min": 0,
+  "max": 554,
+  "median_h2": 5.0,
+  "words": [
+   538,
+   554,
+   532,
+   553,
+   212,
+   210,
+   518,
+   0
+  ]
+ },
+ "foods-ar": {
+  "n": 4,
+  "fails": 0,
+  "median_words": 485.0,
+  "min": 464,
+  "max": 505,
+  "median_h2": 5.5,
+  "words": [
+   505,
+   497,
+   464,
+   473
+  ]
+ },
+ "exercises-en": {
+  "n": 6,
+  "fails": 0,
+  "median_words": 1154.5,
+  "min": 218,
+  "max": 1275,
+  "median_h2": 8.0,
+  "words": [
+   1012,
+   1275,
+   1258,
+   218,
+   1116,
+   1193
+  ]
+ },
+ "exercises-ar": {
+  "n": 3,
+  "fails": 0,
+  "median_words": 159,
+  "min": 140,
+  "max": 185,
+  "median_h2": 4,
+  "words": [
+   140,
+   159,
+   185
+  ]
+ },
+ "blog-en": {
+  "n": 2,
+  "fails": 0,
+  "median_words": 1323.0,
+  "min": 1217,
+  "max": 1429,
+  "median_h2": 9.0,
+  "words": [
+   1429,
+   1217
+  ]
+ },
+ "blog-ar": {
+  "n": 2,
+  "fails": 0,
+  "median_words": 1456.5,
+  "min": 1396,
+  "max": 1517,
+  "median_h2": 10.5,
+  "words": [
+   1517,
+   1396
+  ]
+ },
+ "tools-en": {
+  "n": 3,
+  "fails": 0,
+  "median_words": 3661,
+  "min": 3337,
+  "max": 4004,
+  "median_h2": 10,
+  "words": [
+   4004,
+   3661,
+   3337
+  ]
+ },
+ "commercial": {
+  "n": 3,
+  "fails": 0,
+  "median_words": 1397,
+  "min": 694,
+  "max": 3446,
+  "median_h2": 10,
+  "words": [
+   1397,
+   694,
+   3446
+  ]
+ },
+ "muscles": {
+  "n": 2,
+  "fails": 0,
+  "median_words": 1229.0,
+  "min": 1202,
+  "max": 1256,
+  "median_h2": 6.0,
+  "words": [
+   1202,
+   1256
+  ]
+ }
+}

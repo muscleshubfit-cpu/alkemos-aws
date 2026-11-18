@@ -1,0 +1,522 @@
+{
+ "homepage-en": {
+  "url": "https://alkemos.com/",
+  "status": 200,
+  "final_url": "https://alkemos.com/",
+  "server": "cloudflare",
+  "cf_cache": "HIT",
+  "age": "2969",
+  "cache_control": "public, max-age=300, must-revalidate, s-maxage=3600, stale-while-revalidate=86400",
+  "x_robots": "",
+  "content_type": "text/html; charset=utf-8",
+  "bytes": 351622,
+  "title": "Alkemos — The Smart Fitness & Nutrition Platform",
+  "meta_robots": "index, follow",
+  "canonical": "https://alkemos.com",
+  "hreflang": {
+   "en": "https://alkemos.com",
+   "ar": "https://alkemos.com/ar",
+   "x-default": "https://alkemos.com"
+  },
+  "jsonld_types": [
+   "FAQPage",
+   "Organization",
+   "WebSite"
+  ],
+  "body_words": 2215,
+  "chrome_status": 200,
+  "bytes_match_chrome": true,
+  "latency_ms": 82
+ },
+ "homepage-ar": {
+  "url": "https://alkemos.com/ar",
+  "status": 200,
+  "final_url": "https://alkemos.com/ar",
+  "server": "cloudflare",
+  "cf_cache": "HIT",
+  "age": "",
+  "cache_control": "public, max-age=300, must-revalidate, s-maxage=3600, stale-while-revalidate=86400",
+  "x_robots": "",
+  "content_type": "text/html; charset=utf-8",
+  "bytes": 378473,
+  "title": "Alkemos | منصة اللياقة والتغذية الذكية المتكاملة",
+  "meta_robots": "index, follow",
+  "canonical": "https://alkemos.com/ar",
+  "hreflang": {
+   "en": "https://alkemos.com",
+   "ar": "https://alkemos.com/ar",
+   "x-default": "https://alkemos.com"
+  },
+  "jsonld_types": [
+   "FAQPage",
+   "Organization",
+   "WebSite"
+  ],
+  "body_words": 2101,
+  "chrome_status": 200,
+  "bytes_match_chrome": true,
+  "latency_ms": 464
+ },
+ "tool-calorie-en": {
+  "url": "https://alkemos.com/tools/calorie-calculator",
+  "status": 200,
+  "final_url": "https://alkemos.com/tools/calorie-calculator",
+  "server": "cloudflare",
+  "cf_cache": "HIT",
+  "age": "",
+  "cache_control": "public, max-age=300, must-revalidate, s-maxage=3600, stale-while-revalidate=86400",
+  "x_robots": "",
+  "content_type": "text/html; charset=utf-8",
+  "bytes": 156749,
+  "title": "Calorie Calculator — Calculate Your Daily Needs | Alkemos",
+  "meta_robots": "index, follow",
+  "canonical": "https://alkemos.com/tools/calorie-calculator",
+  "hreflang": {
+   "en": "https://alkemos.com/tools/calorie-calculator",
+   "ar": "https://alkemos.com/ar/tools/calorie-calculator",
+   "x-default": "https://alkemos.com/tools/calorie-calculator"
+  },
+  "jsonld_types": [
+   "BreadcrumbList",
+   "HowTo",
+   "Organization",
+   "WebApplication",
+   "WebSite"
+  ],
+  "body_words": 4256,
+  "chrome_status": 200,
+  "bytes_match_chrome": true,
+  "latency_ms": 290
+ },
+ "tool-calorie-ar": {
+  "url": "https://alkemos.com/ar/tools/calorie-calculator",
+  "status": 200,
+  "final_url": "https://alkemos.com/ar/tools/calorie-calculator",
+  "server": "cloudflare",
+  "cf_cache": "HIT",
+  "age": "",
+  "cache_control": "public, max-age=300, must-revalidate, s-maxage=3600, stale-while-revalidate=86400",
+  "x_robots": "",
+  "content_type": "text/html; charset=utf-8",
+  "bytes": 173515,
+  "title": "حاسبة السعرات الحرارية — احسب احتياجك اليومي والماكروز — Alkemos",
+  "meta_robots": "index, follow",
+  "canonical": "https://alkemos.com/ar/tools/calorie-calculator",
+  "hreflang": {
+   "en": "https://alkemos.com/tools/calorie-calculator",
+   "ar": "https://alkemos.com/ar/tools/calorie-calculator",
+   "x-default": "https://alkemos.com/tools/calorie-calculator"
+  },
+  "jsonld_types": [
+   "BreadcrumbList",
+   "HowTo",
+   "Organization",
+   "WebApplication",
+   "WebSite"
+  ],
+  "body_words": 3746,
+  "chrome_status": 200,
+  "bytes_match_chrome": true,
+  "latency_ms": 475
+ },
+ "tool-bodyfat-en": {
+  "url": "https://alkemos.com/tools/body-fat-calculator",
+  "status": 200,
+  "final_url": "https://alkemos.com/tools/body-fat-calculator",
+  "server": "cloudflare",
+  "cf_cache": "EXPIRED",
+  "age": "",
+  "cache_control": "public, max-age=300, must-revalidate, s-maxage=3600, stale-while-revalidate=86400",
+  "x_robots": "",
+  "content_type": "text/html; charset=utf-8",
+  "bytes": 144036,
+  "title": "Body Fat Calculator — Calculate Your Body Fat % | Alkemos",
+  "meta_robots": "index, follow",
+  "canonical": "https://alkemos.com/tools/body-fat-calculator",
+  "hreflang": {
+   "en": "https://alkemos.com/tools/body-fat-calculator",
+   "ar": "https://alkemos.com/ar/tools/body-fat-calculator",
+   "x-default": "https://alkemos.com/tools/body-fat-calculator"
+  },
+  "jsonld_types": [
+   "BreadcrumbList",
+   "HowTo",
+   "Organization",
+   "WebApplication",
+   "WebSite"
+  ],
+  "body_words": 3913,
+  "chrome_status": 200,
+  "bytes_match_chrome": true,
+  "latency_ms": 350
+ },
+ "food-salmon-en": {
+  "url": "https://alkemos.com/foods/salmon",
+  "status": 200,
+  "final_url": "https://alkemos.com/foods/salmon",
+  "server": "cloudflare",
+  "cf_cache": "HIT",
+  "age": "",
+  "cache_control": "public, max-age=300, must-revalidate, s-maxage=3600, stale-while-revalidate=86400",
+  "x_robots": "",
+  "content_type": "text/html; charset=utf-8",
+  "bytes": 122908,
+  "title": "Salmon — Calories, Macros & Nutrition per 100g | Alkemos",
+  "meta_robots": "index, follow",
+  "canonical": "https://alkemos.com/foods/salmon",
+  "hreflang": {
+   "en": "https://alkemos.com/foods/salmon",
+   "ar": "https://alkemos.com/ar/foods/salmon",
+   "x-default": "https://alkemos.com/foods/salmon"
+  },
+  "jsonld_types": [
+   "BreadcrumbList",
+   "NutritionInformation",
+   "Organization",
+   "WebPage",
+   "WebSite"
+  ],
+  "body_words": 712,
+  "chrome_status": 200,
+  "bytes_match_chrome": true,
+  "latency_ms": 302
+ },
+ "food-rice-en": {
+  "url": "https://alkemos.com/foods/white-rice",
+  "status": 200,
+  "final_url": "https://alkemos.com/foods/white-rice",
+  "server": "cloudflare",
+  "cf_cache": "HIT",
+  "age": "",
+  "cache_control": "public, max-age=300, must-revalidate, s-maxage=3600, stale-while-revalidate=86400",
+  "x_robots": "",
+  "content_type": "text/html; charset=utf-8",
+  "bytes": 123858,
+  "title": "White Rice (Cooked) — Calories, Macros & Nutrition per 100g | Alkemos",
+  "meta_robots": "index, follow",
+  "canonical": "https://alkemos.com/foods/white-rice",
+  "hreflang": {
+   "en": "https://alkemos.com/foods/white-rice",
+   "ar": "https://alkemos.com/ar/foods/white-rice",
+   "x-default": "https://alkemos.com/foods/white-rice"
+  },
+  "jsonld_types": [
+   "BreadcrumbList",
+   "NutritionInformation",
+   "Organization",
+   "WebPage",
+   "WebSite"
+  ],
+  "body_words": 728,
+  "chrome_status": 200,
+  "bytes_match_chrome": true,
+  "latency_ms": 305
+ },
+ "food-oliveoil-ar": {
+  "url": "https://alkemos.com/ar/foods/olive-oil",
+  "status": 200,
+  "final_url": "https://alkemos.com/ar/foods/olive-oil",
+  "server": "cloudflare",
+  "cf_cache": "EXPIRED",
+  "age": "",
+  "cache_control": "public, max-age=300, must-revalidate, s-maxage=3600, stale-while-revalidate=86400",
+  "x_robots": "",
+  "content_type": "text/html; charset=utf-8",
+  "bytes": 130052,
+  "title": "زيت زيتون — السعرات والماكروز لكل 100 جرام — Alkemos",
+  "meta_robots": "index, follow",
+  "canonical": "https://alkemos.com/ar/foods/olive-oil",
+  "hreflang": {
+   "en": "https://alkemos.com/foods/olive-oil",
+   "ar": "https://alkemos.com/ar/foods/olive-oil",
+   "x-default": "https://alkemos.com/foods/olive-oil"
+  },
+  "jsonld_types": [
+   "BreadcrumbList",
+   "NutritionInformation",
+   "Organization",
+   "WebPage",
+   "WebSite"
+  ],
+  "body_words": 693,
+  "chrome_status": 200,
+  "bytes_match_chrome": true,
+  "latency_ms": 378
+ },
+ "food-mcnuggets-en": {
+  "url": "https://alkemos.com/foods/mcdonalds-chicken-mcnuggets",
+  "status": 200,
+  "final_url": "https://alkemos.com/foods/mcdonalds-chicken-mcnuggets",
+  "server": "cloudflare",
+  "cf_cache": "MISS",
+  "age": "",
+  "cache_control": "public, max-age=300, must-revalidate, s-maxage=3600, stale-while-revalidate=86400",
+  "x_robots": "",
+  "content_type": "text/html; charset=utf-8",
+  "bytes": 115651,
+  "title": "McDONALD'S, Chicken McNUGGETS — Calories, Macros & Nutrition per 100g | Alkemos",
+  "meta_robots": "index, follow",
+  "canonical": "https://alkemos.com/foods/mcdonalds-chicken-mcnuggets",
+  "hreflang": {
+   "en": "https://alkemos.com/foods/mcdonalds-chicken-mcnuggets",
+   "ar": "https://alkemos.com/ar/foods/mcdonalds-chicken-mcnuggets",
+   "x-default": "https://alkemos.com/foods/mcdonalds-chicken-mcnuggets"
+  },
+  "jsonld_types": [
+   "BreadcrumbList",
+   "NutritionInformation",
+   "Organization",
+   "WebPage",
+   "WebSite"
+  ],
+  "body_words": 384,
+  "chrome_status": 200,
+  "bytes_match_chrome": true,
+  "latency_ms": 352
+ },
+ "exercise-en": {
+  "url": "https://alkemos.com/exercises/dumbbell-bench-press-with-neutral-grip",
+  "status": 200,
+  "final_url": "https://alkemos.com/exercises/dumbbell-bench-press-with-neutral-grip",
+  "server": "cloudflare",
+  "cf_cache": "EXPIRED",
+  "age": "",
+  "cache_control": "public, max-age=300, must-revalidate, s-maxage=3600, stale-while-revalidate=86400",
+  "x_robots": "",
+  "content_type": "text/html; charset=utf-8",
+  "bytes": 149204,
+  "title": "Dumbbell Bench Press with Neutral Grip — Proper Form & Instructions",
+  "meta_robots": "index, follow",
+  "canonical": "https://alkemos.com/exercises/dumbbell-bench-press-with-neutral-grip",
+  "hreflang": {
+   "en": "https://alkemos.com/exercises/dumbbell-bench-press-with-neutral-grip",
+   "ar": "https://alkemos.com/ar/exercises/dumbbell-bench-press-with-neutral-grip",
+   "x-default": "https://alkemos.com/exercises/dumbbell-bench-press-with-neutral-grip"
+  },
+  "jsonld_types": [
+   "BreadcrumbList",
+   "HowTo",
+   "Organization",
+   "WebPage",
+   "WebSite"
+  ],
+  "body_words": 1186,
+  "chrome_status": 200,
+  "bytes_match_chrome": true,
+  "latency_ms": 516
+ },
+ "exercise-ar": {
+  "url": "https://alkemos.com/ar/exercises/shoulder-circles",
+  "status": 200,
+  "final_url": "https://alkemos.com/ar/exercises/shoulder-circles",
+  "server": "cloudflare",
+  "cf_cache": "EXPIRED",
+  "age": "",
+  "cache_control": "public, max-age=300, must-revalidate, s-maxage=3600, stale-while-revalidate=86400",
+  "x_robots": "",
+  "content_type": "text/html; charset=utf-8",
+  "bytes": 127486,
+  "title": "دوائر الكتفين — طريقة الأداء الصحيحة والخطوات — Alkemos",
+  "meta_robots": "index, follow",
+  "canonical": "https://alkemos.com/ar/exercises/shoulder-circles",
+  "hreflang": {
+   "en": "https://alkemos.com/exercises/shoulder-circles",
+   "ar": "https://alkemos.com/ar/exercises/shoulder-circles",
+   "x-default": "https://alkemos.com/exercises/shoulder-circles"
+  },
+  "jsonld_types": [
+   "BreadcrumbList",
+   "HowTo",
+   "Organization",
+   "WebPage",
+   "WebSite"
+  ],
+  "body_words": 328,
+  "chrome_status": 200,
+  "bytes_match_chrome": true,
+  "latency_ms": 346
+ },
+ "muscle-en": {
+  "url": "https://alkemos.com/muscles/biceps",
+  "status": 200,
+  "final_url": "https://alkemos.com/muscles/biceps",
+  "server": "cloudflare",
+  "cf_cache": "HIT",
+  "age": "",
+  "cache_control": "public, max-age=300, must-revalidate, s-maxage=3600, stale-while-revalidate=86400",
+  "x_robots": "",
+  "content_type": "text/html; charset=utf-8",
+  "bytes": 180054,
+  "title": "Biceps Exercises — Curls & Arm Movements | Alkemos",
+  "meta_robots": "index, follow",
+  "canonical": "https://alkemos.com/muscles/biceps",
+  "hreflang": {
+   "en": "https://alkemos.com/muscles/biceps",
+   "ar": "https://alkemos.com/ar/muscles/biceps",
+   "x-default": "https://alkemos.com/muscles/biceps"
+  },
+  "jsonld_types": [
+   "BreadcrumbList",
+   "ItemList",
+   "Organization",
+   "WebSite"
+  ],
+  "body_words": 1354,
+  "chrome_status": 200,
+  "bytes_match_chrome": true,
+  "latency_ms": 271
+ },
+ "blog-en": {
+  "url": "https://alkemos.com/blog/protein-after-workout-grams-guide",
+  "status": 200,
+  "final_url": "https://alkemos.com/blog/protein-after-workout-grams-guide",
+  "server": "cloudflare",
+  "cf_cache": "EXPIRED",
+  "age": "",
+  "cache_control": "public, max-age=300, must-revalidate, s-maxage=3600, stale-while-revalidate=86400",
+  "x_robots": "",
+  "content_type": "text/html; charset=utf-8",
+  "bytes": 153027,
+  "title": "How Many Grams of Protein After a Workout? (Calculated)",
+  "meta_robots": "index, follow",
+  "canonical": "https://alkemos.com/blog/protein-after-workout-grams-guide",
+  "hreflang": {
+   "en": "https://alkemos.com/blog/protein-after-workout-grams-guide",
+   "ar": "https://alkemos.com/ar/blog/protein-grams-after-workout-guide",
+   "x-default": "https://alkemos.com/blog/protein-after-workout-grams-guide"
+  },
+  "jsonld_types": [
+   "Article",
+   "BreadcrumbList",
+   "FAQPage",
+   "Organization",
+   "WebPage",
+   "WebSite"
+  ],
+  "body_words": 1681,
+  "chrome_status": 200,
+  "bytes_match_chrome": true,
+  "latency_ms": 317
+ },
+ "blog-ar": {
+  "url": "https://alkemos.com/ar/blog/hiit-home-workout-guide",
+  "status": 200,
+  "final_url": "https://alkemos.com/ar/blog/hiit-home-workout-guide",
+  "server": "cloudflare",
+  "cf_cache": "HIT",
+  "age": "",
+  "cache_control": "public, max-age=300, must-revalidate, s-maxage=3600, stale-while-revalidate=86400",
+  "x_robots": "",
+  "content_type": "text/html; charset=utf-8",
+  "bytes": 177410,
+  "title": "دليل شامل لتمارين HIIT في المنزل لحرق الدهون وبناء العضلات",
+  "meta_robots": "index, follow",
+  "canonical": "https://alkemos.com/ar/blog/hiit-home-workout-guide",
+  "hreflang": {
+   "ar": "https://alkemos.com/ar/blog/hiit-home-workout-guide",
+   "en": "https://alkemos.com/blog/hiit-home-fat-burning-workout",
+   "x-default": "https://alkemos.com/blog/hiit-home-fat-burning-workout"
+  },
+  "jsonld_types": [
+   "Article",
+   "BreadcrumbList",
+   "FAQPage",
+   "Organization",
+   "WebPage",
+   "WebSite"
+  ],
+  "body_words": 1796,
+  "chrome_status": 200,
+  "bytes_match_chrome": true,
+  "latency_ms": 306
+ },
+ "commercial-evo": {
+  "url": "https://alkemos.com/evo",
+  "status": 200,
+  "final_url": "https://alkemos.com/evo",
+  "server": "cloudflare",
+  "cf_cache": "HIT",
+  "age": "",
+  "cache_control": "public, max-age=300, must-revalidate, s-maxage=3600, stale-while-revalidate=86400",
+  "x_robots": "",
+  "content_type": "text/html; charset=utf-8",
+  "bytes": 140457,
+  "title": "EVO — AI Fitness Coach | Alkemos",
+  "meta_robots": "index, follow",
+  "canonical": "https://alkemos.com/evo",
+  "hreflang": {
+   "en": "https://alkemos.com/evo",
+   "ar": "https://alkemos.com/ar/evo",
+   "x-default": "https://alkemos.com/evo"
+  },
+  "jsonld_types": [
+   "FAQPage",
+   "Organization",
+   "SoftwareApplication",
+   "WebSite"
+  ],
+  "body_words": 1571,
+  "chrome_status": 200,
+  "bytes_match_chrome": true,
+  "latency_ms": 311
+ },
+ "commercial-coaching": {
+  "url": "https://alkemos.com/coaching",
+  "status": 200,
+  "final_url": "https://alkemos.com/coaching",
+  "server": "cloudflare",
+  "cf_cache": "HIT",
+  "age": "",
+  "cache_control": "public, max-age=300, must-revalidate, s-maxage=3600, stale-while-revalidate=86400",
+  "x_robots": "",
+  "content_type": "text/html; charset=utf-8",
+  "bytes": 144262,
+  "title": "Online Coaching with Real Coaches | Alkemos",
+  "meta_robots": "index, follow",
+  "canonical": "https://alkemos.com/coaching",
+  "hreflang": {
+   "en": "https://alkemos.com/coaching",
+   "ar": "https://alkemos.com/ar/coaching",
+   "x-default": "https://alkemos.com/coaching"
+  },
+  "jsonld_types": [
+   "FAQPage",
+   "Organization",
+   "Service",
+   "WebSite"
+  ],
+  "body_words": 946,
+  "chrome_status": 200,
+  "bytes_match_chrome": true,
+  "latency_ms": 277
+ },
+ "authors": {
+  "url": "https://alkemos.com/authors",
+  "status": 200,
+  "final_url": "https://alkemos.com/authors",
+  "server": "cloudflare",
+  "cf_cache": "EXPIRED",
+  "age": "",
+  "cache_control": "public, max-age=300, must-revalidate, s-maxage=3600, stale-while-revalidate=86400",
+  "x_robots": "",
+  "content_type": "text/html; charset=utf-8",
+  "bytes": 109976,
+  "title": "Authors & Reviewers | Alkemos",
+  "meta_robots": "index, follow",
+  "canonical": "https://alkemos.com/authors",
+  "hreflang": {
+   "en": "https://alkemos.com/authors",
+   "ar": "https://alkemos.com/ar/authors",
+   "x-default": "https://alkemos.com/authors"
+  },
+  "jsonld_types": [
+   "BreadcrumbList",
+   "Organization",
+   "WebSite"
+  ],
+  "body_words": 386,
+  "chrome_status": 200,
+  "bytes_match_chrome": true,
+  "latency_ms": 378
+ }
+}

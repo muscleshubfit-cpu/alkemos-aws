@@ -1,0 +1,1460 @@
+{
+ "coverage": {
+  "series": [
+   {
+    "date": "2026-09-04",
+    "not_indexed": 2,
+    "indexed": 0,
+    "impressions": 0
+   },
+   {
+    "date": "2026-09-05",
+    "not_indexed": 2099,
+    "indexed": 720,
+    "impressions": 1
+   },
+   {
+    "date": "2026-09-06",
+    "not_indexed": 2099,
+    "indexed": 720,
+    "impressions": 20
+   },
+   {
+    "date": "2026-09-07",
+    "not_indexed": 2099,
+    "indexed": 720,
+    "impressions": 125
+   },
+   {
+    "date": "2026-09-08",
+    "not_indexed": 2099,
+    "indexed": 720,
+    "impressions": 216
+   },
+   {
+    "date": "2026-09-09",
+    "not_indexed": 2099,
+    "indexed": 720,
+    "impressions": 364
+   },
+   {
+    "date": "2026-09-10",
+    "not_indexed": 2099,
+    "indexed": 720,
+    "impressions": 277
+   },
+   {
+    "date": "2026-09-11",
+    "not_indexed": 2099,
+    "indexed": 720,
+    "impressions": 294
+   },
+   {
+    "date": "2026-09-12",
+    "not_indexed": 2099,
+    "indexed": 720,
+    "impressions": 386
+   },
+   {
+    "date": "2026-09-13",
+    "not_indexed": 2099,
+    "indexed": 720,
+    "impressions": 289
+   },
+   {
+    "date": "2026-09-14",
+    "not_indexed": 2099,
+    "indexed": 720,
+    "impressions": 297
+   },
+   {
+    "date": "2026-09-15",
+    "not_indexed": 2081,
+    "indexed": 780,
+    "impressions": 260
+   },
+   {
+    "date": "2026-09-16",
+    "not_indexed": 2081,
+    "indexed": 780,
+    "impressions": 252
+   },
+   {
+    "date": "2026-09-17",
+    "not_indexed": 2081,
+    "indexed": 780,
+    "impressions": 214
+   },
+   {
+    "date": "2026-09-18",
+    "not_indexed": 2081,
+    "indexed": 780,
+    "impressions": 144
+   },
+   {
+    "date": "2026-09-19",
+    "not_indexed": 2088,
+    "indexed": 792,
+    "impressions": 109
+   },
+   {
+    "date": "2026-09-20",
+    "not_indexed": 2088,
+    "indexed": 792,
+    "impressions": 75
+   },
+   {
+    "date": "2026-09-21",
+    "not_indexed": 2088,
+    "indexed": 792,
+    "impressions": 90
+   },
+   {
+    "date": "2026-09-22",
+    "not_indexed": 1860,
+    "indexed": 1462,
+    "impressions": 175
+   },
+   {
+    "date": "2026-09-23",
+    "not_indexed": 1860,
+    "indexed": 1462,
+    "impressions": 110
+   },
+   {
+    "date": "2026-09-24",
+    "not_indexed": 1860,
+    "indexed": 1462,
+    "impressions": 81
+   },
+   {
+    "date": "2026-09-25",
+    "not_indexed": 1860,
+    "indexed": 1462,
+    "impressions": 103
+   },
+   {
+    "date": "2026-09-26",
+    "not_indexed": 1860,
+    "indexed": 1462,
+    "impressions": 144
+   },
+   {
+    "date": "2026-09-27",
+    "not_indexed": 1860,
+    "indexed": 1462,
+    "impressions": 146
+   },
+   {
+    "date": "2026-09-28",
+    "not_indexed": 1860,
+    "indexed": 1462,
+    "impressions": 117
+   },
+   {
+    "date": "2026-09-29",
+    "not_indexed": 1860,
+    "indexed": 1462,
+    "impressions": 295
+   },
+   {
+    "date": "2026-09-30",
+    "not_indexed": 1860,
+    "indexed": 1462,
+    "impressions": 496
+   },
+   {
+    "date": "2026-10-01",
+    "not_indexed": 1860,
+    "indexed": 1462,
+    "impressions": 641
+   },
+   {
+    "date": "2026-10-02",
+    "not_indexed": 1860,
+    "indexed": 1462,
+    "impressions": 586
+   },
+   {
+    "date": "2026-10-03",
+    "not_indexed": 1860,
+    "indexed": 1462,
+    "impressions": 459
+   },
+   {
+    "date": "2026-10-04",
+    "not_indexed": 1860,
+    "indexed": 1462,
+    "impressions": 49
+   },
+   {
+    "date": "2026-10-05",
+    "not_indexed": 2292,
+    "indexed": 1042,
+    "impressions": 14
+   },
+   {
+    "date": "2026-10-06",
+    "not_indexed": 2292,
+    "indexed": 1042,
+    "impressions": 3
+   },
+   {
+    "date": "2026-10-07",
+    "not_indexed": 2292,
+    "indexed": 1042,
+    "impressions": 2
+   },
+   {
+    "date": "2026-10-08",
+    "not_indexed": 2292,
+    "indexed": 1042,
+    "impressions": 1
+   },
+   {
+    "date": "2026-10-09",
+    "not_indexed": 2292,
+    "indexed": 1042,
+    "impressions": 0
+   },
+   {
+    "date": "2026-10-10",
+    "not_indexed": 2296,
+    "indexed": 1039,
+    "impressions": 0
+   },
+   {
+    "date": "2026-10-11",
+    "not_indexed": 2296,
+    "indexed": 1039,
+    "impressions": 1
+   },
+   {
+    "date": "2026-10-12",
+    "not_indexed": 2296,
+    "indexed": 1039,
+    "impressions": 1
+   },
+   {
+    "date": "2026-10-13",
+    "not_indexed": 2300,
+    "indexed": 1035,
+    "impressions": 0
+   },
+   {
+    "date": "2026-10-14",
+    "not_indexed": 2300,
+    "indexed": 1035,
+    "impressions": 0
+   },
+   {
+    "date": "2026-10-15",
+    "not_indexed": 2300,
+    "indexed": 1035,
+    "impressions": 0
+   },
+   {
+    "date": "2026-10-16",
+    "not_indexed": 2300,
+    "indexed": 1035,
+    "impressions": 3
+   },
+   {
+    "date": "2026-10-17",
+    "not_indexed": 2308,
+    "indexed": 1028,
+    "impressions": 0
+   },
+   {
+    "date": "2026-10-18",
+    "not_indexed": 2308,
+    "indexed": 1028,
+    "impressions": 2
+   },
+   {
+    "date": "2026-10-19",
+    "not_indexed": 2308,
+    "indexed": 1028,
+    "impressions": 1
+   },
+   {
+    "date": "2026-10-20",
+    "not_indexed": 2324,
+    "indexed": 1020,
+    "impressions": 1
+   },
+   {
+    "date": "2026-10-21",
+    "not_indexed": 2324,
+    "indexed": 1020,
+    "impressions": 0
+   },
+   {
+    "date": "2026-10-22",
+    "not_indexed": 2324,
+    "indexed": 1020,
+    "impressions": 0
+   },
+   {
+    "date": "2026-10-23",
+    "not_indexed": 2324,
+    "indexed": 1020,
+    "impressions": 0
+   },
+   {
+    "date": "2026-10-24",
+    "not_indexed": 2519,
+    "indexed": 886,
+    "impressions": 4
+   },
+   {
+    "date": "2026-10-25",
+    "not_indexed": 2519,
+    "indexed": 886,
+    "impressions": 2
+   },
+   {
+    "date": "2026-10-26",
+    "not_indexed": 2519,
+    "indexed": 886,
+    "impressions": 0
+   },
+   {
+    "date": "2026-10-27",
+    "not_indexed": 2519,
+    "indexed": 886,
+    "impressions": 0
+   },
+   {
+    "date": "2026-10-28",
+    "not_indexed": 2519,
+    "indexed": 886,
+    "impressions": 0
+   },
+   {
+    "date": "2026-10-29",
+    "not_indexed": 2519,
+    "indexed": 886,
+    "impressions": 1
+   },
+   {
+    "date": "2026-10-30",
+    "not_indexed": 2519,
+    "indexed": 886,
+    "impressions": 1
+   },
+   {
+    "date": "2026-10-31",
+    "not_indexed": 2519,
+    "indexed": 886,
+    "impressions": 7
+   },
+   {
+    "date": "2026-11-01",
+    "not_indexed": 2519,
+    "indexed": 886,
+    "impressions": 1
+   },
+   {
+    "date": "2026-11-02",
+    "not_indexed": 2519,
+    "indexed": 886,
+    "impressions": 3
+   },
+   {
+    "date": "2026-11-03",
+    "not_indexed": 2519,
+    "indexed": 886,
+    "impressions": 0
+   },
+   {
+    "date": "2026-11-04",
+    "not_indexed": 2519,
+    "indexed": 886,
+    "impressions": 3
+   },
+   {
+    "date": "2026-11-05",
+    "not_indexed": 2519,
+    "indexed": 886,
+    "impressions": 3
+   },
+   {
+    "date": "2026-11-06",
+    "not_indexed": 2519,
+    "indexed": 886,
+    "impressions": 4
+   },
+   {
+    "date": "2026-11-07",
+    "not_indexed": 2894,
+    "indexed": 519,
+    "impressions": 0
+   },
+   {
+    "date": "2026-11-08",
+    "not_indexed": 2894,
+    "indexed": 519,
+    "impressions": 0
+   },
+   {
+    "date": "2026-11-09",
+    "not_indexed": 2894,
+    "indexed": 519,
+    "impressions": 1
+   },
+   {
+    "date": "2026-11-10",
+    "not_indexed": 3142,
+    "indexed": 351,
+    "impressions": 10
+   },
+   {
+    "date": "2026-11-11",
+    "not_indexed": 3142,
+    "indexed": 351,
+    "impressions": 4
+   },
+   {
+    "date": "2026-11-12",
+    "not_indexed": 3142,
+    "indexed": 351,
+    "impressions": 1
+   },
+   {
+    "date": "2026-11-13",
+    "not_indexed": 3142,
+    "indexed": 351,
+    "impressions": 4
+   }
+  ],
+  "waves_detected": [
+   {
+    "date": "2026-09-05",
+    "from": 0,
+    "to": 720,
+    "delta": 720,
+    "not_indexed_from": 2,
+    "not_indexed_to": 2099
+   },
+   {
+    "date": "2026-09-15",
+    "from": 720,
+    "to": 780,
+    "delta": 60,
+    "not_indexed_from": 2099,
+    "not_indexed_to": 2081
+   },
+   {
+    "date": "2026-09-22",
+    "from": 792,
+    "to": 1462,
+    "delta": 670,
+    "not_indexed_from": 2088,
+    "not_indexed_to": 1860
+   },
+   {
+    "date": "2026-10-05",
+    "from": 1462,
+    "to": 1042,
+    "delta": -420,
+    "not_indexed_from": 1860,
+    "not_indexed_to": 2292
+   },
+   {
+    "date": "2026-10-24",
+    "from": 1020,
+    "to": 886,
+    "delta": -134,
+    "not_indexed_from": 2324,
+    "not_indexed_to": 2519
+   },
+   {
+    "date": "2026-11-07",
+    "from": 886,
+    "to": 519,
+    "delta": -367,
+    "not_indexed_from": 2519,
+    "not_indexed_to": 2894
+   },
+   {
+    "date": "2026-11-10",
+    "from": 519,
+    "to": 351,
+    "delta": -168,
+    "not_indexed_from": 2894,
+    "not_indexed_to": 3142
+   }
+  ],
+  "first_date": "2026-09-04",
+  "last_date": "2026-11-13",
+  "peak_indexed": 1462,
+  "peak_indexed_date": "2026-09-22",
+  "current_indexed": 351,
+  "current_not_indexed": 3142,
+  "current_total_known": 3493,
+  "current_freeze_days": 4,
+  "last_date_impressions_ge_50": "2026-10-03",
+  "last_date_impressions_ge_10": "2026-11-10",
+  "phase_stats": {
+   "pre_collapse_peak (09-22..10-04)": {
+    "days": 13,
+    "impressions_sum": 3402,
+    "impressions_max_day": 641,
+    "indexed_start": 1462,
+    "indexed_end": 1462
+   },
+   "post_w1 (10-05..10-23)": {
+    "days": 19,
+    "impressions_sum": 29,
+    "impressions_max_day": 14,
+    "indexed_start": 1042,
+    "indexed_end": 1020
+   },
+   "post_w2_frozen (10-24..11-06)": {
+    "days": 14,
+    "impressions_sum": 29,
+    "impressions_max_day": 7,
+    "indexed_start": 886,
+    "indexed_end": 886
+   },
+   "post_w3 (11-07..11-09)": {
+    "days": 3,
+    "impressions_sum": 1,
+    "impressions_max_day": 1,
+    "indexed_start": 519,
+    "indexed_end": 519
+   },
+   "latest_7d (11-07..11-13)": {
+    "days": 7,
+    "impressions_sum": 20,
+    "impressions_max_day": 10,
+    "indexed_start": 519,
+    "indexed_end": 351
+   },
+   "latest_14d (10-31..11-13)": {
+    "days": 14,
+    "impressions_sum": 41,
+    "impressions_max_day": 10,
+    "indexed_start": 886,
+    "indexed_end": 351
+   },
+   "latest_28d (10-17..11-13)": {
+    "days": 28,
+    "impressions_sum": 53,
+    "impressions_max_day": 10,
+    "indexed_start": 1028,
+    "indexed_end": 351
+   }
+  }
+ },
+ "exclusions_now": {
+  "Excluded by ‘noindex’ tag": {
+   "pages": 163,
+   "source": "Website",
+   "validation": "Failed"
+  },
+  "Not found (404)": {
+   "pages": 5,
+   "source": "Website",
+   "validation": "Failed"
+  },
+  "Alternate page with proper canonical tag": {
+   "pages": 203,
+   "source": "Website",
+   "validation": "Started"
+  },
+  "Page with redirect": {
+   "pages": 4,
+   "source": "Website",
+   "validation": "Started"
+  },
+  "Blocked by robots.txt": {
+   "pages": 1,
+   "source": "Website",
+   "validation": "Started"
+  },
+  "Crawled - currently not indexed": {
+   "pages": 1823,
+   "source": "Google systems",
+   "validation": "Started"
+  },
+  "Discovered - currently not indexed": {
+   "pages": 943,
+   "source": "Google systems",
+   "validation": "Started"
+  }
+ },
+ "exclusions_compare_vs_2026-11-11": {
+  "Excluded by ‘noindex’ tag": {
+   "now": 163,
+   "prior": null,
+   "delta": null,
+   "validation": "Failed"
+  },
+  "Not found (404)": {
+   "now": 5,
+   "prior": null,
+   "delta": null,
+   "validation": "Failed"
+  },
+  "Alternate page with proper canonical tag": {
+   "now": 203,
+   "prior": null,
+   "delta": null,
+   "validation": "Started"
+  },
+  "Page with redirect": {
+   "now": 4,
+   "prior": null,
+   "delta": null,
+   "validation": "Started"
+  },
+  "Blocked by robots.txt": {
+   "now": 1,
+   "prior": null,
+   "delta": null,
+   "validation": "Started"
+  },
+  "Crawled - currently not indexed": {
+   "now": 1823,
+   "prior": 1271,
+   "delta": 552,
+   "validation": "Started"
+  },
+  "Discovered - currently not indexed": {
+   "now": 943,
+   "prior": 879,
+   "delta": 64,
+   "validation": "Started"
+  }
+ },
+ "prior_baseline": {
+  "Crawled - currently not indexed": 1271,
+  "Discovered - currently not indexed": 879,
+  "indexed_total": 886,
+  "not_indexed_total": 2519,
+  "as_of": "2026-11-11 (data through 06-11/11-11)"
+ },
+ "performance": {
+  "series": [
+   {
+    "date": "2026-09-04",
+    "clicks": 0,
+    "impressions": 0,
+    "ctr": "",
+    "position": null
+   },
+   {
+    "date": "2026-09-05",
+    "clicks": 0,
+    "impressions": 1,
+    "ctr": "0%",
+    "position": "1"
+   },
+   {
+    "date": "2026-09-06",
+    "clicks": 0,
+    "impressions": 20,
+    "ctr": "0%",
+    "position": "53.3"
+   },
+   {
+    "date": "2026-09-07",
+    "clicks": 1,
+    "impressions": 125,
+    "ctr": "0.8%",
+    "position": "56.3"
+   },
+   {
+    "date": "2026-09-08",
+    "clicks": 0,
+    "impressions": 216,
+    "ctr": "0%",
+    "position": "66.1"
+   },
+   {
+    "date": "2026-09-09",
+    "clicks": 0,
+    "impressions": 364,
+    "ctr": "0%",
+    "position": "62.7"
+   },
+   {
+    "date": "2026-09-10",
+    "clicks": 1,
+    "impressions": 277,
+    "ctr": "0.36%",
+    "position": "54"
+   },
+   {
+    "date": "2026-09-11",
+    "clicks": 0,
+    "impressions": 294,
+    "ctr": "0%",
+    "position": "62.1"
+   },
+   {
+    "date": "2026-09-12",
+    "clicks": 0,
+    "impressions": 386,
+    "ctr": "0%",
+    "position": "65.1"
+   },
+   {
+    "date": "2026-09-13",
+    "clicks": 0,
+    "impressions": 289,
+    "ctr": "0%",
+    "position": "64.8"
+   },
+   {
+    "date": "2026-09-14",
+    "clicks": 0,
+    "impressions": 297,
+    "ctr": "0%",
+    "position": "66.6"
+   },
+   {
+    "date": "2026-09-15",
+    "clicks": 0,
+    "impressions": 260,
+    "ctr": "0%",
+    "position": "57.9"
+   },
+   {
+    "date": "2026-09-16",
+    "clicks": 1,
+    "impressions": 252,
+    "ctr": "0.4%",
+    "position": "59.3"
+   },
+   {
+    "date": "2026-09-17",
+    "clicks": 0,
+    "impressions": 214,
+    "ctr": "0%",
+    "position": "53.9"
+   },
+   {
+    "date": "2026-09-18",
+    "clicks": 0,
+    "impressions": 144,
+    "ctr": "0%",
+    "position": "61.4"
+   },
+   {
+    "date": "2026-09-19",
+    "clicks": 1,
+    "impressions": 109,
+    "ctr": "0.92%",
+    "position": "37.7"
+   },
+   {
+    "date": "2026-09-20",
+    "clicks": 0,
+    "impressions": 75,
+    "ctr": "0%",
+    "position": "25"
+   },
+   {
+    "date": "2026-09-21",
+    "clicks": 0,
+    "impressions": 90,
+    "ctr": "0%",
+    "position": "28.8"
+   },
+   {
+    "date": "2026-09-22",
+    "clicks": 0,
+    "impressions": 175,
+    "ctr": "0%",
+    "position": "24.4"
+   },
+   {
+    "date": "2026-09-23",
+    "clicks": 0,
+    "impressions": 110,
+    "ctr": "0%",
+    "position": "39.8"
+   },
+   {
+    "date": "2026-09-24",
+    "clicks": 0,
+    "impressions": 81,
+    "ctr": "0%",
+    "position": "42.8"
+   },
+   {
+    "date": "2026-09-25",
+    "clicks": 0,
+    "impressions": 103,
+    "ctr": "0%",
+    "position": "33.2"
+   },
+   {
+    "date": "2026-09-26",
+    "clicks": 0,
+    "impressions": 144,
+    "ctr": "0%",
+    "position": "49.7"
+   },
+   {
+    "date": "2026-09-27",
+    "clicks": 0,
+    "impressions": 146,
+    "ctr": "0%",
+    "position": "54.5"
+   },
+   {
+    "date": "2026-09-28",
+    "clicks": 0,
+    "impressions": 117,
+    "ctr": "0%",
+    "position": "35.3"
+   },
+   {
+    "date": "2026-09-29",
+    "clicks": 1,
+    "impressions": 295,
+    "ctr": "0.34%",
+    "position": "32.6"
+   },
+   {
+    "date": "2026-09-30",
+    "clicks": 2,
+    "impressions": 496,
+    "ctr": "0.4%",
+    "position": "39.2"
+   },
+   {
+    "date": "2026-10-01",
+    "clicks": 0,
+    "impressions": 641,
+    "ctr": "0%",
+    "position": "54.3"
+   },
+   {
+    "date": "2026-10-02",
+    "clicks": 1,
+    "impressions": 586,
+    "ctr": "0.17%",
+    "position": "49"
+   },
+   {
+    "date": "2026-10-03",
+    "clicks": 0,
+    "impressions": 459,
+    "ctr": "0%",
+    "position": "42.8"
+   },
+   {
+    "date": "2026-10-04",
+    "clicks": 0,
+    "impressions": 49,
+    "ctr": "0%",
+    "position": "72.2"
+   },
+   {
+    "date": "2026-10-05",
+    "clicks": 0,
+    "impressions": 14,
+    "ctr": "0%",
+    "position": "68.1"
+   },
+   {
+    "date": "2026-10-06",
+    "clicks": 0,
+    "impressions": 3,
+    "ctr": "0%",
+    "position": "75.7"
+   },
+   {
+    "date": "2026-10-07",
+    "clicks": 2,
+    "impressions": 2,
+    "ctr": "100%",
+    "position": "1.5"
+   },
+   {
+    "date": "2026-10-08",
+    "clicks": 0,
+    "impressions": 1,
+    "ctr": "0%",
+    "position": "1"
+   },
+   {
+    "date": "2026-10-09",
+    "clicks": 0,
+    "impressions": 0,
+    "ctr": "",
+    "position": null
+   },
+   {
+    "date": "2026-10-10",
+    "clicks": 0,
+    "impressions": 0,
+    "ctr": "",
+    "position": null
+   },
+   {
+    "date": "2026-10-11",
+    "clicks": 0,
+    "impressions": 1,
+    "ctr": "0%",
+    "position": "1"
+   },
+   {
+    "date": "2026-10-12",
+    "clicks": 1,
+    "impressions": 1,
+    "ctr": "100%",
+    "position": "1"
+   },
+   {
+    "date": "2026-10-13",
+    "clicks": 0,
+    "impressions": 0,
+    "ctr": "",
+    "position": null
+   },
+   {
+    "date": "2026-10-14",
+    "clicks": 0,
+    "impressions": 0,
+    "ctr": "",
+    "position": null
+   },
+   {
+    "date": "2026-10-15",
+    "clicks": 0,
+    "impressions": 0,
+    "ctr": "",
+    "position": null
+   },
+   {
+    "date": "2026-10-16",
+    "clicks": 0,
+    "impressions": 3,
+    "ctr": "0%",
+    "position": "32.7"
+   },
+   {
+    "date": "2026-10-17",
+    "clicks": 0,
+    "impressions": 0,
+    "ctr": "",
+    "position": null
+   },
+   {
+    "date": "2026-10-18",
+    "clicks": 0,
+    "impressions": 2,
+    "ctr": "0%",
+    "position": "19"
+   },
+   {
+    "date": "2026-10-19",
+    "clicks": 0,
+    "impressions": 1,
+    "ctr": "0%",
+    "position": "4"
+   },
+   {
+    "date": "2026-10-20",
+    "clicks": 0,
+    "impressions": 1,
+    "ctr": "0%",
+    "position": "3"
+   },
+   {
+    "date": "2026-10-21",
+    "clicks": 0,
+    "impressions": 0,
+    "ctr": "",
+    "position": null
+   },
+   {
+    "date": "2026-10-22",
+    "clicks": 0,
+    "impressions": 0,
+    "ctr": "",
+    "position": null
+   },
+   {
+    "date": "2026-10-23",
+    "clicks": 0,
+    "impressions": 0,
+    "ctr": "",
+    "position": null
+   },
+   {
+    "date": "2026-10-24",
+    "clicks": 1,
+    "impressions": 4,
+    "ctr": "25%",
+    "position": "1.2"
+   },
+   {
+    "date": "2026-10-25",
+    "clicks": 0,
+    "impressions": 2,
+    "ctr": "0%",
+    "position": "3.5"
+   },
+   {
+    "date": "2026-10-26",
+    "clicks": 0,
+    "impressions": 0,
+    "ctr": "",
+    "position": null
+   },
+   {
+    "date": "2026-10-27",
+    "clicks": 0,
+    "impressions": 0,
+    "ctr": "",
+    "position": null
+   },
+   {
+    "date": "2026-10-28",
+    "clicks": 0,
+    "impressions": 0,
+    "ctr": "",
+    "position": null
+   },
+   {
+    "date": "2026-10-29",
+    "clicks": 1,
+    "impressions": 1,
+    "ctr": "100%",
+    "position": "1"
+   },
+   {
+    "date": "2026-10-30",
+    "clicks": 0,
+    "impressions": 1,
+    "ctr": "0%",
+    "position": "1"
+   },
+   {
+    "date": "2026-10-31",
+    "clicks": 0,
+    "impressions": 7,
+    "ctr": "0%",
+    "position": "4.9"
+   },
+   {
+    "date": "2026-11-01",
+    "clicks": 0,
+    "impressions": 1,
+    "ctr": "0%",
+    "position": "5"
+   },
+   {
+    "date": "2026-11-02",
+    "clicks": 0,
+    "impressions": 3,
+    "ctr": "0%",
+    "position": "1"
+   },
+   {
+    "date": "2026-11-03",
+    "clicks": 0,
+    "impressions": 0,
+    "ctr": "",
+    "position": null
+   },
+   {
+    "date": "2026-11-04",
+    "clicks": 0,
+    "impressions": 3,
+    "ctr": "0%",
+    "position": "12.7"
+   },
+   {
+    "date": "2026-11-05",
+    "clicks": 0,
+    "impressions": 3,
+    "ctr": "0%",
+    "position": "1.7"
+   },
+   {
+    "date": "2026-11-06",
+    "clicks": 0,
+    "impressions": 4,
+    "ctr": "0%",
+    "position": "2"
+   },
+   {
+    "date": "2026-11-07",
+    "clicks": 0,
+    "impressions": 0,
+    "ctr": "",
+    "position": null
+   },
+   {
+    "date": "2026-11-08",
+    "clicks": 0,
+    "impressions": 0,
+    "ctr": "",
+    "position": null
+   },
+   {
+    "date": "2026-11-09",
+    "clicks": 1,
+    "impressions": 1,
+    "ctr": "100%",
+    "position": "2"
+   },
+   {
+    "date": "2026-11-10",
+    "clicks": 1,
+    "impressions": 10,
+    "ctr": "10%",
+    "position": "1.7"
+   },
+   {
+    "date": "2026-11-11",
+    "clicks": 1,
+    "impressions": 4,
+    "ctr": "25%",
+    "position": "12.5"
+   },
+   {
+    "date": "2026-11-12",
+    "clicks": 0,
+    "impressions": 1,
+    "ctr": "0%",
+    "position": "1"
+   },
+   {
+    "date": "2026-11-13",
+    "clicks": 0,
+    "impressions": 4,
+    "ctr": "0%",
+    "position": "2.8"
+   },
+   {
+    "date": "2026-11-14",
+    "clicks": 0,
+    "impressions": 3,
+    "ctr": "0%",
+    "position": "4"
+   },
+   {
+    "date": "2026-11-15",
+    "clicks": 0,
+    "impressions": 0,
+    "ctr": "",
+    "position": null
+   },
+   {
+    "date": "2026-11-16",
+    "clicks": 0,
+    "impressions": 0,
+    "ctr": "",
+    "position": null
+   }
+  ],
+  "first_date": "2026-09-04",
+  "last_date": "2026-11-16",
+  "phase_stats": {
+   "pre_collapse_peak (09-22..10-04)": {
+    "clicks": 4,
+    "impressions": 3402,
+    "avg_position": 43.83
+   },
+   "post_w1 (10-05..10-23)": {
+    "clicks": 3,
+    "impressions": 29,
+    "avg_position": 20.7
+   },
+   "post_w2_frozen (10-24..11-06)": {
+    "clicks": 2,
+    "impressions": 29,
+    "avg_position": 3.4
+   },
+   "post_w3 (11-07..11-09)": {
+    "clicks": 1,
+    "impressions": 1,
+    "avg_position": 2.0
+   },
+   "latest_7d (11-07..11-13)": {
+    "clicks": 3,
+    "impressions": 20,
+    "avg_position": 4.0
+   },
+   "latest_14d (10-31..11-13)": {
+    "clicks": 3,
+    "impressions": 41,
+    "avg_position": 4.3
+   },
+   "latest_28d (10-17..11-13)": {
+    "clicks": 5,
+    "impressions": 53,
+    "avg_position": 4.44
+   }
+  },
+  "total_clicks": 16,
+  "total_impressions": 6896
+ },
+ "pages_breakdown": {
+  "en/tools": {
+   "pages_with_impressions": 6,
+   "clicks": 1,
+   "impressions": 2789,
+   "avg_position_weighted": 82.11
+  },
+  "en/foods": {
+   "pages_with_impressions": 315,
+   "clicks": 1,
+   "impressions": 1765,
+   "avg_position_weighted": 17.39
+  },
+  "en/exercises": {
+   "pages_with_impressions": 274,
+   "clicks": 0,
+   "impressions": 1563,
+   "avg_position_weighted": 50.96
+  },
+  "ar/exercises": {
+   "pages_with_impressions": 161,
+   "clicks": 3,
+   "impressions": 369,
+   "avg_position_weighted": 9.3
+  },
+  "ar/foods": {
+   "pages_with_impressions": 25,
+   "clicks": 0,
+   "impressions": 307,
+   "avg_position_weighted": 8.86
+  },
+  "en/blog": {
+   "pages_with_impressions": 35,
+   "clicks": 0,
+   "impressions": 113,
+   "avg_position_weighted": 21.7
+  },
+  "en/homepage": {
+   "pages_with_impressions": 1,
+   "clicks": 7,
+   "impressions": 84,
+   "avg_position_weighted": 3.83
+  },
+  "ar/blog": {
+   "pages_with_impressions": 30,
+   "clicks": 1,
+   "impressions": 83,
+   "avg_position_weighted": 6.82
+  },
+  "en/commercial": {
+   "pages_with_impressions": 3,
+   "clicks": 2,
+   "impressions": 72,
+   "avg_position_weighted": 36.56
+  },
+  "en/muscles": {
+   "pages_with_impressions": 4,
+   "clicks": 0,
+   "impressions": 48,
+   "avg_position_weighted": 49.02
+  },
+  "en/other:diet-plan": {
+   "pages_with_impressions": 7,
+   "clicks": 0,
+   "impressions": 36,
+   "avg_position_weighted": 39.25
+  },
+  "ar/tools": {
+   "pages_with_impressions": 5,
+   "clicks": 0,
+   "impressions": 30,
+   "avg_position_weighted": 32.67
+  },
+  "en/other:equipment": {
+   "pages_with_impressions": 5,
+   "clicks": 0,
+   "impressions": 21,
+   "avg_position_weighted": 28.38
+  },
+  "ar/muscles": {
+   "pages_with_impressions": 3,
+   "clicks": 0,
+   "impressions": 12,
+   "avg_position_weighted": 12.08
+  },
+  "en/other:about": {
+   "pages_with_impressions": 1,
+   "clicks": 0,
+   "impressions": 11,
+   "avg_position_weighted": 3.82
+  },
+  "ar/other:memberships": {
+   "pages_with_impressions": 1,
+   "clicks": 0,
+   "impressions": 10,
+   "avg_position_weighted": 5.0
+  },
+  "ar/other:diet-plan": {
+   "pages_with_impressions": 5,
+   "clicks": 0,
+   "impressions": 10,
+   "avg_position_weighted": 8.1
+  },
+  "en/other:for-coaches": {
+   "pages_with_impressions": 2,
+   "clicks": 0,
+   "impressions": 9,
+   "avg_position_weighted": 6.55
+  },
+  "en/other:contact": {
+   "pages_with_impressions": 1,
+   "clicks": 0,
+   "impressions": 7,
+   "avg_position_weighted": 2.86
+  },
+  "ar/other:about": {
+   "pages_with_impressions": 1,
+   "clicks": 0,
+   "impressions": 7,
+   "avg_position_weighted": 6.71
+  },
+  "ar/other:programs": {
+   "pages_with_impressions": 3,
+   "clicks": 0,
+   "impressions": 7,
+   "avg_position_weighted": 5.86
+  },
+  "ar/other:equipment": {
+   "pages_with_impressions": 4,
+   "clicks": 0,
+   "impressions": 7,
+   "avg_position_weighted": 22.43
+  },
+  "en/other:memberships": {
+   "pages_with_impressions": 1,
+   "clicks": 0,
+   "impressions": 6,
+   "avg_position_weighted": 7.0
+  },
+  "ar/homepage": {
+   "pages_with_impressions": 1,
+   "clicks": 3,
+   "impressions": 5,
+   "avg_position_weighted": 1.4
+  },
+  "ar/commercial": {
+   "pages_with_impressions": 3,
+   "clicks": 0,
+   "impressions": 5,
+   "avg_position_weighted": 6.8
+  },
+  "en/other:collections": {
+   "pages_with_impressions": 1,
+   "clicks": 0,
+   "impressions": 4,
+   "avg_position_weighted": 8.0
+  },
+  "ar/other:for-coaches": {
+   "pages_with_impressions": 1,
+   "clicks": 0,
+   "impressions": 3,
+   "avg_position_weighted": 2.33
+  },
+  "ar/other:terms": {
+   "pages_with_impressions": 1,
+   "clicks": 0,
+   "impressions": 3,
+   "avg_position_weighted": 8.67
+  },
+  "en/other:programs": {
+   "pages_with_impressions": 2,
+   "clicks": 0,
+   "impressions": 3,
+   "avg_position_weighted": 32.0
+  },
+  "en/other:exercises?cat=chest": {
+   "pages_with_impressions": 1,
+   "clicks": 0,
+   "impressions": 2,
+   "avg_position_weighted": 7.5
+  },
+  "en/other:ai-meal-planner": {
+   "pages_with_impressions": 1,
+   "clicks": 0,
+   "impressions": 2,
+   "avg_position_weighted": 39.5
+  },
+  "en/other:http:": {
+   "pages_with_impressions": 1,
+   "clicks": 0,
+   "impressions": 1,
+   "avg_position_weighted": 1.0
+  },
+  "ar/other:foods?cat=fat": {
+   "pages_with_impressions": 1,
+   "clicks": 0,
+   "impressions": 1,
+   "avg_position_weighted": 7.0
+  },
+  "en/other:terms": {
+   "pages_with_impressions": 1,
+   "clicks": 0,
+   "impressions": 1,
+   "avg_position_weighted": 7.0
+  },
+  "en/other:faq": {
+   "pages_with_impressions": 1,
+   "clicks": 0,
+   "impressions": 1,
+   "avg_position_weighted": 8.0
+  },
+  "ar/other:compare": {
+   "pages_with_impressions": 1,
+   "clicks": 0,
+   "impressions": 1,
+   "avg_position_weighted": 12.0
+  }
+ },
+ "pages_position_distribution": {
+  "0-9": 497,
+  "10-19": 155,
+  "120-129": 1,
+  "20-29": 43,
+  "200-209": 3,
+  "30-39": 43,
+  "40-49": 49,
+  "50-59": 30,
+  "60-69": 43,
+  "70-79": 29,
+  "80-89": 12,
+  "90-99": 4
+ },
+ "queries_summary": {
+  "arabic": {
+   "count": 163,
+   "impressions": 1245,
+   "clicks": 0,
+   "avg_position_weighted": 75.53
+  },
+  "english": {
+   "count": 837,
+   "impressions": 2685,
+   "clicks": 1,
+   "avg_position_weighted": 65.53
+  },
+  "brand": {
+   "count": 1,
+   "impressions": 5,
+   "clicks": 1,
+   "avg_position_weighted": 4.4
+  },
+  "non_brand": {
+   "count": 999,
+   "impressions": 3925,
+   "clicks": 0,
+   "avg_position_weighted": 68.78
+  }
+ }
+}

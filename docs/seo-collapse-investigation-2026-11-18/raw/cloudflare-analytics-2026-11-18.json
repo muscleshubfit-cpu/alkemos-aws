@@ -1,0 +1,278 @@
+{
+ "zone": "alkemos.com",
+ "collected_at": "2026-11-18",
+ "method": "Cloudflare GraphQL Analytics API (read-only)",
+ "ua_counts_nov11_18": [
+  {
+   "ua": "Mediapartners-Google",
+   "count": 2890
+  },
+  {
+   "ua": "Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.8010.52 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
+   "count": 463
+  },
+  {
+   "ua": "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; GoogleOther) Chrome/154.0.8037.97 Safari/537.36",
+   "count": 314
+  },
+  {
+   "ua": "Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.8037.97 Mobile Safari/537.36 (compatible; GoogleOther)",
+   "count": 276
+  },
+  {
+   "ua": "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
+   "count": 216
+  },
+  {
+   "ua": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.8037.97 Safari/537.36 (compatible; Google-InspectionTool/1.0)",
+   "count": 93
+  },
+  {
+   "ua": "Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.8037.97 Mobile Safari/537.36 (compatible; Google-InspectionTool/1.0)",
+   "count": 92
+  },
+  {
+   "ua": "Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.8103.78 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
+   "count": 40
+  },
+  {
+   "ua": "Googlebot-Image/1.0",
+   "count": 33
+  },
+  {
+   "ua": "Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
+   "count": 20
+  },
+  {
+   "ua": "Mozilla/5.0 (compatible; Google-InspectionTool/1.0)",
+   "count": 5
+  },
+  {
+   "ua": "Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.8103.50 Mobile Safari/537.36 (compatible; Google-InspectionTool/1.0)",
+   "count": 5
+  },
+  {
+   "ua": "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; Googlebot/2.1; +http://www.google.com/bot.html) Chrome/W.X.Y.Z Safari/537.36",
+   "count": 4
+  },
+  {
+   "ua": "Google-Display-Ads-Bot",
+   "count": 4
+  },
+  {
+   "ua": "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; Googlebot/2.1; +http://www.google.com/bot.html) Chrome/130.0 Safari/537.36",
+   "count": 4
+  },
+  {
+   "ua": "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; Googlebot/2.1; +http://www.google.com/bot.html) Chrome/154.0.8037.97 Safari/537.36",
+   "count": 2
+  },
+  {
+   "ua": "GoogleOther",
+   "count": 2
+  },
+  {
+   "ua": "Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.84 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
+   "count": 1
+  }
+ ],
+ "daily_nov4_17": {
+  "2026-11-04": {
+   "googlebot": {
+    "googlebot": 99,
+    "googlebot_image": 2,
+    "inspection": 0,
+    "googlebot_status": {
+     "200": 84,
+     "308": 4,
+     "404": 7,
+     "301": 3,
+     "403": 1
+    }
+   },
+   "all_5xx": 6844
+  },
+  "2026-11-05": {
+   "googlebot": {
+    "googlebot": 126,
+    "googlebot_image": 11,
+    "inspection": 0,
+    "googlebot_status": {
+     "200": 119,
+     "404": 5,
+     "301": 2
+    }
+   },
+   "all_5xx": 4443
+  },
+  "2026-11-06": {
+   "googlebot": {
+    "googlebot": 52,
+    "googlebot_image": 1,
+    "inspection": 0,
+    "googlebot_status": {
+     "200": 50,
+     "404": 2
+    }
+   },
+   "all_5xx": 4631
+  },
+  "2026-11-07": {
+   "googlebot": {
+    "googlebot": 167,
+    "googlebot_image": 2,
+    "inspection": 0,
+    "googlebot_status": {
+     "200": 157,
+     "404": 10
+    }
+   },
+   "all_5xx": 5821
+  },
+  "2026-11-08": {
+   "googlebot": {
+    "googlebot": 78,
+    "googlebot_image": 4,
+    "inspection": 0,
+    "googlebot_status": {
+     "200": 76,
+     "404": 2
+    }
+   },
+   "all_5xx": 4593
+  },
+  "2026-11-09": {
+   "googlebot": {
+    "googlebot": 102,
+    "googlebot_image": 1,
+    "inspection": 0,
+    "googlebot_status": {
+     "200": 96,
+     "301": 6
+    }
+   },
+   "all_5xx": 5831
+  },
+  "2026-11-10": {
+   "googlebot": {
+    "googlebot": 389,
+    "googlebot_image": 4,
+    "inspection": 54,
+    "googlebot_status": {
+     "200": 377,
+     "404": 12
+    }
+   },
+   "all_5xx": 74559
+  },
+  "2026-11-11": {
+   "googlebot": {
+    "googlebot": 77,
+    "googlebot_image": 2,
+    "inspection": 68,
+    "googlebot_status": {
+     "200": 77
+    }
+   },
+   "all_5xx": 7349
+  },
+  "2026-11-12": {
+   "googlebot": {
+    "googlebot": 252,
+    "googlebot_image": 14,
+    "inspection": 0,
+    "googlebot_status": {
+     "200": 243,
+     "301": 9
+    }
+   },
+   "all_5xx": 9790
+  },
+  "2026-11-13": {
+   "googlebot": {
+    "googlebot": 191,
+    "googlebot_image": 6,
+    "inspection": 127,
+    "googlebot_status": {
+     "200": 138,
+     "403": 25,
+     "404": 27,
+     "301": 1
+    }
+   },
+   "all_5xx": 5745
+  },
+  "2026-11-14": {
+   "googlebot": {
+    "googlebot": 100,
+    "googlebot_image": 0,
+    "inspection": 0,
+    "googlebot_status": {
+     "200": 100
+    }
+   },
+   "all_5xx": 3600
+  },
+  "2026-11-15": {
+   "googlebot": {
+    "googlebot": 68,
+    "googlebot_image": 1,
+    "inspection": 0,
+    "googlebot_status": {
+     "200": 56,
+     "404": 5,
+     "403": 7
+    }
+   },
+   "all_5xx": 3196
+  },
+  "2026-11-16": {
+   "googlebot": {
+    "googlebot": 73,
+    "googlebot_image": 10,
+    "inspection": 0,
+    "googlebot_status": {
+     "200": 71,
+     "404": 2
+    }
+   },
+   "all_5xx": 5145
+  },
+  "2026-11-17": {
+   "googlebot": {
+    "googlebot": 58,
+    "googlebot_image": 0,
+    "inspection": 0,
+    "googlebot_status": {
+     "200": 57,
+     "301": 1
+    }
+   },
+   "all_5xx": 5428
+  }
+ },
+ "nov10_anomaly": {
+  "total_requests": 441047,
+  "large_uas": [
+   {
+    "ua": "Mozilla/5.0 (Linux; Android 11; moto g power (2022)) AppleWebKit/537.36 (KHTML, ",
+    "status": 200,
+    "count": 305043
+   },
+   {
+    "ua": "nginx-ssl early hints",
+    "status": 504,
+    "count": 74194
+   },
+   {
+    "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)",
+    "status": 200,
+    "count": 15139
+   }
+  ],
+  "googlebot_status_on_nov10": {
+   "200": 332,
+   "404": 12
+  }
+ }
+}
