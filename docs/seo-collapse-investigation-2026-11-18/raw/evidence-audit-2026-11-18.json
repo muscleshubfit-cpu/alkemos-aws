@@ -1,0 +1,233 @@
+{
+ "audit_of": "SEO-COLLAPSE-INVESTIGATION-2026-11-18 (supplement)",
+ "computed_at": "2026-11-18",
+ "inputs_offline_only": true,
+ "readme_table_vs_raw_json": {
+  "cells_compared": 56,
+  "cells_differing": 10,
+  "errata": [
+   {
+    "date": "2026-11-04",
+    "column": "all_5xx",
+    "as_printed": 7170,
+    "raw_json": 6844,
+    "delta": -326
+   },
+   {
+    "date": "2026-11-05",
+    "column": "all_5xx",
+    "as_printed": 4441,
+    "raw_json": 4443,
+    "delta": 2
+   },
+   {
+    "date": "2026-11-09",
+    "column": "all_5xx",
+    "as_printed": 5832,
+    "raw_json": 5831,
+    "delta": -1
+   },
+   {
+    "date": "2026-11-10",
+    "column": "all_5xx",
+    "as_printed": 74556,
+    "raw_json": 74559,
+    "delta": 3
+   },
+   {
+    "date": "2026-11-11",
+    "column": "all_5xx",
+    "as_printed": 7353,
+    "raw_json": 7349,
+    "delta": -4
+   },
+   {
+    "date": "2026-11-12",
+    "column": "googlebot_image",
+    "as_printed": 20,
+    "raw_json": 14,
+    "delta": -6
+   },
+   {
+    "date": "2026-11-12",
+    "column": "all_5xx",
+    "as_printed": 9792,
+    "raw_json": 9790,
+    "delta": -2
+   },
+   {
+    "date": "2026-11-14",
+    "column": "googlebot",
+    "as_printed": 60,
+    "raw_json": 100,
+    "delta": 40
+   },
+   {
+    "date": "2026-11-14",
+    "column": "all_5xx",
+    "as_printed": 3616,
+    "raw_json": 3600,
+    "delta": -16
+   },
+   {
+    "date": "2026-11-17",
+    "column": "all_5xx",
+    "as_printed": 5430,
+    "raw_json": 5428,
+    "delta": -2
+   }
+  ],
+  "note": "README §5-c table was typeset from an earlier query run whose raw output was not preserved; the saved raw JSON is the only reproducible artifact and is hereby the canonical source."
+ },
+ "canonical_totals_nov4_17": {
+  "window": "2026-11-04 .. 2026-11-17 (14 days — end date exclusive, nothing on 18-11 captured)",
+  "googlebot_text_ua": 1832,
+  "googlebot_image_ua": 58,
+  "inspection_tool_ua": 249,
+  "all_5xx_all_visitors": 146975,
+  "report_claimed": {
+   "googlebot": 1832,
+   "image": 64,
+   "inspection": 249
+  },
+  "verdict": {
+   "googlebot": "matches raw (1,832)",
+   "image": "MISMATCH — raw says 58, report says 64",
+   "inspection": "matches raw (249)"
+  },
+  "image_discrepancy_root": "the README daily column itself sums to 64 because its 2026-11-12 cell says 20 where the preserved raw says 14 (an earlier unpreserved run); the preserved raw sums to 58. Canonical = 58."
+ },
+ "googlebot_text_ua_status_distribution_nov4_17": {
+  "total": 1832,
+  "distribution": {
+   "200": 1701,
+   "308": 4,
+   "404": 72,
+   "301": 22,
+   "403": 33
+  },
+  "pct_200": 92.8,
+  "pct_404": 3.9,
+  "pct_403": 1.8,
+  "measurement_gap": "the classifier records status codes ONLY for text-Googlebot UAs; Googlebot-Image and Google-InspectionTool statuses were never captured — any 'family-wide zero-5xx' claim is only partially measured"
+ },
+ "http_403_census_googlebot_text_ua": {
+  "total": 33,
+  "per_day": {
+   "2026-11-04": 1,
+   "2026-11-13": 25,
+   "2026-11-15": 7
+  },
+  "days_with_403": [
+   "2026-11-04",
+   "2026-11-13",
+   "2026-11-15"
+  ],
+  "co_occurrence": {
+   "2026-11-13": "inspection-tool spike day (127) + 27×404 + all_5xx 5,745",
+   "2026-11-15": "otherwise quiet day (68 googlebot, 5×404)",
+   "2026-11-04": "mixed-normal day (7×404, 4×308, 3×301)"
+  },
+  "report_claim": "«كلها تقريبًا 200 بصفر حجب» — CONTRADICTED by the preserved raw",
+  "share_of_traffic": "1.8% of text-Googlebot-UA requests",
+  "what_current_data_cannot_settle": [
+   "source IP / ASN / country of each 403 (GraphQL daily aggregates carry no clientIP)",
+   "request paths and the matching rule (CF WAF / rate rule / origin Caddy)",
+   "verified-Googlebot vs spoofed-Googlebot UA — UA string alone proves nothing"
+  ]
+ },
+ "reconciliation_ua_list_vs_daily_nov11_17": {
+  "googlebot_text": {
+   "ua_list": 750,
+   "daily": 819,
+   "gap": 69,
+   "verdict": "UNRECONCILED beyond the documented ±3% adaptive variance — needs a token re-query"
+  },
+  "googlebot_image": {
+   "ua_list": 33,
+   "daily": 33,
+   "gap": 0,
+   "verdict": "exact match (33 = 33)"
+  },
+  "inspection_tool": {
+   "ua_list": 195,
+   "daily": 195,
+   "gap": 0,
+   "verdict": "exact match (195 = 195)"
+  },
+  "note": "the ua_list is a top-N snapshot (18 rows) and cannot produce exact totals by construction; the daily table is the canonical trend source"
+ },
+ "reconciliation_nov10_googlebot": {
+  "daily_block": {
+   "200": 377,
+   "404": 12
+  },
+  "daily_block_sums_to": 389,
+  "anomaly_block": {
+   "200": 332,
+   "404": 12
+  },
+  "anomaly_block_sums_to": 344,
+  "verdict": "CONFLICT inside the same preserved file: 377×200 vs 332×200 for the same day/UA family from two different queries (adaptive variance exceeds the ±3% note). Both agree on zero 5xx. Needs re-query.",
+  "report_claim_480x200_10x404": "NOT reproducible from the preserved raw for either measurement (377/332 ×200; 12 ×404) — the «480×200 + 10×404» family line must be corrected"
+ },
+ "nov10_anomaly_reproducibility": {
+  "total_requests_441047": true,
+  "top_ua_mobile_storm_raw": 305043,
+  "top_ua_mobile_storm_report": 309958,
+  "mobile_storm_reproducible": false,
+  "nginx_ssl_504_raw": 74194,
+  "nginx_share_of_504": 99.51,
+  "nginx_99_5pct_claim": "reproducible (74,194 / 74,559 = 99.51%)",
+  "alkemos_seo_audit_2321_in_raw": false,
+  "note": "«= 15× المعدل» is also not derivable: per-day total-request counts were never saved (only 5xx totals and the Nov-10 anomaly total)"
+ },
+ "gsc_category_audit": {
+  "nov18_csv_equals_pinned": true,
+  "nov11_sum_equals_chart_not_indexed": [
+   true,
+   2519
+  ],
+  "nov18_sum_equals_chart_not_indexed": [
+   true,
+   3142
+  ],
+  "net_deltas": {
+   "noindex": 6,
+   "404": 1,
+   "canonical": 0,
+   "redirect": 0,
+   "robots": 0,
+   "CNI": 552,
+   "DNI": 64
+  },
+  "indexed_delta": -535,
+  "known_set_delta": 88
+ },
+ "cni_vs_indexed_identity_gap": {
+  "aggregate_consistency": "Δindexed −535 ≈ ΔCNI +552 (diff 17) — consistent with a net flow into CNI, and CNI by GSC's own definition means Google crawled those URLs (Google-side statement, independent of any UA)",
+  "what_aggregates_cannot_prove": "the IDENTITY of the URLs: chart-level exports are stock counts at two snapshot dates; the flow matrix between buckets is unobserved, and multiple matrices fit the same nets — two examples below",
+  "illustrative_flow_matrices": {
+   "reading_A_pages_moved_indexed_to_cni": {
+    "indexed→CNI": 535,
+    "indexed→out_of_report": 0,
+    "DNI→CNI": 17,
+    "new_or_rediscovered→CNI/DNI/noindex": "64+6+…",
+    "fits_nets": true,
+    "note": "the report's implicit reading: the de-indexed URLs ≈ the CNI entrants"
+   },
+   "reading_B_displacement": {
+    "indexed→out_of_report_entirely": 535,
+    "indexed→CNI": 0,
+    "DNI→CNI": 453,
+    "new→CNI": 99,
+    "new→DNI": 64,
+    "noindex": "+6",
+    "fits_nets": true,
+    "note": "no URL that left the index ever entered CNI — aggregates identical"
+   }
+  },
+  "verdict": "«مطابق تمامًا» must be downgraded to: aggregate-consistent, identity-unproven — proving URL-level transition requires URL-level exports (indexed list + per-category drilldowns at matched dates)",
+  "operational_note": "GSC UI drilldown exports cap at 1,000 rows — the 1,823 CNI list needs prefix-filtered chunked exports; the API has no coverage endpoint (documented in report 18)"
+ }
+}
