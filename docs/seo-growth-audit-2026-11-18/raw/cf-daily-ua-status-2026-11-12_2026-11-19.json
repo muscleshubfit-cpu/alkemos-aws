@@ -1,0 +1,348 @@
+{
+ "zone": "alkemos.com",
+ "collected": "2026-11-12->2026-11-19",
+ "method": "per-day unsampled GraphQL (same as collapse investigation cf_googlebot_analytics.py)",
+ "daily": {
+  "2026-11-12": {
+   "all_requests": 42564,
+   "distinct_uas": 258,
+   "google_agent": [],
+   "google_family": [
+    {
+     "edgeResponseStatus": 200,
+     "userAgent": "Mediapartners-Google",
+     "count": 2885
+    },
+    {
+     "edgeResponseStatus": 200,
+     "userAgent": "Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.8010.52 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
+     "count": 205
+    },
+    {
+     "edgeResponseStatus": 200,
+     "userAgent": "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
+     "count": 38
+    },
+    {
+     "edgeResponseStatus": 200,
+     "userAgent": "Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.8037.97 Mobile Safari/537.36 (compatible; GoogleOther)",
+     "count": 36
+    },
+    {
+     "edgeResponseStatus": 200,
+     "userAgent": "Googlebot-Image/1.0",
+     "count": 13
+    },
+    {
+     "edgeResponseStatus": 301,
+     "userAgent": "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
+     "count": 7
+    },
+    {
+     "edgeResponseStatus": 301,
+     "userAgent": "Mediapartners-Google",
+     "count": 4
+    },
+    {
+     "edgeResponseStatus": 301,
+     "userAgent": "Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.8010.52 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
+     "count": 2
+    },
+    {
+     "edgeResponseStatus": 404,
+     "userAgent": "Googlebot-Image/1.0",
+     "count": 1
+    },
+    {
+     "edgeResponseStatus": 401,
+     "userAgent": "Mediapartners-Google",
+     "count": 1
+    }
+   ],
+   "status_403_total": 449,
+   "status_429_total": 0,
+   "googlebot_status": {
+    "200": 256,
+    "301": 9,
+    "404": 1
+   }
+  },
+  "2026-11-13": {
+   "all_requests": 32050,
+   "distinct_uas": 135,
+   "google_agent": [],
+   "google_family": [
+    {
+     "edgeResponseStatus": 200,
+     "userAgent": "Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.8037.97 Mobile Safari/537.36 (compatible; GoogleOther)",
+     "count": 90
+    },
+    {
+     "edgeResponseStatus": 200,
+     "userAgent": "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; GoogleOther) Chrome/154.0.8037.97 Safari/537.36",
+     "count": 90
+    },
+    {
+     "edgeResponseStatus": 200,
+     "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.8037.97 Safari/537.36 (compatible; Google-InspectionTool/1.0)",
+     "count": 70
+    },
+    {
+     "edgeResponseStatus": 200,
+     "userAgent": "Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.8037.97 Mobile Safari/537.36 (compatible; Google-InspectionTool/1.0)",
+     "count": 50
+    },
+    {
+     "edgeResponseStatus": 200,
+     "userAgent": "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
+     "count": 40
+    },
+    {
+     "edgeResponseStatus": 200,
+     "userAgent": "Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.8010.52 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
+     "count": 30
+    },
+    {
+     "edgeResponseStatus": 200,
+     "userAgent": "Googlebot-Image/1.0",
+     "count": 10
+    },
+    {
+     "edgeResponseStatus": 404,
+     "userAgent": "Googlebot-Image/1.0",
+     "count": 10
+    }
+   ],
+   "status_403_total": 1900,
+   "status_429_total": 0,
+   "googlebot_status": {
+    "200": 80,
+    "404": 10
+   }
+  },
+  "2026-11-14": {
+   "all_requests": 25258,
+   "distinct_uas": 206,
+   "google_agent": [],
+   "google_family": [
+    {
+     "edgeResponseStatus": 200,
+     "userAgent": "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; GoogleOther) Chrome/154.0.8037.97 Safari/537.36",
+     "count": 72
+    },
+    {
+     "edgeResponseStatus": 200,
+     "userAgent": "Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.8037.97 Mobile Safari/537.36 (compatible; GoogleOther)",
+     "count": 56
+    },
+    {
+     "edgeResponseStatus": 200,
+     "userAgent": "Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.8010.52 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
+     "count": 17
+    },
+    {
+     "edgeResponseStatus": 200,
+     "userAgent": "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
+     "count": 14
+    }
+   ],
+   "status_403_total": 313,
+   "status_429_total": 0,
+   "googlebot_status": {
+    "200": 31
+   }
+  },
+  "2026-11-15": {
+   "all_requests": 19900,
+   "distinct_uas": 267,
+   "google_agent": [],
+   "google_family": [
+    {
+     "edgeResponseStatus": 200,
+     "userAgent": "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; GoogleOther) Chrome/154.0.8037.97 Safari/537.36",
+     "count": 60
+    },
+    {
+     "edgeResponseStatus": 200,
+     "userAgent": "Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.8037.97 Mobile Safari/537.36 (compatible; GoogleOther)",
+     "count": 36
+    },
+    {
+     "edgeResponseStatus": 200,
+     "userAgent": "Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.8010.52 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
+     "count": 34
+    },
+    {
+     "edgeResponseStatus": 200,
+     "userAgent": "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
+     "count": 19
+    },
+    {
+     "edgeResponseStatus": 404,
+     "userAgent": "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
+     "count": 4
+    },
+    {
+     "edgeResponseStatus": 403,
+     "userAgent": "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
+     "count": 4
+    },
+    {
+     "edgeResponseStatus": 404,
+     "userAgent": "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko); compatible; OAI-AdsBot/1.0; +https://openai.com/adsbot",
+     "count": 4
+    },
+    {
+     "edgeResponseStatus": 403,
+     "userAgent": "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko); compatible; OAI-AdsBot/1.0; +https://openai.com/adsbot",
+     "count": 3
+    },
+    {
+     "edgeResponseStatus": 403,
+     "userAgent": "Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
+     "count": 3
+    },
+    {
+     "edgeResponseStatus": 200,
+     "userAgent": "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; Googlebot/2.1; +http://www.google.com/bot.html) Chrome/154.0.8037.97 Safari/537.36",
+     "count": 2
+    },
+    {
+     "edgeResponseStatus": 200,
+     "userAgent": "Googlebot-Image/1.0",
+     "count": 1
+    },
+    {
+     "edgeResponseStatus": 404,
+     "userAgent": "Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
+     "count": 1
+    },
+    {
+     "edgeResponseStatus": 200,
+     "userAgent": "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko); compatible; OAI-AdsBot/1.0; +https://openai.com/adsbot",
+     "count": 1
+    },
+    {
+     "edgeResponseStatus": 200,
+     "userAgent": "Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.84 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
+     "count": 1
+    },
+    {
+     "edgeResponseStatus": 308,
+     "userAgent": "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; GoogleOther) Chrome/154.0.8037.97 Safari/537.36",
+     "count": 1
+    },
+    {
+     "edgeResponseStatus": 404,
+     "userAgent": "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; GoogleOther) Chrome/154.0.8037.97 Safari/537.36",
+     "count": 1
+    }
+   ],
+   "status_403_total": 507,
+   "status_429_total": 0,
+   "googlebot_status": {
+    "200": 57,
+    "404": 5,
+    "403": 7
+   }
+  },
+  "2026-11-16": {
+   "all_requests": 24454,
+   "distinct_uas": 313,
+   "google_agent": [],
+   "google_family": [
+    {
+     "edgeResponseStatus": 200,
+     "userAgent": "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; GoogleOther) Chrome/154.0.8037.97 Safari/537.36",
+     "count": 108
+    },
+    {
+     "edgeResponseStatus": 200,
+     "userAgent": "Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.8010.52 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
+     "count": 50
+    },
+    {
+     "edgeResponseStatus": 200,
+     "userAgent": "Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.8037.97 Mobile Safari/537.36 (compatible; GoogleOther)",
+     "count": 43
+    },
+    {
+     "edgeResponseStatus": 200,
+     "userAgent": "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
+     "count": 21
+    },
+    {
+     "edgeResponseStatus": 200,
+     "userAgent": "Googlebot-Image/1.0",
+     "count": 10
+    },
+    {
+     "edgeResponseStatus": 404,
+     "userAgent": "Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.8010.52 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
+     "count": 2
+    }
+   ],
+   "status_403_total": 1923,
+   "status_429_total": 7,
+   "googlebot_status": {
+    "200": 81,
+    "404": 2
+   }
+  },
+  "2026-11-17": {
+   "all_requests": 29364,
+   "distinct_uas": 296,
+   "google_agent": [],
+   "google_family": [
+    {
+     "edgeResponseStatus": 200,
+     "userAgent": "Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.8103.78 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
+     "count": 40
+    },
+    {
+     "edgeResponseStatus": 200,
+     "userAgent": "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
+     "count": 17
+    },
+    {
+     "edgeResponseStatus": 200,
+     "userAgent": "GoogleOther",
+     "count": 1
+    },
+    {
+     "edgeResponseStatus": 301,
+     "userAgent": "GoogleOther",
+     "count": 1
+    },
+    {
+     "edgeResponseStatus": 301,
+     "userAgent": "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
+     "count": 1
+    }
+   ],
+   "status_403_total": 597,
+   "status_429_total": 0,
+   "googlebot_status": {
+    "200": 57,
+    "301": 1
+   }
+  },
+  "2026-11-18": {
+   "all_requests": 13800,
+   "distinct_uas": 33,
+   "google_agent": [],
+   "google_family": [
+    {
+     "edgeResponseStatus": 200,
+     "userAgent": "Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.8103.78 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
+     "count": 100
+    }
+   ],
+   "status_403_total": 0,
+   "status_429_total": 0,
+   "googlebot_status": {
+    "200": 100
+   }
+  }
+ }
+}

@@ -1,0 +1,575 @@
+{
+ "base": "https://alkemos.com",
+ "collected_at_utc": "2026-11-18T17:42:01Z",
+ "total_requests": 30,
+ "method": "UA-string probe via HTTPS from audit sandbox (non-Google IP) — NON-CONCLUSIVE for identity per owner constraint; measures UA-based edge/WAF/origin reactions only",
+ "results": [
+  {
+   "path": "/",
+   "ua": "chrome",
+   "url": "https://alkemos.com/",
+   "status": 200,
+   "ms": 121,
+   "redirects": [],
+   "headers": {
+    "cf-ray": "a5c8c4171c2110c9-HKG",
+    "cf-cache-status": "HIT",
+    "server": "cloudflare",
+    "content-type": "text/html; charset=utf-8",
+    "x-pathname": "/",
+    "cache-control": "public, max-age=300, must-revalidate, s-maxage=3600, stale-while-revalidate=86400"
+   },
+   "bytes": 351989,
+   "challenge_markers": [],
+   "body_sha1_head": "ece9255da70c"
+  },
+  {
+   "path": "/",
+   "ua": "googlebot",
+   "url": "https://alkemos.com/",
+   "status": 200,
+   "ms": 76,
+   "redirects": [],
+   "headers": {
+    "cf-ray": "a5c8c41ddda91055-HKG",
+    "cf-cache-status": "HIT",
+    "server": "cloudflare",
+    "content-type": "text/html; charset=utf-8",
+    "x-pathname": "/",
+    "cache-control": "public, max-age=300, must-revalidate, s-maxage=3600, stale-while-revalidate=86400"
+   },
+   "bytes": 351989,
+   "challenge_markers": [],
+   "body_sha1_head": "ece9255da70c"
+  },
+  {
+   "path": "/",
+   "ua": "google_agent_bare",
+   "url": "https://alkemos.com/",
+   "status": 200,
+   "ms": 73,
+   "redirects": [],
+   "headers": {
+    "cf-ray": "a5c8c42489c97be4-HKG",
+    "cf-cache-status": "HIT",
+    "server": "cloudflare",
+    "content-type": "text/html; charset=utf-8",
+    "x-pathname": "/",
+    "cache-control": "public, max-age=300, must-revalidate, s-maxage=3600, stale-while-revalidate=86400"
+   },
+   "bytes": 351989,
+   "challenge_markers": [],
+   "body_sha1_head": "ece9255da70c"
+  },
+  {
+   "path": "/",
+   "ua": "google_agent_browserlike",
+   "url": "https://alkemos.com/",
+   "status": 200,
+   "ms": 117,
+   "redirects": [],
+   "headers": {
+    "cf-ray": "a5c8c42b8fd784a2-HKG",
+    "cf-cache-status": "HIT",
+    "server": "cloudflare",
+    "content-type": "text/html; charset=utf-8",
+    "x-pathname": "/",
+    "cache-control": "public, max-age=300, must-revalidate, s-maxage=3600, stale-while-revalidate=86400"
+   },
+   "bytes": 351989,
+   "challenge_markers": [],
+   "body_sha1_head": "ece9255da70c"
+  },
+  {
+   "path": "/ar",
+   "ua": "chrome",
+   "url": "https://alkemos.com/ar",
+   "status": 200,
+   "ms": 110,
+   "redirects": [],
+   "headers": {
+    "cf-ray": "a5c8c4328945f4fb-HKG",
+    "cf-cache-status": "HIT",
+    "server": "cloudflare",
+    "content-type": "text/html; charset=utf-8",
+    "x-pathname": "/ar",
+    "cache-control": "public, max-age=300, must-revalidate, s-maxage=3600, stale-while-revalidate=86400"
+   },
+   "bytes": 378840,
+   "challenge_markers": [],
+   "body_sha1_head": "2068f0702010"
+  },
+  {
+   "path": "/ar",
+   "ua": "googlebot",
+   "url": "https://alkemos.com/ar",
+   "status": 200,
+   "ms": 90,
+   "redirects": [],
+   "headers": {
+    "cf-ray": "a5c8c4393e15860d-HKG",
+    "cf-cache-status": "HIT",
+    "server": "cloudflare",
+    "content-type": "text/html; charset=utf-8",
+    "x-pathname": "/ar",
+    "cache-control": "public, max-age=300, must-revalidate, s-maxage=3600, stale-while-revalidate=86400"
+   },
+   "bytes": 378840,
+   "challenge_markers": [],
+   "body_sha1_head": "2068f0702010"
+  },
+  {
+   "path": "/ar",
+   "ua": "google_agent_bare",
+   "url": "https://alkemos.com/ar",
+   "status": 200,
+   "ms": 93,
+   "redirects": [],
+   "headers": {
+    "cf-ray": "a5c8c44008670964-HKG",
+    "cf-cache-status": "HIT",
+    "server": "cloudflare",
+    "content-type": "text/html; charset=utf-8",
+    "x-pathname": "/ar",
+    "cache-control": "public, max-age=300, must-revalidate, s-maxage=3600, stale-while-revalidate=86400"
+   },
+   "bytes": 378840,
+   "challenge_markers": [],
+   "body_sha1_head": "2068f0702010"
+  },
+  {
+   "path": "/ar",
+   "ua": "google_agent_browserlike",
+   "url": "https://alkemos.com/ar",
+   "status": 200,
+   "ms": 85,
+   "redirects": [],
+   "headers": {
+    "cf-ray": "a5c8c446e92e852a-HKG",
+    "cf-cache-status": "HIT",
+    "server": "cloudflare",
+    "content-type": "text/html; charset=utf-8",
+    "x-pathname": "/ar",
+    "cache-control": "public, max-age=300, must-revalidate, s-maxage=3600, stale-while-revalidate=86400"
+   },
+   "bytes": 378840,
+   "challenge_markers": [],
+   "body_sha1_head": "2068f0702010"
+  },
+  {
+   "path": "/tools/calorie-calculator",
+   "ua": "chrome",
+   "url": "https://alkemos.com/tools/calorie-calculator",
+   "status": 200,
+   "ms": 56,
+   "redirects": [],
+   "headers": {
+    "cf-ray": "a5c8c44dabcb6e43-HKG",
+    "cf-cache-status": "HIT",
+    "server": "cloudflare",
+    "content-type": "text/html; charset=utf-8",
+    "x-pathname": "/tools/calorie-calculator",
+    "cache-control": "public, max-age=300, must-revalidate, s-maxage=3600, stale-while-revalidate=86400"
+   },
+   "bytes": 157116,
+   "challenge_markers": [],
+   "body_sha1_head": "3b8a242eed82"
+  },
+  {
+   "path": "/tools/calorie-calculator",
+   "ua": "googlebot",
+   "url": "https://alkemos.com/tools/calorie-calculator",
+   "status": 200,
+   "ms": 66,
+   "redirects": [],
+   "headers": {
+    "cf-ray": "a5c8c4544b220436-HKG",
+    "cf-cache-status": "HIT",
+    "server": "cloudflare",
+    "content-type": "text/html; charset=utf-8",
+    "x-pathname": "/tools/calorie-calculator",
+    "cache-control": "public, max-age=300, must-revalidate, s-maxage=3600, stale-while-revalidate=86400"
+   },
+   "bytes": 157116,
+   "challenge_markers": [],
+   "body_sha1_head": "3b8a242eed82"
+  },
+  {
+   "path": "/tools/calorie-calculator",
+   "ua": "google_agent_bare",
+   "url": "https://alkemos.com/tools/calorie-calculator",
+   "status": 200,
+   "ms": 56,
+   "redirects": [],
+   "headers": {
+    "cf-ray": "a5c8c45aea6c76b3-HKG",
+    "cf-cache-status": "HIT",
+    "server": "cloudflare",
+    "content-type": "text/html; charset=utf-8",
+    "x-pathname": "/tools/calorie-calculator",
+    "cache-control": "public, max-age=300, must-revalidate, s-maxage=3600, stale-while-revalidate=86400"
+   },
+   "bytes": 157116,
+   "challenge_markers": [],
+   "body_sha1_head": "3b8a242eed82"
+  },
+  {
+   "path": "/tools/calorie-calculator",
+   "ua": "google_agent_browserlike",
+   "url": "https://alkemos.com/tools/calorie-calculator",
+   "status": 200,
+   "ms": 80,
+   "redirects": [],
+   "headers": {
+    "cf-ray": "a5c8c46188f10503-HKG",
+    "cf-cache-status": "HIT",
+    "server": "cloudflare",
+    "content-type": "text/html; charset=utf-8",
+    "x-pathname": "/tools/calorie-calculator",
+    "cache-control": "public, max-age=300, must-revalidate, s-maxage=3600, stale-while-revalidate=86400"
+   },
+   "bytes": 157116,
+   "challenge_markers": [],
+   "body_sha1_head": "3b8a242eed82"
+  },
+  {
+   "path": "/foods/salmon",
+   "ua": "chrome",
+   "url": "https://alkemos.com/foods/salmon",
+   "status": 200,
+   "ms": 69,
+   "redirects": [],
+   "headers": {
+    "cf-ray": "a5c8c4684d196131-HKG",
+    "cf-cache-status": "HIT",
+    "server": "cloudflare",
+    "content-type": "text/html; charset=utf-8",
+    "x-pathname": "/foods/salmon",
+    "cache-control": "public, max-age=300, must-revalidate, s-maxage=3600, stale-while-revalidate=86400"
+   },
+   "bytes": 123275,
+   "challenge_markers": [],
+   "body_sha1_head": "f91dcb1becfd"
+  },
+  {
+   "path": "/foods/salmon",
+   "ua": "googlebot",
+   "url": "https://alkemos.com/foods/salmon",
+   "status": 200,
+   "ms": 54,
+   "redirects": [],
+   "headers": {
+    "cf-ray": "a5c8c46efd978149-HKG",
+    "cf-cache-status": "HIT",
+    "server": "cloudflare",
+    "content-type": "text/html; charset=utf-8",
+    "x-pathname": "/foods/salmon",
+    "cache-control": "public, max-age=300, must-revalidate, s-maxage=3600, stale-while-revalidate=86400"
+   },
+   "bytes": 123275,
+   "challenge_markers": [],
+   "body_sha1_head": "f91dcb1becfd"
+  },
+  {
+   "path": "/foods/salmon",
+   "ua": "google_agent_bare",
+   "url": "https://alkemos.com/foods/salmon",
+   "status": 200,
+   "ms": 61,
+   "redirects": [],
+   "headers": {
+    "cf-ray": "a5c8c4758fda080f-HKG",
+    "cf-cache-status": "HIT",
+    "server": "cloudflare",
+    "content-type": "text/html; charset=utf-8",
+    "x-pathname": "/foods/salmon",
+    "cache-control": "public, max-age=300, must-revalidate, s-maxage=3600, stale-while-revalidate=86400"
+   },
+   "bytes": 123275,
+   "challenge_markers": [],
+   "body_sha1_head": "f91dcb1becfd"
+  },
+  {
+   "path": "/foods/salmon",
+   "ua": "google_agent_browserlike",
+   "url": "https://alkemos.com/foods/salmon",
+   "status": 200,
+   "ms": 48,
+   "redirects": [],
+   "headers": {
+    "cf-ray": "a5c8c47c2990d44c-HKG",
+    "cf-cache-status": "HIT",
+    "server": "cloudflare",
+    "content-type": "text/html; charset=utf-8",
+    "x-pathname": "/foods/salmon",
+    "cache-control": "public, max-age=300, must-revalidate, s-maxage=3600, stale-while-revalidate=86400"
+   },
+   "bytes": 123275,
+   "challenge_markers": [],
+   "body_sha1_head": "f91dcb1becfd"
+  },
+  {
+   "path": "/blog/protein-after-workout-grams-guide",
+   "ua": "chrome",
+   "url": "https://alkemos.com/blog/protein-after-workout-grams-guide",
+   "status": 200,
+   "ms": 58,
+   "redirects": [],
+   "headers": {
+    "cf-ray": "a5c8c482bbacb9c5-HKG",
+    "cf-cache-status": "HIT",
+    "server": "cloudflare",
+    "content-type": "text/html; charset=utf-8",
+    "x-pathname": "/blog/protein-after-workout-grams-guide",
+    "cache-control": "public, max-age=300, must-revalidate, s-maxage=3600, stale-while-revalidate=86400"
+   },
+   "bytes": 153394,
+   "challenge_markers": [],
+   "body_sha1_head": "ed7d9cf3c54d"
+  },
+  {
+   "path": "/blog/protein-after-workout-grams-guide",
+   "ua": "googlebot",
+   "url": "https://alkemos.com/blog/protein-after-workout-grams-guide",
+   "status": 200,
+   "ms": 51,
+   "redirects": [],
+   "headers": {
+    "cf-ray": "a5c8c48958ff9b15-HKG",
+    "cf-cache-status": "HIT",
+    "server": "cloudflare",
+    "content-type": "text/html; charset=utf-8",
+    "x-pathname": "/blog/protein-after-workout-grams-guide",
+    "cache-control": "public, max-age=300, must-revalidate, s-maxage=3600, stale-while-revalidate=86400"
+   },
+   "bytes": 153394,
+   "challenge_markers": [],
+   "body_sha1_head": "ed7d9cf3c54d"
+  },
+  {
+   "path": "/blog/protein-after-workout-grams-guide",
+   "ua": "google_agent_bare",
+   "url": "https://alkemos.com/blog/protein-after-workout-grams-guide",
+   "status": 200,
+   "ms": 49,
+   "redirects": [],
+   "headers": {
+    "cf-ray": "a5c8c48fe90e9b15-HKG",
+    "cf-cache-status": "HIT",
+    "server": "cloudflare",
+    "content-type": "text/html; charset=utf-8",
+    "x-pathname": "/blog/protein-after-workout-grams-guide",
+    "cache-control": "public, max-age=300, must-revalidate, s-maxage=3600, stale-while-revalidate=86400"
+   },
+   "bytes": 153394,
+   "challenge_markers": [],
+   "body_sha1_head": "ed7d9cf3c54d"
+  },
+  {
+   "path": "/blog/protein-after-workout-grams-guide",
+   "ua": "google_agent_browserlike",
+   "url": "https://alkemos.com/blog/protein-after-workout-grams-guide",
+   "status": 200,
+   "ms": 57,
+   "redirects": [],
+   "headers": {
+    "cf-ray": "a5c8c49679470b03-HKG",
+    "cf-cache-status": "HIT",
+    "server": "cloudflare",
+    "content-type": "text/html; charset=utf-8",
+    "x-pathname": "/blog/protein-after-workout-grams-guide",
+    "cache-control": "public, max-age=300, must-revalidate, s-maxage=3600, stale-while-revalidate=86400"
+   },
+   "bytes": 153394,
+   "challenge_markers": [],
+   "body_sha1_head": "ed7d9cf3c54d"
+  },
+  {
+   "path": "/evo",
+   "ua": "chrome",
+   "url": "https://alkemos.com/evo",
+   "status": 200,
+   "ms": 66,
+   "redirects": [],
+   "headers": {
+    "cf-ray": "a5c8c49d19f6fbc9-HKG",
+    "cf-cache-status": "HIT",
+    "server": "cloudflare",
+    "content-type": "text/html; charset=utf-8",
+    "x-pathname": "/evo",
+    "cache-control": "public, max-age=300, must-revalidate, s-maxage=3600, stale-while-revalidate=86400"
+   },
+   "bytes": 140824,
+   "challenge_markers": [],
+   "body_sha1_head": "6004edbd654a"
+  },
+  {
+   "path": "/coaching",
+   "ua": "chrome",
+   "url": "https://alkemos.com/coaching",
+   "status": 200,
+   "ms": 55,
+   "redirects": [],
+   "headers": {
+    "cf-ray": "a5c8c4a3c9497155-HKG",
+    "cf-cache-status": "HIT",
+    "server": "cloudflare",
+    "content-type": "text/html; charset=utf-8",
+    "x-pathname": "/coaching",
+    "cache-control": "public, max-age=300, must-revalidate, s-maxage=3600, stale-while-revalidate=86400"
+   },
+   "bytes": 144629,
+   "challenge_markers": [],
+   "body_sha1_head": "9edd6b5d10d4"
+  },
+  {
+   "path": "/exercises/dumbbell-bench-press-with-neutral-grip",
+   "ua": "chrome",
+   "url": "https://alkemos.com/exercises/dumbbell-bench-press-with-neutral-grip",
+   "status": 200,
+   "ms": 66,
+   "redirects": [],
+   "headers": {
+    "cf-ray": "a5c8c4aa6cc104e4-HKG",
+    "cf-cache-status": "HIT",
+    "server": "cloudflare",
+    "content-type": "text/html; charset=utf-8",
+    "x-pathname": "/exercises/dumbbell-bench-press-with-neutral-grip",
+    "cache-control": "public, max-age=300, must-revalidate, s-maxage=3600, stale-while-revalidate=86400"
+   },
+   "bytes": 149571,
+   "challenge_markers": [],
+   "body_sha1_head": "f2ae24c58dbd"
+  },
+  {
+   "path": "/muscles/biceps",
+   "ua": "chrome",
+   "url": "https://alkemos.com/muscles/biceps",
+   "status": 200,
+   "ms": 64,
+   "redirects": [],
+   "headers": {
+    "cf-ray": "a5c8c4b10af5d50d-HKG",
+    "cf-cache-status": "HIT",
+    "server": "cloudflare",
+    "content-type": "text/html; charset=utf-8",
+    "x-pathname": "/muscles/biceps",
+    "cache-control": "public, max-age=300, must-revalidate, s-maxage=3600, stale-while-revalidate=86400"
+   },
+   "bytes": 180421,
+   "challenge_markers": [],
+   "body_sha1_head": "5ccc82740288"
+  },
+  {
+   "path": "/authors",
+   "ua": "chrome",
+   "url": "https://alkemos.com/authors",
+   "status": 200,
+   "ms": 44,
+   "redirects": [],
+   "headers": {
+    "cf-ray": "a5c8c4b7bd527aa1-HKG",
+    "cf-cache-status": "HIT",
+    "server": "cloudflare",
+    "content-type": "text/html; charset=utf-8",
+    "x-pathname": "/authors",
+    "cache-control": "public, max-age=300, must-revalidate, s-maxage=3600, stale-while-revalidate=86400"
+   },
+   "bytes": 110343,
+   "challenge_markers": [],
+   "body_sha1_head": "8c291b92382a"
+  },
+  {
+   "path": "/api/food-search?q=chicken%20breast",
+   "ua": "chrome",
+   "url": "https://alkemos.com/api/food-search?q=chicken%20breast",
+   "status": 200,
+   "ms": 1059,
+   "redirects": [],
+   "headers": {
+    "cf-ray": "a5c8c4be3bbeafed-HKG",
+    "cf-cache-status": "DYNAMIC",
+    "server": "cloudflare",
+    "content-type": "application/json",
+    "x-pathname": "/api/food-search"
+   },
+   "bytes": 3528,
+   "challenge_markers": [],
+   "body_sha1_head": "44e155ce7757"
+  },
+  {
+   "path": "/api/food-search?q=chicken%20breast",
+   "ua": "google_agent_browserlike",
+   "url": "https://alkemos.com/api/food-search?q=chicken%20breast",
+   "status": 200,
+   "ms": 1049,
+   "redirects": [],
+   "headers": {
+    "cf-ray": "a5c8c4cb1a3e0ef4-HKG",
+    "cf-cache-status": "DYNAMIC",
+    "server": "cloudflare",
+    "content-type": "application/json",
+    "x-pathname": "/api/food-search"
+   },
+   "bytes": 4911,
+   "challenge_markers": [],
+   "body_sha1_head": "8290b1e1aa35"
+  },
+  {
+   "path": "/api/build-info",
+   "ua": "chrome",
+   "url": "https://alkemos.com/api/build-info",
+   "status": 200,
+   "ms": 734,
+   "redirects": [],
+   "headers": {
+    "cf-ray": "a5c8c4d7e97208bc-HKG",
+    "cf-cache-status": "DYNAMIC",
+    "server": "cloudflare",
+    "content-type": "application/json",
+    "x-pathname": "/api/build-info",
+    "cache-control": "no-store"
+   },
+   "bytes": 162,
+   "challenge_markers": [],
+   "body_sha1_head": "a21e8f1255ff"
+  },
+  {
+   "path": "/api/build-info",
+   "ua": "google_agent_browserlike",
+   "url": "https://alkemos.com/api/build-info",
+   "status": 200,
+   "ms": 727,
+   "redirects": [],
+   "headers": {
+    "cf-ray": "a5c8c4e2cee385c7-HKG",
+    "cf-cache-status": "DYNAMIC",
+    "server": "cloudflare",
+    "content-type": "application/json",
+    "x-pathname": "/api/build-info",
+    "cache-control": "no-store"
+   },
+   "bytes": 162,
+   "challenge_markers": [],
+   "body_sha1_head": "0ace648b0f16"
+  },
+  {
+   "path": "/robots.txt",
+   "ua": "chrome",
+   "url": "https://alkemos.com/robots.txt",
+   "status": 200,
+   "ms": 259,
+   "redirects": [],
+   "headers": {
+    "cf-ray": "a5c8c4ed8fd0dd46-HKG",
+    "cf-cache-status": "HIT",
+    "server": "cloudflare",
+    "content-type": "text/plain; charset=UTF-8",
+    "cache-control": "public, max-age=86400, must-revalidate"
+   },
+   "bytes": 4200,
+   "challenge_markers": [],
+   "body_sha1_head": "b7d9f300656f"
+  }
+ ]
+}
