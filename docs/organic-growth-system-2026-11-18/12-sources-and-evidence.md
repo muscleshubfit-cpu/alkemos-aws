@@ -1,6 +1,6 @@
 # 12 — المصادر والأدلة (Sources & Evidence)
 
-> **القاعدة:** كل ادعاء في هذا المشروع يعود إلى أحد المصادر أدناه بتاريخه. المصادر الداخلية = ملفات المستودع عند HEAD ‏90b2f242 (فحص 2026-11-19). المصادر الخارجية = مقروءة حية بتاريخ 2026-11-19 عبر بحث الويب (عناوين النتائج ومقتطفاتها وروابطها). **قسم القياسات الجارية (§4) هو السجل الحي لأي قراءة لاحقة.**
+> **القاعدة:** كل ادعاء في هذا المشروع يعود إلى أحد المصادر أدناه بتاريخه **وبرابطه المباشر حيثما كان خارجيًا**. المصادر الداخلية = ملفات المستودع عند HEAD ‏90b2f242 (فحص 2026-11-18). المصادر الخارجية = مقروءة حية بتاريخ 2026-11-18 عبر بحث الويب (عناوين النتائج ومقتطفاتها وروابطها) **وأُعيد التحقق من روابطها المباشرة في جلسة تحديث 2026-11-18**. **قسم القياسات الجارية (§4) هو السجل الحي لأي قراءة لاحقة.**
 
 ---
 
@@ -19,25 +19,26 @@
 | `docs/seo-collapse-investigation-2026-11-18/` (README + الملحق) | **خط الأساس التاريخي فقط:** 6,896/16 · آخر 28 يومًا ‏53 · غير براندي ‏3,925/0 · مواقع مرجحة 82.1/17.4/9.3 · جرد خرائط محدث — (مشروع مستقل: لا يعتمد هذا المشروع على استنتاجاته) |
 | `docs/GSC-RE-AUDIT-2026-11-12.md` | قدرات GSC الموثقة (حصة 2,000/يوم · قراءة-فقط) |
 | `docs/SEO-CWV-THRESHOLDS.md` | عتبات CWV ‏2026 |
-| `STATE.md` + `AGENTS.md` + `docs/CI_GATES.md` | القوانين الحاكمة (الأمانة · الكاناري · الرئيسية اكتشاف · قرارات المالك الموثقة المشار إليها بD-أ إلى D-هـ) |
-| `worklog.md` (مدخل 2026-11-19) + بنية `archive/WORKLOG_ARCHIVE.md` | حوكمية الإضافة |
+| `STATE.md` + `AGENTS.md` + `docs/CI_GATES.md` | القوانين الحاكمة (الأمانة · الكاناري · الرئيسية اكتشاف · قرارات المالك الموثقة المشار إليها بD-أ إلى D-ج بعد تحديث 2026-11-18) |
+| `worklog.md` (مدخلا 2026-11-18: التسليم الأصلي + جلسة تحديث القرارات) + بنية `archive/WORKLOG_ARCHIVE.md` | حوكمية الإضافة والتحديث |
 
-## 2. مصادر خارجية — مقروءة بتاريخ 2026-11-19
+## 2. مصادر خارجية — مقروءة ومُتحقق من روابطها المباشرة بتاريخ 2026-11-18
 
-### 2.1 بحوث GEO/AEO/AIO (مؤرخة)
-| المصدر | الرابط/التعريف | الاستخدام |
+### 2.1 بحوث GEO/AEO/AIO (مؤرخة — روابط مباشرة قابلة للفتح)
+| المصدر | الرابط المباشر | الاستخدام |
 |---|---|---|
-| Ahrefs — «Update: AI Overviews Reduce Clicks by 58%» (فبراير 2026؛ تأكيدات Seer ‏49.4-65.2% · Authoritas ‏47.5%) | ahrefs.com/blog/ai-overviews-reduce-clicks-update | 09-§1 (F-7) |
-| Pew Research — «Google users are less likely to click...» (يوليو 2025) | pewresearch.org/short-reads/2025/07/22 | 09-§1 |
-| Semrush — AI Overviews impact study (ديسمبر 2025: ظهور ~25% يوليو → 15.69%) | semrush.com (تقرير Dec 15, 2025) | 09-§1 |
-| Seer Interactive — AIO CTR update (سبتمبر 2025: CTR ‏1.31% ديسمبر 2025 → 2.36% فبراير 2026) | seerinteractive.com/insights/aio-impact-on-google-ctr-september-2025-update | 09-§1 |
-| Princeton/Georgia Tech/Allen AI — ورقة «GEO: Generative Engine Optimization» (Fact Density ‏+40%) | موثقة نقلاً عن أدلة GEO الصناعية المقروءة | 09-§1/§3.2 |
-| SE Ranking — تحليل 400K URL (2025: >32K رابط مرجعي = 3.5× اقتباس · Reddit/Quora ‏4×) | seranking.com (دراسة 2025) | 09-§1 · D-هـ |
-| Zenith AI — ChatGPT يقتبس صفحات المقارنة +11.1 نقطة عن Google | موثق بدليل Yotpo GEO ‏(يونيو 2026) المقروء | 09-§1/§3 |
-| SE Ranking — «Does LLMs.txt impact...» (أكتوبر 2026: 300K نطاق — لا أثر) + إعلان Google الرسمي 15-06-2026 (لا قيمة ترتيب — عبر أدلة يونيو/نوفمبر 2026 المقروءة وJohn Mueller) | seranking.com/blog/llms-txt · digitalapplied.com | 09-§1 |
-| Yotpo — «ChatGPT SEO & GEO 2026: 12 Tips» (كتل جواب 40-60 · أقسام 120-180 · Gartner ‏-25% بحث تقليدي · OpenAI/Harvard ‏24% استخدام معلوماتي) | yotpo.com/blog/chatgpt-seo-geo-tips | 09-§1/§3.1 |
+| Ahrefs — «Update: AI Overviews Reduce Clicks by 58%» (Ryan Law، 4 فبراير 2026؛ بيانات ديسمبر 2025: -58% للموضع الأول مقابل -34.5% في أبريل 2025 — وتوثق الصفحة نفسها التأكيدات: Seer 49.4-65.2% · Authoritas 47.5% ديسكتوب/37.7% موبايل · Kevin Indig >50%) | https://ahrefs.com/blog/ai-overviews-reduce-clicks-update | 09-§1 (F-7) |
+| Pew Research — «Google users are less likely to click on links when an AI summary appears in the results» (22 يوليو 2025: 8% مقابل 15% نسبة النقر مع/بلا ملخص AI — عينة 900 بالغ أمريكي و68,879 بحثًا) | https://www.pewresearch.org/short-reads/2025/07/22/google-users-are-less-likely-to-click-on-links-when-an-ai-summary-appears-in-the-results/ | 09-§1 |
+| Semrush — «Semrush Report: AI Overviews' Impact on Search in 2025» (15 ديسمبر 2025: 6.49% يناير → ~25% يوليو → 15.69% نوفمبر 2025 على قاعدة 10 ملايين كلمة) | https://www.semrush.com/blog/semrush-ai-overviews-study | 09-§1 |
+| Seer Interactive — «AIO Impact on Google CTR: September 2025 Update» (CTR عضوي لاستعلامات AIO: 1.76% يونيو 2024 → 0.61% سبتمبر 2025 = -61%) | https://www.seerinteractive.com/insights/aio-impact-on-google-ctr-september-2025-update | 09-§1 |
+| Princeton/Georgia Tech/Allen AI — ورقة «GEO: Generative Engine Optimization» (Aggarwal وآخرون — KDD 2024؛ «Fact Density» ترفع ظهور المواقع الأدنى ترتيبًا حتى 40% في إجابات المحركات التوليدية) | https://arxiv.org/abs/2311.09735 | 09-§1/§3.2 |
+| SE Ranking — «How to Optimize for ChatGPT» (24 نوفمبر 2025: تحليل 129,000 نطاق و216,524 صفحة في 20 مجالًا — المواقع >32,000 رابط مرجعي أقرب للاقتباس 3.5× من فئة ≤200 · ملايين الإشارات على Reddit/Quora ≈ 4× · llms.txt أثره مهملاً) | https://seranking.com/blog/how-to-optimize-for-chatgpt | 09-§1 (حقيقة بحثية فقط — لا برنامج روابط خارجية بقرار المالك تحديث 2026-11-18) |
+| Zenith AI — ChatGPT يقتبس صفحات المقارنة/مواقع العلامات المنافسة أكثر من Google بـ11.1 نقطة (الادعاء مقروء بدليل Yotpo أدناه الذي ينقل دراسة Zenith؛ ودراسة Zenith المنشورة على مدونتها تفحص اقتباسات المحركات التوليدية لمواقع المقارنة) | https://www.yotpo.com/blog/chatgpt-seo-geo-tips + https://www.tryzenith.ai/blog/ai-search-google-vs-gemini-q3-2025 | 09-§1/§3 |
+| SE Ranking — «Does LLMs.txt impact your AI visibility and citations? No, according to research» (15 أكتوبر 2026: 300,000 نطاق — لا علاقة للملف بالاقتباس) + موقف Google/John Mueller الرسمي (SEJ 2 يونيو 2026: «مواصفة تخمينية لا تدعمها Search» — وتوثيق 15-06-2026 أن خط ترتيب Search لا يستشير الملف) | https://seranking.com/blog/llms-txt + https://www.searchenginejournal.com/google-says-llms-txt-is-purely-speculative-for-now/577576 + https://www.digitalapplied.com/blog/google-llms-txt-no-seo-value-lighthouse-audit-2026 | 09-§1 |
+| Yotpo — «ChatGPT SEO & GEO 2026: 12 Tips to Get Cited in AI Answers» (كتل جواب 40-60 كلمة · أقسام 120-180 كلمة · Gartner -25% حجم بحث تقليدي بحلول 2026 · OpenAI/Harvard 24% استخدام معلوماتي) | https://www.yotpo.com/blog/chatgpt-seo-geo-tips | 09-§1/§3.1 |
 
-### 2.2 فحوص SERP الحية (بحث ويب مباشر — تكوين المتصدرين بتاريخ 2026-11-19)
+
+### 2.2 فحوص SERP الحية (بحث ويب مباشر — تكوين المتصدرين بتاريخ 2026-11-18)
 | الاستعلام | أبرز من ظهر (المستخدم في 02/03) |
 |---|---|
 | حاسبة السعرات الحرارية | moh.gov.sa · elconsolto.com/calculator/bmr · rc2.med.sa · مصدر إماراتي · nutridaybyday.com · saudi-fit.com |
@@ -59,7 +60,14 @@
 ### 2.3 مصادر ملحوظة قيد التحقق اللاحق (P0-G)
 أحجام بحث Keyword Planner لقائمة 02-§7 (مصر/السعودية/الإمارات/US) — **غير متوفرة بلا أداة**؛ لا رقم حجم بحث ورد بأي تقرير من تقدير.
 
-## 3. حدود الأدلة المعلنة (للأمانة)
+## 3. حدود الأدلة المعلنة وتمييز البيانات الفعلية عن التقديرات (للأمانة)
+
+**التصنيف الملزم لكل رقم/ادعاء في هذه المنظومة:**
+- **(أ) قياس فعلي:** مستخرج من GSC/GA4/DOM/الكود بمصدره ونافذته وتاريخه — مثل كل أرقام §1 وجداول GSC (6,896/16 · 1,665@84.06 · 68@20.16 · الدول · عدّ الروابط ~5).
+- **(ب) استنتاج من فحص SERP حي مؤرخ:** تكوين المتصدرين بتاريخ الفحص (2026-11-18 وما قبله الموثق) — دليل طلب لا رقم حجم.
+- **(ج) تقدير نوعي:** موسوم صراحة [تقدير] ولا يحمل رقمًا (مثل «حجم عربي محدود» لنمط الاشتراكات).
+- **(د) نتائج دراسات خارجية:** موثقة بروابطها المباشرة وتواريخها في §2.1 — تصف السوق لا منصتنا، ولا تُنسب للمنصة.
+
 
 1. فحوص SERP عبر بحث الويب تعرض تكوين النتائج لا مواضع Alkemos الحية (الموقع في فترة اضطراب فهرسة موثق بمشروع مستقل).
 2. القياسات التاريخية GSC من نوافذ موثقة سابقًا ولم تُعد تسحب بهذه الجلسة (القدرة موثقة GSC-RE-AUDIT).
@@ -70,7 +78,8 @@
 
 | التاريخ | القياس | النافذة | القيمة | المرجع |
 |---|---|---|---|---|
-| 2026-11-19 | عدّ روابط أدوات→تجاري الزاحفة | لقطة DOM/كود | ~5 (فوتر) | هذه الجلسة (07-§1) |
-| 2026-11-19 | حالة بوابات المستودع | لقطة | docs_audit ✓ · docs_parity ✓ · stale-refs ✓ | سجل العمل |
+| 2026-11-18 | عدّ روابط أدوات→تجاري الزاحفة | لقطة DOM/كود | ~5 (فوتر) | الجلسة الأصلية (07-§1) |
+| 2026-11-18 | حالة بوابات المستودع بعد التسليم | لقطة | docs_audit ✓ · docs_parity ✓ · stale-refs ✓ | الجلسة الأصلية |
+| 2026-11-18 | فحص اتساق ما بعد تحديث قرارات المالك | الملفات الأربعة عشر + الحوكمية | صفر بقايا (روابط خارجية · تجربة توليد · تواريخ مستقبلية) · بوابات ✓ · الترقيم D-أ..D-ج وP2-A..C متسق | جلسة التحديث |
 | — | *أول قراءة GSC نظيفة بعد الاعتماد* | 28 يومًا | *بانتظار* | K1-K3/K8 |
 | — | *أول تقرير قمع GA4* | 4 أسابيع بعد P0-G | *بانتظار* | K6/K7 |
