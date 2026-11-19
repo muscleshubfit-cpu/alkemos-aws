@@ -79,6 +79,11 @@ const TOOL_SURFACE_FILES = [
   // (tools-hub-itemlist.ts) emits Arabic schema copy on /ar/tools — same
   // surface, same MSA law.
   "src/lib/tools-hub-itemlist.ts",
+  // ORGANIC-GROWTH-P0-C (2026-11-19): the result→diet-plan bridge renders
+  // Arabic copy inside the two calculators' result blocks (the component
+  // + its matching/link module) — same surface, same MSA law.
+  "src/components/DietPlanResultBridge.tsx",
+  "src/lib/diet-plan-bridge.ts",
 ] as const;
 
 const AR_RUN = /[\u0600-\u06FF]/;

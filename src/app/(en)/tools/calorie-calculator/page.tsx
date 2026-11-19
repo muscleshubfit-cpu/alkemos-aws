@@ -12,6 +12,11 @@ import { OtherTools } from "@/components/OtherTools";
 // renders on the article pages from the same source).
 import { ToolArticleLinks } from "@/components/ToolArticleLinks";
 import { RecipeSuggestStrip } from "@/components/recipes/RecipeSuggestStrip";
+// ORGANIC-GROWTH-P0-C (docs/organic-growth-system-2026-11-18
+// /10-prioritized-execution-roadmap.md): «نتيجتك → خطتك الجاهزة» — the
+// result block ends the commercial dead-end (F-4) by offering the four
+// ready-made day-plan cells at the level nearest the visitor's number.
+import { DietPlanResultBridge } from "@/components/DietPlanResultBridge";
 import { LeadCaptureCard } from "@/components/LeadCaptureCard";
 import { SaveResultButton } from "@/components/SaveResultButton";
 import { ShareButtons } from "@/components/ShareButtons";
@@ -308,6 +313,17 @@ export default function CalorieCalculatorPage() {
                 </div>
               </div>
             </div>
+
+            {/* ORGANIC-GROWTH-P0-C: the result→ready-made-plan bridge —
+                inside the FIRST result container (after the value cards,
+                before the commercial CTA below: value → free next step →
+                the memberships bridge stays where P0-A put it). The two
+                result gates of the P0-A split signature are unchanged. */}
+            <DietPlanResultBridge
+              calories={result.target}
+              lang={lang}
+              source="calorie-calculator"
+            />
           </div>
         )}
 

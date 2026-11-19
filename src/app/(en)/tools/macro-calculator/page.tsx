@@ -11,6 +11,11 @@ import { OtherTools } from "@/components/OtherTools";
 // the tool result — pairs from src/lib/tool-article-links.ts (reverse leg
 // renders on the article pages from the same source).
 import { ToolArticleLinks } from "@/components/ToolArticleLinks";
+// ORGANIC-GROWTH-P0-C (docs/organic-growth-system-2026-11-18
+// /10-prioritized-execution-roadmap.md): «نتيجتك → خطتك الجاهزة» — the
+// result block ends the commercial dead-end (F-4) by offering the four
+// ready-made day-plan cells at the level nearest the visitor's number.
+import { DietPlanResultBridge } from "@/components/DietPlanResultBridge";
 import { LeadCaptureCard } from "@/components/LeadCaptureCard";
 import { SaveResultButton } from "@/components/SaveResultButton";
 import { ShareButtons } from "@/components/ShareButtons";
@@ -34,7 +39,12 @@ export default function MacroCalculatorPage() {
 
   const [calories, setCalories] = useState("");
   const [diet, setDiet] = useState<DietType>("balanced");
+  // ORGANIC-GROWTH-P0-C: `cal` snapshots the number the CURRENT result was
+  // computed from (the raw `calories` input can be edited afterwards
+  // without recalculating — the bridge must never show plan links for a
+  // number the visible macros were not computed from).
   const [result, setResult] = useState<{
+    cal: number;
     protein_g: number; carbs_g: number; fat_g: number;
     protein_cal: number; carbs_cal: number; fat_cal: number;
   } | null>(null);
@@ -49,6 +59,7 @@ export default function MacroCalculatorPage() {
     const fat_cal = Math.round(cal * preset.fat / 100);
 
     setResult({
+      cal,
       protein_g: Math.round(protein_cal / 4),
       carbs_g: Math.round(carbs_cal / 4),
       fat_g: Math.round(fat_cal / 9),
@@ -112,6 +123,17 @@ export default function MacroCalculatorPage() {
                 <p className="mt-1 text-xs font-normal text-gray-400">{result.fat_cal} {isAr ? "سعرة" : "cal"}</p>
               </div>
             </div>
+
+            {/* ORGANIC-GROWTH-P0-C: the result→ready-made-plan bridge —
+                inside the FIRST result container (after the value cards,
+                before the commercial CTA below: value → free next step →
+                the memberships bridge stays where P0-A put it). The two
+                result gates of the P0-A split signature are unchanged. */}
+            <DietPlanResultBridge
+              calories={result.cal}
+              lang={lang}
+              source="macro-calculator"
+            />
           </div>
         )}
 
