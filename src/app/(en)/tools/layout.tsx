@@ -1,5 +1,11 @@
 import type { Metadata } from "next";
 import { Resources } from "@/components/hub-head-resources";
+import { jsonLd } from "@/lib/seo";
+// ORGANIC-GROWTH-P0-F (owner order 2026-11-19, roadmap 10/P0-F): the hub's
+// parent ItemList schema — built from the SAME TOOLS array the grid renders
+// (tools-shared.ts), serialized through the existing getItemListSchema
+// helper (the workout-tracker/macro-tracker layout precedent).
+import { getToolsHubItemList } from "@/lib/tools-hub-itemlist";
 
 /**
  * M30 fix: English-first metadata for /tools.
@@ -36,11 +42,13 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     url: "https://alkemos.com/tools",
-    // PHASE 187 (deep-audit P0-2): og:image — static branded family
-    // card (design mirrors /api/og-image; see scripts/generate-og-cards.py).
+    // PHASE 187 (deep-audit P0-2): og:image — static branded family card
+    // (design mirrors /api/og-image; see scripts/generate-og-cards.py).
+    // ORGANIC-GROWTH-P0-F (2026-11-19): the hub's DEDICATED card
+    // (og-tools-en) replaces the homepage fallback card.
     images: [
       {
-        url: "/images/og/og-home-en.png?v=4",
+        url: "/images/og/og-tools-en.png?v=4",
         width: 1200,
         height: 630,
         alt: "Alkemos Free Fitness Calculators",
@@ -49,12 +57,22 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    images: ["/images/og/og-home-en.png?v=4"],
+    images: ["/images/og/og-tools-en.png?v=4"],
   },
 };
 
+const toolsItemListSchema = getToolsHubItemList("en");
+
 export default function ToolsLayout({ children }: { children: React.ReactNode }) {
   return (
-    <Resources banner="tools">{children}</Resources>
+    <Resources banner="tools">
+      {/* ORGANIC-GROWTH-P0-F: the parent ItemList — 8 ListItems (one per
+          hub tool), machine-readable for rich results & AI answer engines. */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: jsonLd(toolsItemListSchema) }}
+      />
+      {children}
+    </Resources>
   );
 }

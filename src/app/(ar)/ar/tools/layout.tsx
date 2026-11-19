@@ -1,5 +1,11 @@
 import type { Metadata } from "next";
 import { Resources } from "@/components/hub-head-resources";
+import { jsonLd } from "@/lib/seo";
+// ORGANIC-GROWTH-P0-F (owner order 2026-11-19, roadmap 10/P0-F): the AR
+// mirror of the hub's parent ItemList — built from the SAME TOOLS array
+// the grid renders (tools-shared.ts) with /ar-prefixed destinations
+// (the SEO-GEO-4 mirror law), serialized through getItemListSchema.
+import { getToolsHubItemList } from "@/lib/tools-hub-itemlist";
 
 /**
  * SEO-GEO-4 (2026-09-08, owner directive «ابدأ (ج) ثم (أ)»): AR tools hub.
@@ -49,9 +55,11 @@ export const metadata: Metadata = {
     url: "https://alkemos.com/ar/tools",
     // PHASE 187 (deep-audit P0-2): og:image — static branded family
     // card (design mirrors /api/og-image; see scripts/generate-og-cards.py).
+    // ORGANIC-GROWTH-P0-F (2026-11-19): the hub's DEDICATED AR card
+    // (og-tools-ar) replaces the homepage fallback card.
     images: [
       {
-        url: "/images/og/og-home-ar.png?v=4",
+        url: "/images/og/og-tools-ar.png?v=4",
         width: 1200,
         height: 630,
         alt: "حاسبات اللياقة المجانية من Alkemos",
@@ -60,14 +68,24 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    images: ["/images/og/og-home-ar.png?v=4"],
+    images: ["/images/og/og-tools-ar.png?v=4"],
     title: "الأدوات المجانية | Alkemos",
     description: "حاسبات لياقة وتغذية مجانية بالعربية لمساعدتك في رحلتك.",
   },
 };
 
+const toolsItemListSchema = getToolsHubItemList("ar");
+
 export default function ArToolsLayout({ children }: { children: React.ReactNode }) {
   return (
-    <Resources banner="tools">{children}</Resources>
+    <Resources banner="tools">
+      {/* ORGANIC-GROWTH-P0-F: القائمة الأبوية للـItemList — 8 عناصر (واحدة
+          لكل أداة بالمركز) قابلة للقراءة الآلية لنتائج العرض ومحركات الإجابة. */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: jsonLd(toolsItemListSchema) }}
+      />
+      {children}
+    </Resources>
   );
 }

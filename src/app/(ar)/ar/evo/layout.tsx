@@ -41,11 +41,12 @@ export const metadata: Metadata = {
     // openGraph without images, and a child openGraph block REPLACES the
     // root one in Next.js metadata merging, so the og-home-ar card from
     // /ar/layout.tsx was NOT inherited. Pinned explicitly — Phase 231
-    // (owner order C3): the card is now the DEDICATED AR EVO card
-    // (og-evo-ar, 1200×630) instead of the homepage card.
+    // (owner order C3) promised the DEDICATED AR EVO card (og-evo-ar,
+    // 1200×630); ORGANIC-GROWTH-P0-F (2026-11-19, roadmap 10/P0-F) makes
+    // the promise real: the card exists on disk and is wired here.
     images: [
       {
-        url: "/images/og/og-home-ar.png?v=4",
+        url: "/images/og/og-evo-ar.png?v=4",
         width: 1200,
         height: 630,
         alt: "مدرب اللياقة الذكي EVO | Alkemos",
@@ -57,7 +58,7 @@ export const metadata: Metadata = {
     title: "مدرب اللياقة الذكي EVO | Alkemos",
     description:
       "محرك أداء ذكي يبني خطط تغذية وتمارين مخصصة من بياناتك — المحادثة اليومية مجانية، والخطط والتبديلات مع الاشتراك.",
-    images: ["/images/og/og-home-ar.png?v=4"],
+    images: ["/images/og/og-evo-ar.png?v=4"],
   },
   alternates: {
     canonical: "https://alkemos.com/ar/evo",

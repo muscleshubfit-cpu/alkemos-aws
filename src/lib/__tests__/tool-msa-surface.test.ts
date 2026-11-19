@@ -75,6 +75,10 @@ const TOOL_SURFACE_FILES = [
   // (tools-hub-starting-paths.ts) renders on /tools too — same surface,
   // same MSA law.
   "src/lib/tools-hub-starting-paths.ts",
+  // ORGANIC-GROWTH-P0-F (2026-11-19): the hub ItemList module
+  // (tools-hub-itemlist.ts) emits Arabic schema copy on /ar/tools — same
+  // surface, same MSA law.
+  "src/lib/tools-hub-itemlist.ts",
 ] as const;
 
 const AR_RUN = /[\u0600-\u06FF]/;

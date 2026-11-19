@@ -27,13 +27,21 @@ import { resolve } from "node:path";
  *      the HOMEPAGE card (og-home-en / og-home-ar) as the default
  *      fallback — NOT a per-family card (the retired SOCIAL-OG-3
  *      system the owner judged unsuccessful).
+ *      ORGANIC-GROWTH-P0-F AMENDMENT (2026-11-19, owner order «نفّذ البند
+ *      التالي بالترتيب» — roadmap 10/P0-F, owner-approved): the roadmap
+ *      ranked THREE families high-impact enough to break the fallback
+ *      law — the commercial trio memberships · evo · the tools hub —
+ *      and these six surfaces now carry DEDICATED cards
+ *      (og-memberships-en/ar · og-evo-en/ar · og-tools-en/ar). Every
+ *      other image-less surface stays on the og-home fallback law.
  *   3. twitter:card stays summary_large_image and twitter.images
  *      mirrors og:image everywhere (a "summary" card ignores images).
  *   4. SHARE_IMG_VER is the single bump point for a site-wide
  *      share-cache re-bust (SOCIAL-OG-2 law): v=4 = this law's sweep.
  *      Platforms that scraped a URL during an earlier era keep serving
  *      the remembered thumbnail for up to 30 days; a NEW image URL
- *      forces a fresh fetch at the next scrape.
+ *      forces a fresh fetch at the next scrape. The P0-F dedicated
+ *      cards ship as fresh URLs under the same v=4 (never scraped).
  */
 
 const OG_DIR = resolve(__dirname, "../../../public/images/og");
@@ -48,7 +56,18 @@ const OG_DIR = resolve(__dirname, "../../../public/images/og");
  */
 const SHARE_IMG_VER = "?v=4";
 
-const CARDS = ["og-home-en", "og-home-ar"] as const;
+const CARDS = [
+    "og-home-en",
+    "og-home-ar",
+    // ORGANIC-GROWTH-P0-F (2026-11-19): the roadmap's dedicated commercial
+    // trio — existence + wiring asserted below like the home pair.
+    "og-memberships-en",
+    "og-memberships-ar",
+    "og-evo-en",
+    "og-evo-ar",
+    "og-tools-en",
+    "og-tools-ar",
+] as const;
 
 /** surface source → og-home card (language-matched) — the fallback law */
 const WIRED_SURFACES: Array<[string, string]> = [
@@ -67,18 +86,21 @@ const WIRED_SURFACES: Array<[string, string]> = [
   ["src/app/(ar)/ar/collections/[slug]/page.tsx", "og-home-ar"],
   ["src/app/(en)/blog/category/[slug]/page.tsx", "og-home-en"],
   ["src/app/(ar)/ar/blog/category/[slug]/page.tsx", "og-home-ar"],
-  ["src/app/(en)/tools/layout.tsx", "og-home-en"],
+  // The five tool CALCULATOR sub-layouts stay on the og-home fallback law
+  // (P0-F dedicates the HUB cards only — the roadmap's field 2 scope).
   ["src/app/(en)/tools/bmi-calculator/layout.tsx", "og-home-en"],
   ["src/app/(en)/tools/body-fat-calculator/layout.tsx", "og-home-en"],
   ["src/app/(en)/tools/calorie-calculator/layout.tsx", "og-home-en"],
   ["src/app/(en)/tools/macro-calculator/layout.tsx", "og-home-en"],
   ["src/app/(en)/tools/water-tracker/layout.tsx", "og-home-en"],
-  ["src/app/(ar)/ar/tools/layout.tsx", "og-home-ar"],
   ["src/app/(ar)/ar/tools/bmi-calculator/layout.tsx", "og-home-ar"],
   ["src/app/(ar)/ar/tools/body-fat-calculator/layout.tsx", "og-home-ar"],
   ["src/app/(ar)/ar/tools/calorie-calculator/layout.tsx", "og-home-ar"],
   ["src/app/(ar)/ar/tools/macro-calculator/layout.tsx", "og-home-ar"],
   ["src/app/(ar)/ar/tools/water-tracker/layout.tsx", "og-home-ar"],
+  // ORGANIC-GROWTH-P0-F: the hub pair itself — DEDICATED cards.
+  ["src/app/(en)/tools/layout.tsx", "og-tools-en"],
+  ["src/app/(ar)/ar/tools/layout.tsx", "og-tools-ar"],
   ["src/app/(ar)/ar/layout.tsx", "og-home-ar"],
   ["src/app/(en)/exercises/layout.tsx", "og-home-en"],
   ["src/app/(ar)/ar/exercises/page.tsx", "og-home-ar"],
@@ -86,10 +108,10 @@ const WIRED_SURFACES: Array<[string, string]> = [
   ["src/app/(ar)/ar/programs/page.tsx", "og-home-ar"],
   ["src/app/(en)/coaching/layout.tsx", "og-home-en"],
   ["src/app/(ar)/ar/coaching/layout.tsx", "og-home-ar"],
-  ["src/app/(en)/memberships/layout.tsx", "og-home-en"],
-  ["src/app/(ar)/ar/memberships/page.tsx", "og-home-ar"],
-  ["src/app/(en)/evo/layout.tsx", "og-home-en"],
-  ["src/app/(ar)/ar/evo/layout.tsx", "og-home-ar"],
+  ["src/app/(en)/memberships/layout.tsx", "og-memberships-en"],
+  ["src/app/(ar)/ar/memberships/page.tsx", "og-memberships-ar"],
+  ["src/app/(en)/evo/layout.tsx", "og-evo-en"],
+  ["src/app/(ar)/ar/evo/layout.tsx", "og-evo-ar"],
   ["src/app/(en)/diet-plan/page.tsx", "og-home-en"],
   ["src/app/(en)/diet-plan/[level]/[system]/page.tsx", "og-home-en"],
   ["src/app/(ar)/ar/diet-plan/page.tsx", "og-home-ar"],
@@ -143,15 +165,15 @@ function repoRootPath(rel: string): string {
   return resolve(__dirname, "../../..", rel);
 }
 
-describe("og:image coverage (SOCIAL-OG-4 — first-own-image + homepage fallback)", () => {
-  it("the homepage card pair exists on disk (run scripts/generate-og-cards.py)", () => {
+describe("og:image coverage (SOCIAL-OG-4 — first-own-image + homepage fallback · P0-F commercial trio)", () => {
+  it("every declared card exists on disk (run scripts/generate-og-cards.py)", () => {
     for (const card of CARDS) {
       const p = resolve(OG_DIR, `${card}.png`);
       expect(existsSync(p), `${card}.png missing (run scripts/generate-og-cards.py)`).toBe(true);
     }
   });
 
-  it.each(WIRED_SURFACES)("%s shares the homepage card in og + twitter (the fallback law)", (rel, card) => {
+  it.each(WIRED_SURFACES)("%s shares its pinned card in og + twitter (fallback · P0-F dedicated trio)", (rel, card) => {
     const src = readFileSync(repoRootPath(rel), "utf8");
     // the card path is asserted substring-style so BOTH URL forms pass:
     // relative ("/images/og/og-home-en.png?v=4") and absolute
@@ -260,7 +282,7 @@ describe("og:image coverage (SOCIAL-OG-4 — first-own-image + homepage fallback
     }
   });
 
-  it("SOCIAL-OG-4: no stray card files — the og-home pair is the only static card on disk", () => {
+  it("SOCIAL-OG-4 + ORGANIC-GROWTH-P0-F: no stray card files — the home pair + the P0-F dedicated trio are the only static cards on disk", () => {
     const pngs = readdirSync(OG_DIR)
       .filter((f) => f.endsWith(".png"))
       .map((f) => f.replace(/\.png$/, ""));
@@ -268,6 +290,6 @@ describe("og:image coverage (SOCIAL-OG-4 — first-own-image + homepage fallback
     for (const png of pngs) {
       expect(known.has(png), `orphan card ${png}.png — the SOCIAL-OG-4 law retired it; delete it`).toBe(true);
     }
-    expect(pngs.length).toBe(2);
+    expect(pngs.length).toBe(8);
   });
 });

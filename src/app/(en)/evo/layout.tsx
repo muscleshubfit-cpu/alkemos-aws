@@ -32,12 +32,13 @@ export const metadata: Metadata = {
     // §12.53 item 4 (2026-09-15): the EN list surfaces shared NO social
     // card — this layout declared openGraph without images, and a child
     // openGraph block REPLACES the root one in Next.js metadata merging,
-    // so nothing was inherited. Phase 231 (owner order C3): the card is
-    // now the DEDICATED EVO card (og-evo-en, 1200×630, same generator
-    // design) — it previously reused the homepage card (og-home-en).
+    // so nothing was inherited. Phase 231 (owner order C3) promised the
+    // DEDICATED EVO card (og-evo-en, 1200×630, same generator design);
+    // ORGANIC-GROWTH-P0-F (2026-11-19, roadmap 10/P0-F) makes the promise
+    // real: the card exists on disk and is wired here.
     images: [
       {
-        url: "/images/og/og-home-en.png?v=4",
+        url: "/images/og/og-evo-en.png?v=4",
         width: 1200,
         height: 630,
         alt: "EVO — AI Fitness Coach | Alkemos",
@@ -46,7 +47,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    images: ["/images/og/og-home-en.png?v=4"],
+    images: ["/images/og/og-evo-en.png?v=4"],
   },
   alternates: {
     canonical: "https://alkemos.com/evo",

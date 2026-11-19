@@ -175,14 +175,34 @@ def make_card(name: str, lang: str, title: str, desc: str) -> None:
 SPECS = [
     # SOCIAL-OG-4 (2026-11-06, owner order «استخدام الصورة الأولى الخاصة بكل صفحة
     # تلقائيًا كصورة معاينة، وإن لم تكن للصفحة صورة خاصة فصورة الصفحة الرئيسية»):
-    # the ONLY static card left is the homepage pair — every page without an
-    # own content image (no cover photo / exercise photo / program image /
-    # author avatar) shares it as the default fallback. The 27 former family
-    # and per-comparison cards are retired (git history preserves them).
+    # the homepage pair is the default fallback shared by every page
+    # without an own content image (the ONLY static cards left under the
+    # retired SOCIAL-OG-3 family-card system).
     ("og-home-en", "en", "Alkemos — Fitness & Nutrition, Bilingual",
      "Exercises, foods, calculators, AI plan generators & coaching — in English & Arabic."),
     ("og-home-ar", "ar", "منصة Alkemos الرياضية الشاملة",
      "تمارين وأطعمة وحاسبات ومولدات خطط بالذكاء الاصطناعي ومدربون معتمدون — بالعربية والإنجليزية."),
+    # ORGANIC-GROWTH-P0-F (2026-11-19, owner order «نفّذ البند التالي بالترتيب» —
+    # roadmap docs/organic-growth-system-2026-11-18/10 P0-F): THREE families
+    # get their dedicated cards back — the commercial trio the roadmap
+    # ranked as high-impact (memberships · evo · tools hub), ×2 languages.
+    # The (en)/(ar) evo layouts had PROMISED dedicated cards since Phase 231
+    # ("og-evo-en, 1200×630, same generator design") while pointing at
+    # og-home — the promise is now real. Copy rule stays TIMELESS: the card
+    # text mirrors each surface's og:title/og:description (no library
+    # counts, no prices — both change as the sources grow).
+    ("og-memberships-en", "en", "Alkemos Memberships — Premium & Pro Plans",
+     "Every price and usage limit in plain view: plan generations, swaps, saves, and what each tier adds."),
+    ("og-memberships-ar", "ar", "عضويات Alkemos — بريميوم وبرو",
+     "كل الأسعار والحدود بوضوح: توليد الخطط الذكية، التبديلات، الحفظ، وما تضيفه كل باقة."),
+    ("og-evo-en", "en", "EVO — AI Fitness Coach | Alkemos",
+     "An intelligent engine that builds personalized plans and suggests smart swaps — chat free daily."),
+    ("og-evo-ar", "ar", "مدرب اللياقة الذكي EVO | Alkemos",
+     "محرك أداء ذكي يبني خطط تغذية وتمارين مخصصة من بياناتك — المحادثة اليومية مجانية، والخطط والتبديلات مع الاشتراك."),
+    ("og-tools-en", "en", "Free Fitness Tools | Alkemos",
+     "Free calculators, a water tracker, and the manual meal planner — AI plan generation for subscribers."),
+    ("og-tools-ar", "ar", "الأدوات المجانية | Alkemos",
+     "حاسبات لياقة وتغذية مجانية بالعربية — ومخطط وجبات يدوي، وتوليد الخطط بالذكاء الاصطناعي للمشتركين."),
 ]
 
 
