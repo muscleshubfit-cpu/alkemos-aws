@@ -55,6 +55,16 @@ const GATED_TOOLS = [
   "src/app/(en)/meal-planner/page.tsx",
 ] as const;
 
+// ORGANIC-GROWTH-P1-E (2026-11-20 — owner roadmap order, 01-§6):
+// water-tracker's client-side DB-save gate («Premium+ only») contradicted
+// the plans table (memberships.ts grants EVERY member saves; the server
+// enforces that quota) and was REMOVED. The save is plan-quota now — the
+// only save-limit message is the shared server «Save limit reached (N)»
+// (pinned in water-tracker-p1e.test.ts). meal-planner's gate is a REAL
+// per-plan entitlement (limits.mealPlannerExport) and stays gated.
+const STILL_GATED = ["src/app/(en)/meal-planner/page.tsx"] as const;
+const P1E_UNGATED = ["src/app/(en)/tools/water-tracker/page.tsx"] as const;
+
 const AR_MIRRORS = [
   "src/app/(ar)/ar/tools/calorie-calculator/page.tsx",
   "src/app/(ar)/ar/tools/bmi-calculator/page.tsx",
@@ -108,16 +118,27 @@ describe("ORGANIC-GROWTH-P0-A — crawlable commercial CTAs on the 12 tool pages
     expect(linkIdx).toBeLessThan(gates[1].index!);
   });
 
-  it.each(GATED_TOOLS)("the functional Premium+ toast gates are PRESERVED (behavior, not crawl surface) (%s)", (file) => {
+  it.each(STILL_GATED)("the functional Premium+ toast gates are PRESERVED (behavior, not crawl surface) (%s)", (file) => {
     const src = read(file);
     // The handler-level gates stay: auth navigation + the memberships
-    // upgrade navigation after the toast (water-tracker DB save /
-    // meal-planner JSON export). Removing them would change behavior.
+    // upgrade navigation after the toast (meal-planner JSON export).
+    // Removing them would change behavior.
     expect(src).toContain('navigate("auth", { mode: "login" })');
     expect(src).toContain('navigate("memberships");');
     expect(src).toContain('from "@/hooks/use-nav"');
     // And the page carries NO result gate — the new CTA card is static
     // JSX, so it is server-rendered by construction.
+    expect(src).not.toContain("{result && (");
+  });
+
+  it.each(P1E_UNGATED)("P1-E: the contradictory save gate is GONE — plan-quota save; auth nav + use-nav preserved (%s)", (file) => {
+    const src = read(file);
+    // The login navigation stays (save still requires an account), and
+    // the use-nav wiring with it; the memberships toast gate is gone and
+    // the P0-A crawlable CTA card is the page's commercial bridge.
+    expect(src).toContain('navigate("auth", { mode: "login" })');
+    expect(src).not.toContain('navigate("memberships");');
+    expect(src).toContain('from "@/hooks/use-nav"');
     expect(src).not.toContain("{result && (");
   });
 

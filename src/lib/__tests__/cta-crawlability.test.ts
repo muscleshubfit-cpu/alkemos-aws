@@ -246,10 +246,20 @@ describe("CTA-CRAWLABILITY — admin + coach surfaces", () => {
 /* ── the P0-A functional keeps must survive this frame too ─────────────── */
 
 describe("CTA-CRAWLABILITY — functional keeps from the audit (never convert)", () => {
-  it("water-tracker + meal-planner keep their Premium+ toast gates inside handlers", () => {
+  it("meal-planner keeps its Premium+ JSON-export gate; water-tracker's save gate was removed by P1-E", () => {
     const water = read("src/app/(en)/tools/water-tracker/page.tsx");
     const meal = read("src/app/(en)/meal-planner/page.tsx");
-    expect(water).toContain('navigate("memberships")');
+    // ORGANIC-GROWTH-P1-E (2026-11-20 — owner roadmap order, 01-§6):
+    // water-tracker's client-side DB-save gate («Premium+ only»)
+    // contradicted the plans table (memberships.ts grants EVERY member
+    // saves; /api/tools/save-result enforces that quota) — REMOVED. The
+    // page defers to the server quota now (one message, consistent with
+    // memberships.ts — pinned in water-tracker-p1e.test.ts). The auth
+    // navigation stays.
+    expect(water).toContain('navigate("auth", { mode: "login" })');
+    expect(water).not.toContain('navigate("memberships")');
+    // meal-planner's gate is a REAL per-plan entitlement
+    // (limits.mealPlannerExport from memberships.ts) — untouched.
     expect(meal).toContain('navigate("memberships")');
   });
 

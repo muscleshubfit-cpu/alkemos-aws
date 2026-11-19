@@ -11,7 +11,13 @@ import { ToolSchemaScripts } from "@/components/ToolSchemaScripts";
  * mirror exists for this page.
  */
 export const metadata: Metadata = {
-  title: "Water Tracker — Daily Hydration Goal & Log | Alkemos",
+  // ORGANIC-GROWTH-P1-E (06-§2/T5, 2026-11-20): retargeted from
+  // "Water Tracker — Daily Hydration Goal & Log" to the WEB intent
+  // "Water Intake Calculator" — the app-intent "tracker" head term
+  // belongs to APK-store SERPs this page should not chase (T5's
+  // different strategy). 56 chars · head term first · one brand
+  // suffix · og/twitter untouched (P0-D/P1-F scope precedent).
+  title: "Water Intake Calculator — Hydration Goal & Log | Alkemos",
   description:
     // SEO-P2-10 (2026-10-01, SEO audit item 10): 181 → 132 chars — the
     // ≤160 SERP-truncation law now holds (35 ml × kg proof kept).

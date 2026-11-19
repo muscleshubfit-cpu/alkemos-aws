@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/hooks/use-auth";
 import { useNav } from "@/hooks/use-nav";
-import { useMembershipTier } from "@/hooks/use-membership-tier";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { AdSenseAd } from "@/components/AdSenseAd";
@@ -93,7 +92,6 @@ export default function WaterTrackerPage() {
   const { lang } = useI18n();
   const { profile } = useAuth();
   const { navigate } = useNav();
-  const { tier } = useMembershipTier(profile);
   const isAr = lang === "ar";
 
   const [log, setLog] = useState<DayLog>({});
@@ -195,23 +193,20 @@ export default function WaterTrackerPage() {
     );
   };
 
-  // ===== Save to DB (Premium+ feature) =====
+  // ===== Save to DB (plan-quota feature — ORGANIC-GROWTH-P1-E 2026-11-20) =====
+  // The documented contradiction (01-§6): this handler used to block free
+  // members from saving with a client-side membership gate, while the plans
+  // table (memberships.ts — the single source of truth) grants EVERY
+  // logged-in member saves (Free: 3 · Premium: 50 · Pro/Coaching: 200) and
+  // /api/tools/save-result enforces exactly that quota server-side.
+  // P1-E removes that gate so this page behaves like SaveResultButton (the
+  // site-wide save pattern): login → save → the server answers 403
+  // "Limit reached (N)" at the cap with the SAME upgrade message used
+  // everywhere else. One message, consistent with memberships.ts.
   const handleSaveToDb = async () => {
     if (!profile) {
       toast.error(isAr ? "سجّل الدخول للحفظ" : "Log in to save");
       navigate("auth", { mode: "login" });
-      return;
-    }
-    // Water tracker DB save is a Premium+ feature — resolve tier via
-    // the useMembershipTier hook (queries subscriptions table).
-    const allowed = ["premium", "pro", "coaching"].includes(tier);
-    if (!allowed) {
-      toast.error(
-        isAr
-          ? "حفظ سجل الماء متاح لأعضاء باقة بريميوم فأعلى"
-          : "Water log save is Premium+ only",
-      );
-      navigate("memberships");
       return;
     }
 
@@ -505,7 +500,10 @@ export default function WaterTrackerPage() {
             handleSaveToDb — a JS-only path crawlers can never see (F-1). The
             roadmap's 12/12 acceptance demands a crawlable <a> here too, so
             the SAME unified CTA card as the calculators ships in the server
-            HTML (one contextual commercial CTA per tool page — law 07-§4.2). */}
+            HTML (one contextual commercial CTA per tool page — law 07-§4.2).
+            [P1-E 2026-11-20: that client-side toast gate has since been
+            REMOVED (plan-quota save now) — this crawlable card is the page's
+            commercial bridge.] */}
         <div className="mt-6 rounded-3xl border border-[var(--edge)] bg-[var(--tint)] p-6 text-center">
           <p className="text-base font-normal text-[var(--text)]">
             {isAr
