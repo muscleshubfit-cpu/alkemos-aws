@@ -19,7 +19,16 @@ const SITE = "https://alkemos.com";
 const PAGE_URL = `${SITE}/for-coaches`;
 
 export const metadata: Metadata = {
-  title: "Coach on Alkemos — your clients, your prices, your money",
+  // ORGANIC-GROWTH-P0-D (2026-11-19, roadmap 10 field 4): the EN title
+  // joins the group convention the EN commercial surfaces already
+  // follow ("… | Alkemos": tools · evo · memberships · coaching — the
+  // affiliate page is P0-E's own documented gap) WITHOUT doubling the
+  // brand: the old lead itself carried "Alkemos", so a suffix would
+  // have rendered it twice; the lead is replaced by a brand-free
+  // positioning line + the ONE group suffix (64 chars ≤ 70, brand
+  // exactly once). og/twitter titles are untouched by P0-D (scope
+  // law: the <title> only).
+  title: "Coach Platform — Your Clients, Your Prices, Your Money | Alkemos",
   description:
     // CONTENT-AUDIT P1-7 (audit §2.1): 260 chars — trimmed to the ~160
     // budget; commission model + free registration kept up front.

@@ -17,7 +17,14 @@ import { COACH_FAQ_AR } from "@/app/(en)/for-coaches/content";
 const SITE_URL = "https://alkemos.com";
 
 export const metadata: Metadata = {
-  title: "انضم كمدرب في Alkemos — درِّب عملاءك بأسعارك وأموالك بين يديك",
+  // ORGANIC-GROWTH-P0-D (2026-11-19, roadmap 10 field 4): the AR string
+  // fed the /ar root template "%s — Alkemos" → the rendered <title> was
+  // 71 chars with the brand TWICE (the audit-01 documented defect).
+  // title.absolute bypasses the template (the coaching/memberships AR
+  // precedent) so the rendered title is EXACTLY the string below — 55
+  // chars ≤ 70, brand once mid-title (the SEO-GEO-4 mid-title law).
+  // og/twitter titles are untouched by P0-D (scope law: <title> only).
+  title: { absolute: "انضم كمدرب في Alkemos — عملاؤك وأسعارك وأموالك بين يديك" },
   description:
     // CONTENT-AUDIT P1-7 (audit §2.1): 205 chars — trimmed inside the ~160 budget.
 "سجّل كمدرب أو أخصائي تغذية على Alkemos مجانًا: أدر عملاءك أنت، خطط بالذكاء الاصطناعي، سعرك وتحصيلك المباشر — بدون أي نسبة. تفعيل فوري.",
