@@ -4,6 +4,9 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useI18n } from "@/lib/i18n";
 import { COACHING_FAQ } from "@/lib/coaching-faq";
+// ORGANIC-GROWTH-P1-A (09-§3.1 «كم تكلفة المدرب أونلاين؟» — قسم التسعير):
+// the GEO direct-answer block — same single-source law as COACHING_FAQ.
+import { COACHING_GEO_BLOCK } from "@/lib/coaching-geo-answer";
 // GROWTH-PLAN batch 10 (owner order «إبراز القيمة التي تدفع المستخدم للاشتراك»):
 // the yearly saving is DERIVED from memberships.ts (single source of truth)
 // — 12 × monthly − yearly — instead of stating the yearly price alone.
@@ -505,6 +508,24 @@ export default function CoachingPage() {
         {/* ===================== PRICING ===================== */}
         <section id="coaching-pricing" className="scroll-mt-20 bg-[var(--bg)] px-4 py-16 md:py-24">
           <div className="mx-auto max-w-5xl">
+            {/* ORGANIC-GROWTH-P1-A (09-§3.1): the GEO direct-answer block —
+                the pricing section's mother question «كم تكلفة المدرب
+                أونلاين؟» answered in 40-60 words at the TOP of the pricing
+                section (the roadmap's placement for coaching) + the sources
+                line (pricing verified against memberships.ts). */}
+            <Reveal>
+              <section className="mx-auto mb-10 max-w-3xl rounded-xl border border-[var(--edge)] bg-[var(--tint)]/50 p-4 md:p-5">
+                <h2 className="text-lg font-semibold tracking-tight text-[var(--text)] md:text-xl">
+                  {isAr ? COACHING_GEO_BLOCK.qAr : COACHING_GEO_BLOCK.qEn}
+                </h2>
+                <p className="mt-2 text-sm font-normal leading-relaxed text-[var(--muted-foreground)] md:text-base">
+                  {isAr ? COACHING_GEO_BLOCK.aAr : COACHING_GEO_BLOCK.aEn}
+                </p>
+                <p className="mt-3 text-xs font-normal leading-relaxed text-[var(--muted-2)]">
+                  {isAr ? COACHING_GEO_BLOCK.sourcesAr : COACHING_GEO_BLOCK.sourcesEn}
+                </p>
+              </section>
+            </Reveal>
             <Reveal>
               <h2 className="text-center text-3xl font-semibold tracking-tight md:text-5xl">
                 {isAr ? "مدرب خاص. باقة واحدة." : "A personal coach. One simple plan."}

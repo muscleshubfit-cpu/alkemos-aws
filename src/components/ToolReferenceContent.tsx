@@ -99,6 +99,24 @@ export function ToolReferenceContent({ content }: { content: ToolReference }) {
 
   return (
     <div className="mt-12 space-y-4 text-base font-normal leading-relaxed text-[var(--muted-foreground)]">
+      {/* ORGANIC-GROWTH-P1-A (09-§3.1): the GEO direct-answer block — the
+          tool's mother question answered in 40-60 words as the FIRST
+          block of the reference content (the extractable direct-answer
+          template — «جواب 40-60 كلمة أول المرجعي»). Rendered before the
+          intro whenever the module carries one (the five P1-A tools). */}
+      {content.geo && (
+        <section
+          id="direct-answer"
+          aria-label={isAr ? "الإجابة المباشرة" : "Direct answer"}
+          className="scroll-mt-24 rounded-xl border border-[var(--edge)] bg-[var(--tint)]/50 p-4 md:p-5"
+        >
+          <h2 className="text-lg font-semibold tracking-tight text-[var(--text)]">
+            {content.geo.q[isAr ? "ar" : "en"]}
+          </h2>
+          <p className="mt-2 leading-relaxed">{content.geo.a[isAr ? "ar" : "en"]}</p>
+        </section>
+      )}
+
       {/* Lead paragraph */}
       <p>{content.intro[isAr ? "ar" : "en"]}</p>
 
@@ -133,6 +151,16 @@ export function ToolReferenceContent({ content }: { content: ToolReference }) {
             </div>
           ))}
         </section>
+      )}
+
+      {/* ORGANIC-GROWTH-P1-A (09-§3.2 / 06-§4.3): the fact-density
+          sources line at the bottom of the reference — the
+          omnicalculator pattern «سطر مصادر أسفل كل حاسبة» naming the
+          equation/standard behind the tool's numbers. */}
+      {content.geo && (
+        <p className="mt-8 border-t border-[var(--edge)] pt-4 text-xs font-normal leading-relaxed text-[var(--muted-2)]">
+          {content.geo.sources[isAr ? "ar" : "en"]}
+        </p>
       )}
     </div>
   );

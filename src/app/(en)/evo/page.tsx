@@ -24,6 +24,9 @@ import Image from "next/image";
 import { ThemeImg } from "@/components/ThemeImg";
 import { openEvoFloatingChat } from "@/lib/evo-chat-events";
 import { EVO_FAQ } from "@/lib/evo-faq";
+// ORGANIC-GROWTH-P1-A (09-§3.1 «هل EVO مجاني؟»): the GEO direct-answer
+// block — same single-source law as EVO_FAQ (module → page renders it).
+import { EVO_GEO_BLOCK } from "@/lib/evo-geo-answer";
 
 export default function EvoPage() {
   const { lang } = useI18n();
@@ -230,6 +233,25 @@ export default function EvoPage() {
               priority
             />
           </div>
+        </section>
+
+        {/* ORGANIC-GROWTH-P1-A (09-§3.1 — «هل EVO مجاني؟»): the GEO
+            direct-answer block. The roadmap's mechanism for EVO is «FAQ
+            الموجود يُعاد ترتيبه» — the FAQ already leads with this
+            question in both languages (order pinned by the P1-A canary);
+            this block makes the answer extractable as the FIRST content
+            section after the hero, in the 40-60 word template + the
+            sources line (quotas verified against memberships.ts). */}
+        <section className="marble-card mx-auto mt-16 max-w-3xl p-6 md:p-8">
+          <h2 className="text-xl font-semibold tracking-tight md:text-2xl">
+            {isAr ? EVO_GEO_BLOCK.qAr : EVO_GEO_BLOCK.qEn}
+          </h2>
+          <p className="mt-3 text-base font-normal leading-relaxed text-[var(--muted-foreground)] md:text-lg">
+            {isAr ? EVO_GEO_BLOCK.aAr : EVO_GEO_BLOCK.aEn}
+          </p>
+          <p className="mt-4 text-xs font-normal leading-relaxed text-[var(--muted-2)]">
+            {isAr ? EVO_GEO_BLOCK.sourcesAr : EVO_GEO_BLOCK.sourcesEn}
+          </p>
         </section>
 
         {/* What is EVO? — marble-card (identity) */}

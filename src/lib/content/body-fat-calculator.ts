@@ -14,6 +14,25 @@ export const BODY_FAT_CALCULATOR_CONTENT: ToolReference = {
     en: "Body fat percentage answers the question BMI cannot: what your weight is actually made of. Two people at the same height and weight can carry 12% and 32% body fat — with completely different health profiles, athletic capacity, and appearance. This calculator estimates your body fat with the US Navy circumference method — a tape-measure formula developed by the US Naval Health Research Center and still used by militaries and gyms worldwide, requiring nothing more than height, neck, waist, and (for women) hip measurements. Below the tool is the full reference: the exact formulas and how they work, a measurement protocol that removes most of the error, category tables for men and women, honest accuracy comparisons against DEXA and skinfolds, and how to use the number to set real targets.",
     ar: "تجيب نسبة دهون الجسم عن السؤال الذي يعجز عنه مؤشر كتلة الجسم: مما يتكون وزنك فعلًا. فشخصان بالطول والوزن نفسيهما قد يحملان 12% و32% دهون — بملفّي صحة مختلفتين تمامًا، وقدرة رياضية ومظهر مختلفين. تقدّر هذه الحاسبة دهون جسمك بطريقة محيطات البحرية الأمريكية — صيغة شريط قياس طوّرها مركز البحرية الأمريكي لأبحاث الصحة وما تزال تستخدمها الجيوش والصالات حول العالم، ولا تحتاج أكثر من الطول والرقبة والخصر (والورك للإناث). وتحت الأداة المرجع الكامل: الصيغتان الدقيقتان وكيف تعملان، وبروتوكول قياس يمحو معظم الخطأ، وجدولا الفئات للذكور والإناث، ومقارنات دقة صادقة مقابل مسح DEXA وطريقة ثنيات الجلد، وكيف تستخدم الرقم لوضع أهداف حقيقية.",
   },
+  // ORGANIC-GROWTH-P1-A (09-§3.1): the GEO direct-answer block — the
+  // body-fat tool's mother question «كيف أحسب نسبة الدهون بطريقة
+  // البحرية؟». Numbers all from the module itself: Hodgdon & Beckett
+  // 1984 · the 495 constant · the "within about 3–4 percentage points of
+  // DEXA" accuracy verdict. Sources line: 06-§4.3.
+  geo: {
+    q: {
+      en: "How do I calculate body fat with the Navy method?",
+      ar: "كيف أحسب نسبة الدهون بطريقة البحرية؟",
+    },
+    a: {
+      en: "The US Navy method estimates body fat from tape measurements: height, neck, waist, and — for women — hips. It feeds them into the Hodgdon–Beckett 1984 logarithmic formulas (495 divided by the computed body density, minus 450) and returns a percentage that typically lands within about 3–4 percentage points of a DEXA scan, using nothing but a tape measure.",
+      ar: "تقدّر طريقة البحرية الأمريكية دهون الجسم بقياسات شريط القياس: الطول والرقبة والخصر (والورك للإناث). تدخلها صيغتا Hodgdon و Beckett اللوغاريتميتان عام 1984 (495 مقسومة على كثافة الجسم المحسوبة، ناقص 450) وتعيد نسبة مئوية تهبط عادة في حدود 3–4 نقاط مئوية من مسح DEXA، بلا أدوات سوى شريط قياس.",
+    },
+    sources: {
+      en: "Sources: Hodgdon–Beckett, US Navy circumference method (1984).",
+      ar: "المصادر: طريقة محيطات البحرية الأمريكية — Hodgdon و Beckett (1984).",
+    },
+  },
   sections: [
     {
       id: "what-is-body-fat",

@@ -59,19 +59,48 @@ export interface FaqItem {
   a: Bi;
 }
 
+/**
+ * ORGANIC-GROWTH-P1-A (09-§3.1) GEO answer block — the tool's mother
+ * question (as searchers phrase it) answered in 40-60 words, rendered
+ * as the FIRST block of the reference content (the direct-answer
+ * template engines extract — 09-§1: blocks 40-60 words, the
+ * Yotpo/Princeton synthesis), plus the fact-density sources line
+ * rendered at the bottom (06-§4.3 — the omnicalculator pattern
+ * «سطر مصادر أسفل كل حاسبة»).
+ *
+ * Optional on purpose: only the five P1-A tools (calorie · macro ·
+ * bmi · body-fat · water-tracker) carry one — meal-planner is outside
+ * P1-A's seven-page list (09-§3.1) and its page must not change.
+ */
+export interface GeoAnswerBlock {
+  /** The mother question — the block's heading. */
+  q: Bi;
+  /** 40-60 words direct answer, canary-pinned per language. */
+  a: Bi;
+  /** Sources line: the equation/standard behind the tool's numbers. */
+  sources: Bi;
+}
+
 /** The full reference package for ONE tool page. */
 export interface ToolReference {
   /** Tool slug — must match the page it is rendered on. */
   slug: string;
   /** Lead paragraph directly under the tool (before the first H2). */
   intro: Bi;
+  /** ORGANIC-GROWTH-P1-A GEO answer block — optional (see GeoAnswerBlock). */
+  geo?: GeoAnswerBlock;
   sections: ReferenceSection[];
   faqs: FaqItem[];
 }
 
 /** Flatten every localized string of a reference into one text blob. */
 export function flattenReferenceText(ref: ToolReference, lang: "en" | "ar"): string {
+  // P1-A: the geo block's text is part of the page's reference text —
+  // it rides the SAME depth/MSA/Latin laws as everything else.
   const parts: string[] = [ref.intro[lang]];
+  if (ref.geo) {
+    parts.push(ref.geo.q[lang], ref.geo.a[lang], ref.geo.sources[lang]);
+  }
   for (const s of ref.sections) {
     parts.push(s.heading[lang]);
     for (const b of s.blocks) {

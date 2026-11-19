@@ -15,6 +15,29 @@ export const MACRO_CALCULATOR_CONTENT: ToolReference = {
     en: "Calories decide whether your weight moves; macros decide what that weight is made of, how you feel while moving it, and how well you perform. This macro calculator takes your daily calorie budget and splits it into protein, carbohydrate, and fat grams across five diet patterns — balanced, low-carb, high-protein, keto, and low-fat — so the same 2,000 calories can become a muscle-retention cut, an endurance machine's fuel plan, or a ketogenic protocol. Below the tool you will find the complete reference: what each macro actually does in your body, the evidence behind protein targets, how to choose a split for your specific goal, how to turn daily grams into real meals, and honest answers to the questions people argue about most.",
     ar: "السعرات تحدد هل يتحرك وزنك؛ والماكروز تحدد مما يتكون هذا الوزن، وكيف تشعر أثناء تحركه، ومستوى أدائك. تأخذ حاسبة الماكروز هذه ميزانية سعراتك اليومية وتوزعها إلى غرامات بروتين وكربوهيدرات ودهون عبر خمسة أنماط غذائية — متوازن، قليل الكربوهيدرات، عالي البروتين، كيتو، قليل الدهون — بحيث يمكن لسعرات الـ2000 نفسها أن تصبح خطة خسارة تحافظ على العضلات، أو وقودًا لآلة تحمل، أو بروتوكول كيتوجيني. وتحت الأداة ستجد المرجع الكامل: ما يفعله كل مغذٍّ منها فعلًا في جسمك، والأدلة وراء أهداف البروتين، وكيف تختار توزيعًا لهدفك تحديدًا، وكيف تحوّل الغرامات اليومية إلى وجبات حقيقية، وإجابات صادقة عن أكثر الأسئلة جدلًا.",
   },
+  // ORGANIC-GROWTH-P1-A (09-§3.1): the GEO direct-answer block — the
+  // macro tool's mother question. The roadmap's sketch spells it with
+  // the colloquial carb abbreviation; the Phase-204 owner law retires
+  // that abbreviation on the tool surface in favor of «كربوهيدرات» —
+  // the law wins and the delta is documented in report 23 §2. The
+  // roadmap's sketch also cited "1.8-2.2g/kg"; the reference module's
+  // own documented research range is 1.6–2.2 g/kg (accuracy-to-code:
+  // the module is the authority). The 75 kg → 120-165 g example is the
+  // module's own published arithmetic.
+  geo: {
+    q: {
+      en: "How much protein, carbs, and fat do I need?",
+      ar: "كم بروتين وكربوهيدرات ودهون أحتاج؟",
+    },
+    a: {
+      en: "Split your daily calories into protein, carbohydrates, and fat at 4, 4, and 9 kcal per gram. People who lift need roughly 1.6–2.2 g of protein per kg of body weight — a 75 kg lifter lands between 120 and 165 g — while a balanced split runs 30% protein, 40% carbs, 30% fat; keto flips to 25/5/70, high-protein 45/35/20.",
+      ar: "وزّع سعراتك اليومية بين البروتين والكربوهيدرات والدهون بمعاملات 4 و4 و9 سعرة للغرام. من يتدرب يحتاج نحو 1.6–2.2 غ بروتين لكل كجم من وزن الجسم — فرفّاع أثقال بوزن 75 كجم يقع بين 120 و165 غرامًا — والتوزيع المتوازن 30% بروتين و40% كربوهيدرات و30% دهون؛ وكيتو يقلبها إلى 25/5/70.",
+    },
+    sources: {
+      en: "Sources: protein 1.6–2.2 g/kg research range · Atwater factors 4/4/9 kcal/g.",
+      ar: "المصادر: نطاق البروتين البحثي 1.6–2.2 غ/كجم · عوامل Atwater 4/4/9 سعرة/غ.",
+    },
+  },
   sections: [
     {
       id: "what-are-macros",

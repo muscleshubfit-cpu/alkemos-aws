@@ -13,6 +13,25 @@ export const WATER_TRACKER_CONTENT: ToolReference = {
     en: "Water is the medium everything else happens in: nutrient transport, joint lubrication, temperature regulation, waste removal, and the electrical environment of your nervous system. Losing just 2% of body water measurably degrades endurance, attention, and mood — and thirst is a lagging indicator, arriving after the deficit has already begun costing you. This tracker sets a daily hydration goal scaled to your body weight (35 ml per kilogram, clamped to a safe 2–4.5 liter range), lets you log cups or custom amounts in a tap, keeps a seven-day history, and works entirely in your browser. Below the tool is the complete reference: how the 35 ml/kg rule compares with the official intake guidelines, what adjusts your personal number (heat, training, caffeine, altitude), how to recognize real dehydration and the rarer danger of overhydration, and which foods quietly carry a large share of your water budget.",
     ar: "الماء هو الوسط الذي يحدث فيه كل شيء آخر: نقل المغذيات، وتشحيم المفاصل، وتنظيم الحرارة، وإزالة الفضلات، والبيئة الكهربائية لجهازك العصبي. فخسارة 2% فقط من ماء الجسم تُضعف بشكل قابل للقياس التحمّل والانتباه والمزاج — والعطش مؤشر متأخر يصل بعد أن يبدأ العجز أصلًا في التكلفة. تضبط هذه الأداة هدف ترطيب يومي متناسبًا مع وزن جسمك (35 مل لكل كيلوغرام، محصورًا في نطاق آمن 2–4.5 لتر)، وتتيح تسجيل الأكواب أو مقادير مخصصة بلمسة، وتحفظ تاريخًا لأسبوع، وتعمل كليًا داخل متصفحك. وتحت الأداة المرجع الكامل: كيف تقارن قاعدة 35 مل/كجم بالإرشادات الرسمية للاستهلاك، وما الذي يعدّل رقمك الشخصي (الحرارة، والتدريب، والكافيين، والارتفاع)، وكيف تتعرف على الجفاف الحقيقي وعلى الخطر الأندر: الإفراط في الترطيب، وأي الأطعمة تحمل بهدوء حصة كبيرة من ميزانية مائك.",
   },
+  // ORGANIC-GROWTH-P1-A (09-§3.1): the GEO direct-answer block — the
+  // water tool's mother question «كم ماء أحتاج يوميًا؟» with the
+  // tracker's own rule: 35 ml × kg (70 kg → 2,450 ml — inside the
+  // 2,000–4,500 clamp), all matching water-tracker's computeGoal.
+  // Sources line: 06-§4.3.
+  geo: {
+    q: {
+      en: "How much water do I need per day?",
+      ar: "كم ماء أحتاج يوميًا؟",
+    },
+    a: {
+      en: "Drink about 35 milliliters of water per kilogram of body weight each day: a 70 kg adult needs roughly 2,450 milliliters — about two and a half liters — before exercise, heat, or dry air raise it. This tracker computes the goal from the same 35 ml/kg rule, clamped to a safe 2,000–4,500 ml range, then logs every cup.",
+      ar: "اشرب نحو 35 مليلترًا من الماء لكل كيلوغرام من وزن جسمك يوميًا: فبالغ بوزن 70 كجم يحتاج تقريبًا 2,450 مليلترًا — نحو لترين ونصف — قبل أن يرفع التمرينُ أو الحرارةُ أو الهواء الجاف هذا الرقم. تحسب هذه الأداة الهدف اليومي بالقاعدة نفسها (35 مل/كجم) محصورة في نطاق آمن 2,000–4,500 مل، ثم تسجل كل كوب.",
+    },
+    sources: {
+      en: "Sources: 35 ml/kg body-weight rule · safe clamp 2,000–4,500 ml.",
+      ar: "المصادر: قاعدة 35 مل لكل كجم من وزن الجسم · الحصر الآمن 2,000–4,500 مل.",
+    },
+  },
   sections: [
     {
       id: "why-hydration",

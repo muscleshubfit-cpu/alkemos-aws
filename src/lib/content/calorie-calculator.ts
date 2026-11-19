@@ -15,6 +15,28 @@ export const CALORIE_CALCULATOR_CONTENT: ToolReference = {
     en: "This calorie calculator estimates your daily energy needs using the Mifflin-St Jeor equation — the research standard for predicting resting metabolism — and then adjusts the result for your activity level and goal. You get three numbers that work together: your BMR (the energy you burn at complete rest), your TDEE (the energy you burn in a normal day), and your daily calorie target for losing, maintaining, or gaining weight. Below the calculator you will find the complete reference: how each equation works, how to choose your activity level honestly, how fast you can safely lose or gain weight, calorie tables for common foods and exercises, and evidence-based answers to the questions people actually search for.",
     ar: "تحسب هذه الحاسبة احتياجك اليومي من الطاقة باستخدام معادلة Mifflin-St Jeor — المعيار البحثي المعتمد للتنبؤ بمعدل الأيض في حالة الراحة — ثم تُعدّل النتيجة وفق مستوى نشاطك وهدفك. تحصل على ثلاثة أرقام تعمل معًا: معدل الأيض الأساسي (BMR) وهو الطاقة التي تحرقها في راحة تامة، والإنفاق اليومي الكلي (TDEE) وهو الطاقة التي تحرقها في يوم عادي، والهدف اليومي من السعرات لخسارة الوزن أو تثبيته أو زيادته. وستجد أسفل الحاسبة المرجع الكامل: كيف تعمل كل معادلة، وكيف تختار مستوى نشاطك بصدق، وبأي سرعة يمكنك خسارة الوزن أو زيادته بأمان، وجداول سعرات لأشهر الأطعمة والتمارين، وإجابات مبنية على الأدلة للأسئلة التي يبحث عنها الناس فعلًا.",
   },
+  // ORGANIC-GROWTH-P1-A (09-§3.1): the GEO direct-answer block — the
+  // calorie tool's mother question «كم سعرة أحتاج يوميًا؟» answered in
+  // 40-60 words (canary geo-answer-blocks-p1a.test.ts pins the range in
+  // both languages) with the EQUATION's representative arithmetic, never
+  // a personal result: 70 kg / 175 cm / 30 y → BMR 1,649 (male) / 1,483
+  // (female) — exactly Math.round of the Mifflin-St Jeor values the
+  // calculator computes (fitness-math.ts), pinned by arithmetic in the
+  // canary. Sources line: 06-§4.3 (the omnicalculator pattern).
+  geo: {
+    q: {
+      en: "How many calories do I need per day?",
+      ar: "كم سعرة أحتاج يوميًا؟",
+    },
+    a: {
+      en: "Your daily calorie need is personal: the Mifflin-St Jeor equation computes your resting metabolism from weight, height, age, and sex — a 70 kg, 175 cm, 30-year-old burns 1,649 kcal (male) or 1,483 kcal (female) at rest — then your activity multiplier (1.2 sedentary to 1.9 athlete) sets maintenance, minus 500 for loss or plus 400 for gain.",
+      ar: "احتياجك اليومي من السعرات شخصي: معادلة Mifflin-St Jeor تحسب معدل أيضك في راحة تامة من وزنك وطولك وعمرك وجنسك — فشخص بوزن 70 كجم وطول 175 سم وعمر 30 سنة يحرق 1,649 سعرة (ذكرًا) أو 1,483 سعرة (أنثى) — ثم يُضرب الرقم في مضاعف النشاط (1.2 للخامل حتى 1.9 للرياضي) ليحدد الثبات، مع خصم 500 للخسارة أو إضافة 400 للزيادة.",
+    },
+    sources: {
+      en: "Sources: Mifflin-St Jeor equation (1990) · activity multipliers 1.2–1.9.",
+      ar: "المصادر: معادلة Mifflin-St Jeor (1990) · مضاعفات النشاط 1.2–1.9.",
+    },
+  },
   sections: [
     {
       id: "what-are-calories",

@@ -82,6 +82,12 @@ const LAYOUT_FILES = [
 /** Every paragraph of ≥25 words in one language, normalized. */
 function longParagraphs(ref: ToolReference, lang: "en" | "ar"): string[] {
   const out: string[] = [];
+  // ORGANIC-GROWTH-P1-A: the geo answer block's text joins the
+  // standalone-per-tool law surface (strengthening only — the block is
+  // new P1-A content on five of the six tools).
+  if (ref.geo) {
+    out.push(ref.geo.q[lang], ref.geo.a[lang])
+  }
   for (const s of ref.sections) {
     for (const b of s.blocks) {
       if (b.kind === "p" || b.kind === "h3") out.push(b.text[lang]);
@@ -100,6 +106,13 @@ function longParagraphs(ref: ToolReference, lang: "en" | "ar"): string[] {
 /** Walk the structure and collect every {en, ar} pair. */
 function collectBiPairs(ref: ToolReference): Array<[string, string]> {
   const pairs: Array<[string, string]> = [[ref.intro.en, ref.intro.ar]];
+  // ORGANIC-GROWTH-P1-A: the geo block's bilingual pairs join the
+  // parity law surface (strengthening only).
+  if (ref.geo) {
+    pairs.push([ref.geo.q.en, ref.geo.q.ar]);
+    pairs.push([ref.geo.a.en, ref.geo.a.ar]);
+    pairs.push([ref.geo.sources.en, ref.geo.sources.ar]);
+  }
   for (const s of ref.sections) {
     pairs.push([s.heading.en, s.heading.ar]);
     for (const b of s.blocks) {

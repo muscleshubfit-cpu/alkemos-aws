@@ -14,6 +14,25 @@ export const BMI_CALCULATOR_CONTENT: ToolReference = {
     en: "Body Mass Index (BMI) is the most widely used screening number in the world for classifying body weight against height: your weight in kilograms divided by the square of your height in meters. This calculator computes your BMI, places it in the World Health Organization category scale, and derives the healthy weight range for your exact height — the weight span at which your BMI would sit between 18.5 and 24.9. The complete reference below covers what the index can and cannot tell you: its formula and history, how to interpret the categories honestly, why it misreads athletes and older adults, how it compares with waist-based measures, and the classic ideal-weight formulas alongside the range method this tool uses.",
     ar: "مؤشر كتلة الجسم هو رقم الفحص الأوسع استخدامًا في العالم لتصنيف وزن الجسم مقابل الطول: وزنك بالكيلوغرام مقسومًا على مربع طولك بالمتر. تحسب هذه الحاسبة مؤشرك، وتضعه على سلم فئات منظمة الصحة العالمية، وتستخرج نطاق الوزن الصحي لطولك تحديدًا — مدى الوزن الذي يقف عنده مؤشرك بين 18.5 و24.9. ويغطي المرجع الكامل أدناه ما يستطيع المؤشر قوله وما لا يستطيع: صيغته وتاريخه، وكيف تقرأ الفئات بصدق، ولماذا يسيء قراءة الرياضيين وكبار السن، وكيف يقارن بمقاييس الخصر، والمعادلات الكلاسيكية للوزن المثالي إلى جانب طريقة النطاق التي تستخدمها هذه الأداة.",
   },
+  // ORGANIC-GROWTH-P1-A (09-§3.1): the GEO direct-answer block — the
+  // BMI tool's mother question «ما هو مؤشر كتلة الجسم الطبيعي؟» with
+  // the WHO cutoffs the calculator implements (18.5 / 25 / 30 — the
+  // page's own category table) and the module's own 75 kg @ 1.75 m →
+  // 24.5 example. Sources line: 06-§4.3.
+  geo: {
+    q: {
+      en: "What is a normal BMI?",
+      ar: "ما هو مؤشر كتلة الجسم الطبيعي؟",
+    },
+    a: {
+      en: "A normal body mass index is 18.5 to 24.9 — the WHO healthy-weight band. BMI equals your weight in kilograms divided by the square of your height in meters: a 75 kg person at 1.75 m has a BMI of 24.5, inside the band. Below 18.5 is underweight, 25–29.9 overweight, 30+ obese — the cutoffs this calculator uses.",
+      ar: "مؤشر كتلة الجسم الطبيعي يقع بين 18.5 و24.9 — نطاق الوزن الصحي بتصنيف منظمة الصحة العالمية. المؤشر يساوي وزنك بالكيلوغرام مقسومًا على مربع طولك بالمتر: فشخص بوزن 75 كجم وطول 1.75 متر مؤشرُه 24.5 داخل النطاق. وأقل من 18.5 نقص وزن، ومن 25 إلى 29.9 زيادة وزن، و30 فأكثر سمنة — الحدود نفسها التي تستخدمها هذه الحاسبة.",
+    },
+    sources: {
+      en: "Sources: WHO BMI classification cutoffs (18.5 / 25 / 30).",
+      ar: "المصادر: تصنيف منظمة الصحة العالمية للمؤشر — الحدود 18.5 / 25 / 30.",
+    },
+  },
   sections: [
     {
       id: "what-is-bmi",
