@@ -12,6 +12,7 @@ import {
 } from "react";
 import { usePathname } from "next/navigation";
 import { deferIdle } from "@/lib/defer-idle";
+import { consumeGoogleSignupMarkIfAny } from "@/lib/analytics";
 import type { Profile } from "@/lib/supabase/types";
 
 // Exported for the W1-4a render-storm canary (the probe types the ctx
@@ -147,6 +148,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     unsubRef.current = data.onAuthChange((p) => {
       setProfile(p);
       setLoading(false);
+      // ORGANIC-GROWTH-P0-G (08-§4): signup_complete — Google arm. The
+      // /auth/callback server route marks a FRESH Google-created account
+      // with a 5-minute cookie; the moment the profile lands here the
+      // mark is consumed and the event fires EXACTLY once (the cookie is
+      // deleted on consumption — repeated callbacks like token refresh
+      // can never double-send). Returning-user logins carry no mark.
+      if (p) consumeGoogleSignupMarkIfAny();
     });
   }, []);
 

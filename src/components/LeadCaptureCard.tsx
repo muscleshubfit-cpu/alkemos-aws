@@ -9,6 +9,7 @@ import {
   emailErrorMessage,
   validateNameStrict,
 } from "@/lib/email-validation";
+import { trackGa4Event } from "@/lib/analytics";
 
 type ToolSlug =
   | "calorie-calculator"
@@ -89,6 +90,11 @@ export function LeadCaptureCard({ toolSlug, resultSummary, resultJson }: Props) 
         return;
       }
       setDone(true);
+      // ORGANIC-GROWTH-P0-G (08-§4): lead_capture — ONLY after the server
+      // confirmed the lead row (/api/send-email saves tool_leads FIRST,
+      // then sends). tool + lang only — the email/name NEVER enter the
+      // analytics payload (zero PII law).
+      trackGa4Event("lead_capture", { tool: toolSlug, lang });
     } catch (e) {
       setError(
         e instanceof Error

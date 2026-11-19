@@ -17,6 +17,7 @@ import { dualPriceString } from "@/lib/local-prices";
 import { useEgpDisplay } from "@/lib/egp-display";
 import { EgpTwin } from "@/components/egp/EgpTwin";
 import { cn } from "@/lib/utils";
+import { trackGa4Event } from "@/lib/analytics";
 import { toast } from "sonner";
 
 /**
@@ -162,6 +163,10 @@ function PayPalButtons({
   const paypalRef = useRef<HTMLDivElement>(null);
   const renderedRef = useRef(false);
   const [processing, setProcessing] = useState(false);
+  // ORGANIC-GROWTH-P0-G: subscription_success must fire at most once per
+  // button mount — PayPal's SDK drives onApprove, but a retry/double
+  // callback can never double-send the funnel's money event.
+  const successFiredRef = useRef(false);
 
   useEffect(() => {
     if (renderedRef.current || !paypalRef.current) return;
@@ -196,6 +201,16 @@ function PayPalButtons({
           if (!res.ok || !data.orderId) {
             throw new Error(data.error || "Failed to create order");
           }
+          // ORGANIC-GROWTH-P0-G (08-§4): checkout_start (بالباقة) — the
+          // REAL start moment: the user clicked pay and the server
+          // CREATED the PayPal order. plan + duration + payment_method +
+          // lang only (zero PII).
+          trackGa4Event("checkout_start", {
+            plan: planTier,
+            duration_months: durationMonths,
+            payment_method: "paypal",
+            lang: isAr ? "ar" : "en",
+          });
           return data.orderId;
         },
         onApprove: async (data: { orderID: string }) => {
@@ -208,6 +223,25 @@ function PayPalButtons({
             });
             const result = await res.json();
             if (res.ok && result.success) {
+              // ORGANIC-GROWTH-P0-G (08-§4): subscription_success
+              // (بالباقة والدفع) — fired ONLY here: the server CAPTURED
+              // the payment (PayPal COMPLETED) AND activated the
+              // subscription in the same idempotent RPC before answering
+              // { success: true }. The once-per-mount ref below plus the
+              // server's own idempotency (uq_subscription_requests_
+              // paypal_order) make a double-send impossible. The MANUAL
+              // rail (InstaPay/Vodafone) NEVER fires this event — its
+              // requests stay pending coach approval (no confirmed
+              // success at submit time).
+              if (!successFiredRef.current) {
+                successFiredRef.current = true;
+                trackGa4Event("subscription_success", {
+                  plan: planTier,
+                  duration_months: durationMonths,
+                  payment_method: "paypal",
+                  lang: isAr ? "ar" : "en",
+                });
+              }
               toast.success(
                 isAr
                   ? "تم الدفع بنجاح! تم تفعيل اشتراكك 🎉"
@@ -348,6 +382,19 @@ export function CheckoutView({ tier, months }: { tier: TierId | MembershipTier; 
         receipt_path: receiptPath || null,
       });
       setDone(true);
+      // ORGANIC-GROWTH-P0-G (08-§4): checkout_start — MANUAL rail (the
+      // real start moment: the request was actually submitted with the
+      // receipt). NOTE: subscription_success is INTENTIONALLY absent
+      // here — a manual request is NOT a confirmed subscription until
+      // the coach approves it server-side; firing now would fake the
+      // funnel's money event. plan + duration + payment_method + lang
+      // only (zero PII — no name/whatsapp).
+      trackGa4Event("checkout_start", {
+        plan: tier as string,
+        duration_months: months as number,
+        payment_method: method,
+        lang,
+      });
       toast.success(
         isAr ? "تم إرسال طلب الاشتراك! راجعه فريق Alkemos قريبًا." : "Subscription request sent!",
       );

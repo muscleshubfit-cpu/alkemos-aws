@@ -8,6 +8,7 @@ import { useMembershipTier } from "@/hooks/use-membership-tier";
 import { Bookmark, Loader2, Check, Download, Trash2, ImageDown } from "lucide-react";
 import { toast } from "sonner";
 import type { ToolResultData } from "@/lib/result-png-export";
+import { trackGa4Event } from "@/lib/analytics";
 
 type Props = {
   toolSlug: string;
@@ -71,6 +72,10 @@ export function SaveResultButton({ toolSlug, title, resultData }: Props) {
       }
 
       setSaved(true);
+      // ORGANIC-GROWTH-P0-G (08-§4): save_result — ONLY after the server
+      // confirmed the row (res.ok); the 403 limit path above stays
+      // silent. tool + lang only (zero PII).
+      trackGa4Event("save_result", { tool: toolSlug, lang });
       toast.success(isAr ? "تم الحفظ ✅" : "Saved ✅");
       setTimeout(() => setSaved(false), 3000);
     } catch (e) {

@@ -15,6 +15,7 @@ import { passwordBreachCount } from "@/lib/password-breach";
 import { safeNext } from "@/lib/safe-redirect";
 import { setCoachSlugCookie, clearCoachSlugCookie, getCoachSlugCookie } from "@/lib/coach-cookie";
 import { localizeAuthError } from "@/lib/error-i18n";
+import { trackGa4Event } from "@/lib/analytics";
 import { passwordStrength, strengthLabel } from "@/lib/password-strength";
 import { toast } from "sonner";
 
@@ -119,6 +120,19 @@ export function AuthView({ mode, next, coach }: { mode: "login" | "signup"; next
           phone,
           coachSlug,
         );
+        // ORGANIC-GROWTH-P0-G (08-§4): signup_complete — ONLY when the
+        // account was REALLY created: !error && !dupEmail (the duplicate
+        // arm is GoTrue's fake-user answer — no account exists). Covers
+        // BOTH the instant-session and needsConfirmation outcomes (the
+        // auth row exists in both). method + lang + the confirmation
+        // flag only — zero PII (no email/name/phone).
+        if (!error && !dupEmail) {
+          trackGa4Event("signup_complete", {
+            method: "email",
+            lang,
+            ...(needsConf ? { email_confirmation_required: true } : {}),
+          });
+        }
         if (error) {
           // M1 fix: GoTrue's raw English strings were shown verbatim
           // inside the Arabic UI — localize at the display layer.

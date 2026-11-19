@@ -17,6 +17,7 @@ import { ShareButtons } from "@/components/ShareButtons";
 import { ReviewInviteCard } from "@/components/ReviewInviteCard";
 import { ToolReferenceContent } from "@/components/ToolReferenceContent";
 import { BODY_FAT_CALCULATOR_CONTENT } from "@/lib/content/body-fat-calculator";
+import { fireOncePerSession, trackGa4Event } from "@/lib/analytics";
 
 type Gender = "male" | "female";
 
@@ -106,6 +107,12 @@ export default function BodyFatCalculatorPage() {
     const leanMass = Math.round(estimatedWeight - fatMass);
 
     setResult({ bf, category, color, fatMass, leanMass });
+    // ORGANIC-GROWTH-P0-G (08-§4): tool_result — REAL computation moment,
+    // once per session per tool. tool + lang only (zero PII; geo/source
+    // stay GA4-automatic).
+    fireOncePerSession("tool_result:body-fat-calculator", () =>
+      trackGa4Event("tool_result", { tool: "body-fat-calculator", lang }),
+    );
   };
 
   return (

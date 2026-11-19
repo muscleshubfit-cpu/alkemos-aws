@@ -20,6 +20,7 @@ import { ShoppingListCard } from "@/components/ShoppingListCard";
 import { ToolReferenceContent } from "@/components/ToolReferenceContent";
 import { MEAL_PLANNER_CONTENT } from "@/lib/content/meal-planner";
 import { LeadCaptureCard } from "@/components/LeadCaptureCard";
+import { fireOncePerSession, trackGa4Event } from "@/lib/analytics";
 import {
   Plus,
   Trash2,
@@ -189,6 +190,14 @@ export default function MealPlannerPage() {
   };
 
   const addItemToMeal = (mealId: string, item: MealItem) => {
+    // ORGANIC-GROWTH-P0-G (08-§4): tool_result — the planner is a builder
+    // with no "calculate" click; its REAL result moment is the first
+    // food item actually added to a meal (the totals become real data
+    // then). Once per session — item edits/extra adds must not inflate
+    // the funnel key event. tool + lang only (zero PII).
+    fireOncePerSession("tool_result:meal-planner", () =>
+      trackGa4Event("tool_result", { tool: "meal-planner", lang }),
+    );
     setMeals(
       meals.map((m) =>
         m.id === mealId ? { ...m, items: [...m.items, item] } : m,
@@ -300,6 +309,9 @@ export default function MealPlannerPage() {
         return;
       }
       setSaved(true);
+      // ORGANIC-GROWTH-P0-G (08-§4): save_result — ONLY after the server
+      // confirmed the plan row (res.ok). tool + lang only (zero PII).
+      trackGa4Event("save_result", { tool: "meal-planner", lang });
       toast.success(isAr ? "تم حفظ الجدول ✅" : "Plan saved ✅");
       setTimeout(() => setSaved(false), 3000);
     } catch (e) {

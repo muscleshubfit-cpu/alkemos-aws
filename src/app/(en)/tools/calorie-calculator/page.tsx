@@ -23,6 +23,7 @@ import { ShareButtons } from "@/components/ShareButtons";
 import { ReviewInviteCard } from "@/components/ReviewInviteCard";
 import { ToolReferenceContent } from "@/components/ToolReferenceContent";
 import { CALORIE_CALCULATOR_CONTENT } from "@/lib/content/calorie-calculator";
+import { fireOncePerSession, trackGa4Event } from "@/lib/analytics";
 import {
   calculateCalorieTargets,
   ACTIVITY_FACTORS as SHARED_ACTIVITY_FACTORS,
@@ -100,6 +101,13 @@ export default function CalorieCalculatorPage() {
       goal,
     });
     setResult(targets);
+    // ORGANIC-GROWTH-P0-G (08-§4): tool_result — fired at the REAL
+    // computation moment (user click → setResult), once per session per
+    // tool (funnel key event; recalculations must not inflate it).
+    // Params: tool + lang only — zero PII, geo/source stay GA4-automatic.
+    fireOncePerSession("tool_result:calorie-calculator", () =>
+      trackGa4Event("tool_result", { tool: "calorie-calculator", lang }),
+    );
   };
 
   return (

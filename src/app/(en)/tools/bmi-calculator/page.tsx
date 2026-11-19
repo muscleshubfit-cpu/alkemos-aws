@@ -17,6 +17,7 @@ import { ShareButtons } from "@/components/ShareButtons";
 import { ReviewInviteCard } from "@/components/ReviewInviteCard";
 import { ToolReferenceContent } from "@/components/ToolReferenceContent";
 import { BMI_CALCULATOR_CONTENT } from "@/lib/content/bmi-calculator";
+import { fireOncePerSession, trackGa4Event } from "@/lib/analytics";
 
 type Unit = "metric" | "imperial";
 
@@ -93,6 +94,12 @@ export default function BMICalculatorPage() {
     const idealWeightMax = Math.round(24.9 * heightM * heightM * (unit === "metric" ? 1 : 2.20462));
 
     setResult({ bmi, category, color, idealWeightMin, idealWeightMax });
+    // ORGANIC-GROWTH-P0-G (08-§4): tool_result — REAL computation moment,
+    // once per session per tool. tool + lang only (zero PII; geo/source
+    // stay GA4-automatic).
+    fireOncePerSession("tool_result:bmi-calculator", () =>
+      trackGa4Event("tool_result", { tool: "bmi-calculator", lang }),
+    );
   };
 
   return (

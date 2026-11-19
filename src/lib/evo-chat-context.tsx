@@ -18,6 +18,7 @@ import { classifyEvoIntent } from "@/lib/evo-intent";
 import { useAuth } from "@/hooks/use-auth";
 import { useMembershipTier } from "@/hooks/use-membership-tier";
 import { getLimits } from "@/lib/memberships";
+import { docLang, trackGa4Event } from "@/lib/analytics";
 import { ensureGuestId } from "@/lib/plan-persistence";
 import {
   EVO_OPEN_CHAT_EVENT,
@@ -433,6 +434,14 @@ export function EvoChatProvider({ children }: { children: ReactNode }) {
     async (content: string) => {
       if (!content.trim() || dailyLimitReached) return;
 
+      // ORGANIC-GROWTH-P0-G (08-§4): evo_message — the SINGLE chokepoint
+      // for every real send (form submit + quick chips, both locales).
+      // Fired at SEND time (the genuine user action — server errors stay
+      // visible in the 429/error paths, and a dropped message is still a
+      // real demand signal). tier + lang ONLY: the message body NEVER
+      // enters analytics (zero PII law). Handler-scoped → re-render-safe.
+      trackGa4Event("evo_message", { tier, lang: docLang() });
+
       const userMessage: ChatMessage = {
         id: `msg-${Date.now()}-user`,
         role: "user",
@@ -720,7 +729,7 @@ export function EvoChatProvider({ children }: { children: ReactNode }) {
         refreshQuota();
       }
     },
-    [state.messages, dailyLimitReached, dailyLimit, isPaidTier, refreshQuota],
+    [state.messages, dailyLimitReached, dailyLimit, isPaidTier, refreshQuota, tier],
   );
 
   // PHASE 69 — initial quota fetch once the tier resolves. Paid users

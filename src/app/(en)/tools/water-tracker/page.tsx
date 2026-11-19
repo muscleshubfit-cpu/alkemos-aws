@@ -19,6 +19,7 @@ import { ReviewInviteCard } from "@/components/ReviewInviteCard";
 import { ToolReferenceContent } from "@/components/ToolReferenceContent";
 import { WATER_TRACKER_CONTENT } from "@/lib/content/water-tracker";
 import { LeadCaptureCard } from "@/components/LeadCaptureCard";
+import { fireOncePerSession, trackGa4Event } from "@/lib/analytics";
 import { Bookmark, Download, Loader2, Check, Droplets, Plus, Minus, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 
@@ -141,7 +142,18 @@ export default function WaterTrackerPage() {
   }, [log, isAr]);
 
   // ===== Actions =====
+  // ORGANIC-GROWTH-P0-G (08-§4): tool_result — the tracker has no
+  // "calculate" click; its REAL result moments are the first goal
+  // computation (applyWeightGoal) and the first logged water
+  // (addCup/addCustom). Once per session per tool — repeated cup taps
+  // must not inflate the funnel key event. tool + lang only (zero PII).
+  const trackToolResult = () =>
+    fireOncePerSession("tool_result:water-tracker", () =>
+      trackGa4Event("tool_result", { tool: "water-tracker", lang }),
+    );
+
   const addCup = () => {
+    trackToolResult();
     setLog((prev) => ({
       ...prev,
       [today]: (prev[today] || 0) + settings.cupMl,
@@ -157,6 +169,7 @@ export default function WaterTrackerPage() {
 
   const addCustom = (ml: number) => {
     if (ml <= 0) return;
+    trackToolResult();
     setLog((prev) => ({
       ...prev,
       [today]: (prev[today] || 0) + ml,
@@ -176,6 +189,7 @@ export default function WaterTrackerPage() {
     }
     const rec = recommendedByWeight(w);
     setSettings((s) => ({ ...s, goalMl: rec }));
+    trackToolResult();
     toast.success(
       isAr ? `هدفك الموصى به: ${rec} مل/يوم` : `Recommended goal: ${rec} ml/day`,
     );
@@ -232,6 +246,9 @@ export default function WaterTrackerPage() {
         return;
       }
       setSavedToDb(true);
+      // ORGANIC-GROWTH-P0-G (08-§4): save_result — ONLY after the server
+      // confirmed the row (res.ok). tool + lang only (zero PII).
+      trackGa4Event("save_result", { tool: "water-tracker", lang });
       toast.success(isAr ? "تم حفظ السجل ✅" : "Saved ✅");
       setTimeout(() => setSavedToDb(false), 3000);
     } catch (e) {

@@ -8,6 +8,7 @@ import {
   validateEmailStrict,
   emailErrorMessage,
 } from "@/lib/email-validation";
+import { trackGa4Event } from "@/lib/analytics";
 
 /**
  * NewsletterForm — Phase 72 (owner request)
@@ -61,6 +62,10 @@ export function NewsletterForm({ variant = "footer" }: { variant?: "footer" | "h
         return;
       }
       setDone(true);
+      // ORGANIC-GROWTH-P0-G (08-§4): lead_capture — ONLY after the server
+      // confirmed the subscription row (res.ok). tool="newsletter" + lang
+      // only — the email NEVER enters the analytics payload (zero PII).
+      trackGa4Event("lead_capture", { tool: "newsletter", lang });
     } catch (e) {
       setError(e instanceof Error ? e.message : (isAr ? "حدث خطأ" : "Something went wrong"));
     } finally {

@@ -22,6 +22,7 @@ import { ShareButtons } from "@/components/ShareButtons";
 import { ReviewInviteCard } from "@/components/ReviewInviteCard";
 import { ToolReferenceContent } from "@/components/ToolReferenceContent";
 import { MACRO_CALCULATOR_CONTENT } from "@/lib/content/macro-calculator";
+import { fireOncePerSession, trackGa4Event } from "@/lib/analytics";
 
 type DietType = "balanced" | "low_carb" | "high_protein" | "keto" | "low_fat";
 
@@ -65,6 +66,12 @@ export default function MacroCalculatorPage() {
       fat_g: Math.round(fat_cal / 9),
       protein_cal, carbs_cal, fat_cal,
     });
+    // ORGANIC-GROWTH-P0-G (08-§4): tool_result — REAL computation moment,
+    // once per session per tool. tool + lang only (zero PII; geo/source
+    // stay GA4-automatic).
+    fireOncePerSession("tool_result:macro-calculator", () =>
+      trackGa4Event("tool_result", { tool: "macro-calculator", lang }),
+    );
   };
 
   return (

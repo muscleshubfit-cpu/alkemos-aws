@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { authCallbackRedirect } from "@/lib/auth-callback-redirect";
+import { GOOGLE_SIGNUP_COOKIE } from "@/lib/analytics";
 
 /**
  * OAuth + recovery callback handler (server-side).
@@ -117,7 +118,7 @@ export async function GET(request: Request) {
 
  // ── Gate 4: PKCE exchange (code is guaranteed non-null here).
  try {
- const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+ const { error: exchangeError, data } = await supabase.auth.exchangeCodeForSession(code);
  if (exchangeError) {
  console.error("[auth/callback] Code exchange failed:", exchangeError.message);
  }
@@ -130,7 +131,33 @@ export async function GET(request: Request) {
  providerError: null,
  exchangeError: exchangeError?.message ?? null,
  });
- return NextResponse.redirect(`${redirectOrigin}${decision.href}`);
+ const redirect = NextResponse.redirect(`${redirectOrigin}${decision.href}`);
+
+ // ORGANIC-GROWTH-P0-G (08-§4): signup_complete — Google arm. The
+ // exchange result carries the auth user; a FRESH Google-created
+ // account (created <5 min ago AND app_metadata.provider === "google"
+ // — an email-first account that later links Google keeps provider
+ // "email" and is NOT a fresh Google signup) is marked with a
+ // 5-minute client-readable cookie. The AuthProvider consumes the
+ // mark when the profile arrives and fires signup_complete exactly
+ // once (cookie deleted on consumption). Zero PII: the mark is a
+ // constant "1" — no email, no id.
+ if (!exchangeError && data?.user) {
+ const createdMs = Date.parse(data.user.created_at ?? "");
+ const isFreshGoogleSignup =
+ data.user.app_metadata?.provider === "google" &&
+ Number.isFinite(createdMs) &&
+ Date.now() - createdMs < 5 * 60 * 1000;
+ if (isFreshGoogleSignup) {
+ redirect.cookies.set(GOOGLE_SIGNUP_COOKIE, "1", {
+ maxAge: 300,
+ path: "/",
+ sameSite: "lax",
+ });
+ }
+ }
+
+ return redirect;
  } catch (e) {
  const msg = e instanceof Error ? e.message : String(e);
  console.error("[auth/callback] Exception:", msg);
