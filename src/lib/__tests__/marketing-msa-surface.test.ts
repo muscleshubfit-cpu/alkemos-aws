@@ -69,6 +69,13 @@ const MARKETING_SURFACE_FILES = [
   "src/lib/site-content/static-pages.ts",
   "src/lib/site-content/home.ts",
   "src/lib/faq-content.ts",
+  // ORGANIC-GROWTH-P0-E (2026-11-19, roadmap 10 field 4): the affiliate
+  // FAQ copy moved from AffiliateProgramView's inline getCopy to the
+  // single-source module src/lib/affiliate-faq.ts (view renders + both
+  // language layouts emit FAQPage JSON-LD) — the scanner follows the
+  // text to its new file (the SITE-CONTENT-281 pattern; same as
+  // memberships-faq's move under this manifest's law).
+  "src/lib/affiliate-faq.ts",
   "src/lib/tools-shared.ts",
   "src/lib/foods-shared.ts",
   "src/components/foods/FoodsFilters.tsx",

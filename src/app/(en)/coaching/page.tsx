@@ -732,6 +732,40 @@ export default function CoachingPage() {
                 </>
               )}
             </p>
+            {/* ORGANIC-GROWTH-P0-E (2026-11-19, roadmap 10 field 4
+                «رابطان واردان (memberships/coaching → «برنامج الشركاء»)»
+                + matrix 07-§2 row «memberships/coaching — الفوتر
+                التجاري»): the same commercial end-zone channel bridge as
+                memberships — ONE muted crawlable line to the affiliate
+                program (this page's own $39.99 coaching subscription is
+                the strongest internal affiliate product, $8 commission —
+                05-§6). Language-aware (SEO-GEO-4); plain <a> per the
+                section's own contextual-link precedent directly above. */}
+            <p className="mx-auto mt-3 max-w-xl text-sm text-[var(--muted-foreground)]">
+              {isAr ? (
+                <>
+                  أو{" "}
+                  <a
+                    href="/ar/affiliate"
+                    className="font-medium underline underline-offset-4 hover:text-[var(--text)]"
+                  >
+                    اصنع دخلًا بترشيح أصدقائك عبر برنامج الشركاء (20%)
+                  </a>
+                  .
+                </>
+              ) : (
+                <>
+                  Or{" "}
+                  <a
+                    href="/affiliate"
+                    className="font-medium underline underline-offset-4 hover:text-[var(--text)]"
+                  >
+                    make income by referring your friends through the Affiliate Program (20%)
+                  </a>
+                  .
+                </>
+              )}
+            </p>
           </Reveal>
         </section>
 

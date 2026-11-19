@@ -32,6 +32,13 @@ import {
   buildPromoCopy,
   PROMO_TEMPLATES,
 } from "@/lib/affiliate-content";
+// ORGANIC-GROWTH-P0-E (2026-11-19, roadmap 10 field 4): the FAQ moved to
+// the single source src/lib/affiliate-faq.ts (the memberships-faq.ts /
+// coaching-faq.ts precedent) so both language layouts emit the SAME Q&A
+// as FAQPage JSON-LD in the server HTML. The five original texts moved
+// VERBATIM (+ the commission-rate question the roadmap's four subjects
+// require). The view renders from the same array — schema == visible.
+import { AFFILIATE_FAQ } from "@/lib/affiliate-faq";
 import { COMMISSION_RATE } from "@/lib/affiliate-constants";
 import { CopyButton } from "@/components/ui/copy-button";
 import { AffiliateToolkit } from "@/components/views/AffiliateToolkit";
@@ -153,13 +160,32 @@ export function AffiliateProgramView() {
             </p>
 
             <div className="mt-10 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
-              <button
-                onClick={primaryCta}
+              {/* ORGANIC-GROWTH-P0-E (2026-11-19, roadmap 10 field 4:
+                  «تحويل أزرار القسمين الأول والأخير إلى روابط»): the hero
+                  PRIMARY CTA is now a real crawlable <Link> — the exact
+                  CTA-CRAWLABILITY secondary pattern, extended to the
+                  mixed button. href carries the exact state-dependent
+                  destination primaryCta() navigated to (member dashboard
+                  when logged in, /auth?mode=signup for the guest SSR
+                  default — the crawler-facing href). The clipboard
+                  behavior for a member holding a code is preserved
+                  byte-faithfully: onClick intercepts ONLY that case
+                  (preventDefault + the same copy-and-toast); every other
+                  state falls through to the Link's own soft navigation,
+                  identical to the retired navigate() calls. */}
+              <Link
+                href={profile ? "/referral" : "/auth?mode=signup"}
+                onClick={(e) => {
+                  if (profile && affiliateUrl) {
+                    e.preventDefault();
+                    void primaryCta();
+                  }
+                }}
                 className="btn-chrome inline-flex min-h-[52px] w-full items-center justify-center gap-2 px-8 text-base font-semibold sm:w-auto"
               >
                 {c.hero.ctaPrimary}
                 <ArrowRight className={`h-5 w-5 ${isAr ? "rotate-180" : ""}`} aria-hidden="true" />
-              </button>
+              </Link>
               {/* CTA-CRAWLABILITY (2026-11-19): the hero secondary CTA is
                   pure navigation (dashboard for members / signup for guests)
                   → a real <Link> with the exact state-dependent href the
@@ -553,13 +579,24 @@ export function AffiliateProgramView() {
               {c.finalCta.body}
             </p>
             <div className="mt-10">
-              <button
-                onClick={primaryCta}
+              {/* ORGANIC-GROWTH-P0-E (2026-11-19, roadmap 10 field 4:
+                  «تحويل أزرار القسمين الأول والأخير إلى روابط»): the FINAL
+                  CTA is the same conversion as the hero primary above —
+                  crawlable <Link> with the same state-dependent href and
+                  the same clipboard interception (same primaryCta()). */}
+              <Link
+                href={profile ? "/referral" : "/auth?mode=signup"}
+                onClick={(e) => {
+                  if (profile && affiliateUrl) {
+                    e.preventDefault();
+                    void primaryCta();
+                  }
+                }}
                 className="btn-chrome inline-flex min-h-[52px] w-full items-center justify-center gap-2 px-8 text-base font-semibold sm:w-auto"
               >
                 {c.hero.ctaPrimary}
                 <ArrowRight className={`h-5 w-5 ${isAr ? "rotate-180" : ""}`} aria-hidden="true" />
-              </button>
+              </Link>
             </div>
 
             <p className="mt-10 text-xs font-normal text-[var(--muted-foreground)]">
@@ -774,31 +811,17 @@ function getCopy(isAr: boolean): Copy {
           "وصول لحظي للأداء والتقدم",
         ],
       },
-      faq: {
-        title: "الأسئلة الشائعة عن البرنامج",
-        items: [
-          {
-            q: "كم تكلفة الانضمام إلى البرنامج؟",
-            a: "الانضمام مجاني تمامًا: يكفي حساب Alkemos مجاني، ويُنشأ رابطك الشخصي تلقائيًا في لوحتك دون رسوم تسجيل أو اشتراك. العمولة تُحسب على عمليات الشراء المؤهلة فقط، ولا توجد أي التزامات شهرية على الشريك.",
-          },
-          {
-            q: "متى وكيف أستلم أرباحي؟",
-            a: "تظهر العمولة في لوحتك لحظة تأكيد دفع الاشتراك المؤهل، ويُتاح سحبها بعد انقضاء نافذة الاسترداد. عندما يبلغ رصيدك المتاح الحد الأدنى للصرف وهو 10 دولارات، تطلب الصرف من لوحتك بأحد الطرق المتاحة (محفظة إلكترونية أو تحويل بنكي أو خصم من قيمة اشتراكك)، ثم يراجع فريق Alkemos الطلب ويُنفّذه. لا صرف تلقائيًا بلا طلب — أنت من يحدد التوقيت.",
-          },
-          {
-            q: "ماذا يحدث إذا استرد المشتري قيمته؟",
-            a: "تُحفظ عمولات الاشتراكات طوال نافذة استرداد مدتها سبعة أيام قبل توافرها للصرف؛ فإن استرد المشتري قيمته داخل النافذة تُعكس العمولة تلقائيًا. بهذا تُبنى أرباحك على مدفوعات فعلية بقيت فعلية — لا عمولات على عمليات ملغاة.",
-          },
-          {
-            q: "هل يتتبع الرابط الزائر إن اشترى بعد مدة؟",
-            a: "نعم — التتبع على مستويين: من يسجّل حسابًا عبر رابطك يظل مرتبطًا بإحالتك ربطًا دائمًا (النقرة الأولى تحسم النسبة)، وعمليات الشراء المؤهلة اللاحقة من ذلك الحساب تُحتسب لك، بينما تغطي آلية الكوكيز البالغة 30 يومًا منتجات وخدمات الدفع لمرة واحدة.",
-          },
-          {
-            q: "هل أحتاج إلى أن أكون مدربًا أو صاحب جمهور كبير؟",
-            a: "لا — البرنامج مفتوح لأي مستخدم يصل إلى جمهور مهتم فعلًا باللياقة والتغذية: صنّاع محتوى ومدربين ومشرفي مجموعات ومدونين ومالكي مواقع. القاعدة الوحيدة الملزمة: التوصية لجمهور حقيقي مهتم؛ فالممارسات المزعجة أو الإرسال الجماعي غير المرغوب فيه يعرّضان الحساب للإيقاف.",
-          },
-        ],
-      },
+      // SEO-GROWTH-P2 (2026-11-05, owner order «الأسئلة الشائعة ذات الصلة +
+      // الإفصاح الواضح»): every other key conversion surface (tools,
+      // memberships, coaching, programs) ships visible FAQs — the affiliate
+      // program page was the one without. Plain visible text (AEO); the
+      // numbers all come from AFFILIATE_PROGRAM_FACTS / the engine's
+      // documented 7-day refund hold — no new claims.
+      // ORGANIC-GROWTH-P0-E (2026-11-19): the items moved VERBATIM to
+      // src/lib/affiliate-faq.ts (+ the commission-rate question) — this
+      // copy block now renders from the single source both language
+      // layouts also emit as FAQPage JSON-LD.
+      faq: { title: "الأسئلة الشائعة عن البرنامج", items: AFFILIATE_FAQ.ar },
       finalCta: {
         title: "جاهز للبدء؟",
         body:
@@ -953,31 +976,7 @@ function getCopy(isAr: boolean): Copy {
         "Instant access to your performance and progress",
       ],
     },
-    faq: {
-      title: "Affiliate Program FAQ",
-      items: [
-        {
-          q: "How much does it cost to join the program?",
-          a: "Nothing — a free Alkemos account is all you need: your personal tracking link is generated automatically in your dashboard, with no sign-up fee and no subscription. Commissions are earned on eligible purchases only; the program itself carries no monthly obligations for partners.",
-        },
-        {
-          q: "When and how do I get paid?",
-          a: "A commission appears on your dashboard the moment an eligible subscription payment is confirmed, and becomes withdrawable after the refund window passes. Once your available balance reaches the $10 minimum payout, you request the payout from your dashboard via one of the available methods (mobile wallet, bank transfer, or subscription discount), and the Alkemos team reviews and processes it. Nothing pays out automatically without your request — you control the timing.",
-        },
-        {
-          q: "What happens if the buyer asks for a refund?",
-          a: "Subscription commissions are held for a 7-day refund window before they become withdrawable; if the buyer is refunded inside that window, the commission is reversed automatically. Your earnings are therefore always built on payments that actually stuck — never on cancelled orders.",
-        },
-        {
-          q: "Does my link still count if the visitor buys later?",
-          a: "Yes — attribution works on two levels: anyone who signs up through your link stays permanently tied to your referral (the first click wins), so their later eligible purchases count for you, while one-time products and services are covered by the 30-day cookie mechanism.",
-        },
-        {
-          q: "Do I need to be a coach or have a big audience?",
-          a: "No — the program is open to any user who reaches a genuinely interested fitness and nutrition audience: content creators, coaches, community admins, bloggers, and website owners. The one binding rule: recommend to a real, interested audience — spam practices or unsolicited mass-messaging put the account at risk of suspension.",
-        },
-      ],
-    },
+    faq: { title: "Affiliate Program FAQ", items: AFFILIATE_FAQ.en },
     finalCta: {
       title: "Ready to start?",
       body:

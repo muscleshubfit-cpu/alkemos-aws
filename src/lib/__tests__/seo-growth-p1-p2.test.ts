@@ -95,6 +95,12 @@ describe("SEO-GROWTH P2: affiliate program FAQ + internal links", () => {
     "src/components/views/AffiliateProgramView.tsx",
     "utf8",
   );
+  // ORGANIC-GROWTH-P0-E (2026-11-19, roadmap 10 field 4): the FAQ copy
+  // moved from the view's inline getCopy to the single source
+  // src/lib/affiliate-faq.ts (the memberships-faq.ts precedent) — this
+  // canary follows the text to its new file (the SITE-CONTENT-281
+  // pattern), same needles, same intent.
+  const faqModule = readFileSync("src/lib/affiliate-faq.ts", "utf8");
 
   it("the affiliate view renders a visible FAQ section (both languages)", () => {
     expect(view).toContain("c.faq.title");
@@ -109,13 +115,14 @@ describe("SEO-GROWTH P2: affiliate program FAQ + internal links", () => {
     // AR block then EN block — each carries its own language's facts:
     // payout minimum ($10 / 10 دولارات), refund hold (7-day / سبعة أيام),
     // cookie window (30-day / 30 يوم). The 20% rate itself stays on the
-    // commission cards (already pinned by the existing heroStats copy).
-    const arFaqAt = view.indexOf('title: "الأسئلة الشائعة عن البرنامج"');
-    const enFaqAt = view.indexOf('title: "Affiliate Program FAQ"');
+    // commission cards (already pinned by the existing heroStats copy)
+    // AND in the P0-E commission-rate FAQ question (affiliate-p0e canary).
+    const arFaqAt = faqModule.indexOf("ar: [");
+    const enFaqAt = faqModule.indexOf("en: [");
     expect(arFaqAt).toBeGreaterThan(0);
     expect(enFaqAt).toBeGreaterThan(arFaqAt);
-    const arBlock = view.slice(arFaqAt, enFaqAt);
-    const enBlock = view.slice(enFaqAt);
+    const arBlock = faqModule.slice(arFaqAt, enFaqAt);
+    const enBlock = faqModule.slice(enFaqAt);
     for (const needle of ["10 دولارات", "سبعة أيام", "30 يوم"]) {
       expect(arBlock, `AR FAQ missing: "${needle}"`).toContain(needle);
     }
@@ -126,8 +133,8 @@ describe("SEO-GROWTH P2: affiliate program FAQ + internal links", () => {
 
   it("no guaranteed-income or fabricated-testimonial phrasing entered with the FAQ", () => {
     // The page's honesty guardrails (header comment) stay binding.
-    const enFaqAt = view.indexOf('title: "Affiliate Program FAQ"');
-    const enBlock = view.slice(enFaqAt, view.indexOf("finalCta", enFaqAt));
+    const enFaqAt = faqModule.indexOf("en: [");
+    const enBlock = faqModule.slice(enFaqAt);
     for (const banned of [
       "guaranteed income",
       "passive income guarantee",

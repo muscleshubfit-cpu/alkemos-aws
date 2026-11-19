@@ -80,14 +80,33 @@ describe("CTA-CRAWLABILITY — SiteHeader (every page's chrome)", () => {
 /* ── public pages with converted CTAs ──────────────────────────────────── */
 
 describe("CTA-CRAWLABILITY — public surfaces", () => {
-  it("AffiliateProgramView: hero secondary + toolkit signup are <Link>s; the clipboard primary stays a <button>", () => {
+  it("AffiliateProgramView: hero secondary + toolkit signup + the P0-E hero/final primaries are <Link>s (clipboard kept via onClick interception)", () => {
     const src = read("src/components/views/AffiliateProgramView.tsx");
-    expect(src).toContain('href={profile ? "/referral" : "/auth?mode=signup"}');
+    // state-dependent href x3: hero secondary + hero primary + final CTA
+    expect(
+      src.match(/href=\{profile \? "\/referral" : "\/auth\?mode=signup"\}/g)
+        ?.length,
+    ).toBe(3);
     expect(src.match(/href="\/auth\?mode=signup"/g)?.length).toBe(1);
     expect(src).not.toContain("onClick={secondaryCta}");
-    // functional keep: the primary CTA copies the affiliate link to clipboard
+    // ORGANIC-GROWTH-P0-E (2026-11-19, roadmap 10 field 4: «تحويل أزرار
+    // القسمين الأول والأخير إلى روابط»): the hero primary + final CTA
+    // buttons became real <Link>s — the P0-E order supersedes this
+    // canary's original «the clipboard primary stays a <button>» keep
+    // (updated in the same frame per the canary-update law). The clipboard
+    // behavior for members holding a code is preserved byte-faithfully:
+    // onClick intercepts ONLY that case (preventDefault + primaryCta's
+    // copy-and-toast); every other state falls through to the Link's own
+    // navigation — identical to the retired navigate() calls.
     expect(src).toContain("navigator.clipboard.writeText(affiliateUrl)");
-    expect(src).toContain("onClick={primaryCta}");
+    expect(src).toContain("e.preventDefault();");
+    expect(src).toContain("void primaryCta();");
+    // no bare primaryCta button remains anywhere
+    expect(src).not.toContain("onClick={primaryCta}");
+    // functional keeps: the authed-only share buttons stay <button>s
+    expect(src).toContain("onClick={shareWhatsApp}");
+    expect(src).toContain("onClick={shareFacebook}");
+    expect(src).toContain("onClick={shareX}");
   });
 
   it("StaticPageView: the FAQ tail CTA is a language-aware <Link> (about/faq/privacy/terms ×2 languages)", () => {

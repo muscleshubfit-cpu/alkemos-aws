@@ -1,4 +1,13 @@
 import type { Metadata } from "next";
+// ORGANIC-GROWTH-P0-E (2026-11-19, roadmap 10 field 4: «FAQPage (4-6
+// أسئلة…) + BreadcrumbList»): both language surfaces of /affiliate gain
+// the FAQPage JSON-LD (from the SAME single source the page renders —
+// src/lib/affiliate-faq.ts, the memberships-faq.ts precedent) + a
+// BreadcrumbList with RELATIVE urls (getBreadcrumbSchema prefixes the
+// site origin — the diet-plan convention; passing absolute urls doubles
+// the origin, the live defect class documented in report 18 §6).
+import { getFAQSchema, getBreadcrumbSchema, jsonLd } from "@/lib/seo";
+import { AFFILIATE_FAQ } from "@/lib/affiliate-faq";
 
 /**
  * Public Affiliate Program page SEO metadata.
@@ -13,9 +22,15 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Alkemos Affiliate Program — Turn Your Influence Into Income",
   description:
-    // SEO-P2-10 (2026-10-01, SEO audit item 10): 170 → 133 chars — the
-    // ≤160 SERP-truncation law now holds (earn CTA kept).
-    "Join the Alkemos Affiliate Program: share fitness and nutrition tools and earn commissions from purchases through your personal link.",
+    // SEO-P2-10 (2026-10-01, SEO audit item 10): the ≤160 SERP-truncation
+    // law holds (156 chars).
+    // ORGANIC-GROWTH-P0-E (2026-11-19, roadmap 10 field 4: «توحيد
+    // 20%/$10 بالنسختين»): the EN description was the only half of the
+    // pair deprived of the two strongest numbers (F-8 — the AR twin has
+    // carried 20% + 10$ since Phase 208). The numbers join here, mirroring
+    // the AR structure (platform-trust + 20% commission + $10 minimum) —
+    // «النصان متطابقان رقميًا» (roadmap field 9).
+    "Join the Alkemos Affiliate Program: share a platform you trust and earn a 20% commission on eligible purchases through your link, with a $10 minimum payout.",
   keywords: [
     "Alkemos affiliate program",
     "fitness affiliate program",
@@ -78,10 +93,32 @@ export const metadata: Metadata = {
   },
 };
 
+const faqSchema = getFAQSchema(AFFILIATE_FAQ.en);
+const breadcrumbSchema = getBreadcrumbSchema([
+  { name: "Home", url: "/" },
+  { name: "Affiliate Program", url: "/affiliate" },
+]);
+
 export default function AffiliateLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return children;
+  return (
+    <>
+      {/* ORGANIC-GROWTH-P0-E: FAQPage JSON-LD — GEO-only value (Google
+          retired FAQ rich results May 2026; AI answer engines still parse
+          JSON-LD from the server HTML — the repo's documented decision,
+          same as coaching-faq.ts/memberships-faq.ts). */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: jsonLd(faqSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: jsonLd(breadcrumbSchema) }}
+      />
+      {children}
+    </>
+  );
 }

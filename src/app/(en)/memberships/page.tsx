@@ -663,6 +663,41 @@ export default function MembershipsPage({ lang: langProp }: { lang?: Lang } = {}
                 <span className="rtl:rotate-180">›</span>
               </a>
             </div>
+            {/* ORGANIC-GROWTH-P0-E (2026-11-19, roadmap 10 field 4
+                «رابطان واردان (memberships/coaching → «برنامج الشركاء»)»
+                + matrix 07-§2 row «memberships/coaching — الفوتر
+                التجاري»): the page's commercial end-zone gains the
+                one-line channel bridge to the affiliate program —
+                crawlable, language-aware (SEO-GEO-4), ONE muted text link
+                (not a CTA button; the card's conversion CTAs above are
+                untouched — the one-CTA law applies to tool pages, this is
+                the documented matrix row). Plain <a> per the section's
+                own bridge precedent (compare/coaching links above). */}
+            <p className="mx-auto mt-6 max-w-xl text-sm font-normal leading-relaxed text-[var(--muted-foreground)]">
+              {isAr ? (
+                <>
+                  أو{" "}
+                  <a
+                    href="/ar/affiliate"
+                    className="font-medium underline underline-offset-4 hover:text-[var(--text)]"
+                  >
+                    اصنع دخلًا بترشيح أصدقائك عبر برنامج الشركاء (20%)
+                  </a>
+                  .
+                </>
+              ) : (
+                <>
+                  Or{" "}
+                  <a
+                    href="/affiliate"
+                    className="font-medium underline underline-offset-4 hover:text-[var(--text)]"
+                  >
+                    make income by referring your friends through the Affiliate Program (20%)
+                  </a>
+                  .
+                </>
+              )}
+            </p>
           </div>
         </section>
 

@@ -1,4 +1,14 @@
 import type { Metadata } from "next";
+// ORGANIC-GROWTH-P0-E (2026-11-19, roadmap 10 field 4: «FAQPage (4-6
+// أسئلة…) + BreadcrumbList»): the AR mirror emits its FAQPage JSON-LD
+// from the SAME single source the page renders (src/lib/affiliate-faq.ts —
+// the memberships-faq.ts AR precedent) + a BreadcrumbList with RELATIVE
+// urls (getBreadcrumbSchema prefixes the site origin — the /ar/foods
+// convention). The AR description is UNTOUCHED: it already carried the
+// 20%/10$ pair (F-8 was EN-only deprivation — «النصان متطابقان رقميًا»
+// now holds on both sides).
+import { getFAQSchema, getBreadcrumbSchema, jsonLd } from "@/lib/seo";
+import { AFFILIATE_FAQ } from "@/lib/affiliate-faq";
 
 /**
  * AR MIRROR of /affiliate — SEO layout (§12.53 item 11, owner order
@@ -74,10 +84,32 @@ export const metadata: Metadata = {
   },
 };
 
+const faqSchema = getFAQSchema(AFFILIATE_FAQ.ar);
+const breadcrumbSchema = getBreadcrumbSchema([
+  { name: "الرئيسية", url: "/ar" },
+  { name: "برنامج الأفلييت (الشركاء)", url: "/ar/affiliate" },
+]);
+
 export default function ArAffiliateLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return children;
+  return (
+    <>
+      {/* ORGANIC-GROWTH-P0-E: FAQPage JSON-LD — GEO-only value (Google
+          retired FAQ rich results May 2026; AI answer engines still parse
+          JSON-LD from the server HTML — the repo's documented decision,
+          same as the AR memberships mirror). */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: jsonLd(faqSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: jsonLd(breadcrumbSchema) }}
+      />
+      {children}
+    </>
+  );
 }
