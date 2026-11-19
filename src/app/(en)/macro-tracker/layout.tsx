@@ -24,7 +24,11 @@ const SITE = "https://alkemos.com";
 const PAGE_URL = `${SITE}/macro-tracker`;
 
 export const metadata: Metadata = {
-  title: "Macro Tracker — Set Targets, Build Meals, Track Totals | Alkemos",
+  // ORGANIC-GROWTH-P1-F (2026-11-20): the SERP <title> ≤60 law — trimmed
+  // from the 64-char "Set Targets, Build Meals, Track Totals" original.
+  // og:title/twitter:title keep the long form (social cards are not bound
+  // by the SERP display budget — the P0-D scope-discipline precedent).
+  title: "Macro Tracker — Set Targets & Track Totals | Alkemos",
   description:
     // ~160-char budget (CONTENT-AUDIT P1-7 law): real capabilities only —
     // targets, live totals, AI plans; no food-diary claims.

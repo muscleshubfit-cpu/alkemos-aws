@@ -45,7 +45,9 @@ const SITE_URL = "https://alkemos.com";
  */
 export const metadata: Metadata = {
   alternates: {
-    canonical: "/ar",
+    // ORGANIC-GROWTH-P1-F (2026-11-20): absolute canonical — the in-scope
+    // site convention (was "/ar"; rendered identical via metadataBase).
+    canonical: `${SITE_URL}/ar`,
     languages: {
       // BILINGUAL-CONTENT Phase 2 (audit §2.8 detail): "/" declares
       // en/x-default as "https://alkemos.com" (no trailing slash) — the

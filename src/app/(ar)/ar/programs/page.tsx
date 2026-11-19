@@ -18,7 +18,10 @@ export const metadata: Metadata = {
   description:
     "برامج تدريب جاهزة لكل المستويات والأهداف — برامج منزلية بدون معدات، برامج دمبل، وبرامج كاملة للنادي الرياضي بالجدول الأسبوعي وشرح كل تمرين على Alkemos.",
   alternates: {
-    canonical: "/ar/programs",
+    // ORGANIC-GROWTH-P1-F (2026-11-20): absolute canonical — the in-scope
+    // site convention (was "/ar/programs"; rendered identical via
+    // metadataBase).
+    canonical: `${SITE_URL}/ar/programs`,
     languages: {
       en: `${SITE_URL}/programs`,
       ar: `${SITE_URL}/ar/programs`,

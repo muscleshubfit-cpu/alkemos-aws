@@ -23,7 +23,11 @@ const SITE = "https://alkemos.com";
 const PAGE_URL = `${SITE}/workout-tracker`;
 
 export const metadata: Metadata = {
-  title: "Workout Tracker — Plan Workouts & Track Progress Free | Alkemos",
+  // ORGANIC-GROWTH-P1-F (2026-11-20): the SERP <title> ≤60 law — trimmed
+  // from the 63-char "Plan Workouts & Track Progress Free" original.
+  // og:title/twitter:title keep the long form (social cards are not bound
+  // by the SERP display budget — the P0-D scope-discipline precedent).
+  title: "Workout Tracker — Plan Workouts & Track Progress | Alkemos",
   description:
     // ~160-char budget (CONTENT-AUDIT P1-7 law): real capabilities only —
     // AI plans, programs, exercise library, body-metric tracking.

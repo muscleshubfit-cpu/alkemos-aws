@@ -24,7 +24,9 @@ export const metadata: Metadata = {
     "free meal planner",
   ],
   alternates: {
-    canonical: "/meal-planner",
+    // ORGANIC-GROWTH-P1-F (2026-11-20): absolute canonical — the in-scope
+    // site convention (was relative; rendered identical via metadataBase).
+    canonical: "https://alkemos.com/meal-planner",
     // SEO-GEO-4 (2026-09-08): reciprocal pair with the new AR mirror
     // (this file's old "No hreflang: no /ar mirror" note is superseded).
     languages: {

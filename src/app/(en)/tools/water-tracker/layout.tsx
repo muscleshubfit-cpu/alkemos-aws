@@ -25,7 +25,10 @@ export const metadata: Metadata = {
     "daily water intake",
   ],
   alternates: {
-    canonical: "/tools/water-tracker",
+    // ORGANIC-GROWTH-P1-F (2026-11-20): absolute canonical — the in-scope
+    // site convention (was the last relative one on the EN tools side;
+    // rendered identical via metadataBase).
+    canonical: "https://alkemos.com/tools/water-tracker",
     // SEO-GEO-4 (2026-09-08): reciprocal pair with the new AR mirror.
     languages: {
       en: "https://alkemos.com/tools/water-tracker",

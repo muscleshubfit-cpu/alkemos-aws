@@ -46,7 +46,10 @@ export const metadata: Metadata = {
   description:
     "قارن باقات Alkemos: مجاني للأبد، بريميوم $14.99/شهر، برو $29.99/شهر، والتدريب الأونلاين مع مدرب خاص $39.99/شهر — كل الحدود منشورة بشفافية، والإلغاء في أي وقت.",
   alternates: {
-    canonical: "/ar/memberships",
+    // ORGANIC-GROWTH-P1-F (2026-11-20): absolute canonical — the in-scope
+    // site convention (was "/ar/memberships"; rendered identical via
+    // metadataBase).
+    canonical: `${SITE_URL}/ar/memberships`,
     languages: {
       en: `${SITE_URL}/memberships`,
       ar: `${SITE_URL}/ar/memberships`,

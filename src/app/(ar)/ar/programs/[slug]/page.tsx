@@ -45,7 +45,10 @@ export async function generateMetadata({
     title,
     description,
     alternates: {
-      canonical: `/ar/programs/${program.slug}`,
+      // ORGANIC-GROWTH-P1-F (2026-11-20): absolute canonical — the in-scope
+      // site convention (was the relative template; rendered identical via
+      // metadataBase). `url` is this page's own AR absolute URL.
+      canonical: url,
       languages: {
         en: `${SITE_URL}/programs/${program.slug}`,
         ar: url,
