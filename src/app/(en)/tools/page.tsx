@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useI18n } from "@/lib/i18n";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
@@ -9,6 +10,11 @@ import { EngravedIcon } from "@/components/ThemeImg";
 // counts): the hub arrays moved to src/lib/tools-shared.ts — the single
 // source that also feeds the homepage «8+ Tools» proof chip. Same render.
 import { TOOLS, TOOL_LIBRARIES } from "@/lib/tools-shared";
+// ORGANIC-GROWTH-P0-B (owner order 2026-11-19 — roadmap 10/P0-B + 07-§2):
+// the starting-lane sentences render from segment data so every tool they
+// name is a real crawlable <Link> (was plain text — the intent routing was
+// invisible to crawlers and cost a navigation step). Same sentences.
+import { STARTING_LANES } from "@/lib/tools-hub-starting-paths";
 
 // Phase 127 «Marble & Chrome» identity: engraved icon pairs (mission §6
 // zero-emoji law) replace the old Apple-style emoji-fallback tiles.
@@ -55,7 +61,17 @@ export default function ToolsPage() {
           <p className="mx-auto mt-4 max-w-2xl text-center text-sm font-normal leading-relaxed text-[var(--muted-foreground)] md:max-w-3xl md:text-base">
             {isAr
               ? "الأرقام أولًا: كل تغيير حقيقي في جسمك يبدأ بمعرفة أرقامك — كم تحرق، وكيف توزّعها، وماذا تقيس. أدوات Alkemos الثماني المجانية تحسبها لك كاملة: ابدأ بحاسبة السعرات لتعرف رقمك اليومي، وزّعه بالماكروز، ابنِ يومك في مخطط الوجبات من قاعدة 8,162+ صنفًا غذائيًا — كل ذلك دون حاجة إلى حساب — ثم تابع دهون جسمك وماءك حتى تصل. ولتوليد الخطة كاملة بالذكاء الاصطناعي في ثوانٍ فهو متاح لمشتركي بريميوم وأعلى."
-              : "Numbers first: every real change in your body starts with knowing your numbers — how much you burn, how you split them, and what you track. Alkemos' eight free tools calculate them all, no account needed: start with the Calorie Calculator for your daily number, split it with the Macro Calculator, build your day in the manual Meal Planner from 8,162+ foods — then track body fat and water on the way. Generating the full plan with AI in seconds is available to subscribers (Premium and above)."}
+              : "Numbers first: every real change in your body starts with knowing your numbers — how much you burn, how you split them, and what you track. Alkemos' eight free tools calculate them all, no account needed: start with the Calorie Calculator for your daily number, split it with the Macro Calculator, build your day in the manual Meal Planner from 8,162+ foods — then track body fat and water on the way. Generating the full plan with AI in seconds is available to subscribers (Premium and above)."}{" "}
+            {/* P0-B (07-§2 row 4): ONE contextual commercial bridge exactly where
+                the Premium+ sentence names the subscription — «ما الذي يضيفه
+                الاشتراك؟». The one-CTA law: this is the ONLY memberships
+                link in the hub body (07-§4.2 — no second bridge anywhere). */}
+            <Link
+              href={isAr ? "/ar/memberships" : "/memberships"}
+              className="font-medium text-[#0071e3] hover:underline"
+            >
+              {isAr ? "ما الذي يضيفه الاشتراك؟" : "What does the subscription add?"}
+            </Link>
           </p>
         </div>
 
@@ -70,7 +86,11 @@ export default function ToolsPage() {
             hub (a card index with no intent routing). Three goal lanes,
             each pointing at the tool(s) that serve it; every destination
             exists in TOOLS/TOOL_LIBRARIES (tools-shared.ts) or the
-            verified program library (workout-programs.ts). */}
+            verified program library (workout-programs.ts).
+            ORGANIC-GROWTH-P0-B (2026-11-19): the lane sentences render from
+            segment data (tools-hub-starting-paths.ts) — every tool a sentence
+            names is a real crawlable <Link> (language-aware href), the
+            sentence itself byte-identical. Soft-nav via next/link. */}
         <section className="mt-12">
           <h2 className="text-2xl font-semibold tracking-tight md:text-3xl">
             {isAr ? "من أين تبدأ؟" : "Where do you start?"}
@@ -81,32 +101,25 @@ export default function ToolsPage() {
               : "Pick your goal, and the list below takes you straight to your first tool:"}
           </p>
           <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
-            {[
-              {
-                goalAr: "هدفك خسارة الدهون",
-                goalEn: "Your goal is fat loss",
-                pathAr: "ابدأ بحاسبة السعرات لتعرف رقمك اليومي، ثم وزّعه بالماكروز، وتابع التقدم بحاسبة الدهون ومتتبع الماء.",
-                pathEn: "Start with the Calorie Calculator for your daily number, split it with the Macro Calculator, and follow progress with the Body Fat Calculator and the Water Tracker.",
-              },
-              {
-                goalAr: "هدفك بناء العضل",
-                goalEn: "Your goal is building muscle",
-                pathAr: "ابدأ بالماكروز (بروتينك أولًا) بجانب حاسبة السعرات، وولّد تقسيمتك من مخطط التمارين بالذكاء الاصطناعي أو من برامج التدريب الجاهزة.",
-                pathEn: "Start with the Macro Calculator (your protein first) alongside the Calorie Calculator, and generate your split from the AI Workout Planner or the ready programs.",
-              },
-              {
-                goalAr: "هدفك الصحة العامة",
-                goalEn: "You're starting with general health",
-                pathAr: "قياس سريع في دقائق: مؤشر الكتلة، ثم نسبة الدهون، ثم عادة الماء اليومية — ثلاث أدوات ترسم لك صورة واضحة منذ اليوم الأول.",
-                pathEn: "A quick three-minute reading: the BMI Calculator, then Body Fat, then the daily water habit — three tools that give you a clear picture on day one.",
-              },
-            ].map((lane) => (
+            {STARTING_LANES.map((lane) => (
               <div key={lane.goalEn} className="marble-card p-6">
                 <h3 className="text-base font-semibold tracking-tight text-[var(--text)]">
                   {isAr ? lane.goalAr : lane.goalEn}
                 </h3>
                 <p className="mt-2 text-sm font-normal leading-relaxed text-[var(--muted-foreground)]">
-                  {isAr ? lane.pathAr : lane.pathEn}
+                  {(isAr ? lane.segAr : lane.segEn).map((seg, i) =>
+                    seg.href ? (
+                      <Link
+                        key={i}
+                        href={isAr ? `/ar${seg.href}` : seg.href}
+                        className="font-medium text-[#0071e3] hover:underline"
+                      >
+                        {seg.text}
+                      </Link>
+                    ) : (
+                      <span key={i}>{seg.text}</span>
+                    )
+                  )}
                 </p>
               </div>
             ))}

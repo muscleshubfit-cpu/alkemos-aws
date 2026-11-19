@@ -71,6 +71,10 @@ const TOOL_SURFACE_FILES = [
   // cleanup): the tools-hub data source renders on /tools — dialect and
   // Latin law now cover the source itself, not just the hub page.
   "src/lib/tools-shared.ts",
+  // ORGANIC-GROWTH-P0-B (2026-11-19): the starting-lane segment data
+  // (tools-hub-starting-paths.ts) renders on /tools too — same surface,
+  // same MSA law.
+  "src/lib/tools-hub-starting-paths.ts",
 ] as const;
 
 const AR_RUN = /[\u0600-\u06FF]/;
