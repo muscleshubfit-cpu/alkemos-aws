@@ -66,7 +66,7 @@ describe("ToolChainResultBridge render (P1-D — BMI → calorie calculator)", (
     const html = renderBmi(27.5, "en");
     expect(html).toContain("Above the healthy range? Start with a targeted calorie plan");
     expect(html).toContain("The calorie calculator works out your daily target to reach a healthy weight");
-    expect(html).toContain("ready-made day plans at the calorie level closest to your number");
+    expect(html).toContain("ready-made day plans at the calorie level closest to that target");
     expect(html).toContain('href="/tools/calorie-calculator"');
     expect(html).toContain("Start with the calorie calculator");
     // ONE bridge, ONE link — no coaching line on the BMI chain.
@@ -106,8 +106,8 @@ describe("ToolChainResultBridge render (P1-D — BMI → calorie calculator)", (
 describe("ToolChainResultBridge render (P1-D — body-fat → macro + coaching)", () => {
   it("the doc's message + BOTH destinations, EN", () => {
     const html = renderBodyFat("en");
-    expect(html).toContain("Keep your muscle while cutting");
-    expect(html).toContain("enough daily protein");
+    expect(html).toContain("Preserve muscle while losing fat");
+    expect(html).toContain("Adequate protein intake can help preserve lean mass");
     expect(html).toContain("macro calculator");
     // The free-tool pill FIRST, then the quiet coaching line.
     expect(html).toContain('href="/tools/macro-calculator"');
@@ -126,7 +126,7 @@ describe("ToolChainResultBridge render (P1-D — body-fat → macro + coaching)"
   it("the same bridge, AR — locale-native hrefs and zero bare Latin in the text layer", () => {
     const html = renderBodyFat("ar");
     expect(html).toContain("حافظ على عضلاتك أثناء خسارة الدهون");
-    expect(html).toContain("بروتينًا كافيًا يوميًا");
+    expect(html).toContain("كمية مناسبة من البروتين يوميًا");
     expect(html).toContain('href="/ar/tools/macro-calculator"');
     expect(html).toContain("احسب توزيع الماكروز من سعراتك اليومية");
     expect(html).toContain('href="/ar/coaching"');
@@ -136,16 +136,18 @@ describe("ToolChainResultBridge render (P1-D — body-fat → macro + coaching)"
     expect(LATIN.test(textOnly(html))).toBe(false);
   });
 
-  it("honesty (owner review 2026-11-20): the rendered bridge says estimated — never measured, no weight-based macro claim", () => {
+  it("honesty (owner review 2026-11-20): the rendered bridge states the general protein fact — never measured, no lean-mass-derived need, no weight-based macro claim", () => {
     const en = textOnly(renderBodyFat("en"));
-    expect(en).toContain("estimated lean mass");
-    expect(en).toContain("splits your daily calories");
+    expect(en).toContain("Adequate protein intake can help preserve lean mass during fat loss");
+    expect(en).toContain("distributes your daily calories among protein, carbohydrates, and fats");
     expect(en).not.toMatch(/\bmeasur/);
     expect(en).not.toContain("your weight");
+    expect(en).not.toContain("lean mass needs");
     const ar = textOnly(renderBodyFat("ar"));
-    expect(ar).toContain("المقدَّرة");
-    expect(ar).toContain("توزّع سعراتك اليومية");
+    expect(ar).toContain("كمية مناسبة من البروتين يوميًا");
+    expect(ar).toContain("توزيع سعراتك اليومية على جرامات");
     expect(ar).not.toContain("قِست");
     expect(ar).not.toContain("بوزنك");
+    expect(ar).not.toContain("تحتاج بروتين");
   });
 });

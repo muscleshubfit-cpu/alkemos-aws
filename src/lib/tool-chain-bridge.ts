@@ -27,10 +27,11 @@
  *       «نتيجة BMI → /tools/calorie-calculator» — the first step of the
  *       tools-hub starting lanes, whose result continues to the
  *       ready-made plan cells through the P0-C bridge).
- *     - Body-fat → ONE tool link (the macro calculator — the visitor's
- *       ESTIMATED lean mass needs daily protein, and the macro calculator
- *       splits the entered daily calories into macro grams by the chosen
- *       diet; it takes NO weight and NO lean-mass input — owner review
+ *     - Body-fat → ONE tool link (the macro calculator — adequate daily
+ *       protein helps preserve lean mass, and the macro calculator
+ *       distributes the entered daily calories among macro grams by the
+ *       chosen diet; it takes NO weight and NO lean-mass input and
+ *       computes no protein need from the lean mass — owner reviews
  *       2026-11-20) + ONE quiet service link (coaching — 06-§2:
  *       obesity/cutting is explicit coaching intent). The service link
  *       renders as a faint contextual line (the P0-E/P1-B
@@ -41,14 +42,17 @@
  * destination page actually has (the calorie calculator computes the
  * daily target for the goal; its result opens the ready-made plans at
  * the nearest published level — the P0-C bridge; the macro calculator
- * splits the visitor's ENTERED daily calories into protein/carb/fat
+ * distributes the visitor's ENTERED daily calories among protein/carb/fat
  * grams by the chosen diet preset — its only inputs are calories +
  * diet type, it consumes no weight and no lean mass; coaching is human
  * supervision). The body-fat page's fat/lean masses are ESTIMATES from
- * a weight inferred at a healthy-midpoint BMI of 22 — so this copy
- * says «المقدَّرة/estimated», never «measured» (owner review
- * 2026-11-20; the estimate qualifier is pinned on the page's own
- * cards by the canary). The doc's literal wording «حافظ على عضلاتك
+ * a weight inferred at a healthy-midpoint BMI of 22 — the page's own
+ * cards carry the «(تقديرية)/(est.)» qualifier with the estimate-basis
+ * note (owner review 2026-11-20; pinned on the page by the canary), and
+ * the bridge copy never calls them «measured» and never derives a
+ * protein requirement from them (owner wording review 2026-11-20: the
+ * protein sentence states the general fact — adequate intake helps
+ * preserve lean mass — no computed need). The doc's literal wording «حافظ على عضلاتك
  * أثناء القطع» was adapted to
  * the site's own published vocabulary «خسارة الدهون» (the fat-loss
  * phrasing of the macro reference content — «القطع» appears nowhere in
@@ -56,20 +60,28 @@
  * الصحي» (the BMI page's own intro vocabulary). Zero quota/price
  * claims are made here.
  *
- * Language pass (owner order 2026-11-21 — the SAME review scope, both
+ * Language pass (owner orders 2026-11-20 — the SAME review scope, both
  * languages, every user-visible string of this bridge): the Arabic is
  * natural فصحى — no clitic possessive on the transliterated loanword
  * (the macro anchor reads «احسب توزيع الماكروز…», never the suffixed
  * loanword form), the BMI sub-lines read «تحدد لك هدفك اليومي من
- * السعرات… خططًا يومية جاهزة عند مستوى السعرات الأقرب إلى نتيجتك»,
- * and the lean-mass estimate and the macro calculator's function are
- * TWO separate sentences (clear split between what is estimated and
- * what the tool does). The English is natural professional copy
- * («works out your daily target…», «at the calorie level closest to
- * your number», «The macro calculator then splits… according to your
- * diet type») — never mechanical phrasing. The scientific accuracy of
- * §10 is untouched; the replaced phrasings are banned at source level
- * by the canary's language guard.
+ * السعرات… خططًا يومية جاهزة عند مستوى السعرات الأقرب إلى هذا الهدف»
+ * (the nearest level refers to the explicit calorie target, never an
+ * ambiguous «number/result»), and the protein sentence states the
+ * general fact without deriving a requirement from the lean mass
+ * («يساعد تناول كمية مناسبة من البروتين يوميًا على الحفاظ على الكتلة
+ * الصافية أثناء خسارة الدهون») — the general guidance and the macro
+ * calculator's function are TWO separate sentences (a clear split
+ * between what is general advice and what the tool does). The English
+ * is natural professional copy («works out your daily target…», «at
+ * the calorie level closest to that target», "Preserve muscle while
+ * losing fat", "Adequate protein intake can help preserve lean mass
+ * during fat loss. The macro calculator distributes your daily
+ * calories among protein, carbohydrates, and fats according to your
+ * selected diet.") — never mechanical phrasing and never a
+ * lean-mass-derived protein claim. The scientific accuracy of §10 is
+ * untouched; every replaced phrasing is banned at source level by the
+ * canary's language guard.
  *
  * The display component is src/components/ToolChainResultBridge.tsx
  * (rendered inside the calculators' FIRST result container — value
@@ -132,20 +144,20 @@ const BMI_COPY: Record<BmiChainSegment, Omit<ChainBridgeModel, "toolLinks" | "se
   below: {
     titleAr: "وزنك تحت المعدل الصحي؟ ابدأ بخطة سعرات مستهدفة",
     titleEn: "Below the healthy range? Start with a targeted calorie plan",
-    subAr: "حاسبة السعرات تحدد لك هدفك اليومي من السعرات لزيادة الوزن بفائض معتدل — ونتيجتها تعرض خططًا يومية جاهزة عند مستوى السعرات الأقرب إلى نتيجتك.",
-    subEn: "The calorie calculator works out your daily target for gaining weight with a moderate surplus — and its result opens ready-made day plans at the calorie level closest to your number.",
+    subAr: "حاسبة السعرات تحدد لك هدفك اليومي من السعرات لزيادة الوزن بفائض معتدل — ونتيجتها تعرض خططًا يومية جاهزة عند مستوى السعرات الأقرب إلى هذا الهدف.",
+    subEn: "The calorie calculator works out your daily target for gaining weight with a moderate surplus — and its result opens ready-made day plans at the calorie level closest to that target.",
   },
   normal: {
     titleAr: "وزنك داخل المعدل الصحي — حافظ عليه",
     titleEn: "In the healthy range — keep it there",
-    subAr: "حاسبة السعرات تحدد لك هدفك اليومي من السعرات للحفاظ على وزنك الحالي — ونتيجتها تعرض خططًا يومية جاهزة عند مستوى السعرات الأقرب إلى نتيجتك.",
-    subEn: "The calorie calculator works out your daily target to maintain your current weight — and its result opens ready-made day plans at the calorie level closest to your number.",
+    subAr: "حاسبة السعرات تحدد لك هدفك اليومي من السعرات للحفاظ على وزنك الحالي — ونتيجتها تعرض خططًا يومية جاهزة عند مستوى السعرات الأقرب إلى هذا الهدف.",
+    subEn: "The calorie calculator works out your daily target to maintain your current weight — and its result opens ready-made day plans at the calorie level closest to that target.",
   },
   above: {
     titleAr: "وزنك فوق المعدل الصحي؟ ابدأ بخطة سعرات مستهدفة",
     titleEn: "Above the healthy range? Start with a targeted calorie plan",
-    subAr: "حاسبة السعرات تحدد لك هدفك اليومي من السعرات للوصول إلى وزن صحي — ونتيجتها تعرض خططًا يومية جاهزة عند مستوى السعرات الأقرب إلى نتيجتك.",
-    subEn: "The calorie calculator works out your daily target to reach a healthy weight — and its result opens ready-made day plans at the calorie level closest to your number.",
+    subAr: "حاسبة السعرات تحدد لك هدفك اليومي من السعرات للوصول إلى وزن صحي — ونتيجتها تعرض خططًا يومية جاهزة عند مستوى السعرات الأقرب إلى هذا الهدف.",
+    subEn: "The calorie calculator works out your daily target to reach a healthy weight — and its result opens ready-made day plans at the calorie level closest to that target.",
   },
 };
 
@@ -184,19 +196,22 @@ export function bodyFatChainLinks(isAr: boolean): ChainBridgeLink[] {
 
 /** The body-fat bridge copy — the doc's message in the site's vocabulary.
  * Owner review 2026-11-20 (honesty): the body-fat page's lean/fat masses
- * are ESTIMATES (weight inferred at BMI 22), and the macro calculator's
- * real inputs are daily calories + diet type — the sub-line states both
- * facts exactly, as TWO separate sentences ("المقدَّرة" · "توزّع سعراتك
- * اليومية … حسب نظامك الغذائي" / "estimated" · "splits your daily
- * calories … according to your diet type"), never "measured" and never
- * a weight/goal-based macro claim (language pass 2026-11-21: the
- * estimate and the tool's function are a period apart, never one
- * dashed claim). */
+ * are ESTIMATES (weight inferred at BMI 22 — the qualifier lives on the
+ * page's own cards), and the macro calculator's real inputs are daily
+ * calories + diet type. The final wording (owner wording review
+ * 2026-11-20) states the general protein fact WITHOUT deriving a
+ * requirement from the lean mass ("يساعد تناول كمية مناسبة من البروتين
+ * يوميًا…" / "Adequate protein intake can help preserve lean mass…")
+ * and the tool's actual function ("توزيع سعراتك اليومية على جرامات …
+ * وفقًا لنظامك الغذائي" / "distributes your daily calories among
+ * protein, carbohydrates, and fats according to your selected diet")
+ * — TWO separate sentences, never one dashed claim, never "measured",
+ * never a lean-mass-derived protein need. */
 const BODY_FAT_COPY = {
   titleAr: "حافظ على عضلاتك أثناء خسارة الدهون",
-  titleEn: "Keep your muscle while cutting",
-  subAr: "كتلتك الصافية المقدَّرة تحتاج بروتينًا كافيًا يوميًا ليدافع عنها أثناء خسارة الدهون. وحاسبة الماكروز توزّع سعراتك اليومية على جرامات البروتين والكربوهيدرات والدهون حسب نظامك الغذائي.",
-  subEn: "Your estimated lean mass needs enough daily protein to defend it through fat loss. The macro calculator then splits your daily calories into protein, carbohydrate and fat grams according to your diet type.",
+  titleEn: "Preserve muscle while losing fat",
+  subAr: "يساعد تناول كمية مناسبة من البروتين يوميًا على الحفاظ على الكتلة الصافية أثناء خسارة الدهون. وتتيح لك حاسبة الماكروز توزيع سعراتك اليومية على جرامات البروتين والكربوهيدرات والدهون وفقًا لنظامك الغذائي.",
+  subEn: "Adequate protein intake can help preserve lean mass during fat loss. The macro calculator distributes your daily calories among protein, carbohydrates, and fats according to your selected diet.",
   serviceLeadAr: "أو دع مدربًا خاصًا يرافقك خطوة بخطوة عبر",
   serviceLeadEn: "Or let a personal coach guide you step by step with",
 } as const;

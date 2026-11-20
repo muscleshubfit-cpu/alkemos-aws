@@ -180,27 +180,34 @@ describe("ORGANIC-GROWTH-P1-D — the copy (byte pins + honesty law §12.50)", (
       const sub = bmiChainBridge(bmi, false)!.subEn;
       expect(sub).toContain(goal);
       expect(sub).toContain(
-        "ready-made day plans at the calorie level closest to your number",
+        "ready-made day plans at the calorie level closest to that target",
       );
     }
     // AR mirrors carry the same honest chain sentence.
     expect(bmiChainBridge(27.5, true)!.subAr).toContain(
-      "خططًا يومية جاهزة عند مستوى السعرات الأقرب إلى نتيجتك",
+      "خططًا يومية جاهزة عند مستوى السعرات الأقرب إلى هذا الهدف",
     );
   });
 
-  it("body-fat: the doc's message in the site's vocabulary — the ESTIMATED lean mass needs protein", () => {
+  it("body-fat: the doc's message in the site's vocabulary — protein supports the lean mass, macros distribute calories", () => {
     const model = bodyFatChainBridge(false);
-    expect(model.titleEn).toBe("Keep your muscle while cutting");
+    expect(model.titleEn).toBe("Preserve muscle while losing fat");
     expect(model.titleAr).toBe("حافظ على عضلاتك أثناء خسارة الدهون");
-    expect(model.subEn).toContain("estimated lean mass");
-    expect(model.subEn).toContain("enough daily protein");
+    expect(model.subEn).toContain(
+      "Adequate protein intake can help preserve lean mass during fat loss",
+    );
     expect(model.subEn).toContain("macro calculator");
-    expect(model.subEn).toContain("splits your daily calories");
-    expect(model.subAr).toContain("المقدَّرة");
-    expect(model.subAr).toContain("بروتينًا كافيًا يوميًا");
+    expect(model.subEn).toContain(
+      "distributes your daily calories among protein, carbohydrates, and fats",
+    );
+    expect(model.subEn).toContain("according to your selected diet");
+    expect(model.subAr).toContain("كمية مناسبة من البروتين يوميًا");
+    expect(model.subAr).toContain("الحفاظ على الكتلة الصافية");
     expect(model.subAr).toContain("حاسبة الماكروز");
-    expect(model.subAr).toContain("توزّع سعراتك اليومية");
+    expect(model.subAr).toContain(
+      "توزيع سعراتك اليومية على جرامات البروتين والكربوهيدرات والدهون",
+    );
+    expect(model.subAr).toContain("وفقًا لنظامك الغذائي");
     expect(model.serviceLeadEn).toBe("Or let a personal coach guide you step by step with");
     expect(model.serviceLeadAr).toBe("أو دع مدربًا خاصًا يرافقك خطوة بخطوة عبر");
   });
@@ -247,11 +254,11 @@ describe("ORGANIC-GROWTH-P1-D — the copy (byte pins + honesty law §12.50)", (
       "حافظ على عضلاتك أثناء خسارة الدهون",
       "أو دع مدربًا خاصًا يرافقك خطوة بخطوة عبر",
       // Owner review 2026-11-20: the corrected honest copy is pinned too —
-      // the estimate wording and the calories-based macro description.
-      // (Language pass 2026-11-21: the macro anchor now reads «توزيع
-      // الماكروز» — the suffixed-loanword form is banned by the language
-      // guard below.)
-      "كتلتك الصافية المقدَّرة تحتاج بروتينًا كافيًا يوميًا",
+      // the general protein-support fact and the calories-based macro
+      // description. (Language pass 2026-11-20: the macro anchor reads
+      // «توزيع الماكروز» — the suffixed-loanword form is banned by the
+      // language guard below.)
+      "يساعد تناول كمية مناسبة من البروتين يوميًا على الحفاظ على الكتلة الصافية",
       "احسب توزيع الماكروز من سعراتك اليومية",
     ]) {
       expect(lib).toContain(pinned);
@@ -268,24 +275,36 @@ describe("ORGANIC-GROWTH-P1-D — the honesty guard (owner review 2026-11-20)", 
    *
    *  1. The body-fat page INFERS a weight (healthy-midpoint BMI 22) and
    *     derives fat/lean mass from it — the bridge must never call the
-   *     lean mass «measured»; it says «estimated/المقدَّرة».
+   *     lean mass «measured» and must never derive a protein
+   *     requirement from it (the final wording states the GENERAL
+   *     fact: adequate intake helps preserve lean mass); the page's
+   *     own cards carry the «(تقديرية)/(est.)» qualifier + basis note.
    *  2. The macro calculator's only inputs are DAILY CALORIES + DIET
-   *     TYPE (it splits the calories by the diet preset ratios) — the
-   *     bridge must never claim macros «by your weight and goal» nor
-   *     promise protein-need computation from lean mass.
+   *     TYPE (it distributes the calories by the diet preset ratios) —
+   *     the bridge must never claim macros «by your weight and goal»
+   *     nor promise protein-need computation from lean mass.
    */
-  it("the bridge never calls the lean mass measured — it says estimated (both languages)", () => {
+  it("the bridge never calls the lean mass measured and never derives a protein need from it (both languages)", () => {
     const ar = bodyFatChainBridge(true);
     const en = bodyFatChainBridge(false);
     expect(ar.subAr).not.toContain("قِست");
     expect(en.subEn).not.toMatch(/\bmeasur/);
-    expect(ar.subAr).toContain("المقدَّرة");
-    expect(en.subEn).toContain("estimated");
-    // The old claim phrases stay dead at the SOURCE level too.
-    expect(read(LIB)).not.toContain("قِستَها");
-    expect(read(LIB)).not.toContain("just measured");
-    expect(read(LIB)).not.toContain("بوزنك وهدفك");
-    expect(read(LIB)).not.toContain("for your weight and goal");
+    // The protein sentence states the GENERAL fact — the lean mass is
+    // never the subject that "needs" protein (no computed requirement).
+    expect(ar.subAr).not.toContain("تحتاج بروتين");
+    expect(en.subEn).not.toContain("lean mass needs");
+    expect(en.subEn).not.toContain("needs enough daily protein");
+    // The old claim phrases stay dead at the SOURCE level too (lib +
+    // component — comments included).
+    const src = read(LIB) + read(COMPONENT);
+    expect(src).not.toContain("قِستَها");
+    expect(src).not.toContain("just measured");
+    expect(src).not.toContain("بوزنك وهدفك");
+    expect(src).not.toContain("for your weight and goal");
+    expect(src).not.toContain("تحتاج بروتين");
+    expect(src).not.toContain("يدافع عنها");
+    expect(src).not.toContain("lean mass needs");
+    expect(src).not.toContain("needs enough daily protein");
   });
 
   it("the macro link label matches the calculator's REAL inputs — calories, no protein-adequacy promise", () => {
@@ -299,15 +318,15 @@ describe("ORGANIC-GROWTH-P1-D — the honesty guard (owner review 2026-11-20)", 
     expect(read(LIB)).not.toContain("Calculate your macros with enough protein");
   });
 
-  it("the bridge describes the macro calculator by its actual computation — calories split by diet, never weight/goal", () => {
+  it("the bridge describes the macro calculator by its actual computation — calories distributed by diet, never weight/goal", () => {
     const ar = bodyFatChainBridge(true).subAr;
     const en = bodyFatChainBridge(false).subEn;
     expect(ar).not.toContain("بوزنك");
     expect(en).not.toContain("your weight");
-    expect(ar).toContain("توزّع سعراتك اليومية");
-    expect(ar).toContain("حسب نظامك الغذائي");
-    expect(en).toContain("splits your daily calories");
-    expect(en).toContain("diet type");
+    expect(ar).toContain("توزيع سعراتك اليومية على جرامات");
+    expect(ar).toContain("وفقًا لنظامك الغذائي");
+    expect(en).toContain("distributes your daily calories");
+    expect(en).toContain("your selected diet");
     // Cross-check the macro page's real code: calories × diet preset
     // ratios ARE the computation the copy describes.
     const macroPage = read("src/app/(en)/tools/macro-calculator/page.tsx");
@@ -337,52 +356,75 @@ describe("ORGANIC-GROWTH-P1-D — the honesty guard (owner review 2026-11-20)", 
   });
 });
 
-describe("ORGANIC-GROWTH-P1-D — the language pass (owner order 2026-11-21)", () => {
+describe("ORGANIC-GROWTH-P1-D — the language pass (owner orders 2026-11-20)", () => {
   /**
-   * The owner's mandatory language review (2026-11-21): EVERY
+   * The owner's mandatory language review (2026-11-20): EVERY
    * user-visible P1-D string in BOTH languages — natural فصحى Arabic
    * (never colloquial, never a literal translation from the English,
    * never a clitic possessive attached to the transliterated loanword
    * — the owner's cited example: a suffixed «macros» reads like
    * slang, «توزيع الماكروز» is the فصيح form) and natural
    * professional English (never mechanical phrasing). The scientific
-   * accuracy of the §10 honesty fix is untouched: the macro
-   * calculator distributes calories by diet type; the lean mass stays
-   * an ESTIMATE from a BMI-22 inferred weight — and the two facts are
-   * now TWO separate sentences (a clear split between the estimate
-   * and the tool's actual function).
+   * accuracy of the §10 honesty fix is untouched and completed by the
+   * final wording: the protein sentence states the general fact
+   * (adequate intake helps preserve lean mass) — the macro calculator
+   * distributes calories by the selected diet and computes no protein
+   * need from the lean mass (an ESTIMATE from a BMI-22 inferred
+   * weight, qualified on the page's own cards), and the two facts
+   * are TWO separate sentences.
    */
   it("the replaced Arabic and English phrasings stay dead at the source", () => {
-    const lib = read(LIB);
+    const src = read(LIB) + read(COMPONENT);
     // Arabic: no clitic possessive on the loanword anywhere in the
     // bridge source (comments included — the class itself is banned).
-    expect(lib).not.toContain("ماكروزك");
+    expect(src).not.toContain("ماكروزك");
     // The clunky BMI sub-line forms the pass replaced.
-    expect(lib).not.toContain("خطط يوم جاهزة");
-    expect(lib).not.toContain("عند أقرب مستوى سعرات");
+    expect(src).not.toContain("خطط يوم جاهزة");
+    expect(src).not.toContain("عند أقرب مستوى سعرات");
+    // The ambiguous "nearest to your number/result" forms the final
+    // wording replaced (the nearest level now names the target).
+    expect(src).not.toContain("الأقرب إلى نتيجتك");
+    // The lean-mass-needs-protein framing the final wording replaced.
+    expect(src).not.toContain("تحتاج بروتين");
+    expect(src).not.toContain("يدافع عنها");
     // English: the mechanical phrasings the pass replaced.
-    expect(lib).not.toContain("at the level nearest");
-    expect(lib).not.toContain("gives your daily target");
-    expect(lib).not.toContain("by your diet type");
+    expect(src).not.toContain("at the level nearest");
+    expect(src).not.toContain("gives your daily target");
+    expect(src).not.toContain("by your diet type");
+    expect(src).not.toContain("closest to your number");
+    // English: the lean-mass-needs-protein framing + the old title.
+    expect(src).not.toContain("lean mass needs");
+    expect(src).not.toContain("needs enough daily protein");
+    expect(src).not.toContain("Keep your muscle while cutting");
   });
 
-  it("the corrected phrasings are pinned live (both languages)", () => {
+  it("the final phrasings are pinned live (both languages)", () => {
     const lib = read(LIB);
     expect(lib).toContain("احسب توزيع الماكروز من سعراتك اليومية");
     expect(lib).toContain("تحدد لك هدفك اليومي من السعرات");
-    expect(lib).toContain("خططًا يومية جاهزة عند مستوى السعرات الأقرب إلى نتيجتك");
+    expect(lib).toContain("خططًا يومية جاهزة عند مستوى السعرات الأقرب إلى هذا الهدف");
+    expect(lib).toContain("يساعد تناول كمية مناسبة من البروتين يوميًا على الحفاظ على الكتلة الصافية");
+    expect(lib).toContain(
+      "وتتيح لك حاسبة الماكروز توزيع سعراتك اليومية على جرامات البروتين والكربوهيدرات والدهون وفقًا لنظامك الغذائي",
+    );
+    expect(lib).toContain("Preserve muscle while losing fat");
+    expect(lib).toContain(
+      "Adequate protein intake can help preserve lean mass during fat loss",
+    );
+    expect(lib).toContain(
+      "The macro calculator distributes your daily calories among protein, carbohydrates, and fats according to your selected diet",
+    );
     expect(lib).toContain("works out your daily target");
-    expect(lib).toContain("at the calorie level closest to your number");
-    expect(lib).toContain("according to your diet type");
+    expect(lib).toContain("at the calorie level closest to that target");
   });
 
-  it("the lean-mass estimate and the macro calculator's function are TWO separate sentences", () => {
-    // Arabic: period, not a dash — the estimate need and the tool's
+  it("the general protein fact and the macro calculator's function are TWO separate sentences", () => {
+    // Arabic: period, not a dash — the general guidance and the tool's
     // real function never blend into one claim.
-    expect(bodyFatChainBridge(true).subAr).toContain("خسارة الدهون. وحاسبة الماكروز");
+    expect(bodyFatChainBridge(true).subAr).toContain("خسارة الدهون. وتتيح لك حاسبة الماكروز");
     expect(bodyFatChainBridge(true).subAr).not.toContain("الدهون — حاسبة الماكروز");
     // English: the same two-sentence split.
-    expect(bodyFatChainBridge(false).subEn).toContain("through fat loss. The macro calculator then splits");
+    expect(bodyFatChainBridge(false).subEn).toContain("during fat loss. The macro calculator distributes");
     expect(bodyFatChainBridge(false).subEn).not.toContain("fat loss — the macro calculator");
   });
 });
