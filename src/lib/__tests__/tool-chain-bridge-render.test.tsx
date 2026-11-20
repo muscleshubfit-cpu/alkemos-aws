@@ -65,8 +65,8 @@ describe("ToolChainResultBridge render (P1-D — BMI → calorie calculator)", (
   it("an above-range result (27.5): the roadmap message + the calorie link, EN", () => {
     const html = renderBmi(27.5, "en");
     expect(html).toContain("Above the healthy range? Start with a targeted calorie plan");
-    expect(html).toContain("The calorie calculator computes your daily target to reach a healthy weight");
-    expect(html).toContain("ready-made day plans at the level nearest your number");
+    expect(html).toContain("The calorie calculator works out your daily target to reach a healthy weight");
+    expect(html).toContain("ready-made day plans at the calorie level closest to your number");
     expect(html).toContain('href="/tools/calorie-calculator"');
     expect(html).toContain("Start with the calorie calculator");
     // ONE bridge, ONE link — no coaching line on the BMI chain.
@@ -90,7 +90,7 @@ describe("ToolChainResultBridge render (P1-D — BMI → calorie calculator)", (
     expect(renderBmi(17.2, "en")).toContain(
       "Below the healthy range? Start with a targeted calorie plan",
     );
-    expect(renderBmi(17.2, "en")).toContain("to gain weight with a moderate surplus");
+    expect(renderBmi(17.2, "en")).toContain("for gaining weight with a moderate surplus");
     // The destination never changes with the segment — ONE chain.
     expect(renderBmi(22, "en")).toContain('href="/tools/calorie-calculator"');
     expect(renderBmi(17.2, "en")).toContain('href="/tools/calorie-calculator"');
@@ -128,7 +128,7 @@ describe("ToolChainResultBridge render (P1-D — body-fat → macro + coaching)"
     expect(html).toContain("حافظ على عضلاتك أثناء خسارة الدهون");
     expect(html).toContain("بروتينًا كافيًا يوميًا");
     expect(html).toContain('href="/ar/tools/macro-calculator"');
-    expect(html).toContain("احسب ماكروزك من سعراتك اليومية");
+    expect(html).toContain("احسب توزيع الماكروز من سعراتك اليومية");
     expect(html).toContain('href="/ar/coaching"');
     expect(html).toContain("أو دع مدربًا خاصًا يرافقك خطوة بخطوة عبر");
     expect(html).toContain("التدريب الأونلاين");

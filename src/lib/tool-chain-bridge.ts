@@ -56,6 +56,21 @@
  * الصحي» (the BMI page's own intro vocabulary). Zero quota/price
  * claims are made here.
  *
+ * Language pass (owner order 2026-11-21 — the SAME review scope, both
+ * languages, every user-visible string of this bridge): the Arabic is
+ * natural فصحى — no clitic possessive on the transliterated loanword
+ * (the macro anchor reads «احسب توزيع الماكروز…», never the suffixed
+ * loanword form), the BMI sub-lines read «تحدد لك هدفك اليومي من
+ * السعرات… خططًا يومية جاهزة عند مستوى السعرات الأقرب إلى نتيجتك»,
+ * and the lean-mass estimate and the macro calculator's function are
+ * TWO separate sentences (clear split between what is estimated and
+ * what the tool does). The English is natural professional copy
+ * («works out your daily target…», «at the calorie level closest to
+ * your number», «The macro calculator then splits… according to your
+ * diet type») — never mechanical phrasing. The scientific accuracy of
+ * §10 is untouched; the replaced phrasings are banned at source level
+ * by the canary's language guard.
+ *
  * The display component is src/components/ToolChainResultBridge.tsx
  * (rendered inside the calculators' FIRST result container — value
  * first, law 413). Guarded in src/lib/__tests__/tool-chain-bridge-p1d.test.ts
@@ -117,20 +132,20 @@ const BMI_COPY: Record<BmiChainSegment, Omit<ChainBridgeModel, "toolLinks" | "se
   below: {
     titleAr: "وزنك تحت المعدل الصحي؟ ابدأ بخطة سعرات مستهدفة",
     titleEn: "Below the healthy range? Start with a targeted calorie plan",
-    subAr: "حاسبة السعرات تحسب هدفك اليومي لزيادة الوزن بفائض معتدل — ونتيجتها تعرض خطط يوم جاهزة عند أقرب مستوى سعرات لنتيجتك.",
-    subEn: "The calorie calculator computes your daily target to gain weight with a moderate surplus — and its result opens ready-made day plans at the level nearest your number.",
+    subAr: "حاسبة السعرات تحدد لك هدفك اليومي من السعرات لزيادة الوزن بفائض معتدل — ونتيجتها تعرض خططًا يومية جاهزة عند مستوى السعرات الأقرب إلى نتيجتك.",
+    subEn: "The calorie calculator works out your daily target for gaining weight with a moderate surplus — and its result opens ready-made day plans at the calorie level closest to your number.",
   },
   normal: {
     titleAr: "وزنك داخل المعدل الصحي — حافظ عليه",
     titleEn: "In the healthy range — keep it there",
-    subAr: "حاسبة السعرات تعطيك هدفك اليومي للحفاظ على وزنك الحالي — ونتيجتها تعرض خطط يوم جاهزة عند أقرب مستوى سعرات لنتيجتك.",
-    subEn: "The calorie calculator gives your daily target to maintain your current weight — and its result opens ready-made day plans at the level nearest your number.",
+    subAr: "حاسبة السعرات تحدد لك هدفك اليومي من السعرات للحفاظ على وزنك الحالي — ونتيجتها تعرض خططًا يومية جاهزة عند مستوى السعرات الأقرب إلى نتيجتك.",
+    subEn: "The calorie calculator works out your daily target to maintain your current weight — and its result opens ready-made day plans at the calorie level closest to your number.",
   },
   above: {
     titleAr: "وزنك فوق المعدل الصحي؟ ابدأ بخطة سعرات مستهدفة",
     titleEn: "Above the healthy range? Start with a targeted calorie plan",
-    subAr: "حاسبة السعرات تحسب هدفك اليومي للوصول إلى وزن صحي — ونتيجتها تعرض خطط يوم جاهزة عند أقرب مستوى سعرات لنتيجتك.",
-    subEn: "The calorie calculator computes your daily target to reach a healthy weight — and its result opens ready-made day plans at the level nearest your number.",
+    subAr: "حاسبة السعرات تحدد لك هدفك اليومي من السعرات للوصول إلى وزن صحي — ونتيجتها تعرض خططًا يومية جاهزة عند مستوى السعرات الأقرب إلى نتيجتك.",
+    subEn: "The calorie calculator works out your daily target to reach a healthy weight — and its result opens ready-made day plans at the calorie level closest to your number.",
   },
 };
 
@@ -154,7 +169,7 @@ export function bodyFatChainLinks(isAr: boolean): ChainBridgeLink[] {
       href: `${isAr ? "/ar" : ""}/tools/macro-calculator`,
       destination: "macro-calculator",
       kind: "tool",
-      labelAr: "احسب ماكروزك من سعراتك اليومية",
+      labelAr: "احسب توزيع الماكروز من سعراتك اليومية",
       labelEn: "Calculate your macros from your daily calories",
     },
     {
@@ -171,14 +186,17 @@ export function bodyFatChainLinks(isAr: boolean): ChainBridgeLink[] {
  * Owner review 2026-11-20 (honesty): the body-fat page's lean/fat masses
  * are ESTIMATES (weight inferred at BMI 22), and the macro calculator's
  * real inputs are daily calories + diet type — the sub-line states both
- * facts exactly ("المقدَّرة" · "توزّع سعراتك اليومية … حسب نظامك
- * الغذائي" / "estimated" · "splits your daily calories … by your diet
- * type"), never "measured" and never a weight/goal-based macro claim. */
+ * facts exactly, as TWO separate sentences ("المقدَّرة" · "توزّع سعراتك
+ * اليومية … حسب نظامك الغذائي" / "estimated" · "splits your daily
+ * calories … according to your diet type"), never "measured" and never
+ * a weight/goal-based macro claim (language pass 2026-11-21: the
+ * estimate and the tool's function are a period apart, never one
+ * dashed claim). */
 const BODY_FAT_COPY = {
   titleAr: "حافظ على عضلاتك أثناء خسارة الدهون",
   titleEn: "Keep your muscle while cutting",
-  subAr: "كتلتك الصافية المقدَّرة تحتاج بروتينًا كافيًا يوميًا ليدافع عنها أثناء خسارة الدهون — حاسبة الماكروز توزّع سعراتك اليومية على جرامات البروتين والكربوهيدرات والدهون حسب نظامك الغذائي.",
-  subEn: "Your estimated lean mass needs enough daily protein to defend it through fat loss — the macro calculator splits your daily calories into protein, carbohydrate and fat grams by your diet type.",
+  subAr: "كتلتك الصافية المقدَّرة تحتاج بروتينًا كافيًا يوميًا ليدافع عنها أثناء خسارة الدهون. وحاسبة الماكروز توزّع سعراتك اليومية على جرامات البروتين والكربوهيدرات والدهون حسب نظامك الغذائي.",
+  subEn: "Your estimated lean mass needs enough daily protein to defend it through fat loss. The macro calculator then splits your daily calories into protein, carbohydrate and fat grams according to your diet type.",
   serviceLeadAr: "أو دع مدربًا خاصًا يرافقك خطوة بخطوة عبر",
   serviceLeadEn: "Or let a personal coach guide you step by step with",
 } as const;
