@@ -84,6 +84,12 @@ const TOOL_SURFACE_FILES = [
   // + its matching/link module) — same surface, same MSA law.
   "src/components/DietPlanResultBridge.tsx",
   "src/lib/diet-plan-bridge.ts",
+  // ORGANIC-GROWTH-P1-D (2026-11-20): the result→next-tool chain bridge
+  // renders Arabic copy inside the BMI and body-fat calculators' result
+  // blocks (the component + its segment/copy/link module) — same surface,
+  // same MSA law.
+  "src/components/ToolChainResultBridge.tsx",
+  "src/lib/tool-chain-bridge.ts",
 ] as const;
 
 const AR_RUN = /[\u0600-\u06FF]/;

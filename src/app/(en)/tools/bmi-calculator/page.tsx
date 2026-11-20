@@ -17,6 +17,11 @@ import { ShareButtons } from "@/components/ShareButtons";
 import { ReviewInviteCard } from "@/components/ReviewInviteCard";
 import { ToolReferenceContent } from "@/components/ToolReferenceContent";
 import { BMI_CALCULATOR_CONTENT } from "@/lib/content/bmi-calculator";
+// ORGANIC-GROWTH-P1-D (roadmap «جسور السلسلة»): the result→next-tool
+// chain bridge — renders inside the FIRST result container, after the
+// value cards, before the commercial CTA (value → free next step →
+// the memberships bridge stays where P0-A put it).
+import { ToolChainResultBridge } from "@/components/ToolChainResultBridge";
 import { fireOncePerSession, trackGa4Event } from "@/lib/analytics";
 
 type Unit = "metric" | "imperial";
@@ -243,6 +248,18 @@ export default function BMICalculatorPage() {
                 </p>
               </div>
             </div>
+
+            {/* ORGANIC-GROWTH-P1-D (10-prioritized-execution-roadmap.md):
+                the result→calorie-calculator chain bridge — inside the
+                FIRST result container (after the value cards, before the
+                commercial CTA below: value → free next step → the
+                memberships bridge stays where P0-A put it). The two result
+                gates of the P0-A split signature are unchanged. */}
+            <ToolChainResultBridge
+              source="bmi-calculator"
+              bmi={result.bmi}
+              lang={lang}
+            />
           </div>
         )}
 

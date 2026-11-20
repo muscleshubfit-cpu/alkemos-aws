@@ -17,6 +17,11 @@ import { ShareButtons } from "@/components/ShareButtons";
 import { ReviewInviteCard } from "@/components/ReviewInviteCard";
 import { ToolReferenceContent } from "@/components/ToolReferenceContent";
 import { BODY_FAT_CALCULATOR_CONTENT } from "@/lib/content/body-fat-calculator";
+// ORGANIC-GROWTH-P1-D (roadmap «جسور السلسلة»): the result→macro/coaching
+// chain bridge — renders inside the FIRST result container, after the
+// value cards, before the commercial CTA (value → free next step →
+// the memberships bridge stays where P0-A put it).
+import { ToolChainResultBridge } from "@/components/ToolChainResultBridge";
 import { fireOncePerSession, trackGa4Event } from "@/lib/analytics";
 
 type Gender = "male" | "female";
@@ -201,6 +206,17 @@ export default function BodyFatCalculatorPage() {
                 <p className="mt-1 text-xs font-normal text-[var(--muted-foreground)]">{isAr ? "كتلة صافية" : "Lean mass"}</p>
               </div>
             </div>
+
+            {/* ORGANIC-GROWTH-P1-D (10-prioritized-execution-roadmap.md):
+                the result→macro-calculator + coaching chain bridge —
+                inside the FIRST result container (after the value cards,
+                before the commercial CTA below: value → free next step →
+                the memberships bridge stays where P0-A put it). The two
+                result gates of the P0-A split signature are unchanged. */}
+            <ToolChainResultBridge
+              source="body-fat-calculator"
+              lang={lang}
+            />
           </div>
         )}
 
