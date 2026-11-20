@@ -340,6 +340,34 @@ export const BMI_CALCULATOR_CONTENT: ToolReference = {
         ar: "النقطة الواحدة تعادل مربع طولك بالكيلوغرامات: عند 1.70 متر نحو 2.9 كجم؛ وعند 1.80 متر نحو 3.24 كجم. ولاحظ الظلم الذي تفرضه الفيزياء على طوال القامة — عليهم تحريك كيلوغرامات أكثر لكل نقطة. وحساب حزام الصحة يتبع مباشرة: للهبوط من 29 إلى 24.9 عند 1.75 متر تحتاج خسارة نحو (29 − 24.9) × 3.06 ≈ 12.5 كجم.",
       },
     },
+    // ORGANIC-GROWTH-P1-H (06-§2/T2 — roadmap 10: expand the numeric
+    // FAQ with the «What does a BMI of {N} mean?» template): the measured
+    // GSC numeric-value tail runs «bmi 20»→«bmi 43» at positions 72-86
+    // (run 39152491179) — five more values spanning that tail
+    // (20 · 25 · 30 · 40 · 43) join the existing 27 + boundary pair,
+    // each answer working the page's own documented arithmetic
+    // (one point = height-squared kg · the 5–10% first-milestone rule ·
+    // the 500-kcal half-point-per-month rule).
+    {
+      q: {
+        en: "What does a BMI of 20 mean?",
+        ar: "مؤشر 20 يعني ماذا؟",
+      },
+      a: {
+        en: "A BMI of 20 sits in the lower half of the healthy band (18.5–24.9) — about 61.3 kg at 1.75 m, roughly 4.6 kg above the underweight edge. For most adults nothing needs doing: the number says weight is not a health problem in either direction. Two honest caveats. If you arrived there through unintentional weight loss, the trend outranks the position — unexplained loss belongs with a physician, not a calculator. And if you train for muscle, the lower half of the band simply means you have room to gain. As everywhere on this page, the companions — waist, body fat, trend — tell the story one number cannot.",
+        ar: "مؤشر 20 يقع في النصف السفلي من نطاق الصحة (18.5–24.9) — نحو 61.3 كجم عند طول 1.75 متر، أي قرابة 4.6 كجم فوق حافة نقص الوزن. لا شيء مطلوب فعله عند معظم البالغين: الرقم يقول إن الوزن ليس مشكلة صحية في أي اتجاه. مع تحفظين صادقين: إن وصلت إليه بخسارة وزن غير مقصودة فالاتجاه يتقدم على الموضع — الخسارة غير المفسرة مكانها الطبيب لا الحاسبة؛ وإن كنت تتدرب لبناء العضل فالنصف السفلي من النطاق يعني ببساطة أن لديك متسعًا للكسب. وكالمعتاد بهذه الصفحة: الرفقاء — الخصر ودهون الجسم والاتجاه — يحكون القصة التي لا يستطيعها رقم مفرد.",
+      },
+    },
+    {
+      q: {
+        en: "What does a BMI of 25 mean?",
+        ar: "مؤشر 25 يعني ماذا؟",
+      },
+      a: {
+        en: "A BMI of 25 is the first digit of the overweight band (25.0–29.9) — and the boundary is a convention, not a cliff; this FAQ's boundary question unpacks why. At 1.75 m, a BMI of 25 is about 76.6 kg against 76.3 kg at 24.9 — a 300-gram difference between the last healthy digit and the first cautioning one. The practical response is not dramatic. Check the companions: waist against the 94/80 cm thresholds, body fat percentage, and the direction of your readings. If those are clean and stable, treat the number as a watch item. If waist and bloodwork are climbing, the page's first-milestone rule applies: losing 5–10% of body weight (3.8–7.7 kg for a 76.5 kg person) measurably improves blood pressure, blood glucose, and blood lipids.",
+        ar: "مؤشر 25 هو أول خانة في نطاق زيادة الوزن (25.0–29.9) — والحد نفسه اصطلاح لا هاوية؛ سؤال الحدود في هذا القسم يفكك السبب. فعند طول 1.75 متر يعادل المؤشر 25 نحو 76.6 كجم مقابل 76.3 كجم عند 24.9 — فرق 300 غرام بين آخر خانة صحة وأول خانة تنبيه. الاستجابة العملية ليست درامية. افحص الرفقاء: الخصر مقابل عتبتي 94/80 سم، ونسبة دهون الجسم، واتجاه قراءاتك. فإن كانت نظيفة ومستقرة فتعامل مع الرقم كبند مراقبة. وإن كان الخصر والتحاليل صاعدين فقاعدة المحطة الأولى بالصفحة تنطبق: خسارة 5–10% من وزن الجسم (3.8–7.7 كجم لشخص بوزن 76.5 كجم) تحسّن ضغط الدم وغلوكوزه ودهونه تحسنًا قابلًا للقياس.",
+      },
+    },
     // PRIORITY-PAGES Implementation (2026-10-19, audit §A-4 + §3.3): the
     // measured pattern "users search for THEIR numeric value" — five
     // BMI-value queries in GSC run 39152491179 (e.g. "27.0 bmi" @ 72,
@@ -355,6 +383,36 @@ export const BMI_CALCULATOR_CONTENT: ToolReference = {
       a: {
         en: "A BMI of 27 sits inside the overweight band (25.0–29.9) — roughly one height-squared in kilograms above the healthy edge (about 3.1 kg at 1.75 m), i.e. 2–4 kg for most heights. Read it as a screening signal, not a verdict: what matters more is where the weight sits (waist circumference) and what it is made of (body fat percentage). If those companions are healthy, treat 27 as a flag to hold the trend — and watch the direction of your readings over the following weeks rather than the single number.",
         ar: "مؤشر 27 يقع داخل نطاق زيادة الوزن (25.0–29.9) — أي نحو مربع طولك بالكيلوغرامات فوق حافة النطاق الصحي (قرابة 3.1 كجم عند 1.75 متر)، أي 2–4 كجم لأغلب الأطوال. اقرأه إشارةَ فرزٍ لا حكمًا: الأهم بعد الرقم أين يجلس الوزن (محيط الخصر) وممّ يتكون (نسبة دهون الجسم). فإن كان هذان الرفيقان سليمين فاعتبر 27 رايةً تُمسك الاتجاه — وراقب اتجاه قراءاتك خلال الأسابيع التالية لا الرقم الواحد.",
+      },
+    },
+    {
+      q: {
+        en: "What does a BMI of 30 mean?",
+        ar: "مؤشر 30 يعني ماذا؟",
+      },
+      a: {
+        en: "A BMI of 30 is the medical threshold of obesity — class I runs 30–34.9 — about 91.9 kg at 1.75 m. It deserves attention, not panic: risk here is graded and it answers to modest change. Losing 5–10% of body weight (4.6–9.2 kg for a 92 kg person) measurably improves blood pressure, blood glucose, and blood lipids — this page's documented first milestone, not the whole distance to the band. Read the number with its companions: a waist above 102/88 cm raises the risk estimate, while clean bloodwork and an active life lower it. If you take one action, make it a sustainable calorie deficit — by this page's own arithmetic, a steady 500-kcal daily deficit moves the index about half a point a month.",
+        ar: "مؤشر 30 هو العتبة الطبية للسمنة — الصنف الأول يمتد 30–34.9 — نحو 91.9 كجم عند طول 1.75 متر. يستحق انتباهًا لا هلعًا: الخطر هنا متدرج ويستجيب لتغيير متواضع. فخسارة 5–10% من وزن الجسم (4.6–9.2 كجم لشخص بوزن 92 كجم) تحسّن ضغط الدم وغلوكوزه ودهونه تحسنًا قابلًا للقياس — وهي المحطة الأولى الموثقة بهذه الصفحة لا المسافة كلها إلى النطاق. اقرأ الرقم مع رفقائه: خصر فوق 102/88 سم يرفع تقدير الخطر، وتحاليل نظيفة وحياة نشطة تخفضه. وإن اتخذت خطوة واحدة فاجعلها عجزًا سعريًا مستدامًا — فبحسبة هذه الصفحة نفسها، العجز اليومي الثابت 500 سعرة يحرك المؤشر نحو نصف نقطة شهريًا.",
+      },
+    },
+    {
+      q: {
+        en: "What does a BMI of 40 mean?",
+        ar: "مؤشر 40 يعني ماذا؟",
+      },
+      a: {
+        en: "A BMI of 40 is the class III (severe) obesity threshold — about 122.5 kg at 1.75 m — and this is the band where the honest first step is professional: a physician, ideally with a dietitian, because joint load, blood pressure, blood glucose, and sleep-apnea risk all climb steeply here, and supervised programs outperform solo attempts at this level. The mathematics of improvement stays the same and stays encouraging: the 5–10% milestone for a 122.5 kg person is 6–12 kg — often enough to improve blood sugar and blood pressure before the mirror registers any change. This site's calorie calculator and meal planner support the journey; medical supervision should lead it at this level.",
+        ar: "مؤشر 40 هو عتبة السمنة المفرطة (الصنف الثالث) — نحو 122.5 كجم عند طول 1.75 متر — وهذا هو النطاق الذي تكون فيه الخطوة الأولى الصادقة مهنية: طبيب، ويُفضّل معه أخصائي تغذية، لأن حمل المفاصل وضغط الدم والغلوكوز وخطر انقطاع النفس النومي تصعد كلها بحدّة هنا، والبرامج الخاضعة لإشراف تتفوق على المحاولات الفردية عند هذا المستوى. وتبقى رياضيات التحسن نفسها مشجعة: محطة الـ5–10% لشخص بوزن 122.5 كجم تعادل 6–12 كجم — وغالبًا ما تكفي لتحسين غلوكوز الدم وضغطه قبل أن يسجل المرآة أي تغيير. حاسبة السعرات ومخطط الوجبات في هذا الموقع يدعمان الرحلة؛ والإشراف الطبي ينبغي أن يقودها عند هذا المستوى.",
+      },
+    },
+    {
+      q: {
+        en: "What does a BMI of 43 mean?",
+        ar: "مؤشر 43 يعني ماذا؟",
+      },
+      a: {
+        en: "A BMI of 43 sits inside class III obesity (the 40+ band) — about 131.7 kg at 1.75 m. The guidance of the 40 threshold applies in full — physician first, supervised change over solo attempts — and the honest arithmetic here is about distance: at 1.75 m one BMI point is about 3.06 kg, so the road from 43 down to the healthy band's ceiling at 24.9 spans roughly 55 kg. That number is the argument for milestones, not despair: the same page's 5–10% rule makes the first milestone 6.6–13.2 kg, and each one measurably improves blood pressure, glucose, and lipids. The calculator above recomputes the band edge for your exact height.",
+        ar: "مؤشر 43 يقع داخل السمنة المفرطة (نطاق 40 فأكثر) — نحو 131.7 كجم عند طول 1.75 متر. وإرشاد عتبة 40 نفسها ينطبق كاملًا — الطبيب أولًا، والتغيير بإشراف مهني خير من المحاولات الفردية — والحساب الصادق هنا عن المسافة: فعند 1.75 متر تعادل النقطة الواحدة نحو 3.06 كجم، فالطريق من 43 إلى سقف نطاق الصحة عند 24.9 يمتد قرابة 55 كجم. هذا الرقم حجة للمحطات لا لليأس: فقاعدة الـ5–10% بالصفحة نفسها تجعل المحطة الأولى 6.6–13.2 كجم، وكل محطة تحسّن الضغط والغلوكوز والدهون تحسنًا قابلًا للقياس. والحاسبة أعلاه تعيد حساب حافة النطاق لطولك تحديدًا.",
       },
     },
     {

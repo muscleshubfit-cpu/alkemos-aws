@@ -495,6 +495,33 @@ export const MACRO_CALCULATOR_CONTENT: ToolReference = {
         ar: "يتوقف ذلك على وزنك وميزانية سعراتك، لأن الغرامات لكل كيلوغرام والنسب المئوية مسطرتان مختلفتان. والتحويل: الغرامات × 4 = سعرات البروتين؛ وهذه ÷ إجمالي السعرات × 100 = النسبة. فمتدرب بوزن 80 كيلوغرامًا عند 2 غرام/كجم يأكل 160 غرامًا = 640 سعرة — وهي 32% من يوم بسعرات 2000، لكنها 26.7% فقط من يوم بـ2400. لهذا نادرًا ما يتفق العالمان: الهدف الغرامي الثابت يرسّخ البروتين إلى وزن جسمك بينما النسبة الثابتة تجعله يطفو مع ميزانية سعراتك. وعند التعارض، رسّخ البروتين بالغرامات (مسطرة وزن الجسم) ودع الكربوهيدرات والدهون تمتصان الفارق.",
       },
     },
+    // ORGANIC-GROWTH-P1-H (02-§8 — roadmap 10: expand the numeric FAQ
+    // with the measured «{N}g {food}» pattern, e.g. «120g banana macros»
+    // @7.5 in GSC run 39152491179): the banana worked example runs on the
+    // site food library's OWN per-100 g values and its OWN default 120 g
+    // serving, and the per-gram item runs the module's 4/4/9 Atwater
+    // arithmetic in both directions — no number outside the page's own
+    // documented constants.
+    {
+      q: {
+        en: "How do I work out the macros of 120 g of banana — or any food at any weight?",
+        ar: "كيف أحسب ماكروز 120 غرامًا من الموز — أو أي طعام بأي وزن؟",
+      },
+      a: {
+        en: "Read the per-100-gram column, then multiply by weight ÷ 100. The banana entry in this site's food library carries, per 100 g: 89 kcal, 1.1 g protein, 23 g carbohydrate, 0.3 g fat — so a 120 g portion (the library's own default serving of one medium banana) gives 89 × 1.2 ≈ 107 kcal, 1.1 × 1.2 ≈ 1.3 g protein, 23 × 1.2 = 27.6 g carbohydrate, and 0.3 × 1.2 ≈ 0.4 g fat. The same scaling serves every food you will ever log: 200 g of cooked chicken breast at the page's own 31 g per 100 g yields 62 g of protein, and a food's macros at any weight are always its per-100-gram values times weight ÷ 100 — the exact scaling this site's meal planner applies when you build meals from the library.",
+        ar: "اقرأ عمود «لكل 100 غرام» ثم اضرب في الوزن ÷ 100. فمدخل الموزة في مكتبة أطعمة هذا الموقع يحمل لكل 100 غرام: 89 سعرة و1.1 غرام بروتين و23 غرام كربوهيدرات و0.3 غرام دهون — فحصة 120 غرامًا (وهي حصة «موزة متوسطة» الافتراضية في المكتبة نفسها) تعطي 89 × 1.2 ≈ 107 سعرات، و1.1 × 1.2 ≈ 1.3 غرام بروتين، و23 × 1.2 = 27.6 غرام كربوهيدرات، و0.3 × 1.2 ≈ 0.4 غرام دهون. والقياس نفسه يخدم كل طعام ستسجله يومًا: فـ200 غرام من صدر الدجاج المطبوخ عند 31 غرامًا لكل 100 بجدول هذه الصفحة تعطي 62 غرام بروتين، وماكروز أي طعام عند أي وزن هي دائمًا قيم كل 100 غرام مضروبة في الوزن ÷ 100 — وهو القياس نفسه الذي يطبقه مخطط الوجبات في هذا الموقع حين تبني وجباتك من المكتبة.",
+      },
+    },
+    {
+      q: {
+        en: "How many calories are in one gram of protein, carbohydrate, and fat?",
+        ar: "كم سعرة في الغرام الواحد من البروتين والكربوهيدرات والدهون؟",
+      },
+      a: {
+        en: "Four, four, and nine — the Atwater factors, and the entire arithmetic this page runs on: grams = calories ÷ factor, and calories = grams × factor. Worked in both directions: 100 g of protein is 400 kcal, 200 g of carbohydrate is 800 kcal, 50 g of fat is 450 kcal — and a 600-kcal protein budget divides by 4 into 150 g. Because fat carries more than twice the energy of the other two per gram, it is the first thing a tight calorie budget squeezes, and the quietest leak in the other direction: a tablespoon of cooking oil (about 13 g of fat) lands near 120 kcal — the first of the three logging errors documented above.",
+        ar: "أربعة، وأربعة، وتسعة — عوامل Atwater، وهي كل الحساب الذي تعمل عليه هذه الصفحة: الغرامات = السعرات ÷ العامل، والسعرات = الغرامات × العامل. أمثلة على الاتجاهين: 100 غرام بروتين تعادل 400 سعرة، و200 غرام كربوهيدرات تعادل 800 سعرة، و50 غرام دهون تعادل 450 سعرة — وميزانية بروتينية قدرها 600 سعرة تُقسم على 4 فتساوي 150 غرامًا. ولأن الدهون تحمل أكثر من ضعف طاقة الآخرين لكل غرام فهي أول ما تُضغط عند ضيق الميزانية، وهي أكثر مصادر التسرب صمتًا في الاتجاه المعاكس: ملعقة زيت طبخ (نحو 13 غرام دهون) تهبط قرب 120 سعرة — وهي أول أخطاء التسجيل الثلاثة الموثقة أعلاه.",
+      },
+    },
   ],
 };
 
