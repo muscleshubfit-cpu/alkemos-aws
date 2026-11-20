@@ -240,7 +240,17 @@ describe("F-2-A regression fix — internal links keep the visitor inside their 
   it("coaching: the «Learn more about EVO» link is locale-aware", () => {
     const src = read(COACHING_PAGE);
     expect(src).toContain('href={isAr ? "/ar/evo" : "/evo"}');
-    expect(src).not.toMatch(/href="\/evo"/);
+    // ORGANIC-GROWTH-P1-B (2026-11-20, roadmap 10/P1-B + matrix 07-§2
+    // «coaching — قسم EVO والثقة → /evo + /tools»): the EVO section now
+    // also carries the two crawlable free-bridge exits as LITERAL hrefs
+    // inside their own language branches — href="/ar/evo" renders only
+    // in the AR branch and href="/evo" only in the EN branch, so the
+    // F-2-A locale-awareness law holds BY CONSTRUCTION (each reader
+    // gets their own locale; the original ban targeted UNCONDITIONAL
+    // hardcoded EN hrefs). The per-language counts (exactly one each)
+    // are pinned in services-free-bridges-p1b.test.ts.
+    expect(src.match(/href="\/ar\/evo"/g)?.length).toBe(1);
+    expect(src.match(/href="\/evo"/g)?.length).toBe(1);
   });
 
   it("blog article: the Home breadcrumb crumb follows the page locale (not a hardcoded «/»)", () => {

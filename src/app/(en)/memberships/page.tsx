@@ -376,6 +376,90 @@ export default function MembershipsPage({ lang: langProp }: { lang?: Lang } = {}
           </div>
         </section>
 
+        {/* ORGANIC-GROWTH-P1-B (2026-11-20, roadmap 10/P1-B + 05-§2 item 2
+            + matrix 07-§2 row «memberships — قسم القيمة → /tools +
+            /diet-plan»): the page was a one-way commercial sheet — every
+            bridge pointed INTO the checkout and ZERO exits led to the
+            free product (the mirror of finding F-1: the site's strongest
+            commercial asset was crawl-blind to its own free surfaces).
+            The hesitant buyer's honest next step — trying the free
+            product FIRST — now has its card right after the value
+            section, with the matrix's crawlable «try first» exits: the
+            tools hub (the matrix's exact anchor «جرّب الأدوات مجانًا
+            أولًا»), its natural first step (the calorie calculator — the
+            hub's own starting-path order T1, whose result continues into
+            the diet-plan cells via P0-C's bridge), and the ready-plan
+            library. Every fact is already published on this page (the
+            free persona card above: every tool free · EVO chat 10
+            messages a day · a free account keeps plans forever) — zero
+            new claims (honesty law §12.50). THREE plain quiet <a>s — the
+            section's own contextual-bridge precedent (compare/coaching/
+            affiliate links); the page's conversion CTAs are untouched.
+            Language-aware (SEO-GEO-4). */}
+        <div className="marble-card mt-12 flex items-start gap-3 p-6">
+          <EngravedIcon name="calories" alt="" size={26} className="mt-0.5 h-6 w-6 shrink-0" />
+          <div>
+            <h3 className="text-base font-semibold">
+              {isAr ? "جرّب قبل الاشتراك" : "Try before subscribing"}
+            </h3>
+            <p className="mt-2 text-sm font-normal leading-relaxed text-[var(--muted-foreground)]">
+              {isAr
+                ? "المجاني ليس نسخة تجريبية: كل الأدوات والحاسبات مجانية، ومحادثة EVO مجانية بـ10 رسائل يوميًا، والحساب المجاني يحفظ نتائجك وخططك للأبد. جرّب المنتج بنفسك أولًا، وارتقِ حين يصبح استخدامك أوسع من حصتك."
+                : "Free isn't a trial version: every tool and calculator is free, EVO chat is free with 10 messages a day, and a free account keeps your results and plans forever. Try the product yourself first, and upgrade when your usage outgrows your quota."}
+            </p>
+            <p className="mt-2.5 text-sm font-normal leading-relaxed">
+              {isAr ? (
+                <>
+                  <a
+                    href="/ar/tools"
+                    className="font-medium underline underline-offset-4 hover:text-[var(--text)]"
+                  >
+                    جرّب الأدوات مجانًا أولًا
+                  </a>
+                  {" · "}
+                  <a
+                    href="/ar/tools/calorie-calculator"
+                    className="font-medium underline underline-offset-4 hover:text-[var(--text)]"
+                  >
+                    ابدأ بحاسبة السعرات
+                  </a>
+                  {" · "}
+                  <a
+                    href="/ar/diet-plan"
+                    className="font-medium underline underline-offset-4 hover:text-[var(--text)]"
+                  >
+                    مكتبة الخطط الجاهزة
+                  </a>
+
+                </>
+              ) : (
+                <>
+                  <a
+                    href="/tools"
+                    className="font-medium underline underline-offset-4 hover:text-[var(--text)]"
+                  >
+                    Try the tools free first
+                  </a>
+                  {" · "}
+                  <a
+                    href="/tools/calorie-calculator"
+                    className="font-medium underline underline-offset-4 hover:text-[var(--text)]"
+                  >
+                    Start with the calorie calculator
+                  </a>
+                  {" · "}
+                  <a
+                    href="/diet-plan"
+                    className="font-medium underline underline-offset-4 hover:text-[var(--text)]"
+                  >
+                    Browse the ready-plan library
+                  </a>
+                </>
+              )}
+            </p>
+          </div>
+        </div>
+
         {/* PRIORITY-PAGES Implementation 3 (2026-10-19, audit §C-1 +
             Improvement 3 — owner-approved frame): "Which plan fits you?" —
             the buyer's first decision question, unserved by any copy. Four

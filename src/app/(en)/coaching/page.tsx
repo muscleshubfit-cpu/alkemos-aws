@@ -409,6 +409,64 @@ export default function CoachingPage() {
                 <ArrowRight className="h-4 w-4 rtl:rotate-180" />
               </a>
             </div>
+            {/* ORGANIC-GROWTH-P1-B (2026-11-20, roadmap 10/P1-B + 05-§3
+                item 2 + matrix 07-§2 row «coaching — قسم EVO والثقة →
+                /evo + /tools»): the page's only exits were the checkout
+                — a not-ready-to-pay reader had no free path (the audit's
+                one-way commercial sheet). The two matrix free-bridge
+                exits now sit in the EVO section, built on the section's
+                own every-membership message plus the published free-tier
+                fact (EVO chat: 10 messages a day — memberships.ts). The
+                roadmap's literal EVO wording (free PLAN-building) is NOT
+                usable: AI plan generation is subscriber-only
+                (AI-QUOTAS 2026-11-14) — the honest free offer is the
+                chat, so the anchor is the matrix's core «جرّب EVO
+                مجانًا» with the quota number. Plain quiet <a>s (the
+                page's own contextual-link precedent — the for-coaches/
+                affiliate end-zone lines); the informational EVO link
+                above (owner directive 2026-08-30) is untouched.
+                Language-aware (SEO-GEO-4). */}
+            <p className="mx-auto mt-4 max-w-lg text-sm font-normal leading-relaxed text-[var(--muted-foreground)]">
+              {isAr ? (
+                <>
+                  EVO جزء من كل عضويات Alkemos — والعضوية المجانية تشمل محادثته
+                  اليومية (10 رسائل):{" "}
+                  <a
+                    href="/ar/evo"
+                    className="font-medium underline underline-offset-4 hover:text-[var(--text)]"
+                  >
+                    جرّب EVO مجانًا
+                  </a>{" "}
+                  أو{" "}
+                  <a
+                    href="/ar/tools"
+                    className="font-medium underline underline-offset-4 hover:text-[var(--text)]"
+                  >
+                    ابدأ بالأدوات المجانية
+                  </a>{" "}
+                  — وأضف مدربًا بشريًا حين تكون جاهزًا.
+                </>
+              ) : (
+                <>
+                  EVO is part of every Alkemos membership — and the free
+                  membership includes its daily chat (10 messages):{" "}
+                  <a
+                    href="/evo"
+                    className="font-medium underline underline-offset-4 hover:text-[var(--text)]"
+                  >
+                    try EVO free
+                  </a>{" "}
+                  or{" "}
+                  <a
+                    href="/tools"
+                    className="font-medium underline underline-offset-4 hover:text-[var(--text)]"
+                  >
+                    start with the free tools
+                  </a>{" "}
+                  — and add a human coach whenever you are ready.
+                </>
+              )}
+            </p>
           </div>
         </section>
 
