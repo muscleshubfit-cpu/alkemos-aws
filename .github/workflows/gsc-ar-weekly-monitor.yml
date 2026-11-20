@@ -1,0 +1,117 @@
+# GSC AR-tools weekly monitor — the ORGANIC-GROWTH-P1-I «تشغيل».
+#
+# WHY (owner order 2026-11-21 «نفّذ البند التالي غير المنفّذ بالكامل» —
+# roadmap 10/P1-I): «مراقبة أدوات AR في GSC أسبوعيًا وفق 08-§2 (تشغيل +
+# سجل)» — acceptance «سجل شهري موثق». The «سجل» is
+# docs/organic-growth-system-2026-11-18/gsc-ar-weekly-monitoring-log.md;
+# this workflow + scripts/gsc-ar-weekly-report.py are the «تشغيل».
+#
+# WINDOW LAW (governing — GSC-RE-AUDIT-2026-11-12 + 08 header):
+# GSC execution opens 2026-11-30. The SCRIPT enforces it: any run
+# (scheduled or dispatched) before that date is a guarded no-op — exit 0,
+# zero Google calls, zero log writes. The cron slot "20 6 * * 1" (Mondays
+# 06:20 UTC) lands exactly on the window opening: first fire 2026-11-23
+# (guarded no-op — also proves the scheduler registered), first REAL
+# reading Monday 2026-11-30 06:20 UTC.
+#
+# READ-ONLY: the OAuth scope is webmasters.readonly; the only API calls
+# are sites.list (discovery) and searchAnalytics/query. The ONLY
+# repository mutation is the monitoring log (a docs-only push).
+#
+# PATTERN (the repo's established scheduled-workflow shape):
+#   - schedule + workflow_dispatch, tight concurrency group, honest exit
+#   - the gemini-weekly-usage-report commit discipline: GIT-IDENTITY law
+#     email, REPO_ACCESS_TOKEN (owner PAT = ruleset bypass actor) rides
+#     the push, the checkout extraheader is dropped first (343-FIXUP-3),
+#     and landing on main is VERIFIED via ls-remote. When REPO_ACCESS_TOKEN
+#     is missing/unauthorized the run stays GREEN but clearly reports the
+#     entry needs a manual land — the report body is ALWAYS in
+#     $GITHUB_STEP_SUMMARY.
+#   - the gsc-connection-test credential hygiene: the SA JSON is
+#     materialized to $RUNNER_TEMP with 0600 perms, never echoed, and
+#     deleted by an always() cleanup step (the script also cleans in a
+#     finally block — defense in depth).
+#   - python3 + openssl + stdlib only — zero installs (discipline A-12).
+#
+# FAILURE POSTURE: honest red. A failed GSC query fails the run with
+# Google's exact message and writes NO partial log entry. Docs-only
+# pushes skip the deploy pipeline via paths-ignore (quality-gate Phase
+# 290 scoping law) — production is untouched by design.
+#
+# GITHUB-SCHEDULER CAVEATS (documented, not hidden): fires can run a few
+# minutes late (harmless — the 28d window absorbs it) and schedules auto
+# -disable after 60 days of repo inactivity (not applicable — active
+# repo; every code push deploys).
+
+name: GSC AR-tools weekly monitor (P1-I)
+
+on:
+  schedule:
+    - cron: "20 6 * * 1" # Mondays 06:20 UTC — window opens Mon 2026-11-30; off the daily grid (03:47/05:30/05:45/06:00/06:10/06:30/06:47)
+  workflow_dispatch:
+
+concurrency:
+  group: gsc-ar-weekly-monitor
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5 — pinned 2026-10-10 audit (pre-enable hardening)
+
+      - name: Preflight (fail fast naming missing GSC secret)
+        env:
+          GSC_CREDENTIALS: ${{ secrets.GOOGLE_SEARCH_CONSOLE_CREDENTIALS }}
+        run: |
+          if [ -z "$GSC_CREDENTIALS" ]; then
+            echo "::error::GOOGLE_SEARCH_CONSOLE_CREDENTIALS repo secret is not configured — the weekly reading was NOT pulled."
+            exit 1
+          fi
+
+      - name: Run the weekly reading (read-only GSC; window-guarded)
+        timeout-minutes: 5 # honest red beats a silent hang
+        env:
+          GSC_CREDENTIALS: ${{ secrets.GOOGLE_SEARCH_CONSOLE_CREDENTIALS }}
+        run: python3 scripts/gsc-ar-weekly-report.py
+
+      - name: Commit updated log (owner identity — GIT-IDENTITY law)
+        id: commit
+        continue-on-error: true
+        env:
+          REPO_ACCESS_TOKEN: ${{ secrets.REPO_ACCESS_TOKEN }}
+        run: |
+          if [ -z "$REPO_ACCESS_TOKEN" ]; then
+            echo "⚠️ REPO_ACCESS_TOKEN missing — the reading lives in this run's summary only; land the entry manually."
+            exit 1
+          fi
+          git config user.name "alkemos-gsc-monitor"
+          git config user.email "muscleshubfit@gmail.com"
+          if git diff --quiet docs/organic-growth-system-2026-11-18/gsc-ar-weekly-monitoring-log.md; then
+            echo "No log changes this run (guarded no-op before the 2026-11-30 window, or a zero-data week) — nothing to commit."
+            exit 0
+          fi
+          git add docs/organic-growth-system-2026-11-18/gsc-ar-weekly-monitoring-log.md
+          git commit -m "docs(seo): GSC AR-tools weekly reading $(date -u +%F) (P1-I monitoring — worklog ORGANIC-GROWTH-P1-I-2026-11-21)" --quiet
+          # 343-FIXUP-3: actions/checkout persists the default GITHUB_TOKEN as an
+          # http extraheader which HIJACKS the URL-embedded PAT. Drop it so
+          # REPO_ACCESS_TOKEN (owner PAT = ruleset bypass actor) actually rides
+          # the push.
+          git config --unset-all http.https://github.com/.extraheader 2>/dev/null || true
+          git push "https://muscleshubfit-cpu:${REPO_ACCESS_TOKEN}@github.com/muscleshubfit-cpu/alkemos-aws.git" HEAD:main 2>&1 | sed -E 's#(muscleshubfit-cpu|x-access-token):[^@]*@#\1:***@#g'
+          if git ls-remote "https://muscleshubfit-cpu:${REPO_ACCESS_TOKEN}@github.com/muscleshubfit-cpu/alkemos-aws.git" refs/heads/main 2>/dev/null | grep -q "$(git rev-parse HEAD)"; then
+            echo "pushed=1" >> "$GITHUB_OUTPUT"
+            echo "✅ Weekly reading landed on main as $(git rev-parse --short HEAD)."
+          else
+            echo "❌ Reading commit did NOT land on main — check REPO_ACCESS_TOKEN scopes/ruleset bypass."
+            exit 1
+          fi
+
+      - name: Delete temporary credential files
+        if: always()
+        run: rm -f "$RUNNER_TEMP/gsc-sa.json" "$RUNNER_TEMP/gsc-sa-key.pem"

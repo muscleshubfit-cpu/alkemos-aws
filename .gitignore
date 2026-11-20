@@ -152,6 +152,15 @@ scripts/ai-providers/__pycache__/
 !/scripts/backup-retention.mjs
 #   scripts/gemini-usage-report.mjs → Gemini weekly usage report generator over the Upstash per-tag counters: SCAN+GET last 7 full days, per-tag + daily aggregation (gemini-weekly-usage-report.yml, Phase 343 2026-10-06 — hit the same /scripts/* blanket trap as the family: committed-untracked in 343 and the smoke dispatch failed "Cannot find module"; exception added in the 343-FIXUP frame)
 !/scripts/gemini-usage-report.mjs
+#   scripts/gsc-ar-weekly-report.py → the ORGANIC-GROWTH-P1-I weekly GSC AR-tools
+#   monitor (owner order 2026-11-21): read-only Search Console readings (7d/28d
+#   windows + the 08-§2.1 analyses + the monthly documented reading) into
+#   docs/organic-growth-system-2026-11-18/gsc-ar-weekly-monitoring-log.md — fired
+#   by gsc-ar-weekly-monitor.yml (Mondays 06:20 UTC; the script itself guards the
+#   2026-11-30 GSC execution window). Hit the same /scripts/* blanket trap as the
+#   family — exception added in the same frame (the 24de79d1 lesson: a workflow
+#   referencing an uncommitted script is invisible to every CI gate).
+!/scripts/gsc-ar-weekly-report.py
 #   scripts/db-blog-state-inspect.mjs → READ-ONLY blog_posts state prober over raw PostgREST: target slugs in any language/publish state + published slug+language duplicate census + review_status census + 5 most-recently-updated rows (db-blog-state-inspect.yml, BLOG-CACHE-REFRESH 2026-10-21 — the row-level evidence channel for the owner's manual-edits/review staleness incident; hit the same /scripts/* blanket trap as the family — exception added in the same frame)
 !/scripts/db-blog-state-inspect.mjs
 /skills/
