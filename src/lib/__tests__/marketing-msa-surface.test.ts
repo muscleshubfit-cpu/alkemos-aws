@@ -76,6 +76,11 @@ const MARKETING_SURFACE_FILES = [
   // text to its new file (the SITE-CONTENT-281 pattern; same as
   // memberships-faq's move under this manifest's law).
   "src/lib/affiliate-faq.ts",
+  // ORGANIC-GROWTH-P1-G (2026-11-21, roadmap 10 §P1-G): the affiliate
+  // recruitment kit (partner segments + outreach templates) lives in its
+  // own single-source module rendered by AffiliateProgramView — the
+  // scanner follows the AR text to its new file (same pattern).
+  "src/lib/affiliate-kit.ts",
   // ORGANIC-GROWTH-P1-A (2026-11-20, roadmap 10 / 09-§3.1): the /evo and
   // /coaching GEO direct-answer blocks live in their own single-source
   // modules (the pages render them) — same SITE-CONTENT-281 pattern: the

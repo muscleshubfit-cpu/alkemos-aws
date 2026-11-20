@@ -39,6 +39,16 @@ import {
 // VERBATIM (+ the commission-rate question the roadmap's four subjects
 // require). The view renders from the same array — schema == visible.
 import { AFFILIATE_FAQ } from "@/lib/affiliate-faq";
+// ORGANIC-GROWTH-P1-G (2026-11-21, roadmap 10 §P1-G · plan 05-§6): the
+// affiliate RECRUITMENT kit — the partner segments section (the coaches
+// «two markets» story) + the ready outreach message templates — lives in
+// its own single-source module (the affiliate-faq.ts precedent), rendered
+// here for BOTH languages from the SAME arrays.
+import {
+  AFFILIATE_KIT,
+  affiliateKitLinkHref,
+  COACH_ACTIVATION_TWIN_AMOUNTS,
+} from "@/lib/affiliate-kit";
 import { COMMISSION_RATE } from "@/lib/affiliate-constants";
 import { CopyButton } from "@/components/ui/copy-button";
 import { AffiliateToolkit } from "@/components/views/AffiliateToolkit";
@@ -53,6 +63,8 @@ export function AffiliateProgramView() {
   const isAr = lang === "ar";
   const dir = isAr ? "rtl" : "ltr";
   const c = getCopy(isAr);
+  // P1-G: the recruitment kit copy (segments + outreach) — single source.
+  const kit = AFFILIATE_KIT[isAr ? "ar" : "en"];
 
   // Load the user's referral code if they're logged in, so we can show
   // share buttons with their personal affiliate URL.
@@ -287,6 +299,72 @@ export function AffiliateProgramView() {
           </div>
         </section>
 
+        {/* ─── PARTNER SEGMENTS (P1-G — قسم الشرائح) ─── */}
+        {/* ORGANIC-GROWTH-P1-G (2026-11-21, roadmap 10 §P1-G · plan 05-§6):
+            the segment-recruitment layer the plan documents as missing —
+            the four highest-value partner segments, each with its honest
+            why-it-fits story. The coaches card carries the «سوقان/two
+            markets» story (05-§5: B2C eligible subscriptions + B2B
+            referred-coach client activations, both at 20%), and the
+            section implements the 07-§2 matrix row «صفحة الأفلييت —
+            الأقسام → /memberships + /coaching + /for-coaches» as ONE
+            contextual crawlable link per card (locale-aware hrefs from
+            the kit module — SEO-GEO-4). The activation fees inside the
+            coaches pitch gain their EGP twins (they are PRICES the
+            coach pays — the EGP-DISPLAY law); the commission figures
+            stay pure USD (earnings, the page's standing law). */}
+        <section className="border-b border-[var(--edge)] bg-[var(--tint)]">
+          <div className="mx-auto w-full max-w-5xl px-4 py-20 sm:px-6 md:py-28">
+            <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl md:text-5xl">
+              {kit.segmentsTitle}
+            </h2>
+            <p className="mt-4 max-w-2xl text-base font-normal text-[var(--muted-foreground)] sm:text-lg">
+              {kit.segmentsSubtitle}
+            </p>
+
+            <div className="mt-12 grid gap-6 md:grid-cols-2">
+              {kit.segments.map((seg) => (
+                <article key={seg.id} className="marble-card flex flex-col p-8">
+                  <h3 className="text-xl font-semibold tracking-tight">
+                    {seg.title}
+                  </h3>
+                  <p className="mt-3 text-sm font-normal leading-relaxed text-[var(--muted-foreground)]">
+                    {seg.id === "coaches" ? (
+                      // EGP twins on the activation-fee figures only
+                      // (COACH_ACTIVATION_TWIN_AMOUNTS — derived from
+                      // coach-limits.ts, never hand-typed here).
+                      <EgpPriceText
+                        text={seg.pitch}
+                        isAr={isAr}
+                        onlyAmounts={[...COACH_ACTIVATION_TWIN_AMOUNTS]}
+                      />
+                    ) : (
+                      seg.pitch
+                    )}
+                  </p>
+                  <p className="mt-4 text-sm font-medium leading-relaxed text-[var(--text)]">
+                    {seg.share}
+                  </p>
+                  {seg.link && (
+                    <div className="mt-6 pt-2">
+                      <Link
+                        href={affiliateKitLinkHref(seg.link.kind, isAr)}
+                        className="inline-flex items-center gap-1.5 text-sm font-medium underline underline-offset-4 hover:text-[var(--text)]"
+                      >
+                        {seg.link.label}
+                        <ArrowRight
+                          className={`h-4 w-4 ${isAr ? "rotate-180" : ""}`}
+                          aria-hidden="true"
+                        />
+                      </Link>
+                    </div>
+                  )}
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
         {/* ─── COMMISSION SECTION ─── */}
         <section className="border-b border-[var(--edge)] bg-[var(--tint)]">
           <div className="mx-auto w-full max-w-5xl px-4 py-20 sm:px-6 md:py-28">
@@ -458,6 +536,85 @@ export function AffiliateProgramView() {
                 </Link>
               </div>
             )}
+          </div>
+        </section>
+
+        {/* ─── RECRUITMENT KIT — outreach message templates (P1-G) ─── */}
+        {/* ORGANIC-GROWTH-P1-G (2026-11-21, roadmap 10 §P1-G · plan
+            05-§6): «قوالب رسائل تواصل (PR خفيف بلا وعود أرقام غير قابلة
+            للتحقق)» — the ready outreach messages for recruiting coaches
+            and content creators, PUBLISHED on the page (acceptance:
+            «كيت منشور بالصفحة»). They serve both senders: the team
+            (paste the site link) and a partner inviting a fellow coach
+            (paste the personal link — the referred coach's client
+            activations earn the inviter 20%, attribution is permanent).
+            The bodies are verbatim-copyable artifacts: sender
+            placeholders + the honest published numbers only, with the
+            disclosure line INSIDE each template (not an add-on). The
+            GA4 event follows the standing affiliate copy family
+            (affiliate_template_copied / affiliate_banner_html_copied). */}
+        <section className="border-b border-[var(--edge)]">
+          <div className="mx-auto w-full max-w-5xl px-4 py-20 sm:px-6 md:py-28">
+            <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl md:text-5xl">
+              {kit.kitTitle}
+            </h2>
+            <p className="mt-4 max-w-3xl text-base font-normal text-[var(--muted-foreground)] sm:text-lg">
+              {kit.kitSubtitle}
+            </p>
+
+            <div className="mt-10 grid gap-6 lg:grid-cols-2">
+              {kit.outreach.map((tpl) => (
+                <article
+                  key={tpl.id}
+                  className={`marble-card flex flex-col p-6 md:p-8 ${
+                    tpl.id === "email" ? "lg:col-span-2" : ""
+                  }`}
+                >
+                  <header className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+                    <h3 className="text-lg font-semibold tracking-tight">
+                      {tpl.title}
+                    </h3>
+                    <p className="text-xs font-normal text-[var(--muted-foreground)]">
+                      {tpl.platform}
+                    </p>
+                  </header>
+
+                  {/* The copyable message body — wraps long lines (no
+                      horizontal scroll), keyboard-accessible, dir-aware
+                      so the Arabic templates read RTL naturally. */}
+                  <pre
+                    dir={dir}
+                    tabIndex={0}
+                    aria-label={kit.bodyAriaLabel}
+                    className="mt-4 max-h-96 overflow-auto whitespace-pre-wrap break-words rounded-xl border border-[var(--edge)] bg-[var(--tint)] p-4 text-sm font-normal leading-relaxed text-[var(--text)]"
+                  >
+                    {tpl.body}
+                  </pre>
+
+                  <footer className="mt-4 flex items-center justify-end">
+                    <CopyButton
+                      value={tpl.body}
+                      label={kit.copyLabel}
+                      successLabel={kit.copiedLabel}
+                      errorLabel={kit.copyErrorLabel}
+                      variant="secondary"
+                      analyticsEvent="affiliate_outreach_copied"
+                      analyticsPayload={{
+                        channel: tpl.id,
+                        lang: isAr ? "ar" : "en",
+                      }}
+                      ariaLabel={`${kit.copyLabel}: ${tpl.title}`}
+                    />
+                  </footer>
+                </article>
+              ))}
+            </div>
+
+            {/* The honesty reminder — the roadmap's «نصوص قانونية بلا
+                وعود» field, visible right under the templates. */}
+            <p className="mt-8 rounded-2xl border border-[var(--edge)] bg-[var(--tint)] p-4 text-xs font-normal leading-relaxed text-[var(--muted-foreground)]">
+              {kit.kitNote}
+            </p>
           </div>
         </section>
 
