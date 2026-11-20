@@ -1,5 +1,5 @@
 /**
- * ORGANIC-GROWTH-P1-G render proof (owner order 2026-11-21 — docs/
+ * ORGANIC-GROWTH-P1-G render proof (owner order 2026-11-20 — docs/
  * organic-growth-system-2026-11-18/10-prioritized-execution-roadmap.md
  * §P1-G): the acceptance is «كيت منشور بالصفحة» — the kit is
  * PUBLISHED ON THE PAGE. Source pins alone cannot prove that (a dead

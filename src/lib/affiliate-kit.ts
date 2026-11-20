@@ -2,7 +2,7 @@
  * src/lib/affiliate-kit.ts — the affiliate RECRUITMENT kit, single
  * source (EN + AR).
  *
- * ORGANIC-GROWTH-P1-G (2026-11-21, roadmap
+ * ORGANIC-GROWTH-P1-G (2026-11-20, roadmap
  * docs/organic-growth-system-2026-11-18/10 §P1-G · plan 05-§6): the
  * documented gap — «لا برنامج توظيف شرائح: الشريحة الأعلى قيمة =
  * المدربون وصنّاع المحتوى الذين يتصدرون نية "مدرب اونلاين" عربيًا

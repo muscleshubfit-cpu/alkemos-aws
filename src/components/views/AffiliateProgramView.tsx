@@ -39,7 +39,7 @@ import {
 // VERBATIM (+ the commission-rate question the roadmap's four subjects
 // require). The view renders from the same array — schema == visible.
 import { AFFILIATE_FAQ } from "@/lib/affiliate-faq";
-// ORGANIC-GROWTH-P1-G (2026-11-21, roadmap 10 §P1-G · plan 05-§6): the
+// ORGANIC-GROWTH-P1-G (2026-11-20, roadmap 10 §P1-G · plan 05-§6): the
 // affiliate RECRUITMENT kit — the partner segments section (the coaches
 // «two markets» story) + the ready outreach message templates — lives in
 // its own single-source module (the affiliate-faq.ts precedent), rendered
@@ -300,7 +300,7 @@ export function AffiliateProgramView() {
         </section>
 
         {/* ─── PARTNER SEGMENTS (P1-G — قسم الشرائح) ─── */}
-        {/* ORGANIC-GROWTH-P1-G (2026-11-21, roadmap 10 §P1-G · plan 05-§6):
+        {/* ORGANIC-GROWTH-P1-G (2026-11-20, roadmap 10 §P1-G · plan 05-§6):
             the segment-recruitment layer the plan documents as missing —
             the four highest-value partner segments, each with its honest
             why-it-fits story. The coaches card carries the «سوقان/two
@@ -540,7 +540,7 @@ export function AffiliateProgramView() {
         </section>
 
         {/* ─── RECRUITMENT KIT — outreach message templates (P1-G) ─── */}
-        {/* ORGANIC-GROWTH-P1-G (2026-11-21, roadmap 10 §P1-G · plan
+        {/* ORGANIC-GROWTH-P1-G (2026-11-20, roadmap 10 §P1-G · plan
             05-§6): «قوالب رسائل تواصل (PR خفيف بلا وعود أرقام غير قابلة
             للتحقق)» — the ready outreach messages for recruiting coaches
             and content creators, PUBLISHED on the page (acceptance:

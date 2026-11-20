@@ -12,7 +12,7 @@ import { COACH_CLIENT_PACKAGES } from "@/lib/coach-limits";
 import { MEMBERSHIPS } from "@/lib/memberships";
 
 /**
- * ORGANIC-GROWTH-P1-G canary (owner order 2026-11-21 «نفّذ البند التالي
+ * ORGANIC-GROWTH-P1-G canary (owner order 2026-11-20 «نفّذ البند التالي
  * مباشرة من خطة التنفيذ» — docs/organic-growth-system-2026-11-18/
  * 10-prioritized-execution-roadmap.md §P1-G · plan 05-§6): the affiliate
  * RECRUITMENT kit —
