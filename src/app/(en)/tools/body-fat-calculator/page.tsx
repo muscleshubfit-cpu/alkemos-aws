@@ -199,13 +199,22 @@ export default function BodyFatCalculatorPage() {
             <div className="grid grid-cols-2 gap-4">
               <div className="rounded-2xl bg-[var(--tint)] p-6 text-center">
                 <p className="text-2xl font-semibold tracking-tight text-[var(--warning)]">{result.fatMass} kg</p>
-                <p className="mt-1 text-xs font-normal text-[var(--muted-foreground)]">{isAr ? "كتلة دهون" : "Fat mass"}</p>
+                <p className="mt-1 text-xs font-normal text-[var(--muted-foreground)]">{isAr ? "كتلة دهون (تقديرية)" : "Fat mass (est.)"}</p>
               </div>
               <div className="rounded-2xl bg-[var(--tint)] p-6 text-center">
                 <p className="text-2xl font-semibold text-[var(--success)]">{result.leanMass} kg</p>
-                <p className="mt-1 text-xs font-normal text-[var(--muted-foreground)]">{isAr ? "كتلة صافية" : "Lean mass"}</p>
+                <p className="mt-1 text-xs font-normal text-[var(--muted-foreground)]">{isAr ? "كتلة صافية (تقديرية)" : "Lean mass (est.)"}</p>
               </div>
             </div>
+
+            {/* Owner review 2026-11-20 (honesty): both masses derive from a
+                weight INFERRED at a healthy-midpoint BMI of 22 — the card
+                labels and this note say تقديرية/est., never a measurement. */}
+            <p className="text-xs font-normal leading-relaxed text-[var(--muted-foreground)]">
+              {isAr
+                ? "تُحسب الكتلتان من وزن مقدَّر وفق طولك (منتصف المعدل الصحي لمؤشر كتلة الجسم) — لا من قياس مباشر لجسمك."
+                : "Both masses are computed from a weight estimated from your height (midpoint of the healthy BMI range) — not a direct body measurement."}
+            </p>
 
             {/* ORGANIC-GROWTH-P1-D (10-prioritized-execution-roadmap.md):
                 the result→macro-calculator + coaching chain bridge —
@@ -252,8 +261,8 @@ export default function BodyFatCalculatorPage() {
               toolSlug="body-fat-calculator"
               resultSummary={
                 isAr
-                  ? `نسبة الدهون: ${result.bf}% (${result.category}) · كتلة دهون: ${result.fatMass}kg · كتلة عضلية: ${result.leanMass}kg`
-                  : `Body Fat: ${result.bf}% (${result.category}) · Fat mass: ${result.fatMass}kg · Lean mass: ${result.leanMass}kg`
+                  ? `نسبة الدهون: ${result.bf}% (${result.category}) · كتلة دهون (تقديرية): ${result.fatMass}kg · كتلة صافية (تقديرية): ${result.leanMass}kg`
+                  : `Body Fat: ${result.bf}% (${result.category}) · Fat mass (est.): ${result.fatMass}kg · Lean mass (est.): ${result.leanMass}kg`
               }
               resultJson={{ ...result, gender }}
             />

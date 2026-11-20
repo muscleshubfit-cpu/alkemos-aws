@@ -27,20 +27,29 @@
  *       «نتيجة BMI → /tools/calorie-calculator» — the first step of the
  *       tools-hub starting lanes, whose result continues to the
  *       ready-made plan cells through the P0-C bridge).
- *     - Body-fat → ONE tool link (the macro calculator — the lean mass
- *       the visitor just measured needs its daily protein grams) + ONE
- *       quiet service link (coaching — 06-§2: obesity/cutting is
- *       explicit coaching intent). The service link renders as a faint
- *       contextual line (the P0-E/P1-B commercial-zone precedent), NOT
- *       a button: the memberships CTA stays the page's single
- *       commercial CTA (law 07-§4.2).
+ *     - Body-fat → ONE tool link (the macro calculator — the visitor's
+ *       ESTIMATED lean mass needs daily protein, and the macro calculator
+ *       splits the entered daily calories into macro grams by the chosen
+ *       diet; it takes NO weight and NO lean-mass input — owner review
+ *       2026-11-20) + ONE quiet service link (coaching — 06-§2:
+ *       obesity/cutting is explicit coaching intent). The service link
+ *       renders as a faint contextual line (the P0-E/P1-B
+ *       commercial-zone precedent), NOT a button: the memberships CTA
+ *       stays the page's single commercial CTA (law 07-§4.2).
  *
  * Honesty (law §12.50): every claim on the cards is a capability the
  * destination page actually has (the calorie calculator computes the
  * daily target for the goal; its result opens the ready-made plans at
  * the nearest published level — the P0-C bridge; the macro calculator
- * computes protein/carb/fat grams; coaching is human supervision). The
- * doc's literal wording «حافظ على عضلاتك أثناء القطع» was adapted to
+ * splits the visitor's ENTERED daily calories into protein/carb/fat
+ * grams by the chosen diet preset — its only inputs are calories +
+ * diet type, it consumes no weight and no lean mass; coaching is human
+ * supervision). The body-fat page's fat/lean masses are ESTIMATES from
+ * a weight inferred at a healthy-midpoint BMI of 22 — so this copy
+ * says «المقدَّرة/estimated», never «measured» (owner review
+ * 2026-11-20; the estimate qualifier is pinned on the page's own
+ * cards by the canary). The doc's literal wording «حافظ على عضلاتك
+ * أثناء القطع» was adapted to
  * the site's own published vocabulary «خسارة الدهون» (the fat-loss
  * phrasing of the macro reference content — «القطع» appears nowhere in
  * the site's Arabic copy), same for «فوق الطبيعي» → «فوق المعدل
@@ -145,8 +154,8 @@ export function bodyFatChainLinks(isAr: boolean): ChainBridgeLink[] {
       href: `${isAr ? "/ar" : ""}/tools/macro-calculator`,
       destination: "macro-calculator",
       kind: "tool",
-      labelAr: "احسب ماكروزك بالبروتين الكافي",
-      labelEn: "Calculate your macros with enough protein",
+      labelAr: "احسب ماكروزك من سعراتك اليومية",
+      labelEn: "Calculate your macros from your daily calories",
     },
     {
       href: `${isAr ? "/ar" : ""}/coaching`,
@@ -158,12 +167,18 @@ export function bodyFatChainLinks(isAr: boolean): ChainBridgeLink[] {
   ];
 }
 
-/** The body-fat bridge copy — the doc's message in the site's vocabulary. */
+/** The body-fat bridge copy — the doc's message in the site's vocabulary.
+ * Owner review 2026-11-20 (honesty): the body-fat page's lean/fat masses
+ * are ESTIMATES (weight inferred at BMI 22), and the macro calculator's
+ * real inputs are daily calories + diet type — the sub-line states both
+ * facts exactly ("المقدَّرة" · "توزّع سعراتك اليومية … حسب نظامك
+ * الغذائي" / "estimated" · "splits your daily calories … by your diet
+ * type"), never "measured" and never a weight/goal-based macro claim. */
 const BODY_FAT_COPY = {
   titleAr: "حافظ على عضلاتك أثناء خسارة الدهون",
   titleEn: "Keep your muscle while cutting",
-  subAr: "الكتلة الصافية التي قِستَها الآن تحتاج بروتينًا كافيًا يوميًا ليدافع عنها أثناء خسارة الدهون — حاسبة الماكروز تحسب جرامات البروتين والكربوهيدرات والدهون بوزنك وهدفك.",
-  subEn: "The lean mass you just measured needs enough daily protein to defend it through fat loss — the macro calculator computes your protein, carbohydrate and fat grams for your weight and goal.",
+  subAr: "كتلتك الصافية المقدَّرة تحتاج بروتينًا كافيًا يوميًا ليدافع عنها أثناء خسارة الدهون — حاسبة الماكروز توزّع سعراتك اليومية على جرامات البروتين والكربوهيدرات والدهون حسب نظامك الغذائي.",
+  subEn: "Your estimated lean mass needs enough daily protein to defend it through fat loss — the macro calculator splits your daily calories into protein, carbohydrate and fat grams by your diet type.",
   serviceLeadAr: "أو دع مدربًا خاصًا يرافقك خطوة بخطوة عبر",
   serviceLeadEn: "Or let a personal coach guide you step by step with",
 } as const;

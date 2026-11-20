@@ -18,11 +18,14 @@ import {
  *
  *   - BMI → the calorie calculator (ONE bridge: the segment only picks
  *     the message — the calculator serves every goal, lose/maintain/gain);
- *   - body-fat → the macro calculator (the lean mass the visitor just
- *     measured needs its protein grams) + a QUIET coaching line (the
- *     service link renders as a faint contextual text link — the
- *     P0-E/P1-B commercial-zone precedent — because the memberships CTA
- *     stays the tool page's single commercial CTA, law 07-§4.2).
+ *   - body-fat → the macro calculator (the visitor's ESTIMATED lean mass
+ *     needs daily protein — the macro calculator splits the entered daily
+ *     calories into macro grams by the chosen diet; it takes no weight
+ *     and no lean-mass input — owner review 2026-11-20) + a QUIET
+ *     coaching line (the service link renders as a faint contextual
+ *     text link — the P0-E/P1-B commercial-zone precedent — because the
+ *     memberships CTA stays the tool page's single commercial CTA, law
+ *     07-§4.2).
  *
  * Laws this component obeys:
  *   - RESULT-GATED by design: the BMI message depends on the visitor's

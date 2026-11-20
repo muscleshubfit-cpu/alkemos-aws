@@ -121,8 +121,8 @@ describe("ORGANIC-GROWTH-P1-D — the chain links (BMI→calorie · body-fat→m
         href: "/tools/macro-calculator",
         destination: "macro-calculator",
         kind: "tool",
-        labelAr: "احسب ماكروزك بالبروتين الكافي",
-        labelEn: "Calculate your macros with enough protein",
+        labelAr: "احسب ماكروزك من سعراتك اليومية",
+        labelEn: "Calculate your macros from your daily calories",
       },
       {
         href: "/coaching",
@@ -189,14 +189,18 @@ describe("ORGANIC-GROWTH-P1-D — the copy (byte pins + honesty law §12.50)", (
     );
   });
 
-  it("body-fat: the doc's message in the site's vocabulary — lean mass needs protein", () => {
+  it("body-fat: the doc's message in the site's vocabulary — the ESTIMATED lean mass needs protein", () => {
     const model = bodyFatChainBridge(false);
     expect(model.titleEn).toBe("Keep your muscle while cutting");
     expect(model.titleAr).toBe("حافظ على عضلاتك أثناء خسارة الدهون");
+    expect(model.subEn).toContain("estimated lean mass");
     expect(model.subEn).toContain("enough daily protein");
     expect(model.subEn).toContain("macro calculator");
+    expect(model.subEn).toContain("splits your daily calories");
+    expect(model.subAr).toContain("المقدَّرة");
     expect(model.subAr).toContain("بروتينًا كافيًا يوميًا");
     expect(model.subAr).toContain("حاسبة الماكروز");
+    expect(model.subAr).toContain("توزّع سعراتك اليومية");
     expect(model.serviceLeadEn).toBe("Or let a personal coach guide you step by step with");
     expect(model.serviceLeadAr).toBe("أو دع مدربًا خاصًا يرافقك خطوة بخطوة عبر");
   });
@@ -242,11 +246,91 @@ describe("ORGANIC-GROWTH-P1-D — the copy (byte pins + honesty law §12.50)", (
       "وزنك فوق المعدل الصحي؟ ابدأ بخطة سعرات مستهدفة",
       "حافظ على عضلاتك أثناء خسارة الدهون",
       "أو دع مدربًا خاصًا يرافقك خطوة بخطوة عبر",
+      // Owner review 2026-11-20: the corrected honest copy is pinned too —
+      // the estimate wording and the calories-based macro description.
+      "كتلتك الصافية المقدَّرة تحتاج بروتينًا كافيًا يوميًا",
+      "احسب ماكروزك من سعراتك اليومية",
     ]) {
       expect(lib).toContain(pinned);
     }
     expect(comp).toContain("الخطوة التالية بعد نتيجتك");
     expect(comp).toContain('"Your next step after the result"');
+  });
+});
+
+describe("ORGANIC-GROWTH-P1-D — the honesty guard (owner review 2026-11-20)", () => {
+  /**
+   * The owner's code review found two inaccurate claims in the original
+   * P1-D copy; this block pins their correction so neither can return:
+   *
+   *  1. The body-fat page INFERS a weight (healthy-midpoint BMI 22) and
+   *     derives fat/lean mass from it — the bridge must never call the
+   *     lean mass «measured»; it says «estimated/المقدَّرة».
+   *  2. The macro calculator's only inputs are DAILY CALORIES + DIET
+   *     TYPE (it splits the calories by the diet preset ratios) — the
+   *     bridge must never claim macros «by your weight and goal» nor
+   *     promise protein-need computation from lean mass.
+   */
+  it("the bridge never calls the lean mass measured — it says estimated (both languages)", () => {
+    const ar = bodyFatChainBridge(true);
+    const en = bodyFatChainBridge(false);
+    expect(ar.subAr).not.toContain("قِست");
+    expect(en.subEn).not.toMatch(/\bmeasur/);
+    expect(ar.subAr).toContain("المقدَّرة");
+    expect(en.subEn).toContain("estimated");
+    // The old claim phrases stay dead at the SOURCE level too.
+    expect(read(LIB)).not.toContain("قِستَها");
+    expect(read(LIB)).not.toContain("just measured");
+    expect(read(LIB)).not.toContain("بوزنك وهدفك");
+    expect(read(LIB)).not.toContain("for your weight and goal");
+  });
+
+  it("the macro link label matches the calculator's REAL inputs — calories, no protein-adequacy promise", () => {
+    const [macro] = bodyFatChainLinks(false);
+    expect(macro.labelAr).not.toContain("الكافي");
+    expect(macro.labelEn).not.toContain("enough protein");
+    expect(macro.labelAr).toContain("سعراتك اليومية");
+    expect(macro.labelEn).toContain("daily calories");
+    // The banned label stays dead at the SOURCE level.
+    expect(read(LIB)).not.toContain("احسب ماكروزك بالبروتين الكافي");
+    expect(read(LIB)).not.toContain("Calculate your macros with enough protein");
+  });
+
+  it("the bridge describes the macro calculator by its actual computation — calories split by diet, never weight/goal", () => {
+    const ar = bodyFatChainBridge(true).subAr;
+    const en = bodyFatChainBridge(false).subEn;
+    expect(ar).not.toContain("بوزنك");
+    expect(en).not.toContain("your weight");
+    expect(ar).toContain("توزّع سعراتك اليومية");
+    expect(ar).toContain("حسب نظامك الغذائي");
+    expect(en).toContain("splits your daily calories");
+    expect(en).toContain("diet type");
+    // Cross-check the macro page's real code: calories × diet preset
+    // ratios ARE the computation the copy describes.
+    const macroPage = read("src/app/(en)/tools/macro-calculator/page.tsx");
+    expect(macroPage).toContain("cal * preset.protein / 100");
+    expect(macroPage).toContain("const DIET_PRESETS");
+  });
+
+  it("the body-fat page marks its fat/lean masses as estimates and pins the estimate basis", () => {
+    const src = read(TOOL_PAGES.bodyFat);
+    // The estimate basis the note describes is the REAL computation:
+    // weight inferred at a healthy-midpoint BMI of 22.
+    expect(src).toContain("estimatedWeight = 22 * heightM * heightM");
+    // Both cards carry the estimate qualifier in both languages.
+    expect(src).toContain("كتلة دهون (تقديرية)");
+    expect(src).toContain("Fat mass (est.)");
+    expect(src).toContain("كتلة صافية (تقديرية)");
+    expect(src).toContain("Lean mass (est.)");
+    // The note states the basis and denies a direct measurement.
+    expect(src).toContain("تُحسب الكتلتان من وزن مقدَّر");
+    expect(src).toContain("لا من قياس مباشر لجسمك");
+    expect(src).toContain("not a direct body measurement");
+    // The lead-capture summary carries the same qualifiers and never
+    // relapses to the wrong «muscle mass» label for lean mass.
+    expect(src).toContain("كتلة صافية (تقديرية): ${result.leanMass}");
+    expect(src).toContain("Lean mass (est.): ${result.leanMass}");
+    expect(src).not.toContain("كتلة عضلية");
   });
 });
 

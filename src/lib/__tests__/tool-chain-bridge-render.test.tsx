@@ -111,7 +111,7 @@ describe("ToolChainResultBridge render (P1-D — body-fat → macro + coaching)"
     expect(html).toContain("macro calculator");
     // The free-tool pill FIRST, then the quiet coaching line.
     expect(html).toContain('href="/tools/macro-calculator"');
-    expect(html).toContain("Calculate your macros with enough protein");
+    expect(html).toContain("Calculate your macros from your daily calories");
     expect(html).toContain('href="/coaching"');
     expect(html).toContain("Or let a personal coach guide you step by step with");
     expect(html).toContain("online coaching");
@@ -128,11 +128,24 @@ describe("ToolChainResultBridge render (P1-D — body-fat → macro + coaching)"
     expect(html).toContain("حافظ على عضلاتك أثناء خسارة الدهون");
     expect(html).toContain("بروتينًا كافيًا يوميًا");
     expect(html).toContain('href="/ar/tools/macro-calculator"');
-    expect(html).toContain("احسب ماكروزك بالبروتين الكافي");
+    expect(html).toContain("احسب ماكروزك من سعراتك اليومية");
     expect(html).toContain('href="/ar/coaching"');
     expect(html).toContain("أو دع مدربًا خاصًا يرافقك خطوة بخطوة عبر");
     expect(html).toContain("التدريب الأونلاين");
     expect((html.match(/<a /g) || []).length).toBe(2);
     expect(LATIN.test(textOnly(html))).toBe(false);
+  });
+
+  it("honesty (owner review 2026-11-20): the rendered bridge says estimated — never measured, no weight-based macro claim", () => {
+    const en = textOnly(renderBodyFat("en"));
+    expect(en).toContain("estimated lean mass");
+    expect(en).toContain("splits your daily calories");
+    expect(en).not.toMatch(/\bmeasur/);
+    expect(en).not.toContain("your weight");
+    const ar = textOnly(renderBodyFat("ar"));
+    expect(ar).toContain("المقدَّرة");
+    expect(ar).toContain("توزّع سعراتك اليومية");
+    expect(ar).not.toContain("قِست");
+    expect(ar).not.toContain("بوزنك");
   });
 });
