@@ -29,6 +29,22 @@ WHAT IT READS (read-only, the gsc-connection-test v2 discipline):
   Nothing else: no indexing requests, no coverage API, no writes to
   Search Console. The ONLY repository mutation is the monitoring log.
 
+REQUEST SHAPE (P1-I-FIX 2026-11-21 — the dimensionFilterGroups repair):
+  The original build attached SIX per-filter groups — one group per
+  family pattern, each typed "or" — but the Search Console API ANDs
+  the GROUPS (official reference: "All filter groups must match in
+  order for a row to be returned") and groupType "or" is documented
+  NOT YET SUPPORTED — so the six groups demanded a page containing
+  all six family patterns at once: zero matching rows, silently. The repair ships the family as the API
+  actually supports it: exactly ONE "and" group holding ONE page
+  filter with operator includingRegex, whose single RE2 expression
+  alternates the six escaped family patterns (unanchored substring
+  semantics + the (?i) inline flag preserve the retired contains
+  operator's documented non-case-sensitive substring match). Pure
+  construction is pinned by `--selftest` (below) and by the canary
+  that spawns it — the request STRUCTURE and its SEMANTICS, not
+  script-text presence.
+
 ANALYSES (08-§2.1 thresholds, letter of the protocol):
   - rising candidates: queries with >=50 impressions in the 28d window;
     marked «جديدة» when absent from the previous weekly entry's JSON
@@ -53,7 +69,13 @@ block (the workflow also runs an always() cleanup step — defense in
 depth). Error text is scrubbed of tokens. Honest failures exit 1 with
 Google's exact message; a failed run never writes a partial log entry.
 
-Run: python3 scripts/gsc-ar-weekly-report.py   (from anywhere in the repo)
+Run:  python3 scripts/gsc-ar-weekly-report.py            (weekly reading)
+      python3 scripts/gsc-ar-weekly-report.py --selftest (P1-I-FIX
+      construction test: builds every real payload, asserts the
+      one-group/includingRegex shape and matches the RE2 family
+      expression against a must-match/must-not-match URL battery —
+      no network, no secrets, no log writes; runs before AND after
+      the 2026-11-30 window)
 """
 
 import base64
@@ -260,20 +282,33 @@ class QueryError(Exception):
         self.detail = detail
 
 
-def query_api(prop, auth_headers, dims=None, filters=None, row_limit=None,
-              start_d=None, end_d=None):
+def build_payload(dims=None, filter_group=None, row_limit=None,
+                  start_d=None, end_d=None):
+    """The exact searchAnalytics/query request body (pure — the P1-I-FIX
+    selftest pins its structure and semantics)."""
     payload = {"startDate": start_d.isoformat(),
                "endDate": end_d.isoformat(),
                "searchType": "web",
                "dataState": "final"}
     if dims:
         payload["dimensions"] = dims
-    if filters:
-        payload["dimensionFilterGroups"] = [
-            {"groupType": "or", "filters": [f]} for f in filters
-        ]
+    if filter_group is not None:
+        # ONE group, ALWAYS. The API ANDs the groups across
+        # dimensionFilterGroups (official reference: "All filter groups
+        # must match in order for a row to be returned") and groupType
+        # "or" is documented NOT YET SUPPORTED — the retired per-family
+        # groups therefore demanded a page matching every family
+        # pattern at once (zero rows). P1-I-FIX 2026-11-21.
+        payload["dimensionFilterGroups"] = [filter_group]
     if row_limit:
         payload["rowLimit"] = row_limit
+    return payload
+
+
+def query_api(prop, auth_headers, dims=None, filter_group=None, row_limit=None,
+              start_d=None, end_d=None):
+    payload = build_payload(dims=dims, filter_group=filter_group,
+                            row_limit=row_limit, start_d=start_d, end_d=end_d)
     url = (API_BASE + "/sites/" + urllib.parse.quote(prop, safe="")
            + "/searchAnalytics/query")
     status, text = http(urllib.request.Request(
@@ -287,9 +322,24 @@ def query_api(prop, auth_headers, dims=None, filters=None, row_limit=None,
         raise QueryError(0, "HTTP 200 with non-JSON body (truncated): `" + text[:200] + "`")
 
 
-def ar_filters():
-    return [{"dimension": "page", "operator": "contains", "expression": e}
-            for e in AR_TOOLS_PAGE_CONTAINS]
+def ar_page_regex():
+    """One RE2 expression alternating the six family patterns (the
+    API-compatible family OR). re.escape escapes only regex-special
+    characters — for these URLs that is the dots and hyphens, and
+    backslash+punctuation is a literal in RE2 exactly as in Python re.
+    The (?i) inline flag preserves the retired contains operator's
+    documented non-case-sensitive substring semantics."""
+    return "(?i)" + "|".join(re.escape(p) for p in AR_TOOLS_PAGE_CONTAINS)
+
+
+def ar_filter_group():
+    """The family filter in the shape the Search Console API actually
+    supports: ONE 'and' group (the only supported groupType) holding ONE
+    page filter with operator includingRegex — the single RE2 alternation
+    of ar_page_regex() with unanchored substring semantics."""
+    return {"groupType": "and", "filters": [
+        {"dimension": "page", "operator": "includingRegex",
+         "expression": ar_page_regex()}]}
 
 
 def totals_of(rows):
@@ -615,22 +665,24 @@ def main():
     w28 = (end - dt.timedelta(days=27), end)
 
     try:
-        ar7 = totals_of(query_api(PRIMARY, auth_headers, filters=ar_filters(),
+        ar7 = totals_of(query_api(PRIMARY, auth_headers,
+                                  filter_group=ar_filter_group(),
                                   start_d=w7[0], end_d=w7[1]))
-        ar28 = totals_of(query_api(PRIMARY, auth_headers, filters=ar_filters(),
+        ar28 = totals_of(query_api(PRIMARY, auth_headers,
+                                   filter_group=ar_filter_group(),
                                    start_d=w28[0], end_d=w28[1]))
         prop7 = totals_of(query_api(PRIMARY, auth_headers,
                                     start_d=w7[0], end_d=w7[1]))
         prop28 = totals_of(query_api(PRIMARY, auth_headers,
                                      start_d=w28[0], end_d=w28[1]))
         q_rows = query_api(PRIMARY, auth_headers, dims=["query"],
-                           filters=ar_filters(), row_limit=500,
+                           filter_group=ar_filter_group(), row_limit=500,
                            start_d=w28[0], end_d=w28[1])
         page_rows = query_api(PRIMARY, auth_headers, dims=["page"],
-                              filters=ar_filters(), row_limit=200,
+                              filter_group=ar_filter_group(), row_limit=200,
                               start_d=w28[0], end_d=w28[1])
         qp_rows = query_api(PRIMARY, auth_headers, dims=["query", "page"],
-                            filters=ar_filters(), row_limit=500,
+                            filter_group=ar_filter_group(), row_limit=500,
                             start_d=w28[0], end_d=w28[1])
     except QueryError as exc:
         die("**searchAnalytics/query failed** — HTTP " + str(exc.status) + ".",
@@ -671,10 +723,11 @@ def main():
     elif not any(b.startswith("<!-- entry:monthly:%s -->" % ym) for b in monthly_blocks):
         prev_m_json = first_json_of(monthly_blocks)
         try:
-            ar_m = totals_of(query_api(PRIMARY, auth_headers, filters=ar_filters(),
+            ar_m = totals_of(query_api(PRIMARY, auth_headers,
+                                       filter_group=ar_filter_group(),
                                        start_d=prev_month_start, end_d=prev_month_end))
             qm_rows = query_api(PRIMARY, auth_headers, dims=["query"],
-                                filters=ar_filters(), row_limit=500,
+                                filter_group=ar_filter_group(), row_limit=500,
                                 start_d=prev_month_start, end_d=prev_month_end)
             m_entry, _ = render_monthly_entry(run_date, prev_month_start,
                                               prev_month_end, ar_m, qm_rows,
@@ -716,5 +769,181 @@ def main():
     return 0
 
 
+# ------------------------------------------------------------------ selftest
+def selftest():
+    """P1-I-FIX construction test: the ACTUAL request structure + semantics.
+    No network, no secrets, no log writes — runs before AND after the
+    2026-11-30 window. Exit 0 = every pin holds."""
+    failures = []
+
+    def check(name, ok, detail=""):
+        log(("  OK   " if ok else "  FAIL ") + name +
+            (("" if ok else " — " + str(detail))))
+        if not ok:
+            failures.append(name)
+
+    log("P1-I-FIX selftest — request structure + semantics (no network)")
+
+    # -- 1. the family RE2 expression ------------------------------------
+    expr = ar_page_regex()
+    body = expr[len("(?i)"):]
+    branches = body.split("|")
+    check("regex: case-insensitive inline flag preserved (contains parity)",
+          expr.startswith("(?i)"))
+    check("regex: exactly six alternation branches", len(branches) == 6,
+          len(branches))
+    check("regex: every branch is re.escape(pattern) verbatim (RE2-literal)",
+          branches == [re.escape(p) for p in AR_TOOLS_PAGE_CONTAINS])
+    try:
+        compiled = re.compile(expr)
+        check("regex: compiles (RE2-compatible escapes only)", True)
+    except re.error as exc:
+        compiled = None
+        check("regex: compiles (RE2-compatible escapes only)", False, exc)
+    check("regex: <=4096 chars (API filter cap)", len(expr) <= 4096, len(expr))
+
+    # -- 2. semantics: MUST match (the AR family incl. T1-T5 subpaths) ---
+    must_match = [
+        "https://alkemos.com/ar/tools",                    # hub
+        "https://alkemos.com/ar/tools/",                   # hub trailing /
+        "https://alkemos.com/ar/tools/calorie-calculator", # T1
+        "https://alkemos.com/ar/tools/bmi-calculator",     # T2
+        "https://alkemos.com/ar/tools/macro-calculator",   # T3
+        "https://alkemos.com/ar/tools/body-fat-calculator",# T4
+        "https://alkemos.com/ar/tools/water-tracker",      # T5
+        "https://alkemos.com/ar/meal-planner",             # T6
+        "https://alkemos.com/ar/ai-meal-planner",          # T7
+        "https://alkemos.com/ar/ai-workout-planner",       # T8
+        "https://alkemos.com/ar/macro-tracker",            # T9
+        "https://alkemos.com/ar/workout-tracker",          # T10
+        "https://ALKEMOS.com/ar/TOOLS",                    # contains parity
+        # substring semantics parity: the retired contains operator
+        # matched any URL CONTAINING the family path — so does the
+        # unanchored regex; /ar/tools-archive-x contains /ar/tools.
+        "https://alkemos.com/ar/tools-archive-x",
+    ]
+    # -- 3. semantics: MUST NOT match (T11 · EN family · others · www) ---
+    must_not_match = [
+        "https://alkemos.com/ar/diet-plan",             # T11 — own family
+        "https://alkemos.com/tools",                    # EN hub
+        "https://alkemos.com/tools/calorie-calculator", # EN T1
+        "https://alkemos.com/meal-planner",             # EN T6
+        "https://alkemos.com/ai-meal-planner",          # EN T7
+        "https://alkemos.com/ai-workout-planner",       # EN T8
+        "https://alkemos.com/macro-tracker",            # EN T9
+        "https://alkemos.com/workout-tracker",          # EN T10
+        "https://alkemos.com/",                         # homepage
+        "https://alkemos.com/ar/foods/olive-oil",       # foods family
+        "https://alkemos.com/ar/coaching",              # coaching family
+        "https://www.alkemos.com/ar/tools",             # www (old parity)
+    ]
+    if compiled is not None:
+        for u in must_match:
+            check("match: %s" % u, bool(compiled.search(u)))
+        for u in must_not_match:
+            check("no-match: %s" % u, not compiled.search(u))
+
+    # -- 4. the filter GROUP shape (the API contract) --------------------
+    grp = ar_filter_group()
+    check("group: a single group object (never a list of groups)",
+          isinstance(grp, dict))
+    check("group: groupType 'and' (the only supported value)",
+          grp.get("groupType") == "and", grp.get("groupType"))
+    gf = grp.get("filters", [])
+    check("group: exactly ONE filter inside", len(gf) == 1, len(gf))
+    f0 = gf[0] if gf else {}
+    check("filter: dimension 'page'", f0.get("dimension") == "page")
+    check("filter: operator 'includingRegex' (RE2)",
+          f0.get("operator") == "includingRegex", f0.get("operator"))
+    check("filter: expression IS the family alternation",
+          f0.get("expression") == expr)
+
+    # -- 5. every real payload the monitor sends -------------------------
+    w7 = (dt.date(2026, 11, 24), dt.date(2026, 11, 30))
+    w28 = (dt.date(2026, 11, 3), dt.date(2026, 11, 30))
+    mo = (dt.date(2026, 11, 1), dt.date(2026, 11, 30))
+    payloads = {
+        "weekly ar 7d totals": build_payload(
+            filter_group=ar_filter_group(), start_d=w7[0], end_d=w7[1]),
+        "weekly ar 28d totals": build_payload(
+            filter_group=ar_filter_group(), start_d=w28[0], end_d=w28[1]),
+        "weekly property 7d totals (context)": build_payload(
+            start_d=w7[0], end_d=w7[1]),
+        "weekly property 28d totals (context)": build_payload(
+            start_d=w28[0], end_d=w28[1]),
+        "weekly queries 28d": build_payload(
+            dims=["query"], filter_group=ar_filter_group(),
+            row_limit=500, start_d=w28[0], end_d=w28[1]),
+        "weekly pages 28d": build_payload(
+            dims=["page"], filter_group=ar_filter_group(),
+            row_limit=200, start_d=w28[0], end_d=w28[1]),
+        "weekly query->page pairs 28d": build_payload(
+            dims=["query", "page"], filter_group=ar_filter_group(),
+            row_limit=500, start_d=w28[0], end_d=w28[1]),
+        "monthly ar totals": build_payload(
+            filter_group=ar_filter_group(), start_d=mo[0], end_d=mo[1]),
+        "monthly queries": build_payload(
+            dims=["query"], filter_group=ar_filter_group(),
+            row_limit=500, start_d=mo[0], end_d=mo[1]),
+    }
+    for name, p in payloads.items():
+        check("payload '%s': web + final + dates" % name,
+              p.get("searchType") == "web" and p.get("dataState") == "final"
+              and p.get("startDate") and p.get("endDate"))
+        if "(context)" in name:
+            check("payload '%s': NO dimensionFilterGroups key" % name,
+                  "dimensionFilterGroups" not in p)
+        else:
+            groups = p.get("dimensionFilterGroups", [])
+            check("payload '%s': exactly ONE group" % name, len(groups) == 1)
+            g = groups[0] if groups else {}
+            check("payload '%s': 'and' group + single includingRegex page filter"
+                  % name,
+                  g.get("groupType") == "and"
+                  and len(g.get("filters", [])) == 1
+                  and g["filters"][0].get("dimension") == "page"
+                  and g["filters"][0].get("operator") == "includingRegex")
+    check("payload: dimensions preserved (query/page/pairs)",
+          payloads["weekly queries 28d"]["dimensions"] == ["query"]
+          and payloads["weekly pages 28d"]["dimensions"] == ["page"]
+          and payloads["weekly query->page pairs 28d"]["dimensions"] == ["query", "page"])
+    check("payload: rowLimit preserved (500/200/500)",
+          payloads["weekly queries 28d"]["rowLimit"] == 500
+          and payloads["weekly pages 28d"]["rowLimit"] == 200
+          and payloads["weekly query->page pairs 28d"]["rowLimit"] == 500)
+
+    # -- 6. the retired bug shape can never return -----------------------
+    # Needles are assembled at runtime so this check's own source can
+    # never satisfy itself (a verbatim literal here would self-trip).
+    src = Path(__file__).read_text(encoding="utf-8")
+    retired_or_group = '"groupType"' + ": " + '"or"'
+    retired_group_lc = '"filters"' + ": [f]} for f in filters"
+    retired_contains = '"operator"' + ": " + '"contains"'
+    check("retired: no groupType 'or' literal in the module",
+          retired_or_group not in src)
+    check("retired: no per-filter group list comprehension in the module",
+          retired_group_lc not in src)
+    check("retired: no contains-operator family filter in the module",
+          retired_contains not in src)
+
+    # -- 7. the governing invariants the fix must NOT touch --------------
+    check("window law: WINDOW_OPENS still 2026-11-30",
+          WINDOW_OPENS == dt.date(2026, 11, 30))
+    check("thresholds: 08-§2.1 letter unchanged (50/100/1%/(5,20)/(11,20))",
+          (RISING_IMPS, CTR_OPP_IMPS, CTR_OPP_CTR_MAX, CTR_OPP_POS, ONE_STEP_POS)
+          == (50, 100, 0.01, (5, 20), (11, 20)))
+    check("retention: 12 weekly + 12 monthly unchanged",
+          RETAIN_WEEKLY == 12 and RETAIN_MONTHLY == 12)
+
+    total = len(failures)
+    if failures:
+        log("P1-I-FIX selftest: %d FAILURE(S)" % total)
+        return 1
+    log("P1-I-FIX selftest: PASS (all pins hold — structure AND semantics)")
+    return 0
+
+
 if __name__ == "__main__":
+    if len(sys.argv) > 1 and sys.argv[1] == "--selftest":
+        sys.exit(selftest())
     sys.exit(main())

@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { spawnSync } from "node:child_process";
 
 /**
  * ORGANIC-GROWTH-P1-I canaries (owner order 2026-11-21 — roadmap 10/P1-I +
@@ -26,6 +27,22 @@ import { resolve } from "node:path";
  *      registry/CI-GATES rows that keep the docs gates green.
  *   6. COMMIT DISCIPLINE — GIT-IDENTITY law email on the automated
  *      weekly push, REPO_ACCESS_TOKEN rides it, temp credentials cleaned.
+ *
+ * P1-I-FIX (owner order 2026-11-21 «راجع وأصلح خلل استعلامات GSC في
+ * P1-I المكتشف في scripts/gsc-ar-weekly-report.py»): the original
+ * query layer built SIX per-filter dimensionFilterGroups typed "or".
+ * The Search Console API ANDs the groups (official reference: "All
+ * filter groups must match in order for a row to be returned") and
+ * groupType "or" is documented NOT YET SUPPORTED — so the six groups
+ * demanded a page containing all six family patterns at once: zero
+ * matching rows, silently. The repair ships ONE "and" group holding
+ * ONE page filter with operator includingRegex whose single RE2
+ * expression alternates the six escaped family patterns. The FIX
+ * block below verifies the ACTUAL request structure and its real
+ * semantics by SPAWNING the python selftest (`--selftest` — pure
+ * construction, no network/secrets/log writes) — not script-text
+ * presence. python3 is already a hard battery requirement here (the
+ * docs gates + the weekly workflow itself run python3).
  */
 
 const read = (p: string) => readFileSync(resolve(process.cwd(), p), "utf8");
@@ -267,5 +284,70 @@ describe("P1-I registry + gates rows (born-archived law, checks M/N)", () => {
     expect(script).toContain(
       'LOG_PATH = REPO / "docs/organic-growth-system-2026-11-18/gsc-ar-weekly-monitoring-log.md"',
     );
+  });
+});
+
+describe("P1-I FIX — the API request contract (structure AND semantics)", () => {
+  // The dimensionFilterGroups repair (owner order 2026-11-21): the
+  // retired build attached six per-filter groups typed "or" — the API
+  // ANDs groups and "or" is documented not-yet-supported, so the
+  // family queries would have matched ZERO pages, silently. These
+  // tests verify the ACTUAL request construction and its real
+  // semantics — the class of bug text-presence canaries cannot see.
+
+  it("the python --selftest passes (real payload construction + semantics)", () => {
+    // Pure construction: no network, no secrets, no log writes — it
+    // runs before AND after the 2026-11-30 window. python3 is already
+    // a hard repo battery requirement (docs gates + the weekly
+    // workflow itself), so this adds no new dependency.
+    const res = spawnSync("python3", [SCRIPT_PATH, "--selftest"], {
+      encoding: "utf8",
+      cwd: process.cwd(),
+    });
+    expect(
+      res.status,
+      `selftest exited ${res.status}\nstdout:\n${res.stdout}\nstderr:\n${res.stderr}`,
+    ).toBe(0);
+    expect(res.stdout).toContain("P1-I-FIX selftest");
+    expect(res.stdout).toContain("PASS");
+    // the semantics battery really ran (family matches + non-family
+    // rejects), not just the header
+    expect(res.stdout).toContain("match: https://alkemos.com/ar/tools/calorie-calculator");
+    expect(res.stdout).toContain("no-match: https://alkemos.com/ar/diet-plan");
+    expect(res.stdout).toContain("no-match: https://alkemos.com/tools/calorie-calculator");
+  });
+
+  it("attaches exactly ONE filter group — the retired per-family groups are gone", () => {
+    // one group, always — never a list comprehension of per-filter groups
+    expect(script).toContain('payload["dimensionFilterGroups"] = [filter_group]');
+    expect(script).not.toContain('"groupType": "or"');
+    expect(script).not.toContain('"filters": [f]} for f in filters');
+  });
+
+  it("the family rides ONE includingRegex (RE2) page filter in an 'and' group", () => {
+    expect(script).toContain('"groupType": "and"');
+    expect(script).toContain('"operator": "includingRegex"');
+    expect(script).toContain('def ar_page_regex():');
+    // the expression is DERIVED from the pinned family list (single
+    // source of truth), escaped for RE2, with the (?i) contains parity
+    expect(script).toContain('return "(?i)" + "|".join(re.escape(p) for p in AR_TOOLS_PAGE_CONTAINS)');
+    // the retired contains-operator family filter must not return
+    expect(script).not.toContain('"operator": "contains"');
+  });
+
+  it("every family call site passes the single filter group (7 queries)", () => {
+    // 5 weekly (ar7, ar28, queries, pages, pairs) + 2 monthly — all
+    // switch to filter_group=ar_filter_group(); the property-context
+    // totals pass none. Counted inside main()'s body only (the
+    // selftest's own payload battery repeats the call by design).
+    const mainBody = script.slice(
+      script.indexOf("def main():"),
+      script.indexOf("------------- selftest"),
+    );
+    expect(mainBody.length).toBeGreaterThan(0);
+    const sites = mainBody.split("filter_group=ar_filter_group()").length - 1;
+    expect(sites).toBe(7);
+    // and no call site still passes the retired filters= parameter
+    expect(script).not.toContain("filters=ar_filters()");
   });
 });
