@@ -56,6 +56,22 @@ import { spawnSync } from "node:child_process";
  * output: subpaths + query-string forms still match; sibling
  * segments are rejected (incl. uppercase ones — (?i) must not
  * weaken the boundary).
+ *
+ * P1-I-EN (owner order 2026-11-21 «نفّذ P1-I-EN بالكامل وفق §10.5 من
+ * التقرير 28، مع الالتزام بالبنية الحالية لمراقبة العربية، وإنتاج
+ * تقرير أسبوعي موحد يقارن أدوات العربية والإنجليزية»): the weekly
+ * arm now reads the EN-tools family TOO — full data separation
+ * (§10.5-ب: an INDEPENDENT single and-group includingRegex filter per
+ * family) — and renders ONE unified weekly entry (§10.5-ج: both
+ * families side by side + the AR↔EN 28d gap + per-language weekly
+ * growth) plus the unified monthly reading. The EN family = the (en)
+ * route-group mirrors measured from the repo (§10.5-أ): /tools (hub
+ * + T1-T5 subpaths) + /meal-planner + /ai-meal-planner +
+ * /ai-workout-planner + /macro-tracker + /workout-tracker; T11
+ * /diet-plan excluded (its own family). The log stays the SAME file
+ * (§10.5-هـ: expand the existing log — sanctioned by the plan). The
+ * pins below cover the EN family, the separation, the unified
+ * render, and the EN selftest battery (spawned for real).
  */
 
 const read = (p: string) => readFileSync(resolve(process.cwd(), p), "utf8");
@@ -78,6 +94,17 @@ const AR_TOOLS_FAMILY = [
   "https://alkemos.com/ar/ai-workout-planner",
   "https://alkemos.com/ar/macro-tracker",
   "https://alkemos.com/ar/workout-tracker",
+];
+
+/** The EN-tools family (P1-I-EN §10.5-أ) — the (en) route-group mirrors,
+ * unprefixed URLs; same verbatim-pin discipline. */
+const EN_TOOLS_FAMILY = [
+  "https://alkemos.com/tools",
+  "https://alkemos.com/meal-planner",
+  "https://alkemos.com/ai-meal-planner",
+  "https://alkemos.com/ai-workout-planner",
+  "https://alkemos.com/macro-tracker",
+  "https://alkemos.com/workout-tracker",
 ];
 
 describe("P1-I workflow — schedule, window, read-only posture", () => {
@@ -273,10 +300,14 @@ describe("P1-I monitoring log — the «سجل» contract", () => {
     expect(logDoc).toContain("لا مدخلات بعد");
   });
 
-  it("declares the retention and the AR-tools family scope", () => {
+  it("declares the retention and the AR+EN family scopes", () => {
     expect(logDoc).toMatch(/12 مدخلًا أسبوعيًا/);
     expect(logDoc).toContain("T10");
     expect(logDoc).toContain("T11 `/ar/diet-plan` مستبعد");
+    // P1-I-EN: the log now covers BOTH families in one unified entry
+    expect(logDoc).toContain("أدوات EN");
+    expect(logDoc).toContain("T11 `/diet-plan` مستبعد");
+    expect(logDoc).toContain("المقارنة AR↔EN");
   });
 });
 
@@ -321,7 +352,9 @@ describe("P1-I FIX — the API request contract (structure AND semantics)", () =
       res.status,
       `selftest exited ${res.status}\nstdout:\n${res.stdout}\nstderr:\n${res.stderr}`,
     ).toBe(0);
-    expect(res.stdout).toContain("P1-I-FIX selftest");
+    expect(res.stdout).toContain(
+      "GSC tools weekly selftest (P1-I + P1-I-EN)",
+    );
     expect(res.stdout).toContain("PASS");
     // the semantics battery really ran (family matches + non-family
     // rejects), not just the header
@@ -379,10 +412,11 @@ describe("P1-I FIX — the API request contract (structure AND semantics)", () =
     expect(script).not.toContain("AR_TOOLS_PAGE_CONTAINS");
   });
 
-  it("every family call site passes the single filter group (7 queries)", () => {
+  it("every AR family call site passes the single filter group (7 queries)", () => {
     // 5 weekly (ar7, ar28, queries, pages, pairs) + 2 monthly — all
     // switch to filter_group=ar_filter_group(); the property-context
-    // totals pass none. Counted inside main()'s body only (the
+    // totals pass none. The EN mirror count (7) is pinned in the
+    // P1-I-EN block below. Counted inside main()'s body only (the
     // selftest's own payload battery repeats the call by design).
     const mainBody = script.slice(
       script.indexOf("def main():"),
@@ -393,5 +427,175 @@ describe("P1-I FIX — the API request contract (structure AND semantics)", () =
     expect(sites).toBe(7);
     // and no call site still passes the retired filters= parameter
     expect(script).not.toContain("filters=ar_filters()");
+  });
+});
+
+describe("P1-I-EN — the EN-tools family (pinned against the real (en) routes)", () => {
+  it("the six EN URL patterns live verbatim in the script", () => {
+    for (const pattern of EN_TOOLS_FAMILY) {
+      expect(script).toContain(`"${pattern}",`);
+    }
+  });
+
+  it("every EN pattern resolves to a REAL route in the (en) tree", () => {
+    for (const pattern of EN_TOOLS_FAMILY) {
+      // The (en) route group maps 1:1 onto the UNPREFIXED URLs —
+      // measured from the repo tree (§10.5-أ), never assumed mirrors.
+      const route = pattern.replace("https://alkemos.com", "");
+      const page = `src/app/(en)${route}/page.tsx`;
+      expect(
+        existsSync(resolve(process.cwd(), page)),
+        `${page} must exist (EN family pattern ${pattern})`,
+      ).toBe(true);
+    }
+  });
+
+  it("the /tools hub carries the five EN calculators/trackers (T1-T5)", () => {
+    for (const tool of [
+      "calorie-calculator",
+      "bmi-calculator",
+      "macro-calculator",
+      "body-fat-calculator",
+      "water-tracker",
+    ]) {
+      expect(
+        existsSync(resolve(process.cwd(), `src/app/(en)/tools/${tool}/page.tsx`)),
+        `/tools/${tool} must exist`,
+      ).toBe(true);
+    }
+  });
+
+  it("T11 /diet-plan is deliberately EXCLUDED from the EN family", () => {
+    const familyBlock = script.slice(
+      script.indexOf("EN_TOOLS_FAMILY_PAGES = ["),
+      script.indexOf("]", script.indexOf("EN_TOOLS_FAMILY_PAGES = [")),
+    );
+    expect(familyBlock).not.toContain("diet-plan");
+  });
+
+  it("full data separation: the EN family carries no /ar/ path and vice versa", () => {
+    const enBlock = script.slice(
+      script.indexOf("EN_TOOLS_FAMILY_PAGES = ["),
+      script.indexOf("]", script.indexOf("EN_TOOLS_FAMILY_PAGES = [")),
+    );
+    expect(enBlock).not.toContain("/ar/");
+    for (const pattern of AR_TOOLS_FAMILY) {
+      expect(pattern).toContain("/ar/");
+    }
+  });
+});
+
+describe("P1-I-EN — the unified weekly report (one entry, both families)", () => {
+  it("the script defines the EN family + its own regex/filter constructors", () => {
+    expect(script).toContain("EN_TOOLS_FAMILY_PAGES = [");
+    expect(script).toContain("def en_page_regex():");
+    expect(script).toContain("def en_filter_group():");
+    // the EN constructors mirror the AR construction exactly
+    expect(script).toContain("for p in EN_TOOLS_FAMILY_PAGES");
+  });
+
+  it("every EN call site passes the single EN filter group (7 queries)", () => {
+    const mainBody = script.slice(
+      script.indexOf("def main():"),
+      script.indexOf("------------- selftest"),
+    );
+    const sites = mainBody.split("filter_group=en_filter_group()").length - 1;
+    expect(sites).toBe(7);
+  });
+
+  it("renders the side-by-side table + the AR↔EN comparison (§10.5-ج)", () => {
+    expect(script).toContain("فجوة الأداء");
+    expect(script).toContain("النمو الأسبوعي");
+    expect(script).toContain("المقارنة AR↔EN");
+    // the unified summary table carries all seven columns
+    expect(script).toContain("أدوات EN ‏7ي");
+    expect(script).toContain("أدوات EN ‏28ي");
+  });
+
+  it("the unified JSON provenance carries both families + per-language pools", () => {
+    expect(script).toContain('"en_tools": {"7d"');
+    expect(script).toContain('"ar_tools": {"7d"');
+    expect(script).toContain('"en": {"queries_pool"');
+    expect(script).toContain('"ar": {"queries_pool"');
+  });
+
+  it("the run summary emits the EN line + the gap line", () => {
+    expect(script).toContain("أدوات EN ‏28ي:");
+    expect(script).toContain("فجوة الأداء AR↔EN (28ي · §10.5-ج)");
+  });
+
+  it("the unified monthly entry documents BOTH languages", () => {
+    expect(script).toContain("أدوات AR — الشهر كامل");
+    expect(script).toContain("أدوات EN — الشهر كامل");
+    expect(script).toContain("فجوة الشهر AR↔EN (§10.5-ج)");
+  });
+
+  it("the workflow reflects the unified scope (name + commit message)", () => {
+    expect(workflow).toContain("P1-I-EN");
+    expect(workflow).toContain("AR+EN");
+  });
+});
+
+describe("P1-I-EN — the selftest EN battery (spawned, real semantics)", () => {
+  it("the python --selftest EN battery: matches, mutual exclusion, boundaries", () => {
+    const res = spawnSync("python3", [SCRIPT_PATH, "--selftest"], {
+      encoding: "utf8",
+      cwd: process.cwd(),
+    });
+    expect(res.status).toBe(0);
+    // the EN family really matched its own pages...
+    expect(res.stdout).toContain(
+      "match: https://alkemos.com/tools/calorie-calculator",
+    );
+    expect(res.stdout).toContain(
+      "match: https://alkemos.com/tools?utm_source=menu",
+    );
+    // ...and rejected T11 EN, the WHOLE AR family, and EN siblings
+    expect(res.stdout).toContain("no-match: https://alkemos.com/diet-plan");
+    expect(res.stdout).toContain("no-match: https://alkemos.com/ar/tools");
+    expect(res.stdout).toContain(
+      "no-match: https://alkemos.com/ar/tools/calorie-calculator",
+    );
+    expect(res.stdout).toContain("no-match: https://alkemos.com/tools-archive-x");
+    expect(res.stdout).toContain(
+      "no-match: https://ALKEMOS.com/TOOLS-ARCHIVE-X",
+    );
+  });
+
+  it("the selftest proves full data separation (§10.5-ب) structurally", () => {
+    const res = spawnSync("python3", [SCRIPT_PATH, "--selftest"], {
+      encoding: "utf8",
+      cwd: process.cwd(),
+    });
+    expect(res.status).toBe(0);
+    expect(res.stdout).toContain(
+      "separation: the two family expressions differ (never merged)",
+    );
+    expect(res.stdout).toContain("separation: AR regex matches NO EN-family URL");
+    expect(res.stdout).toContain("separation: EN regex matches NO AR-family URL");
+    expect(res.stdout).toContain(
+      "separation: the EN expression carries no /ar/ path",
+    );
+  });
+
+  it("the selftest render pins prove the unified entry + the comparison math", () => {
+    const res = spawnSync("python3", [SCRIPT_PATH, "--selftest"], {
+      encoding: "utf8",
+      cwd: process.cwd(),
+    });
+    expect(res.status).toBe(0);
+    expect(res.stdout).toContain(
+      "render: unified entry carries both families side by side",
+    );
+    expect(res.stdout).toContain(
+      "render: weekly growth per language (AR +100% · EN +300%)",
+    );
+    expect(res.stdout).toContain("render: gap math (EN imps = 50% of AR)");
+    expect(res.stdout).toContain(
+      "render: month-over-month comparison per language (AR +100% · EN +300%)",
+    );
+    expect(res.stdout).toContain(
+      "render: monthly entry carries both languages",
+    );
   });
 });

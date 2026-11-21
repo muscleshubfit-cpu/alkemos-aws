@@ -1,10 +1,22 @@
-# GSC AR-tools weekly monitor — the ORGANIC-GROWTH-P1-I «تشغيل».
+# GSC tools weekly monitor (AR + EN) — the ORGANIC-GROWTH-P1-I
+# «تشغيل», extended by ORGANIC-GROWTH-P1-I-EN.
 #
 # WHY (owner order 2026-11-21 «نفّذ البند التالي غير المنفّذ بالكامل» —
 # roadmap 10/P1-I): «مراقبة أدوات AR في GSC أسبوعيًا وفق 08-§2 (تشغيل +
 # سجل)» — acceptance «سجل شهري موثق». The «سجل» is
 # docs/organic-growth-system-2026-11-18/gsc-ar-weekly-monitoring-log.md;
 # this workflow + scripts/gsc-ar-weekly-report.py are the «تشغيل».
+#
+# P1-I-EN EXTENSION (owner order 2026-11-21 «نفّذ P1-I-EN بالكامل وفق
+# §10.5 من التقرير 28، مع الالتزام بالبنية الحالية لمراقبة العربية،
+# وإنتاج تقرير أسبوعي موحد يقارن أدوات العربية والإنجليزية» — report
+# 28 §10.5): the SAME workflow and schedule now read the EN-tools family
+# too — full data separation (each family its own single and-group
+# includingRegex filter) — and write ONE unified weekly entry comparing
+# AR↔EN (28d performance gap + per-language week-over-week growth) plus
+# the monthly documented reading for both languages. The log file is the
+# SAME (the §10.5-هـ sanctioned "expand the existing log" option). The
+# window law, read-only posture, and push discipline are UNCHANGED.
 #
 # WINDOW LAW (governing — GSC-RE-AUDIT-2026-11-12 + 08 header):
 # GSC execution opens 2026-11-30. The SCRIPT enforces it: any run
@@ -43,7 +55,7 @@
 # -disable after 60 days of repo inactivity (not applicable — active
 # repo; every code push deploys).
 
-name: GSC AR-tools weekly monitor (P1-I)
+name: GSC tools weekly monitor (P1-I AR + P1-I-EN)
 
 on:
   schedule:
@@ -74,7 +86,7 @@ jobs:
             exit 1
           fi
 
-      - name: Run the weekly reading (read-only GSC; window-guarded)
+      - name: Run the weekly reading (read-only GSC AR+EN; window-guarded)
         timeout-minutes: 5 # honest red beats a silent hang
         env:
           GSC_CREDENTIALS: ${{ secrets.GOOGLE_SEARCH_CONSOLE_CREDENTIALS }}
@@ -97,7 +109,7 @@ jobs:
             exit 0
           fi
           git add docs/organic-growth-system-2026-11-18/gsc-ar-weekly-monitoring-log.md
-          git commit -m "docs(seo): GSC AR-tools weekly reading $(date -u +%F) (P1-I monitoring — worklog ORGANIC-GROWTH-P1-I-2026-11-21)" --quiet
+          git commit -m "docs(seo): GSC tools weekly reading AR+EN $(date -u +%F) (P1-I + P1-I-EN monitoring — worklog ORGANIC-GROWTH-P1-I-EN-2026-11-21)" --quiet
           # 343-FIXUP-3: actions/checkout persists the default GITHUB_TOKEN as an
           # http extraheader which HIJACKS the URL-embedded PAT. Drop it so
           # REPO_ACCESS_TOKEN (owner PAT = ruleset bypass actor) actually rides
