@@ -38,9 +38,15 @@ REQUEST SHAPE (P1-I-FIX 2026-11-21 — the dimensionFilterGroups repair):
   all six family patterns at once: zero matching rows, silently. The repair ships the family as the API
   actually supports it: exactly ONE "and" group holding ONE page
   filter with operator includingRegex, whose single RE2 expression
-  alternates the six escaped family patterns (unanchored substring
-  semantics + the (?i) inline flag preserve the retired contains
-  operator's documented non-case-sensitive substring match). Pure
+  alternates the six escaped family patterns — each hard-terminated
+  by a REAL PATH BOUNDARY "(?:[/?]|$)" (end of URL, a following
+  path separator, or a query string) with the whole alternation
+  ^-anchored, so a family page matches ITSELF and its true SUBPATHS
+  only, never a longer sibling segment such as /ar/tools-archive-x
+  or /ar/meal-planner-extra (the final review 2026-11-21 retired the
+  contains-era unanchored substring match precisely because it
+  swallowed such siblings). The (?i) inline flag keeps the match
+  non-case-sensitive (RE2-supported). Pure
   construction is pinned by `--selftest` (below) and by the canary
   that spawns it — the request STRUCTURE and its SEMANTICS, not
   script-text presence.
@@ -72,10 +78,11 @@ Google's exact message; a failed run never writes a partial log entry.
 Run:  python3 scripts/gsc-ar-weekly-report.py            (weekly reading)
       python3 scripts/gsc-ar-weekly-report.py --selftest (P1-I-FIX
       construction test: builds every real payload, asserts the
-      one-group/includingRegex shape and matches the RE2 family
-      expression against a must-match/must-not-match URL battery —
-      no network, no secrets, no log writes; runs before AND after
-      the 2026-11-30 window)
+      one-group/includingRegex shape and matches the path-BOUNDED RE2
+      family expression against a must-match/must-not-match URL
+      battery — sibling segments like /ar/tools-archive-x are
+      must-NOT-match — no network, no secrets, no log writes; runs
+      before AND after the 2026-11-30 window)
 """
 
 import base64
@@ -110,8 +117,11 @@ WINDOW_OPENS = dt.date(2026, 11, 30)
 # The AR-tools family = the AR mirrors of the 06-§1 tool inventory
 # (T1-T10 + the /ar/tools hub). T11 (/ar/diet-plan) is its OWN family in
 # 08-§2.1 and is deliberately EXCLUDED here. The P1-I canary pins this
-# list against the actual src/app/(ar)/ar routes.
-AR_TOOLS_PAGE_CONTAINS = [
+# list against the actual src/app/(ar)/ar routes. Renamed off
+# *_PAGE_CONTAINS in the final review: the contains-era substring
+# semantics are retired — each entry is matched as a BOUNDED page
+# prefix (itself + true subpaths only — see ar_page_regex).
+AR_TOOLS_FAMILY_PAGES = [
     "https://alkemos.com/ar/tools",               # hub + T1-T5
     "https://alkemos.com/ar/meal-planner",        # T6
     "https://alkemos.com/ar/ai-meal-planner",     # T7
@@ -322,21 +332,34 @@ def query_api(prop, auth_headers, dims=None, filter_group=None, row_limit=None,
         raise QueryError(0, "HTTP 200 with non-JSON body (truncated): `" + text[:200] + "`")
 
 
+# A family entry matches the page ITSELF or a true SUBPATH of it —
+# never a longer sibling segment. The boundary terminates the escaped
+# pattern at: end of URL ($) · a following path separator (/) · a
+# query string (?) — so /ar/tools matches /ar/tools, /ar/tools/<sub>
+# and /ar/tools?x but NOT /ar/tools-archive-x (final review
+# 2026-11-21: the contains-era unanchored substring match was retired
+# precisely because it swallowed sibling segments like that).
+PATH_BOUNDARY = "(?:[/?]|$)"
+
+
 def ar_page_regex():
-    """One RE2 expression alternating the six family patterns (the
-    API-compatible family OR). re.escape escapes only regex-special
-    characters — for these URLs that is the dots and hyphens, and
-    backslash+punctuation is a literal in RE2 exactly as in Python re.
-    The (?i) inline flag preserves the retired contains operator's
-    documented non-case-sensitive substring semantics."""
-    return "(?i)" + "|".join(re.escape(p) for p in AR_TOOLS_PAGE_CONTAINS)
+    """One RE2 expression alternating the six path-BOUNDED family
+    patterns (the API-compatible family OR). re.escape escapes only
+    regex-special characters — for these URLs that is the dots and
+    hyphens, and backslash+punctuation is a literal in RE2 exactly as
+    in Python re. The whole alternation is ^-anchored and every branch
+    is terminated by PATH_BOUNDARY, so a page value matches a family
+    pattern only at a real path boundary; the (?i) inline flag keeps
+    the match non-case-sensitive."""
+    return ("(?i)^(?:" + "|".join(re.escape(p) + PATH_BOUNDARY
+                                  for p in AR_TOOLS_FAMILY_PAGES) + ")")
 
 
 def ar_filter_group():
     """The family filter in the shape the Search Console API actually
     supports: ONE 'and' group (the only supported groupType) holding ONE
     page filter with operator includingRegex — the single RE2 alternation
-    of ar_page_regex() with unanchored substring semantics."""
+    of ar_page_regex() with bounded path semantics (^ + PATH_BOUNDARY)."""
     return {"groupType": "and", "filters": [
         {"dimension": "page", "operator": "includingRegex",
          "expression": ar_page_regex()}]}
@@ -786,14 +809,15 @@ def selftest():
 
     # -- 1. the family RE2 expression ------------------------------------
     expr = ar_page_regex()
-    body = expr[len("(?i)"):]
-    branches = body.split("|")
-    check("regex: case-insensitive inline flag preserved (contains parity)",
+    check("regex: case-insensitive inline flag preserved",
           expr.startswith("(?i)"))
-    check("regex: exactly six alternation branches", len(branches) == 6,
-          len(branches))
-    check("regex: every branch is re.escape(pattern) verbatim (RE2-literal)",
-          branches == [re.escape(p) for p in AR_TOOLS_PAGE_CONTAINS])
+    check("regex: ^-anchored alternation '(?i)^(?:' ... ')'",
+          expr.startswith("(?i)^(?:") and expr.endswith(")"),
+          expr[:12] + "..." + expr[-4:])
+    check("regex: exactly six boundary tokens (one per family branch)",
+          expr.count(PATH_BOUNDARY) == 6, expr.count(PATH_BOUNDARY))
+    check("regex: every family pattern present exactly once, re.escape'd",
+          all(expr.count(re.escape(p)) == 1 for p in AR_TOOLS_FAMILY_PAGES))
     try:
         compiled = re.compile(expr)
         check("regex: compiles (RE2-compatible escapes only)", True)
@@ -816,13 +840,13 @@ def selftest():
         "https://alkemos.com/ar/ai-workout-planner",       # T8
         "https://alkemos.com/ar/macro-tracker",            # T9
         "https://alkemos.com/ar/workout-tracker",          # T10
-        "https://ALKEMOS.com/ar/TOOLS",                    # contains parity
-        # substring semantics parity: the retired contains operator
-        # matched any URL CONTAINING the family path — so does the
-        # unanchored regex; /ar/tools-archive-x contains /ar/tools.
-        "https://alkemos.com/ar/tools-archive-x",
+        "https://ALKEMOS.com/ar/TOOLS",                    # (?i) parity
+        "https://alkemos.com/ar/tools?utm_source=menu",    # query-string form
+        "https://alkemos.com/ar/tools/water-tracker?week=2",  # subpath + query
+        "https://ALKEMOS.com/ar/tools/Calorie-Calculator", # (?i) through subpath
     ]
-    # -- 3. semantics: MUST NOT match (T11 · EN family · others · www) ---
+    # -- 3. semantics: MUST NOT match (T11 · EN family · SIBLING segments
+    #       · others · www) — the boundary rejects every longer sibling --
     must_not_match = [
         "https://alkemos.com/ar/diet-plan",             # T11 — own family
         "https://alkemos.com/tools",                    # EN hub
@@ -835,7 +859,16 @@ def selftest():
         "https://alkemos.com/",                         # homepage
         "https://alkemos.com/ar/foods/olive-oil",       # foods family
         "https://alkemos.com/ar/coaching",              # coaching family
-        "https://www.alkemos.com/ar/tools",             # www (old parity)
+        "https://www.alkemos.com/ar/tools",             # www (contains-era parity)
+        # final-review boundary negatives: sibling segments that CONTAIN a
+        # family pattern as a string prefix must NOT match — the retired
+        # unanchored expression swallowed all of these.
+        "https://alkemos.com/ar/tools-archive-x",               # hub + '-archive-x'
+        "https://alkemos.com/ar/tools-archive-x/weekly",        # sibling subpath
+        "https://alkemos.com/ar/toolsmith",                     # same-segment prefix
+        "https://alkemos.com/ar/meal-planner-extra",            # T6 + '-extra'
+        "https://alkemos.com/ar/meal-planner-extra/weekly-plan",  # sibling subpath
+        "https://ALKEMOS.com/ar/TOOLS-ARCHIVE-X",               # (?i) must not weaken the boundary
     ]
     if compiled is not None:
         for u in must_match:
@@ -919,12 +952,15 @@ def selftest():
     retired_or_group = '"groupType"' + ": " + '"or"'
     retired_group_lc = '"filters"' + ": [f]} for f in filters"
     retired_contains = '"operator"' + ": " + '"contains"'
+    retired_unanchored = 'return "' + '(?i)" + "|".join('
     check("retired: no groupType 'or' literal in the module",
           retired_or_group not in src)
     check("retired: no per-filter group list comprehension in the module",
           retired_group_lc not in src)
     check("retired: no contains-operator family filter in the module",
           retired_contains not in src)
+    check("retired: no unanchored contains-era family join in the module",
+          retired_unanchored not in src)
 
     # -- 7. the governing invariants the fix must NOT touch --------------
     check("window law: WINDOW_OPENS still 2026-11-30",

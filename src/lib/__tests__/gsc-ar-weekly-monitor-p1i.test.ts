@@ -43,6 +43,19 @@ import { spawnSync } from "node:child_process";
  * construction, no network/secrets/log writes) — not script-text
  * presence. python3 is already a hard battery requirement here (the
  * docs gates + the weekly workflow itself run python3).
+ *
+ * P1-I-FIX FINAL REVIEW (owner order 2026-11-21 «مراجعة أخيرة قبل
+ * إغلاق P1-I-FIX»): the family RE2 is now PATH-BOUNDED — every
+ * branch is terminated by "(?:[/?]|$)" (end of URL, a following
+ * path separator, or a query string) and the alternation is
+ * ^-anchored, so a family page matches ITSELF and its true SUBPATHS
+ * only — never a longer sibling segment such as /ar/tools-archive-x
+ * or /ar/meal-planner-extra (the contains-era unanchored substring
+ * match was retired: it swallowed exactly those siblings). The
+ * boundary pins below assert both directions from the REAL selftest
+ * output: subpaths + query-string forms still match; sibling
+ * segments are rejected (incl. uppercase ones — (?i) must not
+ * weaken the boundary).
  */
 
 const read = (p: string) => readFileSync(resolve(process.cwd(), p), "utf8");
@@ -217,8 +230,8 @@ describe("P1-I AR-tools family — pinned against the real app routes", () => {
 
   it("T11 /ar/diet-plan is deliberately EXCLUDED (its own 08-§2.1 family)", () => {
     const familyBlock = script.slice(
-      script.indexOf("AR_TOOLS_PAGE_CONTAINS = ["),
-      script.indexOf("]", script.indexOf("AR_TOOLS_PAGE_CONTAINS = [")),
+      script.indexOf("AR_TOOLS_FAMILY_PAGES = ["),
+      script.indexOf("]", script.indexOf("AR_TOOLS_FAMILY_PAGES = [")),
     );
     expect(familyBlock).not.toContain("diet-plan");
   });
@@ -315,6 +328,23 @@ describe("P1-I FIX — the API request contract (structure AND semantics)", () =
     expect(res.stdout).toContain("match: https://alkemos.com/ar/tools/calorie-calculator");
     expect(res.stdout).toContain("no-match: https://alkemos.com/ar/diet-plan");
     expect(res.stdout).toContain("no-match: https://alkemos.com/tools/calorie-calculator");
+    // final-review boundary semantics, pinned from the REAL battery:
+    // subpaths and query-string forms still match...
+    expect(res.stdout).toContain("match: https://alkemos.com/ar/tools?utm_source=menu");
+    expect(res.stdout).toContain(
+      "match: https://alkemos.com/ar/tools/water-tracker?week=2",
+    );
+    // ...and sibling segments are REJECTED — the exact cases the
+    // retired unanchored expression swallowed.
+    expect(res.stdout).toContain("no-match: https://alkemos.com/ar/tools-archive-x");
+    expect(res.stdout).toContain("no-match: https://alkemos.com/ar/meal-planner-extra");
+    expect(res.stdout).toContain(
+      "no-match: https://alkemos.com/ar/meal-planner-extra/weekly-plan",
+    );
+    expect(res.stdout).toContain("no-match: https://ALKEMOS.com/ar/TOOLS-ARCHIVE-X");
+    expect(res.stdout).toContain(
+      "regex: exactly six boundary tokens (one per family branch)",
+    );
   });
 
   it("attaches exactly ONE filter group — the retired per-family groups are gone", () => {
@@ -327,12 +357,26 @@ describe("P1-I FIX — the API request contract (structure AND semantics)", () =
   it("the family rides ONE includingRegex (RE2) page filter in an 'and' group", () => {
     expect(script).toContain('"groupType": "and"');
     expect(script).toContain('"operator": "includingRegex"');
-    expect(script).toContain('def ar_page_regex():');
+    expect(script).toContain("def ar_page_regex():");
     // the expression is DERIVED from the pinned family list (single
-    // source of truth), escaped for RE2, with the (?i) contains parity
-    expect(script).toContain('return "(?i)" + "|".join(re.escape(p) for p in AR_TOOLS_PAGE_CONTAINS)');
+    // source of truth), escaped for RE2, with the (?i) flag
+    expect(script).toContain("for p in AR_TOOLS_FAMILY_PAGES");
     // the retired contains-operator family filter must not return
     expect(script).not.toContain('"operator": "contains"');
+  });
+
+  it("the family RE2 is PATH-BOUNDED — the retired unanchored join is gone (final review)", () => {
+    // every branch is terminated by the real path boundary and the
+    // alternation is ^-anchored: a family page matches itself + its
+    // true subpaths only, never a longer sibling segment.
+    expect(script).toContain('PATH_BOUNDARY = "(?:[/?]|$)"');
+    expect(script).toContain('return ("(?i)^(?:" + "|".join(re.escape(p) + PATH_BOUNDARY');
+    // the retired unanchored contains-era construction must not return
+    expect(script).not.toContain('return "(?i)" + "|".join(');
+    // the family list itself is named for what it now is — bounded
+    // pages, not contains patterns
+    expect(script).toContain("AR_TOOLS_FAMILY_PAGES = [");
+    expect(script).not.toContain("AR_TOOLS_PAGE_CONTAINS");
   });
 
   it("every family call site passes the single filter group (7 queries)", () => {
