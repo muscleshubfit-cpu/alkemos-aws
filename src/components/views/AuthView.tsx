@@ -510,12 +510,19 @@ export function AuthView({ mode, next, coach }: { mode: "login" | "signup"; next
                     />
                   </div>
                   <div className="space-y-2">
+                    {/* ORGANIC-GROWTH-D-C (owner decision 2026-11-21 — phone
+                        NOT mandatory at registration): the `required` attr is
+                        GONE from this input (the only enforcement point of
+                        the old mandate — coach register and invite-adopt were
+                        already optional, profiles.phone is nullable, and the
+                        0001 trigger reads raw_user_meta_data->>'phone' which
+                        is NULL when absent). Label marks it optional in both
+                        languages via i18n "auth.phone". */}
                     <Label htmlFor="phone" className="text-sm font-medium">
                       {t("auth.phone")}
                     </Label>
                     <Input
                       id="phone"
-                      required
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                       placeholder="+20 100 000 0000"

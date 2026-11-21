@@ -43,6 +43,12 @@ export async function signUpEmail(
  phone: string,
  coachSlug?: string | null,
 ): Promise<{ error: string | null; profile: Profile | null; needsConfirmation?: boolean; duplicateEmail?: boolean }> {
+ // ORGANIC-GROWTH-D-C (owner decision 2026-11-21 — phone NOT mandatory
+ // at registration): an empty phone must never reach the DB as "" — the
+ // signup metadata OMITS the key entirely (the 0001 handle_new_user
+ // trigger then reads raw_user_meta_data->>'phone' as NULL into the
+ // nullable profiles.phone) and the local-fallback profile stores null.
+ const phoneValue = phone.trim();
  if (isSupabaseConfigured && supabase) {
  // COACH ATTRIBUTION (0033): a slug from /auth?coach={slug} (or the
  // 30-day cookie set by the landing page CTA) travels in the signup
@@ -63,7 +69,7 @@ export async function signUpEmail(
  options: {
   data: {
    full_name: fullName,
-   phone,
+   ...(phoneValue ? { phone: phoneValue } : {}),
    role: "client",
    ...(resolvedCoachSlug ? { coach_slug: resolvedCoachSlug } : {}),
    ...(refCode ? { referral_code: refCode } : {}),
@@ -182,7 +188,7 @@ export async function signUpEmail(
  id: data.user.id,
  email: data.user.email ?? null,
  full_name: fullName,
- phone,
+ phone: phoneValue || null,
  role: "client",
  coach_kind: null,
  invite_adopted_at: null,
@@ -220,7 +226,7 @@ export async function signUpEmail(
  id,
  email,
  full_name: fullName,
- phone,
+ phone: phoneValue || null,
  role: "client",
  coach_kind: null,
  invite_adopted_at: null,
