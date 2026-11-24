@@ -35,7 +35,13 @@ CHECK TYPES:
                        2026-10-29; the legacy QA_PROBE_* repo secrets are
                        retired) and assert fields on one returned row. THE
                        strongest: it exercises auth + RLS + the function
-                       body itself.
+                       body itself. With "use_fixture": true the matched row
+                       is the EPHEMERAL ISOLATED test client provisioned by
+                       scripts/db/probe_fixture.py (MIGRATION-PROBE-0102-
+                       ISOLATION 2026-11-24, the issue-#8 lesson) — the check
+                       runs on self-owned deterministic test data and the
+                       registry row carries NO client identifiers at all:
+                       probes must never depend on (or name) real customers.
 
 PRIVACY: probes must never print client PII. rpc_behavior rows are matched by
   client UUID and only the asserted fields are reported (repo is public).
@@ -102,10 +108,19 @@ PROBES: list[dict] = [
              "expect": 0},
         ],
     },
-    # 0102 — SUB-PICK-ACTIVE-FIRST (THE reported defect, measured through the
-    # app's own admin list code path: the renewed-ACTIVE coaching of client
-    # 87cd7ba6 (samarsamy0992@gmail.com) must be the picked primary — the
-    # expired premium row may never mask it again)
+    # 0102 — SUB-PICK-ACTIVE-FIRST (THE reported defect, measured on an
+    # ISOLATED ephemeral fixture — MIGRATION-PROBE-0102-ISOLATION 2026-11-24,
+    # the issue-#8 lesson: the original probe asserted a REAL production
+    # client's mutable subscription state and false-RED'd from 2026-11-23 the
+    # moment that client's coaching lapsed, while the migration's law was
+    # live. The fixture (scripts/db/probe_fixture.py) reproduces the EXACT
+    # defect shape on self-owned test data — an EXPIRED higher-tier premium
+    # row that must never mask a renewed ACTIVE lower-tier coaching row —
+    # so the probe keeps its full behavioral strength (auth + RLS + the
+    # function body through the real admin code path) with zero dependence
+    # on real customers and zero time-rot (the coaching row's end_date is
+    # 10 years out). A drift back to the pre-0102 tier-priority pick turns
+    # this RED the same day.)
     {
         "file": "20261026120000_0102_sub_pick_active_first.sql",
         "label": "0102 SUB-PICK-ACTIVE-FIRST",
@@ -113,8 +128,7 @@ PROBES: list[dict] = [
         "checks": [
             {"type": "rpc_behavior",
              "rpc": "get_coach_client_list_paged",
-             "body": {"p_limit": 5, "p_search": "samar"},
-             "find_client": "87cd7ba6-9e25-4fec-a7b6-b75ed1e2e09b",
+             "use_fixture": True,
              "expect": {"sub_tier": "coaching", "sub_status": "active"},
              "field_rules": [{"field": "sub_end_date", "op": "gt_now"}]},
         ],

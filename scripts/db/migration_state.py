@@ -15,7 +15,12 @@ WHAT IT DOES (read-only — zero writes, any environment):
      that call the real RPCs as an EPHEMERAL QA admin (auto-provisioned and
      hard-deleted within the run by `scripts/db/probe_session.py`, same
      Test-Accounts Channel guards — QA-TEST-ACCOUNTS-CLOSE 2026-10-29) —
-     the same code path the admin UI uses.
+     the same code path the admin UI uses. A behavioral probe may declare
+     `use_fixture` (MIGRATION-PROBE-0102-ISOLATION 2026-11-24): it then
+     runs against an EPHEMERAL ISOLATED test client provisioned by
+     `scripts/db/probe_fixture.py` (deterministic subscription scenario,
+     hard-deleted within the run) — NEVER against real customer data, the
+     0102 false-RED lesson (issue #8).
   3. Verdict:
        APPLIED        every probe of the LATEST migration passes
        NOT-APPLIED    a probe fails (measurable drift — the exact 2026-10-27
@@ -51,6 +56,7 @@ from datetime import datetime, timezone
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 
+import probe_fixture  # noqa: E402
 import probe_session  # noqa: E402
 from migration_probes import PROBES, TRANSFORMS  # noqa: E402
 
@@ -150,23 +156,43 @@ def run_probe(check: dict, env: dict, swagger: dict) -> tuple[bool, str]:
                 "(scripts/db/probe_session.py); see the provisioning error "
                 "above")
         jwt = env["probe_jwt"]
+        # ISOLATED FIXTURE variant (MIGRATION-PROBE-0102-ISOLATION
+        # 2026-11-24, issue #8): the check runs against the ephemeral
+        # test client provisioned by scripts/db/probe_fixture.py — a
+        # deterministic, self-owned subscription scenario — never
+        # against real customer data. body/find_client come from the
+        # live fixture, so the registry row itself carries NO client
+        # identifiers at all.
+        fixture = bool(check.get("use_fixture"))
+        if fixture and not env.get("fixture_uid"):
+            return False, (
+                "test-client fixture missing — the isolated fixture "
+                "could not be provisioned this run "
+                "(scripts/db/probe_fixture.py); see the provisioning "
+                "error above")
+        body = ({"p_limit": 5, "p_search": env["fixture_search"]}
+                if fixture else check["body"])
+        find_client = (env["fixture_uid"] if fixture
+                       else check["find_client"])
+        who = (f"fixture client …{env['fixture_search'][-6:]}" if fixture
+               else f"client {check['find_client'][:8]}…")
         st, rows = http("POST",
                         env["sb"] + f"/rest/v1/rpc/{check['rpc']}",
-                        env["anon"], token=jwt, body=check["body"])
+                        env["anon"], token=jwt, body=body)
         if st != 200:
             return False, f"rpc {check['rpc']} -> HTTP {st}: " \
                           f"{str(rows)[:140]}"
         if not isinstance(rows, list):
             return False, f"rpc {check['rpc']} returned non-list payload"
         row = next((r for r in rows
-                    if r.get("client_id") == check["find_client"]), None)
+                    if r.get("client_id") == find_client), None)
         if row is None:
-            return False, f"client {check['find_client'][:8]}… not found in " \
+            return False, f"{who} not found in " \
                           f"{check['rpc']} response ({len(rows)} rows)"
         # assert fields — print ONLY the asserted fields (no PII)
         for field, expected in check["expect"].items():
             if row.get(field) != expected:
-                return False, (f"client {check['find_client'][:8]}… "
+                return False, (f"{who} "
                                f"{field}={row.get(field)!r} "
                                f"(migration expects {expected!r})")
         for rule in check.get("field_rules", []):
@@ -174,12 +200,12 @@ def run_probe(check: dict, env: dict, swagger: dict) -> tuple[bool, str]:
             if rule["op"] == "gt_now":
                 ok = bool(val) and parse_isodate(val) > datetime.now(timezone.utc)
                 if not ok:
-                    return False, (f"client {check['find_client'][:8]}… "
+                    return False, (f"{who} "
                                    f"{rule['field']}={val} is not in the "
                                    f"future (expects an ACTIVE row)")
         got = {f: row.get(f) for f in list(check["expect"])
                + [r["field"] for r in check.get("field_rules", [])]}
-        return True, f"client {check['find_client'][:8]}… picked {got}"
+        return True, f"{who} picked {got}"
 
     if t == "self_role_patch_rejected":
         # 0105 DRIFT GUARD (ADMIN-ROLE-LOSS-FORENSICS-AND-FIX 2026-11-05):
@@ -278,6 +304,31 @@ def main() -> int:
                   f"provisioned: {e}")
             env["probe_jwt"] = ""
 
+    # ---- ephemeral ISOLATED test-client fixture (the 0102 lesson, issue
+    # #8 — MIGRATION-PROBE-0102-ISOLATION 2026-11-24): same lifecycle as
+    # the probe session — created, used, hard-deleted inside THIS run;
+    # crashed-run leftovers are swept by the next run. Carries its own
+    # deterministic subscription scenario so behavioral probes never
+    # depend on (or print) real customer data.
+    needs_fixture = any(c.get("use_fixture")
+                        for p in PROBES for c in p["checks"])
+    fixture_email = ""
+    if needs_fixture:
+        for note in probe_fixture.cleanup_stale(sb, service):
+            print(f"- probe-fixture stale sweep: {note}")
+        try:
+            fixture_email, fixture_uid, fixture_search = \
+                probe_fixture.create(sb, service)
+            env["fixture_uid"] = fixture_uid
+            env["fixture_search"] = fixture_search
+            print(f"- probe fixture: {fixture_email} (ephemeral isolated "
+                  "test client — expired premium + active coaching; "
+                  "deleted at the end of this run)")
+        except Exception as e:
+            print(f"::error::isolated test-client fixture could not be "
+                  f"provisioned: {e}")
+            env["fixture_uid"] = ""
+
     try:
         results = []
         for p in PROBES:  # ordered registry — advisory anchors first
@@ -293,6 +344,9 @@ def main() -> int:
         if probe_email:
             print(f"- probe session cleanup: "
                   f"{probe_session.destroy(sb, service, probe_email)}")
+        if fixture_email:
+            print(f"- probe fixture cleanup: "
+                  f"{probe_fixture.destroy(sb, service, fixture_email)}")
 
     # ---- verdict: EVERY registered probe must pass --------------------------
     # (not just the latest — the 2026-10-27 reconciliation proved why: 0103
@@ -304,7 +358,8 @@ def main() -> int:
     failing = [r for r in results if not r["passed"]]
     unverifiable = any(
         ("session missing" in c["detail"]
-         or "ANON_KEY missing" in c["detail"])
+         or "ANON_KEY missing" in c["detail"]
+         or "fixture missing" in c["detail"])
         for r in results for c in r["checks"] if not c["ok"])
     if latest_probe is None:
         verdict = "UNVERIFIABLE"
