@@ -67,7 +67,7 @@ export default function DesignPreview({ lang = "en" }: Props) {
         <Link href={ar ? "/ar" : "/"} className={styles.brand} aria-label="Alkemos home">
           <Image src="/images/brand/logo-hero-light.webp" alt="Alkemos" width={152} height={54} priority />
         </Link>
-        <nav className={styles.nav}>{c.nav.map((item, i) => <a key={item} href={["/exercises","/foods","/tools","/coaching"][i]}>{item}</a>)}</nav>
+        <nav className={styles.nav}>{c.nav.map((item, i) => <a key={item} href={(ar ? ["/ar/exercises","/ar/foods","/ar/tools","/ar/coaching"] : ["/exercises","/foods","/tools","/coaching"])[i]}>{item}</a>)}</nav>
         <Link className={styles.headerCta} href={ar ? "/ar/memberships" : "/memberships"}>{ar ? "ابدأ رحلتك" : "Get started"} <span>↗</span></Link>
       </header>
 
