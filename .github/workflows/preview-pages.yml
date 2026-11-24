@@ -1,0 +1,34 @@
+name: Publish isolated design preview
+on:
+  push:
+    branches:
+      - design/alkemos-home-redesign-preview
+    paths:
+      - 'preview-pages/**'
+      - '.github/workflows/preview-pages.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pages-design-preview
+  cancel-in-progress: true
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout preview branch
+        uses: actions/checkout@v4
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+      - name: Upload static preview
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: preview-pages
+      - name: Deploy preview
+        id: deployment
+        uses: actions/deploy-pages@v4
