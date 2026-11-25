@@ -24,6 +24,14 @@
 #   persistent test-account dependency and no QA_PROBE_* secrets).
 #   Verdict RED until the LATEST repo migration is proven applied.
 #
+#   Since ACCOUNTS-ORPHAN-AUDIT 2026-11-25 the same run ALSO executes
+#   scripts/db/accounts_orphan_audit.py — the read-only auth.users ↔
+#   profiles consistency check (auth-without-profile / profile-without-
+#   auth / orphaned dependent rows; reserved-test-domain census). The
+#   owner order behind it: after deleting test accounts from the admin
+#   panel, the deletion's two failure shapes must be MEASURABLE, not
+#   assumed — the same observability law as the migration probes.
+#
 # VISIBILITY LAW: on drift this gate (a) fails loudly, (b) files ONE
 #   deduplicated issue (label migration-drift) with the evidence and the
 #   two fix paths, so silent drift is structurally impossible again.
@@ -68,6 +76,25 @@ jobs:
           echo "STATE_RC=$rc" >> "$GITHUB_ENV"
           exit 0  # the issue step below must still run on drift
 
+      # ACCOUNTS-ORPHAN-AUDIT 2026-11-25: read-only auth.users ↔ profiles
+      # consistency — runs AFTER the state probes so the 0102 fixture's
+      # own create→probe→destroy cycle is already complete: any leftover
+      # of that cycle (or of the owner's admin-panel deletions, or of any
+      # crashed run) lands in this audit's buckets. Real data is never
+      # deleted by anything here — detection only (AGENTS.md §3.3); the
+      # qa.* channel leftovers self-heal via the cleanup_stale sweeps the
+      # state step above already ran.
+      - name: Accounts orphan audit (auth ↔ profiles — read-only)
+        env:
+          SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          set +e
+          python3 scripts/db/accounts_orphan_audit.py
+          rc=$?
+          echo "ORPHAN_RC=$rc" >> "$GITHUB_ENV"
+          exit 0  # the final verdict below propagates it
+
       - name: File/dedupe the drift issue (evidence + fix paths)
         if: env.STATE_RC != '0'
         env:
@@ -96,5 +123,17 @@ jobs:
       - name: Final verdict (propagates the probe exit code)
         if: ${{ always() }}
         run: |
-          [ "${STATE_RC:-2}" = "0" ] && echo "migration state: GREEN" && exit 0
-          exit 1
+          rc=0
+          if [ "${STATE_RC:-2}" = "0" ]; then
+            echo "migration state: GREEN"
+          else
+            echo "migration state: RED"
+            rc=1
+          fi
+          if [ "${ORPHAN_RC:-2}" = "0" ]; then
+            echo "accounts orphan audit: CLEAN"
+          else
+            echo "accounts orphan audit: ORPHANS DETECTED (see the audit step above)"
+            rc=1
+          fi
+          exit $rc

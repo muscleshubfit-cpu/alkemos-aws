@@ -23,13 +23,21 @@ THE DESIGN (this module):
     1. cleanup_stale()   — best-effort sweep of leftovers from crashed
                            runs (qa.probe.* older than 1h), so the
                            mechanism self-heals on the next daily run.
+                           TWO passes (ACCOUNTS-ORPHAN-AUDIT 2026-11-25):
+                           profile-driven (stale test profiles) AND
+                           auth-driven (auth users of this channel whose
+                           profile is ALREADY gone — the crash window
+                           between the two DELETEs that the profile-driven
+                           pass alone could never see).
     2. create()          — qa.probe.<stamp><rand>@alkemos-test.com,
                            random one-time password (never printed),
                            email_confirm=true, then role=admin +
                            is_test_account=true on its profile row.
     3. signin()          — password grant → access token (JWT).
     4. destroy()         — profile row + auth user hard-deleted, then
-                           verified. Called in a finally block by the
+                           VERIFIED: both re-read after deletion (not
+                           just the HTTP status — ACCOUNTS-ORPHAN-AUDIT
+                           2026-11-25). Called in a finally block by the
                            gate — a RED run still cleans up.
 
   No credential is ever printed, logged, or stored; the password lives
@@ -99,9 +107,24 @@ def _profile(sb: str, service: str, email: str) -> dict | None:
     return None
 
 
+def _auth_user_exists(sb: str, service: str, uid: str) -> bool | None:
+    """ACTUAL post-delete verification: re-read the auth user through the
+    Admin API. True = still present, False = gone, None = indeterminate
+    (any other HTTP status). ACCOUNTS-ORPHAN-AUDIT 2026-11-25: a delete
+    whose only proof is "HTTP 200" can still leave an invisible orphan."""
+    st, _ = _http("GET", sb + f"/auth/v1/admin/users/{uid}", service)
+    if st == 200:
+        return True
+    if st == 404:
+        return False
+    return None
+
+
 def _destroy_one(sb: str, service: str, uid: str, email: str) -> str:
-    """Hard-delete one probe account (profile row, then auth user).
-    Returns a short human status. Profile-first order = the 0095 map."""
+    """Hard-delete one probe account (profile row, then auth user), then
+    VERIFY BOTH actually disappeared by re-reading them (not just the
+    HTTP status of the DELETE — ACCOUNTS-ORPHAN-AUDIT 2026-11-25).
+    Profile-first order = the 0095 map. Returns a short human status."""
     notes = []
     st, _ = _http("DELETE", sb + f"/rest/v1/profiles?id=eq.{uid}", service)
     notes.append(f"profile:{'deleted' if st in (200, 204) else f'HTTP {st}'}")
@@ -111,13 +134,88 @@ def _destroy_one(sb: str, service: str, uid: str, email: str) -> str:
     notes.append(f"auth-user:{'deleted' if ok else f'HTTP {st}'}")
     left = _profile(sb, service, email)
     notes.append("residual:" + ("none" if left is None else "PROFILE STILL THERE"))
+    gone = _auth_user_exists(sb, service, uid)
+    notes.append("auth-residual:" + (
+        "none" if gone is False
+        else "AUTH USER STILL THERE" if gone is True
+        else "unknown(HTTP)"))
     return ", ".join(notes)
+
+
+def auth_users_all(sb: str, service: str) -> list[dict]:
+    """Every auth user through the Admin API, paginated (id/email/
+    created_at kept — everything else dropped). READ-ONLY; raises on
+    transport failure. Shared by the stale sweeps and the accounts
+    orphan audit (scripts/db/accounts_orphan_audit.py)."""
+    out: list[dict] = []
+    page = 1
+    while page <= 100:  # safety cap: 100 pages × 200 users
+        st, body = _http(
+            "GET",
+            sb + f"/auth/v1/admin/users?per_page=200&page={page}", service)
+        if st != 200 or not isinstance(body, dict):
+            raise RuntimeError(
+                f"admin user list failed (HTTP {st}): {str(body)[:120]}")
+        users = body.get("users") or []
+        out.extend({"id": u.get("id"), "email": u.get("email"),
+                    "created_at": u.get("created_at")} for u in users)
+        nxt = body.get("next_page")
+        if not nxt or not users:
+            break
+        page = int(nxt)
+    return out
+
+
+def sweep_orphan_auth_users(sb: str, service: str, prefix: str) -> list[str]:
+    """Clean up the leftovers the profile-driven sweep CANNOT see: auth
+    users carrying THIS channel's prefix + the reserved test domain,
+    older than STALE_AFTER_HOURS, whose profile row is ALREADY GONE (the
+    crash window between the profile DELETE and the auth DELETE).
+    Ownership is verified on THREE axes before any delete — email
+    prefix, reserved domain, and age; a profile-present account is never
+    touched here (the profile-driven pass above owns it, with its own
+    is_test_account guard). Returns per-account notes."""
+    notes: list[str] = []
+    cutoff = datetime.now(timezone.utc) - timedelta(hours=STALE_AFTER_HOURS)
+    try:
+        users = auth_users_all(sb, service)
+    except RuntimeError as e:
+        # best-effort sweep: surface, never crash the gate
+        return [f"orphan-auth sweep skipped: {e}"]
+    for u in users:
+        email = (u.get("email") or "").lower()
+        if not (email.startswith(prefix) and email.endswith(PROBE_DOMAIN)):
+            continue  # not this channel's account — NEVER touched
+        created = u.get("created_at") or ""
+        when = None
+        try:
+            if created:
+                when = datetime.fromisoformat(created.replace("Z", "+00:00"))
+        except ValueError:
+            when = None
+        if when is not None and when.tzinfo is None:
+            when = when.replace(tzinfo=timezone.utc)
+        if when is None or when >= cutoff:
+            continue  # young (or unknown age) — may be an ACTIVE run
+        if _profile(sb, service, email) is not None:
+            continue  # profile exists — not an orphan (profile sweep owns it)
+        st, _ = _http("DELETE", sb + f"/auth/v1/admin/users/{u['id']}",
+                      service)
+        gone = _auth_user_exists(sb, service, u["id"])
+        notes.append(
+            f"orphaned auth user {email}: auth-user:"
+            f"{'deleted' if st in (200, 204) else f'HTTP {st}'}, "
+            f"auth-residual:"
+            f"{'none' if gone is False else 'AUTH USER STILL THERE' if gone is True else 'unknown'}")
+    return notes
 
 
 def cleanup_stale(sb: str, service: str) -> list[str]:
     """Best-effort sweep of crashed-run leftovers: every qa.probe.* test
     profile older than STALE_AFTER_HOURS (young ones may belong to a
-    concurrent run — never touched). Returns per-account notes."""
+    concurrent run — never touched), PLUS the profile-less auth users of
+    the same channel+age (the crash-window orphans — see
+    sweep_orphan_auth_users). Returns per-account notes."""
     cutoff = (datetime.now(timezone.utc)
               - timedelta(hours=STALE_AFTER_HOURS)).isoformat()
     st, rows = _http(
@@ -125,12 +223,12 @@ def cleanup_stale(sb: str, service: str) -> list[str]:
         sb + "/rest/v1/profiles?select=id,email,created_at"
         f"&email=like.{PROBE_PREFIX}*{PROBE_DOMAIN}"
         f"&is_test_account=eq.true&created_at=lt.{cutoff}", service)
-    if st != 200 or not isinstance(rows, list) or not rows:
-        return []
-    out = []
-    for r in rows:
-        out.append(f"stale {r['email']}: "
-                   + _destroy_one(sb, service, r["id"], r["email"]))
+    out: list[str] = []
+    if st == 200 and isinstance(rows, list):
+        for r in rows:
+            out.append(f"stale {r['email']}: "
+                       + _destroy_one(sb, service, r["id"], r["email"]))
+    out.extend(sweep_orphan_auth_users(sb, service, PROBE_PREFIX))
     return out
 
 

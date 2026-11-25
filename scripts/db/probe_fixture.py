@@ -25,6 +25,10 @@ same Test-Accounts Channel guards, owner directive 2026-10-26/29):
     1. cleanup_stale()  — best-effort sweep of crashed-run leftovers
                           (qa.client.* older than 1h; young ones may
                           belong to a concurrent run — never touched).
+                          TWO passes (ACCOUNTS-ORPHAN-AUDIT 2026-11-25):
+                          stale test profiles AND this channel's
+                          profile-less auth users (crash-window orphans
+                          the profile-driven pass alone cannot see).
     2. create()         — qa.client.<stamp><rand>@alkemos-test.com,
                           random one-time password (never printed),
                           email_confirm=true → handle_new_user() creates
@@ -52,7 +56,8 @@ import string
 import time
 from datetime import datetime, timedelta, timezone
 
-from probe_session import _destroy_one, _http, _password, _profile
+from probe_session import (_destroy_one, _http, _password, _profile,
+                           sweep_orphan_auth_users)
 
 FIXTURE_DOMAIN = "@alkemos-test.com"
 FIXTURE_PREFIX = "qa.client."
@@ -67,7 +72,10 @@ def _iso(dt: datetime) -> str:
 def cleanup_stale(sb: str, service: str) -> list[str]:
     """Best-effort sweep of crashed-run leftovers: every qa.client.* test
     profile older than STALE_AFTER_HOURS (young ones may belong to a
-    concurrent run — never touched). Returns per-account notes."""
+    concurrent run — never touched), PLUS this channel's profile-less
+    auth users of the same age (the crash-window orphans — the shared
+    sweep_orphan_auth_users pass, ACCOUNTS-ORPHAN-AUDIT 2026-11-25).
+    Returns per-account notes."""
     cutoff = (datetime.now(timezone.utc)
               - timedelta(hours=STALE_AFTER_HOURS)).isoformat()
     st, rows = _http(
@@ -75,12 +83,12 @@ def cleanup_stale(sb: str, service: str) -> list[str]:
         sb + "/rest/v1/profiles?select=id,email,created_at"
         f"&email=like.{FIXTURE_PREFIX}*{FIXTURE_DOMAIN}"
         f"&is_test_account=eq.true&created_at=lt.{cutoff}", service)
-    if st != 200 or not isinstance(rows, list) or not rows:
-        return []
-    out = []
-    for r in rows:
-        out.append(f"stale {r['email']}: "
-                   + _destroy_with_subs(sb, service, r["id"], r["email"]))
+    out: list[str] = []
+    if st == 200 and isinstance(rows, list):
+        for r in rows:
+            out.append(f"stale {r['email']}: "
+                       + _destroy_with_subs(sb, service, r["id"], r["email"]))
+    out.extend(sweep_orphan_auth_users(sb, service, FIXTURE_PREFIX))
     return out
 
 
