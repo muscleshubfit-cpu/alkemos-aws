@@ -45,10 +45,10 @@ THE DESIGN (this module):
   account. No repo secret is needed anymore.
 
 FUTURE-ACCOUNTS LAW (owner directive 2026-10-29): closing the QA task
-  deletes the 18 stale test accounts — it does NOT forbid future ones.
-  Creating test accounts when needed (QA rounds, fault verification)
-  stays allowed under the channel's security rules; this module is one
-  such sanctioned creator, and it deletes what it creates.
+deletes the 18 stale test accounts — it does NOT forbid future ones.
+Creating test accounts when needed (QA rounds, fault verification)
+stays allowed under the channel's security rules; this module is one
+such sanctioned creator, and it deletes what it creates.
 """
 
 from __future__ import annotations
@@ -65,6 +65,23 @@ from datetime import datetime, timedelta, timezone
 PROBE_DOMAIN = "@alkemos-test.com"
 PROBE_PREFIX = "qa.probe."
 STALE_AFTER_HOURS = 1
+
+# PAGINATION-COMPLETENESS (hardening 2026-11-25): the Admin-API user
+# enumeration's page geometry. The cap is a SAFETY NET, not an
+# end-of-results signal — reaching it while next_page still points
+# forward means the enumeration could not be proven complete.
+AUTH_USERS_PER_PAGE = 200
+AUTH_USERS_MAX_PAGES = 100
+
+
+class EnumerationIncomplete(RuntimeError):
+    """Raised when an enumeration cannot be PROVEN complete (hardening
+    2026-11-25): the page cap was reached without the API's
+    end-of-results signal, a page request failed, or the pagination
+    contract (next_page) was violated. Subclasses RuntimeError so the
+    best-effort sweeps keep surfacing-and-surviving it, while the
+    accounts orphan audit (the verdict path) maps it to an explicit
+    FAIL — a truncated enumeration must NEVER yield a CLEAN verdict."""
 
 
 def _http(method: str, url: str, key: str, token: str | None = None,
@@ -144,26 +161,73 @@ def _destroy_one(sb: str, service: str, uid: str, email: str) -> str:
 
 def auth_users_all(sb: str, service: str) -> list[dict]:
     """Every auth user through the Admin API, paginated (id/email/
-    created_at kept — everything else dropped). READ-ONLY; raises on
-    transport failure. Shared by the stale sweeps and the accounts
-    orphan audit (scripts/db/accounts_orphan_audit.py)."""
+    created_at kept — everything else dropped). READ-ONLY.
+
+    PAGINATION-COMPLETENESS LAW (hardening 2026-11-25): the ONLY proof
+    of completion is the API's own end-of-results signal — a response
+    whose next_page is null/absent. Anything else raises
+    EnumerationIncomplete instead of returning partial rows:
+      * page cap (AUTH_USERS_MAX_PAGES) reached while next_page still
+        points forward — the cap is a safety net, NOT an end signal;
+      * a page request failing (non-200 / non-dict body);
+      * a broken pagination contract: next_page not coercible to an
+        int, next_page that does not advance past the current page,
+        an empty page that still claims a next page, or a user entry
+        that is not a dict carrying an id (the audit's whole
+        comparison keys on id — an id-less entry would silently
+        vanish from it).
+    Shared by the stale sweeps (best-effort: they surface the skip)
+    and the accounts orphan audit (which FAILS the gate on it)."""
     out: list[dict] = []
     page = 1
-    while page <= 100:  # safety cap: 100 pages × 200 users
+    while page <= AUTH_USERS_MAX_PAGES:
         st, body = _http(
             "GET",
-            sb + f"/auth/v1/admin/users?per_page=200&page={page}", service)
+            sb + f"/auth/v1/admin/users?per_page={AUTH_USERS_PER_PAGE}"
+                 f"&page={page}", service)
         if st != 200 or not isinstance(body, dict):
-            raise RuntimeError(
+            raise EnumerationIncomplete(
                 f"admin user list failed (HTTP {st}): {str(body)[:120]}")
-        users = body.get("users") or []
+        users = body.get("users")
+        if not isinstance(users, list):
+            raise EnumerationIncomplete(
+                "admin user list returned an invalid payload (users is "
+                f"{type(users).__name__}, not a list) — enumeration "
+                "cannot be proven complete")
+        for u in users:
+            if not isinstance(u, dict) or not u.get("id"):
+                raise EnumerationIncomplete(
+                    f"admin user list page {page} carries an invalid "
+                    f"entry ({str(u)[:60]!r}) — every auth user must be "
+                    "an object with an id; enumeration cannot be proven "
+                    "complete")
         out.extend({"id": u.get("id"), "email": u.get("email"),
                     "created_at": u.get("created_at")} for u in users)
         nxt = body.get("next_page")
-        if not nxt or not users:
-            break
-        page = int(nxt)
-    return out
+        if nxt is None:
+            return out  # the API's end-of-results proof
+        try:
+            nxt = int(nxt)
+        except (TypeError, ValueError):
+            raise EnumerationIncomplete(
+                f"admin user list returned an invalid next_page "
+                f"({nxt!r}) — pagination contract broken, enumeration "
+                "cannot be proven complete")
+        if not users:
+            raise EnumerationIncomplete(
+                f"admin user list page {page} is empty while next_page "
+                "still points forward — pagination contract broken")
+        if nxt <= page:
+            raise EnumerationIncomplete(
+                f"admin user list next_page={nxt} does not advance past "
+                f"page {page} — pagination contract broken, enumeration "
+                "cannot be proven complete")
+        page = nxt
+    raise EnumerationIncomplete(
+        f"admin user enumeration hit the {AUTH_USERS_MAX_PAGES}-page "
+        f"safety cap ({AUTH_USERS_PER_PAGE * AUTH_USERS_MAX_PAGES:,} "
+        "users) with next_page still pointing forward — enumeration "
+        "INCOMPLETE, partial data refused")
 
 
 def sweep_orphan_auth_users(sb: str, service: str, prefix: str) -> list[str]:
