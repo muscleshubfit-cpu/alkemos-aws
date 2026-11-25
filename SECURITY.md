@@ -346,7 +346,7 @@ Alkemos processes the following categories of personal data:
 - Supabase region: configured at project creation (the production
   project ref is `wyopqryzfjifyeyvyxfy`).
 - The AWS Lightsail origin runs in the region chosen by the hosting
-  migration plan (eu-north-1 — `docs/VERCEL-TO-AWS-HOSTING-MIGRATION-PLAN-2026-10-09.md`),
+  migration plan (eu-north-1 — `docs/archive/VERCEL-TO-AWS-HOSTING-MIGRATION-PLAN-2026-10-09.md`),
   fronted by the Cloudflare edge.
 - Agents must NOT change hosting regions without explicit owner
   approval (data residency / latency trade-off).

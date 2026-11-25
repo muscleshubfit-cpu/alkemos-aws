@@ -8,7 +8,7 @@
 > library; §7.1/§7.1.2/§7.4/§7.4.1/§7.4.2 added or updated to the new page)
 > **Status:** Active — binding reference for all UI/UX decisions
 > **Audience:** AI agents, developers, designers
-> **Redesign record:** `docs/VISUAL-REDESIGN-AUDIT-2026-09-23.md` (audit +
+> **Redesign record:** `docs/archive/VISUAL-REDESIGN-AUDIT-2026-09-23.md` (audit +
 > wave plan + owner decisions). This file describes the RESULTING system.
 
 ---

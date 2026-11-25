@@ -473,7 +473,7 @@ GitHub Actions — ورك فلو لكل لغة (تشغيل واحد = مقال �
 
 ## 10. النشر والاستضافة — AWS Lightsail
 
-> **أصل الإنتاج منذ قطع DNS بتاريخ 2026-10-10.** خطة الهجرة الكاملة وسجلها: [`docs/VERCEL-TO-AWS-HOSTING-MIGRATION-PLAN-2026-10-09.md`](./docs/VERCEL-TO-AWS-HOSTING-MIGRATION-PLAN-2026-10-09.md). ملف [`vercel.json`](./vercel.json) يبقى فقط لمسار التراجع الموثق (DNS rollback) — Vercel لم يعد يشغّل الإنتاج.
+> **أصل الإنتاج منذ قطع DNS بتاريخ 2026-10-10.** خطة الهجرة الكاملة وسجلها: [`docs/archive/VERCEL-TO-AWS-HOSTING-MIGRATION-PLAN-2026-10-09.md`](./docs/archive/VERCEL-TO-AWS-HOSTING-MIGRATION-PLAN-2026-10-09.md). ملف [`vercel.json`](./vercel.json) يبقى فقط لمسار التراجع الموثق (DNS rollback) — Vercel لم يعد يشغّل الإنتاج.
 
 ### شكل الإنتاج
 

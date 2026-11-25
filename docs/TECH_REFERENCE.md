@@ -280,7 +280,7 @@ RUN_ON_SUPABASE_0030_MULTI_COACH.sql = نسخة مرجعية مطابقة باي
              ▲ طبقة الحافة الرسمية      (Caddy :443 ─► PM2 ─► Next.js :3000) ──► Supabase
 ```
 
-- الطلب يمر عبر Cloudflare قبل أصل الإنتاج (أصل AWS Lightsail منذ قطع DNS بتاريخ 2026-10-10 — قبل ذلك كان Vercel؛ انظر `docs/VERCEL-TO-AWS-HOSTING-MIGRATION-PLAN-2026-10-09.md`)، وقواعد الكاش الأربع في المنطقة (zone) تملك سلوك كاش الإنتاج.
+- الطلب يمر عبر Cloudflare قبل أصل الإنتاج (أصل AWS Lightsail منذ قطع DNS بتاريخ 2026-10-10 — قبل ذلك كان Vercel؛ انظر `docs/archive/VERCEL-TO-AWS-HOSTING-MIGRATION-PLAN-2026-10-09.md`)، وقواعد الكاش الأربع في المنطقة (zone) تملك سلوك كاش الإنتاج.
 - إعداد المنطقة Browser-Cache-TTL = **Respect Existing Headers** (تحقق خارجي 2026-09-16) — أي أن **القاعدة** وليست إعداد المنطقة هي المصدر.
 
 ### 5.2 الـ ruleset وقواعده الأربع «alkemos cache rules (SEO-GEO-4 2026-09-08)»

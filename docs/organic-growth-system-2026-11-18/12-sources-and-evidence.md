@@ -13,9 +13,9 @@
 | `src/lib/seo.ts` · `tool-schema.ts` · `tools-shared.ts` · `memberships.ts` · `tier-limits.ts` | السكيما المشتركة · جرد الأدوات · الأسعار والحدود |
 | `src/components/SiteHeader.tsx` · `SiteFooter.tsx` · `views/LandingView.tsx` (+Islands/DynamicIslands) · `OtherTools.tsx` · `LeadCaptureCard.tsx` · `SaveResultButton.tsx` · `EvoFloatingWidget.tsx` | خريطة الروابط والتحويل (07) |
 | `src/app/sitemap-*.xml/route.ts` · `public/robots.txt` | الفهرسة (01-§3) |
-| `docs/PERFORMANCE-AUDIT-2026-11-08.md` (+ تنفيذ 452 الموثق بSTATE) | كل أرقام الأداء في 01-§5 |
+| `docs/archive/PERFORMANCE-AUDIT-2026-11-08.md` (+ تنفيذ 452 الموثق بSTATE) | كل أرقام الأداء في 01-§5 |
 | `docs/seo-growth-audit-2026-11-05/04-keywords-competitors.md` + `data/2026-11-05-live-measurements.md` | قياسات GSC التاريخية (تشغيلتا #8/#9) وفحوص SERP ‏11-05 والجرد |
-| `docs/CONVERSION-COMPETITOR-STUDY-2026-11-04.md` | دراسة منافسي التحويل الثمانية وأنماطهم |
+| `docs/archive/CONVERSION-COMPETITOR-STUDY-2026-11-04.md` | دراسة منافسي التحويل الثمانية وأنماطهم |
 | `docs/seo-collapse-investigation-2026-11-18/` (README + الملحق) | **خط الأساس التاريخي فقط:** 6,896/16 · آخر 28 يومًا ‏53 · غير براندي ‏3,925/0 · مواقع مرجحة 82.1/17.4/9.3 · جرد خرائط محدث — (مشروع مستقل: لا يعتمد هذا المشروع على استنتاجاته) |
 | `docs/GSC-RE-AUDIT-2026-11-12.md` | قدرات GSC الموثقة (حصة 2,000/يوم · قراءة-فقط) |
 | `docs/SEO-CWV-THRESHOLDS.md` | عتبات CWV ‏2026 |

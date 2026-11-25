@@ -32,7 +32,7 @@ is **proprietary and confidential** (see [License](#-license)).
   arabization batches shipped so far; the long USDA-imported tail still
   carries English-only names and surfaces as-is on the Arabic pages until
   its batch is translated (governing plan:
-  [`docs/FOOD-DATA-ARABIZATION-PLAN-2026-09-19.md`](./docs/FOOD-DATA-ARABIZATION-PLAN-2026-09-19.md)).
+  [`docs/archive/FOOD-DATA-ARABIZATION-PLAN-2026-09-19.md`](./docs/archive/FOOD-DATA-ARABIZATION-PLAN-2026-09-19.md)).
   Curated foods also carry an editorial enrichment layer (unique intro,
   usage context, FAQ per food, bilingual, server-rendered
   — `src/lib/foods-enrichment.ts`)
@@ -539,7 +539,7 @@ application verified — a green deploy is never assumed as proof.
 
 The production origin is an **AWS Lightsail** instance (DNS cutover from
 Vercel completed 2026-10-10; the migration record lives in
-[`docs/VERCEL-TO-AWS-HOSTING-MIGRATION-PLAN-2026-10-09.md`](./docs/VERCEL-TO-AWS-HOSTING-MIGRATION-PLAN-2026-10-09.md)):
+[`docs/archive/VERCEL-TO-AWS-HOSTING-MIGRATION-PLAN-2026-10-09.md`](./docs/archive/VERCEL-TO-AWS-HOSTING-MIGRATION-PLAN-2026-10-09.md)):
 
 - **Runtime** — PM2 runs the Next.js server on `127.0.0.1:3000` in fork mode
   with a memory-restart valve (`ecosystem.config.js`); releases live under
@@ -578,8 +578,8 @@ Vercel completed 2026-10-10; the migration record lives in
 | [`supabase/migrations/INDEX.md`](./supabase/migrations/INDEX.md) | Binding migration registry |
 | [`.env.example`](./.env.example) | Annotated environment variable reference |
 | [`SECURITY.md`](./SECURITY.md) | Security policy |
-| [`docs/AUTHORITY-ENGINE-RELATION-2026-11-09.md`](./docs/AUTHORITY-ENGINE-RELATION-2026-11-09.md) | The independent Authority Growth Engine (backlinks) project — its relation to this site, isolation guarantees, and verified results (Arabic) |
-| [`docs/healthy-recipes-platform/`](./docs/healthy-recipes-platform/) | The Healthy Recipes platform — the full repository audit and the executable implementation plan for the bilingual daily recipes engine (Arabic; executed in full P1→P9 on 2026-11-10; the daily pair's failure forensics + root-cause fix lives in `docs/RECIPES-WORKFLOW-FAILURE-FORENSICS-2026-11-12.md`) |
+| [`docs/archive/AUTHORITY-ENGINE-RELATION-2026-11-09.md`](./docs/archive/AUTHORITY-ENGINE-RELATION-2026-11-09.md) | The independent Authority Growth Engine (backlinks) project — its relation to this site, isolation guarantees, and verified results (Arabic) |
+| [`docs/healthy-recipes-platform/`](./docs/healthy-recipes-platform/) | The Healthy Recipes platform — the full repository audit and the executable implementation plan for the bilingual daily recipes engine (Arabic; executed in full P1→P9 on 2026-11-10; the daily pair's failure forensics + root-cause fix lives in `docs/archive/RECIPES-WORKFLOW-FAILURE-FORENSICS-2026-11-12.md`) |
 | [`CONTRIBUTING.md`](./CONTRIBUTING.md) | Contribution policy (proprietary — issues only) |
 | [`worklog.md`](./worklog.md) | Active task log (full history in `archive/`) |
 | [`CHANGELOG.md`](./CHANGELOG.md) | How change history is tracked in this repo |

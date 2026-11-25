@@ -696,7 +696,6 @@ Cloudflare يُضيف تلقائيًا كتلة `"BEGIN Cloudflare Managed conte
 | مرجع Schema.org | `docs/SEO-SCHEMA-REFERENCE.md` |
 | أدوات CI | `docs/CI_GATES.md` |
 | المرجع التقني | `docs/TECH_REFERENCE.md` |
-| التدقيق التاريخي | `docs/_AUDIT.md` |
 | خطة SEO/GEO | هذا الملف |
 
 ### Appendix B — أدوات خارجية موصى بها
