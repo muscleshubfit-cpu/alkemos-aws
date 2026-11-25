@@ -41,7 +41,7 @@
 | `docs/archive/FOOD-ARABIZATION-PHASE-2-REPORT-2026-09-19.md` | Phase-2 expansion execution report — +975 USDA foods Arabized |
 | `docs/archive/FOOD-ARABIZATION-PILOT-1-REPORT-2026-09-19.md` | Pilot-1 execution report — 481 USDA foods Arabized (nameAr, MSA, fail-closed pipeline), Phase-0 infra (SEO_FOOD_BAND manifest + ?l |
 | `docs/archive/FOOD-DATA-ARABIZATION-PLAN-2026-09-19.md` | Arabization plan for the 8,750-row USDA tail — field-by-field scope (`nameAr` only; tags/serving decisions), size/perf/build/sitem |
-| `docs/archive/FOOD-DATA-LANGUAGE-AUDIT-REPORT-2026-09-19.md` | تدقيق قراءة-فقط لفصل لغات بيانات الأطعمة: root cause (80 curated bilingual vs 8,750 USDA English-only `nameAr |
+| `docs/archive/FOOD-DATA-LANGUAGE-AUDIT-REPORT-2026-09-19.md` | تدقيق قراءة-فصل لفصل لغات بيانات الأطعمة: root cause (80 curated bilingual vs 8,750 USDA English-only `nameAr |
 | `docs/archive/FOOD-PORK-ALCOHOL-DELETION-2026-11-12.md` | ‡ ‡ حذف الخنزير والكحول نهائيًا (668 صفًا؛ درع المالك للثمانية) (أمر المالك 2026-11-12 «حذف جميع الأغذية المصنفة فعليًا ضمن لحوم الخنزير والكحول من  |
 | `docs/archive/RECIPES-WORKFLOW-FAILURE-FORENSICS-2026-11-12.md` | تشخيص جذور فشل الوصفات الأربعة (LRU · حارس · سلسلة r0 · حجز الخانة) — مغلقة |
 
@@ -104,9 +104,14 @@
 | `docs/archive/UI-AUDIT-HOMEPAGE.md` | Point-in-time UI audit |
 | `docs/archive/UI-IMPLEMENTATION-PLAN.md` | Point-in-time UI plan |
 
+## المتجر والأفلييت الخارجي
+
+| الملف | ما هو |
+|---|---|
+| `docs/archive/ALKEMOS-STORE-AFFILIATE-READINESS-AUDIT-2026-11-26.md` | تدقيق جاهزية المتجر الأفلييت (Alkemos Store × Amazon Associates الأمريكي — أمر مالك يفتح قرار D-أ المؤجل): تدقيق الوضع الثماني المحاور + قانون المتجر الملزم (إفصاح/أسعار/صور) + الخطة المرحلية 0→4 + جداول 0115 المقترحة + المخاطر والتكاليف + SOP التشغيل — قراءة-فقط بلا كود |
+
 ## السجلات الحية (append-only) داخل الأرشيف
 
 | الملف | ما هو |
 |---|---|
 | `docs/archive/SEO-GEO-EXECUTION-LOG.md` | ‡ The SEO/GEO §12 implementation log (§12.1→§12.68: external-audit P0 execution + the P0-3 baseline + the P0-4 deferral + the P1-5 C |
-
