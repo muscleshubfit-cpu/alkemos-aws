@@ -475,10 +475,73 @@ export async function getPlanFileUrl(bucket: string, filePath: string): Promise<
  return "";
 }
 
+// ---------------------------------------------------------------------------
+// P-04 pagination (W2-1b — 2026-11-26, full-stack audit remediation plan
+// docs/FULL-STACK-AUDIT-AND-REMEDIATION-PLAN-2026-10-02.md · «0047 قسّم
+// قائمة العملاء لكن الاشتراكات لم تعالج» — code-only frame, NO migration).
+//
+// PATTERN (the project's own Pagination-Completeness Law — Phase 516
+// hardening, scripts/db/accounts_orphan_audit.py): fixed PostgREST pages
+// via range(); the ONLY proof of completion is a SHORT page (< page size);
+// a failed page or the MAX_PAGES cap without that proof REFUSES partial
+// data. Sizes mirror the audit precedent exactly (SUBS_PAGE=1000 ·
+// MAX_PAGES=50 → 50,000-row cap). Page size must stay ≤ the Supabase
+// PostgREST default max-rows (1000) or a "full" page would be short in
+// disguise and end the walk early (silent truncation).
+// ---------------------------------------------------------------------------
+
+/** PostgREST page size for listAllSubscriptions (audit SUBS_PAGE precedent). */
+const SUBSCRIPTIONS_PAGE_SIZE = 1000;
+
+/** Safety cap: 50 pages × 1000 = 50,000 rows before completeness refuses. */
+const SUBSCRIPTIONS_MAX_PAGES = 50;
+
+/**
+ * P-04 fix: listAllSubscriptions used to fetch `select("*")` in ONE
+ * unbounded shot — PostgREST's default max-rows silently truncated every
+ * table beyond 1000 rows, so coach/admin views lost subscriptions without
+ * any signal. Now the whole table is walked in pages, preserving:
+ *   - the signature/return contract (`Promise<Subscription[]>`);
+ *   - the error contract (a failed request → [] — never partial data);
+ *   - the LocalStorage fallback (`isSupabaseConfigured` false path).
+ * Consumers are order-agnostic (find/filter by client_id), and the walk
+ * itself needs a deterministic TOTAL order so no row is lost or repeated
+ * across page boundaries: created_at desc (the convention of every peer
+ * list function in this file) + id asc (unique PK tiebreaker).
+ */
 export async function listAllSubscriptions(): Promise<Subscription[]> {
  if (isSupabaseConfigured && supabase) {
- const { data } = await supabase.from("subscriptions").select("*");
- return data ?? [];
+  const out: Subscription[] = [];
+  for (let page = 0; page < SUBSCRIPTIONS_MAX_PAGES; page++) {
+   const from = page * SUBSCRIPTIONS_PAGE_SIZE;
+   const { data, error } = await supabase
+    .from("subscriptions")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .order("id", { ascending: true })
+    .range(from, from + SUBSCRIPTIONS_PAGE_SIZE - 1);
+   // Behavior-preserving error contract: the old single-shot swallowed
+   // errors into [] (`data ?? []`); a failed page does the same — partial
+   // collected rows are NEVER returned as the full list
+   // (Pagination-Completeness Law).
+   if (error) {
+    console.error("[data] listAllSubscriptions page failed:", error.message);
+    return [];
+   }
+   const rows = data ?? [];
+   out.push(...rows);
+   if (rows.length < SUBSCRIPTIONS_PAGE_SIZE) {
+    return out; // short page = end-of-results proof
+   }
+  }
+  // Every page came back full for 50 pages (50,000+ rows) with no
+  // completion proof — refuse the truncated data instead of silently
+  // presenting it as «all subscriptions» (Pagination-Completeness Law).
+  console.error(
+   `[data] listAllSubscriptions hit the ${SUBSCRIPTIONS_MAX_PAGES}-page cap ` +
+    `(${SUBSCRIPTIONS_MAX_PAGES * SUBSCRIPTIONS_PAGE_SIZE} rows) without a short page — partial data refused`,
+  );
+  return [];
  }
  return read<Subscription[]>(LS_SUBS, []);
 }
