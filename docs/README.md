@@ -68,6 +68,7 @@
 |---|---|---|
 | `docs/repository-comprehensive-audit-2026-11-24/` | التدقيق الشامل الأخير — القائمة الموحدة للأعمال المتبقية (U-1..U-15) | ACTIVE (U-1+U-2 منفذان) |
 | `docs/organic-growth-system-2026-11-18/` | منظومة النمو العضوي: الخطة 00-12 + تقارير التنفيذ 13-30 + الحالة | ACTIVE (P2 بأوامر مالك + نوافذ زمنية) |
+| `docs/organic-growth-system-2026-11-18/gsc-ar-weekly-monitoring-log.md` | سجل رصد GSC الأسبوعي الموحد (عائلتا AR+EN جنبًا إلى جنب) — يُكتب آليًا من سير العمل `.github/workflows/gsc-ar-weekly-monitor.yml`؛ القراءات من 2026-11-30 | LIVE (أوتوماتيكي — نافذة 2026-11-30) |
 | `docs/seo-collapse-investigation-2026-11-18/` | تحقيق انهيار الفهرسة (آلية مؤكدة؛ قرار A1 أولًا) | ACTIVE (بانتظار مالك) |
 | `docs/diet-plan-uniqueness-p0a/` | تجربة تفرد خلايا الخطط (P0-A) — بانتظار مراجعة المالك | ACTIVE (بانتظار مالك) |
 | `docs/seo-growth-audit-2026-11-18/` | تدقيق وصول Google-Agent (صفر حجب/صفر زيارات) | DELIVERED (مغلق) |
