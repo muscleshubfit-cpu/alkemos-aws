@@ -18,6 +18,13 @@ no test account is ever created by this suite):
   * probe_session.auth_users_all — pagination.
   * probe_fixture.cleanup_stale — wires the shared sweep with the
     fixture prefix.
+  * PAGINATION-COMPLETENESS (hardening 2026-11-25): every census must
+    be PROVEN complete by the source API's own end-of-results signal
+    (null next_page for the Auth Admin API, a short page for PostgREST)
+    — reaching the page-cap safety nets without that proof, a failed
+    page request, or broken/invalid pagination data raises
+    EnumerationIncomplete instead of returning partial rows, and the
+    audit's main() maps it to exit 3 (verdict WITHHELD, never CLEAN).
 
 Run:  python3 -m pytest scripts/db/test_accounts_orphan_audit.py -q
 """
@@ -320,13 +327,323 @@ def test_auth_users_all_paginates(monkeypatch):
              "next_page": 2}
     page2 = {"users": [user("last", "last@x.com")], "next_page": None}
     fake = FakeHttp([
-        ("GET", "page=1", (200, page1)),
-        ("GET", "page=2", (200, page2)),
+        ("GET", "&page=1", (200, page1)),
+        ("GET", "&page=2", (200, page2)),
     ])
     monkeypatch.setattr(probe_session, "_http", fake)
     users = probe_session.auth_users_all("https://sb", "K")
     assert len(users) == 201
     assert users[-1]["id"] == "last"
+
+
+# --------------------------------------------------------------------------
+# PAGINATION-COMPLETENESS (hardening 2026-11-25) — a verdict is only
+# rendered on enumerations PROVEN complete; everything else FAILS
+# --------------------------------------------------------------------------
+
+def test_pagination_geometry_and_exit_codes_pinned():
+    """The page ceilings are the audit's documented safety nets — pin
+    them so nobody silently shrinks them below the production reality
+    (31 users / 31 profiles / 13 subscription rows as of 2026-11-25)
+    or blurs the exit-code contract."""
+    assert probe_session.AUTH_USERS_PER_PAGE == 200
+    assert probe_session.AUTH_USERS_MAX_PAGES == 100   # 20,000 users
+    assert aoa.PAGE == 500
+    assert aoa.SUBS_PAGE == 1000
+    assert aoa.MAX_PAGES == 50                          # 25k / 50k rows
+    assert (aoa.CLEAN, aoa.ORPHANS, aoa.CONFIG_ERROR,
+            aoa.INCOMPLETE) == (0, 1, 2, 3)
+    assert issubclass(probe_session.EnumerationIncomplete, RuntimeError)
+
+
+def test_auth_users_all_complete_single_page(monkeypatch):
+    """Completion proof #1: next_page absent on the very first page."""
+    fake = FakeHttp([
+        ("GET", "&page=1", (200, {"users": [user("a", "a@x.com")],
+                                  "next_page": None})),
+    ])
+    monkeypatch.setattr(probe_session, "_http", fake)
+    assert [u["id"] for u in
+            probe_session.auth_users_all("https://sb", "K")] == ["a"]
+
+
+def test_auth_users_all_empty_auth_is_complete(monkeypatch):
+    """Completion proof #2: zero users, no next_page — a legitimate
+    empty census (not a failure)."""
+    fake = FakeHttp([
+        ("GET", "&page=1", (200, {"users": [], "next_page": None})),
+    ])
+    monkeypatch.setattr(probe_session, "_http", fake)
+    assert probe_session.auth_users_all("https://sb", "K") == []
+
+
+def test_auth_users_all_complete_exactly_at_cap(monkeypatch):
+    """The cap itself is NOT a failure: reaching the last allowed page
+    WITH the end-of-results signal on it is a complete enumeration."""
+    monkeypatch.setattr(probe_session, "AUTH_USERS_MAX_PAGES", 3)
+    fake = FakeHttp([
+        ("GET", "&page=1", (200, {"users": [user("a", "a@x.com")],
+                                  "next_page": 2})),
+        ("GET", "&page=2", (200, {"users": [user("b", "b@x.com")],
+                                  "next_page": 3})),
+        ("GET", "&page=3", (200, {"users": [user("c", "c@x.com")],
+                                  "next_page": None})),
+    ])
+    monkeypatch.setattr(probe_session, "_http", fake)
+    users = probe_session.auth_users_all("https://sb", "K")
+    assert [u["id"] for u in users] == ["a", "b", "c"]
+
+
+def test_auth_users_all_cap_without_completion_raises(monkeypatch):
+    """THE hardening case: page cap reached while next_page still
+    points forward — partial data must be REFUSED, not returned (the
+    old code silently returned the first 100 pages and a truncated
+    census could masquerade as CLEAN)."""
+    monkeypatch.setattr(probe_session, "AUTH_USERS_MAX_PAGES", 3)
+    fake = FakeHttp([
+        ("GET", "&page=1", (200, {"users": [user("a", "a@x.com")],
+                                  "next_page": 2})),
+        ("GET", "&page=2", (200, {"users": [user("b", "b@x.com")],
+                                  "next_page": 3})),
+        ("GET", "&page=3", (200, {"users": [user("c", "c@x.com")],
+                                  "next_page": 4})),
+    ])
+    monkeypatch.setattr(probe_session, "_http", fake)
+    with pytest.raises(probe_session.EnumerationIncomplete) as ei:
+        probe_session.auth_users_all("https://sb", "K")
+    assert "3-page safety cap" in str(ei.value)
+    assert "INCOMPLETE" in str(ei.value)
+
+
+def test_auth_users_all_page_request_failure_raises(monkeypatch):
+    """One page request failing (HTTP 500) = enumeration incomplete =
+    explicit failure, never a verdict on the pages that did arrive."""
+    fake = FakeHttp([
+        ("GET", "&page=1", (200, {"users": [user("a", "a@x.com")],
+                                  "next_page": 2})),
+        ("GET", "&page=2", (500, "boom")),
+    ])
+    monkeypatch.setattr(probe_session, "_http", fake)
+    with pytest.raises(probe_session.EnumerationIncomplete) as ei:
+        probe_session.auth_users_all("https://sb", "K")
+    assert "HTTP 500" in str(ei.value)
+
+
+def test_auth_users_all_invalid_next_page_rejected(monkeypatch):
+    """Invalid pagination data: a next_page that is not an int, points
+    backwards/nowhere, or rides on an empty page — all contract
+    violations, all refused."""
+    cases = [
+        {"users": [user("a", "a@x.com")], "next_page": "later"},  # junk
+        {"users": [user("a", "a@x.com")], "next_page": 1},        # no advance
+        {"users": [user("a", "a@x.com")], "next_page": 0},        # invalid
+        {"users": [], "next_page": 2},                            # empty+next
+    ]
+    for body in cases:
+        fake = FakeHttp([("GET", "&page=1", (200, body))])
+        monkeypatch.setattr(probe_session, "_http", fake)
+        with pytest.raises(probe_session.EnumerationIncomplete) as ei:
+            probe_session.auth_users_all("https://sb", "K")
+        assert "cannot be proven complete" in str(ei.value) \
+            or "contract broken" in str(ei.value), body
+
+
+def test_auth_users_all_numeric_string_next_page_tolerated(monkeypatch):
+    """A numeric-string next_page (proxy coercion) still advances —
+    tolerance pinned so only genuinely invalid markers fail."""
+    fake = FakeHttp([
+        ("GET", "&page=1", (200, {"users": [user("a", "a@x.com")],
+                                  "next_page": "2"})),
+        ("GET", "&page=2", (200, {"users": [user("b", "b@x.com")],
+                                  "next_page": None})),
+    ])
+    monkeypatch.setattr(probe_session, "_http", fake)
+    users = probe_session.auth_users_all("https://sb", "K")
+    assert [u["id"] for u in users] == ["a", "b"]
+
+
+def test_auth_users_all_invalid_user_entries_rejected(monkeypatch):
+    """Missing/invalid row data: a non-dict entry, or a dict without
+    an id (the audit's comparison keys on id — an id-less entry would
+    silently vanish from it) — both refused."""
+    for bad in (["garbage"], [{"email": "no-id@x.com"}],
+                [user("a", "a@x.com"), None]):
+        fake = FakeHttp([
+            ("GET", "&page=1", (200, {"users": bad, "next_page": None})),
+        ])
+        monkeypatch.setattr(probe_session, "_http", fake)
+        with pytest.raises(probe_session.EnumerationIncomplete) as ei:
+            probe_session.auth_users_all("https://sb", "K")
+        assert "invalid" in str(ei.value)
+
+
+def test_auth_users_all_invalid_payload_shape_rejected(monkeypatch):
+    """A 200 response whose body is not the expected object (HTML
+    error page, list, …) is invalid data — refused."""
+    fake = FakeHttp([("GET", "&page=1", (200, "<html>gateway</html>"))])
+    monkeypatch.setattr(probe_session, "_http", fake)
+    with pytest.raises(probe_session.EnumerationIncomplete) as ei:
+        probe_session.auth_users_all("https://sb", "K")
+    assert "HTTP 200" in str(ei.value)
+
+
+def test_sweep_survives_incomplete_enumeration(monkeypatch):
+    """The crash-window sweep stays BEST-EFFORT under the hardened
+    enumeration: it surfaces the skip as a note and never crashes the
+    gate (the audit step that follows is the loud failure path)."""
+    monkeypatch.setattr(probe_session, "AUTH_USERS_MAX_PAGES", 2)
+    fake = FakeHttp([
+        ("GET", "&page=1", (200, {"users": [user("a", "a@x.com")],
+                                  "next_page": 2})),
+        ("GET", "&page=2", (200, {"users": [user("b", "b@x.com")],
+                                  "next_page": 3})),
+    ])
+    monkeypatch.setattr(probe_session, "_http", fake)
+    notes = probe_session.sweep_orphan_auth_users(
+        "https://sb", "K", probe_session.PROBE_PREFIX)
+    assert len(notes) == 1 and "skipped" in notes[0]
+    assert "safety cap" in notes[0]
+    assert not any(m == "DELETE" for m, _ in fake.calls)
+
+
+# --- PostgREST side: profiles / subscriptions (accounts_orphan_audit) ---
+
+def test_fetch_profiles_complete_multi_page(monkeypatch):
+    """Completion proof: a SHORT page ends the enumeration and every
+    row is returned."""
+    monkeypatch.setattr(aoa, "PAGE", 2)
+    monkeypatch.setattr(aoa, "MAX_PAGES", 5)
+    fake = FakeHttp([
+        ("GET", "limit=2&offset=0", (200, [prof("a", "a@t.com"),
+                                            prof("b", "b@t.com")])),
+        ("GET", "limit=2&offset=2", (200, [prof("c", "c@t.com")])),
+    ])
+    monkeypatch.setattr(aoa, "_http", fake)
+    rows = aoa.fetch_profiles("https://sb", "K")
+    assert [r["id"] for r in rows] == ["a", "b", "c"]
+
+
+def test_fetch_profiles_cap_without_completion_raises(monkeypatch):
+    """THE hardening case (PostgREST side): every page full through
+    the cap with no short page — partial data refused."""
+    monkeypatch.setattr(aoa, "PAGE", 2)
+    monkeypatch.setattr(aoa, "MAX_PAGES", 3)
+    fake = FakeHttp([
+        ("GET", "limit=2&offset=0", (200, [prof("a", "a@t.com"),
+                                            prof("b", "b@t.com")])),
+        ("GET", "limit=2&offset=2", (200, [prof("c", "c@t.com"),
+                                            prof("d", "d@t.com")])),
+        ("GET", "limit=2&offset=4", (200, [prof("e", "e@t.com"),
+                                            prof("f", "f@t.com")])),
+    ])
+    monkeypatch.setattr(aoa, "_http", fake)
+    with pytest.raises(RuntimeError) as ei:
+        aoa.fetch_profiles("https://sb", "K")
+    assert "3-page safety cap" in str(ei.value)
+    assert "INCOMPLETE" in str(ei.value)
+
+
+def test_fetch_profiles_cap_with_final_short_page_ok(monkeypatch):
+    """The cap is not itself a failure: a short page ON the last
+    allowed page proves completion."""
+    monkeypatch.setattr(aoa, "PAGE", 2)
+    monkeypatch.setattr(aoa, "MAX_PAGES", 3)
+    fake = FakeHttp([
+        ("GET", "limit=2&offset=0", (200, [prof("a", "a@t.com"),
+                                            prof("b", "b@t.com")])),
+        ("GET", "limit=2&offset=2", (200, [prof("c", "c@t.com"),
+                                            prof("d", "d@t.com")])),
+        ("GET", "limit=2&offset=4", (200, [prof("e", "e@t.com")])),
+    ])
+    monkeypatch.setattr(aoa, "_http", fake)
+    rows = aoa.fetch_profiles("https://sb", "K")
+    assert [r["id"] for r in rows] == ["a", "b", "c", "d", "e"]
+
+
+def test_fetch_profiles_page_failure_and_invalid_payload(monkeypatch):
+    """A failed page request OR a 200 with a non-list body — both
+    invalid, both refused (a verdict needs every page)."""
+    monkeypatch.setattr(aoa, "PAGE", 2)
+    fake = FakeHttp([
+        ("GET", "limit=2&offset=0", (200, [prof("a", "a@t.com"),
+                                            prof("b", "b@t.com")])),
+        ("GET", "limit=2&offset=2", (502, "bad gateway")),
+    ])
+    monkeypatch.setattr(aoa, "_http", fake)
+    with pytest.raises(RuntimeError) as ei:
+        aoa.fetch_profiles("https://sb", "K")
+    assert "profiles list failed (HTTP 502)" in str(ei.value)
+
+    fake = FakeHttp([("GET", "limit=2&offset=0",
+                      (200, {"message": "not a list"}))])
+    monkeypatch.setattr(aoa, "_http", fake)
+    with pytest.raises(RuntimeError) as ei:
+        aoa.fetch_profiles("https://sb", "K")
+    assert "profiles list failed (HTTP 200)" in str(ei.value)
+
+
+def test_fetch_subscriptions_complete_cap_and_failure(monkeypatch):
+    """The subscriptions census obeys the same law: short page =
+    complete; cap without one = refused; failed page = refused."""
+    monkeypatch.setattr(aoa, "SUBS_PAGE", 2)
+    monkeypatch.setattr(aoa, "MAX_PAGES", 3)
+
+    fake = FakeHttp([
+        ("GET", "limit=2&offset=0", (200, [{"client_id": "a"},
+                                            {"client_id": "b"}])),
+        ("GET", "limit=2&offset=2", (200, [{"client_id": "c"}])),
+    ])
+    monkeypatch.setattr(aoa, "_http", fake)
+    assert aoa.fetch_subscription_client_ids(
+        "https://sb", "K") == ["a", "b", "c"]
+
+    fake = FakeHttp([
+        ("GET", "limit=2&offset=0", (200, [{"client_id": "a"},
+                                            {"client_id": "b"}])),
+        ("GET", "limit=2&offset=2", (200, [{"client_id": "c"},
+                                            {"client_id": "d"}])),
+        ("GET", "limit=2&offset=4", (200, [{"client_id": "e"},
+                                            {"client_id": "f"}])),
+    ])
+    monkeypatch.setattr(aoa, "_http", fake)
+    with pytest.raises(RuntimeError) as ei:
+        aoa.fetch_subscription_client_ids("https://sb", "K")
+    assert "3-page safety cap" in str(ei.value)
+
+    fake = FakeHttp([
+        ("GET", "limit=2&offset=0", (200, [{"client_id": "a"},
+                                            {"client_id": "b"}])),
+        ("GET", "limit=2&offset=2", (403, "forbidden")),
+    ])
+    monkeypatch.setattr(aoa, "_http", fake)
+    with pytest.raises(RuntimeError) as ei:
+        aoa.fetch_subscription_client_ids("https://sb", "K")
+    assert "subscriptions list failed (HTTP 403)" in str(ei.value)
+
+
+def test_main_withholds_verdict_on_incomplete_enumeration(
+        monkeypatch, capsys):
+    """The verdict path: an unprovable census exits INCOMPLETE (3)
+    with an explicit ::error:: — never ORPHANS (1, a data finding) and
+    never CLEAN (0, a verdict on partial data)."""
+    monkeypatch.setenv("SUPABASE_URL", "https://sb")
+    monkeypatch.setenv("SUPABASE_SERVICE_ROLE_KEY", "K")
+    monkeypatch.delenv("GITHUB_STEP_SUMMARY", raising=False)
+    monkeypatch.setattr(sys, "argv", ["accounts_orphan_audit.py"])
+
+    def boom(sb, service):
+        raise probe_session.EnumerationIncomplete(
+            "admin user enumeration hit the 100-page safety cap "
+            "(20,000 users) with next_page still pointing forward — "
+            "enumeration INCOMPLETE, partial data refused")
+
+    monkeypatch.setattr(aoa, "auth_users_all", boom)
+    rc = aoa.main()
+    out = capsys.readouterr().out
+    assert rc == aoa.INCOMPLETE == 3
+    assert "::error::" in out
+    assert "INCOMPLETE" in out and "WITHHELD" in out
+    assert "never CLEAN on partial data" in out
 
 
 def test_fixture_cleanup_wires_shared_sweep(monkeypatch):

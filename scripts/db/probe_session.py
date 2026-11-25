@@ -45,10 +45,10 @@ THE DESIGN (this module):
   account. No repo secret is needed anymore.
 
 FUTURE-ACCOUNTS LAW (owner directive 2026-10-29): closing the QA task
-deletes the 18 stale test accounts — it does NOT forbid future ones.
-Creating test accounts when needed (QA rounds, fault verification)
-stays allowed under the channel's security rules; this module is one
-such sanctioned creator, and it deletes what it creates.
+  deletes the 18 stale test accounts — it does NOT forbid future ones.
+  Creating test accounts when needed (QA rounds, fault verification)
+  stays allowed under the channel's security rules; this module is one
+  such sanctioned creator, and it deletes what it creates.
 """
 
 from __future__ import annotations

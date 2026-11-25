@@ -50,7 +50,20 @@ PRIVACY (the repo is PUBLIC — workflow logs are world-readable):
   cleanup_stale (the sanctioned channel, ownership-verified).
 
 Exit codes: 0 = clean (warnings allowed) · 1 = orphans detected ·
-2 = configuration error.
+2 = configuration error · 3 = enumeration INCOMPLETE (pagination cap
+reached without an end-of-results proof, a page request failed, or
+the pagination contract was broken — verdict WITHHELD, never a CLEAN
+on partial data; hardening 2026-11-25).
+
+PAGINATION-COMPLETENESS LAW (hardening 2026-11-25): every census this
+audit renders a verdict on must be PROVEN complete by the source API's
+own end-of-results signal — a short page (< PAGE rows) for the
+PostgREST tables, a null/absent next_page for the Auth Admin API.
+Reaching the page-cap safety nets without that proof raises before
+analyze() ever runs: a truncated auth or profiles list could hide an
+orphan beyond the cap (false CLEAN) or fabricate one (false RED), and
+neither is an acceptable verdict. The audit stays READ-ONLY — nothing
+here writes, deletes or retries against production.
 
 Usage:
   SUPABASE_URL=… SUPABASE_SERVICE_ROLE_KEY=… \
@@ -81,6 +94,7 @@ DETAIL_CAP = 20     # max detail lines per bucket (log noise guard)
 CONFIG_ERROR = 2
 ORPHANS = 1
 CLEAN = 0
+INCOMPLETE = 3  # enumeration not proven complete — verdict withheld
 
 
 def is_test_email(email: str | None) -> bool:
@@ -94,7 +108,13 @@ def _id8(uid: str | None) -> str:
 
 def fetch_profiles(sb: str, service: str) -> list[dict]:
     """All profiles rows (id/email/role/is_test_account/created_at),
-    paginated via PostgREST. Read-only."""
+    paginated via PostgREST. Read-only.
+
+    PAGINATION-COMPLETENESS LAW (hardening 2026-11-25): the ONLY proof
+    of completion is a SHORT page (< PAGE rows). Hitting the MAX_PAGES
+    safety cap with every page full raises RuntimeError — a truncated
+    profiles list could hide an orphan beyond the cap (false CLEAN) or
+    fabricate one (false RED), so partial data is refused."""
     out: list[dict] = []
     offset = 0
     for _ in range(MAX_PAGES):
@@ -107,13 +127,20 @@ def fetch_profiles(sb: str, service: str) -> list[dict]:
                 f"profiles list failed (HTTP {st}): {str(rows)[:120]}")
         out.extend(rows)
         if len(rows) < PAGE:
-            return out
+            return out  # short page = end-of-results proof
         offset += PAGE
-    return out
+    raise RuntimeError(
+        f"profiles enumeration hit the {MAX_PAGES}-page safety cap "
+        f"({MAX_PAGES * PAGE:,} rows) without a short page — "
+        "enumeration INCOMPLETE, partial data refused")
 
 
 def fetch_subscription_client_ids(sb: str, service: str) -> list[str | None]:
-    """Every subscriptions.client_id, paginated. Read-only."""
+    """Every subscriptions.client_id, paginated. Read-only.
+
+    Same PAGINATION-COMPLETENESS LAW as fetch_profiles (hardening
+    2026-11-25): a short SUBS_PAGE page is the only completion proof;
+    the MAX_PAGES cap without one raises instead of truncating."""
     out: list[str | None] = []
     offset = 0
     for _ in range(MAX_PAGES):
@@ -126,9 +153,12 @@ def fetch_subscription_client_ids(sb: str, service: str) -> list[str | None]:
                 f"subscriptions list failed (HTTP {st}): {str(rows)[:120]}")
         out.extend(r.get("client_id") for r in rows)
         if len(rows) < SUBS_PAGE:
-            return out
+            return out  # short page = end-of-results proof
         offset += SUBS_PAGE
-    return out
+    raise RuntimeError(
+        f"subscriptions enumeration hit the {MAX_PAGES}-page safety cap "
+        f"({MAX_PAGES * SUBS_PAGE:,} rows) without a short page — "
+        "enumeration INCOMPLETE, partial data refused")
 
 
 def analyze(auth_users: list[dict], profiles: list[dict],
@@ -286,8 +316,14 @@ def main() -> int:
         profiles = fetch_profiles(sb, service)
         sub_ids = fetch_subscription_client_ids(sb, service)
     except RuntimeError as e:
-        print(f"::error::accounts_orphan_audit fetch failed: {e}")
-        return ORPHANS  # a failed read is NOT a clean verdict
+        # PAGINATION-COMPLETENESS (hardening 2026-11-25): a failed or
+        # unprovable enumeration is NOT a clean verdict and NOT an
+        # orphan finding — the verdict is WITHHELD with an explicit
+        # FAIL so nobody can read partial data as CLEAN.
+        print("::error::accounts_orphan_audit enumeration INCOMPLETE — "
+              "verdict WITHHELD (never CLEAN on partial data): "
+              f"{e}")
+        return INCOMPLETE
 
     report = analyze(auth_users, profiles, sub_ids)
     rc = verdict(report)
