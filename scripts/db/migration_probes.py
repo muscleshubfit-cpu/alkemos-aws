@@ -527,7 +527,84 @@ PROBES: list[dict] = [
              "expect": 27},
         ],
     },
+    # 0119 — AFFILIATE-STORE-EXPANSION (owner order 2026-11-27 «تحويل
+    # المتجر لمتجر لياقة وتغذية متكامل»): the category-tile image column,
+    # the two new commercial mains, and the 48-product verified batch.
+    {
+        "file": "20261127120000_0119_affiliate_store_expansion.sql",
+        "label": "0119 AFFILIATE-STORE-EXPANSION",
+        "strength": "strong",
+        "checks": [
+            {"type": "swagger_column", "table": "affiliate_store_categories", "column": "image_url"},
+            # the two NEW commercial mains exist and are active
+            {"type": "rest_rows",
+             "path": ("/rest/v1/affiliate_store_categories"
+                      "?select=slug,is_active&slug=in.(sports-nutrition,workout-accessories)&limit=10"),
+             "transform": "count_rows",
+             "expect": 2},
+            # every main carries its tile image (0119's own observable)
+            {"type": "rest_rows",
+             "path": ("/rest/v1/affiliate_store_categories"
+                      "?select=slug&is_active=is.true&parent_id=is.null&image_url=not.is.null&limit=50"),
+             "transform": "count_rows",
+             "expect": 12},
+            # the 48-product verified batch (fixed slug set — the count is eternal)
+            {"type": "rest_rows",
+             "path": ("/rest/v1/affiliate_store_products?select=slug&slug=in."
+                      "(optimum-nutrition-gold-standard-whey,"
+                      "vega-premium-plant-protein,"
+                      "optimum-nutrition-gold-standard-casein,"
+                      "optimum-nutrition-micronized-creatine,"
+                      "optimum-nutrition-amino-energy,"
+                      "animal-pak-multivitamin,"
+                      "naturewise-vitamin-d3-5000,"
+                      "sports-research-omega-3-fish-oil,"
+                      "doctors-best-magnesium-glycinate,"
+                      "vital-proteins-collagen-peptides,"
+                      "nutririse-organic-ashwagandha,"
+                      "quest-chocolate-chip-cookie-dough-bars,"
+                      "rxbar-chocolate-sea-salt,"
+                      "one-reeses-peanut-butter-lovers-bars,"
+                      "justins-classic-peanut-butter,"
+                      "pbfit-organic-peanut-butter-powder,"
+                      "wonderful-pistachios-no-shells,"
+                      "terrasoul-organic-chia-seeds,"
+                      "epic-beef-sea-salt-pepper-bites,"
+                      "anthonys-blanched-almond-flour,"
+                      "bigelow-classic-green-tea,"
+                      "c4-sport-pre-workout,"
+                      "optimum-gold-standard-pre-workout,"
+                      "liquid-iv-hydration-multiplier,"
+                      "nuun-sport-electrolyte-tablets,"
+                      "clif-bloks-energy-chews,"
+                      "gu-energy-original-gel,"
+                      "lock-jaw-oly-barbell-collars,"
+                      "jfit-slam-ball,"
+                      "iron-gym-doorway-pull-up-bar,"
+                      "incstores-foam-flooring-tiles,"
+                      "gymreapers-lifting-straps,"
+                      "cramer-gym-chalk-block,"
+                      "wod-nation-speed-jump-rope,"
+                      "under-armour-undeniable-duffle,"
+                      "gaiam-premium-yoga-strap,"
+                      "manta-original-sleep-mask,"
+                      "prosourcefit-acupressure-mat-set,"
+                      "fitbit-inspire-3,"
+                      "garmin-forerunner-165,"
+                      "pyrex-2-cup-measuring-cup,"
+                      "hanes-cool-dri-performance-t-shirt,"
+                      "nike-everyday-cushioned-crew-socks,"
+                      "simple-modern-40oz-tumbler,"
+                      "periodization-theory-and-methodology,"
+                      "531-forever-book,"
+                      "beyond-531-kindle,"
+                      "hardcover-fitness-journal)&limit=100"),
+             "transform": "count_rows",
+             "expect": 48},
+        ],
+    },
 ]# fmt on
+
 
 # --- named transforms for rest_rows probes ----------------------------------
 

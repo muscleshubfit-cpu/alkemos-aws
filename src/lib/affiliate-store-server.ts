@@ -52,6 +52,11 @@ export type AffiliateStoreCategoryNode = {
   name: string;
   description: string | null;
   iconKey: string | null;
+  /** Category tile image (0119 — owner order «استبدل أيقونات Shop by Category
+   * بصور منتجات حقيقية»): the SAME trusted source as product images
+   * (527-G1 — m.media-amazon.com original product photos). Null → the
+   * carved icon renders. */
+  imageUrl: string | null;
   parentId: string | null;
   publishedCount: number;
   /** true when this is a leaf (no active children) — used by leaf URLs. */
@@ -130,7 +135,7 @@ function affiliateStorePublicClient() {
 
 type CategoryRow = Pick<
   AffiliateStoreCategory,
-  "id" | "slug" | "name" | "description" | "icon_key" | "parent_id" | "is_active"
+  "id" | "slug" | "name" | "description" | "icon_key" | "image_url" | "parent_id" | "is_active"
 >;
 type ProductRow = Pick<
   AffiliateStoreProduct,
@@ -139,7 +144,7 @@ type ProductRow = Pick<
   | "category_id" | "price_usd"
 >;
 
-const CATEGORY_COLUMNS = "id,slug,name,description,icon_key,parent_id,is_active";
+const CATEGORY_COLUMNS = "id,slug,name,description,icon_key,image_url,parent_id,is_active";
 const PRODUCT_COLUMNS =
   "id,slug,title,summary,brand,image_url,editorial_rating,is_featured,content,asin,updated_at,category_id,price_usd";
 
@@ -301,6 +306,7 @@ export const getAffiliateStoreSnapshot = unstable_cache(
       name: cat.name,
       description: cat.description,
       iconKey: cat.icon_key,
+      imageUrl: cat.image_url,
       parentId: cat.parent_id,
       publishedCount: counts.get(cat.id) ?? 0,
       isLeaf: cat.parent_id !== null,

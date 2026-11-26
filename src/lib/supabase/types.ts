@@ -2509,6 +2509,7 @@ export type Database = {
           name: string;
           description: string | null;
           icon_key: string | null;
+          image_url: string | null;
           sort_order: number;
           is_active: boolean;
           parent_id: string | null;
@@ -2521,6 +2522,7 @@ export type Database = {
           name: string;
           description?: string | null;
           icon_key?: string | null;
+          image_url?: string | null;
           sort_order?: number;
           is_active?: boolean;
           parent_id?: string | null;
@@ -2532,6 +2534,7 @@ export type Database = {
           name?: string;
           description?: string | null;
           icon_key?: string | null;
+          image_url?: string | null;
           sort_order?: number;
           is_active?: boolean;
           parent_id?: string | null;

@@ -30,8 +30,7 @@ import type { BlogPostCard } from "@/lib/blog";
 import Image from "next/image";
 import { ThemeImg, EngravedIcon } from "@/components/ThemeImg";
 import { Reveal, CountUp, CarouselShell, LibraryBrowser, EvoCard, HeroCta } from "./LandingViewIslands";
-import { AffiliateStoreProductCard } from "@/components/affiliate-store/AffiliateStoreProductCard";
-import { AffiliateStoreCategoryIcon } from "@/components/affiliate-store/AffiliateStoreProductCard";
+import { AffiliateStoreProductCard, AffiliateStoreCategoryImage } from "@/components/affiliate-store/AffiliateStoreProductCard";
 import { ShortDisclosureLine } from "@/components/affiliate-store/disclosure";
 import type { AffiliateStoreProductCard as AffiliateStoreCardData } from "@/lib/affiliate-store-server";
 import { EgpTwin } from "@/components/egp/EgpTwin";
@@ -583,7 +582,7 @@ export function LandingView({
    *  muted). Passed ONLY by the EN home (store law §0 — the section is
    *  isAr-gated and the AR home passes nothing). */
   storeProducts?: AffiliateStoreCardData[];
-  storeCategories?: Array<{ slug: string; name: string; iconKey: string | null; listable: boolean }>;
+  storeCategories?: Array<{ slug: string; name: string; iconKey: string | null; imageUrl?: string | null; listable: boolean }>;
 }) {
   // SITE-CONTENT-281: the admin-editable marketing copy for the active
   // locale — Supabase overrides (passed down by the server route) win,
@@ -1220,9 +1219,9 @@ export function LandingView({
                 The store behind the training
               </h2>
               <p className="mx-auto mt-3 max-w-2xl text-base font-normal md:text-lg" style={{ color: PALETTE.textSec }}>
-                The exact gear our programs and recipes are built around — strength equipment, home-gym
-                machines, kitchen tools, wearables, and recovery gear, editorially reviewed and linked
-                straight to Amazon.
+                Supplements, healthy food, sports nutrition, strength and cardio equipment, workout
+                accessories, recovery gear, fitness tech and training media — editorially reviewed
+                picks for the whole training life, linked straight to Amazon.
               </p>
             </Reveal>
 
@@ -1238,19 +1237,27 @@ export function LandingView({
               </Reveal>
             )}
 
-            {/* Category tiles — the real active wave-1 families */}
+            {/* Category tiles — REAL product photos (0119: «أظهر تنوع
+                المتجر بوضوح من الصفحة الرئيسية») — the first families of
+                the store's commercial taxonomy */}
             {(storeCategories?.length ?? 0) > 0 && (
               <Reveal delay={120}>
-                <ul className="mx-auto mt-8 flex max-w-5xl flex-wrap justify-center gap-3">
+                <ul className="mx-auto mt-8 grid max-w-5xl grid-cols-2 gap-3 sm:grid-cols-4">
                   {storeCategories!.map((cat) => (
                     <li key={cat.slug}>
                       {cat.listable ? (
                         <a
                           href={`/affiliate-store/${cat.slug}`}
-                          className="flex items-center gap-2 rounded-full border border-[var(--edge)] bg-[var(--card)] px-4 py-2 text-sm transition-shadow hover:shadow-md"
+                          className="group block overflow-hidden rounded-xl border border-[var(--edge)] bg-[var(--card)] transition-shadow hover:shadow-md"
                         >
-                          <AffiliateStoreCategoryIcon iconKey={cat.iconKey} name={cat.name} size={20} />
-                          {cat.name}
+                          <AffiliateStoreCategoryImage
+                            imageUrl={cat.imageUrl ?? null}
+                            iconKey={cat.iconKey}
+                            name={cat.name}
+                          />
+                          <span className="block px-3 py-2.5 text-center text-xs font-medium leading-snug">
+                            {cat.name}
+                          </span>
                         </a>
                       ) : null}
                     </li>

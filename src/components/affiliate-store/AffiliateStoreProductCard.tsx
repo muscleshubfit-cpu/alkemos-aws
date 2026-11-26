@@ -54,6 +54,52 @@ export function AffiliateStoreCategoryIcon({
   );
 }
 
+/**
+ * STORE CATEGORY VISUAL (PHASE 0119 — owner order 2026-11-27 «استبدل جميع
+ * أيقونات Shop by Category بصور منتجات حقيقية مناسبة لكل تصنيف»):
+ * a category tile now renders its REAL PRODUCT PHOTO first —
+ *  - image_url (the same trusted 527-G1 source as product images:
+ *    the original m.media-amazon.com product photo of a representative
+ *    pick from the category) inside an aspect-[4/3] cover box;
+ *  - on load failure → the neutral professional placeholder (the
+ *    AffiliateStoreProductImage fallback — never presented as a photo);
+ *  - NULL image_url → the carved Marble & Chrome icon pair (the 527
+ *    default, unchanged).
+ * The person-free law is enforced at WRITE time (guards + the migration's
+ * machine-vision verification ledger); this component only renders what
+ * passed the gate.
+ */
+export function AffiliateStoreCategoryImage({
+  imageUrl,
+  iconKey,
+  name,
+  className = "",
+}: {
+  imageUrl: string | null;
+  iconKey: string | null;
+  name: string;
+  className?: string;
+}) {
+  if (imageUrl) {
+    return (
+      <span className={`relative block aspect-[4/3] w-full overflow-hidden bg-[var(--muted)]/40 ${className}`}>
+        <AffiliateStoreProductImage
+          imageUrl={imageUrl}
+          imageAlt={name}
+          categoryName={name}
+          fill
+          className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+        />
+      </span>
+    );
+  }
+  return (
+    <span className={`flex aspect-[4/3] w-full items-center justify-center bg-[var(--muted)]/40 ${className}`}>
+      <AffiliateStoreCategoryIcon iconKey={iconKey} name={name} size={56} />
+    </span>
+  );
+}
+
 /** The price line: API price when trusted, otherwise the honest Amazon CTA text. */
 export function AffiliateStorePriceLine({
   priceUsd,

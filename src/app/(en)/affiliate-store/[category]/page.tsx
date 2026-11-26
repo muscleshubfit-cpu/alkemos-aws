@@ -3,7 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
-import { AffiliateStoreCategoryIcon, AffiliateStoreProductGrid } from "@/components/affiliate-store/AffiliateStoreProductCard";
+import { AffiliateStoreCategoryIcon, AffiliateStoreCategoryImage, AffiliateStoreProductGrid } from "@/components/affiliate-store/AffiliateStoreProductCard";
+import { AffiliateStoreProductImage } from "@/components/affiliate-store/AffiliateStoreProductImage";
 import { AffiliateStoreViewEvent } from "@/components/affiliate-store/AffiliateStoreViewEvent";
 import { ShortDisclosureLine } from "@/components/affiliate-store/disclosure";
 import { getAffiliateStoreCategoryPage, listAffiliateStoreSitemapEntries, listPublicAffiliateStoreMainCategories } from "@/lib/affiliate-store-server";
@@ -116,9 +117,21 @@ export default async function AffiliateStoreCategoryPage({
           <span className="truncate text-[var(--text)]">{cat.name}</span>
         </nav>
 
-        {/* ── The category masthead ─────────────────────────────────── */}
+        {/* ── The category masthead — REAL PRODUCT PHOTO (0119) with the
+              carved icon as the identity mark ─────────────────────────── */}
         <header className="mb-6 flex items-start gap-4">
-          <span className="shrink-0">
+          {cat.imageUrl && (
+            <span className="relative hidden h-24 w-32 shrink-0 overflow-hidden rounded-xl border border-[var(--edge)] bg-[var(--muted)]/40 sm:block">
+              <AffiliateStoreProductImage
+                imageUrl={cat.imageUrl}
+                imageAlt={cat.name}
+                categoryName={cat.name}
+                fill
+                className="object-cover"
+              />
+            </span>
+          )}
+          <span className="hidden shrink-0 sm:block">
             <AffiliateStoreCategoryIcon iconKey={cat.iconKey} name={cat.name} size={72} />
           </span>
           <div>
@@ -172,11 +185,20 @@ export default async function AffiliateStoreCategoryPage({
                   <Link
                     key={main.id}
                     href={`/affiliate-store/${main.slug}`}
-                    className="group flex items-center gap-3 rounded-xl border border-[var(--edge)] bg-[var(--card)] p-3 transition-shadow hover:shadow-md"
+                    className="group overflow-hidden rounded-xl border border-[var(--edge)] bg-[var(--card)] transition-shadow hover:shadow-md"
                   >
-                    <AffiliateStoreCategoryIcon iconKey={main.iconKey} name={main.name} size={40} />
-                    <span className="text-sm font-medium leading-snug group-hover:underline group-hover:underline-offset-2">
-                      {main.name}
+                    <AffiliateStoreCategoryImage
+                      imageUrl={main.imageUrl}
+                      iconKey={main.iconKey}
+                      name={main.name}
+                    />
+                    <span className="flex items-center justify-between gap-2 p-3">
+                      <span className="text-sm font-medium leading-snug group-hover:underline group-hover:underline-offset-2">
+                        {main.name}
+                      </span>
+                      <span className="shrink-0 text-[11px] text-[var(--muted-foreground)]">
+                        {main.publishedCount}
+                      </span>
                     </span>
                   </Link>
                 ))}

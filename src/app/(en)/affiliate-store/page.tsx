@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
-import { AffiliateStoreCategoryIcon, AffiliateStoreProductGrid } from "@/components/affiliate-store/AffiliateStoreProductCard";
+import { AffiliateStoreCategoryImage, AffiliateStoreProductGrid } from "@/components/affiliate-store/AffiliateStoreProductCard";
 import { AffiliateStoreViewEvent } from "@/components/affiliate-store/AffiliateStoreViewEvent";
 import { ShortDisclosureLine } from "@/components/affiliate-store/disclosure";
 import {
@@ -56,7 +56,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: "Alkemos Affiliate Store — Fitness & Nutrition Gear We Recommend",
     description:
-      "Shop curated fitness and nutrition gear: strength equipment, home gym machines, kitchen and meal-prep tools, wearables, and recovery gear — reviewed by Alkemos, linked to Amazon.",
+      "Shop curated fitness and nutrition products: supplements, healthy food, sports nutrition, strength and cardio equipment, workout accessories, recovery gear, fitness tech and training books — reviewed by Alkemos, linked to Amazon.",
     alternates: { canonical: url },
     openGraph: {
       type: "website",
@@ -126,9 +126,9 @@ export default async function AffiliateStoreHubPage({
             Fitness &amp; nutrition gear, picked by coaches
           </h1>
           <p className="mt-3 max-w-2xl text-sm leading-relaxed text-[var(--muted-foreground)] md:text-base">
-            Strength equipment, home-gym machines, kitchen and meal-prep tools,
-            wearables, and recovery gear — every pick is editorially reviewed by
-            the Alkemos team and links straight to Amazon.
+            Supplements, healthy food and sports nutrition, strength and cardio equipment, workout
+            accessories, recovery gear, fitness tech and training media — every pick is
+            editorially reviewed by the Alkemos team and links straight to Amazon.
           </p>
           {/* د-2 — the short disclosure near the top of the shopping surface */}
           <ShortDisclosureLine className="mt-3" />
@@ -196,7 +196,8 @@ export default async function AffiliateStoreHubPage({
           </div>
         </form>
 
-        {/* ── Category tiles (visible category navigation) ─────────── */}
+        {/* ── Category tiles — REAL PRODUCT PHOTOS (0119: owner order
+              «استبدل جميع أيقونات Shop by Category بصور منتجات حقيقية») ── */}
         {!isFiltered && mains.length > 0 && (
           <section aria-labelledby="store-categories" className="mb-10">
             <h2 id="store-categories" className="mb-4 text-xl font-semibold tracking-tight">
@@ -207,16 +208,25 @@ export default async function AffiliateStoreHubPage({
                 <Link
                   key={main.id}
                   href={`/affiliate-store/${main.slug}`}
-                  className="group flex flex-col items-center gap-2 rounded-xl border border-[var(--edge)] bg-[var(--card)] p-4 text-center transition-shadow hover:shadow-md"
+                  className="group overflow-hidden rounded-xl border border-[var(--edge)] bg-[var(--card)] transition-shadow hover:shadow-md"
                 >
-                  <span className="shrink-0">
-                    <AffiliateStoreCategoryIcon iconKey={main.iconKey} name={main.name} size={56} />
-                  </span>
-                  <span className="text-sm font-medium leading-snug group-hover:underline group-hover:underline-offset-2">
-                    {main.name}
-                  </span>
-                  <span className="text-[11px] leading-relaxed text-[var(--muted-foreground)] line-clamp-2">
-                    {main.description}
+                  <AffiliateStoreCategoryImage
+                    imageUrl={main.imageUrl}
+                    iconKey={main.iconKey}
+                    name={main.name}
+                  />
+                  <span className="block p-3.5 pb-4">
+                    <span className="flex items-baseline justify-between gap-2">
+                      <span className="text-sm font-semibold leading-snug group-hover:underline group-hover:underline-offset-2">
+                        {main.name}
+                      </span>
+                      <span className="shrink-0 text-[11px] font-medium text-[var(--muted-foreground)]">
+                        {main.publishedCount}
+                      </span>
+                    </span>
+                    <span className="mt-1 block text-[11px] leading-relaxed text-[var(--muted-foreground)] line-clamp-2">
+                      {main.description}
+                    </span>
                   </span>
                 </Link>
               ))}

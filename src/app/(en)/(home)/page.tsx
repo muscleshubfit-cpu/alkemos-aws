@@ -70,6 +70,9 @@ export default async function Page() {
     slug: m.slug,
     name: m.name,
     iconKey: m.iconKey,
+    // 0119 — the homepage chips carry the category's REAL product photo
+    // (owner order «أظهر تنوع المتجر بوضوح من الصفحة الرئيسية»).
+    imageUrl: m.imageUrl,
     listable: m.publishedCount >= MAIN_CATEGORY_MIN_PUBLISHED,
   }));
   return (

@@ -79,3 +79,26 @@
 3. **ترتيب المكملات/الأغذية بموجة 2:** **معتمد** — تجهيزًا للتوسعة وفق إطار الغربلة المعتمد دون تجاوز بوابات المراجعة (الأمر نفسه).
 4. **موجات 3** (الكتب/التحمل الخارجي): تُترك لقرار المرحلة 3 كما هي (موجتا 2/3 تُزرعان غير نشطتين حتى قرارات التفعيل).
 5. **تطبيق الاعتماد:** هذا الملف هو مصدر seed الفئات لميجريشن 0115 (بنية `parent_id` المعتمدة — قرار أ من أمر الفتح) والتنفيذ جارٍ بأمر فتح المرحلة 1.
+
+---
+
+## 6) النسخة v3 — التصنيف التجاري الموسع (أمر المالك 2026-11-27 «تحويل المتجر لمتجر لياقة وتغذية متكامل» — نافذ بميجريشن 0119)
+
+أمر المالك أعاد هيكلة **المستوى الرئيسي** تجاريًا (توزيع وتسمية وترتيب) فوق شجرة v2 دون مسّ سلغ الأوراق ذات المنتجات (روابط المنتجات لا تتغير):
+
+| # | الفئة (v3) | السلغ | التغيير عن v2 |
+|---|---|---|---|
+| 1 | **Supplements** | `sports-supplements-vitamins` | تفعيل + إعادة تسمية (كانت موجة 2) |
+| 2 | **Healthy Food** | `healthy-foods-sports-snacks` | تفعيل + إعادة تسمية (كانت موجة 2) |
+| 3 | **Sports Nutrition** | `sports-nutrition` **جديدة** | subs منقولة/جديدة: pre-workout · electrolytes (إعادة تسمية recovery-electrolyte) · energy-gels |
+| 4 | Strength & Free Weights | `strength-free-weights` | كما هو |
+| 5 | Home Gym & Cardio | `home-gym-cardio-equipment` | كما هو |
+| 6 | **Workout Accessories** | `workout-accessories` **جديدة** | استوعبت أحزمة/حقائب الرفع من apparel + jump-ropes/gym-chalk جديدتين |
+| 7 | **Recovery & Wellness** | `yoga-mobility-recovery` | إعادة تسمية + فرع sleep-recovery-tools جديد |
+| 8 | **Fitness Technology** | `wearables-fitness-tech` | إعادة تسمية + استوعبت فروع body-measurement (الرئيسية الماصة أُطفئت) |
+| 9 | Kitchen & Meal Prep | `kitchen-meal-prep` | كما هو |
+| 10 | Training Apparel & Footwear | `training-apparel-footwear` | كما هو (بعد نقل الإكسسوارات) |
+| 11 | Hydration & On-the-Go | `hydration-on-the-go` | كما هو |
+| 12 | **Digital Fitness Products** | `educational-media-guides` | تفعيل + إعادة تسمية (أهلية موثقة: كتب + Kindle + دفاتر — التفصيل بتقرير المرحلة 528 §2.5) |
+
+**قانون التوازن (أمر المالك):** المعدات لا تهيمن — التغذية (مكملات+أغذية+تغذية رياضية) بالمقدمة وبحصة أكبر (36% مقابل 16% معدات في كتالوج الـ75). الفروع المتبقية بلا منتجات (womens-training-apparel · endurance-outdoor · electrolyte-sports-drinks القديم) تبقى بالشجرة غير معروضة حتى تحمل منتجات.
