@@ -52,6 +52,31 @@ is **proprietary and confidential** (see [License](#-license)).
 - **Blog & comparison hub** — bilingual articles plus focused
   "Alkemos vs …" comparison pages (`/blog`, `/compare`)
 
+### Alkemos Product Store (affiliate, English-only)
+- **Curated fitness & nutrition gear** — an Amazon Associates (US) product
+  store living at `/store`: strength and home-gym equipment, kitchen and
+  meal-prep tools, body-measurement devices, wearables, apparel, and
+  hydration gear. Every product carries original Alkemos editorial
+  content (never Amazon copy) and a single purchase unit built at render
+  time from the ASIN + the environment's Associates tag — tagged links
+  are never stored (`src/lib/store-link.ts` is the one tag source).
+- **English-only by law** — the store is entirely English; there is no
+  Arabic mirror and no store link on any Arabic surface (the store's
+  governing law: `docs/archive/ALKEMOS-STORE-AFFILIATE-READINESS-AUDIT-2026-11-26.md`,
+  live docs under `docs/store/`).
+- **Honest compliance, enforced by tests** — the Amazon Associates
+  disclosure renders attached to every buy unit; prices, Amazon images,
+  and Amazon ratings are absent until the Phase-4 Creators API; halal
+  blocklist, claims discipline, image law (absolute ban on women in any
+  store image), commission-rates-internal-only, and ASIN/link guards all
+  run as publish gates + vitest canaries (`src/lib/store-guards.ts`).
+- **Owner-reviewed catalog (0097)** — products are born
+  `review_status=pending`; the owner reviews and publishes from
+  `/admin/store` (review inbox, category/wave activation, StoreLinkVerify,
+  live guard feedback in the editor). Clicks are measured with a
+  non-redirecting `sendBeacon` endpoint (zero PII) + GA4 events; the
+  store ships its own EN-only sitemap family (`/sitemap-store.xml`).
+
 ### EVO — the AI coach
 - Floating chat widget on every page + a dedicated `/evo` experience, with
   live SSE streaming answers
@@ -288,6 +313,14 @@ alkemos/
 - TypeScript DB types mirror the schema (`src/lib/supabase/types.ts`) and are
   audited against the migrations on every push
   (`scripts/migration_audit.py`)
+- **Product store family (`store_*`, migration 0115)** — the affiliate
+  store's EN-only tables (categories with a two-level `parent_id` tree,
+  products with ASIN identity + the 0097 review flow, internal-surface
+  bindings, insert-only click events) — RLS: public reads of
+  published/active rows only, admin writes via the canonical channels,
+  click events service-role-only. Fully independent from the site
+  partner-referral family (`affiliate_*`) — the naming law of the store's
+  governing document.
 - Daily automated JSON backups run to a **private** repository
   (`.github/workflows/db-backup.yml`) — user data never lands in this repo
 
