@@ -290,6 +290,25 @@ export function SiteFooter({
               scoped pair is retired). */}
           {isAr ? "صُنع بعناية لمجتمع اللياقة" : "Built with care for the fitness community"}
         </div>
+
+        {/* ALKEMOS-STORE-PHASE1 (م-3 — DISCLOSURES-EN.md): the PERMANENT
+            footer line on the EN STORE surfaces only (pathname-gated —
+            never on Arabic surfaces, never a substitute for م-1's
+            unit-adjacent disclosure on every buy button). Text is the
+            fixed د-3 line; "full affiliate disclosure" links to
+            /affiliate-disclosure. */}
+        {!pageIsAr &&
+          (pathname.startsWith("/store") || pathname === "/affiliate-disclosure") && (
+            <div className="mt-2 border-t border-[var(--edge)] pt-2 text-center text-[10px] text-[var(--muted-foreground)]">
+              As an Amazon Associate I earn from qualifying purchases.{" "}
+              <a
+                href="/affiliate-disclosure"
+                className="underline underline-offset-2 hover:opacity-80"
+              >
+                Read our full affiliate disclosure.
+              </a>
+            </div>
+          )}
       </div>
     </footer>
   );
