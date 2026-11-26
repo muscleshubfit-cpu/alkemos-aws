@@ -272,6 +272,15 @@ jobs:
       NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
       NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
       NEXT_PUBLIC_SITE_URL: https://alkemos.com
+      # ALKEMOS-STORE (527): the Associates tag is a PUBLIC literal (it
+      # ships inside every public purchase URL — SECURITY.md §2.1) and the
+      # BUILD needs it too: the /affiliate-store/[category]/[slug] product
+      # pages are SSG-prerendered at build time, and resolveAmazonBuyLink
+      # bakes the purchase unit (or its honest fallback) into that HTML —
+      # a build without the tag ships fallback-only product pages for the
+      # whole first ISR hour after every deploy. Same owner-set value
+      # (fact ح-3): ahmedzake-20.
+      AMAZON_ASSOCIATES_TAG: ahmedzake-20
       NEXT_TELEMETRY_DISABLED: "1"
       # --- build-time client-bundle inlining (audit 2026-10-10) ---
       # "use client" components (CheckoutView/CoachWalletView/root-shell)
