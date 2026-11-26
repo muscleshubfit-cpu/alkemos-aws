@@ -5,6 +5,11 @@ import { fetchSiteContentOverrides } from "@/lib/site-content/server";
 import { listPublishedPostsForListPage } from "@/lib/blog-server";
 import { listHomeSampleRecipes } from "@/lib/recipes-server";
 import { selectHomeBlogCarousels } from "@/lib/blog-home-carousel";
+import {
+  getAffiliateStoreTree,
+  listFeaturedAffiliateStoreProducts,
+  MAIN_CATEGORY_MIN_PUBLISHED,
+} from "@/lib/affiliate-store-server";
 
 /**
  * HOMEPAGE (EN canonical "/") — Phase 202 «Product-Website Homepage»
@@ -48,6 +53,25 @@ export default async function Page() {
   const recipeSamples = await listHomeSampleRecipes("en", 3);
   const blogCarousels = selectHomeBlogCarousels(posts);
   const content = await fetchSiteContentOverrides();
+  // ALKEMOS-STORE (VISIBILITY-PREVIEW 2026-11-26 — owner order «قسم
+  // احترافي لمتجر Affiliate Store في الصفحة الرئيسية»): the store
+  // discovery slice, fetched at ISR time through the SAME fail-soft
+  // public layer the store pages use. HONEST-EMPTY: the featured rail
+  // rides only PUBLISHED products ([] until the owner's 0097 review +
+  // publish); the category chips render from the real ACTIVE tree
+  // (listable = the thin-page law ≥3 published → links; below the floor
+  // → muted chips, never dead links). EN-only: the AR home passes
+  // nothing and the section is isAr-gated in LandingView (store law §0).
+  const [storeProducts, storeTree] = await Promise.all([
+    listFeaturedAffiliateStoreProducts(4),
+    getAffiliateStoreTree(),
+  ]);
+  const storeCategories = storeTree.mains.slice(0, 8).map((m) => ({
+    slug: m.slug,
+    name: m.name,
+    iconKey: m.iconKey,
+    listable: m.publishedCount >= MAIN_CATEGORY_MIN_PUBLISHED,
+  }));
   return (
     <>
       <AuthErrorToast />
@@ -55,7 +79,7 @@ export default async function Page() {
           URL-resolved, the BlogListPage precedent (no client locale
           guess on the body; the header/footer chrome keeps its own
           provider behavior). */}
-      <LandingView samples={samples} content={content} isAr={false} blogCarousels={blogCarousels} recipeSamples={recipeSamples} />
+      <LandingView samples={samples} content={content} isAr={false} blogCarousels={blogCarousels} recipeSamples={recipeSamples} storeProducts={storeProducts} storeCategories={storeCategories} />
     </>
   );
 }

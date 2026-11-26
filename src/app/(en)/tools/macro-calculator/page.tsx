@@ -23,6 +23,7 @@ import { ReviewInviteCard } from "@/components/ReviewInviteCard";
 import { ToolReferenceContent } from "@/components/ToolReferenceContent";
 import { MACRO_CALCULATOR_CONTENT } from "@/lib/content/macro-calculator";
 import { fireOncePerSession, trackGa4Event } from "@/lib/analytics";
+import { AffiliateStoreSuggestStrip } from "@/components/affiliate-store/AffiliateStoreSuggestStrip";
 
 type DietType = "balanced" | "low_carb" | "high_protein" | "keto" | "low_fat";
 
@@ -204,6 +205,11 @@ export default function MacroCalculatorPage() {
 
         {/* DELIVERY 0050: other-tools links always visible at the bottom (owner request) */}
         {/* Report 15 §5-B1: «كيف تستخدم نتيجتك» guide strip (marble cards) */}
+        {/* ALKEMOS-STORE (VISIBILITY-PREVIEW 2026-11-26): the store's
+            suggest strip — honest-empty until PUBLISHED products are
+            bound to this tool's surface (tool:macro-calculator); EN only
+            (store law §0 — drops out when the UI language is Arabic). */}
+        <AffiliateStoreSuggestStrip lang={lang} surfaceType="tool" surfaceKey="macro-calculator" />
         <ToolArticleLinks toolSlug="macro-calculator" />
 
         <OtherTools current="macro-calculator" />

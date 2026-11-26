@@ -23,6 +23,7 @@ import {
 } from "@/lib/plan-persistence";
 import { Loader2, Sparkles, RotateCcw, HardDriveDownload, Check } from "lucide-react";
 import { toast } from "sonner";
+import { AffiliateStoreSuggestStrip } from "@/components/affiliate-store/AffiliateStoreSuggestStrip";
 
 /**
  * /ai-meal-planner — the AI meal planner page (§12.28 → Phase 183,
@@ -632,6 +633,11 @@ export default function AiMealPlannerPage() {
         {/* AdSense */}
         <AdSenseAd format="auto" />
         {/* Report 15 §5-B1: «كيف تستخدم نتيجتك» guide strip (marble cards) */}
+        {/* ALKEMOS-STORE (VISIBILITY-PREVIEW 2026-11-26): the store's
+            suggest strip — honest-empty until PUBLISHED products are
+            bound to this tool's surface (tool:ai-meal-planner); EN only
+            (store law §0 — drops out when the UI language is Arabic). */}
+        <AffiliateStoreSuggestStrip lang={lang} surfaceType="tool" surfaceKey="ai-meal-planner" />
         <ToolArticleLinks toolSlug="/ai-meal-planner" />
 
         <OtherTools current="/ai-meal-planner" />

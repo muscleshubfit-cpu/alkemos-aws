@@ -188,6 +188,9 @@ export type AdminAffiliateStoreCategoryNode = {
   name: string;
   is_active: boolean;
   parent_id: string | null;
+  /** The carved-icon key (VISIBILITY-PREVIEW 2026-11-26 — the editor's
+   *  live preview renders the leaf's carved icon as the image fallback). */
+  icon_key: string | null;
   productCount: number;
   children: AdminAffiliateStoreCategoryNode[];
 };
@@ -199,12 +202,12 @@ export async function adminAffiliateStoreCategoryTree(): Promise<AdminAffiliateS
   const [cats, counts] = await Promise.all([
     db
       .from("affiliate_store_categories")
-      .select("id,slug,name,is_active,parent_id,sort_order")
+      .select("id,slug,name,is_active,parent_id,icon_key,sort_order")
       .order("sort_order", { ascending: true }),
     db.from("affiliate_store_products").select("category_id"),
   ]);
   const catRows = (cats.data ?? []) as Array<
-    Pick<AffiliateStoreCategory, "id" | "slug" | "name" | "is_active" | "parent_id">
+    Pick<AffiliateStoreCategory, "id" | "slug" | "name" | "is_active" | "parent_id" | "icon_key">
   >;
   const countMap = new Map<string, number>();
   for (const row of (counts.data ?? []) as Array<{ category_id: string }>) {
@@ -219,6 +222,7 @@ export async function adminAffiliateStoreCategoryTree(): Promise<AdminAffiliateS
         name: c.name,
         is_active: c.is_active,
         parent_id: c.parent_id,
+        icon_key: c.icon_key,
         productCount: countMap.get(c.id) ?? 0,
         children: build(c.id),
       }));

@@ -28,6 +28,7 @@ import {
   calculateCalorieTargets,
   ACTIVITY_FACTORS as SHARED_ACTIVITY_FACTORS,
 } from "@/lib/fitness-math";
+import { AffiliateStoreSuggestStrip } from "@/components/affiliate-store/AffiliateStoreSuggestStrip";
 
 type Gender = "male" | "female";
 type Activity = "sedentary" | "light" | "moderate" | "active" | "very_active";
@@ -408,6 +409,11 @@ export default function CalorieCalculatorPage() {
 
         {/* DELIVERY 0050: other-tools links always visible at the bottom (owner request) */}
         {/* Report 15 §5-B1: «كيف تستخدم نتيجتك» guide strip (marble cards) */}
+        {/* ALKEMOS-STORE (VISIBILITY-PREVIEW 2026-11-26): the store's
+            suggest strip — honest-empty until PUBLISHED products are
+            bound to this tool's surface (tool:calorie-calculator); EN only
+            (store law §0 — drops out when the UI language is Arabic). */}
+        <AffiliateStoreSuggestStrip lang={lang} surfaceType="tool" surfaceKey="calorie-calculator" />
         <ToolArticleLinks toolSlug="calorie-calculator" />
 
         <OtherTools current="calorie-calculator" />

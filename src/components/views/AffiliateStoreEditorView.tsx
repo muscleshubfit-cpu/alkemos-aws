@@ -3,14 +3,21 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Save, ShieldCheck, Unplug } from "lucide-react";
+import { ArrowLeft, ExternalLink, Image as ImageIcon, Save, ShieldCheck, Unplug } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { PageHeader, SectionCard, EmptyState } from "@/components/admin/ui";
+import { AffiliateStoreProductImage } from "@/components/affiliate-store/AffiliateStoreProductImage";
+import { OaDisclosureLine } from "@/components/affiliate-store/disclosure";
+import { AFFILIATE_STORE_BUY_CTA_LABEL } from "@/lib/affiliate-store-link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { runAffiliateStoreProductGuards, type AffiliateStoreGuardFinding } from "@/lib/affiliate-store-guards";
+import {
+  checkAffiliateStoreImageUrlShape,
+  runAffiliateStoreProductGuards,
+  type AffiliateStoreGuardFinding,
+} from "@/lib/affiliate-store-guards";
 import { isValidAsin } from "@/lib/affiliate-store-link";
 
 /**
@@ -20,6 +27,20 @@ import { isValidAsin } from "@/lib/affiliate-store-link";
  *
  *   - CONTENT FIELDS ARE ENGLISH ONLY (store law §0 — the interface is
  *     operator-language but the fields feed an EN-only store).
+ *   - LIVE VISUAL PREVIEW (VISIBILITY-PREVIEW 2026-11-26 — owner order
+ *     «معاينة مرئية حقيقية للمنتج أثناء الإضافة والتحرير»): the sticky
+ *     panel mirrors the PUBLIC surfaces — the rail card + the product
+ *     page header (image or carved icon · title · brand · summary ·
+ *     editorial score · featured badge · leaf category · the buy-unit
+ *     state · the honest no-price law) and re-renders on EVERY keystroke
+ *     (it derives from the same form state — no separate sync).
+ *   - OPEN PUBLIC PAGE: the button opens /affiliate-store/{leaf}/{slug}
+ *     in a new tab (404 while pending — the page goes live at publish,
+ *     the 0097 law; the preview above is the honest pre-publish mirror).
+ *   - DIRECT-IMAGE VALIDATION (owner order «التأكد من أنه رابط صورة مباشر
+ *     وليس رابط صفحة عادية»): the shape guard (page/doc extensions
+ *     BLOCK, extension-less WARN) + the "Verify image" probe
+ *     (HEAD → content-type image/* — a 200 text/html answer is a PAGE).
  *   - LIVE GUARD FEEDBACK: every keystroke re-runs the store guards
  *     (image law v2 §0 · halal blocklist · claims · commission rates ·
  *     ASIN shape · stored-tagged links) — blocking findings refuse the
@@ -38,6 +59,7 @@ type CategoryNode = {
   slug: string;
   name: string;
   is_active: boolean;
+  icon_key: string | null;
   productCount: number;
   children: CategoryNode[];
 };
@@ -126,6 +148,12 @@ export function AffiliateStoreEditorView({ mode, productId }: { mode: "new" | "e
   const [saving, setSaving] = useState(false);
   const [verify, setVerify] = useState<{ status: string; message: string; url: string | null } | null>(null);
   const [verifying, setVerifying] = useState(false);
+  const [imageVerify, setImageVerify] = useState<{
+    status: string;
+    message: string;
+    contentType: string | null;
+  } | null>(null);
+  const [verifyingImage, setVerifyingImage] = useState(false);
   const router = useRouter();
   const [loaded, setLoaded] = useState(mode === "new");
 
@@ -178,6 +206,21 @@ export function AffiliateStoreEditorView({ mode, productId }: { mode: "new" | "e
   );
   const isScreeningCategory =
     selectedMain === "sports-supplements-vitamins" || selectedMain === "healthy-foods-sports-snacks";
+
+  /* ── LIVE PREVIEW derivations (VISIBILITY-PREVIEW 2026-11-26) ──
+   * Everything the public surfaces will render, derived from the SAME
+   * form state — updates on every keystroke, zero separate sync. */
+  const selectedGroup = useMemo(
+    () => leafGroups.find((g) => g.leaves.some((l) => l.id === form.category_id)),
+    [leafGroups, form.category_id],
+  );
+  const selectedLeaf = useMemo(
+    () => selectedGroup?.leaves.find((l) => l.id === form.category_id) ?? null,
+    [selectedGroup, form.category_id],
+  );
+  const publicUrl =
+    selectedLeaf && form.slug ? `/affiliate-store/${selectedLeaf.slug}/${form.slug}` : null;
+  const imageShape = useMemo(() => checkAffiliateStoreImageUrlShape(form.image_url), [form.image_url]);
 
   const findings: AffiliateStoreGuardFinding[] = useMemo(
     () =>
@@ -265,13 +308,177 @@ export function AffiliateStoreEditorView({ mode, productId }: { mode: "new" | "e
     }
   }, [form.asin, isAr]);
 
+  const runImageVerify = useCallback(async () => {
+    setVerifyingImage(true);
+    setImageVerify(null);
+    try {
+      const res = await fetch(
+        `/api/admin/affiliate-store/verify?image=${encodeURIComponent(form.image_url.trim())}`,
+      );
+      const body = (await res.json()) as { status: string; message: string; contentType: string | null };
+      setImageVerify(body);
+    } catch {
+      setImageVerify({
+        status: "error",
+        message: isAr ? "فشل التحقق من الصورة" : "Image verify request failed",
+        contentType: null,
+      });
+    } finally {
+      setVerifyingImage(false);
+    }
+  }, [form.image_url, isAr]);
+
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) =>
     setForm((f) => ({ ...f, [key]: value }));
 
   if (!loaded) return <EmptyState text={isAr ? "جارٍ التحميل…" : "Loading…"} />;
 
+  /* ── THE LIVE PREVIEW PANEL (VISIBILITY-PREVIEW 2026-11-26) ──
+   * Mirrors the PUBLIC surfaces from the current form state: the rail
+   * card + the product page header, honest about the no-price law
+   * (§3.4-6 — prices only from the Phase-4 Amazon API) and the buy
+   * unit (built from ASIN + env tag at render; no ASIN → no unit). */
+  const previewPanel = (
+    <aside
+      data-affiliate-store-preview=""
+      className="order-first space-y-4 lg:sticky lg:top-6 lg:order-none"
+      aria-label={isAr ? "معاينة حية للمنتج" : "Live product preview"}
+    >
+      <div className="rounded-xl border border-[var(--edge)] bg-[var(--card)] p-4">
+        <h3 className="text-sm font-semibold tracking-tight">
+          {isAr ? "المعاينة الحية" : "Live preview"}
+          <span className="ms-2 text-xs font-normal text-muted-foreground">
+            {isAr ? "تتحدث مع كل ضغطة مفتاح" : "updates on every keystroke"}
+          </span>
+        </h3>
+
+        {/* 1) The RAIL CARD replica (homepage rail · store grid · related) */}
+        <p className="mt-3 text-xs font-medium text-muted-foreground">
+          {isAr ? "البطاقة (السكة/الشبكة)" : "Rail / grid card"}
+        </p>
+        <div className="mt-1 flex gap-3 rounded-xl border border-[var(--edge)] bg-[var(--bg)] p-3">
+          <span className="shrink-0 self-start">
+            <AffiliateStoreProductImage
+              imageUrl={form.image_url || null}
+              imageAlt={form.title || "product image"}
+              categoryIconKey={selectedLeaf?.icon_key ?? null}
+              categoryName={selectedLeaf?.name ?? "store"}
+              size={64}
+              className="rounded-lg object-contain"
+            />
+          </span>
+          <span className="min-w-0">
+            <span className="block font-medium leading-snug">
+              {form.title || (isAr ? "عنوان المنتج…" : "Product title…")}
+            </span>
+            {form.brand && (
+              <span className="mt-0.5 block text-xs text-muted-foreground">{form.brand}</span>
+            )}
+            <span className="mt-1 block text-sm text-muted-foreground">
+              {form.summary || (isAr ? "الملخص…" : "Summary…")}
+            </span>
+          </span>
+        </div>
+
+        {/* 2) The PRODUCT PAGE header replica */}
+        <p className="mt-4 text-xs font-medium text-muted-foreground">
+          {isAr ? "رأس صفحة المنتج العامة" : "Public product page header"}
+        </p>
+        <div className="mt-1 rounded-xl border border-[var(--edge)] bg-[var(--bg)] p-3">
+          <div className="flex items-start gap-3">
+            <span className="shrink-0">
+              <AffiliateStoreProductImage
+                imageUrl={form.image_url || null}
+                imageAlt={form.title || "product image"}
+                categoryIconKey={selectedLeaf?.icon_key ?? null}
+                categoryName={selectedLeaf?.name ?? "store"}
+                size={96}
+                eager
+                className="rounded-xl object-contain"
+              />
+            </span>
+            <div className="min-w-0">
+              <p className="font-semibold leading-tight">
+                {form.title || (isAr ? "العنوان…" : "Title…")}
+              </p>
+              {form.brand && <p className="mt-0.5 text-xs text-muted-foreground">{form.brand}</p>}
+              <p className="mt-1 text-xs text-muted-foreground">
+                {isAr ? "الفئة: " : "Category: "}
+                {selectedGroup ? `${selectedGroup.mainName} › ${selectedLeaf?.name ?? ""}` : isAr ? "— اختر فئة —" : "— pick a category —"}
+              </p>
+              {form.editorial_rating !== "" && !Number.isNaN(Number(form.editorial_rating)) && (
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Alkemos Editorial Score: {Number(form.editorial_rating).toFixed(1)}/10
+                </p>
+              )}
+              {form.is_featured && (
+                <span className="mt-1.5 inline-block rounded-full border border-[var(--edge)] px-2 py-0.5 text-[10px] font-medium">
+                  ★ Featured
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* The buy unit (م-1 attached) — the honest pre-publish mirror */}
+          <div className="mt-3 border-t border-[var(--edge)] pt-3">
+            {isValidAsin(form.asin) ? (
+              <>
+                <OaDisclosureLine className="mb-1" />
+                <span
+                  className="inline-flex items-center gap-2 rounded-lg border border-[var(--edge)] bg-[var(--card)] px-5 py-2.5 text-sm font-semibold opacity-90"
+                  aria-hidden="true"
+                >
+                  <ExternalLink className="size-4" aria-hidden="true" />
+                  {AFFILIATE_STORE_BUY_CTA_LABEL}
+                </span>
+                <p className="mt-1 text-[10px] text-muted-foreground">
+                  {isAr
+                    ? "الوسم يُدمج خادميًا وقت العرض — تحقق منه بزر التحقق أعلاه"
+                    : "the Associates tag merges server-side at render — check it with StoreLinkVerify above"}
+                </p>
+              </>
+            ) : (
+              <p className="rounded-lg border border-[var(--edge)] bg-[var(--card)] p-3 text-xs text-muted-foreground">
+                {isAr
+                  ? "لا يوجد ASIN صالح — صفحة المنتج تُعرض بلا زر شراء حتى يُضبط (قانون SOP §5.1)"
+                  : "No valid ASIN — the public page renders WITHOUT a buy unit until one is set (SOP §5.1)."}
+              </p>
+            )}
+            <p className="mt-2 text-[10px] text-muted-foreground">
+              {isAr
+                ? "السعر: لا يُعرض على Alkemos — أمازون تقدم السعر الحي (المرحلة 4/Creators API)"
+                : "Price: never shown on Alkemos — Amazon serves the live price (Phase-4 Creators API)."}
+            </p>
+          </div>
+        </div>
+
+        {/* 3) The open-public-page button (404 while pending — honest) */}
+        <div className="mt-4">
+          {publicUrl ? (
+            <Button asChild variant="outline" size="sm" className="w-full">
+              <a href={publicUrl} target="_blank" rel="noopener">
+                <ExternalLink className="size-4" />
+                {isAr ? "افتح صفحة المنتج العامة" : "Open the public product page"}
+              </a>
+            </Button>
+          ) : (
+            <Button variant="outline" size="sm" className="w-full" disabled>
+              <ExternalLink className="size-4" />
+              {isAr ? "اختر الفئة وSlug لعرض الرابط" : "Pick a category + slug to get the link"}
+            </Button>
+          )}
+          <p className="mt-1.5 text-[10px] leading-snug text-muted-foreground">
+            {isAr
+              ? "المنتجات غير المنشورة تعطي 404 — الصفحة تحيى بنشرها (سير 0097) والمعاينة أعلاه هي مرآتها قبل النشر"
+              : "Unpublished products 404 on the public page — it goes live at publish (0097); the preview above is the honest pre-publish mirror."}
+          </p>
+        </div>
+      </div>
+    </aside>
+  );
+
   return (
-    <div className="mx-auto w-full max-w-4xl px-4 py-8">
+    <div className="mx-auto w-full max-w-6xl px-4 py-8">
       <PageHeader
         title={
           mode === "new"
@@ -296,6 +503,13 @@ export function AffiliateStoreEditorView({ mode, productId }: { mode: "new" | "e
         }
       />
 
+      {/* VISIBILITY-PREVIEW 2026-11-26: two-column shell — the form
+          (min-w-0 guards grid blowout) + the sticky live-preview rail;
+          on mobile the preview rides FIRST (the operator opens an edit
+          and immediately sees the public mirror), on lg the natural DOM
+          order puts the form left and the preview right. */}
+      <div className="mt-6 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
+        <div className="min-w-0 space-y-6">
       <SectionCard title={isAr ? "بيانات المنتج" : "Product data"}>
         <div className="grid gap-4 md:grid-cols-2">
           <label className="grid gap-1 text-sm">
@@ -373,14 +587,50 @@ export function AffiliateStoreEditorView({ mode, productId }: { mode: "new" | "e
               onChange={(e) => set("content", e.target.value)}
             />
           </label>
-          <label className="grid gap-1 text-sm">
+          <label className="grid gap-1 text-sm md:col-span-2">
             <span>image_url {isAr ? "(مملوكة/مرخصة فقط — أو اتركه فارغًا للأيقونة)" : "(owned/licensed only — or leave empty for the carved icon)"}</span>
-            <Input
-              value={form.image_url}
-              onChange={(e) => set("image_url", e.target.value)}
-              placeholder="https://alkemos.com/affiliate-store-products/…"
-              className="font-mono"
-            />
+            <div className="flex flex-wrap items-center gap-2">
+              <Input
+                value={form.image_url}
+                onChange={(e) => set("image_url", e.target.value)}
+                placeholder="https://alkemos.com/affiliate-store-products/…"
+                className="min-w-0 flex-1 font-mono"
+              />
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={verifyingImage || !form.image_url.trim()}
+                onClick={() => void runImageVerify()}
+              >
+                {verifyingImage ? <Unplug className="size-4 animate-pulse" /> : <ImageIcon className="size-4" />}
+                {isAr ? "تحقق من الصورة" : "Verify image"}
+              </Button>
+            </div>
+            <span
+              className={`
+                text-xs
+                ${imageShape.verdict === "block" ? "text-destructive" : imageShape.verdict === "warn" ? "text-amber-600" : "text-muted-foreground"}
+              `}
+            >
+              {imageShape.verdict === "ok" ? "✓" : imageShape.verdict === "warn" ? "⚠" : "⛔"}{" "}
+              {imageShape.message}
+            </span>
+            {imageVerify && (
+              <span className="text-xs">
+                <Badge
+                  variant={
+                    imageVerify.status === "ok"
+                      ? "default"
+                      : imageVerify.status === "dead" || imageVerify.status === "shape-block"
+                        ? "destructive"
+                        : "secondary"
+                  }
+                >
+                  {imageVerify.status}
+                </Badge>{" "}
+                <span className="text-muted-foreground">{imageVerify.message}</span>
+              </span>
+            )}
           </label>
           <label className="grid gap-1 text-sm">
             <span>image_alt {isAr ? "(وصف الصورة — يُفحص بقانون الصور)" : "(image description — screened by the image law)"}</span>
@@ -552,6 +802,9 @@ export function AffiliateStoreEditorView({ mode, productId }: { mode: "new" | "e
           </ul>
         )}
       </SectionCard>
+        </div>
+        {previewPanel}
+      </div>
     </div>
   );
 }

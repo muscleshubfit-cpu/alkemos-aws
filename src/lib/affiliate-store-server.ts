@@ -395,3 +395,57 @@ export async function listRelatedAffiliateStoreProducts(
     )
     .slice(0, limit);
 }
+
+/* ───────── SURFACE ENTRANCES (VISIBILITY-PREVIEW 2026-11-26) ───────── */
+
+/** The surface-binding types the editor can bind (the 0115 family). */
+export const AFFILIATE_STORE_SURFACE_TYPES = [
+  "tool",
+  "equipment_hub",
+  "program",
+  "blog",
+  "collection",
+] as const;
+export type AffiliateStoreSurfaceType = (typeof AFFILIATE_STORE_SURFACE_TYPES)[number];
+
+/**
+ * PUBLISHED products bound to one EN content surface
+ * (affiliate_store_product_links: surface_type + surface_key — the
+ * Phase-2 wiring the founding batch seeded). This is the data leg of
+ * the owner's «مداخل مناسبة للمتجر داخل صفحات المحتوى الإنجليزية
+ * ذات الصلة»: equipment hubs, program pages, and tool pages render
+ * these as "Recommended gear" entrances.
+ *
+ * Laws kept: RLS/anon reads (PUBLISHED only — pending products never
+ * surface anywhere), fail-soft ([] on any error), cached with the
+ * store-products tag (a publish flush lights the rails up).
+ */
+export const listAffiliateStoreProductsForSurface = unstable_cache(
+  async (
+    surfaceType: AffiliateStoreSurfaceType,
+    surfaceKey: string,
+    limit = 4,
+  ): Promise<AffiliateStoreProductCard[]> => {
+    try {
+      const client = affiliateStorePublicClient();
+      if (!client) return [];
+      const { data: linkRows } = await client
+        .from("affiliate_store_product_links")
+        .select("product_id")
+        .eq("surface_type", surfaceType)
+        .eq("surface_key", surfaceKey)
+        .limit(24);
+      const ids = ((linkRows ?? []) as Array<{ product_id: string }>).map((r) => r.product_id);
+      if (ids.length === 0) return [];
+      const rows = await fetchPublishedProducts(400);
+      return rows
+        .map(toCard)
+        .filter((card) => ids.includes(card.id))
+        .slice(0, limit);
+    } catch {
+      return [];
+    }
+  },
+  ["affiliate-store-surface"],
+  { revalidate: 3600, tags: ["affiliate-store-surface", "affiliate-store-products"] },
+);

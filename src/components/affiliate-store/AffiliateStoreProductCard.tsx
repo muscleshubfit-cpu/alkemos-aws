@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ThemeImg } from "@/components/ThemeImg";
+import { AffiliateStoreProductImage } from "@/components/affiliate-store/AffiliateStoreProductImage";
 import type { AffiliateStoreProductCard as CardData } from "@/lib/affiliate-store-server";
 
 /**
@@ -12,6 +13,10 @@ import type { AffiliateStoreProductCard as CardData } from "@/lib/affiliate-stor
  * The card carries NO price (§3.4-6), NO commission hints (§6-c), and
  * NO amazon link — the purchase unit exists ONLY on the product page
  * (م-1 adjacency is unsatisfiable on a grid, so the grid shows none).
+ *
+ * VISIBILITY-PREVIEW 2026-11-26: the image renders through
+ * AffiliateStoreProductImage so a FAILED owned URL falls back to the
+ * carved icon in place (never a broken-image glyph on a public card).
  */
 
 const ICON_FALLBACK = "dumbbell";
@@ -48,23 +53,14 @@ export function AffiliateStoreProductCard({ product }: { product: CardData }) {
       className="group flex gap-4 rounded-xl border border-[var(--edge)] bg-[var(--card)] p-4 transition-shadow hover:shadow-md"
     >
       <span className="shrink-0 self-start">
-        {product.imageUrl ? (
-          // Owned/licensed image only (guard-rejected at write time if
-          // Amazon-hosted or person-signaled — IMAGE-POLICY-EN.md v2 §0).
-          /* eslint-disable-next-line @next/next/no-img-element -- external
-             owned/licensed URLs, fixed display size, not a next/image asset */
-          <img
-            src={product.imageUrl}
-            alt={product.title}
-            width={64}
-            height={64}
-            loading="lazy"
-            decoding="async"
-            className="rounded-lg object-contain"
-          />
-        ) : (
-          <AffiliateStoreCategoryIcon iconKey={product.categoryIconKey} name={product.categoryName} />
-        )}
+        <AffiliateStoreProductImage
+          imageUrl={product.imageUrl}
+          imageAlt={product.title}
+          categoryIconKey={product.categoryIconKey}
+          categoryName={product.categoryName}
+          size={64}
+          className="rounded-lg object-contain"
+        />
       </span>
       <span className="min-w-0">
         <span className="block font-medium leading-snug group-hover:underline group-hover:underline-offset-2">

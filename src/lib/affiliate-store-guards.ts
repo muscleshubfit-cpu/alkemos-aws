@@ -100,6 +100,59 @@ export function checkAffiliateStoreImage(
   return { ok: violations.length === 0, violations };
 }
 
+/* ── 1b) DIRECT-IMAGE URL SHAPE (VISIBILITY-PREVIEW 2026-11-26) ─────── */
+
+/**
+ * The direct-image shape gate (owner order 2026-11-26 — «التأكد من أنه
+ * رابط صورة مباشر وليس رابط صفحة عادية»): image_url must point at an
+ * IMAGE FILE, never a product/HTML page. Extension-based classification:
+ *   - IMAGE extensions (.jpg/.jpeg/.png/.webp/.avif/.gif/.svg) → ok;
+ *   - PAGE/DOCUMENT extensions (.html/.htm/.php/.aspx/.jsp/.pdf…) → BLOCK
+ *     (clear evidence the URL is a page, not an image);
+ *   - NO extension (query-string CDN URLs exist) → WARN: ambiguous — the
+ *     editor's "Verify image" probe (content-type: image/*) settles it.
+ * Non-https schemes and malformed URLs are BLOCKED outright.
+ */
+const IMAGE_EXT_RE = /\.(jpe?g|png|webp|avif|gif|svg)(?:[?#]|$)/i;
+const NON_IMAGE_DOC_RE = /\.(html?|php|aspx?|jsp|xhtml|pdf|docx?|xlsx?|txt|json|xml)(?:[?#]|$)/i;
+
+export type AffiliateStoreImageUrlShape =
+  | { verdict: "ok"; message: string }
+  | { verdict: "warn"; message: string }
+  | { verdict: "block"; message: string };
+
+/** Shape-verdict for one image_url candidate (null/empty = the carved-icon default, ok). */
+export function checkAffiliateStoreImageUrlShape(
+  imageUrl: string | null | undefined,
+): AffiliateStoreImageUrlShape {
+  if (!imageUrl || imageUrl.trim() === "") {
+    return { verdict: "ok", message: "no image — the carved category icon renders (IMAGE-POLICY ص-1 default)" };
+  }
+  const value = imageUrl.trim();
+  let parsed: URL;
+  try {
+    parsed = new URL(value);
+  } catch {
+    return { verdict: "block", message: "image_url is not a valid absolute URL (expected https://…)" };
+  }
+  if (parsed.protocol !== "https:") {
+    return { verdict: "block", message: `image_url must use https (got "${parsed.protocol}//")` };
+  }
+  if (NON_IMAGE_DOC_RE.test(parsed.pathname)) {
+    return {
+      verdict: "block",
+      message: "image_url looks like a PAGE/DOCUMENT link, not a direct image (html/php/pdf/… rejected — use the image file URL)",
+    };
+  }
+  if (IMAGE_EXT_RE.test(parsed.pathname)) {
+    return { verdict: "ok", message: "image_url carries a direct image extension" };
+  }
+  return {
+    verdict: "warn",
+    message: "image_url has no image extension — ambiguous: run “Verify image” (the probe requires content-type image/*)",
+  };
+}
+
 /* ───────────── 2) HALAL BLOCKLIST (§3.4-5 + screening §2-1) ───────── */
 
 /**
@@ -355,6 +408,17 @@ export function runAffiliateStoreProductGuards(
       rule: "image-policy",
       severity: "block",
       message: violation,
+    });
+  }
+  // DIRECT-IMAGE SHAPE (VISIBILITY-PREVIEW 2026-11-26): a page URL in
+  // image_url is a BLOCK; an extension-less URL is a WARN (the editor's
+  // content-type probe settles it).
+  const imageShape = checkAffiliateStoreImageUrlShape(product.image_url);
+  if (imageShape.verdict !== "ok") {
+    findings.push({
+      rule: imageShape.verdict === "block" ? "image-url-shape" : "image-url-ambiguous",
+      severity: imageShape.verdict,
+      message: `image_url: ${imageShape.message}`,
     });
   }
   const halalHit = hasHalalBlocklistHit(

@@ -320,6 +320,17 @@ jobs:
           # Public literal (not a secret) — see header: runtime origin for
           # /auth/callback redirects (AUTH-CALLBACK-LOCALHOST-REDIRECT fix).
           R_NEXT_PUBLIC_SITE_URL: https://alkemos.com
+          # ALKEMOS-STORE (2026-11-26 — VISIBILITY-PREVIEW frame): the
+          # Associates tag is a PUBLIC literal (it appears inside every
+          # public purchase URL; SECURITY.md §2.1 + affiliate-store-link.ts
+          # "the tag value is NOT a secret") — the NEXT_PUBLIC_SITE_URL
+          # staging precedent. Before this row the tag had NO automated
+          # production channel (env-sync staged nothing; the ops-append
+          # workflow is Cloudflare-allowlist-only), so production rendered
+          # StoreLinkVerify's "AMAZON_ASSOCIATES_TAG is not configured"
+          # and NO purchase unit could ever build. Owner-set value (fact
+          # ح-3, unchanged): ahmedzake-20.
+          R_AMAZON_ASSOCIATES_TAG: ahmedzake-20
           R_GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           R_GEMINI_MODEL: ${{ secrets.GEMINI_MODEL }}
           R_OPENROUTER_API: ${{ secrets.OPENROUTER_API }}
@@ -355,6 +366,7 @@ jobs:
           stage NEXT_PUBLIC_SUPABASE_URL       "$R_NEXT_PUBLIC_SUPABASE_URL"
           stage NEXT_PUBLIC_SUPABASE_ANON_KEY  "$R_NEXT_PUBLIC_SUPABASE_ANON_KEY"
           stage NEXT_PUBLIC_SITE_URL            "$R_NEXT_PUBLIC_SITE_URL"
+          stage AMAZON_ASSOCIATES_TAG           "$R_AMAZON_ASSOCIATES_TAG"
           stage GEMINI_API_KEY                 "$R_GEMINI_API_KEY"
           stage GEMINI_MODEL                   "$R_GEMINI_MODEL"
           stage OPENROUTER_API                 "$R_OPENROUTER_API"

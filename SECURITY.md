@@ -65,10 +65,14 @@ Any of the following:
   built at render time by `src/lib/affiliate-store-link.ts` (the single tag
   source; tagged links are never stored in the DB — the store guard
   rejects any `tag=` value in store text columns). It ships in
-  `.env.example` EMPTY by §2.1 law; the owner-set value
-  (`ahmedzake-20` — fact ح-3 of the store governing law) lives in the
-  standard secret stores (`.env.local` locally, the server shared env +
-  repo secret channel in production).
+  `.env.example` EMPTY by §2.1 law. Production delivery (2026-11-26 —
+  VISIBILITY-PREVIEW frame): staged as a PUBLIC literal by
+  `deploy-aws.yml`'s env-sync step (the `NEXT_PUBLIC_SITE_URL`
+  precedent — it was previously missing from every automated channel,
+  which produced StoreLinkVerify's "AMAZON_ASSOCIATES_TAG is not
+  configured" on production); the owner-set value (`ahmedzake-20` —
+  fact ح-3 of the store governing law) also lives in `.env.local` for
+  local development.
 - GitHub personal access tokens.
 - Any OAuth client ID + secret pair.
 - Any future `*_API_KEY` env var added to `.env.example`.

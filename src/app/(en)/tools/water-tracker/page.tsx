@@ -21,6 +21,7 @@ import { LeadCaptureCard } from "@/components/LeadCaptureCard";
 import { fireOncePerSession, trackGa4Event } from "@/lib/analytics";
 import { Bookmark, Download, Loader2, Check, Droplets, Plus, Minus, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
+import { AffiliateStoreSuggestStrip } from "@/components/affiliate-store/AffiliateStoreSuggestStrip";
 
 // ===== Types =====
 
@@ -576,6 +577,11 @@ export default function WaterTrackerPage() {
         {/* AdSense */}
         <AdSenseAd format="auto" />
         {/* Report 15 §5-B1: «كيف تستخدم نتيجتك» guide strip (marble cards) */}
+        {/* ALKEMOS-STORE (VISIBILITY-PREVIEW 2026-11-26): the store's
+            suggest strip — honest-empty until PUBLISHED products are
+            bound to this tool's surface (tool:water-tracker); EN only
+            (store law §0 — drops out when the UI language is Arabic). */}
+        <AffiliateStoreSuggestStrip lang={lang} surfaceType="tool" surfaceKey="water-tracker" />
         <ToolArticleLinks toolSlug="water-tracker" />
 
         <OtherTools current="water-tracker" />

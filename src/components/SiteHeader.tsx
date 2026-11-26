@@ -37,6 +37,7 @@ import {
   Wallet,
   ShieldQuestion,
   Briefcase,
+  Store,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { LanguageToggle } from "@/components/LanguageToggle";
@@ -110,7 +111,11 @@ type MenuItemDef = {
   hideForCoach?: boolean;
   /** Admin sees the CMS surface instead of the public page. */
   adminHref?: string;
-};
+  /** LANGUAGE LAW (store law §0 — VISIBILITY-PREVIEW 2026-11-26):
+   *  an EN-only surface (the affiliate store) — the item drops out of
+   *  the AR menu entirely instead of shipping a dead Arabic href. */
+  enOnly?: boolean;
+}
 
 /** Static drawer group definition — `audience` decides visibility. */
 type MenuGroupDef = {
@@ -235,6 +240,29 @@ const DRAWER_GROUP_DEFS: MenuGroupDef[] = [
       { labelAr: "التدريب الأونلاين", labelEn: "Coaching", icon: Users, hrefAr: "/ar/coaching", hrefEn: "/coaching" },
     ],
   },
+  // Group 6b: ALKEMOS AFFILIATE STORE (VISIBILITY-PREVIEW 2026-11-26 —
+  // owner order «رابط واضح للمتجر في القائمة الرئيسية، للهاتف
+  // والكمبيوتر»): the store's drawer entry — EN ONLY (store law §0:
+  // the enOnly flag drops it from the AR menu; the future Arabic store
+  // is System 3 with its own namespace). The label stays distinct from
+  // System 1's «برنامج الأفلييت (الشركاء)» (/affiliate): that is the
+  // partner program, this is the product store.
+  {
+    id: "store",
+    titleAr: "",
+    titleEn: "",
+    audience: "all",
+    items: [
+      {
+        labelAr: "متجر منتجات الأفلييت",
+        labelEn: "Affiliate Store",
+        icon: Store,
+        hrefAr: "/affiliate-store",
+        hrefEn: "/affiliate-store",
+        enOnly: true,
+      },
+    ],
+  },
   // Group 7: More services — the SECONDARY surfaces (Memberships,
   // Affiliate, For Coaches): reachable but never dominant (owner order
   // 2026-09-15). Staff never see the funnel entries.
@@ -351,6 +379,10 @@ type ServiceNavDef = {
   hrefAr?: string;
   hrefEn?: string;
   items?: ServiceNavItemDef[];
+  /** LANGUAGE LAW (store law §0 — VISIBILITY-PREVIEW 2026-11-26): an
+   *  EN-only entry drops out of the AR navbar instead of resolving a
+   *  dead Arabic href (the affiliate store has no /ar mirror, ever). */
+  enOnly?: boolean;
 };
 
 const SERVICE_NAV_DEFS: ServiceNavDef[] = [
@@ -414,6 +446,23 @@ const SERVICE_NAV_DEFS: ServiceNavDef[] = [
     icon: Users,
     hrefAr: "/ar/coaching",
     hrefEn: "/coaching",
+  },
+  // ALKEMOS-STORE (VISIBILITY-PREVIEW 2026-11-26 — owner order «رابط
+  // واضح للمتجر في القائمة الرئيسية، للهاتف والكمبيوتر"): the
+  // affiliate store joins the visible navbar — EN ONLY (store law §0:
+  // no /ar mirror exists or is planned for THIS store; the future
+  // Arabic store is System 3 with its own namespace). enOnly drops it
+  // from the AR navbar instead of resolving a dead href. The label
+  // stays distinct from System 1's «Affiliate Program» (/affiliate —
+  // the partner program): this is the product store.
+  {
+    id: "store",
+    labelAr: "متجر منتجات الأفلييت",
+    labelEn: "Store",
+    icon: Store,
+    hrefAr: "/affiliate-store",
+    hrefEn: "/affiliate-store",
+    enOnly: true,
   },
 ];
 
@@ -541,6 +590,7 @@ export function SiteHeader({ variant = "landing" }: { variant?: "landing" | "app
         title: isAr ? def.titleAr : def.titleEn,
         items: def.items
           .filter((item) => !(item.hideForCoach && isCoach))
+          .filter((item) => !(item.enOnly && isAr))
           .map((item) => ({
             label: isAr ? item.labelAr : item.labelEn,
             icon: item.icon,
@@ -623,7 +673,11 @@ export function SiteHeader({ variant = "landing" }: { variant?: "landing" | "app
   // resolved per locale, reference stable across navigations.
   const serviceNav = useMemo(
     () =>
-      SERVICE_NAV_DEFS.filter((section) => section.id !== "coaching" || !isCoach).map(
+      SERVICE_NAV_DEFS.filter((section) => section.id !== "coaching" || !isCoach)
+        // LANGUAGE LAW: EN-only sections (the affiliate store) drop out
+        // of the AR navbar — store law §0, VISIBILITY-PREVIEW 2026-11-26.
+        .filter((section) => !(section.enOnly && isAr))
+        .map(
         (section) => ({
           id: section.id,
           labelAr: section.labelAr,

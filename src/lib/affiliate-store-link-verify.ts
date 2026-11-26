@@ -22,6 +22,7 @@
  */
 
 import { isValidAsin, resolveAmazonBuyLink } from "./affiliate-store-link";
+import { checkAffiliateStoreImageUrlShape } from "./affiliate-store-guards";
 
 export type AffiliateStoreLinkVerifyResult = {
   asin: string;
@@ -29,6 +30,15 @@ export type AffiliateStoreLinkVerifyResult = {
   status: "valid" | "invalid-asin" | "no-tag" | "ok" | "dead" | "unverified" | "error";
   url: string | null;
   httpStatus: number | null;
+  message: string;
+};
+
+export type AffiliateStoreImageVerifyResult = {
+  ok: boolean;
+  status: "ok" | "shape-block" | "dead" | "unverified" | "error";
+  url: string | null;
+  httpStatus: number | null;
+  contentType: string | null;
   message: string;
 };
 
@@ -132,5 +142,109 @@ export async function verifyAffiliateStoreProductLink(
     url: link.url,
     httpStatus: status,
     message: `URL built; probe answered ${status} (treated as unverified, not dead).`,
+  };
+}
+
+/**
+ * IMAGE VERIFY (VISIBILITY-PREVIEW 2026-11-26 — owner order «التأكد من أنه
+ * رابط صورة مباشر»): does image_url serve an IMAGE? The shape gate runs
+ * first (a page URL never pays a probe); a live HEAD then requires
+ * content-type image/*. 404/410 = dead; other non-2xx/3xx or a non-image
+ * content-type = dead (a 200 text/html answer is a PAGE, exactly what
+ * the owner asked to catch); unreachable = unverified (CDN bot-blocks
+ * exist — the human clicks the URL to settle it).
+ */
+export async function verifyAffiliateStoreImageUrl(
+  imageUrl: string | null | undefined,
+): Promise<AffiliateStoreImageVerifyResult> {
+  const shape = checkAffiliateStoreImageUrlShape(imageUrl);
+  if (shape.verdict === "block") {
+    return {
+      ok: false,
+      status: "shape-block",
+      url: imageUrl ?? null,
+      httpStatus: null,
+      contentType: null,
+      message: shape.message,
+    };
+  }
+  if (!imageUrl || imageUrl.trim() === "") {
+    return {
+      ok: true,
+      status: "ok",
+      url: null,
+      httpStatus: null,
+      contentType: null,
+      message: "No image set — the carved category icon renders (IMAGE-POLICY ص-1 default; nothing to verify).",
+    };
+  }
+  const url = imageUrl.trim();
+  let status: number | null = null;
+  let contentType: string | null = null;
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), VERIFY_TIMEOUT_MS);
+      const res = await fetch(url, {
+        method: "HEAD",
+        redirect: "follow",
+        headers: { "User-Agent": USER_AGENT },
+        signal: controller.signal,
+      });
+      clearTimeout(timer);
+      status = res.status;
+      contentType = res.headers.get("content-type");
+      break;
+    } catch {
+      if (attempt === 1) status = null;
+    }
+  }
+  if (status === null) {
+    return {
+      ok: true,
+      status: "unverified",
+      url,
+      httpStatus: null,
+      contentType: null,
+      message: "Probe did not answer (some CDNs block HEAD) — open the URL and check it by eye.",
+    };
+  }
+  if (status >= 200 && status < 400 && contentType && /^image\//i.test(contentType)) {
+    return {
+      ok: true,
+      status: "ok",
+      url,
+      httpStatus: status,
+      contentType,
+      message: `Direct image confirmed (content-type ${contentType}).`,
+    };
+  }
+  if (status === 404 || status === 410) {
+    return {
+      ok: false,
+      status: "dead",
+      url,
+      httpStatus: status,
+      contentType,
+      message: "Image URL returned 404/410 — the link is broken; fix it or leave it empty for the carved icon.",
+    };
+  }
+  if (status >= 200 && status < 400) {
+    return {
+      ok: false,
+      status: "dead",
+      url,
+      httpStatus: status,
+      contentType,
+      message: `URL answered 2xx but content-type is "${contentType ?? "unknown"}" — that is a PAGE/file, not a direct image.`,
+    };
+  }
+  return {
+    ok: true,
+    status: "unverified",
+    url,
+    httpStatus: status,
+    contentType,
+    message: `Probe answered ${status} (treated as unverified, not dead) — check by eye.`,
   };
 }

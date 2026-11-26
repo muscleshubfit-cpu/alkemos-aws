@@ -197,3 +197,81 @@ describe("SITEMAP-AFFILIATE-STORE (§1.6 + §0) — the EN-only sitemap child", 
     expect(robots).toContain("https://alkemos.com/sitemap-affiliate-store.xml");
   });
 });
+
+/* ═══ VISIBILITY-PREVIEW 2026-11-26 — the store's public entrances ═══
+ * The owner's visibility order added store entrances on SHARED
+ * surfaces (the header, the homepage view). The language law (§0)
+ * extends from "the (ar) tree has no store pages" to "no SHARED
+ * surface may show the store to an Arabic visitor": the header entries
+ * carry the enOnly flag + the AR filter, the AR homepage passes no
+ * store slice, and no /ar/affiliate-store mirror may ever appear. */
+
+describe("SHARED-SURFACE LANGUAGE LAW — the store never shows on Arabic surfaces", () => {
+  const header = readFileSync(join(REPO_ROOT, "src/components/SiteHeader.tsx"), "utf-8");
+  const landing = readFileSync(join(REPO_ROOT, "src/components/views/LandingView.tsx"), "utf-8");
+  const arHome = readFileSync(join(REPO_ROOT, "src/app/(ar)/ar/(home)/page.tsx"), "utf-8");
+  const enHome = readFileSync(join(REPO_ROOT, "src/app/(en)/(home)/page.tsx"), "utf-8");
+
+  it("SiteHeader: BOTH store entries (drawer + desktop) carry enOnly and the AR filters exist", () => {
+    // the drawer item + the desktop section must both be enOnly-gated
+    expect(header).toContain('labelEn: "Affiliate Store"');
+    expect(header).toContain('labelEn: "Store"');
+    // the two resolution filters (drawer items + desktop sections) —
+    // an enOnly entry drops out of the AR menu instead of resolving a
+    // dead Arabic href
+    expect(header).toContain(".filter((item) => !(item.enOnly && isAr))");
+    expect(header).toContain(".filter((section) => !(section.enOnly && isAr))");
+    // the enOnly flag is declared on the def types
+    expect(header).toMatch(/enOnly\?: boolean;/);
+  });
+
+  it("no /ar/affiliate-store mirror may exist anywhere in app/components src", () => {
+    const offenders: string[] = [];
+    for (const file of [
+      ...walk(join(REPO_ROOT, "src/app")),
+      ...walk(join(REPO_ROOT, "src/components")),
+    ]) {
+      const text = readFileSync(file, "utf-8");
+      if (text.includes("/ar/affiliate-store")) offenders.push(file);
+    }
+    expect(offenders, `an Arabic store mirror leaked into: ${offenders.join(", ")}`).toEqual([]);
+  });
+
+  it("LandingView: the store section is isAr-gated and the AR home passes no store slice", () => {
+    // the section renders only on the EN homepage
+    expect(landing).toContain("{!isAr && (");
+    expect(landing).toContain("ALKEMOS AFFILIATE STORE");
+    // the AR home never passes the store props
+    expect(arHome).not.toContain("storeProducts");
+    expect(arHome).not.toContain("storeCategories");
+    // the EN home does (the entrance exists — wired, not dead code)
+    expect(enHome).toContain("storeProducts={storeProducts}");
+  });
+});
+
+describe("SUGGEST ENDPOINT (VISIBILITY-PREVIEW 2026-11-26) — the public entrances' data leg", () => {
+  it("GET /api/affiliate-store/suggest answers 200 {products:[]} without Supabase env (fail-soft)", async () => {
+    const { GET } = await import("../../app/api/affiliate-store/suggest/route");
+    const { NextRequest } = await import("next/server");
+    const req = new NextRequest(
+      "http://localhost/api/affiliate-store/suggest?surface=tool&key=macro-calculator&limit=3",
+    );
+    const res = await GET(req);
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as { products: unknown[] };
+    expect(Array.isArray(body.products)).toBe(true);
+    expect(body.products).toEqual([]);
+  });
+
+  it("rejects unknown surface types with the same honest empty shape", async () => {
+    const { GET } = await import("../../app/api/affiliate-store/suggest/route");
+    const { NextRequest } = await import("next/server");
+    const req = new NextRequest(
+      "http://localhost/api/affiliate-store/suggest?surface=evil&key=whatever",
+    );
+    const res = await GET(req);
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as { products: unknown[] };
+    expect(body.products).toEqual([]);
+  });
+});

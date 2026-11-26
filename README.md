@@ -81,6 +81,34 @@ is **proprietary and confidential** (see [License](#-license)).
   measured with a non-redirecting `sendBeacon` endpoint (zero PII) + GA4
   events; the store ships its own EN-only sitemap family
   (`/sitemap-affiliate-store.xml`).
+- **Live product preview in the editor (2026-11-26)** — the admin
+  editor (`/admin/affiliate-store/new` and `/[id]`) carries a sticky
+  preview panel that mirrors the PUBLIC surfaces (the rail card + the
+  product page header: image-or-carved-icon, title, brand, summary,
+  editorial score, featured badge, leaf category, the buy-unit state,
+  and the honest no-price law) and re-renders on every keystroke;
+  an "Open the public product page" button links the real
+  `/affiliate-store/{leaf}/{slug}` URL (404 while pending — honest
+  pre-publish mirror); `image_url` is validated as a DIRECT image link
+  (page/document extensions BLOCK at the guard; an extension-less URL
+  warns and the "Verify image" probe requires `content-type: image/*`)
+  and every failed image load falls back in place to the category's
+  carved icon (`AffiliateStoreProductImage` — no broken-image glyphs
+  on any public surface).
+- **Public store entrances (2026-11-26)** — the EN homepage carries a
+  store discovery section (real category chips from the active tree +
+  the featured published-products rail + one CTA to `/affiliate-store`;
+  honest-empty until the owner publishes); the header shows a "Store"
+  entry on desktop and an "Affiliate Store" item in the mobile drawer —
+  both EN-only (`enOnly` flag: they drop out of Arabic menus, store law
+  §0); EN content surfaces carry "Recommended gear" entrances wired
+  from the `affiliate_store_product_links` bindings — a server rail on
+  the equipment hubs and program pages, and a lazy client strip on the
+  tool/planner pages (`/api/affiliate-store/suggest`, published-only,
+  fail-soft). The Associates tag reaches production through
+  `deploy-aws.yml`'s env-sync as a public literal (the
+  `NEXT_PUBLIC_SITE_URL` precedent — it is not a secret; see
+  `SECURITY.md` §2.1).
 
 ### EVO — the AI coach
 - Floating chat widget on every page + a dedicated `/evo` experience, with

@@ -6,6 +6,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { ShareButtons } from "@/components/ShareButtons";
 import { WORKOUT_TRACKER_FAQ_AR, WORKOUT_TRACKER_FAQ_EN } from "./content";
+import { AffiliateStoreSuggestStrip } from "@/components/affiliate-store/AffiliateStoreSuggestStrip";
 
 /**
  * /workout-tracker — search-intent landing page (EN canonical).
@@ -343,6 +344,11 @@ export default function WorkoutTrackerPage() {
             </Link>
           </div>
         </section>
+      {/* ALKEMOS-STORE (VISIBILITY-PREVIEW 2026-11-26): the store's
+          suggest strip — honest-empty until PUBLISHED products are
+          bound to this tool's surface (tool:workout-tracker); EN only
+          (store law §0 — drops out when the UI language is Arabic). */}
+      <AffiliateStoreSuggestStrip lang={lang} surfaceType="tool" surfaceKey="workout-tracker" />
       </main>
 
       {/* Access-point law (2026-09-14): shared marble footer on every

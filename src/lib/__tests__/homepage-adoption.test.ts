@@ -1093,7 +1093,9 @@ describe("TPL-REF-280 — the selective template-reference contract", () => {
     // the BlogSection dynamic island).
     // HEALTHY-RECIPES-PLATFORM (2026-11-10): the recipes browse-all CTA
     // joins the set — eleven in all.
-    expect(readAll().match(/className="chev rtl:rotate-180"/g)?.length).toBe(11);
+    // ALKEMOS-STORE (VISIBILITY-PREVIEW 2026-11-26): the store
+    // browse-all CTA joins the set — twelve in all.
+    expect(readAll().match(/className="chev rtl:rotate-180"/g)?.length).toBe(12);
     expect(src).toContain('className="chev rtl:rotate-180" aria-hidden="true">›</span>');
   });
 

@@ -4,6 +4,7 @@ import {
   EDITORIAL_FLOOR_WORDS,
   blocksPublish,
   checkAffiliateStoreImage,
+  checkAffiliateStoreImageUrlShape,
   editorialWordCount,
   findAnimalSourceReviewFlag,
   hasBannedClaim,
@@ -275,3 +276,61 @@ describe("runAffiliateStoreProductGuards — the aggregated publish gate", () =>
 function hasHalablocklistHitSafe(text: string): string | null {
   return hasHalalBlocklistHit(text);
 }
+
+describe("direct-image URL shape — VISIBILITY-PREVIEW 2026-11-26 («رابط صورة مباشر وليس رابط صفحة عادية»)", () => {
+  it("accepts image extensions (jpg/png/webp/avif/gif/svg, case-insensitive, query-safe)", () => {
+    expect(checkAffiliateStoreImageUrlShape("https://alkemos.com/img/kb-16.jpg").verdict).toBe("ok");
+    expect(checkAffiliateStoreImageUrlShape("https://cdn.example.com/photo.PNG").verdict).toBe("ok");
+    expect(checkAffiliateStoreImageUrlShape("https://cdn.example.com/a/b/photo.webp?v=2").verdict).toBe("ok");
+    expect(checkAffiliateStoreImageUrlShape("https://cdn.example.com/a.avif?x=1#frag").verdict).toBe("ok");
+  });
+  it("treats null/empty as ok (the carved-icon default, IMAGE-POLICY ص-1)", () => {
+    expect(checkAffiliateStoreImageUrlShape(null).verdict).toBe("ok");
+    expect(checkAffiliateStoreImageUrlShape("").verdict).toBe("ok");
+    expect(checkAffiliateStoreImageUrlShape("   ").verdict).toBe("ok");
+  });
+  it("BLOCKS page/document links (html/php/aspx/pdf/json…)", () => {
+    for (const url of [
+      "https://example.com/product-page.html",
+      "https://example.com/product.php?id=1",
+      "https://example.com/doc.pdf",
+      "https://example.com/api/image.json",
+      "https://example.com/page.aspx",
+    ]) {
+      expect(checkAffiliateStoreImageUrlShape(url).verdict, url).toBe("block");
+    }
+  });
+  it("BLOCKS non-https schemes and malformed URLs", () => {
+    expect(checkAffiliateStoreImageUrlShape("http://example.com/img.jpg").verdict).toBe("block");
+    expect(checkAffiliateStoreImageUrlShape("ftp://example.com/img.jpg").verdict).toBe("block");
+    expect(checkAffiliateStoreImageUrlShape("not a url").verdict).toBe("block");
+    expect(checkAffiliateStoreImageUrlShape("/relative/path.jpg").verdict).toBe("block");
+  });
+  it("WARNS (never blocks) on an extension-less CDN URL — the probe settles it", () => {
+    const r = checkAffiliateStoreImageUrlShape("https://cdn.example.com/media/abc123?w=200");
+    expect(r.verdict).toBe("warn");
+  });
+  it("wires into the aggregated gate: page link = block, extension-less = warn, image = clean", () => {
+    const blocked = runAffiliateStoreProductGuards({
+      ...CLEAN_PRODUCT,
+      image_url: "https://example.com/product.html",
+    });
+    expect(blocked.some((f) => f.rule === "image-url-shape" && f.severity === "block")).toBe(true);
+    expect(blocksPublish(blocked)).toBe(true);
+    const warned = runAffiliateStoreProductGuards({
+      ...CLEAN_PRODUCT,
+      image_url: "https://cdn.example.com/media/abc123?w=200",
+    });
+    expect(warned.some((f) => f.rule === "image-url-ambiguous" && f.severity === "warn")).toBe(true);
+    expect(blocksPublish(warned)).toBe(false);
+    const clean = runAffiliateStoreProductGuards({
+      ...CLEAN_PRODUCT,
+      image_url: "https://alkemos.com/img/kb-16.jpg",
+    });
+    expect(clean.some((f) => f.rule === "image-url-shape" || f.rule === "image-url-ambiguous")).toBe(false);
+  });
+  it("regression: the founding batch (image_url NULL everywhere) stays clean", () => {
+    const findings = runAffiliateStoreProductGuards(CLEAN_PRODUCT);
+    expect(findings.some((f) => f.rule.startsWith("image-url"))).toBe(false);
+  });
+});

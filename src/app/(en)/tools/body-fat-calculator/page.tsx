@@ -23,6 +23,7 @@ import { BODY_FAT_CALCULATOR_CONTENT } from "@/lib/content/body-fat-calculator";
 // the memberships bridge stays where P0-A put it).
 import { ToolChainResultBridge } from "@/components/ToolChainResultBridge";
 import { fireOncePerSession, trackGa4Event } from "@/lib/analytics";
+import { AffiliateStoreSuggestStrip } from "@/components/affiliate-store/AffiliateStoreSuggestStrip";
 
 type Gender = "male" | "female";
 
@@ -289,6 +290,11 @@ export default function BodyFatCalculatorPage() {
 
         {/* DELIVERY 0050: other-tools links always visible at the bottom (owner request) */}
         {/* Report 15 §5-B1: «كيف تستخدم نتيجتك» guide strip (marble cards) */}
+        {/* ALKEMOS-STORE (VISIBILITY-PREVIEW 2026-11-26): the store's
+            suggest strip — honest-empty until PUBLISHED products are
+            bound to this tool's surface (tool:body-fat-calculator); EN only
+            (store law §0 — drops out when the UI language is Arabic). */}
+        <AffiliateStoreSuggestStrip lang={lang} surfaceType="tool" surfaceKey="body-fat-calculator" />
         <ToolArticleLinks toolSlug="body-fat-calculator" />
 
         <OtherTools current="body-fat-calculator" />

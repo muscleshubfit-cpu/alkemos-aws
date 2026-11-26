@@ -23,6 +23,7 @@ import { BMI_CALCULATOR_CONTENT } from "@/lib/content/bmi-calculator";
 // the memberships bridge stays where P0-A put it).
 import { ToolChainResultBridge } from "@/components/ToolChainResultBridge";
 import { fireOncePerSession, trackGa4Event } from "@/lib/analytics";
+import { AffiliateStoreSuggestStrip } from "@/components/affiliate-store/AffiliateStoreSuggestStrip";
 
 type Unit = "metric" | "imperial";
 
@@ -327,6 +328,11 @@ export default function BMICalculatorPage() {
 
         {/* DELIVERY 0050: other-tools links always visible at the bottom (owner request) */}
         {/* Report 15 §5-B1: «كيف تستخدم نتيجتك» guide strip (marble cards) */}
+        {/* ALKEMOS-STORE (VISIBILITY-PREVIEW 2026-11-26): the store's
+            suggest strip — honest-empty until PUBLISHED products are
+            bound to this tool's surface (tool:bmi-calculator); EN only
+            (store law §0 — drops out when the UI language is Arabic). */}
+        <AffiliateStoreSuggestStrip lang={lang} surfaceType="tool" surfaceKey="bmi-calculator" />
         <ToolArticleLinks toolSlug="bmi-calculator" />
 
         <OtherTools current="bmi-calculator" />

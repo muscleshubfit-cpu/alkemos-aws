@@ -16,6 +16,7 @@ import {
   type HubExerciseCard,
 } from "@/components/hubs/hub-exercises-shared";
 import { ShowMoreExercises } from "@/components/hubs/ShowMoreExercises";
+import { AffiliateStoreSurfaceRail } from "@/components/affiliate-store/AffiliateStoreSurfaceRail";
 import { getItemListSchema, getBreadcrumbSchema, jsonLd } from "@/lib/seo";
 
 /**
@@ -246,6 +247,13 @@ export default async function EquipmentHubPage({
       </section>
 
       {depth && <HubFaqSection depth={depth} lang="en" title="Frequently Asked Questions" />}
+
+      {/* ALKEMOS-STORE (VISIBILITY-PREVIEW 2026-11-26): the store's
+          “Recommended gear” rail for THIS equipment hub — honest-empty
+          until published products are bound to it (surface
+          equipment_hub:{hub.slug}); renders after the content, before
+          the programs CTA. */}
+      <AffiliateStoreSurfaceRail surfaceType="equipment_hub" surfaceKey={hub.slug} />
 
       <section aria-label="Workout programs" className="rounded-lg bg-muted/50 p-6">
         <h2 className="text-xl font-semibold mb-3">Workout Programs</h2>

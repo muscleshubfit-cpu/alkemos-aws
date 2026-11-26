@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getProgramBySlug } from "@/lib/workout-programs";
 import { getExerciseMinisBySlugs } from "@/lib/exercises";
 import { getBreadcrumbSchema, getFAQSchema, jsonLd } from "@/lib/seo";
+import { AffiliateStoreSurfaceRail } from "@/components/affiliate-store/AffiliateStoreSurfaceRail";
 import ProgramDetailClient from "./ProgramDetailClient";
 
 /**
@@ -141,6 +142,19 @@ export default async function Page({
       <ProgramDetailClient
         program={program ?? null}
         exerciseIndex={exerciseIndex}
+      />
+      {/* ALKEMOS-STORE (VISIBILITY-PREVIEW 2026-11-26): the store's
+          “Gear for this program” rail — honest-empty until published
+          products are bound to this program's surface key. NOTE (the
+          0116 founding batch seeded abbreviated program keys —
+          gym-strength/home-dumbbell/hiit/home-core/home-workout — that
+          do NOT exactly match the real program slugs like
+          gym-strength-5x5; the owner fixes the bindings from the admin
+          editor — documented in the frame report §surface-keys). */}
+      <AffiliateStoreSurfaceRail
+        surfaceType="program"
+        surfaceKey={slug}
+        title="Gear for this program"
       />
     </>
   );

@@ -34,6 +34,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { getLimits, type MembershipTier } from "@/lib/memberships";
+import { AffiliateStoreSuggestStrip } from "@/components/affiliate-store/AffiliateStoreSuggestStrip";
 
 // Content-strategy terminology law: bare Latin tier slugs never appear
 // inside Arabic sentences — map to the canonical AR tier names.
@@ -539,6 +540,11 @@ export default function MealPlannerPage() {
         {/* AdSense */}
         <AdSenseAd format="auto" />
         {/* Report 15 §5-B1: «كيف تستخدم نتيجتك» guide strip (marble cards) */}
+        {/* ALKEMOS-STORE (VISIBILITY-PREVIEW 2026-11-26): the store's
+            suggest strip — honest-empty until PUBLISHED products are
+            bound to this tool's surface (tool:meal-planner); EN only
+            (store law §0 — drops out when the UI language is Arabic). */}
+        <AffiliateStoreSuggestStrip lang={lang} surfaceType="tool" surfaceKey="meal-planner" />
         <ToolArticleLinks toolSlug="/meal-planner" />
 
         <OtherTools current="meal-planner" />

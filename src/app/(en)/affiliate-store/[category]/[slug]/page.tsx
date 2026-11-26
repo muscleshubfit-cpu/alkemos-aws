@@ -6,7 +6,7 @@ import { SiteFooter } from "@/components/SiteFooter";
 import { ShareButtons } from "@/components/ShareButtons";
 import { AmazonBuyButton } from "@/components/affiliate-store/AmazonBuyButton";
 import { AffiliateStoreProductCard } from "@/components/affiliate-store/AffiliateStoreProductCard";
-import { AffiliateStoreCategoryIcon } from "@/components/affiliate-store/AffiliateStoreProductCard";
+import { AffiliateStoreProductImage } from "@/components/affiliate-store/AffiliateStoreProductImage";
 import { AffiliateStoreViewEvent } from "@/components/affiliate-store/AffiliateStoreViewEvent";
 import {
   getAffiliateStoreProductBySlug,
@@ -122,24 +122,17 @@ export default async function AffiliateStoreProductPage({
 
         <header className="mb-8 flex items-start gap-4">
           <span className="shrink-0">
-            {product.imageUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element -- owned/licensed
-              <img
-                src={product.imageUrl}
-                alt={product.title}
-                width={96}
-                height={96}
-                className="rounded-xl object-contain"
-                loading="eager"
-                decoding="async"
-              />
-            ) : (
-              <AffiliateStoreCategoryIcon
-                iconKey={product.categoryIconKey}
-                name={product.categoryName}
-                size={96}
-              />
-            )}
+            {/* VISIBILITY-PREVIEW 2026-11-26: the unified image path — a
+                failed owned URL falls back to the carved category icon. */}
+            <AffiliateStoreProductImage
+              imageUrl={product.imageUrl}
+              imageAlt={product.title}
+              categoryIconKey={product.categoryIconKey}
+              categoryName={product.categoryName}
+              size={96}
+              eager
+              className="rounded-xl object-contain"
+            />
           </span>
           <div className="min-w-0">
             <h1 className="text-3xl font-semibold leading-tight tracking-tight md:text-4xl">

@@ -29,6 +29,7 @@ import {
 } from "@/lib/plan-persistence";
 import { Loader2, Sparkles, RotateCcw, HardDriveDownload, Check } from "lucide-react";
 import { toast } from "sonner";
+import { AffiliateStoreSuggestStrip } from "@/components/affiliate-store/AffiliateStoreSuggestStrip";
 
 /**
  * /ai-workout-planner — the AI workout planner page (§12.32 → Phase
@@ -653,6 +654,11 @@ export default function AiWorkoutPlannerPage() {
         {/* AdSense */}
         <AdSenseAd format="auto" />
         {/* Report 15 §5-B1: «كيف تستخدم نتيجتك» guide strip (marble cards) */}
+        {/* ALKEMOS-STORE (VISIBILITY-PREVIEW 2026-11-26): the store's
+            suggest strip — honest-empty until PUBLISHED products are
+            bound to this tool's surface (tool:ai-workout-planner); EN only
+            (store law §0 — drops out when the UI language is Arabic). */}
+        <AffiliateStoreSuggestStrip lang={lang} surfaceType="tool" surfaceKey="ai-workout-planner" />
         <ToolArticleLinks toolSlug="/ai-workout-planner" />
 
         <OtherTools current="/ai-workout-planner" />
