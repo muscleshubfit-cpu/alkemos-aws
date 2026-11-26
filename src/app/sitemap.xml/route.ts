@@ -77,6 +77,11 @@ export async function GET() {
     // published_at/updated_at from the table, or NO date at all).
     { loc: `${base}/sitemap-recipes.xml`, ...(await recipesEntryLastmod()) },
     { loc: `${base}/sitemap-blog.xml`, ...(await blogEntryLastmod()) },
+    // ALKEMOS-STORE-PHASE1 (2026-11-26): the EN-only store child —
+    // dynamic truthful lastmod (max real updated_at across PUBLISHED
+    // products, the same law as the blog/recipes children; no rows →
+    // no date at all). NO Arabic mirrors by store law §0.
+    { loc: `${base}/sitemap-store.xml`, ...(await storeEntryLastmod()) },
   ];
   return xmlResponse(buildSitemapIndex(entries));
 }
@@ -105,6 +110,35 @@ async function recipesEntryLastmod(): Promise<{ lastModified?: Date }> {
       .map((r: { published_at?: string | null; updated_at?: string | null }) =>
         new Date(r.updated_at ?? r.published_at ?? 0).getTime(),
       )
+      .filter((t: number) => Number.isFinite(t) && t > 0);
+    if (stamps.length === 0) return {};
+    return { lastModified: new Date(Math.max(...stamps)) };
+  } catch {
+    return {};
+  }
+}
+
+/**
+ * The store child's index lastmod — max real updated_at across PUBLISHED
+ * store products (the same truthful-date law; empty/absent → NO date).
+ * Fail-soft: an unreachable Supabase must never 500 the index.
+ */
+async function storeEntryLastmod(): Promise<{ lastModified?: Date }> {
+  try {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    if (!url || !anon) return {};
+    const supabase = createClient(url, anon, {
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
+    const { data } = await supabase
+      .from("store_products")
+      .select("updated_at")
+      .eq("is_published", true)
+      .order("updated_at", { ascending: false })
+      .limit(200);
+    const stamps = (data ?? [])
+      .map((r: { updated_at?: string | null }) => new Date(r.updated_at ?? 0).getTime())
       .filter((t: number) => Number.isFinite(t) && t > 0);
     if (stamps.length === 0) return {};
     return { lastModified: new Date(Math.max(...stamps)) };

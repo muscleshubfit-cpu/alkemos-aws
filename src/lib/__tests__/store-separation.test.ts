@@ -1,7 +1,16 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { hasCommissionRateText } from "../store-guards";
+
+// The sitemap-route canary executes the REAL route handler; under
+// vitest there is no Next incremental cache, so unstable_cache passes
+// through (the pure query logic is what the canary exercises).
+vi.mock("next/cache", () => ({
+  unstable_cache: (fn: unknown) => fn,
+  revalidateTag: () => undefined,
+  revalidatePath: () => undefined,
+}));
 
 /**
  * STORE-SEPARATION CANARIES (governing law §0 + §3.4-2/§3.4-3, Phase-1
@@ -129,5 +138,26 @@ describe("NINTH GUARD, SOURCE LEVEL (§6-c) — public store surfaces show no co
       }
     }
     expect(offenders).toEqual([]);
+  });
+});
+
+describe("SITEMAP-STORE (§1.6 + §0) — the EN-only sitemap child", () => {
+  it("GET /sitemap-store.xml emits the store hub with NO Arabic mirrors or hreflang", async () => {
+    const { GET } = await import("../../app/sitemap-store.xml/route");
+    const res = await GET();
+    expect(res.status).toBe(200);
+    const xml = await res.text();
+    expect(xml).toContain("<loc>https://alkemos.com/store</loc>");
+    expect(xml).not.toContain("/ar/");
+    expect(xml).not.toContain("xhtml:link");
+  });
+
+  it("the sitemap INDEX declares the store child, and robots.txt lists it", async () => {
+    const { GET } = await import("../../app/sitemap.xml/route");
+    const res = await GET();
+    const xml = await res.text();
+    expect(xml).toContain("https://alkemos.com/sitemap-store.xml");
+    const robots = readFileSync(join(REPO_ROOT, "public/robots.txt"), "utf-8");
+    expect(robots).toContain("https://alkemos.com/sitemap-store.xml");
   });
 });
