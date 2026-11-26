@@ -23,6 +23,8 @@
 - **مداخل المحتوى الإنجليزي**: `listAffiliateStoreProductsForSurface` بطبقة البيانات العامة (منشور فقط عبر RLS + fail-soft + كاش بوسم affiliate-store-products) تُغذي: **سكة سيرفر** «Recommended gear» على مراكز المعدات الثمانية (`equipment_hub:{slug}` — المفاتيح المزروعة كلها تطابق) و«Gear for this program» على صفحات البرامج، و**شريط اقتراح كسول** (نمط RecipeSuggestStrip) على صفحات الأدوات العشر (الحاسبات الخمس + meal-planner + مخططا AI + المتتبعان) عبر مسار عام `/api/affiliate-store/suggest`.
 - كل الروابط تقود لواجهة المتجر العامة (بطاقات → صفحات المنتجات · CTA → `/affiliate-store`) — صفر روابط أمازون أو أسعار أو نسب خارج صفحة المنتج.
 
+**اكتشاف حي + إصلاح (الفحص البصري للإطار):** رابط «العربية ←» بتذييل الصفحات كان يبني مرآة عربية ميتة لأسطح المتجر (prefix أعمى — 404 يخالف قانون الفصل §0). أُصلح: `crossLangMirrorHref` تُعيد null لأسطح المتجر (/affiliate-store* و/affiliate-disclosure) فلا يُعرض رابط تبديل لغة بالتذييل هناك (مفتاح اللغة بالترويسة يظل يبدّل لغة الواجهة بلا تغيير URL — السلوك الموثق للمسارات بلا مرايا) + كاناري سلوكي جديد يفحص الدالة مباشرة (أسطح المتجر → null · المسارات العادية → المرايا كما هي).
+
 ### 1.3 الفصل المعماري (محفوظ ومشدّد)
 
 - المتجر EN فقط: القسم الرئيسي ببوابة `!isAr`، والصفحة العربية لا تمرر أي شريحة متجر، وعناصر القائمة `enOnly` — **كاناري جديد** يفحص: كلا مدخلي الترويسة يحملان enOnly + وجود المرشّحين + عدم وجود `/ar/affiliate-store` في أي ملف src + بوابة isAr بقسم LandingView + صفحة AR بلا storeProducts.
@@ -91,7 +93,7 @@
 ## 6) الملفات المنشأة/المعدلة
 
 **جديد:** `src/components/affiliate-store/AffiliateStoreProductImage.tsx` · `AffiliateStoreSurfaceRail.tsx` · `AffiliateStoreSuggestStrip.tsx` · `src/app/api/affiliate-store/suggest/route.ts` · هذا التقرير.
-**معدل:** `affiliate-store-guards.ts` (حارس الشكل) · `affiliate-store-link-verify.ts` (تحقق الصورة) · `affiliate-store-admin.ts` (icon_key) · `affiliate-store-server.ts` (استعلام السطح) · `verify/route.ts` · `AffiliateStoreEditorView.tsx` (المعاينة) · `AffiliateStoreProductCard.tsx` + صفحة المنتج (الصورة الموحدة) · `LandingView.tsx` + `(en)/(home)/page.tsx` (القسم) · `SiteHeader.tsx` (القائمة) · صفحة مركز المعدات + صفحة البرنامج + صفحات الأدوات العشر (المداخل) · `deploy-aws.yml` + `.env.example` + `SECURITY.md` (قناة الوسم) · `README.md` · `STATE.md` · `worklog.md` · اختبارا guards/separation + كاناري chevrons.
+**معدل:** `SiteFooter.tsx` (قانون المرآة: null لأسطح المتجر + تصدير الدالة للكاناري) · `affiliate-store-guards.ts` (حارس الشكل) · `affiliate-store-link-verify.ts` (تحقق الصورة) · `affiliate-store-admin.ts` (icon_key) · `affiliate-store-server.ts` (استعلام السطح) · `verify/route.ts` · `AffiliateStoreEditorView.tsx` (المعاينة) · `AffiliateStoreProductCard.tsx` + صفحة المنتج (الصورة الموحدة) · `LandingView.tsx` + `(en)/(home)/page.tsx` (القسم) · `SiteHeader.tsx` (القائمة) · صفحة مركز المعدات + صفحة البرنامج + صفحات الأدوات العشر (المداخل) · `deploy-aws.yml` + `.env.example` + `SECURITY.md` (قناة الوسم) · `README.md` · `STATE.md` · `worklog.md` · اختبارا guards/separation + كاناري chevrons.
 
 ## 7) المتبقي (فعل مالك — لا شيء منه داخل نطاق هذا الأمر)
 

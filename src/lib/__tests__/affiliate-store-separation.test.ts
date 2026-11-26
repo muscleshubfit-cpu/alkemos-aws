@@ -275,3 +275,25 @@ describe("SUGGEST ENDPOINT (VISIBILITY-PREVIEW 2026-11-26) — the public entran
     expect(body.products).toEqual([]);
   });
 });
+
+describe("FOOTER MIRROR LAW — no dead Arabic mirror on the EN-only store surfaces", () => {
+  // VISIBILITY-PREVIEW live-check discovery (2026-11-26): the footer's
+  // cross-language link blindly prefix-swapped /affiliate-store →
+  // /ar/affiliate-store (a 404 — the store has no Arabic twin, store law
+  // §0). The fix returns null for the store surfaces so NO link renders.
+  it("crossLangMirrorHref returns null for every affiliate-store surface", async () => {
+    const { crossLangMirrorHref } = await import("../../components/SiteFooter");
+    expect(crossLangMirrorHref("/affiliate-store")).toBeNull();
+    expect(crossLangMirrorHref("/affiliate-store/strength-free-weights")).toBeNull();
+    expect(crossLangMirrorHref("/affiliate-store/barbell-plates-collars/cap-barbell-300lb-olympic-weight-set")).toBeNull();
+    expect(crossLangMirrorHref("/affiliate-disclosure")).toBeNull();
+  });
+
+  it("the normal cross-language behavior is untouched (non-store paths still mirror)", async () => {
+    const { crossLangMirrorHref } = await import("../../components/SiteFooter");
+    expect(crossLangMirrorHref("/")).toBe("/ar");
+    expect(crossLangMirrorHref("/tools/macro-calculator")).toBe("/ar/tools/macro-calculator");
+    expect(crossLangMirrorHref("/blog/some-article")).toBe("/ar/blog");
+    expect(crossLangMirrorHref("/ar/tools/bmi-calculator")).toBe("/tools/bmi-calculator");
+  });
+});

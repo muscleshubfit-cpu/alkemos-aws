@@ -84,7 +84,7 @@ import { NewsletterForm } from "@/components/NewsletterForm";
  *    no duplicate switches; the header's LanguageToggle stays the
  *    interactive control.
  */
-function crossLangMirrorHref(pathname: string, explicit?: string): string {
+function crossLangMirrorHref(pathname: string, explicit?: string): string | null {
   if (explicit) return explicit;
   // Blog article leaves: slug-divergent twins — see the law block above.
   if (/^\/blog\/[^/]+$/.test(pathname)) return "/ar/blog";
@@ -92,8 +92,26 @@ function crossLangMirrorHref(pathname: string, explicit?: string): string {
   if (pathname === "/ar") return "/";
   if (pathname.startsWith("/ar/")) return pathname.slice(3) || "/";
   if (pathname === "/") return "/ar";
+  // STORE LAW §0 (VISIBILITY-PREVIEW 2026-11-26 — discovered by the
+  // frame's live visual check): the affiliate-store surfaces are
+  // EN-ONLY — no Arabic mirror exists or is planned for THIS store
+  // (the future Arabic store is System 3, its own namespace). The
+  // blind prefix-swap rendered a DEAD Arabic-prefixed store link on
+  // every store page — the footer renders NO cross-language link
+  // there instead (the header's LanguageToggle still switches the UI
+  // language without a URL change, the documented no-mirror law).
+  if (
+    pathname === "/affiliate-store" ||
+    pathname.startsWith("/affiliate-store/") ||
+    pathname === "/affiliate-disclosure"
+  ) {
+    return null;
+  }
   return `/ar${pathname}`;
 }
+
+/** Exported for the store-separation canary (the EN-only store law). */
+export { crossLangMirrorHref };
 
 export function SiteFooter({
   mirrorHref,
@@ -108,7 +126,6 @@ export function SiteFooter({
   const pathname = usePathname() || "/";
   const pageIsAr = pathname === "/ar" || pathname.startsWith("/ar/");
   const crossLangHref = crossLangMirrorHref(pathname, mirrorHref);
-
   return (
     <footer className="footer-marble relative mt-auto px-4 pb-8 pt-10 text-[var(--muted-foreground)]">
       {/* mt-auto: inside the flex-col min-h-screen page shells (static
@@ -149,7 +166,10 @@ export function SiteFooter({
             {/* F-1 — the cross-language bridge link (see the law block at
                 the top of this file): ONE crawlable <a href> to this page's
                 mirror, labeled in the TARGET language (the audit's «العربية ←»
-                / «English →» pair). m1 fix law: block row + py-1 tap target. */}
+                / «English →» pair). m1 fix law: block row + py-1 tap target.
+                STORE LAW §0: null on the EN-only store surfaces — no link
+                renders there (never a dead Arabic mirror). */}
+            {crossLangHref && (
             <a
               href={crossLangHref}
               hrefLang={pageIsAr ? "en" : "ar"}
@@ -163,6 +183,7 @@ export function SiteFooter({
                 "العربية ←"
               )}
             </a>
+            )}
             {/* Phase SEO-GEO-4.6 (2026-09-09): owned-profile icon row — the
                 human counterpart of Organization.sameAs (src/lib/social.ts).
                 Plain links with NO nofollow: these are OWNED profiles and the
