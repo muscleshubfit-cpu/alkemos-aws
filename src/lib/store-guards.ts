@@ -146,9 +146,12 @@ const ALCOHOL_FREE_MARKERS = [
 ];
 
 /**
- * true when the text hits a halal blocklist word. "alcohol" itself is a
- * hard hit UNLESS the phrase is an explicit alcohol-free marker (the
- * screening law allows the explicit alcohol-free statement).
+ * true when the text hits a halal blocklist word (WORD-BOUNDARY match —
+ * "thumb" must never trip "rum", "swine" never trips "wine": the
+ * blocklist is the screening doc's literal list, not a substring trap).
+ * "alcohol"-family words are a hard hit UNLESS the phrase is an explicit
+ * alcohol-free marker (the screening law allows the explicit
+ * alcohol-free statement).
  * Returns the hit word (for the message) or null.
  */
 export function hasHalalBlocklistHit(
@@ -157,11 +160,14 @@ export function hasHalalBlocklistHit(
   if (!text) return null;
   const value = text.toLowerCase();
   for (const word of HALAL_BLOCKLIST) {
-    if (value.includes(word)) return word;
+    if (new RegExp(`\\b${word}\\b`, "i").test(value)) return word;
   }
-  if (value.includes(ALCOHOL_WORD)) {
+  // alcohol-family: alcohol\w* covers "alcohol", "alcoholic",
+  // "alcohols" — while the explicit markers stay allowed.
+  if (/\balcohol\w*/i.test(value)) {
     const isExplicitlyFree = ALCOHOL_FREE_MARKERS.some((marker) =>
-      value.includes(marker),
+      new RegExp(`\\b${marker.replace(/[-%\d\s]/g, (m) => (m === " " ? "\\s" : m))}\\b`, "i").test(value) ||
+        value.includes(marker),
     );
     if (!isExplicitlyFree) return ALCOHOL_WORD;
   }
@@ -175,7 +181,7 @@ export function findAnimalSourceReviewFlag(
   if (!text) return null;
   const value = text.toLowerCase();
   for (const flag of ANIMAL_SOURCE_REVIEW_FLAGS) {
-    if (value.includes(flag)) return flag;
+    if (new RegExp(`\\b${flag}\\b`, "i").test(value)) return flag;
   }
   return null;
 }

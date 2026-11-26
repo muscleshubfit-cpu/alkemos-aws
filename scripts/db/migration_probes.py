@@ -403,6 +403,49 @@ PROBES: list[dict] = [
              "column": "day"},
         ],
     },
+    # 0116 — STORE-SEED-BATCH-1 (owner order 2026-11-26 «إطلاق 24–32
+    # منتجًا»): the founding batch — 27 products across the eight wave-1
+    # mains, ALL born review_status='pending' + is_published=false (the
+    # 0097 review inbox). Strong probe: the count of the SEEDED SLUG SET
+    # (filtered by slug — immutable by the slug law, so the probe stays
+    # true as the owner reviews/publishes/adds more) must equal 27.
+    # Run with the SERVICE key (RLS hides unpublished rows from anon —
+    # by design).
+    {
+        "file": "20261126140000_0116_store_seed_batch_1.sql",
+        "label": "0116 STORE-SEED-BATCH-1",
+        "strength": "strong",
+        "checks": [
+            {"type": "rest_rows",
+             "path": ("/rest/v1/store_products?select=slug&slug=in."
+                      "(cap-barbell-300lb-olympic-weight-set,"
+                      "bowflex-selecttech-552-adjustable-dumbbells,"
+                      "yes4all-solid-cast-iron-kettlebell,"
+                      "fit-simplify-resistance-loop-bands-set,"
+                      "yosuda-indoor-cycling-bike,"
+                      "sunny-health-sf-rw5515-rowing-machine,"
+                      "flybird-adjustable-weight-bench,"
+                      "walkingpad-a1-pro-foldable-treadmill,"
+                      "triggerpoint-grid-foam-roller-13,"
+                      "gaiam-premium-yoga-mat-6mm,renpho-massage-gun,"
+                      "escali-primo-digital-food-scale,"
+                      "prepnaturals-glass-meal-prep-containers,"
+                      "nutribullet-pro-900-blender,"
+                      "cosori-air-fryer-pro-gen-2-5-8qt,"
+                      "renpho-smart-body-fat-scale,"
+                      "accu-measure-body-fat-caliper,myotape-body-tape-measure,"
+                      "fitbit-charge-6,polar-h10-heart-rate-monitor,"
+                      "soundcore-sport-x10-earbuds,"
+                      "nike-metcon-9-training-shoes,"
+                      "brooks-ghost-16-running-shoes,"
+                      "harbinger-padded-leather-lifting-belt,"
+                      "hydro-flask-wide-mouth-32oz,"
+                      "blenderbottle-classic-v2-shaker,"
+                      "flipbelt-zipper-running-belt)&limit=100"),
+             "transform": "count_rows",
+             "expect": 27},
+        ],
+    },
 ]# fmt on
 
 # --- named transforms for rest_rows probes ----------------------------------
@@ -425,7 +468,14 @@ def at_least_one_admin(rows: list[dict]) -> int:
     return 1 if any(r.get("role") == "admin" for r in rows) else 0
 
 
+def count_rows(rows: list[dict]) -> int:
+    """0116's invariant: the number of rows a query returns (used with a
+    slug-set filter so the count is immutable — slugs are never deleted)."""
+    return len(rows)
+
+
 TRANSFORMS = {
     "duplicate_draft_groups": duplicate_draft_groups,
     "at_least_one_admin": at_least_one_admin,
+    "count_rows": count_rows,
 }
