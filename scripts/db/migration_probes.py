@@ -360,6 +360,49 @@ PROBES: list[dict] = [
              "column": "next_attempt_at"},
         ],
     },
+    # 0115 — STORE-FOUNDATION (owner order 2026-11-26 «تنفيذ المرحلة الأولى»
+    # per docs/store/PHASE-1-SCOPE.md): the Alkemos Product Store family
+    # (System 2, EN-only). Strong probe — new tables with their spec
+    # columns, incl. the ratified amendment (a) parent_id tree column.
+    # The category seed (wave 1 active / waves 2-3 inactive) is data, not
+    # schema; the product batch ships separately as 0116.
+    {
+        "file": "20261126120000_0115_store_foundation.sql",
+        "label": "0115 STORE-FOUNDATION",
+        "strength": "strong",
+        "checks": [
+            {"type": "swagger_table", "table": "store_categories"},
+            {"type": "swagger_table", "table": "store_products"},
+            {"type": "swagger_table", "table": "store_product_links"},
+            {"type": "swagger_table", "table": "store_click_events"},
+            {"type": "swagger_column", "table": "store_categories",
+             "column": "parent_id"},
+            {"type": "swagger_column", "table": "store_categories",
+             "column": "is_active"},
+            {"type": "swagger_column", "table": "store_categories",
+             "column": "icon_key"},
+            {"type": "swagger_column", "table": "store_products",
+             "column": "asin"},
+            {"type": "swagger_column", "table": "store_products",
+             "column": "slug"},
+            {"type": "swagger_column", "table": "store_products",
+             "column": "review_status"},
+            {"type": "swagger_column", "table": "store_products",
+             "column": "is_published"},
+            {"type": "swagger_column", "table": "store_products",
+             "column": "editorial_rating"},
+            {"type": "swagger_column", "table": "store_products",
+             "column": "price_usd"},
+            {"type": "swagger_column", "table": "store_products",
+             "column": "payload"},
+            {"type": "swagger_column", "table": "store_product_links",
+             "column": "surface_type"},
+            {"type": "swagger_column", "table": "store_click_events",
+             "column": "surface_key"},
+            {"type": "swagger_column", "table": "store_click_events",
+             "column": "day"},
+        ],
+    },
 ]# fmt on
 
 # --- named transforms for rest_rows probes ----------------------------------

@@ -2497,6 +2497,176 @@ export type Database = {
           { foreignKeyName: "recipe_favorites_recipe_id_fkey"; columns: ["recipe_id"]; isOneToOne: false; referencedRelation: "recipes"; referencedColumns: ["id"] },
         ];
       };
+      // 0115 (ALKEMOS-STORE-PHASE1 — owner order 2026-11-26) — the affiliate
+      // product store family (System 2, EN-only; governing law §3.1 + the
+      // three ratified amendments: parent_id tree · leaf-URL · internal-only
+      // commissions). NO affiliate_url column by design: purchase links are
+      // built from asin + the env tag at render time (src/lib/store-link.ts).
+      store_categories: {
+        Row: {
+          id: string;
+          slug: string;
+          name: string;
+          description: string | null;
+          icon_key: string | null;
+          sort_order: number;
+          is_active: boolean;
+          parent_id: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          slug: string;
+          name: string;
+          description?: string | null;
+          icon_key?: string | null;
+          sort_order?: number;
+          is_active?: boolean;
+          parent_id?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          slug?: string;
+          name?: string;
+          description?: string | null;
+          icon_key?: string | null;
+          sort_order?: number;
+          is_active?: boolean;
+          parent_id?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          { foreignKeyName: "store_categories_parent_id_fkey"; columns: ["parent_id"]; isOneToOne: false; referencedRelation: "store_categories"; referencedColumns: ["id"] },
+        ];
+      };
+      store_products: {
+        Row: {
+          id: string;
+          category_id: string;
+          asin: string | null;
+          slug: string;
+          title: string;
+          summary: string;
+          content: string;
+          brand: string | null;
+          image_url: string | null;
+          editorial_rating: number | null;
+          price_usd: number | null;
+          price_updated_at: string | null;
+          availability: string | null;
+          payload: Json | null;
+          is_featured: boolean;
+          is_published: boolean;
+          review_status: string;
+          last_reviewed_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          category_id: string;
+          asin?: string | null;
+          slug: string;
+          title: string;
+          summary: string;
+          content: string;
+          brand?: string | null;
+          image_url?: string | null;
+          editorial_rating?: number | null;
+          price_usd?: number | null;
+          price_updated_at?: string | null;
+          availability?: string | null;
+          payload?: Json | null;
+          is_featured?: boolean;
+          is_published?: boolean;
+          review_status?: string;
+          last_reviewed_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          category_id?: string;
+          asin?: string | null;
+          slug?: string;
+          title?: string;
+          summary?: string;
+          content?: string;
+          brand?: string | null;
+          image_url?: string | null;
+          editorial_rating?: number | null;
+          price_usd?: number | null;
+          price_updated_at?: string | null;
+          availability?: string | null;
+          payload?: Json | null;
+          is_featured?: boolean;
+          is_published?: boolean;
+          review_status?: string;
+          last_reviewed_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          { foreignKeyName: "store_products_category_id_fkey"; columns: ["category_id"]; isOneToOne: false; referencedRelation: "store_categories"; referencedColumns: ["id"] },
+        ];
+      };
+      store_product_links: {
+        Row: {
+          id: string;
+          product_id: string;
+          surface_type: string;
+          surface_key: string;
+          sort_order: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          product_id: string;
+          surface_type: string;
+          surface_key: string;
+          sort_order?: number;
+          created_at?: string;
+        };
+        Update: {
+          product_id?: string;
+          surface_type?: string;
+          surface_key?: string;
+          sort_order?: number;
+          created_at?: string;
+        };
+        Relationships: [
+          { foreignKeyName: "store_product_links_product_id_fkey"; columns: ["product_id"]; isOneToOne: false; referencedRelation: "store_products"; referencedColumns: ["id"] },
+        ];
+      };
+      store_click_events: {
+        Row: {
+          id: number;
+          product_id: string;
+          surface_type: string;
+          surface_key: string;
+          occurred_at: string;
+          day: string;
+        };
+        Insert: {
+          product_id: string;
+          surface_type: string;
+          surface_key?: string;
+          occurred_at?: string;
+          day?: string;
+        };
+        Update: {
+          product_id?: string;
+          surface_type?: string;
+          surface_key?: string;
+          occurred_at?: string;
+          day?: string;
+        };
+        Relationships: [
+          { foreignKeyName: "store_click_events_product_id_fkey"; columns: ["product_id"]; isOneToOne: false; referencedRelation: "store_products"; referencedColumns: ["id"] },
+        ];
+      };
     };
     Views: {};
     Functions: {
@@ -2789,3 +2959,7 @@ export type RecipeIngredient = Database["public"]["Tables"]["recipe_ingredients"
 export type NutrientReference = Database["public"]["Tables"]["nutrient_reference"]["Row"];
 export type RecipeGenerationQueueItem = Database["public"]["Tables"]["recipe_generation_queue"]["Row"];
 export type RecipeFavorite = Database["public"]["Tables"]["recipe_favorites"]["Row"];
+export type StoreCategory = Database["public"]["Tables"]["store_categories"]["Row"];
+export type StoreProduct = Database["public"]["Tables"]["store_products"]["Row"];
+export type StoreProductLink = Database["public"]["Tables"]["store_product_links"]["Row"];
+export type StoreClickEvent = Database["public"]["Tables"]["store_click_events"]["Row"];

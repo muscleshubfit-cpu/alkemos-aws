@@ -58,6 +58,17 @@ Any of the following:
   dispatch from `/api/cron/dispatch-pipelines` — this repo only,
   Actions: Read+write).
 - `EVO_CRON_SECRET` (the EVO followup dispatcher's separate secret).
+- `AMAZON_ASSOCIATES_TAG` (0115 / PHASE-1 2026-11-26) — the Alkemos
+  Product Store's Amazon Associates tracking tag. **NOT a secret**: it
+  appears inside every public purchase link
+  (`https://www.amazon.com/dp/{asin}?tag={AMAZON_ASSOCIATES_TAG}`) —
+  built at render time by `src/lib/store-link.ts` (the single tag
+  source; tagged links are never stored in the DB — the store guard
+  rejects any `tag=` value in store text columns). It ships in
+  `.env.example` EMPTY by §2.1 law; the owner-set value
+  (`ahmedzake-20` — fact ح-3 of the store governing law) lives in the
+  standard secret stores (`.env.local` locally, the server shared env +
+  repo secret channel in production).
 - GitHub personal access tokens.
 - Any OAuth client ID + secret pair.
 - Any future `*_API_KEY` env var added to `.env.example`.
