@@ -134,6 +134,17 @@ const SECTIONS: AdminNavSection[] = [
     ],
   },
   {
+    // ALKEMOS-STORE-PHASE1 (owner order 2026-11-26): the affiliate
+    // product store (System 2 — EN-only, Amazon Associates US): the
+    // 0097 review inbox (pending → owner review → publish), the product
+    // editor, and the category/wave activation decisions.
+    ar: "المتجر",
+    en: "Store",
+    items: [
+      { href: "/admin/store", emoji: "🏪", ar: "متجر المنتجات", en: "Product store", exact: true },
+    ],
+  },
+  {
     ar: "النمو والتسويق",
     en: "Growth",
     items: [
