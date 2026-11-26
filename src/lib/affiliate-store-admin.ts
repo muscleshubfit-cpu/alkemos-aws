@@ -8,12 +8,16 @@
  *    AFTER the route already verified the caller with requireAdmin —
  *    the 0105 channel law; the store tables' RLS admin policies are the
  *    second lock, this layer the first.
- *  - The 0097 owner-review flow is HONEST: products are born
- *    review_status='pending' + is_published=false; review flips
- *    pending→reviewed (owner action); publish REQUIRES reviewed and
- *    re-runs every store guard — no bypass (owner order 2026-11-26:
- *    «لا تتجاوز مراجعة المالك المطلوبة قبل نشر المنتجات»).
- *  - Publish/unpublish/category-activation flush the three cache layers
+ *  - 527-L2 — AUTO-PUBLISH (owner order 2026-11-27 «إلغاء نظام الاعتماد
+ *    المزدوج... اجعل جميع المنتجات تُنشر تلقائيًا بمجرد إضافتها وحفظها
+ *    بنجاح، دون أي خطوة اعتماد أو مراجعة أو ضغط زر Publish»): the
+ *    retired 0097 dual-approval (pending → owner review → publish) is
+ *    GONE. A create saves → is_published=true immediately; an update of
+ *    a published product stays live (edits reflect automatically);
+ *    Unpublish stays a one-click hide; republish re-runs the guards.
+ *    The guards (527-G1/G2: image + ASIN + all content laws) are the
+ *    ONLY gate — automated validation, no manual approval step.
+ *  - Save/publish/unpublish/category-activation flush the cache layers
  *    for the store surfaces (revalidateTag + revalidatePath + the CF
  *    edge purge — the blog-cache-revalidate pattern, minimal + safe).
  *  - Nothing here touches System 1 (the affiliate_ / referral_ table family) — §0.
@@ -98,14 +102,20 @@ export async function adminListAffiliateStoreProducts(
 ): Promise<AdminAffiliateStoreProductRow[]> {
   const db = client();
   if (!db) return [];
-  const { data } = await db
-    .from("affiliate_store_products")
-    .select(
-      "*,affiliate_store_categories(id,slug,name,is_active)",
-    )
-    .order("updated_at", { ascending: false })
-    .limit(limit);
-  return ((data ?? []) as unknown as AdminAffiliateStoreProductRow[]);
+  // 527-L1: NO EMBEDS in production-facing reads (the measured
+  // production failure) — direct reads stitched in code.
+  const [prodRes, catRes] = await Promise.all([
+    db.from("affiliate_store_products")
+      .select("id,category_id,slug,title,summary,brand,asin,image_url,editorial_rating,price_usd,is_featured,is_published,review_status,content,created_at,updated_at")
+      .order("updated_at", { ascending: false })
+      .limit(limit),
+    db.from("affiliate_store_categories").select("id,slug,name,is_active"),
+  ]);
+  const cats = new Map((catRes.data ?? []).map((c: { id: string }) => [c.id, c]));
+  return ((prodRes.data ?? []) as Array<Record<string, unknown> & { category_id: string }>).map((row) => ({
+    ...row,
+    category: cats.get(row.category_id) ?? null,
+  })) as unknown as AdminAffiliateStoreProductRow[];
 }
 
 export async function adminGetAffiliateStoreProduct(
@@ -113,12 +123,17 @@ export async function adminGetAffiliateStoreProduct(
 ): Promise<AdminAffiliateStoreProductRow | null> {
   const db = client();
   if (!db) return null;
-  const { data } = await db
-    .from("affiliate_store_products")
-    .select("*,affiliate_store_categories(id,slug,name,is_active)")
-    .eq("id", id)
-    .maybeSingle();
-  return ((data ?? null) as unknown as AdminAffiliateStoreProductRow | null);
+  const [prodRes, catRes] = await Promise.all([
+    db.from("affiliate_store_products").select("*").eq("id", id).maybeSingle(),
+    db.from("affiliate_store_categories").select("id,slug,name,is_active"),
+  ]);
+  if (!prodRes.data) return null;
+  const row = prodRes.data as Record<string, unknown> & { category_id: string };
+  const cats = (catRes.data ?? []) as Array<{ id: string; slug: string; name: string; is_active: boolean }>;
+  return {
+    ...row,
+    category: cats.find((c) => c.id === row.category_id) ?? null,
+  } as unknown as AdminAffiliateStoreProductRow;
 }
 
 export async function adminListAffiliateStoreProductLinks(productId: string): Promise<
@@ -255,9 +270,13 @@ const SURFACE_TYPES = ["tool", "equipment_hub", "program", "blog", "collection"]
 const SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 /**
- * Create/update a product (guards ALWAYS run — blocking findings refuse
- * the save; warnings pass). Products are ALWAYS born pending/unpublished
- * on create; publish is a separate owner action.
+ * Create/update a product — 527-L2 AUTO-PUBLISH: guards ALWAYS run
+ * (blocking findings refuse the save — the automated validation gate:
+ * basics + image + buy path); a CREATE is born published (visible on
+ * every store surface immediately); an UPDATE of a published product
+ * stays published (edits reflect automatically — «وأي تعديل وحفظ لمنتج
+ * منشور ينعكس تلقائيًا»). review_status is written 'reviewed' purely
+ * as a historical record (the 0097 dual-approval flow is retired).
  */
 export async function adminUpsertAffiliateStoreProduct(
   input: AffiliateStoreProductInput,
@@ -288,7 +307,7 @@ export async function adminUpsertAffiliateStoreProduct(
   if (blocksPublish(findings)) {
     return {
       ok: false,
-      error: "store guards rejected the save (blocking findings)",
+      error: "store guards rejected the save (blocking findings — a product needs its real image, its Amazon ASIN, and clean content before it can publish)",
       findings,
     };
   }
@@ -303,6 +322,7 @@ export async function adminUpsertAffiliateStoreProduct(
     image_url: input.image_url,
     editorial_rating: input.editorial_rating,
     is_featured: input.is_featured ?? false,
+    review_status: "reviewed",
     updated_at: new Date().toISOString(),
   };
   let productId = input.id;
@@ -313,9 +333,10 @@ export async function adminUpsertAffiliateStoreProduct(
       .eq("id", productId);
     if (error) return { ok: false, error: error.message, findings };
   } else {
+    // 527-L2: born PUBLISHED — no review step, no Publish button.
     const { data, error } = await db
       .from("affiliate_store_products")
-      .insert({ ...row, review_status: "pending", is_published: false })
+      .insert({ ...row, is_published: true })
       .select("id")
       .single();
     if (error || !data) return { ok: false, error: error?.message ?? "insert failed", findings };
@@ -338,6 +359,13 @@ export async function adminUpsertAffiliateStoreProduct(
       if (error) return { ok: false, error: error.message, findings };
     }
   }
+  // 527-L2: save = publish → the public surfaces refresh now.
+  const saved = await adminGetAffiliateStoreProduct(productId);
+  const catSlug = saved?.category?.slug ?? "";
+  await flushAffiliateStoreCaches([
+    `/affiliate-store/${catSlug}`,
+    `/affiliate-store/${catSlug}/${input.slug}`,
+  ]);
   return { ok: true, id: productId, findings };
 }
 
@@ -345,40 +373,17 @@ export type AffiliateStoreActionResult =
   | { ok: true; findings?: AffiliateStoreGuardFinding[] }
   | { ok: false; error: string; findings?: AffiliateStoreGuardFinding[] };
 
-/** The OWNER review action (0097): pending → reviewed. */
-export async function adminReviewAffiliateStoreProduct(id: string): Promise<AffiliateStoreActionResult> {
-  const db = client();
-  if (!db) return { ok: false, error: "Supabase not configured" };
-  const { error } = await db
-    .from("affiliate_store_products")
-    .update({
-      review_status: "reviewed",
-      last_reviewed_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    })
-    .eq("id", id)
-    .eq("review_status", "pending");
-  if (error) return { ok: false, error: error.message };
-  return { ok: true };
-}
-
 /**
- * The publish action: REQUIRES review_status='reviewed' (the 0097 owner
- * gate — no bypass), re-runs every guard on the CURRENT row, then flips
- * is_published and flushes the store caches.
+ * The publish action (republish path — 527-L2): re-runs every guard on
+ * the CURRENT row (the automated gate — no owner-review requirement
+ * anymore; the review flow is retired), then flips is_published and
+ * flushes the store caches.
  */
 export async function adminPublishAffiliateStoreProduct(id: string): Promise<AffiliateStoreActionResult> {
   const db = client();
   if (!db) return { ok: false, error: "Supabase not configured" };
   const product = await adminGetAffiliateStoreProduct(id);
   if (!product) return { ok: false, error: "product not found" };
-  if (product.review_status !== "reviewed") {
-    return {
-      ok: false,
-      error:
-        "owner review required before publishing (0097 flow — review first, then publish)",
-    };
-  }
   const findings = runAffiliateStoreProductGuards({
     asin: product.asin,
     title: product.title,
@@ -388,7 +393,7 @@ export async function adminPublishAffiliateStoreProduct(id: string): Promise<Aff
     price_usd: product.price_usd,
   });
   if (blocksPublish(findings)) {
-    return { ok: false, error: "store guards rejected publishing", findings };
+    return { ok: false, error: "store guards rejected publishing (image + ASIN + content laws — 527-G2)", findings };
   }
   const { error } = await db
     .from("affiliate_store_products")

@@ -6,12 +6,14 @@ import { SiteFooter } from "@/components/SiteFooter";
 import { AffiliateStoreCategoryIcon, AffiliateStoreProductGrid } from "@/components/affiliate-store/AffiliateStoreProductCard";
 import { AffiliateStoreViewEvent } from "@/components/affiliate-store/AffiliateStoreViewEvent";
 import { ShortDisclosureLine } from "@/components/affiliate-store/disclosure";
-import { getAffiliateStoreCategoryPage, listAffiliateStoreSitemapEntries } from "@/lib/affiliate-store-server";
+import { getAffiliateStoreCategoryPage, listAffiliateStoreSitemapEntries, listPublicAffiliateStoreMainCategories } from "@/lib/affiliate-store-server";
 import { getBreadcrumbSchema, getItemListSchema, jsonLd } from "@/lib/seo";
 
 /**
- * /affiliate-store/[category] — a MAIN category renders its subcategory SECTIONS
- * (the ratified §6-ب URL law); a LEAF category renders its product grid.
+ * /affiliate-store/[category] — a MAIN category renders its FULL product
+ * grid (527: mains show every shelf-qualified product in the subtree,
+ * not empty section headers) plus its subcategory chips; a LEAF category
+ * renders its product grid.
  * EN only — no Arabic mirror, self-canonical, ISR 3600.
  *
  * The thin-page law: a main below 3 published products 404s; a leaf with
@@ -76,19 +78,20 @@ export default async function AffiliateStoreCategoryPage({
   params: Promise<{ category: string }>;
 }) {
   const { category } = await params;
-  const page = await getAffiliateStoreCategoryPage(category);
+  const [page, mains] = await Promise.all([
+    getAffiliateStoreCategoryPage(category),
+    listPublicAffiliateStoreMainCategories(),
+  ]);
   if (!page) notFound();
 
   const { category: cat, sections, products } = page;
   const itemList = getItemListSchema({
     name: `${cat.name} — Alkemos Affiliate Store`,
     description: cat.description ?? `${cat.name} picks, editorially reviewed by Alkemos.`,
-    items: products
-      .concat(sections.flatMap((s) => s.products))
-      .map((p) => ({
-        name: p.title,
-        url: `https://alkemos.com/affiliate-store/${p.categorySlug}/${p.slug}`,
-      })),
+    items: products.map((p) => ({
+      name: p.title,
+      url: `https://alkemos.com/affiliate-store/${p.categorySlug}/${p.slug}`,
+    })),
   });
   const breadcrumb = getBreadcrumbSchema([
     { name: "Home", url: "https://alkemos.com" },
@@ -104,8 +107,8 @@ export default async function AffiliateStoreCategoryPage({
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(itemList) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(breadcrumb) }} />
 
-      <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-12 sm:px-6 md:py-16">
-        <nav className="mb-8 flex items-center gap-2 text-sm text-[var(--muted-foreground)]" aria-label="Breadcrumb">
+      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-10 sm:px-6 md:py-14">
+        <nav className="mb-6 flex flex-wrap items-center gap-2 text-sm text-[var(--muted-foreground)]" aria-label="Breadcrumb">
           <Link href="/" className="hover:opacity-70">Home</Link>
           <span>/</span>
           <Link href="/affiliate-store" className="hover:opacity-70">Store</Link>
@@ -113,12 +116,13 @@ export default async function AffiliateStoreCategoryPage({
           <span className="truncate text-[var(--text)]">{cat.name}</span>
         </nav>
 
-        <header className="mb-10 flex items-start gap-4">
+        {/* ── The category masthead ─────────────────────────────────── */}
+        <header className="mb-6 flex items-start gap-4">
           <span className="shrink-0">
             <AffiliateStoreCategoryIcon iconKey={cat.iconKey} name={cat.name} size={72} />
           </span>
           <div>
-            <h1 className="text-3xl font-semibold leading-tight tracking-tight md:text-4xl">
+            <h1 className="text-2xl font-semibold leading-tight tracking-tight md:text-3xl">
               {cat.name}
             </h1>
             {cat.description && (
@@ -130,28 +134,54 @@ export default async function AffiliateStoreCategoryPage({
         </header>
 
         {/* د-2 — the short disclosure line near the category's
-            recommendation links (§3.4-7: every store page carries an
-            English disclosure component; the buy units carry م-1). */}
+            recommendation links (§3.4-7). */}
         <ShortDisclosureLine className="mb-6" />
 
-        {sections.length > 0 ? (
-          <div className="space-y-12">
+        {/* ── Subcategory chips (a MAIN's shelf navigation) ─────────── */}
+        {sections.length > 0 && (
+          <nav aria-label="Subcategories" className="mb-8 flex flex-wrap gap-2">
             {sections.map((section) => (
-              <section key={section.category.id} aria-labelledby={`sec-${section.category.slug}`}>
-                <h2 id={`sec-${section.category.slug}`} className="mb-4 text-xl font-semibold tracking-tight">
-                  <Link
-                    href={`/affiliate-store/${section.category.slug}`}
-                    className="underline-offset-4 hover:underline"
-                  >
-                    {section.category.name}
-                  </Link>
-                </h2>
-                <AffiliateStoreProductGrid products={section.products} />
-              </section>
+              <Link
+                key={section.category.id}
+                href={`/affiliate-store/${section.category.slug}`}
+                className="rounded-full border border-[var(--edge)] bg-[var(--card)] px-4 py-1.5 text-xs font-medium transition-shadow hover:shadow-md"
+              >
+                {section.category.name}
+                <span className="ms-1.5 text-[var(--muted-foreground)]">
+                  ({section.products.length})
+                </span>
+              </Link>
             ))}
-          </div>
-        ) : (
-          <AffiliateStoreProductGrid products={products} />
+          </nav>
+        )}
+
+        {/* ── THE FULL GRID (527: mains show their whole subtree —
+              never again empty section headings) ───────────────────── */}
+        <AffiliateStoreProductGrid products={products} />
+
+        {/* ── The other categories rail (store navigation) ──────────── */}
+        {mains.length > 1 && (
+          <section aria-labelledby="other-categories" className="mt-12 border-t border-[var(--edge)] pt-8">
+            <h2 id="other-categories" className="mb-4 text-lg font-semibold tracking-tight">
+              Continue browsing
+            </h2>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+              {mains
+                .filter((m) => m.slug !== cat.slug)
+                .map((main) => (
+                  <Link
+                    key={main.id}
+                    href={`/affiliate-store/${main.slug}`}
+                    className="group flex items-center gap-3 rounded-xl border border-[var(--edge)] bg-[var(--card)] p-3 transition-shadow hover:shadow-md"
+                  >
+                    <AffiliateStoreCategoryIcon iconKey={main.iconKey} name={main.name} size={40} />
+                    <span className="text-sm font-medium leading-snug group-hover:underline group-hover:underline-offset-2">
+                      {main.name}
+                    </span>
+                  </Link>
+                ))}
+            </div>
+          </section>
         )}
       </main>
 

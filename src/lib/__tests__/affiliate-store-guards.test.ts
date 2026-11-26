@@ -11,17 +11,23 @@ import {
   hasCommissionRateText,
   hasHalalBlocklistHit,
   hasManualPriceViolation,
-  isAmazonImageUrl,
+  isTrustedAmazonProductImage,
+  isBlockedAmazonHost,
   runAffiliateStoreProductGuards,
 } from "../affiliate-store-guards";
 
 /**
- * STORE-GUARD CANARIES — the Phase-1 spec item 1.7 battery:
- * the image law v2 §0 (absolute women ban + clause (h) Amazon domains),
- * the halal blocklist (§3.4-5 + screening §2-1), claims discipline
- * (screening §3), the pre-API price ban (§3.4-6), the NINTH guard
- * (commissions internal-only — ratified §6-c), and the advisory
- * editorial floor (§3.4-8).
+ * STORE-GUARD CANARIES — the Phase-1 spec item 1.7 battery AS AMENDED BY
+ * PHASE 527 (owner order 2026-11-27):
+ *  - 527-G1: the image law v2 §0 (absolute women/immodesty ban) stays;
+ *    the TRUSTED image source is now Amazon's product-image CDN
+ *    (m.media-amazon.com — the original product photo); legacy Amazon
+ *    hosts stay blocked; alkemos.com self-hosted assets stay allowed.
+ *  - 527-G2: the shelf gate — image_url AND a valid ASIN are REQUIRED
+ *    to publish (no image / no buy path → never on a public surface).
+ *  - The halal blocklist (§3.4-5), claims discipline (screening §3),
+ *    the pre-API price ban (§3.4-6), the NINTH guard (commissions
+ *    internal-only), and the advisory editorial floor (§3.4-8) stay.
  */
 
 const CLEAN_PRODUCT = {
@@ -34,19 +40,48 @@ const CLEAN_PRODUCT = {
     "powder coat keeps chalk and sweat from making the handle slippery. Train three sessions a " +
     "week with swings and cleans and you cover most of the posterior chain work a barbell " +
     "program would ask for, at a fraction of the space and cost.",
-  image_url: null,
+  image_url: "https://m.media-amazon.com/images/I/71dMltueu8L._AC_SL1500_.jpg",
   image_alt: "cast iron kettlebell on a neutral studio background",
   price_usd: null,
 };
 
-describe("image guards — IMAGE-POLICY-EN.md v2 §0 (the absolute ban)", () => {
-  it("rejects Amazon image domains (clause (h) — no stored Amazon images)", () => {
-    expect(isAmazonImageUrl("https://m.media-amazon.com/images/I/71abc.jpg")).toBe(true);
-    expect(isAmazonImageUrl("https://images-na.ssl-images-amazon.com/images/I/71.jpg")).toBe(true);
-    expect(isAmazonImageUrl("https://ecx.images-amazon.com/images/I/71.jpg")).toBe(true);
-    expect(isAmazonImageUrl("https://alkemos.com/affiliate-store-products/kb16.webp")).toBe(false);
-    expect(isAmazonImageUrl(null)).toBe(false);
-    expect(isAmazonImageUrl("")).toBe(false);
+describe("image guards — IMAGE-POLICY-EN.md v2 §0 as amended by 527-G1 (the trusted-source law)", () => {
+  it("ACCEPTS the original product photo on Amazon's image CDN (527-G1)", () => {
+    expect(isTrustedAmazonProductImage("https://m.media-amazon.com/images/I/71abc.jpg")).toBe(true);
+    expect(isTrustedAmazonProductImage("https://m.media-amazon.com/images/I/61KE8cmqB+L._AC_SL1500_.jpg")).toBe(true);
+    expect(isTrustedAmazonProductImage("https://alkemos.com/affiliate-store-products/kb16.webp")).toBe(false);
+    expect(isTrustedAmazonProductImage(null)).toBe(false);
+    expect(isTrustedAmazonProductImage("")).toBe(false);
+  });
+
+  it("still BLOCKS legacy Amazon non-CDN hosts (ssl-images / ecx / images-amazon)", () => {
+    expect(isBlockedAmazonHost("https://images-na.ssl-images-amazon.com/images/I/71.jpg")).toBe(true);
+    expect(isBlockedAmazonHost("https://ecx.images-amazon.com/images/I/71.jpg")).toBe(true);
+    expect(isBlockedAmazonHost("https://images-amazon.com/images/I/71.jpg")).toBe(true);
+    expect(isBlockedAmazonHost("https://m.media-amazon.com/images/I/71.jpg")).toBe(false);
+  });
+
+  it("the full image gate accepts the trusted CDN photo + self-hosted alkemos.com assets", () => {
+    const cdn = checkAffiliateStoreImage(
+      "https://m.media-amazon.com/images/I/71dMltueu8L._AC_SL1500_.jpg",
+      "cast iron kettlebell on white",
+    );
+    expect(cdn.ok).toBe(true);
+    expect(cdn.violations).toEqual([]);
+    const selfHosted = checkAffiliateStoreImage(
+      "https://alkemos.com/affiliate-store-products/kb16.webp",
+      "cast iron kettlebell on a neutral background",
+    );
+    expect(selfHosted.ok).toBe(true);
+  });
+
+  it("rejects untrusted external hosts (527-G1: only the product CDN or alkemos.com)", () => {
+    const result = checkAffiliateStoreImage(
+      "https://random-cdn.example.net/kb16.webp",
+      "cast iron kettlebell",
+    );
+    expect(result.ok).toBe(false);
+    expect(result.violations.some((v) => v.includes("trusted"))).toBe(true);
   });
 
   it("§0.1: rejects ANY female-subject signal in image text (absolute, no exceptions)", () => {
@@ -208,12 +243,42 @@ describe("runAffiliateStoreProductGuards — the aggregated publish gate", () =>
     expect(blocksPublish(findings)).toBe(true);
   });
 
-  it("BLOCKS an Amazon-hosted image (clause (h))", () => {
+  it("BLOCKS a legacy Amazon non-CDN image host (clause (h) as amended)", () => {
+    const findings = runAffiliateStoreProductGuards({
+      ...CLEAN_PRODUCT,
+      image_url: "https://ecx.images-amazon.com/images/I/71abc.jpg",
+    });
+    expect(findings.some((f) => f.rule === "image-policy" && f.severity === "block")).toBe(true);
+  });
+
+  it("ACCEPTS the trusted Amazon product-image CDN (527-G1)", () => {
     const findings = runAffiliateStoreProductGuards({
       ...CLEAN_PRODUCT,
       image_url: "https://m.media-amazon.com/images/I/71abc.jpg",
     });
-    expect(findings.some((f) => f.rule === "image-policy" && f.severity === "block")).toBe(true);
+    expect(findings.some((f) => f.rule === "image-policy")).toBe(false);
+  });
+
+  it("527-G2: BLOCKS a product with no image (the shelf gate)", () => {
+    const findings = runAffiliateStoreProductGuards({
+      ...CLEAN_PRODUCT,
+      image_url: null,
+    });
+    expect(
+      findings.some((f) => f.rule === "shelf-image-required" && f.severity === "block"),
+    ).toBe(true);
+    expect(blocksPublish(findings)).toBe(true);
+  });
+
+  it("527-G2: BLOCKS a product with no valid ASIN (the shelf gate)", () => {
+    const findings = runAffiliateStoreProductGuards({
+      ...CLEAN_PRODUCT,
+      asin: null,
+    });
+    expect(
+      findings.some((f) => f.rule === "shelf-buy-link-required" && f.severity === "block"),
+    ).toBe(true);
+    expect(blocksPublish(findings)).toBe(true);
   });
 
   it("BLOCKS a women-model image (law v2 §0.1 — absolute)", () => {
@@ -319,7 +384,7 @@ describe("direct-image URL shape — VISIBILITY-PREVIEW 2026-11-26 («رابط �
     expect(blocksPublish(blocked)).toBe(true);
     const warned = runAffiliateStoreProductGuards({
       ...CLEAN_PRODUCT,
-      image_url: "https://cdn.example.com/media/abc123?w=200",
+      image_url: "https://alkemos.com/media/abc123?w=200",
     });
     expect(warned.some((f) => f.rule === "image-url-ambiguous" && f.severity === "warn")).toBe(true);
     expect(blocksPublish(warned)).toBe(false);
@@ -329,8 +394,9 @@ describe("direct-image URL shape — VISIBILITY-PREVIEW 2026-11-26 («رابط �
     });
     expect(clean.some((f) => f.rule === "image-url-shape" || f.rule === "image-url-ambiguous")).toBe(false);
   });
-  it("regression: the founding batch (image_url NULL everywhere) stays clean", () => {
-    const findings = runAffiliateStoreProductGuards(CLEAN_PRODUCT);
-    expect(findings.some((f) => f.rule.startsWith("image-url"))).toBe(false);
+  it("regression: the founding batch law — image_url NULL now BLOCKS (527-G2 inverted the old default)", () => {
+    const findings = runAffiliateStoreProductGuards({ ...CLEAN_PRODUCT, image_url: null });
+    expect(findings.some((f) => f.rule === "shelf-image-required")).toBe(true);
+    expect(blocksPublish(findings)).toBe(true);
   });
 });

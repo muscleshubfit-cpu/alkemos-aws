@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { CheckCircle2, Eye, EyeOff, ExternalLink, RefreshCw, Star } from "lucide-react";
+import { ExternalLink, EyeOff, RefreshCw, Star, UploadCloud } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { PageHeader, SectionCard, SegmentedTabs, StatTile, EmptyState } from "@/components/admin/ui";
 import { Badge } from "@/components/ui/badge";
@@ -11,24 +11,24 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
 /**
- * STORE ADMIN VIEW (ALKEMOS-STORE-PHASE1 §1.2 — owner order 2026-11-26).
- * The dashboard behind /admin/affiliate-store: the honest 0097 pipeline
- * (pending → owner review → publish), the product list, and the
- * category tree (wave 1 active / waves 2–3 awaiting the owner's
- * activation orders).
+ * STORE ADMIN VIEW (PHASE 527 — owner order 2026-11-27).
+ * The dashboard behind /admin/affiliate-store under the AUTO-PUBLISH
+ * law (527-L2): the 0097 dual-approval pipeline (pending → owner
+ * review → publish) is RETIRED — a product saves and is LIVE
+ * immediately (the store guards: real image + valid ASIN + clean
+ * content are the only gate, enforced server-side on every save).
  *
- * WHAT THE ADMIN SEES (persisted facts only):
- *   - Stats: total / published / pending review / reviewed / featured /
- *     products without ASIN (no buy button until captured) / category waves.
- *   - The pending-review queue FIRST (the owner's real inbox).
- *   - Products with per-row actions: review ✓ → publish (requires
- *     reviewed + all store guards green) → unpublish / feature.
+ * WHAT THE ADMIN SEES:
+ *   - Stats: total / live / hidden / featured / blocked-from-save
+ *     (products whose last save was refused by the guards — they keep
+ *     their previous state; the editor surfaces the findings).
+ *   - The product list with thumbnails: every row shows the product's
+ *     real image, its category, its ASIN, and its live URL.
+ *   - Per-row actions: Unpublish (hide) / Republish · Feature toggle ·
+ *     Edit (the editor's save keeps a published product live — «أي
+ *     تعديل وحفظ لمنتج منشور ينعكس تلقائيًا»).
  *   - The category tree with activation toggles (waves 2/3 = inactive
  *     by law until the owner's go-live order).
- *
- * WHAT THE ADMIN CAN DO: the narrow action set of /api/admin/affiliate-store —
- * review, publish, unpublish, feature, category-activate. Creation and
- * editing live in the AffiliateStoreEditorView (/admin/affiliate-store/new, /admin/affiliate-store/[id]).
  */
 
 type GuardFinding = { rule: string; severity: "block" | "warn"; message: string };
@@ -39,6 +39,7 @@ type ProductRow = {
   title: string;
   brand: string | null;
   asin: string | null;
+  image_url: string | null;
   review_status: string;
   is_published: boolean;
   is_featured: boolean;
@@ -74,8 +75,9 @@ type State = {
 };
 
 const TABS: Array<{ key: string; ar: string; en: string }> = [
-  { key: "pending", ar: "بانتظار مراجعتك", en: "Pending your review" },
   { key: "all", ar: "كل المنتجات", en: "All products" },
+  { key: "live", ar: "المنشورة", en: "Live" },
+  { key: "hidden", ar: "المخفية", en: "Hidden" },
   { key: "categories", ar: "الفئات والموجات", en: "Categories & waves" },
 ];
 
@@ -83,7 +85,7 @@ export function AffiliateStoreAdminView() {
   const { lang } = useI18n();
   const isAr = lang === "ar";
   const [state, setState] = useState<State | null>(null);
-  const [tab, setTab] = useState("pending");
+  const [tab, setTab] = useState("all");
   const [busy, setBusy] = useState<string | null>(null);
 
   const load = useCallback(async () => {
@@ -120,10 +122,10 @@ export function AffiliateStoreAdminView() {
           toast.error(body.error ?? "Action failed", { description: findings || undefined });
         } else {
           toast.success(
-            action === "review"
+            action === "unpublish"
               ? isAr
-                ? "تمت المراجعة — يمكنك النشر الآن"
-                : "Reviewed — you can publish now"
+                ? "تم إخفاء المنتج من المتجر"
+                : "Hidden from the store"
               : action === "publish"
                 ? isAr
                   ? "تم النشر وتحديث أسطح المتجر"
@@ -143,23 +145,17 @@ export function AffiliateStoreAdminView() {
     [isAr, load],
   );
 
-  const pending = useMemo(
-    () => (state?.products ?? []).filter((p) => p.review_status === "pending"),
+  const visible = useMemo(() => {
+    const products = state?.products ?? [];
+    if (tab === "live") return products.filter((p) => p.is_published);
+    if (tab === "hidden") return products.filter((p) => !p.is_published);
+    return products;
+  }, [tab, state]);
+
+  const blockedFromSave = useMemo(
+    () => (state?.products ?? []).filter((p) => !p.image_url || !p.asin),
     [state],
   );
-  const visible = useMemo(() => {
-    if (tab === "pending") return pending;
-    return state?.products ?? [];
-  }, [tab, pending, state]);
-
-  const flatCategories = useMemo(() => {
-    const out: CategoryNode[] = [];
-    for (const main of state?.categories ?? []) {
-      out.push(main);
-      out.push(...main.children);
-    }
-    return out;
-  }, [state]);
 
   return (
     <div className="mx-auto w-full max-w-5xl px-4 py-8">
@@ -167,8 +163,8 @@ export function AffiliateStoreAdminView() {
         title={isAr ? "متجر منتجات الأفلييت — Alkemos Affiliate Store" : "Alkemos Affiliate Store"}
         sub={
           isAr
-            ? "سير 0097: مراجعة المالك قبل أي نشر · المتجر إنجليزي · النسب الداخلية لا تُعرض للزوار"
-            : "The 0097 flow: your review gates every publish · EN store · internal-only rates"
+            ? "قانون 527: الحفظ = نشر فوري · بوابة آلية (صورة + ASIN + محتوى نظيف) · الإخفاء بضغطة · المتجر إنجليزي · النسب الداخلية لا تُعرض للزوار"
+            : "Law 527: save = publish instantly · automated gate (image + ASIN + clean content) · one-click hide · EN store · internal-only rates"
         }
         actions={
           <div className="flex gap-2">
@@ -187,12 +183,20 @@ export function AffiliateStoreAdminView() {
       {state ? (
         <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-4">
           <StatTile label={isAr ? "إجمالي" : "Total"} value={state.stats.total} />
-          <StatTile label={isAr ? "منشور" : "Published"} value={state.stats.published} />
-          <StatTile label={isAr ? "بانتظار المراجعة" : "Pending review"} value={state.stats.pending} />
-          <StatTile label={isAr ? "بلا ASIN" : "No ASIN yet"} value={state.stats.withoutAsin} />
+          <StatTile label={isAr ? "منشورة" : "Live"} value={state.stats.published} />
+          <StatTile label={isAr ? "مختارة" : "Featured"} value={state.stats.featured} />
+          <StatTile label={isAr ? "بلا صورة/ASIN" : "Missing image/ASIN"} value={blockedFromSave.length} />
         </div>
       ) : (
         <EmptyState text={isAr ? "جارٍ التحميل…" : "Loading…"} />
+      )}
+
+      {blockedFromSave.length > 0 && (
+        <div className="mt-4 rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-xs leading-relaxed">
+          {isAr
+            ? `تنبيه 527-G2: ${blockedFromSave.length} منتجًا ينقصه صورة حقيقية أو ASIN — هذه المنتجات لا تظهر في واجهات المتجر العامة حتى استكمال بياناتها وحفظها (افتح المنتج وأضف الصورة وASIN ثم احفظ).`
+            : `527-G2 notice: ${blockedFromSave.length} product(s) lack a real image or ASIN — they stay OFF all public store surfaces until completed (open the product, add the image + ASIN, save).`}
+        </div>
       )}
 
       <div className="mt-6">
@@ -200,7 +204,14 @@ export function AffiliateStoreAdminView() {
           tabs={TABS.map((t) => ({
             key: t.key,
             label: isAr ? t.ar : t.en,
-            count: t.key === "pending" ? pending.length : t.key === "all" ? state?.stats.total : undefined,
+            count:
+              t.key === "all"
+                ? state?.stats.total
+                : t.key === "live"
+                  ? state?.stats.published
+                  : t.key === "hidden"
+                    ? (state?.stats.total ?? 0) - (state?.stats.published ?? 0)
+                    : undefined,
           }))}
           active={tab}
           onChange={setTab}
@@ -210,31 +221,49 @@ export function AffiliateStoreAdminView() {
       {tab !== "categories" ? (
         <SectionCard
           title={
-            tab === "pending"
+            tab === "live"
               ? isAr
-                ? "صندوق مراجعتك (نمط 0097)"
-                : "Your review inbox (the 0097 flow)"
-              : isAr
-                ? "كل المنتجات"
-                : "All products"
+                ? "المنتجات المنشورة (ظاهرة للزوار)"
+                : "Live products (visitor-visible)"
+              : tab === "hidden"
+                ? isAr
+                  ? "المنتجات المخفية"
+                  : "Hidden products"
+                : isAr
+                  ? "كل المنتجات"
+                  : "All products"
           }
         >
           {visible.length === 0 ? (
             <EmptyState
               text={
-                tab === "pending"
+                tab === "hidden"
                   ? isAr
-                    ? "لا منتجات بانتظار المراجعة — الدفعة التأسيسية تُزرع بميجريشن 0116"
-                    : "Nothing pending — the founding batch is seeded by migration 0116"
+                    ? "لا منتجات مخفية"
+                    : "Nothing hidden"
                   : isAr
-                    ? "لا منتجات"
-                    : "No products"
+                    ? "لا منتجات بعد — أنشئ أول منتج وسينشر تلقائيًا"
+                    : "No products yet — create one and it publishes automatically"
               }
             />
           ) : (
             <ul className="divide-y">
               {visible.map((p) => (
-                <li key={p.id} className="flex flex-wrap items-center gap-2 py-3">
+                <li key={p.id} className="flex flex-wrap items-center gap-3 py-3">
+                  {/* 527: the real product image in the admin list too */}
+                  {p.image_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element -- external product image
+                    <img
+                      src={p.image_url}
+                      alt={p.title}
+                      className="size-12 shrink-0 rounded-md border border-[var(--edge)] object-contain"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <span className="flex size-12 shrink-0 items-center justify-center rounded-md border border-dashed border-[var(--edge)] text-[10px] text-muted-foreground">
+                      {isAr ? "بلا صورة" : "no image"}
+                    </span>
+                  )}
                   <div className="min-w-0 flex-1">
                     <Link
                       href={`/admin/affiliate-store/${p.id}`}
@@ -247,19 +276,10 @@ export function AffiliateStoreAdminView() {
                         {p.is_published
                           ? isAr
                             ? "منشور"
-                            : "published"
+                            : "live"
                           : isAr
-                            ? "غير منشور"
-                            : "draft"}
-                      </Badge>
-                      <Badge variant={p.review_status === "reviewed" ? "default" : "outline"}>
-                        {p.review_status === "reviewed"
-                          ? isAr
-                            ? "تمت المراجعة"
-                            : "reviewed"
-                          : isAr
-                            ? "بانتظار المراجعة"
-                            : "pending review"}
+                            ? "مخفي"
+                            : "hidden"}
                       </Badge>
                       {p.category && <span>{p.category.name}</span>}
                       <span className="font-mono">{p.asin ?? "—"}</span>
@@ -269,28 +289,7 @@ export function AffiliateStoreAdminView() {
                     </div>
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    {p.review_status === "pending" && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        disabled={busy === `review:${p.id}`}
-                        onClick={() => void act("review", p.id)}
-                      >
-                        <CheckCircle2 className="size-4" />
-                        {isAr ? "اعتماد المراجعة" : "Mark reviewed"}
-                      </Button>
-                    )}
-                    {p.review_status === "reviewed" && !p.is_published && (
-                      <Button
-                        size="sm"
-                        disabled={busy === `publish:${p.id}`}
-                        onClick={() => void act("publish", p.id)}
-                      >
-                        <ExternalLink className="size-4" />
-                        {isAr ? "نشر" : "Publish"}
-                      </Button>
-                    )}
-                    {p.is_published && (
+                    {p.is_published ? (
                       <Button
                         size="sm"
                         variant="outline"
@@ -298,7 +297,16 @@ export function AffiliateStoreAdminView() {
                         onClick={() => void act("unpublish", p.id)}
                       >
                         <EyeOff className="size-4" />
-                        {isAr ? "إلغاء النشر" : "Unpublish"}
+                        {isAr ? "إخفاء" : "Unpublish"}
+                      </Button>
+                    ) : (
+                      <Button
+                        size="sm"
+                        disabled={busy === `publish:${p.id}`}
+                        onClick={() => void act("publish", p.id)}
+                      >
+                        <UploadCloud className="size-4" />
+                        {isAr ? "إعادة النشر" : "Publish"}
                       </Button>
                     )}
                     <Button
@@ -321,7 +329,7 @@ export function AffiliateStoreAdminView() {
                           href={`/affiliate-store/${p.category.slug}/${p.slug}`}
                           target="_blank"
                         >
-                          <Eye className="size-4" />
+                          <ExternalLink className="size-4" />
                         </Link>
                       </Button>
                     )}
@@ -343,8 +351,8 @@ export function AffiliateStoreAdminView() {
                   <Badge variant={main.is_active ? "default" : "secondary"}>
                     {main.is_active
                       ? isAr
-                        ? "نشطة (موجة 1)"
-                        : "active (wave 1)"
+                        ? "نشطة"
+                        : "active"
                       : isAr
                         ? "معطلة (بانتظار أمر التفعيل)"
                         : "inactive (awaiting activation order)"}

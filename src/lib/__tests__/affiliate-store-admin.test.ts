@@ -1,10 +1,14 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 
 /**
- * STORE-ADMIN 0097 CANARIES (ALKEMOS-STORE-PHASE1 §1.2 — owner order
- * 2026-11-26: «لا تتجاوز مراجعة المالك المطلوبة قبل نشر المنتجات»):
- * the publish action REQUIRES review_status='reviewed' and re-runs every
- * store guard on the current row; nothing bypasses the owner review.
+ * STORE-ADMIN 527 CANARIES (owner order 2026-11-27 «إلغاء نظام الاعتماد
+ * المزدوج»): the dual-approval flow (pending → owner review → publish)
+ * is RETIRED. The publish action re-runs every store guard on the
+ * current row — the guards are the ONLY gate (automated validation:
+ * basics + real image + ASIN; no manual approval step anywhere).
+ *
+ * 527-L1 note: the data layer reads products and categories with
+ * SEPARATE direct queries (no embeds) — the mock serves both tables.
  */
 
 const { mockFrom } = vi.hoisted(() => ({ mockFrom: vi.fn() }));
@@ -18,14 +22,11 @@ vi.mock("@/lib/edge-purge", () => ({
   purgeCloudflareEdgeUrls: vi.fn(async () => ({ attempted: false, ok: false, urls: [] })),
 }));
 
-import {
-  adminPublishAffiliateStoreProduct,
-  adminReviewAffiliateStoreProduct,
-} from "../affiliate-store-admin";
+import { adminPublishAffiliateStoreProduct } from "../affiliate-store-admin";
 
 function chainReturning(selectResult: unknown) {
-  // shape: from(table).update(row).eq(col, val) OR
-  // from(table).select(cols).eq().maybeSingle()
+  // shape: from(table).select(cols).eq().maybeSingle() OR the awaited
+  // bare select (categories) OR from(table).update(row).eq(col, val)
   return {
     select: vi.fn().mockReturnThis(),
     eq: vi.fn().mockReturnThis(),
@@ -36,6 +37,31 @@ function chainReturning(selectResult: unknown) {
     single: vi.fn().mockResolvedValue({ data: selectResult, error: null }),
     then: undefined,
   };
+}
+
+/** Products by id (first from() on the products table per call). */
+const productStore = new Map<string, Record<string, unknown>>();
+
+function primeProduct(row: Record<string, unknown>) {
+  productStore.set(row.id as string, row);
+}
+
+function installMock() {
+  mockFrom.mockImplementation((table: unknown) => {
+    if (table === "affiliate_store_categories") {
+      return chainReturning([]);
+    }
+    if (table === "affiliate_store_products") {
+      const chain = chainReturning(null);
+      // select("*").eq("id", id).maybeSingle() → the primed row
+      chain.eq.mockImplementation((_col: string, val: string) => {
+        chain.maybeSingle.mockResolvedValue({ data: productStore.get(val) ?? null, error: null });
+        return chain;
+      });
+      return chain;
+    }
+    return chainReturning(null);
+  });
 }
 
 function productRow(overrides: Record<string, unknown> = {}) {
@@ -53,52 +79,35 @@ function productRow(overrides: Record<string, unknown> = {}) {
       "most of the posterior-chain volume a full barbell block would program, in a fraction of " +
       "the floor space and budget.",
     brand: null,
-    image_url: null,
+    image_url: "https://m.media-amazon.com/images/I/71dMltueu8L._AC_SL1500_.jpg",
     editorial_rating: 8.5,
     price_usd: null,
     is_featured: false,
     is_published: false,
-    review_status: "pending",
+    review_status: "reviewed",
     updated_at: "2026-11-26T00:00:00Z",
     category: { id: "22222222-2222-4222-8222-222222222222", slug: "kettlebells", name: "Kettlebells", is_active: true },
     ...overrides,
   };
 }
 
-describe("adminPublishAffiliateStoreProduct — the 0097 owner gate", () => {
+describe("adminPublishAffiliateStoreProduct — the 527 automated gate (auto-publish law)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    productStore.clear();
+    installMock();
   });
 
-  it("REFUSES to publish a pending-review product (no owner-review bypass)", async () => {
-    const chain = chainReturning(productRow({ review_status: "pending" }));
-    mockFrom.mockReturnValueOnce(chain);
-    const res = await adminPublishAffiliateStoreProduct("11111111-1111-4111-8111-111111111111");
-    expect(res.ok).toBe(false);
-    if (!res.ok) {
-      expect(res.error).toMatch(/owner review required/i);
-    }
-    expect(chain.update).not.toHaveBeenCalled();
-  });
-
-  it("publishes a reviewed + clean product (update called once)", async () => {
-    const chain = chainReturning(productRow({ review_status: "reviewed" }));
-    // the second from() call is the UPDATE chain
-    const updateChain = chainReturning(null);
-    mockFrom.mockReturnValueOnce(chain).mockReturnValueOnce(updateChain);
+  it("publishes a clean product with NO review_status requirement (0097 retired)", async () => {
+    // 527: even a 'pending' review_status publishes — the dual-approval
+    // flow is retired; the guards are the only gate.
+    primeProduct(productRow({ review_status: "pending" }));
     const res = await adminPublishAffiliateStoreProduct("11111111-1111-4111-8111-111111111111");
     expect(res.ok).toBe(true);
-    expect(mockFrom).toHaveBeenCalled();
   });
 
-  it("REFUSES to publish a reviewed product that fails a store guard (halal hit)", async () => {
-    const chain = chainReturning(
-      productRow({
-        review_status: "reviewed",
-        summary: "perfect after a glass of wine",
-      }),
-    );
-    mockFrom.mockReturnValueOnce(chain);
+  it("REFUSES to publish a product that fails a store guard (halal hit)", async () => {
+    primeProduct(productRow({ summary: "perfect after a glass of wine" }));
     const res = await adminPublishAffiliateStoreProduct("11111111-1111-4111-8111-111111111111");
     expect(res.ok).toBe(false);
     if (!res.ok) {
@@ -107,36 +116,35 @@ describe("adminPublishAffiliateStoreProduct — the 0097 owner gate", () => {
   });
 
   it("REFUSES to publish with a manual price (pre-API law)", async () => {
-    const chain = chainReturning(
-      productRow({ review_status: "reviewed", price_usd: 29.99 }),
-    );
-    mockFrom.mockReturnValueOnce(chain);
+    primeProduct(productRow({ price_usd: 29.99 }));
     const res = await adminPublishAffiliateStoreProduct("11111111-1111-4111-8111-111111111111");
     expect(res.ok).toBe(false);
   });
 
   it("REFUSES to publish a product with a women-model image (law v2 §0.1)", async () => {
-    const chain = chainReturning(
-      productRow({ review_status: "reviewed", image_url: "https://alkemos.com/affiliate-store-products/woman-model.webp" }),
-    );
-    mockFrom.mockReturnValueOnce(chain);
+    primeProduct(productRow({ image_url: "https://alkemos.com/affiliate-store-products/woman-model.webp" }));
     const res = await adminPublishAffiliateStoreProduct("11111111-1111-4111-8111-111111111111");
     expect(res.ok).toBe(false);
   });
-});
 
-describe("adminReviewAffiliateStoreProduct — the review stamp", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
+  it("REFUSES to publish without a real image (527-G2 shelf gate)", async () => {
+    primeProduct(productRow({ image_url: null }));
+    const res = await adminPublishAffiliateStoreProduct("11111111-1111-4111-8111-111111111111");
+    expect(res.ok).toBe(false);
+    if (!res.ok) {
+      expect(res.error).toMatch(/guards rejected/i);
+    }
   });
 
-  it("flips pending → reviewed with the review stamp (the owner action)", async () => {
-    const chain = chainReturning(null);
-    mockFrom.mockReturnValueOnce(chain);
-    const res = await adminReviewAffiliateStoreProduct("11111111-1111-4111-8111-111111111111");
+  it("REFUSES to publish without a valid ASIN (527-G2 shelf gate)", async () => {
+    primeProduct(productRow({ asin: null }));
+    const res = await adminPublishAffiliateStoreProduct("11111111-1111-4111-8111-111111111111");
+    expect(res.ok).toBe(false);
+  });
+
+  it("publishes with the TRUSTED Amazon product-image CDN (527-G1)", async () => {
+    primeProduct(productRow({ image_url: "https://m.media-amazon.com/images/I/71dMltueu8L._AC_SL1500_.jpg" }));
+    const res = await adminPublishAffiliateStoreProduct("11111111-1111-4111-8111-111111111111");
     expect(res.ok).toBe(true);
-    const updateArg = chain.update.mock.calls[0][0] as Record<string, string>;
-    expect(updateArg.review_status).toBe("reviewed");
-    expect(updateArg.last_reviewed_at).toBeTruthy();
   });
 });

@@ -1196,19 +1196,18 @@ export function LandingView({
         featuredPosts={blogCarousels?.featured ?? []}
       />
 
-      {/* ===================== ALKEMOS AFFILIATE STORE (VISIBILITY-PREVIEW 2026-11-26) =====================
-          The store discovery section (owner order «قسم احترافي لمتجر
-          Affiliate Store في الصفحة الرئيسية») — EN ONLY (store law §0:
+      {/* ===================== ALKEMOS AFFILIATE STORE (PHASE 527) =====================
+          The store's homepage ENTRANCE (owner order 2026-11-27 «أعد تصميم
+          قسم المتجر ليبدو كمدخل حقيقي لمتجر منتجات رياضية وتغذية، وليس
+          مجرد قسم اقتراحات داخل موقع تدريبي») — EN ONLY (store law §0:
           the AR home passes nothing and this block is isAr-gated, so
           the Arabic tree carries zero store surfaces).
-          HONEST content: category chips render from the REAL active
-          tree (listable → links per the thin-page law; below the ≥3
-          published floor → muted chips, never dead links); the featured
-          rail renders ONLY published products ([] until the owner's
-          0097 review + publish — no fake cards); the د-2 short
-          disclosure rides near the first recommendation links; the ONE
-          CTA leads to the public /affiliate-store hub. No prices (the
-          Phase-4 API law), no commission hints (the ninth guard). */}
+          HONEST content: REAL published products with their real photos
+          (the 527-G2 shelf gate guarantees image + buy path), category
+          tiles from the REAL active tree, the د-2 disclosure near the
+          first recommendation links, and ONE strong CTA to the store.
+          No invented prices (cards show "See price on Amazon"), no
+          commission hints (the ninth guard). */}
       {!isAr && (
         <section id="store" className="scroll-mt-20 bg-[var(--bg)] px-4 py-10 md:py-20">
           <div className="mx-auto max-w-6xl">
@@ -1218,18 +1217,31 @@ export function LandingView({
                 ALKEMOS AFFILIATE STORE
               </span>
               <h2 className="mt-5 text-3xl font-semibold tracking-tight md:text-4xl">
-                The gear behind the training
+                The store behind the training
               </h2>
               <p className="mx-auto mt-3 max-w-2xl text-base font-normal md:text-lg" style={{ color: PALETTE.textSec }}>
-                Curated fitness and nutrition picks — strength equipment, kitchen tools, wearables, and recovery
-                gear — editorially reviewed by the Alkemos team and linked straight to Amazon.
+                The exact gear our programs and recipes are built around — strength equipment, home-gym
+                machines, kitchen tools, wearables, and recovery gear, editorially reviewed and linked
+                straight to Amazon.
               </p>
             </Reveal>
 
-            {/* Category chips — the real active wave-1 families */}
+            {/* Featured products — REAL cards with REAL photos (527) */}
+            {(storeProducts?.length ?? 0) > 0 && (
+              <Reveal delay={80} className="mt-8">
+                <ShortDisclosureLine className="mx-auto mb-4 max-w-4xl text-center" />
+                <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+                  {storeProducts!.map((product) => (
+                    <AffiliateStoreProductCard key={product.id} product={product} />
+                  ))}
+                </div>
+              </Reveal>
+            )}
+
+            {/* Category tiles — the real active wave-1 families */}
             {(storeCategories?.length ?? 0) > 0 && (
-              <Reveal delay={80}>
-                <ul className="mx-auto mt-8 flex max-w-4xl flex-wrap justify-center gap-3">
+              <Reveal delay={120}>
+                <ul className="mx-auto mt-8 flex max-w-5xl flex-wrap justify-center gap-3">
                   {storeCategories!.map((cat) => (
                     <li key={cat.slug}>
                       {cat.listable ? (
@@ -1240,36 +1252,16 @@ export function LandingView({
                           <AffiliateStoreCategoryIcon iconKey={cat.iconKey} name={cat.name} size={20} />
                           {cat.name}
                         </a>
-                      ) : (
-                        <span
-                          className="flex items-center gap-2 rounded-full border border-[var(--edge)] bg-[var(--card)] px-4 py-2 text-sm opacity-70"
-                          title="Opens with the founding batch — products are in review"
-                        >
-                          <AffiliateStoreCategoryIcon iconKey={cat.iconKey} name={cat.name} size={20} />
-                          {cat.name}
-                        </span>
-                      )}
+                      ) : null}
                     </li>
                   ))}
                 </ul>
               </Reveal>
             )}
 
-            {/* Featured rail — published products only (honest-empty) */}
-            {(storeProducts?.length ?? 0) > 0 && (
-              <Reveal delay={120} className="mt-8">
-                <ShortDisclosureLine className="mx-auto mb-4 max-w-4xl text-center" />
-                <div className="grid gap-4 sm:grid-cols-2">
-                  {storeProducts!.map((product) => (
-                    <AffiliateStoreProductCard key={product.id} product={product} />
-                  ))}
-                </div>
-              </Reveal>
-            )}
-
             <Reveal delay={160} className="mt-10 text-center">
               <a href="/affiliate-store" className="btn-outline px-7 py-3 text-sm font-medium md:text-base">
-                Browse the store
+                Shop the store
                 <span className="chev rtl:rotate-180" aria-hidden="true">›</span>
               </a>
             </Reveal>

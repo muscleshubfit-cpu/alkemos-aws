@@ -34,7 +34,6 @@ type SuggestedProduct = {
   categoryName: string;
   categoryIconKey: string | null;
 };
-
 export function AffiliateStoreSuggestStrip({
   lang,
   surfaceType,
@@ -93,14 +92,13 @@ export function AffiliateStoreSuggestStrip({
               href={`/affiliate-store/${product.categorySlug}/${product.slug}`}
               className="group flex h-full gap-3 rounded-xl border border-[var(--edge)] bg-[var(--card)] p-3 transition-shadow hover:shadow-md"
             >
-              <span className="shrink-0 self-start">
+              <span className="relative size-20 shrink-0 overflow-hidden rounded-lg bg-[var(--muted)]/40">
                 <AffiliateStoreProductImage
                   imageUrl={product.imageUrl}
                   imageAlt={product.title}
-                  categoryIconKey={product.categoryIconKey}
                   categoryName={product.categoryName}
-                  size={48}
-                  className="rounded-lg object-contain"
+                  fill
+                  className="object-contain"
                 />
               </span>
               <span className="min-w-0">

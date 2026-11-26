@@ -35,8 +35,8 @@ import { isValidAsin } from "@/lib/affiliate-store-link";
  *     state · the honest no-price law) and re-renders on EVERY keystroke
  *     (it derives from the same form state — no separate sync).
  *   - OPEN PUBLIC PAGE: the button opens /affiliate-store/{leaf}/{slug}
- *     in a new tab (404 while pending — the page goes live at publish,
- *     the 0097 law; the preview above is the honest pre-publish mirror).
+ *     in a new tab — under 527 auto-publish a SAVED product is LIVE
+ *     (save = publish; the preview mirrors the live card).
  *   - DIRECT-IMAGE VALIDATION (owner order «التأكد من أنه رابط صورة مباشر
  *     وليس رابط صفحة عادية»): the shape guard (page/doc extensions
  *     BLOCK, extension-less WARN) + the "Verify image" probe
@@ -49,9 +49,14 @@ import { isValidAsin } from "@/lib/affiliate-store-link";
  *     (server-side HEAD probe, honest unverified≠dead).
  *   - THE SCREENING CHECKLIST shows for supplements/food categories
  *     (wave 2) — SUPPLEMENTS-FOOD-SCREENING-EN.md §4 as an editor-side
- *     review list; the gates stay (owner review, never bypassed).
- *   - 0097: save keeps the product pending; review → publish happen on
- *     the dashboard (no publish bypass from the editor).
+ *     checklist; the automated gates stay (never bypassed).
+ *   - 527-L2 AUTO-PUBLISH: save = publish. A create goes live the
+ *     moment it saves; an edit of a live product stays live. The
+ *     guards (527-G1 image law + 527-G2 shelf gate: real image + valid
+ *     ASIN + clean content) are the only gate — no review step.
+ *   - 527-G1: the trusted image source is Amazon's product-image CDN
+ *     (m.media-amazon.com — the original product photo); the image
+ *     field's helper copy reflects the amended law.
  */
 
 type CategoryNode = {
@@ -277,11 +282,11 @@ export function AffiliateStoreEditorView({ mode, productId }: { mode: "new" | "e
         toast.success(
           mode === "new"
             ? isAr
-              ? "حُفظ بانتظار مراجعتك (سير 0097) — راجعه ثم انشره من اللوحة"
-              : "Saved pending your review (0097) — review then publish from the dashboard"
+              ? "حُفظ ونُشر فورًا — المنتج ظاهر الآن في أسطح المتجر"
+              : "Saved & published — the product is live on the store now"
             : isAr
-              ? "حُفظ التعديل"
-              : "Saved",
+              ? "حُفظ التعديل وانعكس فورًا على المتجر"
+              : "Saved — the change is live on the store",
         );
         if (mode === "new" && body.id) {
           router.push(`/admin/affiliate-store/${body.id}`);
@@ -357,14 +362,13 @@ export function AffiliateStoreEditorView({ mode, productId }: { mode: "new" | "e
           {isAr ? "البطاقة (السكة/الشبكة)" : "Rail / grid card"}
         </p>
         <div className="mt-1 flex gap-3 rounded-xl border border-[var(--edge)] bg-[var(--bg)] p-3">
-          <span className="shrink-0 self-start">
+          <span className="relative size-20 shrink-0 overflow-hidden rounded-lg bg-[var(--muted)]/40">
             <AffiliateStoreProductImage
               imageUrl={form.image_url || null}
               imageAlt={form.title || "product image"}
-              categoryIconKey={selectedLeaf?.icon_key ?? null}
               categoryName={selectedLeaf?.name ?? "store"}
-              size={64}
-              className="rounded-lg object-contain"
+              fill
+              className="object-contain"
             />
           </span>
           <span className="min-w-0">
@@ -386,15 +390,14 @@ export function AffiliateStoreEditorView({ mode, productId }: { mode: "new" | "e
         </p>
         <div className="mt-1 rounded-xl border border-[var(--edge)] bg-[var(--bg)] p-3">
           <div className="flex items-start gap-3">
-            <span className="shrink-0">
+            <span className="relative size-24 shrink-0 overflow-hidden rounded-xl bg-[var(--muted)]/40">
               <AffiliateStoreProductImage
                 imageUrl={form.image_url || null}
                 imageAlt={form.title || "product image"}
-                categoryIconKey={selectedLeaf?.icon_key ?? null}
                 categoryName={selectedLeaf?.name ?? "store"}
-                size={96}
+                fill
                 eager
-                className="rounded-xl object-contain"
+                className="object-contain"
               />
             </span>
             <div className="min-w-0">
@@ -469,8 +472,8 @@ export function AffiliateStoreEditorView({ mode, productId }: { mode: "new" | "e
           )}
           <p className="mt-1.5 text-[10px] leading-snug text-muted-foreground">
             {isAr
-              ? "المنتجات غير المنشورة تعطي 404 — الصفحة تحيى بنشرها (سير 0097) والمعاينة أعلاه هي مرآتها قبل النشر"
-              : "Unpublished products 404 on the public page — it goes live at publish (0097); the preview above is the honest pre-publish mirror."}
+              ? "الحفظ = نشر فوري (قانون 527) — الصفحة حية بعد الحفظ مباشرة، والمعاينة أعلاه مرآتها"
+              : "Save = publish instantly (law 527) — the page is live right after saving; the preview above mirrors it."}
           </p>
         </div>
       </div>
@@ -491,8 +494,8 @@ export function AffiliateStoreEditorView({ mode, productId }: { mode: "new" | "e
         }
         sub={
           isAr
-            ? "المحتوى إنجليزي حصرًا · الحفظ يبقي المنتج بانتظار مراجعتك (0097) · لا صور أمازون ولا نساء"
-            : "English-only content · saving keeps it pending your review (0097) · no Amazon images, no women"
+            ? "المحتوى إنجليزي حصرًا · الحفظ = نشر فوري (قانون 527) · الصورة الأصلية من CDN أمازون + ASIN إلزاميان · ممنوع النساء والعري"
+            : "English-only content · save = publish instantly (law 527) · original Amazon-CDN image + ASIN required · no women, no immodest imagery"
         }
         actions={
           <Button asChild variant="outline" size="sm">
@@ -595,12 +598,12 @@ export function AffiliateStoreEditorView({ mode, productId }: { mode: "new" | "e
             />
           </label>
           <label className="grid gap-1 text-sm md:col-span-2 xl:col-span-1">
-            <span>image_url {isAr ? "(مملوكة/مرخصة فقط — أو اتركه فارغًا للأيقونة)" : "(owned/licensed only — or leave empty for the carved icon)"}</span>
+            <span>image_url {isAr ? "(إلزامي — صورة المنتج الأصلية من CDN أمازون m.media-amazon.com — قانون 527-G1/G2)" : "(REQUIRED — the original product photo from Amazon's image CDN m.media-amazon.com — law 527-G1/G2)"}</span>
             <div className="flex flex-wrap items-center gap-2">
               <Input
                 value={form.image_url}
                 onChange={(e) => set("image_url", e.target.value)}
-                placeholder="https://alkemos.com/affiliate-store-products/…"
+                placeholder="https://m.media-amazon.com/images/I/…"
                 className="min-w-0 flex-1 font-mono"
               />
               <Button
@@ -721,8 +724,8 @@ export function AffiliateStoreEditorView({ mode, productId }: { mode: "new" | "e
           </ol>
           <p className="mt-2 text-xs text-muted-foreground">
             {isAr
-              ? "البوابات لا تُتجاوز: مراجعتك (0097) تبقى بوابة النشر، والكلمات المحظورة ترفض آليًا."
-              : "No gate bypass: your 0097 review stays the publish gate, and blocklist words refuse automatically."}
+              ? "البوابات الآلية لا تُتجاوز: الصورة الأصلية وASIN إلزاميان (527-G2)، والكلمات المحظورة ترفض الحفظ آليًا."
+              : "No gate bypass: the original image + ASIN are required (527-G2), and blocklist words refuse the save automatically."}
           </p>
         </SectionCard>
       )}

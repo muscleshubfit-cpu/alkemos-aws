@@ -106,6 +106,6 @@ describe("containsStoredAmazonLink — the stored-link rejection (§3.4-1)", () 
 
 describe("the unified Phase-1 CTA label (no prices before API)", () => {
   it("is the single fixed English CTA", () => {
-    expect(AFFILIATE_STORE_BUY_CTA_LABEL).toBe("Check price on Amazon");
+    expect(AFFILIATE_STORE_BUY_CTA_LABEL).toBe("See price on Amazon");
   });
 });

@@ -4,13 +4,39 @@
  * two ratified Phase-1 additions: the absolute image law v2 §0 and the
  * NINTH guard "commissions are internal-only").
  *
+ * PHASE 527 (owner order 2026-11-27 «إعادة بناء تجربة Affiliate Store
+ * تجاريًا») — two guard amendments, both owner-ordered:
+ *
+ *   527-G1 — AMAZON PRODUCT IMAGES ARE THE TRUSTED SOURCE. The owner's
+ *   order «استخدام صور المنتجات الأصلية من مصادر موثوقة ومسموح
+ *   باستخدامها» + «عرض صورة المنتج الفعلية في كل بطاقة وكل صفحة
+ *   تفاصيل»: for an Amazon Associates store the ORIGINAL product photo
+ *   hosted on Amazon's own image CDN (m.media-amazon.com) IS the trusted,
+ *   permitted source — it is the very image the Associates program
+ *   surfaces for the listing we link to. The old clause-(h) blanket ban
+ *   on Amazon image hosts is RETIRED; the CDN host list below now feeds
+ *   the ALLOWLIST check (https + m.media-amazon.com only). All other
+ *   external image hosts stay blocked. The absolute person-free law
+ *   (§0.1/§0.2 — no women, no immodest imagery) is UNTOUCHED and still
+ *   rejects any female-subject/immodest signal in the URL/alt text.
+ *
+ *   527-G2 — THE SHELF GATE: image_url AND a valid ASIN are REQUIRED to
+ *   publish (owner order: «لا تسمح بالنشر إلا بعد اجتياز التحقق الآلي
+ *   من البيانات الأساسية والصورة ورابط الشراء، دون تدخل يدوي» +
+ *   «عدم نشر منتج في واجهة المتجر... إذا كانت صورته الفعلية
+ *   مفقودة»). A product without its real image or buy path cannot
+ *   appear on any public surface — with auto-publish (527-L2) these
+ *   guards are the ONLY publish gate, so they must carry the weight.
+ *
  * SOURCES (each rule cites its binding law):
  *  - IMAGE-POLICY-EN.md v2 §0 (owner order 2026-11-26): absolute ban on
  *    women/girls in ANY store image (incl. product, lifestyle, AI,
  *    background, partial, reflections) + immodest/NSFW content for both
- *    genders; when in doubt → REJECT and use a neutral carved icon.
- *  - IMAGE-POLICY-EN.md §2/§4 + clause (h): no Amazon image domains in
- *    image_url (no stored Amazon images, ever).
+ *    genders; when in doubt → REJECT.
+ *  - IMAGE-POLICY-EN.md §2/§4 + clause (h) AS AMENDED BY 527-G1: the
+ *    ONLY allowed external image host is m.media-amazon.com (the
+ *    original product photo); every other Amazon domain (cart pages,
+ *    dp links, tagged URLs) stays forbidden by the stored-link guard.
  *  - Governing law §3.4-5 + SUPPLEMENTS-FOOD-SCREENING-EN.md §2-1: the
  *    operational halal blocklist (pork/alcohol wording) on description +
  *    ingredients = automatic publish rejection.
@@ -18,16 +44,16 @@
  *    ingredients (gelatin…) are REVIEW FLAGS (owner decision), not bans.
  *  - SUPPLEMENTS-FOOD-SCREENING-EN.md §3: claims discipline — no disease
  *    claims, no FDA-approved-style wording (structure/function only).
- *  - Governing law §3.4-6: NO price before Phase 4 (price_usd must stay
- *    NULL until the Creators API order).
+ *  - Governing law §3.4-6: NO manual price (price_usd must stay NULL
+ *    until a trusted API serves it — 527 keeps the no-invented-prices
+ *    law; cards show "See price on Amazon" instead).
  *  - Owner order 2026-11-26 (ratified §6-c — the NINTH guard): commission
  *    RATES are internal-only — no rate may appear on any public store
  *    surface (COMMISSION-RATES.md is the internal single source).
  *  - Governing law §3.4-8: ≥300 editorial words is an ADVISORY floor —
- *    it warns, it never blocks (the real publish gate is the owner's
- *    0097 review).
+ *    it warns, it never blocks.
  *
- * Every function here is pure + shared by the admin publish API, the
+ * Every function here is pure + shared by the admin save API, the
  * seed validation, and the vitest canaries (store-guards.test.ts).
  */
 
@@ -41,27 +67,44 @@ import { containsStoredAmazonLink, isValidAsin } from "./affiliate-store-link";
 /* ───────────── 1) IMAGE GUARDS (law v2 §0 + clause (h)) ───────────── */
 
 /**
- * Amazon image CDN hosts (clause (h) — Product Advertising Content):
- * storing an IMAGE file is forbidden forever; a stored image_url from
- * these domains means Amazon-hosted content was copied, so the guard
- * rejects it outright.
+ * The ALLOWED external image host (527-G1): Amazon's official product
+ * image CDN — the ORIGINAL product photo of the exact listing the store
+ * links to (the trusted, permitted source for an Associates store).
+ * Everything else external stays rejected (an unknown host can serve
+ * anything — wrong product, people, immodest content).
  */
-const AMAZON_IMAGE_HOSTS = [
-  "m.media-amazon.com",
-  "media-amazon.com",
+const ALLOWED_IMAGE_HOST = "m.media-amazon.com";
+
+/**
+ * Legacy Amazon hosts that are NOT the product-image CDN (media-amazon
+ * mirrors, ssl-images CDNs, the legacy cloudfront) — still blocked: the
+ * trusted surface is exactly m.media-amazon.com, nothing else.
+ */
+const BLOCKED_AMAZON_HOSTS = [
   "images-amazon.com",
   "images-na.ssl-images-amazon.com",
   "ecx.images-amazon.com",
   "images-eu.ssl-images-amazon.com",
   "images-fe.ssl-images-amazon.com",
-  "d1k5w7mbrh6vq5.cloudfront.net", // legacy amazon media distribution
+  "d1k5w7mbrh6vq5.cloudfront.net",
 ] as const;
 
-/** true when the URL points at an Amazon image CDN host (clause (h)). */
-export function isAmazonImageUrl(url: string | null | undefined): boolean {
+/** true when the URL points at the ALLOWED original-product-image CDN (527-G1). */
+export function isTrustedAmazonProductImage(url: string | null | undefined): boolean {
+  if (!url) return false;
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === "https:" && parsed.hostname === ALLOWED_IMAGE_HOST;
+  } catch {
+    return false;
+  }
+}
+
+/** true when the URL points at a NON-CDN Amazon host (still blocked). */
+export function isBlockedAmazonHost(url: string | null | undefined): boolean {
   if (!url) return false;
   const value = url.toLowerCase();
-  return AMAZON_IMAGE_HOSTS.some((host) => value.includes(host));
+  return BLOCKED_AMAZON_HOSTS.some((host) => value.includes(host));
 }
 
 export type AffiliateStoreImageCheck = {
@@ -70,26 +113,47 @@ export type AffiliateStoreImageCheck = {
 };
 
 /**
- * The FULL image gate (IMAGE-POLICY-EN.md v2 §0 + §4) for one image
- * candidate: its URL + its alt/description text. Rejects:
- *  - Amazon image domains (clause (h));
+ * The FULL image gate (IMAGE-POLICY-EN.md v2 §0 + §4, as amended by
+ * 527-G1) for one image candidate: its URL + its alt/description text.
+ * Rejects:
+ *  - any external host EXCEPT m.media-amazon.com (the trusted original
+ *    product photo CDN — 527-G1); legacy Amazon non-CDN hosts stay
+ *    blocked;
  *  - ANY female-subject signal in the alt/URL text (§0.1 absolute ban —
  *    incl. "woman", "women", "girl", "female", "model"…);
  *  - immodest/NSFW signals (§0.2 — both genders);
  * When in doubt (any signal present) → REJECT: the fallback is the
- * neutral carved icon, never a maybe-noncompliant photo.
+ * neutral professional placeholder, never a maybe-noncompliant photo.
  */
 export function checkAffiliateStoreImage(
   imageUrl: string | null | undefined,
   imageAlt: string | null | undefined,
 ): AffiliateStoreImageCheck {
   const violations: string[] = [];
-  if (isAmazonImageUrl(imageUrl)) {
-    violations.push("image_url points at an Amazon image domain (clause (h) — Amazon images are never stored)");
+  if (imageUrl) {
+    let hostOk = false;
+    let hostBlocked = false;
+    try {
+      const parsed = new URL(imageUrl);
+      const host = parsed.hostname;
+      hostOk =
+        parsed.protocol === "https:" &&
+        (host === ALLOWED_IMAGE_HOST || host === "alkemos.com" || host.endsWith(".alkemos.com"));
+      hostBlocked =
+        BLOCKED_AMAZON_HOSTS.some((h) => host.includes(h)) ||
+        (host.endsWith("amazon.com") || host.endsWith("amazon.es") || host.endsWith("amazon.de"));
+    } catch {
+      hostBlocked = true;
+    }
+    if (!hostOk && hostBlocked) {
+      violations.push("image_url points at a blocked Amazon host — only the original product-image CDN m.media-amazon.com is allowed (527-G1)");
+    } else if (!hostOk) {
+      violations.push("image_url host is not a trusted source — only https://m.media-amazon.com product images (or alkemos.com self-hosted assets) are allowed (527-G1)");
+    }
   }
   const text = `${imageUrl ?? ""} ${imageAlt ?? ""}`;
   if (hasFemaleSubjectSignal(text)) {
-    violations.push("image text carries a female-subject signal (IMAGE-POLICY v2 §0.1 — absolute ban; use a neutral carved icon)");
+    violations.push("image text carries a female-subject signal (IMAGE-POLICY v2 §0.1 — absolute ban; pick a product-only photo)");
   }
   if (hasImmodestSignal(text)) {
     violations.push("image text carries an immodest signal (IMAGE-POLICY v2 §0.2 — immodest imagery is banned for both genders)");
@@ -375,6 +439,25 @@ export function runAffiliateStoreProductGuards(
     ["content", product.content],
     ["image_url", product.image_url],
   ];
+  // 527-G2 — THE SHELF GATE: no real image, no valid buy path → no
+  // publish. These are BLOCKING findings (the auto-publish law 527-L2
+  // means these guards are the only gate the product passes through).
+  if (!product.image_url || product.image_url.trim() === "") {
+    findings.push({
+      rule: "shelf-image-required",
+      severity: "block",
+      message:
+        "image_url is required — a product without its real image never appears on a public store surface (527-G2: «عدم نشر منتج... إذا كانت صورته الفعلية مفقودة»)",
+    });
+  }
+  if (!isValidAsin(product.asin)) {
+    findings.push({
+      rule: "shelf-buy-link-required",
+      severity: "block",
+      message:
+        "a valid ASIN is required — the product needs its real Amazon purchase path before it can publish (527-G2)",
+    });
+  }
   for (const [field, value] of fields) {
     if (value) {
       if (containsStoredAmazonLink(value)) {

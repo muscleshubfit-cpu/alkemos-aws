@@ -110,7 +110,8 @@ export function containsStoredAmazonLink(text: string | null | undefined): boole
 }
 
 /**
- * Canonical CTA label (the audit's Phase-1 law: ONE unified English CTA
- * while no API prices exist — no per-product price claims anywhere).
+ * Canonical CTA label (527: the owner's wording — when no trusted API
+ * price exists the button says what it does, never an invented price:
+ * «إذا لم يتوفر سعر موثوق، اعرض See price on Amazon»).
  */
-export const AFFILIATE_STORE_BUY_CTA_LABEL = "Check price on Amazon";
+export const AFFILIATE_STORE_BUY_CTA_LABEL = "See price on Amazon";

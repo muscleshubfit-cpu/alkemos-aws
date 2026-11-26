@@ -6,7 +6,6 @@ import {
   adminAffiliateStoreStats,
   adminListAffiliateStoreProducts,
   adminPublishAffiliateStoreProduct,
-  adminReviewAffiliateStoreProduct,
   adminSetAffiliateStoreCategoryActive,
   adminSetAffiliateStoreFeatured,
   adminUnpublishAffiliateStoreProduct,
@@ -35,12 +34,15 @@ import {
  * products) were all present and healthy. The fix is the route itself
  * — never a hidden error mask: a 401/500 still surfaces honestly.
  *
- * LAWS (unchanged from the Phase-1 design):
+ * LAWS:
  *  - requireAdmin BEFORE any data-layer call (the 0105 channel law;
  *    the service-role client below it is the second lock).
- *  - The 0097 owner-review flow stays honest: review flips
- *    pending→reviewed; publish REQUIRES reviewed and re-runs every
- *    store guard server-side — no bypass, nothing auto-publishes.
+ *  - 527-L2 AUTO-PUBLISH: the 0097 dual-approval flow (review → publish)
+ *    is RETIRED by the owner's order — products publish the moment they
+ *    save. The action set narrows to: publish (republish) · unpublish ·
+ *    feature {featured} · category-activate {active}. The store guards
+ *    (image + ASIN + content laws) remain the only gate, enforced in
+ *    the data layer on every save.
  *  - Category activation stays an OWNER decision (waves 2/3 remain
  *    inactive until the owner's activation order).
  *  - System separation untouched: this route and its data layer never
@@ -87,9 +89,6 @@ export async function POST(request: NextRequest) {
 
   let res: AffiliateStoreActionResult;
   switch (action) {
-    case "review":
-      res = await adminReviewAffiliateStoreProduct(id);
-      break;
     case "publish":
       res = await adminPublishAffiliateStoreProduct(id);
       break;

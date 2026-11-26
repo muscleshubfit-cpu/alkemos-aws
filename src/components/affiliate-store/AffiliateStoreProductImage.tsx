@@ -1,71 +1,86 @@
 "use client";
 
 import { useState } from "react";
-import { ThemeImg } from "@/components/ThemeImg";
 
 /**
- * STORE PRODUCT IMAGE — the SINGLE rendering path for a store product's
- * visual (VISIBILITY-PREVIEW 2026-11-26 — owner order «توفير صورة بديلة
- * احترافية عند غياب الصورة أو فشل تحميلها»):
+ * STORE PRODUCT IMAGE (PHASE 527) — the SINGLE rendering path for a
+ * store product's visual on every public surface:
  *
- *   1. image_url set → the owned/licensed <img> (guard-approved at write
- *      time — IMAGE-POLICY-EN.md v2);
- *   2. load FAILURE (404/timeout/broken) → falls back IN PLACE to the
- *      category's CARVED ICON (ص-1) — never a broken-image glyph, never
- *      an empty box on a public store surface;
- *   3. no image_url at all → the carved icon (the launch default).
+ *   1. image_url set → the ORIGINAL product photo (527-G1: the trusted
+ *      source is Amazon's product-image CDN, m.media-amazon.com — the
+ *      exact photo of the listing the card links to);
+ *   2. load FAILURE (404/timeout/broken) → the NEUTRAL PROFESSIONAL
+ *      PLACEHOLDER in place — a branded "image unavailable" block that
+ *      is NEVER presented as the product's photo (owner order:
+ *      «توفير صورة بديلة احترافية عند تعذر تحميل الصورة، مع عدم
+ *      تقديمها باعتبارها صورة المنتج»);
+ *   3. no image_url at all → the same placeholder (this should never
+ *      reach a public surface — the 527-G2 shelf gate blocks products
+ *      without an image from publishing — the placeholder is the last
+ *      line of defense).
  *
- * The carved icon pair (light+dark) is person-free by construction, so
- * the fallback keeps every surface compliant with the absolute image
- * law even when an external owned URL dies.
+ * The person-free law (IMAGE-POLICY v2 §0) is enforced at WRITE time by
+ * the store guards; this component only renders what passed the gate.
  */
-
-const ICON_FALLBACK = "dumbbell";
 
 export function AffiliateStoreProductImage({
   imageUrl,
   imageAlt,
-  categoryIconKey,
   categoryName,
-  size = 64,
+  size,
   className = "",
   eager = false,
+  fill = false,
 }: {
   imageUrl: string | null | undefined;
   imageAlt: string;
-  categoryIconKey: string | null;
   categoryName: string;
+  /** Used when `fill` is false (fixed-size renders). */
   size?: number;
   className?: string;
   eager?: boolean;
+  /** Modern layout: fill the parent box (aspect-ratio containers). */
+  fill?: boolean;
 }) {
   const [failed, setFailed] = useState(false);
-  const iconKey = categoryIconKey || ICON_FALLBACK;
+
   if (!imageUrl || failed) {
+    // The professional fallback — clearly labeled as unavailable, never
+    // presented as the product photo (no fake imagery, no icon that
+    // reads as "the product").
     return (
-      <ThemeImg
-        light={`/images/brand/icons/${iconKey}-light.webp`}
-        dark={`/images/brand/icons/${iconKey}-dark.webp`}
-        alt={imageAlt || categoryName}
-        width={size}
-        height={size}
-        eager={eager}
-        className={className}
-      />
+      <span
+        className={`flex items-center justify-center bg-[linear-gradient(135deg,var(--muted)_0%,var(--card)_100%)] ${fill ? "absolute inset-0" : ""} ${className}`}
+        style={fill ? undefined : { width: size ?? 64, height: size ?? 64 }}
+        role="img"
+        aria-label={`${imageAlt} — product image unavailable`}
+        data-store-image-fallback=""
+      >
+        <span className="px-3 py-2 text-center">
+          <span className="block text-[10px] font-semibold uppercase tracking-wider text-[var(--muted-foreground)]">
+            Image unavailable
+          </span>
+          <span className="mt-0.5 block truncate text-[10px] text-[var(--muted-foreground)]">
+            {categoryName}
+          </span>
+        </span>
+      </span>
     );
   }
+
   return (
     /* eslint-disable-next-line @next/next/no-img-element -- external
-       owned/licensed URLs, fixed display size, not a next/image asset */
+       original product photos (Amazon image CDN, 527-G1), fluid display
+       sizes, not a next/image asset */
     <img
       src={imageUrl}
       alt={imageAlt}
-      width={size}
-      height={size}
+      width={fill ? undefined : (size ?? 64)}
+      height={fill ? undefined : (size ?? 64)}
       loading={eager ? "eager" : "lazy"}
       decoding="async"
       onError={() => setFailed(true)}
-      className={className}
+      className={fill ? `absolute inset-0 h-full w-full ${className}` : className}
     />
   );
 }
