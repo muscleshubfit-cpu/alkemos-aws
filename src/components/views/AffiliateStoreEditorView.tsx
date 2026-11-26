@@ -341,7 +341,7 @@ export function AffiliateStoreEditorView({ mode, productId }: { mode: "new" | "e
   const previewPanel = (
     <aside
       data-affiliate-store-preview=""
-      className="order-first space-y-4 lg:sticky lg:top-6 lg:order-none"
+      className="order-first space-y-4 xl:sticky xl:top-6 xl:order-none"
       aria-label={isAr ? "معاينة حية للمنتج" : "Live product preview"}
     >
       <div className="rounded-xl border border-[var(--edge)] bg-[var(--card)] p-4">
@@ -504,14 +504,21 @@ export function AffiliateStoreEditorView({ mode, productId }: { mode: "new" | "e
       />
 
       {/* VISIBILITY-PREVIEW 2026-11-26: two-column shell — the form
-          (min-w-0 guards grid blowout) + the sticky live-preview rail;
-          on mobile the preview rides FIRST (the operator opens an edit
-          and immediately sees the public mirror), on lg the natural DOM
-          order puts the form left and the preview right. */}
-      <div className="mt-6 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
+          (min-w-0 guards grid blowout) + the sticky live-preview rail.
+          SHELL-WIDTH LAW (live-check fix): the admin content area is
+          ~800px, so the rail goes side-by-side only from xl up (at lg
+          the form column collapsed to ~436px and the md:grid-cols-2
+          fields overflowed their cells — the helpers collided); below
+          xl the preview rides FIRST (the operator opens an edit and
+          immediately sees the public mirror) and the fields keep their
+          full-width two-column grid. */}
+      <div className="mt-6 grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
         <div className="min-w-0 space-y-6">
       <SectionCard title={isAr ? "بيانات المنتج" : "Product data"}>
-        <div className="grid gap-4 md:grid-cols-2">
+        {/* xl:grid-cols-1 — single-column fields while the preview rail
+            is side-by-side (the SHELL-WIDTH LAW above); md:grid-cols-2
+            keeps the two-column layout on stacked (below-xl) widths. */}
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-1">
           <label className="grid gap-1 text-sm">
             <span>{isAr ? "الفئة الفرعية (ورقة الرابط)" : "Leaf category (URL segment)"}</span>
             <select
@@ -567,11 +574,11 @@ export function AffiliateStoreEditorView({ mode, productId }: { mode: "new" | "e
             <span>{isAr ? "العلامة التجارية" : "Brand"}</span>
             <Input value={form.brand} onChange={(e) => set("brand", e.target.value)} />
           </label>
-          <label className="grid gap-1 text-sm md:col-span-2">
+          <label className="grid gap-1 text-sm md:col-span-2 xl:col-span-1">
             <span>{isAr ? "العنوان (إنجليزي)" : "Title (EN)"}</span>
             <Input value={form.title} onChange={(e) => set("title", e.target.value)} />
           </label>
-          <label className="grid gap-1 text-sm md:col-span-2">
+          <label className="grid gap-1 text-sm md:col-span-2 xl:col-span-1">
             <span>{isAr ? "الملخص (إنجليزي — يظهر بالبطاقة)" : "Summary (EN — the card text)"}</span>
             <textarea
               className="min-h-20 rounded-md border bg-background px-3 py-2"
@@ -579,7 +586,7 @@ export function AffiliateStoreEditorView({ mode, productId }: { mode: "new" | "e
               onChange={(e) => set("summary", e.target.value)}
             />
           </label>
-          <label className="grid gap-1 text-sm md:col-span-2">
+          <label className="grid gap-1 text-sm md:col-span-2 xl:col-span-1">
             <span>{isAr ? "المحتوى التحريري (إنجليزي فريد — لا نسخ أمازون؛ الأرضية الإرشادية 300 كلمة)" : "Editorial content (unique EN — no Amazon copy; 300-word advisory floor)"}</span>
             <textarea
               className="min-h-64 rounded-md border bg-background px-3 py-2"
@@ -587,7 +594,7 @@ export function AffiliateStoreEditorView({ mode, productId }: { mode: "new" | "e
               onChange={(e) => set("content", e.target.value)}
             />
           </label>
-          <label className="grid gap-1 text-sm md:col-span-2">
+          <label className="grid gap-1 text-sm md:col-span-2 xl:col-span-1">
             <span>image_url {isAr ? "(مملوكة/مرخصة فقط — أو اتركه فارغًا للأيقونة)" : "(owned/licensed only — or leave empty for the carved icon)"}</span>
             <div className="flex flex-wrap items-center gap-2">
               <Input
