@@ -1,0 +1,65 @@
+2026-11-26 13:27:57.996 UTC [9056] LOG:  starting PostgreSQL 16.2 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 10.2.1 20210130 (Red Hat 10.2.1-11), 64-bit
+2026-11-26 13:27:57.996 UTC [9056] LOG:  listening on Unix socket "/home/z/my-project/work/alkemos/:memory:/.s.PGSQL.5432"
+2026-11-26 13:27:57.997 UTC [9059] LOG:  database system was shut down at 2026-11-26 13:27:57 UTC
+2026-11-26 13:27:57.998 UTC [9056] LOG:  database system is ready to accept connections
+2026-11-26 13:27:58.104 UTC [9056] LOG:  received fast shutdown request
+2026-11-26 13:27:58.104 UTC [9056] LOG:  aborting any active transactions
+2026-11-26 13:27:58.105 UTC [9056] LOG:  background worker "logical replication launcher" (PID 9062) exited with exit code 1
+2026-11-26 13:27:58.105 UTC [9057] LOG:  shutting down
+2026-11-26 13:27:58.105 UTC [9057] LOG:  checkpoint starting: shutdown immediate
+2026-11-26 13:27:58.106 UTC [9057] LOG:  checkpoint complete: wrote 3 buffers (0.0%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.001 s, sync=0.001 s, total=0.001 s; sync files=2, longest=0.001 s, average=0.001 s; distance=0 kB, estimate=0 kB; lsn=0/14803F8, redo lsn=0/14803F8
+2026-11-26 13:27:58.108 UTC [9056] LOG:  database system is shut down
+2026-11-26 13:28:12.921 UTC [9101] LOG:  starting PostgreSQL 16.2 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 10.2.1 20210130 (Red Hat 10.2.1-11), 64-bit
+2026-11-26 13:28:12.921 UTC [9101] LOG:  listening on Unix socket "/home/z/my-project/work/alkemos/:memory:/.s.PGSQL.5432"
+2026-11-26 13:28:12.922 UTC [9104] LOG:  database system was shut down at 2026-11-26 13:27:58 UTC
+2026-11-26 13:28:12.924 UTC [9101] LOG:  database system is ready to accept connections
+2026-11-26 13:28:13.035 UTC [9109] ERROR:  role "anon" does not exist
+2026-11-26 13:28:13.035 UTC [9109] STATEMENT:  create policy store_categories_public_read on public.store_categories for select to anon, authenticated using (is_active);
+2026-11-26 13:28:13.039 UTC [9101] LOG:  received fast shutdown request
+2026-11-26 13:28:13.039 UTC [9101] LOG:  aborting any active transactions
+2026-11-26 13:28:13.040 UTC [9101] LOG:  background worker "logical replication launcher" (PID 9107) exited with exit code 1
+2026-11-26 13:28:13.040 UTC [9102] LOG:  shutting down
+2026-11-26 13:28:13.040 UTC [9102] LOG:  checkpoint starting: shutdown immediate
+2026-11-26 13:28:13.041 UTC [9102] LOG:  checkpoint complete: wrote 62 buffers (0.4%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.001 s, sync=0.001 s, total=0.002 s; sync files=50, longest=0.001 s, average=0.000 s; distance=186 kB, estimate=186 kB; lsn=0/14AED60, redo lsn=0/14AED60
+2026-11-26 13:28:13.044 UTC [9101] LOG:  database system is shut down
+2026-11-26 13:28:23.192 UTC [9126] LOG:  starting PostgreSQL 16.2 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 10.2.1 20210130 (Red Hat 10.2.1-11), 64-bit
+2026-11-26 13:28:23.192 UTC [9126] LOG:  listening on Unix socket "/home/z/my-project/work/alkemos/:memory:/.s.PGSQL.5432"
+2026-11-26 13:28:23.193 UTC [9129] LOG:  database system was shut down at 2026-11-26 13:28:13 UTC
+2026-11-26 13:28:23.194 UTC [9126] LOG:  database system is ready to accept connections
+2026-11-26 13:28:23.312 UTC [9134] ERROR:  duplicate key value violates unique constraint "store_products_slug_key"
+2026-11-26 13:28:23.312 UTC [9134] DETAIL:  Key (slug)=(prod-1) already exists.
+2026-11-26 13:28:23.312 UTC [9134] STATEMENT:  insert into public.store_products (category_id, slug, title, summary, content, review_status)
+	  select c.id, 'prod-' || g, 'P ' || g, 's', 'c', 'pending'
+	  from public.store_categories c, generate_series(1, 9) g;
+2026-11-26 13:28:23.315 UTC [9126] LOG:  received fast shutdown request
+2026-11-26 13:28:23.316 UTC [9126] LOG:  aborting any active transactions
+2026-11-26 13:28:23.317 UTC [9126] LOG:  background worker "logical replication launcher" (PID 9132) exited with exit code 1
+2026-11-26 13:28:23.317 UTC [9127] LOG:  shutting down
+2026-11-26 13:28:23.317 UTC [9127] LOG:  checkpoint starting: shutdown immediate
+2026-11-26 13:28:23.318 UTC [9127] LOG:  checkpoint complete: wrote 83 buffers (0.5%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.001 s, sync=0.001 s, total=0.002 s; sync files=77, longest=0.001 s, average=0.001 s; distance=298 kB, estimate=298 kB; lsn=0/14F9708, redo lsn=0/14F9708
+2026-11-26 13:28:23.321 UTC [9126] LOG:  database system is shut down
+2026-11-26 13:28:32.079 UTC [9151] LOG:  starting PostgreSQL 16.2 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 10.2.1 20210130 (Red Hat 10.2.1-11), 64-bit
+2026-11-26 13:28:32.079 UTC [9151] LOG:  listening on Unix socket "/home/z/my-project/work/alkemos/:memory:/.s.PGSQL.5432"
+2026-11-26 13:28:32.080 UTC [9154] LOG:  database system was shut down at 2026-11-26 13:28:23 UTC
+2026-11-26 13:28:32.082 UTC [9151] LOG:  database system is ready to accept connections
+2026-11-26 13:28:32.200 UTC [9159] ERROR:  null value in column "surface_type" of relation "store_click_events" violates not-null constraint
+2026-11-26 13:28:32.200 UTC [9159] DETAIL:  Failing row contains (1, 2bdc665e-c38a-4783-b9bb-7f60da93c08c, null, , 2026-11-26 13:28:32.188972+00, 2026-11-26).
+2026-11-26 13:28:32.200 UTC [9159] STATEMENT:  insert into public.store_click_events (product_id) select id from public.store_products limit 5;
+2026-11-26 13:28:32.205 UTC [9151] LOG:  received fast shutdown request
+2026-11-26 13:28:32.205 UTC [9151] LOG:  aborting any active transactions
+2026-11-26 13:28:32.206 UTC [9151] LOG:  background worker "logical replication launcher" (PID 9157) exited with exit code 1
+2026-11-26 13:28:32.206 UTC [9152] LOG:  shutting down
+2026-11-26 13:28:32.206 UTC [9152] LOG:  checkpoint starting: shutdown immediate
+2026-11-26 13:28:32.208 UTC [9152] LOG:  checkpoint complete: wrote 70 buffers (0.4%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.001 s, sync=0.001 s, total=0.002 s; sync files=75, longest=0.001 s, average=0.000 s; distance=313 kB, estimate=313 kB; lsn=0/1547BC8, redo lsn=0/1547BC8
+2026-11-26 13:28:32.210 UTC [9151] LOG:  database system is shut down
+2026-11-26 13:28:37.118 UTC [9176] LOG:  starting PostgreSQL 16.2 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 10.2.1 20210130 (Red Hat 10.2.1-11), 64-bit
+2026-11-26 13:28:37.118 UTC [9176] LOG:  listening on Unix socket "/home/z/my-project/work/alkemos/:memory:/.s.PGSQL.5432"
+2026-11-26 13:28:37.119 UTC [9179] LOG:  database system was shut down at 2026-11-26 13:28:32 UTC
+2026-11-26 13:28:37.121 UTC [9176] LOG:  database system is ready to accept connections
+2026-11-26 13:28:37.297 UTC [9176] LOG:  received fast shutdown request
+2026-11-26 13:28:37.297 UTC [9176] LOG:  aborting any active transactions
+2026-11-26 13:28:37.298 UTC [9176] LOG:  background worker "logical replication launcher" (PID 9182) exited with exit code 1
+2026-11-26 13:28:37.298 UTC [9177] LOG:  shutting down
+2026-11-26 13:28:37.298 UTC [9177] LOG:  checkpoint starting: shutdown immediate
+2026-11-26 13:28:37.299 UTC [9177] LOG:  checkpoint complete: wrote 110 buffers (0.7%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.002 s, sync=0.001 s, total=0.002 s; sync files=79, longest=0.001 s, average=0.000 s; distance=408 kB, estimate=408 kB; lsn=0/15ADE58, redo lsn=0/15ADE58
+2026-11-26 13:28:37.302 UTC [9176] LOG:  database system is shut down

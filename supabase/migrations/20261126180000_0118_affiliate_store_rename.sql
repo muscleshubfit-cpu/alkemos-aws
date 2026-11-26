@@ -62,6 +62,23 @@
 --
 -- Applied by the repo-owned pipeline (deploy-aws.yml migrate job) /
 -- the re-linked external channel; verified by scripts/db/migration_state.py.
+--
+-- POST-LANDING FIX (same day, before ANY apply — documented exception):
+--   The first push of this file (9cf04fd3) carried two DO blocks using
+--   `FOREACH r IN ARRAY <text[][]>` — invalid pl/pgSQL (FOREACH without
+--   SLICE iterates scalar elements; a text[] loop variable is rejected:
+--   "FOREACH loop variable must not be of an array type" — measured on
+--   db-migrate validate, run 45827844400). The file was NEVER applied
+--   anywhere: the pipeline's single-transaction apply rolled back fully,
+--   production still served public.store_products (PostgREST hint in
+--   the state-audit evidence, run 45827844567) and the ledger recorded
+--   nothing. The owner's own law bans editing migrations ALREADY
+--   APPLIED to production — this one was not; leaving it unfixed would
+--   block the ordered applier forever (every run halts at 0118). The
+--   DO blocks now use the FOR r IN SELECT … FROM (VALUES …) pattern
+--   (no array semantics). The one-push edit-guard RED this causes is
+--   the documented, owner-visible cost — recorded in the rename report
+--   §5.1 and the worklog.
 -- ============================================================================
 
 -- ============================================================
@@ -103,27 +120,28 @@ alter sequence if exists public.store_click_events_id_seq
 -- ============================================================
 do $$
 declare
-  renames text[][] := array[
-    ['affiliate_store_categories',  'store_categories_public_read',    'affiliate_store_categories_public_read'],
-    ['affiliate_store_categories',  'store_categories_admin_insert',   'affiliate_store_categories_admin_insert'],
-    ['affiliate_store_categories',  'store_categories_admin_update',   'affiliate_store_categories_admin_update'],
-    ['affiliate_store_products',    'store_products_public_read',      'affiliate_store_products_public_read'],
-    ['affiliate_store_products',    'store_products_admin_insert',     'affiliate_store_products_admin_insert'],
-    ['affiliate_store_products',    'store_products_admin_update',     'affiliate_store_products_admin_update'],
-    ['affiliate_store_product_links','store_product_links_public_read','affiliate_store_product_links_public_read'],
-    ['affiliate_store_product_links','store_product_links_admin_insert','affiliate_store_product_links_admin_insert'],
-    ['affiliate_store_product_links','store_product_links_admin_delete','affiliate_store_product_links_admin_delete']
-  ];
-  r text[];
+  r record;
 begin
-  foreach r in array renames loop
+  for r in
+    select * from (values
+      ('affiliate_store_categories',   'store_categories_public_read',     'affiliate_store_categories_public_read'),
+      ('affiliate_store_categories',   'store_categories_admin_insert',    'affiliate_store_categories_admin_insert'),
+      ('affiliate_store_categories',   'store_categories_admin_update',    'affiliate_store_categories_admin_update'),
+      ('affiliate_store_products',     'store_products_public_read',       'affiliate_store_products_public_read'),
+      ('affiliate_store_products',     'store_products_admin_insert',      'affiliate_store_products_admin_insert'),
+      ('affiliate_store_products',     'store_products_admin_update',      'affiliate_store_products_admin_update'),
+      ('affiliate_store_product_links','store_product_links_public_read',  'affiliate_store_product_links_public_read'),
+      ('affiliate_store_product_links','store_product_links_admin_insert', 'affiliate_store_product_links_admin_insert'),
+      ('affiliate_store_product_links','store_product_links_admin_delete', 'affiliate_store_product_links_admin_delete')
+    ) as t(tbl, old_name, new_name)
+  loop
     if exists (
       select 1 from pg_policy p
       join pg_class c on c.oid = p.polrelid
       join pg_namespace n on n.oid = c.relnamespace
-      where n.nspname = 'public' and c.relname = r[1] and p.polname = r[2]
+      where n.nspname = 'public' and c.relname = r.tbl and p.polname = r.old_name
     ) then
-      execute format('alter policy %I on public.%I rename to %I', r[2], r[1], r[3]);
+      execute format('alter policy %I on public.%I rename to %I', r.old_name, r.tbl, r.new_name);
     end if;
   end loop;
 end $$;
@@ -135,39 +153,40 @@ end $$;
 -- ============================================================
 do $$
 declare
-  renames text[][] := array[
-    -- primary keys
-    ['affiliate_store_categories',    'store_categories_pkey',    'affiliate_store_categories_pkey'],
-    ['affiliate_store_products',      'store_products_pkey',      'affiliate_store_products_pkey'],
-    ['affiliate_store_product_links', 'store_product_links_pkey', 'affiliate_store_product_links_pkey'],
-    ['affiliate_store_click_events',  'store_click_events_pkey',  'affiliate_store_click_events_pkey'],
-    -- unique constraints (column-level UNIQUE)
-    ['affiliate_store_categories',    'store_categories_slug_key', 'affiliate_store_categories_slug_key'],
-    ['affiliate_store_products',      'store_products_slug_key',   'affiliate_store_products_slug_key'],
-    ['affiliate_store_product_links', 'store_product_links_product_id_surface_type_surface_key_key',
-                                     'affiliate_store_product_links_product_id_surface_type_surface_key_key'],
-    -- foreign keys
-    ['affiliate_store_categories',    'store_categories_parent_id_fkey',    'affiliate_store_categories_parent_id_fkey'],
-    ['affiliate_store_products',      'store_products_category_id_fkey',     'affiliate_store_products_category_id_fkey'],
-    ['affiliate_store_product_links', 'store_product_links_product_id_fkey','affiliate_store_product_links_product_id_fkey'],
-    ['affiliate_store_click_events',  'store_click_events_product_id_fkey',  'affiliate_store_click_events_product_id_fkey'],
-    -- checks
-    ['affiliate_store_products',      'store_products_asin_check',             'affiliate_store_products_asin_check'],
-    ['affiliate_store_products',      'store_products_editorial_rating_check', 'affiliate_store_products_editorial_rating_check'],
-    ['affiliate_store_products',      'store_products_review_status_check',    'affiliate_store_products_review_status_check'],
-    ['affiliate_store_product_links', 'store_product_links_surface_type_check','affiliate_store_product_links_surface_type_check'],
-    ['affiliate_store_click_events',  'store_click_events_surface_type_check', 'affiliate_store_click_events_surface_type_check']
-  ];
-  r text[];
+  r record;
 begin
-  foreach r in array renames loop
+  for r in
+    select * from (values
+      -- primary keys
+      ('affiliate_store_categories',    'store_categories_pkey',    'affiliate_store_categories_pkey'),
+      ('affiliate_store_products',      'store_products_pkey',      'affiliate_store_products_pkey'),
+      ('affiliate_store_product_links', 'store_product_links_pkey', 'affiliate_store_product_links_pkey'),
+      ('affiliate_store_click_events',  'store_click_events_pkey',  'affiliate_store_click_events_pkey'),
+      -- unique constraints (column-level UNIQUE)
+      ('affiliate_store_categories',    'store_categories_slug_key', 'affiliate_store_categories_slug_key'),
+      ('affiliate_store_products',      'store_products_slug_key',   'affiliate_store_products_slug_key'),
+      ('affiliate_store_product_links', 'store_product_links_product_id_surface_type_surface_key_key',
+                                       'affiliate_store_product_links_product_id_surface_type_surface_key_key'),
+      -- foreign keys
+      ('affiliate_store_categories',    'store_categories_parent_id_fkey',    'affiliate_store_categories_parent_id_fkey'),
+      ('affiliate_store_products',      'store_products_category_id_fkey',     'affiliate_store_products_category_id_fkey'),
+      ('affiliate_store_product_links', 'store_product_links_product_id_fkey','affiliate_store_product_links_product_id_fkey'),
+      ('affiliate_store_click_events',  'store_click_events_product_id_fkey',  'affiliate_store_click_events_product_id_fkey'),
+      -- checks
+      ('affiliate_store_products',      'store_products_asin_check',             'affiliate_store_products_asin_check'),
+      ('affiliate_store_products',      'store_products_editorial_rating_check', 'affiliate_store_products_editorial_rating_check'),
+      ('affiliate_store_products',      'store_products_review_status_check',    'affiliate_store_products_review_status_check'),
+      ('affiliate_store_product_links', 'store_product_links_surface_type_check','affiliate_store_product_links_surface_type_check'),
+      ('affiliate_store_click_events',  'store_click_events_surface_type_check', 'affiliate_store_click_events_surface_type_check')
+    ) as t(tbl, old_name, new_name)
+  loop
     if exists (
       select 1 from pg_constraint k
       join pg_class c on c.oid = k.conrelid
       join pg_namespace n on n.oid = c.relnamespace
-      where n.nspname = 'public' and c.relname = r[1] and k.conname = r[2]
+      where n.nspname = 'public' and c.relname = r.tbl and k.conname = r.old_name
     ) then
-      execute format('alter table public.%I rename constraint %I to %I', r[1], r[2], r[3]);
+      execute format('alter table public.%I rename constraint %I to %I', r.tbl, r.old_name, r.new_name);
     end if;
   end loop;
 end $$;
