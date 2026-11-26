@@ -200,6 +200,33 @@ for f in files:
                     mig_tables[t].discard(old)
                 mig_tables[t].add(new)
                 note_col_origin(t, new, f.name)
+        # alter rename TABLE (0118 — the affiliate_store family rename,
+        # owner order 2026-11-26): the Phase-106 column-rename law lifted
+        # to the TABLE level — a later migration may legitimately RENAME
+        # a whole table, and the FINAL name is what types.ts and live
+        # production carry. The rename moves the column set, the RLS
+        # flag, the first-defined order entry and the column-origin
+        # tracking to the NEW name; the OLD name leaves the expected set
+        # entirely (else it would report "missing" forever while the new
+        # name reports "phantom"). Must NOT match `rename constraint X
+        # to Y` (the word "constraint" sits between) — the regex demands
+        # RENAME TO directly after the table name.
+        m = re.match(
+            r"(?i)alter\s+table\s+(?:if\s+exists\s+)?(?:only\s+)?"
+            r"(?:public\.)?([\w.\"']+)\s+rename\s+to\s+([\w.\"']+)",
+            active)
+        if m:
+            old_t, new_t = norm(m.group(1)), norm(m.group(2))
+            if old_t in mig_tables:
+                mig_tables[new_t] = mig_tables.pop(old_t)
+                if old_t in rls_tables:
+                    rls_tables.discard(old_t)
+                    rls_tables.add(new_t)
+                if old_t in mig_order:
+                    mig_order[new_t] = mig_order.pop(old_t)
+                for key in list(col_origin.keys()):
+                    if key[0] == old_t:
+                        col_origin[(new_t, key[1])] = col_origin.pop(key)
         # Phase 191: a BARE `ALTER TABLE <name>` line (nothing after the
         # table name — the clause continues on the next line) opens the
         # join window consumed at the top of the next iteration.

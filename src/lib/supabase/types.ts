@@ -2501,8 +2501,8 @@ export type Database = {
       // product store family (System 2, EN-only; governing law §3.1 + the
       // three ratified amendments: parent_id tree · leaf-URL · internal-only
       // commissions). NO affiliate_url column by design: purchase links are
-      // built from asin + the env tag at render time (src/lib/store-link.ts).
-      store_categories: {
+      // built from asin + the env tag at render time (src/lib/affiliate-store-link.ts).
+      affiliate_store_categories: {
         Row: {
           id: string;
           slug: string;
@@ -2539,10 +2539,10 @@ export type Database = {
           updated_at?: string;
         };
         Relationships: [
-          { foreignKeyName: "store_categories_parent_id_fkey"; columns: ["parent_id"]; isOneToOne: false; referencedRelation: "store_categories"; referencedColumns: ["id"] },
+          { foreignKeyName: "affiliate_store_categories_parent_id_fkey"; columns: ["parent_id"]; isOneToOne: false; referencedRelation: "affiliate_store_categories"; referencedColumns: ["id"] },
         ];
       };
-      store_products: {
+      affiliate_store_products: {
         Row: {
           id: string;
           category_id: string;
@@ -2609,10 +2609,10 @@ export type Database = {
           updated_at?: string;
         };
         Relationships: [
-          { foreignKeyName: "store_products_category_id_fkey"; columns: ["category_id"]; isOneToOne: false; referencedRelation: "store_categories"; referencedColumns: ["id"] },
+          { foreignKeyName: "affiliate_store_products_category_id_fkey"; columns: ["category_id"]; isOneToOne: false; referencedRelation: "affiliate_store_categories"; referencedColumns: ["id"] },
         ];
       };
-      store_product_links: {
+      affiliate_store_product_links: {
         Row: {
           id: string;
           product_id: string;
@@ -2637,10 +2637,10 @@ export type Database = {
           created_at?: string;
         };
         Relationships: [
-          { foreignKeyName: "store_product_links_product_id_fkey"; columns: ["product_id"]; isOneToOne: false; referencedRelation: "store_products"; referencedColumns: ["id"] },
+          { foreignKeyName: "affiliate_store_product_links_product_id_fkey"; columns: ["product_id"]; isOneToOne: false; referencedRelation: "affiliate_store_products"; referencedColumns: ["id"] },
         ];
       };
-      store_click_events: {
+      affiliate_store_click_events: {
         Row: {
           id: number;
           product_id: string;
@@ -2664,7 +2664,7 @@ export type Database = {
           day?: string;
         };
         Relationships: [
-          { foreignKeyName: "store_click_events_product_id_fkey"; columns: ["product_id"]; isOneToOne: false; referencedRelation: "store_products"; referencedColumns: ["id"] },
+          { foreignKeyName: "affiliate_store_click_events_product_id_fkey"; columns: ["product_id"]; isOneToOne: false; referencedRelation: "affiliate_store_products"; referencedColumns: ["id"] },
         ];
       };
     };
@@ -2959,7 +2959,7 @@ export type RecipeIngredient = Database["public"]["Tables"]["recipe_ingredients"
 export type NutrientReference = Database["public"]["Tables"]["nutrient_reference"]["Row"];
 export type RecipeGenerationQueueItem = Database["public"]["Tables"]["recipe_generation_queue"]["Row"];
 export type RecipeFavorite = Database["public"]["Tables"]["recipe_favorites"]["Row"];
-export type StoreCategory = Database["public"]["Tables"]["store_categories"]["Row"];
-export type StoreProduct = Database["public"]["Tables"]["store_products"]["Row"];
-export type StoreProductLink = Database["public"]["Tables"]["store_product_links"]["Row"];
-export type StoreClickEvent = Database["public"]["Tables"]["store_click_events"]["Row"];
+export type AffiliateStoreCategory = Database["public"]["Tables"]["affiliate_store_categories"]["Row"];
+export type AffiliateStoreProduct = Database["public"]["Tables"]["affiliate_store_products"]["Row"];
+export type AffiliateStoreProductLink = Database["public"]["Tables"]["affiliate_store_product_links"]["Row"];
+export type AffiliateStoreClickEvent = Database["public"]["Tables"]["affiliate_store_click_events"]["Row"];

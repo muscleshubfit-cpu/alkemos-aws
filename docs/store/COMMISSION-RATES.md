@@ -1,4 +1,4 @@
-# جدول نسب العمولات الرسمي الحالي — Amazon Associates US (متجر Alkemos Product Store)
+# جدول نسب العمولات الرسمي الحالي — Amazon Associates US (متجر Alkemos Affiliate Store)
 
 > **الحالة:** **موثقة — داخلي حصرًا (قانون العرض):** أمر المالك (2026-11-26): الجدول وأي نسب فيه **لا تُعرض للزوار** في صفحات المتجر أو بطاقات المنتجات أو أي محتوى عام، **ولا تُستخدم كميزة تسويقية** — تبقى متاحة في وثائق الإدارة والتقارير الداخلية لاتخاذ قرارات اختيار المنتجات وترتيب الأولويات فقط (حارس مقترح بالمرحلة 1 — `docs/store/PHASE-1-SCOPE.md` §6-ج). الجدول أدناه **منقول حرفيًا** من الصفحة الرسمية (لا يُعدل ولا يُلخص ولا تُفترض نسب غير موجودة به).
 > **المصدر الرسمي (تمت قراءته حيًا):** «Associates Program Standard Commission Income Statement» — `affiliate-program.amazon.com/help/node/topic/GRXPHT8U84RAYDXZ` (بيان العمولات المرجعي المربوط بصفحة Program Policies — `affiliate-program.amazon.com/help/operating/policies` — المحدثة **2026-04-14**؛ الاتفاقية المرجعية محدثة **2025-10-15**).

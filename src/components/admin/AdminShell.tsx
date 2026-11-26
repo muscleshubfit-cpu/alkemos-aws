@@ -138,10 +138,10 @@ const SECTIONS: AdminNavSection[] = [
     // product store (System 2 — EN-only, Amazon Associates US): the
     // 0097 review inbox (pending → owner review → publish), the product
     // editor, and the category/wave activation decisions.
-    ar: "المتجر",
-    en: "Store",
+    ar: "متجر منتجات الأفلييت",
+    en: "Affiliate Store",
     items: [
-      { href: "/admin/store", emoji: "🏪", ar: "متجر المنتجات", en: "Product store", exact: true },
+      { href: "/admin/affiliate-store", emoji: "🏪", ar: "متجر منتجات الأفلييت", en: "Affiliate Store", exact: true },
     ],
   },
   {

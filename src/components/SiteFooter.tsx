@@ -298,7 +298,7 @@ export function SiteFooter({
             fixed د-3 line; "full affiliate disclosure" links to
             /affiliate-disclosure. */}
         {!pageIsAr &&
-          (pathname.startsWith("/store") || pathname === "/affiliate-disclosure") && (
+          (pathname.startsWith("/affiliate-store") || pathname === "/affiliate-disclosure") && (
             <div className="mt-2 border-t border-[var(--edge)] pt-2 text-center text-[10px] text-[var(--muted-foreground)]">
               As an Amazon Associate I earn from qualifying purchases.{" "}
               <a

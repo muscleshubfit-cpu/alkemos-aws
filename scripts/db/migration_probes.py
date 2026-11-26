@@ -366,40 +366,46 @@ PROBES: list[dict] = [
     # columns, incl. the ratified amendment (a) parent_id tree column.
     # The category seed (wave 1 active / waves 2-3 inactive) is data, not
     # schema; the product batch ships separately as 0116.
+    # 0118 RENAME (owner order 2026-11-26 «توحيد الاسم البرمجي إلى
+    # affiliate_store»): the family's tables now live under their
+    # affiliate_store_* names — the probes verify the migration's EFFECT
+    # (the spec columns exist on the renamed family), the same law the
+    # 0083-rollback pattern set: the newest migration owns the
+    # observable's final name.
     {
         "file": "20261126120000_0115_store_foundation.sql",
         "label": "0115 STORE-FOUNDATION",
         "strength": "strong",
         "checks": [
-            {"type": "swagger_table", "table": "store_categories"},
-            {"type": "swagger_table", "table": "store_products"},
-            {"type": "swagger_table", "table": "store_product_links"},
-            {"type": "swagger_table", "table": "store_click_events"},
-            {"type": "swagger_column", "table": "store_categories",
+            {"type": "swagger_table", "table": "affiliate_store_categories"},
+            {"type": "swagger_table", "table": "affiliate_store_products"},
+            {"type": "swagger_table", "table": "affiliate_store_product_links"},
+            {"type": "swagger_table", "table": "affiliate_store_click_events"},
+            {"type": "swagger_column", "table": "affiliate_store_categories",
              "column": "parent_id"},
-            {"type": "swagger_column", "table": "store_categories",
+            {"type": "swagger_column", "table": "affiliate_store_categories",
              "column": "is_active"},
-            {"type": "swagger_column", "table": "store_categories",
+            {"type": "swagger_column", "table": "affiliate_store_categories",
              "column": "icon_key"},
-            {"type": "swagger_column", "table": "store_products",
+            {"type": "swagger_column", "table": "affiliate_store_products",
              "column": "asin"},
-            {"type": "swagger_column", "table": "store_products",
+            {"type": "swagger_column", "table": "affiliate_store_products",
              "column": "slug"},
-            {"type": "swagger_column", "table": "store_products",
+            {"type": "swagger_column", "table": "affiliate_store_products",
              "column": "review_status"},
-            {"type": "swagger_column", "table": "store_products",
+            {"type": "swagger_column", "table": "affiliate_store_products",
              "column": "is_published"},
-            {"type": "swagger_column", "table": "store_products",
+            {"type": "swagger_column", "table": "affiliate_store_products",
              "column": "editorial_rating"},
-            {"type": "swagger_column", "table": "store_products",
+            {"type": "swagger_column", "table": "affiliate_store_products",
              "column": "price_usd"},
-            {"type": "swagger_column", "table": "store_products",
+            {"type": "swagger_column", "table": "affiliate_store_products",
              "column": "payload"},
-            {"type": "swagger_column", "table": "store_product_links",
+            {"type": "swagger_column", "table": "affiliate_store_product_links",
              "column": "surface_type"},
-            {"type": "swagger_column", "table": "store_click_events",
+            {"type": "swagger_column", "table": "affiliate_store_click_events",
              "column": "surface_key"},
-            {"type": "swagger_column", "table": "store_click_events",
+            {"type": "swagger_column", "table": "affiliate_store_click_events",
              "column": "day"},
         ],
     },
@@ -410,14 +416,16 @@ PROBES: list[dict] = [
     # (filtered by slug — immutable by the slug law, so the probe stays
     # true as the owner reviews/publishes/adds more) must equal 27.
     # Run with the SERVICE key (RLS hides unpublished rows from anon —
-    # by design).
+    # by design). 0118 RENAME (owner order 2026-11-26 «توحيد الاسم
+    # البرمجي إلى affiliate_store»): the row set is queried through the
+    # affiliate_store_products name the family carries since 0118.
     {
         "file": "20261126140000_0116_store_seed_batch_1.sql",
         "label": "0116 STORE-SEED-BATCH-1",
         "strength": "strong",
         "checks": [
             {"type": "rest_rows",
-             "path": ("/rest/v1/store_products?select=slug&slug=in."
+             "path": ("/rest/v1/affiliate_store_products?select=slug&slug=in."
                       "(cap-barbell-300lb-olympic-weight-set,"
                       "bowflex-selecttech-552-adjustable-dumbbells,"
                       "yes4all-solid-cast-iron-kettlebell,"
@@ -454,17 +462,69 @@ PROBES: list[dict] = [
     # founding batch measured 26/27. 0117 re-asserts the store family +
     # batch with the corrected reference. Strong probe: the missing
     # product must now exist. Run with the SERVICE key (RLS hides
-    # unpublished rows from anon — by design).
+    # unpublished rows from anon — by design). 0118 RENAME: the row is
+    # queried through the affiliate_store_products name.
     {
         "file": "20261126150000_0117_store_clean_stack_guard_seed_fix.sql",
         "label": "0117 STORE-CLEAN-STACK-GUARD-SEED-FIX",
         "strength": "strong",
         "checks": [
             {"type": "rest_rows",
-             "path": ("/rest/v1/store_products?select=slug,review_status"
+             "path": ("/rest/v1/affiliate_store_products?select=slug,review_status"
                       "&slug=eq.cap-barbell-300lb-olympic-weight-set"),
              "transform": "count_rows",
              "expect": 1},
+        ],
+    },
+    # 0118 — AFFILIATE-STORE-RENAME (owner order 2026-11-26 «اعتمد
+    # affiliate_store الاسم البرمجي الرسمي والموحد لمتجر منتجات
+    # الأفلييت»): the transitional rename of the store_* family to
+    # affiliate_store_* — tables, indexes, policies, constraints and
+    # the identity sequence, with ZERO data change (0115/0116/0117 are
+    # applied history: never edited, never re-run — this file is the
+    # sanctioned correction channel, the 0107/0117 pattern). Strong
+    # probes: (1) the renamed tables serve through the PostgREST
+    # surface under their NEW names; (2) the founding 27-slug batch
+    # STILL counts 27 THROUGH the new table name — the rename preserved
+    # every row (the same immutable slug-set law as 0116). Service key:
+    # RLS hides unpublished rows from anon by design.
+    {
+        "file": "20261126180000_0118_affiliate_store_rename.sql",
+        "label": "0118 AFFILIATE-STORE-RENAME",
+        "strength": "strong",
+        "checks": [
+            {"type": "swagger_table", "table": "affiliate_store_categories"},
+            {"type": "swagger_table", "table": "affiliate_store_products"},
+            {"type": "swagger_table", "table": "affiliate_store_product_links"},
+            {"type": "swagger_table", "table": "affiliate_store_click_events"},
+            {"type": "rest_rows",
+             "path": ("/rest/v1/affiliate_store_products?select=slug&slug=in."
+                      "(cap-barbell-300lb-olympic-weight-set,"
+                      "bowflex-selecttech-552-adjustable-dumbbells,"
+                      "yes4all-solid-cast-iron-kettlebell,"
+                      "fit-simplify-resistance-loop-bands-set,"
+                      "yosuda-indoor-cycling-bike,"
+                      "sunny-health-sf-rw5515-rowing-machine,"
+                      "flybird-adjustable-weight-bench,"
+                      "walkingpad-a1-pro-foldable-treadmill,"
+                      "triggerpoint-grid-foam-roller-13,"
+                      "gaiam-premium-yoga-mat-6mm,renpho-massage-gun,"
+                      "escali-primo-digital-food-scale,"
+                      "prepnaturals-glass-meal-prep-containers,"
+                      "nutribullet-pro-900-blender,"
+                      "cosori-air-fryer-pro-gen-2-5-8qt,"
+                      "renpho-smart-body-fat-scale,"
+                      "accu-measure-body-fat-caliper,myotape-body-tape-measure,"
+                      "fitbit-charge-6,polar-h10-heart-rate-monitor,"
+                      "soundcore-sport-x10-earbuds,"
+                      "nike-metcon-9-training-shoes,"
+                      "brooks-ghost-16-running-shoes,"
+                      "harbinger-padded-leather-lifting-belt,"
+                      "hydro-flask-wide-mouth-32oz,"
+                      "blenderbottle-classic-v2-shaker,"
+                      "flipbelt-zipper-running-belt)&limit=100"),
+             "transform": "count_rows",
+             "expect": 27},
         ],
     },
 ]# fmt on

@@ -81,7 +81,7 @@ export async function GET() {
     // dynamic truthful lastmod (max real updated_at across PUBLISHED
     // products, the same law as the blog/recipes children; no rows →
     // no date at all). NO Arabic mirrors by store law §0.
-    { loc: `${base}/sitemap-store.xml`, ...(await storeEntryLastmod()) },
+    { loc: `${base}/sitemap-affiliate-store.xml`, ...(await affiliateStoreEntryLastmod()) },
   ];
   return xmlResponse(buildSitemapIndex(entries));
 }
@@ -123,7 +123,7 @@ async function recipesEntryLastmod(): Promise<{ lastModified?: Date }> {
  * store products (the same truthful-date law; empty/absent → NO date).
  * Fail-soft: an unreachable Supabase must never 500 the index.
  */
-async function storeEntryLastmod(): Promise<{ lastModified?: Date }> {
+async function affiliateStoreEntryLastmod(): Promise<{ lastModified?: Date }> {
   try {
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -132,7 +132,7 @@ async function storeEntryLastmod(): Promise<{ lastModified?: Date }> {
       auth: { persistSession: false, autoRefreshToken: false },
     });
     const { data } = await supabase
-      .from("store_products")
+      .from("affiliate_store_products")
       .select("updated_at")
       .eq("is_published", true)
       .order("updated_at", { ascending: false })

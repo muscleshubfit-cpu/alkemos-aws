@@ -19,7 +19,7 @@ export const revalidate = 3600;
 export const metadata: Metadata = {
   title: "Affiliate Disclosure — Alkemos",
   description:
-    "How the Alkemos Product Store earns from qualifying purchases through the Amazon Associates Program.",
+    "How the Alkemos Affiliate Store earns from qualifying purchases through the Amazon Associates Program.",
   alternates: { canonical: "https://alkemos.com/affiliate-disclosure" },
   robots: { index: true, follow: true },
 };
@@ -33,7 +33,7 @@ export default function AffiliateDisclosurePage() {
         <nav className="mb-8 flex items-center gap-2 text-sm text-[var(--muted-foreground)]" aria-label="Breadcrumb">
           <Link href="/" className="hover:opacity-70">Home</Link>
           <span>/</span>
-          <Link href="/store" className="hover:opacity-70">Store</Link>
+          <Link href="/affiliate-store" className="hover:opacity-70">Store</Link>
           <span>/</span>
           <span className="text-[var(--text)]">Affiliate disclosure</span>
         </nav>

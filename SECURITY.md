@@ -59,10 +59,10 @@ Any of the following:
   Actions: Read+write).
 - `EVO_CRON_SECRET` (the EVO followup dispatcher's separate secret).
 - `AMAZON_ASSOCIATES_TAG` (0115 / PHASE-1 2026-11-26) — the Alkemos
-  Product Store's Amazon Associates tracking tag. **NOT a secret**: it
+  Affiliate Store's Amazon Associates tracking tag. **NOT a secret**: it
   appears inside every public purchase link
   (`https://www.amazon.com/dp/{asin}?tag={AMAZON_ASSOCIATES_TAG}`) —
-  built at render time by `src/lib/store-link.ts` (the single tag
+  built at render time by `src/lib/affiliate-store-link.ts` (the single tag
   source; tagged links are never stored in the DB — the store guard
   rejects any `tag=` value in store text columns). It ships in
   `.env.example` EMPTY by §2.1 law; the owner-set value

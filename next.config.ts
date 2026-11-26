@@ -176,6 +176,24 @@ const nextConfig: NextConfig = {
       // ─────────────────────────────────────────────────────────────
       { source: "/blog/calories-to-lose-weight-build-muscle-beginner", destination: "/blog/calculate-daily-calories-fuel-fat-loss-bulking", statusCode: 301 },
       { source: "/ar/blog/muscle-building-home-workout-plan", destination: "/ar/blog/muscle-building-home-workout-guide", statusCode: 301 },
+      // ─────────────────────────────────────────────────────────────
+      // ALKEMOS-STORE-RENAME (owner order 2026-11-26 «اعتمد
+      // affiliate_store الاسم البرمجي الرسمي والموحد لمتجر منتجات
+      // الأفلييت» — migration 0118 + the route/page family rename):
+      // the store's PUBLIC surfaces moved /store → /affiliate-store and
+      // the admin console /admin/store → /admin/affiliate-store. These
+      // 301s keep every published/indexed link and the owner's own
+      // bookmarks working (search-engine equity transfers; the same
+      // 301-for-max-crawler-compatibility law as 178/192). The internal
+      // API paths (/api/store, /api/admin/store) are NOT redirected —
+      // they were never public surfaces and their callers ship renamed
+      // in the same deploy (documented in the rename report).
+      // ─────────────────────────────────────────────────────────────
+      { source: "/store", destination: "/affiliate-store", statusCode: 301 },
+      { source: "/store/:path*", destination: "/affiliate-store/:path*", statusCode: 301 },
+      { source: "/admin/store", destination: "/admin/affiliate-store", statusCode: 301 },
+      { source: "/admin/store/:path*", destination: "/admin/affiliate-store/:path*", statusCode: 301 },
+      { source: "/sitemap-store.xml", destination: "/sitemap-affiliate-store.xml", statusCode: 301 },
     ];
   },
   // COACH PUBLIC PHOTOS (Phase 56): CoachLandingEditor stores the

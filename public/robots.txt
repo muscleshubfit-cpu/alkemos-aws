@@ -74,7 +74,7 @@ Sitemap: https://alkemos.com/sitemap-comparisons.xml
 Sitemap: https://alkemos.com/sitemap-exercises.xml
 Sitemap: https://alkemos.com/sitemap-foods.xml
 Sitemap: https://alkemos.com/sitemap-recipes.xml
-Sitemap: https://alkemos.com/sitemap-store.xml
+Sitemap: https://alkemos.com/sitemap-affiliate-store.xml
 Sitemap: https://alkemos.com/sitemap-blog.xml
 
 # LLM discovery files (llms.txt convention, access-point fix 2026-09-14):

@@ -317,7 +317,7 @@ const REGISTERED_SURFACES: Array<{
   { file: "src/app/(en)/compare/[slug]/page.tsx", component: "ShareButtons", pathExpr: "path={`/compare/${comparison.slug}`}" },
   // ALKEMOS-STORE-PHASE1 (2026-11-26): the store product page's share row —
   // EN-only canonical path (no AR mirror by store law §0).
-  { file: "src/app/(en)/store/[category]/[slug]/page.tsx", component: "ShareButtons", pathExpr: "path={`/store/${product.categorySlug}/${product.slug}`}" },
+  { file: "src/app/(en)/affiliate-store/[category]/[slug]/page.tsx", component: "ShareButtons", pathExpr: "path={`/affiliate-store/${product.categorySlug}/${product.slug}`}" },
   { file: "src/app/(ar)/ar/compare/[slug]/page.tsx", component: "ShareButtons", pathExpr: "path={`/compare/${comparison.slug}`}" },
   // SEO-GROWTH-P4 (2026-11-05): the food-comparison pilot surfaces —
   // canonical paths mirror the family's [slug] pattern.
