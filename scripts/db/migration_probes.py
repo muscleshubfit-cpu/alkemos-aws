@@ -446,6 +446,27 @@ PROBES: list[dict] = [
              "expect": 27},
         ],
     },
+    # 0117 — STORE-CLEAN-STACK-GUARD + SEED-FIX (completes the a1279af1
+    # Phase-1 push): 0116's CAP Barbell row matched
+    # 'barbell-plates-collars' (singular) against 0115's seeded
+    # 'barbells-plates-collars' (plural) — a select-based INSERT with
+    # ON CONFLICT (slug) DO NOTHING inserts ZERO rows silently, so the
+    # founding batch measured 26/27. 0117 re-asserts the store family +
+    # batch with the corrected reference. Strong probe: the missing
+    # product must now exist. Run with the SERVICE key (RLS hides
+    # unpublished rows from anon — by design).
+    {
+        "file": "20261126150000_0117_store_clean_stack_guard_seed_fix.sql",
+        "label": "0117 STORE-CLEAN-STACK-GUARD-SEED-FIX",
+        "strength": "strong",
+        "checks": [
+            {"type": "rest_rows",
+             "path": ("/rest/v1/store_products?select=slug,review_status"
+                      "&slug=eq.cap-barbell-300lb-olympic-weight-set"),
+             "transform": "count_rows",
+             "expect": 1},
+        ],
+    },
 ]# fmt on
 
 # --- named transforms for rest_rows probes ----------------------------------
