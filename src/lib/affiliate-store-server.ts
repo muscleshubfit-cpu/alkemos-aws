@@ -628,3 +628,60 @@ export async function listAffiliateStoreProductsForSurface(
     return [];
   }
 }
+
+/* ───────── INLINE LINKS (the 529 smart-linking render path) ───────── */
+
+/** One applied inline link (the public view model — RLS shows active
+ *  rows of published, shelf-qualified products only). */
+export type AffiliateStoreInlineLinkView = {
+  productId: string;
+  anchorPhrase: string;
+  slug: string;
+  categorySlug: string;
+  title: string;
+};
+
+/**
+ * The EN render path's inline-link reader (529): the active inline links
+ * bound to one content page, stitched with their product's URL identity
+ * (leaf category + slug) for the render-time injection. Fail-soft by
+ * law (empty list, never a throw).
+ */
+export async function listAffiliateStoreInlineLinksForPage(
+  pageType: string,
+  pageSlug: string,
+): Promise<AffiliateStoreInlineLinkView[]> {
+  try {
+    const client = affiliateStorePublicClient();
+    if (!client) return [];
+    // DIRECT link rows (527-L1: no embeds) …
+    const { data: linkRows } = await client
+      .from("affiliate_store_inline_links")
+      .select("product_id,anchor_phrase")
+      .eq("page_type", pageType)
+      .eq("page_slug", pageSlug)
+      .eq("is_active", true)
+      .limit(6);
+    const rows = (linkRows ?? []) as Array<{ product_id: string; anchor_phrase: string }>;
+    if (rows.length === 0) return [];
+    // … then the shelf-qualified cards from the cached snapshot (the
+    // stitch happens in code — the same 527 discipline).
+    const { cards } = await getAffiliateStoreSnapshot();
+    const byId = new Map(cards.map((c) => [c.id, c]));
+    const out: AffiliateStoreInlineLinkView[] = [];
+    for (const row of rows) {
+      const card = byId.get(row.product_id);
+      if (!card) continue; // RLS/snapshot already filtered drafts
+      out.push({
+        productId: card.id,
+        anchorPhrase: row.anchor_phrase,
+        slug: card.slug,
+        categorySlug: card.categorySlug,
+        title: card.title,
+      });
+    }
+    return out;
+  } catch {
+    return [];
+  }
+}

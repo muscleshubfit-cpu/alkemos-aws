@@ -11,6 +11,8 @@ import {
 import { getHowToSchema, getBreadcrumbSchema, getReviewedWebPageSchema, jsonLd } from "@/lib/seo";
 import { CATEGORY_LABELS, EQUIPMENT_LABELS, LEVEL_LABELS } from "@/lib/exercises";
 import ExerciseDetailClient from "./ExerciseDetailClient";
+// 529: the smart-linking rail (equipment-bound products for THIS exercise).
+import { AffiliateStoreSurfaceRail } from "@/components/affiliate-store/AffiliateStoreSurfaceRail";
 
 /**
  * Server component for exercise detail page.
@@ -221,6 +223,9 @@ export default async function Page({
         hubLinks={hubLinks}
         enrichment={exercise ? getExerciseEnrichment(exercise.slug) ?? null : null}
       />
+      {/* 529 — equipment-bound product picks for this exercise (renders
+          nothing until a published product is bound to this surface) */}
+      <AffiliateStoreSurfaceRail surfaceType="equipment_hub" surfaceKey={slug} title="Gear for this exercise" />
     </>
   );
 }

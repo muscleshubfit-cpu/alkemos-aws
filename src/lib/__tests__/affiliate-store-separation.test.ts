@@ -54,6 +54,12 @@ const STORE_CODE = [
   join(REPO_ROOT, "src/lib/affiliate-store-server.ts"),
   join(REPO_ROOT, "src/lib/affiliate-store-admin.ts"),
   join(REPO_ROOT, "src/lib/affiliate-store-link-verify.ts"),
+  // 529 — the automation family joins the separation canary set
+  join(REPO_ROOT, "src/lib/amazon-creators-api.ts"),
+  join(REPO_ROOT, "src/lib/affiliate-store-automation.ts"),
+  join(REPO_ROOT, "src/lib/affiliate-store-fetch.ts"),
+  join(REPO_ROOT, "src/lib/affiliate-store-linking.ts"),
+  join(REPO_ROOT, "src/lib/affiliate-store-analytics.ts"),
   join(REPO_ROOT, "src/app/(en)/affiliate-store"),
   join(REPO_ROOT, "src/app/(en)/affiliate-disclosure"),
   join(REPO_ROOT, "src/components/affiliate-store"),
@@ -62,6 +68,7 @@ const STORE_CODE = [
   join(REPO_ROOT, "src/app/(app)/admin/affiliate-store"),
   join(REPO_ROOT, "src/components/views/AffiliateStoreAdminView.tsx"),
   join(REPO_ROOT, "src/components/views/AffiliateStoreEditorView.tsx"),
+  join(REPO_ROOT, "src/components/views/AffiliateStoreAutomationView.tsx"),
 ];
 
 function walk(dir: string, files: string[] = []): string[] {
@@ -174,6 +181,52 @@ describe("NINTH GUARD, SOURCE LEVEL (§6-c) — public store surfaces show no co
       }
     }
     expect(offenders).toEqual([]);
+  });
+});
+
+describe("AUTOMATION LANGUAGE LAW (529 — §0 extension) — the smart linking is EN-only at every layer", () => {
+  it("insertStoreLinks is a hard no-op for non-English (pinned at the source level)", async () => {
+    const { insertStoreLinks } = await import("../affiliate-store-linking");
+    const ar = "نص عربي يحتوي adjustable dumbbells داخل المقال";
+    const links = [
+      {
+        productId: "p1",
+        anchorPhrase: "adjustable dumbbells",
+        slug: "x",
+        categorySlug: "c",
+        title: "T",
+      },
+    ];
+    const out = insertStoreLinks(ar, "ar", links);
+    expect(out.md).toBe(ar);
+    expect(out.inserted).toHaveLength(0);
+    // and the same phrase under lang 'en' DOES link (the gate is the
+    // language, never the phrase)
+    const en =
+      "Building a home gym takes planning. Adjustable dumbbells are usually the first purchase, " +
+      "because they cover a huge weight range in a small footprint. This guide walks through the " +
+      "essential equipment choices step by step for most lifters.";
+    const outEn = insertStoreLinks(en, "en", links);
+    expect(outEn.inserted).toHaveLength(1);
+  });
+
+  it("the linking scan queries ONLY the EN halves (language='en' filters pinned)", () => {
+    const text = readFileSync(join(REPO_ROOT, "src/lib/affiliate-store-linking.ts"), "utf-8");
+    // blog: EN posts only
+    expect(text).toContain('.eq("language", "en") // THE LANGUAGE LAW: EN posts only');
+    // recipes: EN halves only
+    expect(text).toContain('.eq("language", "en") // EN recipe halves only');
+  });
+
+  it("the EN blog page renders inline links; the AR blog page never imports them", () => {
+    const enBlog = readFileSync(join(REPO_ROOT, "src/app/(en)/blog/[slug]/page.tsx"), "utf-8");
+    expect(enBlog).toContain("insertStoreLinks");
+    const arBlogPath = join(REPO_ROOT, "src/app/(ar)/ar/blog/[slug]/page.tsx");
+    if (existsSync(arBlogPath)) {
+      const arBlog = readFileSync(arBlogPath, "utf-8");
+      expect(arBlog).not.toContain("insertStoreLinks");
+      expect(arBlog).not.toContain("affiliate-store");
+    }
   });
 });
 

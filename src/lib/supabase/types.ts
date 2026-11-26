@@ -2670,9 +2670,235 @@ export type Database = {
           { foreignKeyName: "affiliate_store_click_events_product_id_fkey"; columns: ["product_id"]; isOneToOne: false; referencedRelation: "affiliate_store_products"; referencedColumns: ["id"] },
         ];
       };
+      affiliate_store_automation_settings: {
+        Row: {
+          id: number;
+          is_enabled: boolean;
+          frequency: string;
+          max_new_per_run: number;
+          max_links_per_page: number;
+          auto_link_enabled: boolean;
+          link_score_threshold: number;
+          last_run_at: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          id?: number;
+          is_enabled?: boolean;
+          frequency?: string;
+          max_new_per_run?: number;
+          max_links_per_page?: number;
+          auto_link_enabled?: boolean;
+          link_score_threshold?: number;
+          last_run_at?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          is_enabled?: boolean;
+          frequency?: string;
+          max_new_per_run?: number;
+          max_links_per_page?: number;
+          auto_link_enabled?: boolean;
+          link_score_threshold?: number;
+          last_run_at?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      affiliate_store_fetch_categories: {
+        Row: {
+          category_id: string;
+          keywords: string[];
+          browse_node_id: string | null;
+          target_count: number;
+          is_active: boolean;
+          updated_at: string;
+        };
+        Insert: {
+          category_id: string;
+          keywords: string[];
+          browse_node_id?: string | null;
+          target_count?: number;
+          is_active?: boolean;
+          updated_at?: string;
+        };
+        Update: {
+          keywords?: string[];
+          browse_node_id?: string | null;
+          target_count?: number;
+          is_active?: boolean;
+          updated_at?: string;
+        };
+        Relationships: [
+          { foreignKeyName: "affiliate_store_fetch_categories_category_id_fkey"; columns: ["category_id"]; isOneToOne: true; referencedRelation: "affiliate_store_categories"; referencedColumns: ["id"] },
+        ];
+      };
+      affiliate_store_fetch_runs: {
+        Row: {
+          id: string;
+          trigger: string;
+          status: string;
+          started_at: string;
+          finished_at: string | null;
+          candidates: number;
+          inserted: number;
+          updated: number;
+          unchanged: number;
+          rejected: number;
+          hidden: number;
+          error_summary: string | null;
+          events: Json;
+          settings_snapshot: Json | null;
+        };
+        Insert: {
+          id?: string;
+          trigger?: string;
+          status?: string;
+          started_at?: string;
+          finished_at?: string | null;
+          candidates?: number;
+          inserted?: number;
+          updated?: number;
+          unchanged?: number;
+          rejected?: number;
+          hidden?: number;
+          error_summary?: string | null;
+          events?: Json;
+          settings_snapshot?: Json | null;
+        };
+        Update: {
+          trigger?: string;
+          status?: string;
+          finished_at?: string | null;
+          candidates?: number;
+          inserted?: number;
+          updated?: number;
+          unchanged?: number;
+          rejected?: number;
+          hidden?: number;
+          error_summary?: string | null;
+          events?: Json;
+          settings_snapshot?: Json | null;
+        };
+        Relationships: [];
+      };
+      affiliate_store_link_suggestions: {
+        Row: {
+          id: string;
+          page_type: string;
+          page_slug: string;
+          product_id: string;
+          relevance_score: number;
+          reason: string;
+          anchor_phrase: string | null;
+          status: string;
+          created_at: string;
+          decided_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          page_type: string;
+          page_slug: string;
+          product_id: string;
+          relevance_score: number;
+          reason?: string;
+          anchor_phrase?: string | null;
+          status?: string;
+          created_at?: string;
+          decided_at?: string | null;
+        };
+        Update: {
+          page_type?: string;
+          page_slug?: string;
+          product_id?: string;
+          relevance_score?: number;
+          reason?: string;
+          anchor_phrase?: string | null;
+          status?: string;
+          decided_at?: string | null;
+        };
+        Relationships: [
+          { foreignKeyName: "affiliate_store_link_suggestions_product_id_fkey"; columns: ["product_id"]; isOneToOne: false; referencedRelation: "affiliate_store_products"; referencedColumns: ["id"] },
+        ];
+      };
+      affiliate_store_inline_links: {
+        Row: {
+          id: string;
+          page_type: string;
+          page_slug: string;
+          product_id: string;
+          anchor_phrase: string;
+          is_active: boolean;
+          source: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          page_type: string;
+          page_slug: string;
+          product_id: string;
+          anchor_phrase: string;
+          is_active?: boolean;
+          source?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          page_type?: string;
+          page_slug?: string;
+          product_id?: string;
+          anchor_phrase?: string;
+          is_active?: boolean;
+          source?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          { foreignKeyName: "affiliate_store_inline_links_product_id_fkey"; columns: ["product_id"]; isOneToOne: false; referencedRelation: "affiliate_store_products"; referencedColumns: ["id"] },
+        ];
+      };
+      affiliate_store_impression_events: {
+        Row: {
+          id: number;
+          product_id: string;
+          surface_type: string;
+          surface_key: string;
+          day: string;
+          impressions: number;
+        };
+        Insert: {
+          product_id: string;
+          surface_type: string;
+          surface_key?: string;
+          day?: string;
+          impressions?: number;
+        };
+        Update: {
+          product_id?: string;
+          surface_type?: string;
+          surface_key?: string;
+          day?: string;
+          impressions?: number;
+        };
+        Relationships: [
+          { foreignKeyName: "affiliate_store_impression_events_product_id_fkey"; columns: ["product_id"]; isOneToOne: false; referencedRelation: "affiliate_store_products"; referencedColumns: ["id"] },
+        ];
+      };
     };
     Views: {};
     Functions: {
+      // 0120 (AFFILIATE-STORE-AUTOMATION) — the atomic daily-aggregate
+      // impression increment (beacon endpoint, service-role only).
+      affiliate_store_track_impressions: {
+        Args: {
+          p_product_id: string;
+          p_surface_type: string;
+          p_surface_key: string;
+          p_day: string;
+          p_count?: number;
+        };
+        Returns: undefined;
+      };
       // 0108 (HEALTHY-RECIPES-FOUNDATION) — the atomic pair publish RPCs
       // («ممنوع نشر نسخة منفردة» enforced in the database itself).
       publish_recipe_pair: {
@@ -2966,3 +3192,9 @@ export type AffiliateStoreCategory = Database["public"]["Tables"]["affiliate_sto
 export type AffiliateStoreProduct = Database["public"]["Tables"]["affiliate_store_products"]["Row"];
 export type AffiliateStoreProductLink = Database["public"]["Tables"]["affiliate_store_product_links"]["Row"];
 export type AffiliateStoreClickEvent = Database["public"]["Tables"]["affiliate_store_click_events"]["Row"];
+export type AffiliateStoreAutomationSettings = Database["public"]["Tables"]["affiliate_store_automation_settings"]["Row"];
+export type AffiliateStoreFetchCategory = Database["public"]["Tables"]["affiliate_store_fetch_categories"]["Row"];
+export type AffiliateStoreFetchRun = Database["public"]["Tables"]["affiliate_store_fetch_runs"]["Row"];
+export type AffiliateStoreLinkSuggestion = Database["public"]["Tables"]["affiliate_store_link_suggestions"]["Row"];
+export type AffiliateStoreInlineLink = Database["public"]["Tables"]["affiliate_store_inline_links"]["Row"];
+export type AffiliateStoreImpressionEvent = Database["public"]["Tables"]["affiliate_store_impression_events"]["Row"];

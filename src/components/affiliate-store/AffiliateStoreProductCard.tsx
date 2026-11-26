@@ -100,7 +100,22 @@ export function AffiliateStoreCategoryImage({
   );
 }
 
-/** The price line: API price when trusted, otherwise the honest Amazon CTA text. */
+/**
+ * PUBLIC PRICE DISPLAY LAW (529 — the documented Phase-4 decision):
+ * the automation stores API-served prices (price_usd + price_updated_at
+ * from the Creators API sync pass — the price clause's allowed class),
+ * but Amazon's display policy requires shown pricing to be fresh
+ * (≤1 h) and the sync cadence is daily/weekly. Until the owner's
+ * Phase-4 order ships an ≤1 h refresh budget, public surfaces keep the
+ * honest "See price on Amazon" — the stored price serves the ADMIN
+ * analytics only. Flip: AFFILIATE_STORE_SHOW_PUBLIC_PRICES=1 (a
+ * documented owner decision, never a default).
+ */
+export const AFFILIATE_STORE_PUBLIC_PRICES_ENABLED =
+  process.env.AFFILIATE_STORE_SHOW_PUBLIC_PRICES === "1";
+
+/** The price line: API price when trusted AND display-enabled, otherwise
+ *  the honest Amazon CTA text (the price display law above). */
 export function AffiliateStorePriceLine({
   priceUsd,
   className = "",
@@ -108,16 +123,20 @@ export function AffiliateStorePriceLine({
   priceUsd: number | null;
   className?: string;
 }) {
+  const showPrice = AFFILIATE_STORE_PUBLIC_PRICES_ENABLED && priceUsd !== null;
   return (
     <span className={`text-sm font-semibold ${className}`}>
-      {priceUsd !== null ? `$${priceUsd.toFixed(2)}` : "See price on Amazon"}
+      {showPrice ? `$${(priceUsd as number).toFixed(2)}` : "See price on Amazon"}
     </span>
   );
 }
 
 export function AffiliateStoreProductCard({ product }: { product: CardData }) {
   return (
-    <article className="group relative flex flex-col overflow-hidden rounded-xl border border-[var(--edge)] bg-[var(--card)] transition-shadow hover:shadow-lg">
+    <article
+      data-store-product-id={product.id}
+      className="group relative flex flex-col overflow-hidden rounded-xl border border-[var(--edge)] bg-[var(--card)] transition-shadow hover:shadow-lg"
+    >
       <Link
         href={`/affiliate-store/${product.categorySlug}/${product.slug}`}
         className="flex flex-1 flex-col"

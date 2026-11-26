@@ -3,6 +3,9 @@ import { BlogArticlePage } from "@/components/blog/BlogArticlePage";
 import { fetchBlogForOG, fetchBlogPostFull, fetchPublishedBlogSlugPools, buildBlogHreflang } from "@/lib/blog-server";
 import { sanitizeBlogContent } from "@/lib/blog-content-sanitize";
 import { insertToolLinks } from "@/lib/blog-tool-links";
+// PHASE 529: the smart internal linking (EN-only render injection).
+import { insertStoreLinks } from "@/lib/affiliate-store-linking";
+import { listAffiliateStoreInlineLinksForPage } from "@/lib/affiliate-store-server";
 // Report 15 §5-B1 (owner order 2026-11-12): the retro leg — entries for
 // THIS article's paired tools, computed server-side from the single pair
 // source (src/lib/tool-article-links.ts) so the tool links are crawlable
@@ -212,6 +215,20 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
     content: insertToolLinks(sanitizeBlogContent(fetchedPost.content, "en", slugPools), "en").md,
   };
 
+  // PHASE 529 (AFFILIATE-STORE-AUTOMATION — the smart internal linking):
+  // render-time injection of the page's ACTIVE inline product links
+  // (EN ONLY by law — insertStoreLinks is a hard no-op for any other
+  // language, and this file IS the EN mirror). Links point to the
+  // INTERNAL store product pages; the stored content is never modified
+  // (idempotent pure injection, capped, first-occurrence-only — the
+  // insertToolLinks discipline).
+  const inlineLinks = await listAffiliateStoreInlineLinksForPage("blog", slug);
+  const withStoreLinks =
+    inlineLinks.length > 0
+      ? insertStoreLinks(fullPost.content, "en", inlineLinks).md
+      : fullPost.content;
+  const fullPostWithLinks = { ...fullPost, content: withStoreLinks };
+
   // AUDIT_REPORT §9-0.2 (2026-09-29) — FAQPage JSON-LD from faq_json: the
   // FAQ cards' data becomes machine-readable for AI answer engines (GEO).
   // Audit F5 measured 0/97 articles with FAQPage schema while the data sat
@@ -257,7 +274,7 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
           dangerouslySetInnerHTML={{ __html: jsonLd(faqPageSchema) }}
         />
       )}
-      <BlogArticlePage lang="en" slug={slug} initialPost={fullPost} publishedAt={publishedAt} updatedAt={updatedAt} lastReviewedAt={og.lastReviewedAt ?? undefined} mirrorHref={mirrorHref} toolCta={toolCta} />
+      <BlogArticlePage lang="en" slug={slug} initialPost={fullPostWithLinks} publishedAt={publishedAt} updatedAt={updatedAt} lastReviewedAt={og.lastReviewedAt ?? undefined} mirrorHref={mirrorHref} toolCta={toolCta} />
     </>
   );
 }

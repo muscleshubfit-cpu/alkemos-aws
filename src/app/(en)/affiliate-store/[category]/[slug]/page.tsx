@@ -8,6 +8,7 @@ import { AmazonBuyButton } from "@/components/affiliate-store/AmazonBuyButton";
 import { AffiliateStoreProductCard, AffiliateStorePriceLine } from "@/components/affiliate-store/AffiliateStoreProductCard";
 import { AffiliateStoreProductImage } from "@/components/affiliate-store/AffiliateStoreProductImage";
 import { AffiliateStoreViewEvent } from "@/components/affiliate-store/AffiliateStoreViewEvent";
+import { AffiliateStoreImpressionBeacon } from "@/components/affiliate-store/AffiliateStoreImpressionBeacon";
 import {
   getAffiliateStoreProductBySlug,
   listRelatedAffiliateStoreProducts,
@@ -108,6 +109,8 @@ export default async function AffiliateStoreProductPage({
     <div className="flex min-h-screen flex-col bg-[var(--bg)] text-[var(--text)]">
       <SiteHeader variant="landing" />
       <AffiliateStoreViewEvent event="affiliate_store_product_view" surface="product" slug={product.slug} />
+      {/* 529: the product-detail impression (the page IS the product card) */}
+      <AffiliateStoreImpressionBeacon productIds={[product.id]} surfaceType="product" surfaceKey={product.slug} />
 
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(breadcrumb) }} />
 

@@ -1,0 +1,69 @@
+# AFFILIATE-STORE AUTOMATION FIRE (Phase 529 — owner order 2026-11-27
+# «نفّذ مرحلة بناء منظومة الأتمتة والتسويق الداخلي لمتجر Affiliate
+# Store»): the repo-native scheduler for
+# GET /api/cron/affiliate-store-automation — the daily 07:17 UTC fire
+# that runs the product fetch (official Amazon Creators API) + the
+# smart internal-linking scan.
+#
+# PATTERN: the exchange-rate-daily shape (schedule + workflow_dispatch,
+# tight concurrency group, honest exit codes, no checkout, no install,
+# CRON_SECRET only — the gdrive-workflow discipline).
+#
+# FREQUENCY LIVES IN THE OWNER'S SETTINGS: the workflow fires DAILY at
+# 07:17 UTC; the endpoint's isFetchDue() decides whether the fire
+# EXECUTES (daily/weekly/monthly from the admin panel) — a weekly
+# setting runs on every 7th fire, monthly every ~30th. A paused system
+# (is_enabled=false) is an honest documented no-op.
+#
+# OVERLAP SAFETY (the owner's «منع تداخل المهام المجدولة وتكرار
+# التنفيذ»): (1) this workflow's concurrency group (cancel-in-progress:
+# false — a delayed run waits, never cancels); (2) the DB partial-unique
+# running lock (migration 0120 — a second concurrent run is structurally
+# impossible); (3) the frequency due-check.
+#
+# HONEST DORMANCY: without the Amazon Creators API credentials (the
+# owner's external requirement — 10 qualifying sales in the trailing 30
+# days + Associates Central registration), the endpoint answers 503 and
+# this run goes RED (Actions tab + email) — the double visibility the
+# 0104 failure posture established. NO mock fetch ever happens.
+#
+# SECRETS: CRON_SECRET only — the same repo secret deploy-aws.yml stages
+# to /srv/alkemos/shared/.env (verifyCronAuth on the public origin).
+# Sent as the Bearer header; never echoed (no set -x, no curl -v).
+
+name: Affiliate-store automation fire (fetch + linking)
+
+on:
+  schedule:
+    - cron: "17 7 * * *" # daily 07:17 UTC — off the existing grid (03:47/05:30/05:45/06:00/06:10/06:30/06:47)
+  workflow_dispatch:
+
+concurrency:
+  group: affiliate-store-automation
+  cancel-in-progress: false
+
+permissions: {}
+
+jobs:
+  fire:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Fire the daily job on the live origin (Bearer CRON_SECRET)
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          ENDPOINT: https://alkemos.com/api/cron/affiliate-store-automation
+        run: |
+          if [ -z "$CRON_SECRET" ]; then
+            echo "::error::CRON_SECRET repo secret is not configured — the fire was NOT sent (the endpoint would 401)."
+            exit 1
+          fi
+          echo "→ GET $ENDPOINT (Bearer via env; the value is never logged)"
+          # -f: any 4xx/5xx fails the run loudly. The endpoint's honest
+          # codes: 200 ok (ran/skip) · 503 missing-credentials (dormant —
+          # the owner's external requirement, documented) · 502 fetch
+          # failed (run ledger + admin bell carry the details) · 401 bad
+          # secret.
+          response=$(curl -fsS -m 900 -H "Authorization: Bearer ${CRON_SECRET}" "$ENDPOINT")
+          echo "← endpoint response (no secret material by design):"
+          echo "$response"

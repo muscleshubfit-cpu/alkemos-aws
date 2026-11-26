@@ -4,6 +4,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { AffiliateStoreCategoryImage, AffiliateStoreProductGrid } from "@/components/affiliate-store/AffiliateStoreProductCard";
 import { AffiliateStoreViewEvent } from "@/components/affiliate-store/AffiliateStoreViewEvent";
+import { AffiliateStoreImpressionBeacon } from "@/components/affiliate-store/AffiliateStoreImpressionBeacon";
 import { ShortDisclosureLine } from "@/components/affiliate-store/disclosure";
 import {
   AFFILIATE_STORE_SORT_KEYS,
@@ -115,6 +116,8 @@ export default async function AffiliateStoreHubPage({
     <div className="flex min-h-screen flex-col bg-[var(--bg)] text-[var(--text)]">
       <SiteHeader variant="landing" />
       <AffiliateStoreViewEvent event="affiliate_store_view" surface="store" />
+      {/* 529: the aggregated impression beacon (products actually seen) */}
+      <AffiliateStoreImpressionBeacon productIds={products.map((p) => p.id)} surfaceType="store" surfaceKey="" />
 
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-10 sm:px-6 md:py-14">
         {/* ── The commercial masthead ─────────────────────────────── */}

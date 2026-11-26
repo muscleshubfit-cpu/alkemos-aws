@@ -603,6 +603,48 @@ PROBES: list[dict] = [
              "expect": 48},
         ],
     },
+    # 0120 — AFFILIATE-STORE-AUTOMATION (owner order 2026-11-27 «نفّذ
+    # مرحلة بناء منظومة الأتمتة والتسويق الداخلي لمتجر Affiliate
+    # Store»): the automation data foundation — the singleton settings
+    # row, per-leaf fetch configs, the run ledger (with the DB-enforced
+    # running lock), the smart-linking suggestion/applied tables, and
+    # the daily-aggregated impression events + increment RPC. Strong
+    # probes: the five new tables serve through PostgREST, the
+    # singleton settings row exists (id=1, disabled by default — the
+    # owner flips it from the admin panel), the seeded fetch configs
+    # are present with the seeded keyword sets, and anon RLS hides
+    # the settings table (admin-only) while inline_links reads are
+    # possible (public read policy exists).
+    {
+        "file": "20261127160000_0120_affiliate_store_automation.sql",
+        "label": "0120 AFFILIATE-STORE-AUTOMATION",
+        "strength": "strong",
+        "checks": [
+            {"type": "swagger_table", "table": "affiliate_store_automation_settings"},
+            {"type": "swagger_table", "table": "affiliate_store_fetch_categories"},
+            {"type": "swagger_table", "table": "affiliate_store_fetch_runs"},
+            {"type": "swagger_table", "table": "affiliate_store_link_suggestions"},
+            {"type": "swagger_table", "table": "affiliate_store_inline_links"},
+            {"type": "swagger_table", "table": "affiliate_store_impression_events"},
+            # the singleton settings row exists, seeded disabled (service key)
+            {"type": "rest_rows",
+             "path": "/rest/v1/affiliate_store_automation_settings?select=id,is_enabled,frequency&limit=5",
+             "transform": "count_rows",
+             "expect": 1},
+            # the seeded fetch configs (36 slug-keyed rows: 34 active + 2 apparel OFF)
+            {"type": "rest_rows",
+             "path": ("/rest/v1/affiliate_store_fetch_categories"
+                      "?select=category_id,is_active&limit=100"),
+             "transform": "count_rows",
+             "expect": 36},
+            # the apparel-risk leaves are seeded OFF (person-photo law §0.1)
+            {"type": "rest_rows",
+             "path": ("/rest/v1/affiliate_store_fetch_categories"
+                      "?select=category_id&is_active=is.false&limit=10"),
+             "transform": "count_rows",
+             "expect": 2},
+        ],
+    },
 ]# fmt on
 
 

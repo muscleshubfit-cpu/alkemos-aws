@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { RecipeDetailView } from "@/components/recipes/RecipeDetailView";
+// 529: the smart-linking rail (kitchen & nutrition picks for THIS recipe).
+import { AffiliateStoreSurfaceRail } from "@/components/affiliate-store/AffiliateStoreSurfaceRail";
 import {
   fetchRecipeDetail,
   listPublishedRecipeSlugs,
@@ -152,6 +154,11 @@ export default async function RecipeDetailPage({
         dangerouslySetInnerHTML={{ __html: jsonLd(breadcrumbSchema) }}
       />
       <RecipeDetailView detail={detail} lang={lang} pageUrl={pageUrl} />
+      {/* 529 — relevance-bound product picks for this recipe (renders
+          nothing until a published product is bound to this surface) */}
+      <div className="mx-auto w-full max-w-4xl px-4 pb-12 sm:px-6">
+        <AffiliateStoreSurfaceRail surfaceType="collection" surfaceKey={slug} title="Kitchen picks for this recipe" />
+      </div>
     </>
   );
 }

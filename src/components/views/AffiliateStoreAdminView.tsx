@@ -171,6 +171,12 @@ export function AffiliateStoreAdminView() {
             <Button variant="outline" size="sm" onClick={() => void load()}>
               <RefreshCw className="size-4" /> {isAr ? "تحديث" : "Refresh"}
             </Button>
+            {/* 529: the automation + smart-linking + analytics panel */}
+            <Button variant="outline" size="sm" asChild>
+              <Link href="/admin/affiliate-store/automation">
+                {isAr ? "⚙ الأتمتة والربط" : "⚙ Automation & linking"}
+              </Link>
+            </Button>
             <Button asChild size="sm">
               <Link href="/admin/affiliate-store/new">
                 {isAr ? "+ منتج جديد" : "+ New product"}

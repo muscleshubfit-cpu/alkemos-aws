@@ -6,6 +6,7 @@ import { SiteFooter } from "@/components/SiteFooter";
 import { AffiliateStoreCategoryIcon, AffiliateStoreCategoryImage, AffiliateStoreProductGrid } from "@/components/affiliate-store/AffiliateStoreProductCard";
 import { AffiliateStoreProductImage } from "@/components/affiliate-store/AffiliateStoreProductImage";
 import { AffiliateStoreViewEvent } from "@/components/affiliate-store/AffiliateStoreViewEvent";
+import { AffiliateStoreImpressionBeacon } from "@/components/affiliate-store/AffiliateStoreImpressionBeacon";
 import { ShortDisclosureLine } from "@/components/affiliate-store/disclosure";
 import { getAffiliateStoreCategoryPage, listAffiliateStoreSitemapEntries, listPublicAffiliateStoreMainCategories } from "@/lib/affiliate-store-server";
 import { getBreadcrumbSchema, getItemListSchema, jsonLd } from "@/lib/seo";
@@ -104,6 +105,8 @@ export default async function AffiliateStoreCategoryPage({
     <div className="flex min-h-screen flex-col bg-[var(--bg)] text-[var(--text)]">
       <SiteHeader variant="landing" />
       <AffiliateStoreViewEvent event="affiliate_store_view" surface="category" slug={cat.slug} />
+      {/* 529: the aggregated impression beacon (products actually seen) */}
+      <AffiliateStoreImpressionBeacon productIds={products.map((p) => p.id)} surfaceType="category" surfaceKey={cat.slug} />
 
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(itemList) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(breadcrumb) }} />

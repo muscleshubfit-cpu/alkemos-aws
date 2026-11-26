@@ -366,6 +366,13 @@ jobs:
           # USD→EGP job (/api/cron/exchange-rate). Server-side only — never
           # NEXT_PUBLIC, never in the browser bundle, never logged.
           R_EXCHANGERATE_API_KEY: ${{ secrets.EXCHANGERATE_API_KEY }}
+          # Phase 529 (AFFILIATE-STORE-AUTOMATION): the official Amazon
+          # Creators API credentials (server-side only; absent → the
+          # automation stays honestly dormant, the EXCHANGERATE pattern)
+          # + the public-price display gate (off unless explicitly set).
+          R_AMAZON_CREATORS_API_CREDENTIAL_ID: ${{ secrets.AMAZON_CREATORS_API_CREDENTIAL_ID }}
+          R_AMAZON_CREATORS_API_SECRET: ${{ secrets.AMAZON_CREATORS_API_SECRET }}
+          R_AFFILIATE_STORE_SHOW_PUBLIC_PRICES: ${{ secrets.AFFILIATE_STORE_SHOW_PUBLIC_PRICES }}
         run: |
           : > env-runtime.env
           stage() {
@@ -399,6 +406,9 @@ jobs:
           stage UPSTASH_REDIS_REST_URL        "$R_UPSTASH_REDIS_REST_URL"
           stage UPSTASH_REDIS_REST_TOKEN      "$R_UPSTASH_REDIS_REST_TOKEN"
           stage EXCHANGERATE_API_KEY           "$R_EXCHANGERATE_API_KEY"
+          stage AMAZON_CREATORS_API_CREDENTIAL_ID "$R_AMAZON_CREATORS_API_CREDENTIAL_ID"
+          stage AMAZON_CREATORS_API_SECRET       "$R_AMAZON_CREATORS_API_SECRET"
+          stage AFFILIATE_STORE_SHOW_PUBLIC_PRICES "$R_AFFILIATE_STORE_SHOW_PUBLIC_PRICES"
           echo "runtime env staged: $(wc -l < env-runtime.env) key(s) [$(cut -d= -f1 env-runtime.env | paste -sd, -)] — values never printed"
 
       - name: Install (frozen)
