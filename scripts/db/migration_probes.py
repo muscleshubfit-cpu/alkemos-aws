@@ -631,12 +631,12 @@ PROBES: list[dict] = [
              "path": "/rest/v1/affiliate_store_automation_settings?select=id,is_enabled,frequency&limit=5",
              "transform": "count_rows",
              "expect": 1},
-            # the seeded fetch configs (36 slug-keyed rows: 34 active + 2 apparel OFF)
+            # the seeded fetch configs (38 slug-keyed rows: 36 active + 2 apparel OFF)
             {"type": "rest_rows",
              "path": ("/rest/v1/affiliate_store_fetch_categories"
                       "?select=category_id,is_active&limit=100"),
              "transform": "count_rows",
-             "expect": 36},
+             "expect": 38},
             # the apparel-risk leaves are seeded OFF (person-photo law §0.1)
             {"type": "rest_rows",
              "path": ("/rest/v1/affiliate_store_fetch_categories"
