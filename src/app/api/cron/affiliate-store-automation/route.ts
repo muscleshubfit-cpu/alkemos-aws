@@ -19,9 +19,17 @@ export const maxDuration = 600;
  * GitHub Actions fire channel, the exchange-rate precedent). The
  * FREQUENCY decision (daily/weekly/monthly) lives in the owner's
  * settings row: the scheduler fires daily, this endpoint decides
- * whether the fire EXECUTES (isFetchDue) — weekly = every 7th fire,
- * monthly = every ~30th. A paused system (is_enabled=false) skips
- * honestly.
+ * whether the FETCH executes (isFetchDue) — weekly = every 7th fire,
+ * monthly = every ~30th. A paused system (is_enabled=false) skips the
+ * fetch honestly.
+ *
+ * THE TWO ARMS ARE INDEPENDENT BY DESIGN (measured live 2026-11-27):
+ *   - THE LINKING SCAN runs on EVERY fire while auto_link_enabled is
+ *     on (it is a cheap DB-only pass over the EN surfaces + the shelf;
+ *     its freshness must not wait for the fetch frequency window — a
+ *     weekly-fetch store still gets daily link refreshes for new
+ *     content).
+ *   - THE FETCH runs only when is_enabled AND isFetchDue.
  *
  * OVERLAP SAFETY (three locks):
  *   1. the workflow's tight concurrency group (GitHub level);
@@ -29,15 +37,6 @@ export const maxDuration = 600;
  *      constraint violation, impossible to double-run);
  *   3. the frequency due-check (a re-fire inside the window is a
  *      documented no-op).
- *
- * WHAT ONE FIRE DOES (in order):
- *   1. fetch run — runAffiliateStoreFetch('cron'): credentials gate →
- *      new products per active fetch categories → the sync pass over
- *      every published product (price/availability/image refresh,
- *      unavailable → hide + link deactivation) → run ledger + alerts.
- *   2. linking scan — scanLinkSuggestions(): the EN-surface relevance
- *      scan + threshold-gated auto-apply (inline links + rail
- *      bindings).
  *
  * HONEST CODES (the exchange-rate discipline):
  *   200 ok            — ran (or skipped: disabled / not due / locked)
@@ -58,12 +57,31 @@ export async function GET(request: NextRequest) {
 
   const settings = await getAffiliateStoreAutomationSettings();
 
-  // paused → honest skip (nothing recorded, the schedule stays armed)
+  // ARM 1 — THE LINKING SCAN (every fire while enabled; independent of
+  // the fetch frequency window — measured live: a weekly-fetch window
+  // must never freeze the daily link freshness).
+  let linking: Awaited<ReturnType<typeof scanLinkSuggestions>> | null = null;
+  if (settings.auto_link_enabled) {
+    try {
+      linking = await scanLinkSuggestions();
+    } catch (error) {
+      linking = {
+        pagesScanned: 0,
+        productsConsidered: 0,
+        suggestionsWritten: 0,
+        autoApplied: 0,
+      };
+      console.error("[affiliate-store-automation] linking scan failed:", error);
+    }
+  }
+
+  // fetch paused → honest skip (nothing recorded, the schedule stays armed)
   if (!settings.is_enabled) {
     return NextResponse.json({
       ok: true,
       skipped: "disabled",
-      message: "automation is paused (is_enabled=false) — nothing ran",
+      message: "automation fetch is paused (is_enabled=false) — only the linking scan ran",
+      linking,
     });
   }
 
@@ -74,27 +92,13 @@ export async function GET(request: NextRequest) {
       skipped: "not-due",
       frequency: settings.frequency,
       last_run_at: settings.last_run_at,
-      message: `frequency is ${settings.frequency} and the last run is inside the window — skipped`,
+      message: `fetch frequency is ${settings.frequency} and the last run is inside the window — only the linking scan ran`,
+      linking,
     });
   }
 
-  // THE FETCH RUN
+  // ARM 2 — THE FETCH RUN
   const fetchResult = await runAffiliateStoreFetch("cron");
-
-  // THE LINKING SCAN (independent of fetch success — relevance works on
-  // the products already on the shelf)
-  let linking: Awaited<ReturnType<typeof scanLinkSuggestions>> | null = null;
-  try {
-    linking = await scanLinkSuggestions();
-  } catch (error) {
-    linking = {
-      pagesScanned: 0,
-      productsConsidered: 0,
-      suggestionsWritten: 0,
-      autoApplied: 0,
-    };
-    console.error("[affiliate-store-automation] linking scan failed:", error);
-  }
 
   if (fetchResult.status === "failed" && fetchResult.reason === "missing-credentials") {
     return NextResponse.json(
