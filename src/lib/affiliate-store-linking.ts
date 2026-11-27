@@ -462,26 +462,45 @@ async function fetchPublishedProductTexts(): Promise<Array<ProductText & { id: s
     .filter((p): p is ProductText & { id: string } => p !== null);
 }
 
+/** The plain-text fragment check: does the phrase occur OUTSIDE existing
+ *  markdown links/images? (Measured live 2026-11-27: an anchor that only
+ *  exists inside an existing [..](..) never renders — the injector
+ *  correctly refuses to nest — so the picker must not propose it.) */
+function occursInPlainText(phrase: string, text: string): boolean {
+  const needle = phrase.toLowerCase();
+  for (const line of text.split("\n")) {
+    const fragments = line.split(/(!?\[[^\]]*\]\([^)]*\))/g);
+    for (let i = 0; i < fragments.length; i += 2) {
+      if (fragments[i].toLowerCase().includes(needle)) return true;
+    }
+  }
+  return false;
+}
+
 /**
  * Pick the anchor phrase for a (page, product) pair: the longest product
- * title prefix that actually occurs in the page text (a natural anchor
- * the reader already sees); fallback: the strongest matched token pair.
+ * title prefix that occurs in the page's PLAIN text (a natural anchor
+ * the reader already sees, never inside an existing link); fallback:
+ * the strongest matched token pair (same plain-text rule).
  */
 export function pickAnchorPhrase(product: ProductText, page: PageText, matchedTokens: string[]): string | null {
-  const pageLower = `${page.title} ${page.body}`.toLowerCase();
+  const pageText = `${page.title} ${page.body}`;
   const title = product.title.trim();
   // try title comma-segments, longest first
   const segments = title.split(/[,(|]/).map((s) => s.trim()).filter((s) => s.length >= 8 && s.length <= 60);
   segments.sort((a, b) => b.length - a.length);
   for (const seg of segments) {
-    if (pageLower.includes(seg.toLowerCase())) return seg;
+    if (occursInPlainText(seg, pageText)) return seg;
   }
-  // fallback: first two matched tokens as a phrase (only if the pair occurs)
+  // fallback: first two matched tokens as a phrase (only if the pair
+  // occurs in plain text)
   if (matchedTokens.length >= 2) {
     const pair = `${matchedTokens[0]} ${matchedTokens[1]}`;
-    if (pageLower.includes(pair)) return pair;
+    if (occursInPlainText(pair, pageText)) return pair;
   }
-  if (matchedTokens.length === 1 && matchedTokens[0].length >= 5) return matchedTokens[0];
+  if (matchedTokens.length === 1 && matchedTokens[0].length >= 5) {
+    if (occursInPlainText(matchedTokens[0], pageText)) return matchedTokens[0];
+  }
   return null;
 }
 

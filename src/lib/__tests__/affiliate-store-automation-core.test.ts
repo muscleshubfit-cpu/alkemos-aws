@@ -365,6 +365,38 @@ describe("the exercise-page relevance law (live regression: 2026-11-27)", () => 
   });
 });
 
+describe("pickAnchorPhrase — the plain-text rule (live regression 2026-11-27)", () => {
+  const product = {
+    productId: "p1",
+    slug: "example-pre-workout",
+    categorySlug: "pre-workout-energy-formulas",
+    categoryName: "Pre-Workout & Energy Formulas",
+    title: "Example Pre-Workout Nutrition Formula, 30 Servings",
+    brand: "ExampleFit",
+    summary: "Clean pre-workout formula.",
+  };
+  it("rejects a phrase that only exists inside an existing markdown link", () => {
+    const page = {
+      title: "Whey Protein Dosage For Muscle Gain",
+      body:
+        "The full timing framework is in [the pre-workout nutrition guide](/blog/pre-workout-nutrition-guide).\n" +
+        "Whey is a protein tool first and foremost, and dosage drives results.",
+    };
+    const anchor = pickAnchorPhrase(product, page, ["pre-workout", "nutrition"]);
+    expect(anchor).not.toBe("pre-workout nutrition"); // would never render
+  });
+  it("accepts the same phrase when it also occurs in plain text", () => {
+    const page = {
+      title: "Whey Protein Dosage For Muscle Gain",
+      body:
+        "The full timing framework is in [the guide](/blog/x).\n" +
+        "Getting pre-workout nutrition right matters as much as the shake itself.",
+    };
+    const anchor = pickAnchorPhrase(product, page, ["pre-workout", "nutrition"]);
+    expect(anchor).not.toBeNull();
+  });
+});
+
 describe("tokenize", () => {
   it("drops stop words, short tokens, and pure digits", () => {
     const tokens = tokenize("The best 25 dumbbells for your home gym!");
