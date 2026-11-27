@@ -1,2 +1,0 @@
-# See scripts/db/migration_probes.py — the declarative registry (this file is the law's register).
-# 0122 row added in the same commit as migration 0122 (MIGRATION INDEX LAW).
