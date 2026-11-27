@@ -15,6 +15,7 @@ import {
   approveLinkSuggestion,
   rejectLinkSuggestion,
   setInlineLinkActive,
+  repairInlineLinkAnchor,
 } from "@/lib/affiliate-store-linking";
 import { buildStoreAnalyticsReport, analyticsDailyTotals } from "@/lib/affiliate-store-analytics";
 import { creatorsApiCredentialsStatus } from "@/lib/amazon-creators-api";
@@ -41,6 +42,9 @@ export const maxDuration = 600;
  *     → linking-scan     — a manual relevance scan
  *     → approve-link {id} / reject-link {id}
  *     → toggle-link {id, active}
+ *     → repair-inline-link {id} — Phase 533: recompute an active link's
+ *        anchor from the article's renderable body (deactivates it when
+ *        no renderable anchor exists — never a phantom active row)
  *
  * LAWS: requireAdmin BEFORE any data-layer call (the 0105 channel law);
  * credentials surface as BOOLEANS only (never values); the suggestions
@@ -175,6 +179,11 @@ export async function POST(request: NextRequest) {
       );
       if (!result.ok) return NextResponse.json({ error: result.error }, { status: 409 });
       return NextResponse.json({ ok: true });
+    }
+    case "repair-inline-link": {
+      const result = await repairInlineLinkAnchor(String(body?.id ?? ""));
+      if (!result.ok) return NextResponse.json({ error: result.error }, { status: 409 });
+      return NextResponse.json({ ok: true, action: result.action, anchor: result.anchor });
     }
     default:
       return NextResponse.json({ error: `unknown action "${action}"` }, { status: 400 });

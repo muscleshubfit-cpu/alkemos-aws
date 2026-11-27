@@ -28,10 +28,29 @@
  *   applyLinkSuggestions() — approve ≥ threshold (auto or admin) →
  *     inline_links rows + surface bindings for the rail.
  *   deactivateAffiliateStoreLinksForProducts() — hide propagation.
+ *
+ * THE ANCHOR LAW (Phase 533 — report 533 §3, the structural fix):
+ *   An anchor is only ever picked from the article text the visitor
+ *   ACTUALLY SEES as the renderable markdown body — the blog pipeline
+ *   content (sanitize → tool links) minus the FAQ sections (Phase 178:
+ *   rendered from faq_json cards, stripped from the body) minus the
+ *   leading title heading (Phase 187). Tags/keywords/excerpt/category
+ *   are NEVER anchor sources (they never reach the injector), table
+ *   rows / headings / blockquotes / existing links are never wrappable
+ *   positions, and every candidate is gated by the ultimate truth: a
+ *   real insertStoreLinks probe whose wrap must SURVIVE the render
+ *   strips. approveLinkSuggestion() refuses (clear error, no write)
+ *   when no renderable anchor exists — the product-title fallback that
+ *   wrote dead rows is GONE. repairInlineLinkAnchor() re-anchors or
+ *   deactivates existing invisible links (the official channel).
  */
 
 import { revalidatePath, revalidateTag } from "next/cache";
 import { isSupabaseAdminConfigured, supabaseAdmin } from "./supabase/admin";
+import { stripFaqSectionFromBody, stripTitleHeadingFromBody } from "./blog-msa";
+import { sanitizeBlogContent } from "./blog-content-sanitize";
+import { insertToolLinks } from "./blog-tool-links";
+import { fetchPublishedBlogSlugPools } from "./blog-server";
 import type { Database } from "./supabase/types";
 import { getAffiliateStoreAutomationSettings } from "./affiliate-store-automation";
 import { WORKOUT_PROGRAMS } from "./workout-programs";
@@ -327,6 +346,10 @@ type ScannedPage = {
   page_slug: string;
   title: string;
   body: string;
+  /** Blog pages only (Phase 533): the render context for the anchor
+   *  visibility probe — the pipeline content and the FAQ-strip flag. */
+  pipelineContent?: string;
+  hasFaqCards?: boolean;
 };
 
 export type LinkScanResult = {
@@ -334,25 +357,44 @@ export type LinkScanResult = {
   productsConsidered: number;
   suggestionsWritten: number;
   autoApplied: number;
+  /** Phase 533: pending rows whose anchor/score were recomputed in place. */
+  anchorsRefreshed: number;
 };
 
+/**
+ * THE BLOG SCAN SOURCE (Phase 533 — unified with the render rules):
+ * the page body IS the displayed article body (pipeline content minus
+ * FAQ sections minus the title heading) — exactly the text the store
+ * injector can wrap into. Tags/keywords/excerpt/category are NO LONGER
+ * scan text (report 533 §3-1: anchors picked from them never rendered
+ * — the measured 155/155 dead-approval class). The pipeline context is
+ * carried alongside for the visibility probe.
+ */
 async function fetchEnBlogPages(): Promise<ScannedPage[]> {
   if (!isSupabaseAdminConfigured || !supabaseAdmin) return [];
-  const { data } = await supabaseAdmin
-    .from("blog_posts")
-    .select("slug,title,content,excerpt,category,tags,keywords")
-    .eq("is_published", true)
-    .eq("language", "en") // THE LANGUAGE LAW: EN posts only
-    .limit(400);
-  return ((data ?? []) as Array<{
-    slug: string; title: string; content: string; excerpt: string | null;
-    category: string; tags: string[]; keywords: string[];
-  }>).map((p) => ({
-    page_type: "blog",
-    page_slug: p.slug,
-    title: p.title,
-    body: `${p.content}\n${p.excerpt ?? ""}\n${p.category}\n${(p.tags ?? []).join(" ")}\n${(p.keywords ?? []).join(" ")}`,
-  }));
+  const [pools, postsRes] = await Promise.all([
+    fetchPublishedBlogSlugPools(),
+    supabaseAdmin
+      .from("blog_posts")
+      .select("slug,title,content,faq_json")
+      .eq("is_published", true)
+      .eq("language", "en") // THE LANGUAGE LAW: EN posts only
+      .limit(400),
+  ]);
+  return ((postsRes.data ?? []) as Array<{
+    slug: string; title: string; content: string; faq_json: unknown;
+  }>).map((p) => {
+    const hasFaqCards = Array.isArray(p.faq_json) && p.faq_json.length > 0;
+    const pipelineContent = buildBlogPipelineContent(p.content ?? "", pools);
+    return {
+      page_type: "blog",
+      page_slug: p.slug,
+      title: p.title,
+      body: renderableBlogBody(pipelineContent, p.title, hasFaqCards),
+      pipelineContent,
+      hasFaqCards,
+    };
+  });
 }
 
 async function fetchEnRecipePages(): Promise<ScannedPage[]> {
@@ -462,44 +504,161 @@ async function fetchPublishedProductTexts(): Promise<Array<ProductText & { id: s
     .filter((p): p is ProductText & { id: string } => p !== null);
 }
 
-/** The plain-text fragment check: does the phrase occur OUTSIDE existing
- *  markdown links/images? (Measured live 2026-11-27: an anchor that only
- *  exists inside an existing [..](..) never renders — the injector
- *  correctly refuses to nest — so the picker must not propose it.) */
-function occursInPlainText(phrase: string, text: string): boolean {
+/**
+ * The renderable-position check (Phase 533 — the anchor law): does the
+ * phrase occur in a position the injector can actually WRAP? Mirrors
+ * tryWrapFirstOccurrence exactly — skip lines (headings, blockquotes,
+ * table rows, hr, images), split existing markdown links/images, and
+ * require word boundaries around the match. (The old plain-substring
+ * check proposed anchors from tables/tags/FAQ text that measured live
+ * as never-rendering dead rows — report 533 §3.)
+ */
+export function occursInRenderablePosition(phrase: string, text: string): boolean {
   const needle = phrase.toLowerCase();
+  if (!needle) return false;
   for (const line of text.split("\n")) {
-    const fragments = line.split(/(!?\[[^\]]*\]\([^)]*\))/g);
-    for (let i = 0; i < fragments.length; i += 2) {
-      if (fragments[i].toLowerCase().includes(needle)) return true;
+    if (SKIP_LINE.test(line.trim())) continue;
+    const fragments = line.split(MD_LINK_SPLIT);
+    for (let f = 0; f < fragments.length; f += 2) {
+      const fragment = fragments[f];
+      const lower = fragment.toLowerCase();
+      let idx = lower.indexOf(needle);
+      while (idx !== -1) {
+        const before = idx > 0 ? fragment[idx - 1] : " ";
+        const after = idx + needle.length < fragment.length ? fragment[idx + needle.length] : " ";
+        if (!WORD_CHAR.test(before) && !WORD_CHAR.test(after)) return true;
+        idx = lower.indexOf(needle, idx + needle.length);
+      }
     }
   }
   return false;
 }
 
 /**
+ * THE BLOG RENDER PIPELINE (what the article template feeds the store
+ * injector — page.tsx line order: sanitize → tool links → store links):
+ * built here once so the scan, the approve path and the repair path all
+ * compute anchors on the SAME text the injector sees.
+ */
+export function buildBlogPipelineContent(content: string, pools: { en: ReadonlySet<string>; ar: ReadonlySet<string> }): string {
+  return insertToolLinks(sanitizeBlogContent(content, "en", pools), "en").md;
+}
+
+/**
+ * The DISPLAYED blog body (what the visitor actually reads as the
+ * article markdown): the pipeline content minus the FAQ sections
+ * (Phase 178 — stripped whenever faq_json cards exist, rendered from
+ * the cards instead) minus the leading title heading (Phase 187).
+ * Exactly BlogArticlePage's own strip order.
+ */
+export function renderableBlogBody(pipelineContent: string, title: string, hasFaqCards: boolean): string {
+  const faqStripped = hasFaqCards ? stripFaqSectionFromBody(pipelineContent) : pipelineContent;
+  return stripTitleHeadingFromBody(faqStripped, title);
+}
+
+/** The blog render context an anchor must survive (report 533 §3). */
+export type BlogRenderContext = {
+  /** what insertStoreLinks receives (sanitize + tool links applied) */
+  pipelineContent: string;
+  title: string;
+  hasFaqCards: boolean;
+};
+
+/**
+ * THE ULTIMATE TRUTH (Phase 533): would this candidate link, injected
+ * by the REAL injector over the REAL pipeline content, still be present
+ * in the DISPLAYED body after the Phase-178/187 strips? This is the
+ * exact production shape — the same functions, the same order — so an
+ * anchor that passes here renders for the visitor (and one that fails
+ * here is refused BEFORE any row is written: no dead links, ever).
+ *
+ * `links` is the full render-order link set INCLUDING the candidate;
+ * `candidateUrl` is the internal product URL the candidate must produce.
+ */
+export function anchorRendersVisibly(
+  ctx: BlogRenderContext,
+  links: InlineLinkRow[],
+  candidateUrl: string,
+): boolean {
+  const { md } = insertStoreLinks(ctx.pipelineContent, "en", links);
+  const stripped = ctx.hasFaqCards ? stripFaqSectionFromBody(md) : md;
+  const displayed = stripTitleHeadingFromBody(stripped, ctx.title);
+  return displayed.includes(`](${candidateUrl})`);
+}
+
+/**
  * Pick the anchor phrase for a (page, product) pair: the longest product
- * title prefix that occurs in the page's PLAIN text (a natural anchor
- * the reader already sees, never inside an existing link); fallback:
- * the strongest matched token pair (same plain-text rule).
+ * title segment that occurs in the page's RENDERABLE body (a natural
+ * anchor the reader already sees — never in a heading, table, quote,
+ * existing link, FAQ section or the title hero); fallback: the matched
+ * token pair (same renderable-position rule). The page title is NOT a
+ * source: it renders as the template's H1 hero, outside the markdown
+ * the injector touches. Returns null when nothing renderable exists —
+ * the caller must then refuse the approval (the 533 law).
  */
 export function pickAnchorPhrase(product: ProductText, page: PageText, matchedTokens: string[]): string | null {
-  const pageText = `${page.title} ${page.body}`;
+  const body = page.body; // callers pass the RENDERABLE displayed body
   const title = product.title.trim();
   // try title comma-segments, longest first
   const segments = title.split(/[,(|]/).map((s) => s.trim()).filter((s) => s.length >= 8 && s.length <= 60);
   segments.sort((a, b) => b.length - a.length);
   for (const seg of segments) {
-    if (occursInPlainText(seg, pageText)) return seg;
+    if (occursInRenderablePosition(seg, body)) return seg;
   }
-  // fallback: first two matched tokens as a phrase (only if the pair
-  // occurs in plain text)
-  if (matchedTokens.length >= 2) {
-    const pair = `${matchedTokens[0]} ${matchedTokens[1]}`;
-    if (occursInPlainText(pair, pageText)) return pair;
+  // THE FALLBACK LADDER (Phase 533): every candidate must sit in a
+  // renderable position of the displayed body. Ranked by how truthfully
+  // the anchor describes THIS product — word-coverage of the product's
+  // IDENTITY text (title+brand+category name; the SUMMARY is
+  // deliberately excluded: comparative marketing prose like "slower
+  // than whey" on a CASEIN product measured live as poisoning the
+  // coverage check into picking a false "whey protein" anchor):
+  //   ① multi-word matched tokens whose EVERY word the identity text
+  //      carries ("heart rate monitor" for the Polar H10, "smart scale"
+  //      for the RENPHO, "plant protein" for a plant-based powder) —
+  //      longest first;
+  //   ② single matched tokens present in the product's OWN name
+  //      (title+brand — "whey" for a whey powder, "casein" for a casein
+  //      powder; NOT the broad category name: "creatine" for an amino-
+  //      energy product via "Creatine & Amino Acids" measured as
+  //      misleading), in match order;
+  //   ③ remaining multi-word tokens (category/context phrases, partially
+  //      product-truthful — "water bottle" for an insulated bottle,
+  //      "post-workout shake" for a whey powder), longest first;
+  //   ④ the contiguous pair of the first two matched tokens.
+  // Tier ⑤ (bare singles from the summary that merely occur in the
+  // article — "continuous", "heart") is deliberately ABSENT: a single
+  // word that does not describe the product measured live as a
+  // misleading anchor, and the approve path refuses instead.
+  // (Measured live: the old "pair-of-first-two or nothing" ladder left
+  // 29/30 of the §2 pairs unanchorable, and an unranked ladder picked
+  // "plant protein" for an animal-whey product — word-coverage ranking
+  // prevents both: "plant" never appears in the whey product's text.)
+  const identityText = `${title} ${product.brand ?? ""} ${product.categoryName}`.toLowerCase();
+  const nameText = `${title} ${product.brand ?? ""}`.toLowerCase();
+  const wordCovered = (candidate: string): boolean =>
+    candidate.split(/\s+/).every((w) => w.length === 0 || identityText.includes(w));
+  const fullMultis: string[] = [];
+  const fullSingles: string[] = [];
+  const partialMultis: string[] = [];
+  for (const token of matchedTokens) {
+    if (token.length < 5 || token.length > 60) continue;
+    if (token.includes(" ")) {
+      if (wordCovered(token)) fullMultis.push(token);
+      else partialMultis.push(token);
+    } else if (nameText.includes(token)) {
+      fullSingles.push(token);
+    }
+    // bare non-identity singles are NOT candidates (see the ladder note)
   }
-  if (matchedTokens.length === 1 && matchedTokens[0].length >= 5) {
-    if (occursInPlainText(matchedTokens[0], pageText)) return matchedTokens[0];
+  const pair = matchedTokens.length >= 2 ? `${matchedTokens[0]} ${matchedTokens[1]}` : null;
+  const candidates = [
+    ...[...new Set(fullMultis)].sort((a, b) => b.length - a.length),
+    ...[...new Set(fullSingles)],
+    ...[...new Set(partialMultis)].sort((a, b) => b.length - a.length),
+    ...(pair && pair.length >= 5 ? [pair] : []),
+  ];
+  for (const candidate of candidates) {
+    if (occursInRenderablePosition(candidate, body)) return candidate;
   }
   return null;
 }
@@ -507,9 +666,17 @@ export function pickAnchorPhrase(product: ProductText, page: PageText, matchedTo
 /**
  * THE SCAN: refresh suggestions for every EN surface. Writes ONLY the
  * suggestion queue (application is a separate, threshold-gated step).
+ *
+ * PHASE 533 (the §3-3 gap fix): existing PENDING suggestions get their
+ * anchor/score/reason REFRESHED in place (a stale or NULL anchor no
+ * longer freezes forever); decided rows (approved/rejected) are never
+ * touched. Auto-apply is now render-gated: it runs only for surfaces
+ * with an inline render consumer (blog — the only insertStoreLinks
+ * consumer today) and only when the anchor passes the visibility
+ * probe, so an auto-applied link is a link the visitor actually sees.
  */
 export async function scanLinkSuggestions(): Promise<LinkScanResult> {
-  const result: LinkScanResult = { pagesScanned: 0, productsConsidered: 0, suggestionsWritten: 0, autoApplied: 0 };
+  const result: LinkScanResult = { pagesScanned: 0, productsConsidered: 0, suggestionsWritten: 0, autoApplied: 0, anchorsRefreshed: 0 };
   if (!isSupabaseAdminConfigured || !supabaseAdmin) return result;
 
   const settings = await getAffiliateStoreAutomationSettings();
@@ -523,35 +690,86 @@ export async function scanLinkSuggestions(): Promise<LinkScanResult> {
   result.productsConsidered = products.length;
   if (pages.length === 0 || products.length === 0) return result;
 
-  // existing suggestions (upsert semantics: keep decided rows)
+  // existing suggestions: pending rows are refreshable; decided rows are frozen
   const { data: existing } = await supabaseAdmin
     .from("affiliate_store_link_suggestions")
-    .select("page_type,page_slug,product_id,status");
-  const existingKeys = new Set(
-    ((existing ?? []) as Array<{ page_type: string; page_slug: string; product_id: string }>).map(
-      (r) => `${r.page_type}|${r.page_slug}|${r.product_id}`,
-    ),
-  );
+    .select("page_type,page_slug,product_id,status,anchor_phrase,relevance_score,reason");
+  type ExistingRow = {
+    page_type: string; page_slug: string; product_id: string;
+    status: string; anchor_phrase: string | null; relevance_score: number; reason: string;
+  };
+  const existingByKey = new Map<string, ExistingRow>();
+  for (const r of (existing ?? []) as ExistingRow[]) {
+    existingByKey.set(`${r.page_type}|${r.page_slug}|${r.product_id}`, r);
+  }
+
+  // the live render set for the auto-apply visibility probe (blog only)
+  const productById = new Map(products.map((p) => [p.id, p]));
+  const activeLinksBySlug = new Map<string, InlineLinkRow[]>();
+  if (settings.auto_link_enabled) {
+    const { data: activeRows } = await supabaseAdmin
+      .from("affiliate_store_inline_links")
+      .select("page_slug,product_id,anchor_phrase")
+      .eq("page_type", "blog")
+      .eq("is_active", true);
+    for (const r of (activeRows ?? []) as Array<{ page_slug: string; product_id: string; anchor_phrase: string }>) {
+      const product = productById.get(r.product_id);
+      if (!product) continue;
+      const list = activeLinksBySlug.get(r.page_slug) ?? [];
+      list.push({
+        productId: product.id,
+        anchorPhrase: r.anchor_phrase,
+        slug: product.slug,
+        categorySlug: product.categorySlug,
+        title: product.title,
+      });
+      activeLinksBySlug.set(r.page_slug, list);
+    }
+  }
 
   type SuggestionInsert = Database["public"]["Tables"]["affiliate_store_link_suggestions"]["Insert"];
   const toUpsert: SuggestionInsert[] = [];
+  let newSuggestions = 0;
+  let anchorsRefreshed = 0;
   const autoApplyQueue: Array<{
-    pageType: string;
     pageSlug: string;
     product: ProductText & { id: string };
     anchor: string;
-    score: number;
+    ctx: BlogRenderContext;
+    otherLinks: InlineLinkRow[];
   }> = [];
 
   for (const page of pages) {
-    let perPage = 0;
+    let newThisPage = 0;
     for (const product of products) {
-      if (perPage >= 6) break; // bounded suggestions per page
       const match = scoreProductForPage(product, { title: page.title, body: page.body });
       if (!match) continue;
       const key = `${page.page_type}|${page.page_slug}|${product.id}`;
-      if (existingKeys.has(key)) continue;
+      const existingRow = existingByKey.get(key);
+      if (existingRow && existingRow.status !== "pending") continue; // decided → frozen
       const anchor = pickAnchorPhrase(product, { title: page.title, body: page.body }, match.matchedTokens);
+      if (existingRow) {
+        // PHASE 533: refresh the pending row's anchor/score/reason in
+        // place (upsert update-on-conflict) — only when something moved
+        if (
+          existingRow.anchor_phrase !== anchor ||
+          Number(existingRow.relevance_score) !== match.score ||
+          existingRow.reason !== match.reason
+        ) {
+          toUpsert.push({
+            page_type: page.page_type,
+            page_slug: page.page_slug,
+            product_id: product.id,
+            relevance_score: match.score,
+            reason: match.reason,
+            anchor_phrase: anchor,
+            status: "pending",
+          });
+          anchorsRefreshed += 1;
+        }
+        continue; // existing pending rows never re-enter the new-suggestion budget
+      }
+      if (newThisPage >= 6) continue; // bounded NEW suggestions per page
       toUpsert.push({
         page_type: page.page_type,
         page_slug: page.page_slug,
@@ -561,40 +779,58 @@ export async function scanLinkSuggestions(): Promise<LinkScanResult> {
         anchor_phrase: anchor,
         status: "pending",
       });
-      existingKeys.add(key);
-      perPage += 1;
+      newSuggestions += 1;
+      newThisPage += 1;
+      // AUTO-APPLY (render-gated, Phase 533): only the blog surface has
+      // an inline render consumer, and only a probe-verified anchor.
       if (
         settings.auto_link_enabled &&
+        page.page_type === "blog" &&
+        page.pipelineContent !== undefined &&
         match.score >= settings.link_score_threshold &&
-        anchor !== null &&
-        anchor !== undefined &&
-        anchor.length > 0
+        anchor
       ) {
-        autoApplyQueue.push({
-          pageType: page.page_type,
-          pageSlug: page.page_slug,
-          product,
-          anchor,
-          score: match.score,
-        });
+        const candidateUrl = `/affiliate-store/${product.categorySlug}/${product.slug}`;
+        const otherLinks = activeLinksBySlug.get(page.page_slug) ?? [];
+        const ctx: BlogRenderContext = {
+          pipelineContent: page.pipelineContent,
+          title: page.title,
+          hasFaqCards: page.hasFaqCards ?? false,
+        };
+        if (anchorRendersVisibly(ctx, [...otherLinks, { productId: product.id, anchorPhrase: anchor, slug: product.slug, categorySlug: product.categorySlug, title: product.title }], candidateUrl)) {
+          autoApplyQueue.push({ pageSlug: page.page_slug, product, anchor, ctx, otherLinks });
+        }
       }
     }
   }
 
-  // write suggestions (chunked)
+  // write suggestions (chunked; update-on-conflict so pending refreshes land)
   for (let i = 0; i < toUpsert.length; i += 100) {
     const chunk = toUpsert.slice(i, i + 100);
     await supabaseAdmin.from("affiliate_store_link_suggestions").upsert(chunk, {
       onConflict: "page_type,page_slug,product_id",
-      ignoreDuplicates: true,
+      ignoreDuplicates: false,
     });
   }
-  result.suggestionsWritten = toUpsert.length;
+  result.suggestionsWritten = newSuggestions;
+  result.anchorsRefreshed = anchorsRefreshed;
 
-  // auto-apply the qualifying subset
+  // auto-apply the qualifying (probe-verified) subset
   for (const item of autoApplyQueue) {
-    const applied = await applyInlineLink(item.pageType, item.pageSlug, item.product, item.anchor, "auto");
-    if (applied) result.autoApplied += 1;
+    const applied = await applyInlineLink("blog", item.pageSlug, item.product, item.anchor, "auto");
+    if (applied) {
+      result.autoApplied += 1;
+      // keep the probe set live for the next candidate on the same page
+      const list = activeLinksBySlug.get(item.pageSlug) ?? [];
+      list.push({
+        productId: item.product.id,
+        anchorPhrase: item.anchor,
+        slug: item.product.slug,
+        categorySlug: item.product.categorySlug,
+        title: item.product.title,
+      });
+      activeLinksBySlug.set(item.pageSlug, list);
+    }
   }
   if (result.autoApplied > 0) {
     await flushLinkingCaches();
@@ -684,20 +920,130 @@ export function pageTypeToSurfaceType(pageType: string): string | null {
   }
 }
 
-/** Admin approve: one pending suggestion → applied inline link. */
+/**
+ * THE APPROVE-PATH ANCHOR COMPUTATION (Phase 533 — report §7-1):
+ * fetch the page's REAL render inputs, rebuild the exact render
+ * pipeline (sanitize → tool links → displayed body), then accept the
+ * stored anchor only if it actually renders, else recompute one. A
+ * candidate must pass the anchorRendersVisibly probe (the real
+ * injector + the real strips) — the product-title fallback that wrote
+ * dead rows (533 §3-2) is GONE. Returns the validated anchor or null.
+ */
+async function computeRenderableAnchorForBlog(
+  pageSlug: string,
+  product: ProductText & { id: string },
+  storedAnchor: string | null,
+): Promise<{ anchor: string } | { error: string }> {
+  if (!isSupabaseAdminConfigured || !supabaseAdmin) return { error: "Supabase not configured" };
+  const { data: postRow } = await supabaseAdmin
+    .from("blog_posts")
+    .select("slug,title,content,faq_json,language,is_published")
+    .eq("slug", pageSlug)
+    .eq("language", "en") // THE LANGUAGE LAW: EN posts only
+    .eq("is_published", true)
+    .maybeSingle();
+  if (!postRow) {
+    return { error: `no published EN article found for slug "${pageSlug}" — the link could never render` };
+  }
+  const post = postRow as { slug: string; title: string; content: string; faq_json: unknown };
+  const hasFaqCards = Array.isArray(post.faq_json) && post.faq_json.length > 0;
+  const pools = await fetchPublishedBlogSlugPools();
+  const pipelineContent = buildBlogPipelineContent(post.content ?? "", pools);
+  const ctx: BlogRenderContext = { pipelineContent, title: post.title, hasFaqCards };
+  const displayedBody = renderableBlogBody(pipelineContent, post.title, hasFaqCards);
+  const candidateUrl = `/affiliate-store/${product.categorySlug}/${product.slug}`;
+  const candidateRow: InlineLinkRow = {
+    productId: product.id,
+    anchorPhrase: "",
+    slug: product.slug,
+    categorySlug: product.categorySlug,
+    title: product.title,
+  };
+  // the page's CURRENT active links (the real render set, minus this product)
+  const { data: activeRows } = await supabaseAdmin
+    .from("affiliate_store_inline_links")
+    .select("product_id,anchor_phrase")
+    .eq("page_type", "blog")
+    .eq("page_slug", pageSlug)
+    .eq("is_active", true);
+  const { data: activeProducts } = await supabaseAdmin
+    .from("affiliate_store_products")
+    .select("id,slug,title,brand,summary,category_id")
+    .in("id", ((activeRows ?? []) as Array<{ product_id: string }>).map((r) => r.product_id));
+  const activeProductById = new Map(
+    ((activeProducts ?? []) as Array<{ id: string; slug: string; title: string; brand: string | null; summary: string; category_id: string }>).map((p) => [p.id, p]),
+  );
+  const activeCatIds = [...new Set([...activeProductById.values()].map((p) => p.category_id))];
+  const { data: activeCats } = activeCatIds.length
+    ? await supabaseAdmin.from("affiliate_store_categories").select("id,slug").in("id", activeCatIds)
+    : { data: [] as Array<{ id: string; slug: string }> | null };
+  const activeCatSlugById = new Map(
+    ((activeCats ?? []) as Array<{ id: string; slug: string }>).map((c) => [c.id, c.slug]),
+  );
+  const otherLinks: InlineLinkRow[] = [];
+  for (const r of (activeRows ?? []) as Array<{ product_id: string; anchor_phrase: string }>) {
+    if (r.product_id === product.id) continue;
+    const p = activeProductById.get(r.product_id);
+    if (!p) continue;
+    const catSlug = activeCatSlugById.get(p.category_id);
+    if (!catSlug) continue;
+    otherLinks.push({
+      productId: p.id,
+      anchorPhrase: r.anchor_phrase,
+      slug: p.slug,
+      categorySlug: catSlug,
+      title: p.title,
+    });
+  }
+
+  // 1) the stored anchor, if it actually renders
+  if (storedAnchor && anchorRendersVisibly(ctx, [...otherLinks, { ...candidateRow, anchorPhrase: storedAnchor }], candidateUrl)) {
+    return { anchor: storedAnchor };
+  }
+  // 2) recompute from the RENDERABLE displayed body (never tags/keywords,
+  //    never the product title as an unverified fallback)
+  const match = scoreProductForPage(product, { title: post.title, body: displayedBody });
+  const picked = pickAnchorPhrase(product, { title: post.title, body: displayedBody }, match?.matchedTokens ?? []);
+  if (picked && anchorRendersVisibly(ctx, [...otherLinks, { ...candidateRow, anchorPhrase: picked }], candidateUrl)) {
+    return { anchor: picked };
+  }
+  return {
+    error:
+      `no renderable anchor: neither the stored anchor${storedAnchor ? ` ("${storedAnchor}")` : " (NULL)"} nor a recomputed phrase ` +
+      `occurs in a linkable position of the article's displayed body (tags/keywords/tables/FAQ are excluded by the render law) — ` +
+      `edit the article or reject this suggestion (refusing to write a dead row)`,
+  };
+}
+
+/** Admin approve: one pending suggestion → applied inline link (Phase 533:
+ *  renderable-anchor-gated, blog-only, honest refusals — never a dead row). */
 export async function approveLinkSuggestion(
   suggestionId: string,
 ): Promise<{ ok: true } | { ok: false; error: string }> {
   if (!isSupabaseAdminConfigured || !supabaseAdmin) return { ok: false, error: "Supabase not configured" };
   const { data: suggestion } = await supabaseAdmin
     .from("affiliate_store_link_suggestions")
-    .select("page_type,page_slug,product_id,anchor_phrase")
+    .select("page_type,page_slug,product_id,anchor_phrase,status")
     .eq("id", suggestionId)
     .maybeSingle();
   if (!suggestion) return { ok: false, error: "suggestion not found" };
   const row = suggestion as {
-    page_type: string; page_slug: string; product_id: string; anchor_phrase: string | null;
+    page_type: string; page_slug: string; product_id: string;
+    anchor_phrase: string | null; status: string;
   };
+  if (row.status !== "pending") {
+    return { ok: false, error: `suggestion is not pending (status=${row.status}) — only pending rows can be approved` };
+  }
+  // THE RENDER-CONSUMER LAW (audit 530 §3.2-2): only the blog template
+  // consumes insertStoreLinks today — approving any other surface writes
+  // an inline row nothing renders (the owner's P2 exercise decision is
+  // pending), so the mechanism refuses honestly instead.
+  if (row.page_type !== "blog") {
+    return {
+      ok: false,
+      error: `inline render consumer exists only for blog pages (page_type=${row.page_type}) — approving would write a dead row (audit 530 §3.2-2; the surface-rail binding decision is the owner's pending P2)`,
+    };
+  }
   const { data: product } = await supabaseAdmin
     .from("affiliate_store_products")
     .select("id,slug,title,summary,brand,category_id")
@@ -710,28 +1056,90 @@ export async function approveLinkSuggestion(
     .eq("id", (product as { category_id: string }).category_id)
     .maybeSingle();
   if (!cat) return { ok: false, error: "product category missing" };
-  const anchor =
-    row.anchor_phrase ??
-    ((product as { title: string }).title.split(/[,(|]/)[0].trim().slice(0, 60) || "this product");
-  const applied = await applyInlineLink(
-    row.page_type,
-    row.page_slug,
-    {
-      id: (product as { id: string }).id,
-      productId: (product as { id: string }).id,
-      slug: (product as { slug: string }).slug,
-      categorySlug: (cat as { slug: string }).slug,
-      categoryName: (cat as { name: string }).name,
-      title: (product as { title: string }).title,
-      brand: (product as { brand: string | null }).brand,
-      summary: (product as { summary: string }).summary,
-    },
-    anchor,
-    "manual",
-  );
+  const productText: ProductText & { id: string } = {
+    id: (product as { id: string }).id,
+    productId: (product as { id: string }).id,
+    slug: (product as { slug: string }).slug,
+    categorySlug: (cat as { slug: string }).slug,
+    categoryName: (cat as { name: string }).name,
+    title: (product as { title: string }).title,
+    brand: (product as { brand: string | null }).brand,
+    summary: (product as { summary: string }).summary,
+  };
+  const anchorResult = await computeRenderableAnchorForBlog(row.page_slug, productText, row.anchor_phrase);
+  if ("error" in anchorResult) return { ok: false, error: anchorResult.error };
+  const applied = await applyInlineLink(row.page_type, row.page_slug, productText, anchorResult.anchor, "manual");
   if (!applied) return { ok: false, error: "could not apply (per-page cap reached or write failed)" };
   await flushLinkingCaches();
   return { ok: true };
+}
+
+/**
+ * REPAIR (Phase 533 — report §7-3, the official channel): recompute an
+ * existing ACTIVE inline link's anchor from the article's renderable
+ * body; when no renderable anchor exists the link is DEACTIVATED (no
+ * phantom active rows). Refuses non-blog surfaces (no inline consumer).
+ */
+export async function repairInlineLinkAnchor(
+  linkId: string,
+): Promise<{ ok: true; action: "reanchored" | "deactivated"; anchor: string | null } | { ok: false; error: string }> {
+  if (!isSupabaseAdminConfigured || !supabaseAdmin) return { ok: false, error: "Supabase not configured" };
+  const { data: linkRow } = await supabaseAdmin
+    .from("affiliate_store_inline_links")
+    .select("id,page_type,page_slug,product_id,anchor_phrase,is_active")
+    .eq("id", linkId)
+    .maybeSingle();
+  if (!linkRow) return { ok: false, error: "inline link not found" };
+  const link = linkRow as {
+    id: string; page_type: string; page_slug: string; product_id: string;
+    anchor_phrase: string; is_active: boolean;
+  };
+  if (link.page_type !== "blog") {
+    return {
+      ok: false,
+      error: `inline render consumer exists only for blog pages (page_type=${link.page_type}) — nothing to repair (the surface decision is the owner's pending P2)`,
+    };
+  }
+  const { data: product } = await supabaseAdmin
+    .from("affiliate_store_products")
+    .select("id,slug,title,summary,brand,category_id")
+    .eq("id", link.product_id)
+    .maybeSingle();
+  if (!product) return { ok: false, error: "product not found" };
+  const { data: cat } = await supabaseAdmin
+    .from("affiliate_store_categories")
+    .select("id,slug,name")
+    .eq("id", (product as { category_id: string }).category_id)
+    .maybeSingle();
+  if (!cat) return { ok: false, error: "product category missing" };
+  const productText: ProductText & { id: string } = {
+    id: (product as { id: string }).id,
+    productId: (product as { id: string }).id,
+    slug: (product as { slug: string }).slug,
+    categorySlug: (cat as { slug: string }).slug,
+    categoryName: (cat as { name: string }).name,
+    title: (product as { title: string }).title,
+    brand: (product as { brand: string | null }).brand,
+    summary: (product as { summary: string }).summary,
+  };
+  const anchorResult = await computeRenderableAnchorForBlog(link.page_slug, productText, link.anchor_phrase);
+  if ("error" in anchorResult) {
+    // no renderable anchor exists → deactivate honestly (no phantom row)
+    const { error } = await supabaseAdmin
+      .from("affiliate_store_inline_links")
+      .update({ is_active: false, updated_at: new Date().toISOString() })
+      .eq("id", linkId);
+    if (error) return { ok: false, error: `no renderable anchor and deactivate failed: ${error.message}` };
+    await flushLinkingCaches();
+    return { ok: true, action: "deactivated", anchor: null };
+  }
+  const { error } = await supabaseAdmin
+    .from("affiliate_store_inline_links")
+    .update({ anchor_phrase: anchorResult.anchor, updated_at: new Date().toISOString() })
+    .eq("id", linkId);
+  if (error) return { ok: false, error: error.message };
+  await flushLinkingCaches();
+  return { ok: true, action: "reanchored", anchor: anchorResult.anchor };
 }
 
 /** Admin reject: mark the suggestion rejected (no link is written). */

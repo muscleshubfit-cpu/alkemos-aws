@@ -18,6 +18,11 @@ vi.mock("@/lib/supabase/admin", () => ({
 vi.mock("next/cache", () => ({
   revalidateTag: () => undefined,
   revalidatePath: () => undefined,
+  // affiliate-store-linking now imports blog-server (the Phase-533 render
+  // pipeline) which wraps its fetchers in unstable_cache — a passthrough
+  // keeps the module importable without Next's real runtime (the
+  // site-content-revalidate precedent).
+  unstable_cache: (fn: unknown) => fn,
 }));
 
 vi.mock("@/lib/edge-purge", () => ({

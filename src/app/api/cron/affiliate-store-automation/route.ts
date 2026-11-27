@@ -70,6 +70,7 @@ export async function GET(request: NextRequest) {
         productsConsidered: 0,
         suggestionsWritten: 0,
         autoApplied: 0,
+        anchorsRefreshed: 0,
       };
       console.error("[affiliate-store-automation] linking scan failed:", error);
     }

@@ -109,13 +109,42 @@ Flip to price display is a Phase-4 owner decision with a ≤1 h refresh budget.
   keyword stuffing.
 - **Scan surfaces (EN ONLY):** blog posts (`language='en'`), recipes,
   programs, exercises, tools/nutrition pages.
+- **THE ANCHOR LAW (Phase 534 — report 533 §3, the structural fix):**
+  anchors are computed ONLY from the article text the visitor actually sees —
+  the render pipeline body (sanitize → tool links) minus the FAQ sections
+  (Phase 178: rendered from `faq_json` cards, stripped from the body) minus
+  the leading title heading (Phase 187). Tags/keywords/excerpt/category are
+  never anchor sources; headings, tables, blockquotes and existing links are
+  never wrappable positions; and every candidate anchor must pass the
+  `anchorRendersVisibly` probe — the REAL injector over the REAL pipeline
+  content, then the REAL render strips. A wrap that would not survive to the
+  displayed body is never written:
+  - `approveLinkSuggestion` refuses with a clear "no renderable anchor"
+    error instead of writing a dead row (the product-title fallback is
+    removed — audit 530 §3.2-2 dead-row class). It also refuses non-blog
+    surfaces (no inline render consumer exists yet — the owner's pending
+    P2 exercise decision).
+  - `scanLinkSuggestions` refreshes the anchor/score/reason of existing
+    PENDING suggestions in place (a NULL/stale anchor no longer freezes),
+    never touches decided rows, and auto-applies ONLY probe-verified
+    anchors on blog pages (an auto-applied link is one the visitor sees).
+  - `repairInlineLinkAnchor` (admin action `repair-inline-link`, panel
+    button "Repair anchor") recomputes an active link's anchor from the
+    renderable body and DEACTIVATES the link when no renderable anchor
+    exists — no phantom active rows.
+  - Anchor quality ranking (`pickAnchorPhrase`): product title segments →
+    product-identity multi-word phrases ("heart rate monitor" for a chest
+    strap) → product-name singles ("whey" for a whey powder) → category
+    context phrases ("water bottle" for an insulated bottle) → the matched
+    token pair. Bare non-product singles ("continuous") are never anchors.
 - **Two render paths:** (a) in-text anchors — first-occurrence phrase wrap,
   idempotent, capped by `max_links_per_page`, links point to the INTERNAL
   product page (`/affiliate-store/[category]/[slug]`), never directly to
-  Amazon, never inside existing links/headings; (b) the existing
+  Amazon, never inside existing links/headings/tables; (b) the existing
   `AffiliateStoreSurfaceRail` blocks via `affiliate_store_product_links`.
-- **Auto-apply** suggestions ≥ threshold (`auto_link_enabled`); the rest stay
-  pending for admin approve/reject.
+- **Auto-apply** suggestions ≥ threshold (`auto_link_enabled`) — blog only,
+  render-probe-verified (see the anchor law); the rest stay pending for
+  admin approve/reject.
 - **Hide/delete propagation:** product unpublished/hidden → its inline links +
   surface bindings deactivate + caches flushed (no dead links).
 - **Language law:** the injection function is a hard no-op for `lang !== 'en'`;
@@ -140,11 +169,13 @@ Flip to price display is a Phase-4 owner decision with a ≤1 h refresh budget.
   workflow_dispatch, tight concurrency group (the exchange-rate pattern).
 - Admin API `/api/admin/affiliate-store/automation` (requireAdmin): settings,
   category configs, run-now, linking-scan, suggestion approve/reject, link
-  toggle, analytics.
+  toggle, `repair-inline-link` (Phase 534: re-anchor or deactivate — see the
+  anchor law), analytics.
 - Admin UI `/admin/affiliate-store/automation`: enable/pause, frequency,
   per-run cap, category table (keywords/targets/active), credential status
   (booleans only — never values), last/next run, run history with stats +
-  errors, suggestion review, analytics dashboard.
+  errors, suggestion review (with the computed anchor phrase), inline-link
+  table with per-link "Repair anchor", analytics dashboard.
 
 ### 2.6 Protection & quality (how each owner requirement is met)
 

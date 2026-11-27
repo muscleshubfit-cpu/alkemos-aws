@@ -641,14 +641,27 @@ export function AffiliateStoreAutomationView() {
                         <td className="p-3">{l.source}</td>
                         <td className="p-3">{l.is_active ? "✓" : "—"}</td>
                         <td className="p-3">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => act({ action: "toggle-link", id: l.id, active: !l.is_active }, `tog-${l.id}`)}
-                            disabled={busy === `tog-${l.id}`}
-                          >
-                            {l.is_active ? (isAr ? "تعطيل" : "Deactivate") : isAr ? "تنشيط" : "Activate"}
-                          </Button>
+                          <div className="flex items-center gap-2">
+                            {l.is_active && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => act({ action: "repair-inline-link", id: l.id }, `rep-${l.id}`)}
+                                disabled={busy === `rep-${l.id}`}
+                                title={isAr ? "أعد حساب المرساة من متن المقال القابل للعرض (يعطّل الرابط إن لم توجد مرساة صالحة)" : "Recompute the anchor from the article's renderable body (deactivates the link if no valid anchor exists)"}
+                              >
+                                {busy === `rep-${l.id}` ? "…" : isAr ? "إصلاح المرساة" : "Repair anchor"}
+                              </Button>
+                            )}
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => act({ action: "toggle-link", id: l.id, active: !l.is_active }, `tog-${l.id}`)}
+                              disabled={busy === `tog-${l.id}`}
+                            >
+                              {l.is_active ? (isAr ? "تعطيل" : "Deactivate") : isAr ? "تنشيط" : "Activate"}
+                            </Button>
+                          </div>
                         </td>
                       </tr>
                     ))}
