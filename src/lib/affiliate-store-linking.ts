@@ -587,6 +587,23 @@ export function anchorRendersVisibly(
 }
 
 /**
+ * GENERIC-WORD ANCHOR BLOCKLIST (534-hotfix): single words that occur in
+ * product TITLES (so they pass the identity check) but measured live as
+ * junk anchors — they name packaging, marketing or generic fitness
+ * vocabulary, never the product type ("total" from "Total Upper Body",
+ * "classic" from "Classic Green Tea", "count" from "360 Count",
+ * "sport" from "Nuun Sport", "health" from "Sunny Health & Fitness").
+ * A single-word candidate in this set is never an anchor; a better
+ * candidate (or an honest null) follows.
+ */
+const GENERIC_SINGLE_ANCHORS = new Set([
+  "total", "classic", "count", "green", "premium", "health", "sport",
+  "standard", "nutrition", "training", "monitor", "weight", "powder",
+  "drink", "adjustable", "olympic", "seeds", "heart", "original",
+  "double", "rich", "plus", "essential", "complete", "advanced",
+]);
+
+/**
  * Pick the anchor phrase for a (page, product) pair: the longest product
  * title segment that occurs in the page's RENDERABLE body (a natural
  * anchor the reader already sees — never in a heading, table, quote,
@@ -646,7 +663,8 @@ export function pickAnchorPhrase(product: ProductText, page: PageText, matchedTo
       if (wordCovered(token)) fullMultis.push(token);
       else partialMultis.push(token);
     } else if (nameText.includes(token)) {
-      fullSingles.push(token);
+      // 534-hotfix: generic marketing/packaging words never anchor alone
+      if (!GENERIC_SINGLE_ANCHORS.has(token)) fullSingles.push(token);
     }
     // bare non-identity singles are NOT candidates (see the ladder note)
   }
@@ -690,44 +708,107 @@ export async function scanLinkSuggestions(): Promise<LinkScanResult> {
   result.productsConsidered = products.length;
   if (pages.length === 0 || products.length === 0) return result;
 
-  // existing suggestions: pending rows are refreshable; decided rows are frozen
-  const { data: existing } = await supabaseAdmin
-    .from("affiliate_store_link_suggestions")
-    .select("page_type,page_slug,product_id,status,anchor_phrase,relevance_score,reason");
+  type SuggestionInsert = Database["public"]["Tables"]["affiliate_store_link_suggestions"]["Insert"];
+  // existing suggestions: pending rows are refreshable; decided rows are frozen.
+  // PAGINATED READ (534-hotfix): PostgREST caps any single response at
+  // 1000 rows and this table carries 1,600+ — the unbounded read silently
+  // truncated, so pairs beyond the cap looked "new" and the refresh upsert
+  // (update-on-conflict) REVERTED DECIDED ROWS to pending and flipped
+  // manual inline rows' source to auto (measured live 2026-11-27: 56
+  // exercise-approved suggestions reverted, 3 manual rows flipped). The
+  // loop below reads every page — the freeze law holds again.
   type ExistingRow = {
     page_type: string; page_slug: string; product_id: string;
     status: string; anchor_phrase: string | null; relevance_score: number; reason: string;
   };
   const existingByKey = new Map<string, ExistingRow>();
-  for (const r of (existing ?? []) as ExistingRow[]) {
-    existingByKey.set(`${r.page_type}|${r.page_slug}|${r.product_id}`, r);
-  }
-
-  // the live render set for the auto-apply visibility probe (blog only)
-  const productById = new Map(products.map((p) => [p.id, p]));
-  const activeLinksBySlug = new Map<string, InlineLinkRow[]>();
-  if (settings.auto_link_enabled) {
-    const { data: activeRows } = await supabaseAdmin
-      .from("affiliate_store_inline_links")
-      .select("page_slug,product_id,anchor_phrase")
-      .eq("page_type", "blog")
-      .eq("is_active", true);
-    for (const r of (activeRows ?? []) as Array<{ page_slug: string; product_id: string; anchor_phrase: string }>) {
-      const product = productById.get(r.product_id);
-      if (!product) continue;
-      const list = activeLinksBySlug.get(r.page_slug) ?? [];
-      list.push({
-        productId: product.id,
-        anchorPhrase: r.anchor_phrase,
-        slug: product.slug,
-        categorySlug: product.categorySlug,
-        title: product.title,
-      });
-      activeLinksBySlug.set(r.page_slug, list);
+  {
+    const PAGE = 1000;
+    for (let offset = 0; ; offset += PAGE) {
+      const { data: page } = await supabaseAdmin
+        .from("affiliate_store_link_suggestions")
+        .select("page_type,page_slug,product_id,status,anchor_phrase,relevance_score,reason")
+        .range(offset, offset + PAGE - 1);
+      const rows = (page ?? []) as ExistingRow[];
+      for (const r of rows) existingByKey.set(`${r.page_type}|${r.page_slug}|${r.product_id}`, r);
+      if (rows.length < PAGE) break;
     }
   }
 
-  type SuggestionInsert = Database["public"]["Tables"]["affiliate_store_link_suggestions"]["Insert"];
+  // SELF-HEALING RECONCILIATION (534-hotfix): a suggestion whose pair
+  // carries an ACTIVE inline link IS applied — its status must be
+  // 'approved' (the truncation incident above left 56 exercise pairs
+  // pending while their links render; this pass re-states the truth
+  // through the system's own scan, no direct DB writes).
+  {
+    const PAGE = 1000;
+    const appliedKeys: Array<{ page_type: string; page_slug: string; product_id: string }> = [];
+    for (let offset = 0; ; offset += PAGE) {
+      const { data: page } = await supabaseAdmin
+        .from("affiliate_store_inline_links")
+        .select("page_type,page_slug,product_id")
+        .eq("is_active", true)
+        .range(offset, offset + PAGE - 1);
+      const rows = (page ?? []) as Array<{ page_type: string; page_slug: string; product_id: string }>;
+      for (const r of rows) appliedKeys.push(r);
+      if (rows.length < PAGE) break;
+    }
+    const heal: SuggestionInsert[] = [];
+    for (const k of appliedKeys) {
+      const row = existingByKey.get(`${k.page_type}|${k.page_slug}|${k.product_id}`);
+      if (row && row.status !== "approved") {
+        // heal in place: keep the row's own values, restate the truth
+        heal.push({
+          page_type: k.page_type,
+          page_slug: k.page_slug,
+          product_id: k.product_id,
+          relevance_score: Number(row.relevance_score),
+          reason: row.reason ?? undefined,
+          anchor_phrase: row.anchor_phrase,
+          status: "approved",
+        });
+      }
+    }
+    for (let i = 0; i < heal.length; i += 100) {
+      await supabaseAdmin
+        .from("affiliate_store_link_suggestions")
+        .upsert(heal.slice(i, i + 100), { onConflict: "page_type,page_slug,product_id", ignoreDuplicates: false });
+    }
+  }
+
+  // the live render set for the auto-apply visibility probe (blog only;
+  // paginated — the same 1000-row cap applies)
+  const productById = new Map(products.map((p) => [p.id, p]));
+  const activeLinksBySlug = new Map<string, InlineLinkRow[]>();
+  const linkedPairKeys = new Set<string>();
+  {
+    const PAGE = 1000;
+    for (let offset = 0; ; offset += PAGE) {
+      const { data: page } = await supabaseAdmin
+        .from("affiliate_store_inline_links")
+        .select("page_slug,product_id,anchor_phrase")
+        .eq("page_type", "blog")
+        .eq("is_active", true)
+        .range(offset, offset + PAGE - 1);
+      const rows = (page ?? []) as Array<{ page_slug: string; product_id: string; anchor_phrase: string }>;
+      for (const r of rows) {
+        linkedPairKeys.add(`blog|${r.page_slug}|${r.product_id}`);
+        const product = productById.get(r.product_id);
+        if (!product) continue;
+        const list = activeLinksBySlug.get(r.page_slug) ?? [];
+        list.push({
+          productId: product.id,
+          anchorPhrase: r.anchor_phrase,
+          slug: product.slug,
+          categorySlug: product.categorySlug,
+          title: product.title,
+        });
+        activeLinksBySlug.set(r.page_slug, list);
+      }
+      if (rows.length < PAGE) break;
+    }
+  }
+
   const toUpsert: SuggestionInsert[] = [];
   let newSuggestions = 0;
   let anchorsRefreshed = 0;
@@ -783,9 +864,13 @@ export async function scanLinkSuggestions(): Promise<LinkScanResult> {
       newThisPage += 1;
       // AUTO-APPLY (render-gated, Phase 533): only the blog surface has
       // an inline render consumer, and only a probe-verified anchor.
+      // 534-hotfix: pairs that ALREADY carry an inline row (any state)
+      // are never auto-applied — re-applying would flip a manual row's
+      // source to auto and resurrect editorially-disabled links.
       if (
         settings.auto_link_enabled &&
         page.page_type === "blog" &&
+        !linkedPairKeys.has(`blog|${page.page_slug}|${product.id}`) &&
         page.pipelineContent !== undefined &&
         match.score >= settings.link_score_threshold &&
         anchor

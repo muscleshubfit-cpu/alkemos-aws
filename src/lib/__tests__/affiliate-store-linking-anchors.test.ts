@@ -360,3 +360,43 @@ describe("the end-to-end no-dead-link law (insertStoreLinks + the strips)", () =
     expect(anchorRendersVisibly(ctx, [linkRow("daily dose of creatine monohydrate")], URL_P1)).toBe(false);
   });
 });
+
+describe("GENERIC_SINGLE_ANCHORS blocklist (534-hotfix: junk single-word anchors never ship)", () => {
+  it("rejects 'total' for a 'Total Upper Body Doorway Pull-Up Bar' product — falls to a better candidate", () => {
+    const product = {
+      ...PRODUCT,
+      title: "Iron Gym Total Upper Body Doorway Pull-Up Bar, Black",
+      categorySlug: "power-racks-benches-pull-up-bars",
+      categoryName: "Power Racks, Benches & Pull-up Bars",
+    };
+    const displayed = renderableBlogBody(ARTICLE, "Creatine Timing for Muscle Gain", true);
+    // 'total' occurs renderably in the body? force it to, and prove it is STILL not picked
+    const bodyWithTotal = displayed.replace(
+      "Most lifters ask",
+      "The total volume matters and Most lifters ask",
+    );
+    const anchor = pickAnchorPhrase(product, { title: "Creatine Timing", body: bodyWithTotal }, ["total"]);
+    expect(anchor).not.toBe("total");
+  });
+
+  it("rejects 'classic' (Bigelow Classic Green Tea class) even when it occurs in the body", () => {
+    const product = {
+      ...PRODUCT,
+      title: "Bigelow Classic Green Tea Bags (40 ct, 6 Pack)",
+      categorySlug: "coffees-teas",
+      categoryName: "Coffees & Teas",
+    };
+    const body = "A classic approach to training keeps the total weekly volume honest and repeatable across months.";
+    const anchor = pickAnchorPhrase(product, { title: "Training", body }, ["classic", "green"]);
+    expect(anchor).toBeNull();
+  });
+
+  it("still accepts a real type noun from the product name ('casein', 'magnesium', 'creatine')", () => {
+    const casein = { ...PRODUCT, title: "Optimum Nutrition Gold Standard 100% Casein Protein Powder" };
+    const body = renderableBlogBody(ARTICLE, "Creatine Timing", true).replace(
+      "Most lifters ask",
+      "Some lifters pair creatine with casein at night; Most lifters ask",
+    );
+    expect(pickAnchorPhrase(casein, { title: "Creatine Timing", body }, ["casein"])).toBe("casein");
+  });
+});
