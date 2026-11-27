@@ -789,6 +789,9 @@ export async function scanLinkSuggestions(): Promise<LinkScanResult> {
         .select("page_slug,product_id,anchor_phrase")
         .eq("page_type", "blog")
         .eq("is_active", true)
+        // 534: deterministic order matching the render reader
+        .order("created_at", { ascending: true })
+        .order("id", { ascending: true })
         .range(offset, offset + PAGE - 1);
       const rows = (page ?? []) as Array<{ page_slug: string; product_id: string; anchor_phrase: string }>;
       for (const r of rows) {
@@ -1050,7 +1053,11 @@ async function computeRenderableAnchorForBlog(
     .select("product_id,anchor_phrase")
     .eq("page_type", "blog")
     .eq("page_slug", pageSlug)
-    .eq("is_active", true);
+    .eq("is_active", true)
+    // 534: match the render reader's deterministic order (the probe
+    // simulates the real wrap sequence — candidate appended last)
+    .order("created_at", { ascending: true })
+    .order("id", { ascending: true });
   const { data: activeProducts } = await supabaseAdmin
     .from("affiliate_store_products")
     .select("id,slug,title,brand,summary,category_id")

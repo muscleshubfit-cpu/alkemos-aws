@@ -661,6 +661,13 @@ export async function listAffiliateStoreInlineLinksForPage(
       .eq("page_type", pageType)
       .eq("page_slug", pageSlug)
       .eq("is_active", true)
+      // 534: DETERMINISTIC RENDER ORDER (created_at, then id) — the
+      // approve/repair/auto-apply probes simulate the candidate appended
+      // LAST; an unordered read could shuffle same-anchor links and starve
+      // one of its occurrence (measured live: two 'pre-workout' links on
+      // the evening-training page, only one rendered).
+      .order("created_at", { ascending: true })
+      .order("id", { ascending: true })
       .limit(6);
     const rows = (linkRows ?? []) as Array<{ product_id: string; anchor_phrase: string }>;
     if (rows.length === 0) return [];
