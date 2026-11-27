@@ -325,6 +325,46 @@ describe("insertStoreLinks (THE LANGUAGE LAW + the render discipline)", () => {
   });
 });
 
+describe("the exercise-page relevance law (live regression: 2026-11-27)", () => {
+  it("a BODYWEIGHT exercise must NOT match rack/bench products (instructions excluded from the scan)", () => {
+    const rackProduct = {
+      productId: "rack-1",
+      slug: "example-squat-rack",
+      categorySlug: "power-racks-benches-pull-up-bars",
+      categoryName: "Power Racks, Benches & Pull-up Bars",
+      title: "ExampleFit Squat Rack with Bench",
+      brand: "ExampleFit",
+      summary: "Heavy-duty squat rack with an adjustable bench.",
+    };
+    // the exact live shape post-fix: name + equipment + category + muscles
+    const bodyweightAnkleCircles = {
+      title: "Ankle Circles",
+      body: "Ankle Circles\nbodyweight\ncardio\ncalves",
+    };
+    const match = scoreProductForPage(rackProduct, bodyweightAnkleCircles);
+    expect(match).toBeNull();
+  });
+
+  it("a DUMBBELL exercise matches dumbbell products with the equipment as the anchor source", () => {
+    const dumbbellProduct = {
+      productId: "db-1",
+      slug: "example-adjustable-dumbbell",
+      categorySlug: "adjustable-fixed-dumbbells",
+      categoryName: "Adjustable & Fixed Dumbbells",
+      title: "ExampleFit Adjustable Dumbbell, 52.5 lb",
+      brand: "ExampleFit",
+      summary: "Space-saving adjustable dumbbell.",
+    };
+    const dumbbellPress = {
+      title: "Close-grip Dumbbell Press",
+      body: "Close-grip Dumbbell Press\ndumbbell\nchest\ntriceps",
+    };
+    const match = scoreProductForPage(dumbbellProduct, dumbbellPress);
+    expect(match).not.toBeNull();
+    expect(match!.categoryHit).toBe(true);
+  });
+});
+
 describe("tokenize", () => {
   it("drops stop words, short tokens, and pure digits", () => {
     const tokens = tokenize("The best 25 dumbbells for your home gym!");

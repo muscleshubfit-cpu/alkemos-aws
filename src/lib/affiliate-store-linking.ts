@@ -398,13 +398,18 @@ function fetchProgramPages(): ScannedPage[] {
 
 function fetchExercisePages(): ScannedPage[] {
   // The exercise library is large but static and cheap to scan — the
-  // equipment tag is the real relevance signal (a dumbbell exercise page
-  // is a natural host for dumbbell products).
+  // EQUIPMENT TAG is the real relevance signal (a dumbbell exercise page
+  // is a natural host for dumbbell products). The form-cue instructions
+  // are DELIBERATELY EXCLUDED: they mention incidental gear ("set the
+  // barbell on a rack…") that has nothing to do with the exercise's own
+  // equipment, which measured live as false matches (bodyweight ankle
+  // circles attracting squat-rack links — the owner's «الصلة الحقيقية
+  // وليس تطابق كلمات عشوائي» law).
   return EXERCISES.map((e) => ({
     page_type: "exercise",
     page_slug: e.slug,
     title: e.nameEn,
-    body: [e.nameEn, e.equipment, e.category, (e.primaryMuscles ?? []).join(" "), (e.instructionsEn ?? []).join(" ")].join("\n"),
+    body: [e.nameEn, e.equipment, e.category, (e.primaryMuscles ?? []).join(" ")].join("\n"),
   }));
 }
 
