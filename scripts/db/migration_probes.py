@@ -645,6 +645,67 @@ PROBES: list[dict] = [
              "expect": 2},
         ],
     },
+    # 0121 — AFFILIATE-STORE-CATALOG-COMPLETION (owner order 2026-11-27 «نفّذ
+    # استكمال بناء قاعدة منتجات Affiliate Store اعتمادًا على تقرير التدقيق 530»):
+    # the 25-candidate audit list processed through the full store law — every
+    # ASIN live-verified in a real browser, every image machine-vision-checked
+    # person-free, failed candidates replaced with documented alternatives,
+    # and the two previously-empty leaves activated carrying products.
+    {
+        "file": "20261127200000_0121_affiliate_store_catalog_completion.sql",
+        "label": "0121 AFFILIATE-STORE-CATALOG-COMPLETION",
+        "strength": "strong",
+        "checks": [
+            # the 25-product verified batch (fixed slug set — the count is eternal)
+            {"type": "rest_rows",
+             "path": ("/rest/v1/affiliate_store_products?select=slug&slug=in."
+                      "(dymatize-iso100-hydrolyzed-whey-isolate,"
+                      "yes4all-cable-machine-attachment-set,"
+                      "cap-barbell-fm8000f-deluxe-power-rack,"
+                      "instant-pot-duo-6qt-7-in-1,"
+                      "quaker-old-fashioned-rolled-oats,"
+                      "kodiak-power-cakes-buttermilk-mix,"
+                      "anthonys-organic-psyllium-husk-powder,"
+                      "gymreapers-knee-sleeves-7mm,"
+                      "powerblock-elite-exp-adjustable-dumbbells,"
+                      "bowflex-selecttech-840-kettlebell,"
+                      "aroma-housewares-rice-cooker-steamer,"
+                      "gaiam-yoga-block-support,"
+                      "lectrofan-classic-white-noise-machine,"
+                      "perfect-fitness-ab-carver-pro,"
+                      "cap-adjustable-weighted-vest-20lb,"
+                      "lodge-cast-iron-skillet-1025,"
+                      "cubii-jr1-under-desk-elliptical,"
+                      "nature-nates-raw-unfiltered-honey-32oz,"
+                      "california-olive-ranch-global-blend-evoo,"
+                      "justins-classic-almond-butter-16oz,"
+                      "gymreapers-wrist-wraps-ipf,"
+                      "power-up-protein-trail-mix-14oz,"
+                      "garden-of-life-probiotics-for-men-50b,"
+                      "nsca-essentials-strength-training-conditioning,"
+                      "triggerpoint-stk-handheld-massage-stick)&limit=100"),
+             "transform": "count_rows",
+             "expect": 25},
+            # the two previously-empty leaves now active AND carrying products
+            # (the thin-page law §1.4: no category page goes live empty)
+            {"type": "rest_rows",
+             "path": ("/rest/v1/affiliate_store_categories"
+                      "?select=slug,is_active&slug=in.(home-gyms-cable-stations,ellipticals-steppers)"
+                      "&is_active=is.true&limit=10"),
+             "transform": "count_rows",
+             "expect": 2},
+            # every new row carries its Amazon CDN image (527-G1 trusted source)
+            {"type": "rest_rows",
+             "path": ("/rest/v1/affiliate_store_products?select=slug,image_url"
+                      "&image_url=like.%m.media-amazon.com%&slug=in."
+                      "(dymatize-iso100-hydrolyzed-whey-isolate,"
+                      "cap-barbell-fm8000f-deluxe-power-rack,"
+                      "lodge-cast-iron-skillet-1025,"
+                      "garden-of-life-probiotics-for-men-50b)&limit=100"),
+             "transform": "count_rows",
+             "expect": 4},
+        ],
+    },
 ]# fmt on
 
 
