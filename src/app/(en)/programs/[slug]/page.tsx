@@ -145,12 +145,15 @@ export default async function Page({
       />
       {/* ALKEMOS-STORE (VISIBILITY-PREVIEW 2026-11-26): the store's
           “Gear for this program” rail — honest-empty until published
-          products are bound to this program's surface key. NOTE (the
-          0116 founding batch seeded abbreviated program keys —
-          gym-strength/home-dumbbell/hiit/home-core/home-workout — that
-          do NOT exactly match the real program slugs like
-          gym-strength-5x5; the owner fixes the bindings from the admin
-          editor — documented in the frame report §surface-keys). */}
+          products are bound to this program's surface key. (The 0116/0119
+          founding batches seeded ABBREVIATED program keys —
+          gym-strength / home-dumbbell / hiit / home-core / home-workout —
+          that matched NO real program slug, so every program page rendered
+          an empty rail; re-keyed to the real slugs by migration 0122 on
+          2026-11-28 — audit 530 §6 item 1, governing report
+          docs/archive/AFFILIATE-STORE-PROGRAM-LINKS-532-2026-11-28.md.
+          The keys law now lives in the 0122 probes +
+          affiliate-store-program-links.test.ts.) */}
       <AffiliateStoreSurfaceRail
         surfaceType="program"
         surfaceKey={slug}

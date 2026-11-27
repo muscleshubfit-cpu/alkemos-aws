@@ -706,6 +706,40 @@ PROBES: list[dict] = [
              "expect": 4},
         ],
     },
+    # 0122 — AFFILIATE-STORE-PROGRAM-LINKS-FIX (owner order 2026-11-28 — audit
+    # 530 §6 item 1 «نفّذ البند الأول من خطة التدقيق»): the 40 program
+    # bindings re-keyed from the five ABBREVIATED founding keys (which
+    # matched NO real program slug — every program page rendered an empty
+    # rail) to the REAL slugs, plus the two empty gym programs bound.
+    # Strong end-state probes, drift-proof under legitimate admin edits
+    # (adding products/links with real slugs keeps them green; any future
+    # binding with a non-real slug turns the second check RED the same day —
+    # the exact 530 §3.2-1 defect class can never silently return).
+    {
+        "file": "20261128120000_0122_affiliate_store_program_links_fix.sql",
+        "label": "0122 AFFILIATE-STORE-PROGRAM-LINKS-FIX",
+        "strength": "strong",
+        "checks": [
+            # the five legacy abbreviated keys are eradicated
+            {"type": "rest_rows",
+             "path": ("/rest/v1/affiliate_store_product_links?select=surface_key"
+                      "&surface_type=eq.program"
+                      "&surface_key=in.(gym-strength,home-workout,hiit,home-dumbbell,home-core)"
+                      "&limit=1000"),
+             "transform": "count_rows",
+             "expect": 0},
+            # every program binding targets one of the seven REAL slugs
+            # (single source: src/lib/workout-programs.ts)
+            {"type": "rest_rows",
+             "path": ("/rest/v1/affiliate_store_product_links?select=surface_key"
+                      "&surface_type=eq.program"
+                      "&surface_key=not.in.(gym-strength-5x5,home-beginner-fullbody,"
+                      "home-fat-loss-hiit,home-core-specialization,home-dumbbell-ppl,"
+                      "gym-beginner-fullbody,gym-ppl-intermediate)&limit=1000"),
+             "transform": "count_rows",
+             "expect": 0},
+        ],
+    },
 ]# fmt on
 
 
