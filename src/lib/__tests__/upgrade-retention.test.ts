@@ -200,10 +200,11 @@ describe("A) resolveMembershipTier — the premium→pro lifecycle ladder", () =
       expect(tier).toBe("pro");
       expect(resolveUnifiedPlanPoolLimit(rows)).toBe(12); // 4+8 (376 law)
     } else {
-      // After 2026-11-27 both rows lapse together (same-day activation,
-      // same 1-month term) → free, per the same law.
+      // After 2026-11-27T14:08Z both rows lapse together (same-day activation,
+      // same 1-month term) → free, per the same law — and the free pool is
+      // aiPlanMonthlyLimit=0 (memberships.ts), not a hypothetical 2.
       expect(tier).toBe("free");
-      expect(resolveUnifiedPlanPoolLimit(rows)).toBe(2);
+      expect(resolveUnifiedPlanPoolLimit(rows)).toBe(0);
     }
   });
 });
@@ -436,14 +437,18 @@ describe("C) the stacking law in the database (migration source pins)", () => {
 
 describe("D) pickPrimarySubscription / effectiveSubStatus — what the UI shows after the upgrade", () => {
   it("both rows live → the PRO row is the primary (badge Pro), while the premium row keeps its own honest status", () => {
+    // Date-stable twins of the M3 rows (the fixed production timestamps
+    // lapse at 2026-11-27T14:07-08Z — after that moment the fixture can
+    // no longer demonstrate "both rows live", so the pick-law test rides
+    // relative dates and keeps its premise deterministic).
     const rows = [
-      { ...M3_PREMIUM, id: "sub-premium" },
-      { ...M3_PRO, id: "sub-pro" },
+      { ...M3_PREMIUM, id: "sub-premium", end_date: iso(2 * DAY) },
+      { ...M3_PRO, id: "sub-pro", end_date: iso(3 * DAY) },
     ];
     const primary = pickPrimarySubscription(rows);
     expect(primary?.id).toBe("sub-pro");
     // the premium row is still fully alive for the all-subs list
-    expect(effectiveSubStatus(M3_PREMIUM)).toBe("active");
+    expect(effectiveSubStatus(rows[0])).toBe("active");
   });
 
   it("premium outlives the pro row (renewed later) → premium surfaces as primary (active-first law, 0102)", () => {
