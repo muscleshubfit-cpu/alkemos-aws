@@ -158,6 +158,37 @@ describe("transformCandidate", () => {
       transformCandidate({ ...baseItem, itemInfo: { title: null } }, { id: "c", slug: "s", name: "N" }),
     ).toBeNull();
   });
+
+  // ── the stored-link law canaries (§1.5-2/§3.2 — remediation frame) ──
+  // The real Creators API response carries a tagged detailPageURL; these
+  // canaries make its storage structurally impossible to reintroduce: the
+  // candidate payload must never carry the key, a tagged URL, or any
+  // amazon.com/dp destination — the buy link is built at render time by
+  // resolveAmazonBuyLink (ASIN + env tag) and stored NOWHERE.
+  it("NEVER stores the API detailPageURL in the payload even when the API returns one", () => {
+    // simulate the real wire shape (extra field the type no longer declares)
+    const itemWithUrl = JSON.parse(
+      JSON.stringify({
+        ...baseItem,
+        detailPageURL: "https://www.amazon.com/dp/B08EXAMPLE?tag=ahmedzake-20",
+      }),
+    ) as CreatorsApiItem;
+    const c = transformCandidate(itemWithUrl, { id: "c", slug: "s", name: "N" }, new Set());
+    expect(c).not.toBeNull();
+    expect(c!.payload).not.toHaveProperty("detailPageURL");
+    expect(c!.payload).not.toHaveProperty("detail_page_url");
+  });
+
+  it("carries NO tagged Amazon link anywhere in the payload (stored-link law)", () => {
+    const c = transformCandidate(baseItem, { id: "c", slug: "s", name: "N" }, new Set());
+    expect(c).not.toBeNull();
+    const serialized = JSON.stringify(c!.payload).toLowerCase();
+    expect(serialized).not.toContain("tag=");
+    expect(serialized).not.toContain("amazon.com/dp");
+    expect(serialized).not.toContain("amzn.to");
+    // the ASIN itself (the ONLY stored purchase identity) stays present
+    expect(c!.asin).toBe("B08EXAMPLE");
+  });
 });
 
 describe("candidateSlug", () => {

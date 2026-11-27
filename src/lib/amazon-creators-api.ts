@@ -183,10 +183,15 @@ async function accessToken(fetchImpl: FetchLike): Promise<string> {
 
 /* ───────────────────────── response shapes ───────────────────────── */
 
-/** The item subset this system consumes (the resources we request). */
+/** The item subset this system consumes (the resources we request).
+ *
+ * NO detailPageURL by design (the stored-link law §1.5-2/§3.2): the real
+ * API response may carry one, but this system never reads, types, or
+ * persists it — the purchase destination is built at render time by
+ * resolveAmazonBuyLink (affiliate-store-link.ts) from the ASIN + the
+ * env tag only. */
 export type CreatorsApiItem = {
   asin: string;
-  detailPageURL?: string | null;
   images?: {
     primary?: {
       large?: { url?: string; width?: number; height?: number } | null;

@@ -86,6 +86,15 @@ items → hide (`is_published=false`, availability note — never delete, slug
 law). Every step logged into the run's events; failures raise admin
 notifications (throttled) and RED workflow runs.
 
+**Stored-link law (529-R remediation, 2026-11-27):** the product `payload`
+carries NO `detailPageURL` — the tagged link the API returns is never
+typed, read, or persisted; the stored purchase identity is the ASIN alone
+and the buy destination is built at render time by `resolveAmazonBuyLink`
+(env tag, merged exactly once). Two canaries in
+`affiliate-store-automation-core.test.ts` make reintroduction impossible:
+the payload must lack the key even when the API item carries one, and its
+full serialization must be free of `tag=` / `amazon.com/dp` / `amzn.to`.
+
 **Price display law (documented decision):** API-obtained prices are STORED
 (price clause: API-served data is the allowed class), but public cards keep
 showing "See price on Amazon" — Amazon's policy requires displayed pricing to

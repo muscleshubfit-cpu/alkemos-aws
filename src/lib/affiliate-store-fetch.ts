@@ -260,9 +260,11 @@ export function transformCandidate(
       ? buyBox.availabilityMessage.slice(0, 200)
       : null,
     payload: {
+      // NO detailPageURL here — the tagged Amazon link is NEVER stored (the
+      // §1.5-2/§3.2 stored-link law): the buy destination is built at render
+      // time by resolveAmazonBuyLink from the ASIN + the env tag only.
       source: "creators-api",
       fetched_at: new Date().toISOString(),
-      detailPageURL: item.detailPageURL ?? null,
       parentASIN: item.parentASIN ?? null,
       buyBox: {
         priceUsd: buyBox.priceUsd,

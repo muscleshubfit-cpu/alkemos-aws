@@ -41,9 +41,12 @@ function jsonResponse(body: unknown, status = 200): Response {
   });
 }
 
+// NOTE (the stored-link law §1.5-2/§3.2): the real Creators API response
+// carries a detailPageURL, but this system never types, reads, or persists
+// it — the SAMPLE_ITEM fixture deliberately omits it, and the no-tagged-
+// link-storage canaries live in affiliate-store-automation-core.test.ts.
 const SAMPLE_ITEM: CreatorsApiItem = {
   asin: "B08EXAMPLE",
-  detailPageURL: "https://www.amazon.com/dp/B08EXAMPLE?tag=ahmedzake-20",
   images: {
     primary: {
       large: { url: "https://m.media-amazon.com/images/I/51example._SL1200_.jpg", width: 1200, height: 1200 },
