@@ -370,7 +370,7 @@ alkemos/
   reports for the import frame. See
   [`scripts/food-catalog/README.md`](./scripts/food-catalog/README.md)
 - **Open food catalog tables (`food_catalog` + `food_catalog_aliases`,
-  migrations 0123-0132 — Wave-1 item F3-ب)** — the ODbL open catalog, SEPARATE from
+  migrations 0123-0133 — Wave-1 item F3-ب)** — the ODbL open catalog, SEPARATE from
   the private Alkemos library by storage law (source rows verbatim; the
   logical merge happens at the query layer, never inside storage). RLS:
   public read, zero client write policies — the data lands through the
@@ -382,7 +382,7 @@ alkemos/
   (artifact integrity sha256-gate → migrations-first → single-transaction
   import → live verification + table-size cap) available once
   `SUPABASE_DB_URL` is provisioned, running read-only verification until
-  then. The data licenses + per-source attribution ledger:
+  then. A service-role-only size RPC enforces the ≤150 MB table cap as a standing migration-state-gate probe. The data licenses + per-source attribution ledger:
   [`LICENSES-DATA.md`](./LICENSES-DATA.md)
 - Daily automated JSON backups run to a **private** repository
   (`.github/workflows/db-backup.yml`) — user data never lands in this repo

@@ -64,6 +64,15 @@ async function discoverTables() {
   return Object.keys(defs).sort();
 }
 
+/** REBUILDABLE-BY-DESIGN EXCLUSION (F3-ب 2026-11-28): the open food
+ *  catalog tables are reproducible from the repo's own migration files
+ *  (0124-0132 — statements carried verbatim from the validated F3-a CI
+ *  artifact), so a nightly ~100MB JSON dump of ODbL rows into the private
+ *  backup repo is pure bloat with zero recovery value. Excluded here and
+ *  recorded in the manifest; recover = re-apply the migrations (the
+ *  migration-state gate verifies the re-import). */
+const EXCLUDED_TABLES = new Set(["food_catalog", "food_catalog_aliases"]);
+
 /** Fetch one table with pagination. Returns {rows, orderBy}. */
 async function fetchTable(table) {
   const attempts = [`&order=id`, `&order=created_at`, ``];
@@ -108,8 +117,9 @@ function stableStringify(value) {
 
 async function main() {
   const t0 = Date.now();
-  const tables = await discoverTables();
-  console.log(`db-backup: ${tables.length} tables discovered`);
+  const allTables = await discoverTables();
+  const tables = allTables.filter((t) => !EXCLUDED_TABLES.has(t));
+  console.log(`db-backup: ${tables.length} tables discovered (${allTables.length - tables.length} excluded as rebuildable)`);
 
   const tablesDir = join(outDir, "tables");
   await mkdir(tablesDir, { recursive: true });
@@ -122,6 +132,14 @@ async function main() {
     tables: {},
     totals: { tables: tables.length, rows: 0, bytes: 0, failed: 0 },
   };
+
+  // record the rebuildable-by-design exclusions in the manifest (F3-ب
+  // 2026-11-28: recovered by re-applying migrations, not from snapshots)
+  for (const t of allTables) {
+    if (EXCLUDED_TABLES.has(t)) {
+      manifest.tables[t] = { ok: true, excluded: "rebuildable-by-design (repo migrations 0124-0132)", rows: 0 };
+    }
+  }
 
   for (const table of tables) {
     try {

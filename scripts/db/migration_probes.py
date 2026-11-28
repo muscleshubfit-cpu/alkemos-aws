@@ -908,6 +908,22 @@ PROBES: list[dict] = [
              "expect": 1},
         ],
     },
+    # 0133 — the F3-ب criterion-3 measurement + STANDING gate: the
+    # admin-channel size RPC (service-role only). The probe asserts the
+    # measured catalog size (heap+indexes) is within the plan's 150 MB
+    # cap — bloat past the cap turns the state gate RED by itself, the
+    # same observability law as every other probe.
+    {
+        "file": "20261128191000_0133_food_catalog_size_rpc.sql",
+        "label": "0133 FOOD-CATALOG-SIZE-RPC",
+        "strength": "strong",
+        "checks": [
+            {"type": "rest_rows",
+             "path": "/rest/v1/rpc/get_food_catalog_size",
+             "transform": "food_catalog_size_ok",
+             "expect": 1},
+        ],
+    },
 ]# fmt on
 
 
@@ -937,8 +953,17 @@ def count_rows(rows: list[dict]) -> int:
     return len(rows)
 
 
+def food_catalog_size_ok(rows: list[dict]) -> int:
+    """0133's invariant: the MEASURED catalog size (heap+indexes, from the
+    admin-only get_food_catalog_size RPC) is within the plan's 150 MB cap
+    (F3-ب acceptance criterion 3) — enforced as a standing gate, not a
+    one-time check. Returns 1 only when the live row says total_ok."""
+    return 1 if rows and rows[0].get("total_ok") is True else 0
+
+
 TRANSFORMS = {
     "duplicate_draft_groups": duplicate_draft_groups,
     "at_least_one_admin": at_least_one_admin,
     "count_rows": count_rows,
+    "food_catalog_size_ok": food_catalog_size_ok,
 }

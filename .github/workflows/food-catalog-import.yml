@@ -242,6 +242,26 @@ jobs:
           echo "anon read: HTTP $STATUS, rows=$COUNT"
           [ "$STATUS" = "200" ] && [ "$COUNT" = "1" ] || { echo "::error::public read failed (HTTP $STATUS, rows $COUNT)"; exit 1; }
 
+      # F3-ب criterion 3 — MEASURED on both tracks: the admin-channel size
+      # RPC (migration 0133, service-role only) reports the live
+      # heap+indexes size of both tables + the ≤150 MB verdict. The DIRECT
+      # track's psql step gates on the same cap with pg_total_relation_size.
+      - name: Size measurement (F3-ب criterion 3 — the 150 MB gate, measured)
+        env:
+          SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          SIZE_JSON="$(curl -s -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" \
+            -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
+            "$SUPABASE_URL/rest/v1/rpc/get_food_catalog_size")"
+          echo "size RPC: $SIZE_JSON"
+          OK="$(python3 -c "import json,sys; print(1 if json.loads(sys.argv[1])[0]['total_ok'] is True else 0)" "$SIZE_JSON")"
+          if [ "$OK" != "1" ]; then
+            echo "::error::food_catalog exceeds the 150 MB cap (F3-ب criterion 3) — see the measured size above."
+            exit 1
+          fi
+          echo "size cap OK — measured within 150 MB with indexes"
+
       - name: Job summary (the measured record)
         if: ${{ always() }}
         env:

@@ -2990,6 +2990,18 @@ export type Database = {
     Functions: {
       // 0120 (AFFILIATE-STORE-AUTOMATION) — the atomic daily-aggregate
       // impression increment (beacon endpoint, service-role only).
+      // 0133 (OPENCALORY-F3B-FOOD-CATALOG-SIZE-RPC) — the measured F3-ب
+      // criterion-3 gate: catalog size (heap+indexes) + the ≤150 MB verdict.
+      // Service-role only (revoked from anon/authenticated — ops telemetry).
+      get_food_catalog_size: {
+        Args: Record<string, never>;
+        Returns: {
+          food_catalog_bytes: string;
+          food_catalog_aliases_bytes: string;
+          food_catalog_pretty: string;
+          total_ok: boolean;
+        }[];
+      };
       affiliate_store_track_impressions: {
         Args: {
           p_product_id: string;

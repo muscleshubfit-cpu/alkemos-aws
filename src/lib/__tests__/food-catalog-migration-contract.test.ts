@@ -198,7 +198,7 @@ describe("F3-b (540) — the migration-law objects ship in the same commit", () 
   it("INDEX.md carries the 0123 + data rows and the heading is bumped to the newest file", () => {
     const index = read(INDEX_MD);
     expect(index).toContain("| 0123 |");
-    expect(index).toMatch(/الترقيم 0001 → 0132/);
+    expect(index).toMatch(/الترقيم 0001 → 0133/);
   });
 
   it("types.ts carries both new tables (the migration-law regeneration)", () => {
@@ -293,5 +293,34 @@ describe("F3-b (540) — the data files (the channel pivot: the validated artifa
     // the final file carries the full import-completion checks
     expect(probes).toContain("0132 FOOD-CATALOG-DATA 9/9");
     expect(probes).toContain("offset=60000");
+  });
+});
+
+describe("F3-b (540) — the measured size gate (criterion 3 — table ≤ 150 MB with indexes)", () => {
+  const MIG_0133 = "supabase/migrations/20261128191000_0133_food_catalog_size_rpc.sql";
+
+  it("the size RPC migration exists and pins the 150 MB cap (157,286,400 bytes)", () => {
+    const sql = read(MIG_0133);
+    expect(sql).toMatch(/create or replace function public\.get_food_catalog_size\(\)/i);
+    expect(sql).toContain("pg_total_relation_size('public.food_catalog')");
+    expect(sql).toContain("157286400");
+    expect(sql).toContain("total_ok");
+    // ops telemetry is service-role ONLY — revoked from every client role
+    expect(sql).toMatch(/revoke all on function public\.get_food_catalog_size\(\) from anon/i);
+    expect(sql).toMatch(/revoke all on function public\.get_food_catalog_size\(\) from authenticated/i);
+    // the migration law's security posture for SECURITY DEFINER
+    expect(sql).toMatch(/security definer/i);
+    expect(sql).toMatch(/set search_path = public/i);
+  });
+
+  it("the state gate enforces the cap forever (probe + transform + types mirror)", () => {
+    const probes = read(PROBES_PY);
+    expect(probes).toContain('"20261128191000_0133_food_catalog_size_rpc.sql"');
+    expect(probes).toContain('"path": "/rest/v1/rpc/get_food_catalog_size"');
+    expect(probes).toContain('"transform": "food_catalog_size_ok"');
+    expect(probes).toContain("def food_catalog_size_ok(rows:");
+    const types = read("src/lib/supabase/types.ts");
+    expect(types).toContain("get_food_catalog_size: {");
+    expect(types).toContain("total_ok: boolean;");
   });
 });
