@@ -195,10 +195,10 @@ describe("F3-b (540) — the migration-law objects ship in the same commit", () 
     expect(probes).toContain('"label": "0123 OPENCALORY-F3B-FOOD-CATALOG-IMPORT"');
   });
 
-  it("INDEX.md carries the 0123 row and the heading is bumped", () => {
+  it("INDEX.md carries the 0123 + data rows and the heading is bumped to the newest file", () => {
     const index = read(INDEX_MD);
     expect(index).toContain("| 0123 |");
-    expect(index).toMatch(/الترقيم 0001 → 0123/);
+    expect(index).toMatch(/الترقيم 0001 → 0132/);
   });
 
   it("types.ts carries both new tables (the migration-law regeneration)", () => {
@@ -215,7 +215,7 @@ describe("F3-b (540) — the import channel (repo-owned workflow, never an agent
     // the integrity gate: a failed artifact must never land
     expect(wf).toContain("did NOT pass the F3-a acceptance gate");
     expect(wf).toContain("sha256 mismatch");
-    // migrations BEFORE data (the ledger-driven applier)
+    // migrations BEFORE data (the ledger-driven applier — direct track)
     expect(wf.indexOf("apply_migrations.py")).toBeLessThan(
       wf.indexOf("-f catalog-artifact/food-catalog.sql")
     );
@@ -228,5 +228,70 @@ describe("F3-b (540) — the import channel (repo-owned workflow, never an agent
     // dispatch-only (an import cadence is an owner decision)
     expect(wf).toContain("workflow_dispatch:");
     expect(wf).not.toContain("schedule:");
+    // the two-track honesty: the verify track is read-only through
+    // PostgREST when SUPABASE_DB_URL is absent (the measured posture —
+    // the first deploy's gate proved the secret is not provisioned)
+    expect(wf).toContain("HAS_DB_URL: ${{ secrets.SUPABASE_DB_URL != '' }}");
+    expect(wf).toContain("Track: VERIFY");
+  });
+});
+
+describe("F3-b (540) — the data files (the channel pivot: the validated artifact lands as data-only migrations)", () => {
+  const DATA_DIR = "supabase/migrations";
+  const DATA_FILES = [
+    "20261128190000_0124_food_catalog_data_1.sql",
+    "20261128190100_0125_food_catalog_data_2.sql",
+    "20261128190200_0126_food_catalog_data_3.sql",
+    "20261128190300_0127_food_catalog_data_4.sql",
+    "20261128190400_0128_food_catalog_data_5.sql",
+    "20261128190500_0129_food_catalog_data_6.sql",
+    "20261128190600_0130_food_catalog_data_7.sql",
+    "20261128190700_0131_food_catalog_data_8.sql",
+    "20261128190800_0132_food_catalog_data_9.sql",
+  ];
+  const readHead = (rel: string, bytes = 2600): string =>
+    readFileSync(join(process.cwd(), rel)).subarray(0, bytes).toString("utf8");
+
+  it("all 9 data files exist with strictly increasing versions (hygiene: unique timestamps)", () => {
+    for (const f of DATA_FILES) {
+      expect(readFileSync(join(process.cwd(), DATA_DIR, f)).length).toBeGreaterThan(0);
+    }
+    const stamps = DATA_FILES.map((f) => f.split("_")[0]);
+    expect(new Set(stamps).size).toBe(9); // no duplicate versions
+    expect(stamps).toEqual([...stamps].sort());
+  });
+
+  it("every file carries the provenance header (artifact run + sha256 + ODbL attribution)", () => {
+    for (const f of DATA_FILES) {
+      const head = readHead(join(DATA_DIR, f));
+      expect(head).toContain("OPENCALORY-F3B-FOOD-CATALOG-DATA");
+      expect(head).toContain("run 46159717498"); // the validated F3-a build
+      expect(head).toContain("989f02b0aabeecaef19e978f2ef60963ae505c8b2bb6bdb5d677ce16bc895727");
+      expect(head).toContain("ODbL-1.0");
+      expect(head).toContain("LICENSES-DATA.md");
+    }
+  });
+
+  it("every file is an atomic idempotent unit (own BEGIN/COMMIT + upserts only)", () => {
+    for (const f of DATA_FILES) {
+      const sql = readFileSync(join(process.cwd(), DATA_DIR, f), "utf8");
+      expect(sql).toMatch(/^BEGIN;/m);
+      expect(sql).toMatch(/^COMMIT;/m);
+      // every INSERT statement carries its ON CONFLICT upsert clause —
+      // a re-run never duplicates a row (the artifact's own design)
+      const inserts = (sql.match(/^INSERT INTO /gm) ?? []).length;
+      const upserts = (sql.match(/ON CONFLICT \((id|legacy_id, kind)\) DO UPDATE/g) ?? []).length;
+      expect(inserts).toBe(upserts);
+    }
+  });
+
+  it("the probe registry carries a row per data file (the red probe names the unapplied chunk)", () => {
+    const probes = read(PROBES_PY);
+    for (const f of DATA_FILES) {
+      expect(probes).toContain(f);
+    }
+    // the final file carries the full import-completion checks
+    expect(probes).toContain("0132 FOOD-CATALOG-DATA 9/9");
+    expect(probes).toContain("offset=60000");
   });
 });

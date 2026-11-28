@@ -370,15 +370,19 @@ alkemos/
   reports for the import frame. See
   [`scripts/food-catalog/README.md`](./scripts/food-catalog/README.md)
 - **Open food catalog tables (`food_catalog` + `food_catalog_aliases`,
-  migration 0123 — Wave-1 item F3-ب)** — the ODbL open catalog, SEPARATE from
+  migrations 0123-0132 — Wave-1 item F3-ب)** — the ODbL open catalog, SEPARATE from
   the private Alkemos library by storage law (source rows verbatim; the
   logical merge happens at the query layer, never inside storage). RLS:
   public read, zero client write policies — the data lands through the
-  repo-owned import workflow ONLY
-  (`.github/workflows/food-catalog-import.yml`: artifact integrity
-  sha256-gate → migrations-first → single-transaction atomic import → live
-  verification against the artifact's own validated numbers + a table-size
-  cap). The data licenses + per-source attribution ledger:
+  repo's migration channel ONLY: the validated F3-a CI artifact's statements
+  ship as data-only migration files applied by the re-linked
+  Supabase-GitHub integration (each file atomic + upsert-idempotent, byte-
+  identical to the artifact, provenance headers + integrity-gated), and the
+  `food-catalog-import` workflow is the DIRECT import/verification track
+  (artifact integrity sha256-gate → migrations-first → single-transaction
+  import → live verification + table-size cap) available once
+  `SUPABASE_DB_URL` is provisioned, running read-only verification until
+  then. The data licenses + per-source attribution ledger:
   [`LICENSES-DATA.md`](./LICENSES-DATA.md)
 - Daily automated JSON backups run to a **private** repository
   (`.github/workflows/db-backup.yml`) — user data never lands in this repo

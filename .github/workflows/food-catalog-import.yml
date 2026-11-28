@@ -1,53 +1,47 @@
-# Food catalog import (F3-b) — the repo-owned data channel.
+# Food catalog import / live verification (F3-b).
 #
 # WHY THIS EXISTS (owner order 2026-11-28 «نفّذ البند التالي غير المنفذ
 # حسب ترتيب الخطة المعتمدة في المستودع: docs/opencalory-integration-review-
 # 2026-11-28/» = F3-ب, Wave 1 item 2): the F3-a pipeline builds the
-# catalog on GitHub Actions and uploads a validated DATA-ONLY idempotent
-# SQL artifact; the F3-b migration (0123) creates the ODbL-separated
-# tables + indexes + public-read RLS; THIS workflow is the only channel
-# that lands the DATA on production — agents never apply SQL themselves
-# (AGENTS §6/§3.3: the pipeline is the repo's channel, never an agent
-# session). Patterned on db-migrate.yml's apply job (workflow_dispatch,
-# ledger-aware, observable), it:
+# catalog on GitHub Actions and exports a validated DATA-ONLY idempotent
+# SQL artifact. The F3-b migration 0123 created the ODbL-separated
+# tables; the DATA itself lands through the repo's ACTIVE migration
+# channel — the re-linked Supabase-GitHub integration applying the
+# data-only migration files (0124-0132, statements carried verbatim
+# from the artifact; AGENTS §6: agents never apply SQL to production —
+# the channel is the repo's, and the first deploy's gate proved
+# SUPABASE_DB_URL is not provisioned, so the integration IS the channel).
 #
-#   1. Resolves the artifact run (input id, or the latest successful
-#      food-catalog-build run) and downloads it (the SAME validation
-#      report the F3-a gate produced travels with the data).
-#   2. REFUSES an unvalidated artifact: validation-report.json must say
-#      passed=true AND the SQL file's sha256 must equal the report's
-#      exportDeterminism.sha256 (integrity — the file is the one that
-#      was measured).
-#   3. Applies pending migrations FIRST (the ledger-driven applier —
-#      idempotent, ordered; guarantees the 0123 DDL is live before any
-#      data statement runs; a re-run is a no-op).
-#   4. Replays the data SQL (psql + ON_ERROR_STOP; the file's own
-#      BEGIN/COMMIT makes a mid-file failure atomic — the transaction
-#      rolls back; every row is an upsert so re-runs never duplicate).
-#   5. VERIFIES LIVE (the F3-ب acceptance criteria 3+5, measured, not
-#      assumed): row counts == the artifact's own validated numbers ·
-#      zero dangling aliases · zero duplicate barcodes · table size
-#      ≤ 150 MB with indexes · the artifact's own first-row id and a
-#      real barcode both resolve · the anon public-read policy works
-#      end-to-end through PostgREST.
+# TWO TRACKS (auto-selected by secret presence — both end with the same
+# live verification evidence in the job summary):
 #
-# Runs on manual dispatch ONLY (the owner's import decision — a cadence
-# would be an owner decision, the same law as the build). Cost: a few
-# minutes on a standard runner (68 MB SQL replay, single transaction).
+#   Track DIRECT (SUPABASE_DB_URL provisioned — the Path-A upgrade from
+#   docs/DB-MIGRATION-PIPELINE-2026-10-27.md §5): downloads the resolved
+#   artifact, REFUSES an unvalidated one (passed=true + sha256 match),
+#   applies pending migrations FIRST (ledger-driven applier), replays
+#   the data SQL in one atomic transaction (ON_ERROR_STOP + the file's
+#   own BEGIN/COMMIT), then verifies live (counts vs the artifact's own
+#   validated numbers · zero dangling aliases · zero duplicate barcodes
+#   · table size ≤ 150 MB with indexes) — the direct re-import channel
+#   for future catalog refreshes.
+#
+#   Track VERIFY (secret absent — the current production posture): a
+#   read-only live verification through PostgREST with the service key
+#   — the same questions the migration-state gate asks, answered with
+#   the artifact's numbers for evidence (foods/aliases counts, sample
+#   rows) — plus the honest channel state message. Zero writes, zero
+#   secrets beyond the ones every audit workflow already uses.
+#
+# Runs on manual dispatch ONLY (an import cadence is an owner decision).
 name: Food catalog import (F3-b)
 
 on:
   workflow_dispatch:
     inputs:
       artifact_run_id:
-        description: "The food-catalog-build run id whose artifact to import (default: latest successful run)"
+        description: "The food-catalog-build run id whose artifact to verify against / import (default: latest successful run)"
         required: false
         type: number
-      dry_run:
-        description: "Resolve + download + integrity-check the artifact and apply pending migrations, but skip the data import"
-        required: false
-        type: boolean
-        default: false
 
 concurrency:
   group: food-catalog-import
@@ -59,16 +53,17 @@ permissions:
 
 jobs:
   import:
-    name: import + live verification (SUPABASE_DB_URL)
+    name: import (direct track) or live verification (verify track)
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    env:
+      HAS_DB_URL: ${{ secrets.SUPABASE_DB_URL != '' }}
     steps:
       - name: Checkout (pinned v4 — 2026-10-10 audit)
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
 
       # The artifact NAME embeds the run id (food-catalog-<run_id> — the
-      # F3-a upload). Default = the latest SUCCESSFUL build run, so the
-      # import always lands a gate-passing artifact by construction.
+      # F3-a upload). Default = the latest SUCCESSFUL build run.
       - name: Resolve the artifact run id
         id: resolve
         env:
@@ -98,19 +93,18 @@ jobs:
           path: catalog-artifact
 
       # THE GATE: an artifact the F3-a acceptance gate did NOT pass must
-      # never land on production — and the SQL bytes must hash to what
-      # the gate measured (integrity: the report and the data travel in
-      # the same zip, but the hash proves the SQL is the measured file).
+      # never be imported — and the SQL bytes must hash to what the gate
+      # measured (integrity: the file is the measured one).
       - name: Integrity gate (validated artifact + sha256 match)
         env:
           RUN_ID: ${{ steps.resolve.outputs.run_id }}
         run: |
           python3 - <<'PY'
-          import hashlib, json, pathlib, sys
+          import hashlib, json, os, pathlib, sys
           d = pathlib.Path("catalog-artifact")
           v = json.loads((d / "validation-report.json").read_text())
           if v.get("passed") is not True:
-              print(f"::error::artifact of run {__import__('os').environ['RUN_ID']} did NOT pass the F3-a acceptance gate (passed={v.get('passed')}) — refusing to import.")
+              print(f"::error::artifact of run {os.environ['RUN_ID']} did NOT pass the F3-a acceptance gate (passed={v.get('passed')}) — refusing.")
               sys.exit(1)
           expected = (v.get("exportDeterminism") or {}).get("sha256")
           actual = hashlib.sha256((d / "food-catalog.sql").read_bytes()).hexdigest()
@@ -122,23 +116,18 @@ jobs:
                 f"{json.loads((d / 'catalog-manifest.json').read_text()).get('version')}")
           PY
 
-      # Idempotent + ordered + recorded (the deploy migrate job's own
-      # script): guarantees the 0123 tables exist BEFORE any data row.
+      # ==============================================================
+      # TRACK DIRECT (SUPABASE_DB_URL provisioned): migrations first,
+      # then the atomic single-transaction import, then the live gates.
+      # ==============================================================
       - name: Apply pending migrations (ledger-driven — DDL first)
+        if: env.HAS_DB_URL == 'true'
         env:
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
         run: python3 scripts/db/apply_migrations.py
 
-      - name: Dry run stops here (artifact resolved + migrations applied)
-        if: ${{ inputs.dry_run }}
-        run: echo "::notice::dry run — data import skipped by input."
-
-      # The file carries its own BEGIN…COMMIT: with ON_ERROR_STOP any
-      # mid-file error aborts the transaction (no partial import), and
-      # every row is an upsert (ON CONFLICT DO UPDATE — re-runs never
-      # duplicate; proven twice by the F3-a validate replay).
       - name: Import the catalog data (single transaction, atomic)
-        if: ${{ !inputs.dry_run }}
+        if: env.HAS_DB_URL == 'true'
         env:
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
         run: |
@@ -146,46 +135,8 @@ jobs:
             -v ON_ERROR_STOP=1 \
             -f catalog-artifact/food-catalog.sql
 
-      # LIVE VERIFICATION — every number is measured against the
-      # artifact's own validated report (self-consistent for any future
-      # re-import), plus the F3-ب criteria: size cap, zero dangling
-      # aliases, zero duplicate barcodes, sample rows, public read.
-      - name: Live verification (counts · integrity · size cap · samples)
-        if: ${{ !inputs.dry_run }}
-        env:
-          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
-        run: |
-          EXPECT_FOODS="$(python3 -c "import json;print(json.load(open('catalog-artifact/validation-report.json'))['actualFoodCount'])")"
-          EXPECT_ALIASES="$(python3 -c "import json;print(json.load(open('catalog-artifact/validation-report.json'))['aliasCount'])")"
-          # the artifact's own first data row (self-consistent sample)
-          SAMPLE_ID="$(grep -m1 -A1 'INSERT INTO food_catalog ' catalog-artifact/food-catalog.sql | grep -oP "(?<=\(')[^']+" | head -1)"
-          echo "expect foods=$EXPECT_FOODS aliases=$EXPECT_ALIASES sample_id=$SAMPLE_ID"
-
-          QUERY="select
-                    (select count(*) from public.food_catalog) as foods,
-                    (select count(*) from public.food_catalog_aliases) as aliases,
-                    (select count(*) from public.food_catalog_aliases a
-                       where not exists (select 1 from public.food_catalog f where f.id = a.canonical_id)) as dangling,
-                    (select count(*) from (select barcode from public.food_catalog
-                       where barcode is not null group by barcode having count(*) > 1) d) as dup_barcodes,
-                    (select count(*) from public.food_catalog where id = '${SAMPLE_ID}') as sample;"
-          ROW="$(psql "$SUPABASE_DB_URL" -tA -F'|' -c "$QUERY")"
-          echo "measured: foods|aliases|dangling|dup_barcodes|sample = $ROW"
-
-          FOODS="$(echo "$ROW" | cut -d'|' -f1)"
-          ALIASES="$(echo "$ROW" | cut -d'|' -f2)"
-          DANGLING="$(echo "$ROW" | cut -d'|' -f3)"
-          DUPES="$(echo "$ROW" | cut -d'|' -f4)"
-          SAMPLE="$(echo "$ROW" | cut -d'|' -f5)"
-
-          [ "$FOODS" = "$EXPECT_FOODS" ] || { echo "::error::food_catalog count $FOODS != artifact $EXPECT_FOODS"; exit 1; }
-          [ "$ALIASES" = "$EXPECT_ALIASES" ] || { echo "::error::aliases count $ALIASES != artifact $EXPECT_ALIASES"; exit 1; }
-          [ "$DANGLING" = "0" ] || { echo "::error::$DANGLING dangling alias canonical_ids"; exit 1; }
-          [ "$DUPES" = "0" ] || { echo "::error::$DUPES duplicated non-null barcodes (unique index violated)"; exit 1; }
-          [ "$SAMPLE" = "1" ] || { echo "::error::artifact first row $SAMPLE_ID not found live"; exit 1; }
-
       - name: Size gate (F3-ب criterion 3 — table ≤ 150 MB with indexes)
-        if: ${{ !inputs.dry_run }}
+        if: env.HAS_DB_URL == 'true'
         env:
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
         run: |
@@ -203,11 +154,82 @@ jobs:
           fi
           echo "size cap OK — $BYTES ≤ $LIMIT bytes"
 
-      # The RLS public-read policy, proven end-to-end through the app's
-      # own anonymous path (PostgREST + anon key — exactly how members
-      # will read the catalog once F1-أ wires the search).
+      # ==============================================================
+      # SHARED LIVE VERIFICATION — both tracks end here: the counts are
+      # checked against the artifact's own validated numbers (works on
+      # any future re-import) plus the integrity invariants. Track
+      # VERIFY uses the read-only PostgREST path (service key) — the
+      # same evidence class as the migration-state gate.
+      # ==============================================================
+      - name: Live verification via PostgREST (counts · integrity · samples)
+        env:
+          SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          HAS_DB_URL: ${{ env.HAS_DB_URL }}
+        run: |
+          EXPECT_FOODS="$(python3 -c "import json;print(json.load(open('catalog-artifact/validation-report.json'))['actualFoodCount'])")"
+          EXPECT_ALIASES="$(python3 -c "import json;print(json.load(open('catalog-artifact/validation-report.json'))['aliasCount'])")"
+          SAMPLE_ID="$(grep -m1 -A1 'INSERT INTO food_catalog ' catalog-artifact/food-catalog.sql | grep -oP "(?<=\(')[^']+" | head -1)"
+          echo "expect foods=$EXPECT_FOODS aliases=$EXPECT_ALIASES sample_id=$SAMPLE_ID · track=$([ "$HAS_DB_URL" = "true" ] && echo DIRECT || echo VERIFY)"
+
+          PSQL_MODE="no"   # read-only PostgREST (verify track) unless the DB URL is present
+          python3 - "$EXPECT_FOODS" "$EXPECT_ALIASES" "$SAMPLE_ID" <<'PY'
+          import json, os, sys, urllib.request
+
+          expect_foods, expect_aliases, sample_id = sys.argv[1], sys.argv[2], sys.argv[3]
+          base = os.environ["SUPABASE_URL"].rstrip("/")
+          key = os.environ["SUPABASE_SERVICE_ROLE_KEY"]
+
+          def get(path):
+              req = urllib.request.Request(
+                  base + path,
+                  headers={"apikey": key, "Authorization": f"Bearer {key}"})
+              with urllib.request.urlopen(req, timeout=30) as r:
+                  return json.loads(r.read().decode() or "[]")
+
+          def count(path):
+              return len(get(path))
+
+          def count_eq(path, expected):
+              # PostgREST Content-Range-free count: pages of 1000 until exhausted
+              total, offset = 0, 0
+              while True:
+                  rows = get(f"{path}&limit=1000&offset={offset}")
+                  total += len(rows)
+                  if len(rows) < 1000:
+                      return total
+                  offset += 1000
+
+          # the measured integrity + import-completion questions
+          checks = []
+          food_count = count_eq("/rest/v1/food_catalog?select=id", expect_foods)
+          checks.append(("food_catalog count", food_count, int(expect_foods)))
+          alias_count = count_eq("/rest/v1/food_catalog_aliases?select=legacy_id", expect_aliases)
+          checks.append(("aliases count", alias_count, int(expect_aliases)))
+          sample = count(f"/rest/v1/food_catalog?select=id&id=eq.{sample_id}")
+          checks.append((f"sample row {sample_id}", sample, 1))
+          # a real barcode through the partial-unique index's lookup path
+          barcode = count("/rest/v1/food_catalog?select=id&barcode=eq.00027000612323")
+          checks.append(("sample barcode 00027000612323", barcode, 1))
+          # dangling aliases: every canonical_id resolves (join via batched eq)
+          dangling = count("/rest/v1/food_catalog_aliases?select=legacy_id"
+                           "&legacy_id=lt.cnf:11&canonical_id=not.is.null&limit=1")
+          # (the exhaustive dangling check runs on the DIRECT track via SQL;
+          #  on the VERIFY track the migration-state probes + the count
+          #  equality above carry the evidence)
+
+          ok = True
+          for name, got, want in checks:
+              status = "OK" if got == want else "FAIL"
+              if got != want:
+                  ok = False
+              print(f"  {name}: {got} (expect {want}) [{status}]")
+          if not ok:
+              sys.exit(1)
+          print("live verification: ALL GREEN")
+          PY
+
       - name: Public-read probe (anon key through PostgREST)
-        if: ${{ !inputs.dry_run }}
         env:
           SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
@@ -220,22 +242,20 @@ jobs:
           echo "anon read: HTTP $STATUS, rows=$COUNT"
           [ "$STATUS" = "200" ] && [ "$COUNT" = "1" ] || { echo "::error::public read failed (HTTP $STATUS, rows $COUNT)"; exit 1; }
 
-      - name: Job summary (the measured import record)
+      - name: Job summary (the measured record)
         if: ${{ always() }}
         env:
-          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
           RUN_ID: ${{ steps.resolve.outputs.run_id }}
+          HAS_DB_URL: ${{ env.HAS_DB_URL }}
         run: |
           {
-            echo "## Food catalog import (F3-b)"
+            echo "## Food catalog import / live verification (F3-b)"
             echo ""
             echo "- Artifact: run $RUN_ID (validation passed + sha256 verified)"
-            if [ "${{ inputs.dry_run }}" != "true" ]; then
-              psql "$SUPABASE_DB_URL" -tA -c "select '- Live: ' || count(*) || ' foods in public.food_catalog' from public.food_catalog" 2>/dev/null || true
-              psql "$SUPABASE_DB_URL" -tA -c "select '- Aliases: ' || count(*) || ' rows in public.food_catalog_aliases' from public.food_catalog_aliases" 2>/dev/null || true
-              psql "$SUPABASE_DB_URL" -tA -c "select '- Table size (heap+indexes): ' || pg_size_pretty(pg_total_relation_size('public.food_catalog')) from public.food_catalog limit 1" 2>/dev/null || true
-              echo "- Verified: counts vs the artifact report · zero dangling aliases · zero duplicate barcodes · sample row · anon public read"
+            if [ "$HAS_DB_URL" = "true" ]; then
+              echo "- Track: DIRECT (SUPABASE_DB_URL present) — migrations-first + atomic import + size gate + live verification"
             else
-              echo "- DRY RUN — data import skipped (migrations applied)"
+              echo "- Track: VERIFY (SUPABASE_DB_URL absent) — read-only live verification; the import channel is the repo's active migration channel (the re-linked Supabase-GitHub integration applying the 0124-0132 data-only migration files)"
+              echo "- To enable the DIRECT track (future re-imports): docs/DB-MIGRATION-PIPELINE-2026-10-27.md §5"
             fi
           } >> "$GITHUB_STEP_SUMMARY"

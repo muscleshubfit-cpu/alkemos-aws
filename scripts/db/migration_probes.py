@@ -786,6 +786,128 @@ PROBES: list[dict] = [
              "expect": 1},
         ],
     },
+
+    # 0124-0132 — OPENCALORY-F3B-FOOD-CATALOG-DATA (the F3-ب import data
+    # files — the channel pivot after the first deploy's gate proved
+    # SUPABASE_DB_URL is NOT provisioned: the repo's ACTIVE migration
+    # channel is the re-linked Supabase-GitHub integration, so the
+    # validated artifact's statements land VERBATIM as data-only
+    # migrations, chunked ~9MB per file with own-transaction atomicity
+    # and upsert idempotency — byte-identical to the artifact, 523/523
+    # statements verified). Each chunk's probe pins its OWN first row:
+    # a red probe names the EXACT unapplied chunk (precise recovery),
+    # and the final file (0132 — the alias half) carries the full
+    # import-completion checks: both count thresholds + a barcode
+    # lookup through the partial-unique index's path.
+    {
+        "file": "20261128190000_0124_food_catalog_data_1.sql",
+        "label": "0124 FOOD-CATALOG-DATA 1/9",
+        "strength": "strong",
+        "checks": [
+            {"type": "rest_rows",
+             "path": "/rest/v1/food_catalog?select=id&id=eq.cnf:10",
+             "transform": "count_rows",
+             "expect": 1},
+        ],
+    },
+    {
+        "file": "20261128190100_0125_food_catalog_data_2.sql",
+        "label": "0125 FOOD-CATALOG-DATA 2/9",
+        "strength": "strong",
+        "checks": [
+            {"type": "rest_rows",
+             "path": "/rest/v1/food_catalog?select=id&id=eq.off:0074570114009",
+             "transform": "count_rows",
+             "expect": 1},
+        ],
+    },
+    {
+        "file": "20261128190200_0126_food_catalog_data_3.sql",
+        "label": "0126 FOOD-CATALOG-DATA 3/9",
+        "strength": "strong",
+        "checks": [
+            {"type": "rest_rows",
+             "path": "/rest/v1/food_catalog?select=id&id=eq.off:4044782959350",
+             "transform": "count_rows",
+             "expect": 1},
+        ],
+    },
+    {
+        "file": "20261128190300_0127_food_catalog_data_4.sql",
+        "label": "0127 FOOD-CATALOG-DATA 4/9",
+        "strength": "strong",
+        "checks": [
+            {"type": "rest_rows",
+             "path": "/rest/v1/food_catalog?select=id&id=eq.off:5410063007864",
+             "transform": "count_rows",
+             "expect": 1},
+        ],
+    },
+    {
+        "file": "20261128190400_0128_food_catalog_data_5.sql",
+        "label": "0128 FOOD-CATALOG-DATA 5/9",
+        "strength": "strong",
+        "checks": [
+            {"type": "rest_rows",
+             "path": "/rest/v1/food_catalog?select=id&id=eq.off:8480000110442",
+             "transform": "count_rows",
+             "expect": 1},
+        ],
+    },
+    {
+        "file": "20261128190500_0129_food_catalog_data_6.sql",
+        "label": "0129 FOOD-CATALOG-DATA 6/9",
+        "strength": "strong",
+        "checks": [
+            {"type": "rest_rows",
+             "path": "/rest/v1/food_catalog?select=id&id=eq.off:9346758000062",
+             "transform": "count_rows",
+             "expect": 1},
+        ],
+    },
+    {
+        "file": "20261128190600_0130_food_catalog_data_7.sql",
+        "label": "0130 FOOD-CATALOG-DATA 7/9",
+        "strength": "strong",
+        "checks": [
+            {"type": "rest_rows",
+             "path": "/rest/v1/food_catalog?select=id&id=eq.usda:1124945",
+             "transform": "count_rows",
+             "expect": 1},
+        ],
+    },
+    {
+        "file": "20261128190700_0131_food_catalog_data_8.sql",
+        "label": "0131 FOOD-CATALOG-DATA 8/9",
+        "strength": "strong",
+        "checks": [
+            {"type": "rest_rows",
+             "path": "/rest/v1/food_catalog?select=id&id=eq.usda:2705956",
+             "transform": "count_rows",
+             "expect": 1},
+        ],
+    },
+    {
+        "file": "20261128190800_0132_food_catalog_data_9.sql",
+        "label": "0132 FOOD-CATALOG-DATA 9/9",
+        "strength": "strong",
+        "checks": [
+            {"type": "rest_rows",
+             "path": ("/rest/v1/food_catalog?select=id&limit=1&offset=100000"),
+             "transform": "count_rows",
+             "expect": 1},
+            {"type": "rest_rows",
+             "path": ("/rest/v1/food_catalog_aliases?select=legacy_id"
+                      "&limit=1&offset=60000"),
+             "transform": "count_rows",
+             "expect": 1},
+            {"type": "rest_rows",
+             "path": ("/rest/v1/food_catalog?select=id"
+                      "&barcode=eq.00027000612323"),
+             "transform": "count_rows",
+             "expect": 1},
+        ],
+    },
 ]# fmt on
 
 
