@@ -220,6 +220,7 @@ interface CliArgs {
   csvPath?: string;
   outDir: string;
   offlineOnly: boolean;
+  withOpenNutrition: boolean;
   cacheDir: string;
   version: string;
 }
@@ -229,6 +230,7 @@ function parseCliArgs(argv: string[]): CliArgs {
   let csvPath: string | undefined;
   let outDir: string | undefined;
   let offlineOnly = false;
+  let withOpenNutrition = false;
   let cacheDir = path.join(FORK_DIR, '.cache');
 
   for (const arg of argv) {
@@ -243,6 +245,8 @@ function parseCliArgs(argv: string[]): CliArgs {
       cacheDir = arg.slice('--cache-dir='.length).trim();
     } else if (arg === '--offline-only') {
       offlineOnly = true;
+    } else if (arg === '--with-opennutrition') {
+      withOpenNutrition = true;
     }
   }
 
@@ -256,12 +260,33 @@ function parseCliArgs(argv: string[]): CliArgs {
     csvPath,
     outDir: outDir ? path.resolve(outDir) : defaultOutDir,
     offlineOnly,
+    withOpenNutrition,
     cacheDir: path.resolve(cacheDir),
     version,
   };
 }
 
-const ADAPTERS: CatalogAdapter[] = [
+/**
+ * Composition law (F3-a): the DEFAULT pipeline reproduces the audited core
+ * catalog composition — USDA + CNF (national-tables) + Open Food Facts +
+ * curated packs + menustat-opennosh (cache-only, contributes 0 on a fresh
+ * runner) — the exact four documented contributors of the reference build
+ * (source DATA_LICENSES "Current Build"; raw 170,051 -> 130,362 foods).
+ * OpenNutrition is OPT-IN (--with-opennutrition): it contributed 0 to the
+ * reference build (its zip was unreachable then) and reaching ~60k rows it
+ * would silently grow the approved composition by roughly half — a
+ * composition change of that size is an owner decision (the plan's
+ * extended-sources pattern, F3-هـ), not a build-time default.
+ */
+const DEFAULT_ADAPTERS: CatalogAdapter[] = [
+  usdaAdapter,
+  nationalTablesAdapter,
+  menuStatOpenNoshAdapter,
+  offFoodRepoAdapter,
+  curatedAdapter,
+];
+
+const ALL_ADAPTERS: CatalogAdapter[] = [
   usdaAdapter,
   openNutritionAdapter,
   nationalTablesAdapter,
@@ -308,9 +333,15 @@ export async function runBuildFoodCatalogCli(argv: string[]): Promise<CatalogMan
     projectRoot: FORK_DIR,
   };
 
+  const adapters = args.withOpenNutrition ? ALL_ADAPTERS : DEFAULT_ADAPTERS;
+  if (!args.withOpenNutrition) {
+    console.log(
+      '[food-db:build] Composition: audited core default (usda + national-tables/CNF + menustat-opennosh(cache-only) + off + curated) — opennutrition opt-in via --with-opennutrition'
+    );
+  }
   const allRecords: CatalogFoodInput[] = [];
   const contributions: AdapterContribution[] = [];
-  for (const adapter of ADAPTERS) {
+  for (const adapter of adapters) {
     try {
       const loaded = await adapter.load(loadOpts);
       console.log(`[food-db:build] Adapter "${adapter.id}" contributed ${loaded.length} raw record(s).`);

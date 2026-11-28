@@ -33,12 +33,21 @@ recorded in `out/validation-report.json` (job artifact).
 
 ## Upstream sources (all open, no API keys, no secrets)
 
-USDA FoodData Central (CC0) · Health Canada CNF (OGL-Canada) · Open Food Facts
-(ODbL-1.0 — streamed live from the official dump) · OpenNutrition (ODbL-1.0) ·
-curated regional packs (ODbL/CC0). MenuStat/OpenNosh read from cache only (they
-contribute 0 on a fresh runner). The aggregate catalog is **ODbL-1.0**; the
-attribution ledger lives in the frame report and will be materialized by F3-b
-(migration comment + data-licenses doc + the approved `/data-credits` page).
+**Default (the audited composition):** USDA FoodData Central (CC0) · Health
+Canada CNF (OGL-Canada) · Open Food Facts (ODbL-1.0 — streamed live from the
+official dump) · curated regional packs (ODbL/CC0) — plus MenuStat/OpenNosh
+(cache-only; contributes 0 on a fresh runner). These are the exact four
+documented contributors of the reference build (source DATA_LICENSES "Current
+Build": raw 170,051 → 130,362 foods).
+
+**Opt-in (`--with-opennutrition`):** OpenNutrition (ODbL-1.0, core-capped at
+60,000). It contributed **0** to the reference build (its zip was unreachable
+then — measured by the first CI run: joining, it grew the count to 194,666 =
++49.3% over the reference). Because a silent composition change of that size
+is an owner decision (the plan's per-source decision pattern — see F3-هـ), it is
+NOT part of the default. The aggregate catalog is **ODbL-1.0**; the attribution
+ledger lives in the frame report and will be materialized by F3-b (migration
+comment + data-licenses doc + the approved `/data-credits` page).
 
 ## Adaptations vs the source (everything else is a verbatim carry-over)
 
@@ -78,12 +87,12 @@ catalog built from that DDL.
 1. **CI-only build** — enforced structurally (this workflow; no wiring into
    deploy-aws.yml or the origin server).
 2. **Count check** — reference 130,362 foods (the source's v2026.11.25 core
-   build). Default hard band ±20% (`--max-deviation-pct`); the **actual deviation
-   is always documented** in `build-report.json` + `validation-report.json` +
-   the job summary. Why the band: upstream sources drift daily (the OFF dump) and
-   adapter availability varies (OpenNutrition contributed 0 to the reference
-   build — its zip is reachable again and adds rows) — the per-adapter
-   contributions in every run's report document the cause of each deviation.
+   build — the audited four-source composition). Default hard band ±20%
+   (`--max-deviation-pct`); the **actual deviation is always documented** in
+   `build-report.json` + `validation-report.json` + the job summary. With the
+   composition pinned, the band is meaningful: a failed/short source (e.g. the
+   OFF stream collapsing) breaches the floor, and the per-adapter contributions
+   in every run's report document the cause of each measured deviation.
 3. **Zero rows with critical missing data** — absent/non-finite calories or
    protein = 0 rows, checked on the compiled SQLite AND on the replayed SQL
    artifact.
@@ -104,6 +113,7 @@ cd scripts/food-catalog
 bun install            # frozen via the committed bun.lock
 bunx tsc --noEmit      # typecheck
 bun build.ts --tier=core                       # full build (network downloads)
+bun build.ts --tier=core --with-opennutrition  # …plus the opt-in OpenNutrition source
 bun export-sql.ts --version=<manifest version> # SQL export
 bun validate.ts                                # acceptance gate
 cargo run --release --manifest-path tools/catalog-dedup/Cargo.toml -- \
