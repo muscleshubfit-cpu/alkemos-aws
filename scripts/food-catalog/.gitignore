@@ -1,0 +1,6 @@
+# Fork-local ignores (the root /scripts/* blanket is excepted for this
+# directory in the ROOT .gitignore — these lines keep generated/installed
+# content out of the repo while the pipeline source stays tracked).
+node_modules/
+out/
+.cache/

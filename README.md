@@ -357,6 +357,18 @@ alkemos/
   (`affiliate_transactions`/`affiliate_commissions`/`referral_*`) — the
   naming law of the store's governing document as amended by the rename
   order.
+- **Food catalog CI build pipeline (`scripts/food-catalog/`, owner order
+  2026-11-28 — Wave-1 item F3-أ of the openCalory integration review)** — a
+  forked, self-contained pipeline that compiles upstream open food datasets
+  into a deduplicated catalog and exports a **data-only, idempotent SQL
+  artifact** for the upcoming Supabase `food_catalog` tables (the F3-b
+  frame owns the migration). It runs on GitHub Actions ONLY
+  (`.github/workflows/food-catalog-build.yml`) — never on the production
+  origin — with a full acceptance gate (documented count deviation, zero
+  critical-missing rows, replay idempotency, determinism, size cap) plus a
+  Rust deep-audit of the package; every run uploads its artifacts and
+  reports for the import frame. See
+  [`scripts/food-catalog/README.md`](./scripts/food-catalog/README.md)
 - Daily automated JSON backups run to a **private** repository
   (`.github/workflows/db-backup.yml`) — user data never lands in this repo
 

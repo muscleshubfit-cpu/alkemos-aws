@@ -1,0 +1,496 @@
+[
+  {
+    "id": "curated:global-margherita-pizza",
+    "source": "catalog",
+    "accuracyTier": 3,
+    "category": "European Dishes",
+    "name": "Margherita Pizza (Neapolitan Style)",
+    "aliases": ["pizza margherita", "cheese tomato basil pizza"],
+    "region": "IT",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "slice",
+    "servingWeightGrams": 125,
+    "servingOptions": [
+      { "id": "slice", "label": "slice (125g)", "unit": "slice", "grams": 125, "defaultAmount": 2 },
+      { "id": "whole", "label": "whole pie (500g)", "unit": "whole", "grams": 500, "defaultAmount": 1 },
+      { "id": "g", "label": "g", "unit": "g", "grams": 1, "defaultAmount": 100 }
+    ],
+    "nutrientsPerBasis": { "calories": 285, "protein": 12, "carbs": 37, "fat": 10, "fiber": 2.2 },
+    "micronutrientsPerBasis": { "sodiumMg": 610, "calciumMg": 210, "saturatedFatG": 4.8 },
+    "updatedAt": 1700000000000
+  },
+  {
+    "id": "curated:global-spaghetti-carbonara",
+    "source": "catalog",
+    "accuracyTier": 3,
+    "category": "European Dishes",
+    "name": "Spaghetti Carbonara",
+    "aliases": ["pasta alla carbonara", "carbonara"],
+    "region": "IT",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "plate",
+    "servingWeightGrams": 320,
+    "servingOptions": [
+      { "id": "plate", "label": "plate (320g)", "unit": "plate", "grams": 320, "defaultAmount": 1 },
+      { "id": "cup", "label": "cup (170g)", "unit": "cup", "grams": 170, "defaultAmount": 1 },
+      { "id": "g", "label": "g", "unit": "g", "grams": 1, "defaultAmount": 100 }
+    ],
+    "nutrientsPerBasis": { "calories": 610, "protein": 25, "carbs": 66, "fat": 27, "fiber": 3.0 },
+    "micronutrientsPerBasis": { "sodiumMg": 940, "saturatedFatG": 11, "cholesterolMg": 220, "calciumMg": 180 },
+    "updatedAt": 1700000000000
+  },
+  {
+    "id": "curated:global-spaghetti-bolognese",
+    "source": "catalog",
+    "accuracyTier": 3,
+    "category": "European Dishes",
+    "name": "Spaghetti Bolognese (Ragù alla Bolognese)",
+    "aliases": ["pasta bolognese", "ragu bolognese", "spag bol"],
+    "region": "IT",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "plate",
+    "servingWeightGrams": 360,
+    "servingOptions": [
+      { "id": "plate", "label": "plate (360g)", "unit": "plate", "grams": 360, "defaultAmount": 1 },
+      { "id": "cup", "label": "cup (200g)", "unit": "cup", "grams": 200, "defaultAmount": 1 },
+      { "id": "g", "label": "g", "unit": "g", "grams": 1, "defaultAmount": 100 }
+    ],
+    "nutrientsPerBasis": { "calories": 540, "protein": 28, "carbs": 64, "fat": 19, "fiber": 5.0 },
+    "micronutrientsPerBasis": { "sodiumMg": 820, "saturatedFatG": 6.8, "ironMg": 4.2, "potassiumMg": 640 },
+    "updatedAt": 1700000000000
+  },
+  {
+    "id": "curated:global-paella-valenciana",
+    "source": "catalog",
+    "accuracyTier": 3,
+    "category": "European Dishes",
+    "name": "Seafood & Chicken Paella",
+    "aliases": ["paella mixta", "spanish paella", "paella valenciana"],
+    "region": "ES",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "plate",
+    "servingWeightGrams": 350,
+    "servingOptions": [
+      { "id": "plate", "label": "plate (350g)", "unit": "plate", "grams": 350, "defaultAmount": 1 },
+      { "id": "cup", "label": "cup (200g)", "unit": "cup", "grams": 200, "defaultAmount": 1 },
+      { "id": "g", "label": "g", "unit": "g", "grams": 1, "defaultAmount": 100 }
+    ],
+    "nutrientsPerBasis": { "calories": 485, "protein": 28, "carbs": 62, "fat": 13, "fiber": 3.0 },
+    "micronutrientsPerBasis": { "sodiumMg": 960, "ironMg": 3.2, "potassiumMg": 480 },
+    "updatedAt": 1700000000000
+  },
+  {
+    "id": "curated:global-butter-croissant",
+    "source": "catalog",
+    "accuracyTier": 3,
+    "category": "European Dishes",
+    "name": "French Butter Croissant",
+    "aliases": ["croissant au beurre", "plain croissant"],
+    "region": "FR",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 67,
+    "servingOptions": [
+      { "id": "pc", "label": "pc (67g)", "unit": "pc", "grams": 67, "defaultAmount": 1 },
+      { "id": "g", "label": "g", "unit": "g", "grams": 1, "defaultAmount": 100 }
+    ],
+    "nutrientsPerBasis": { "calories": 272, "protein": 5.5, "carbs": 31, "fat": 14, "fiber": 1.7 },
+    "micronutrientsPerBasis": { "sodiumMg": 310, "saturatedFatG": 7.8, "sugarG": 7.5 },
+    "updatedAt": 1700000000000
+  },
+  {
+    "id": "curated:global-fish-and-chips",
+    "source": "catalog",
+    "accuracyTier": 3,
+    "category": "European Dishes",
+    "name": "Fish and Chips (Battered Cod & Thick-Cut Fries)",
+    "aliases": ["british fish and chips", "chippy fish and chips"],
+    "region": "GB",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "plate",
+    "servingWeightGrams": 420,
+    "servingOptions": [
+      { "id": "plate", "label": "plate (420g)", "unit": "plate", "grams": 420, "defaultAmount": 1 },
+      { "id": "g", "label": "g", "unit": "g", "grams": 1, "defaultAmount": 100 }
+    ],
+    "nutrientsPerBasis": { "calories": 840, "protein": 34, "carbs": 84, "fat": 41, "fiber": 6.0 },
+    "micronutrientsPerBasis": { "sodiumMg": 980, "saturatedFatG": 8.0, "potassiumMg": 920 },
+    "updatedAt": 1700000000000
+  },
+  {
+    "id": "curated:global-shepherds-pie",
+    "source": "catalog",
+    "accuracyTier": 3,
+    "category": "European Dishes",
+    "name": "Shepherd's Pie (Minced Lamb & Mashed Potato)",
+    "aliases": ["cottage pie", "lamb shepherds pie"],
+    "region": "GB",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "serving",
+    "servingWeightGrams": 320,
+    "servingOptions": [
+      { "id": "serving", "label": "serving (320g)", "unit": "serving", "grams": 320, "defaultAmount": 1 },
+      { "id": "cup", "label": "cup (240g)", "unit": "cup", "grams": 240, "defaultAmount": 1 },
+      { "id": "g", "label": "g", "unit": "g", "grams": 1, "defaultAmount": 100 }
+    ],
+    "nutrientsPerBasis": { "calories": 430, "protein": 24, "carbs": 38, "fat": 20, "fiber": 4.5 },
+    "micronutrientsPerBasis": { "sodiumMg": 740, "saturatedFatG": 8.5, "potassiumMg": 690, "ironMg": 2.9 },
+    "updatedAt": 1700000000000
+  },
+  {
+    "id": "curated:global-wiener-schnitzel",
+    "source": "catalog",
+    "accuracyTier": 3,
+    "category": "European Dishes",
+    "name": "Wiener Schnitzel (Breaded Veal or Pork Cutlet)",
+    "aliases": ["austrian schnitzel", "german schnitzel"],
+    "region": "DE",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 180,
+    "servingOptions": [
+      { "id": "pc", "label": "pc (180g)", "unit": "pc", "grams": 180, "defaultAmount": 1 },
+      { "id": "g", "label": "g", "unit": "g", "grams": 1, "defaultAmount": 100 }
+    ],
+    "nutrientsPerBasis": { "calories": 445, "protein": 31, "carbs": 24, "fat": 25, "fiber": 1.2 },
+    "micronutrientsPerBasis": { "sodiumMg": 560, "saturatedFatG": 7.0, "cholesterolMg": 120 },
+    "updatedAt": 1700000000000
+  },
+  {
+    "id": "curated:global-bratwurst",
+    "source": "catalog",
+    "accuracyTier": 3,
+    "category": "European Dishes",
+    "name": "German Bratwurst Sausage (Grilled)",
+    "aliases": ["grilled bratwurst", "pork bratwurst"],
+    "region": "DE",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "link",
+    "servingWeightGrams": 85,
+    "servingOptions": [
+      { "id": "link", "label": "link (85g)", "unit": "link", "grams": 85, "defaultAmount": 1 },
+      { "id": "g", "label": "g", "unit": "g", "grams": 1, "defaultAmount": 100 }
+    ],
+    "nutrientsPerBasis": { "calories": 280, "protein": 12, "carbs": 2.0, "fat": 25, "fiber": 0 },
+    "micronutrientsPerBasis": { "sodiumMg": 690, "saturatedFatG": 9.0, "cholesterolMg": 62 },
+    "updatedAt": 1700000000000
+  },
+  {
+    "id": "curated:global-greek-salad",
+    "source": "catalog",
+    "accuracyTier": 3,
+    "category": "European Dishes",
+    "name": "Greek Salad (Horiatiki with Feta & Olive Oil)",
+    "aliases": ["horiatiki", "mediterranean feta salad"],
+    "region": "GR",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "bowl",
+    "servingWeightGrams": 280,
+    "servingOptions": [
+      { "id": "bowl", "label": "bowl (280g)", "unit": "bowl", "grams": 280, "defaultAmount": 1 },
+      { "id": "cup", "label": "cup (180g)", "unit": "cup", "grams": 180, "defaultAmount": 1 },
+      { "id": "g", "label": "g", "unit": "g", "grams": 1, "defaultAmount": 100 }
+    ],
+    "nutrientsPerBasis": { "calories": 240, "protein": 7.5, "carbs": 12, "fat": 19, "fiber": 3.5 },
+    "micronutrientsPerBasis": { "sodiumMg": 680, "calciumMg": 220, "potassiumMg": 460 },
+    "updatedAt": 1700000000000
+  },
+  {
+    "id": "curated:global-chicken-shawarma-wrap",
+    "source": "catalog",
+    "accuracyTier": 3,
+    "category": "Middle Eastern Dishes",
+    "name": "Chicken Shawarma Wrap",
+    "aliases": ["shawarma pita", "chicken doner wrap", "شاورما دجاج"],
+    "region": "AE",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 260,
+    "servingOptions": [
+      { "id": "pc", "label": "pc (260g)", "unit": "pc", "grams": 260, "defaultAmount": 1 },
+      { "id": "g", "label": "g", "unit": "g", "grams": 1, "defaultAmount": 100 }
+    ],
+    "nutrientsPerBasis": { "calories": 520, "protein": 31, "carbs": 48, "fat": 22, "fiber": 4.0 },
+    "micronutrientsPerBasis": { "sodiumMg": 1080, "saturatedFatG": 5.0, "ironMg": 2.8 },
+    "updatedAt": 1700000000000
+  },
+  {
+    "id": "curated:global-falafel",
+    "source": "catalog",
+    "accuracyTier": 3,
+    "category": "Middle Eastern Dishes",
+    "name": "Falafel (Fried Chickpea Patties)",
+    "aliases": ["chickpea falafel", "فلافل"],
+    "region": "LB",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 28,
+    "servingOptions": [
+      { "id": "pc", "label": "pc (28g)", "unit": "pc", "grams": 28, "defaultAmount": 4 },
+      { "id": "order", "label": "order (4 pcs, 112g)", "unit": "order", "grams": 112, "defaultAmount": 1 },
+      { "id": "g", "label": "g", "unit": "g", "grams": 1, "defaultAmount": 100 }
+    ],
+    "nutrientsPerBasis": { "calories": 92, "protein": 3.7, "carbs": 9.0, "fat": 4.8, "fiber": 1.6 },
+    "micronutrientsPerBasis": { "sodiumMg": 135, "ironMg": 0.9, "potassiumMg": 140 },
+    "updatedAt": 1700000000000
+  },
+  {
+    "id": "curated:global-hummus",
+    "source": "catalog",
+    "accuracyTier": 3,
+    "category": "Middle Eastern Dishes",
+    "name": "Classic Hummus (Chickpea & Tahini Dip)",
+    "aliases": ["hommus", "houmous", "حمص"],
+    "region": "LB",
+    "basis": "per100g",
+    "servingSize": 100,
+    "servingUnit": "g",
+    "servingWeightGrams": 100,
+    "servingOptions": [
+      { "id": "tbsp", "label": "tbsp (15g)", "unit": "tbsp", "grams": 15, "defaultAmount": 2 },
+      { "id": "serving", "label": "serving (60g)", "unit": "serving", "grams": 60, "defaultAmount": 1 },
+      { "id": "g", "label": "g", "unit": "g", "grams": 1, "defaultAmount": 100 }
+    ],
+    "nutrientsPerBasis": { "calories": 177, "protein": 7.9, "carbs": 14.3, "fat": 9.6, "fiber": 6.0 },
+    "micronutrientsPerBasis": { "sodiumMg": 379, "ironMg": 2.4, "calciumMg": 38, "potassiumMg": 228 },
+    "updatedAt": 1700000000000
+  },
+  {
+    "id": "curated:global-doner-kebab-plate",
+    "source": "catalog",
+    "accuracyTier": 3,
+    "category": "Middle Eastern Dishes",
+    "name": "Lamb & Beef Doner Kebab (Meat with Pita & Salad)",
+    "aliases": ["turkish doner kebab", "gyro pita", "döner kebap"],
+    "region": "TR",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "serving",
+    "servingWeightGrams": 320,
+    "servingOptions": [
+      { "id": "serving", "label": "serving (320g)", "unit": "serving", "grams": 320, "defaultAmount": 1 },
+      { "id": "g", "label": "g", "unit": "g", "grams": 1, "defaultAmount": 100 }
+    ],
+    "nutrientsPerBasis": { "calories": 640, "protein": 34, "carbs": 52, "fat": 33, "fiber": 4.0 },
+    "micronutrientsPerBasis": { "sodiumMg": 1320, "saturatedFatG": 13, "ironMg": 4.1 },
+    "updatedAt": 1700000000000
+  },
+  {
+    "id": "curated:global-shish-kebab-chicken",
+    "source": "catalog",
+    "accuracyTier": 3,
+    "category": "Middle Eastern Dishes",
+    "name": "Chicken Shish Kebab (Grilled Skewers)",
+    "aliases": ["shish tawook", "tavuk sis", "chicken kebab skewer"],
+    "region": "TR",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "serving",
+    "servingWeightGrams": 180,
+    "servingOptions": [
+      { "id": "serving", "label": "serving (180g)", "unit": "serving", "grams": 180, "defaultAmount": 1 },
+      { "id": "pc", "label": "skewer (90g)", "unit": "pc", "grams": 90, "defaultAmount": 2 },
+      { "id": "g", "label": "g", "unit": "g", "grams": 1, "defaultAmount": 100 }
+    ],
+    "nutrientsPerBasis": { "calories": 275, "protein": 36, "carbs": 4.0, "fat": 12, "fiber": 0.5 },
+    "micronutrientsPerBasis": { "sodiumMg": 620, "potassiumMg": 460 },
+    "updatedAt": 1700000000000
+  },
+  {
+    "id": "curated:global-tacos-al-pastor",
+    "source": "catalog",
+    "accuracyTier": 3,
+    "category": "Latin American Dishes",
+    "name": "Tacos al Pastor (Pork Street Taco on Corn Tortilla)",
+    "aliases": ["al pastor taco", "mexican pork taco"],
+    "region": "MX",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 85,
+    "servingOptions": [
+      { "id": "pc", "label": "pc (85g)", "unit": "pc", "grams": 85, "defaultAmount": 3 },
+      { "id": "order", "label": "order (3 pcs, 255g)", "unit": "order", "grams": 255, "defaultAmount": 1 },
+      { "id": "g", "label": "g", "unit": "g", "grams": 1, "defaultAmount": 100 }
+    ],
+    "nutrientsPerBasis": { "calories": 185, "protein": 11, "carbs": 16, "fat": 8.5, "fiber": 2.0 },
+    "micronutrientsPerBasis": { "sodiumMg": 320, "ironMg": 1.2 },
+    "updatedAt": 1700000000000
+  },
+  {
+    "id": "curated:global-chicken-burrito",
+    "source": "catalog",
+    "accuracyTier": 3,
+    "category": "Latin American Dishes",
+    "name": "Chicken Burrito (Rice, Black Beans, Cheese & Salsa)",
+    "aliases": ["grilled chicken burrito", "mission burrito"],
+    "region": "MX",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 380,
+    "servingOptions": [
+      { "id": "pc", "label": "pc (380g)", "unit": "pc", "grams": 380, "defaultAmount": 1 },
+      { "id": "g", "label": "g", "unit": "g", "grams": 1, "defaultAmount": 100 }
+    ],
+    "nutrientsPerBasis": { "calories": 680, "protein": 36, "carbs": 78, "fat": 24, "fiber": 9.0 },
+    "micronutrientsPerBasis": { "sodiumMg": 1350, "calciumMg": 240, "ironMg": 4.0 },
+    "updatedAt": 1700000000000
+  },
+  {
+    "id": "curated:global-chicken-quesadilla",
+    "source": "catalog",
+    "accuracyTier": 3,
+    "category": "Latin American Dishes",
+    "name": "Chicken & Cheese Quesadilla",
+    "aliases": ["quesadilla de pollo", "grilled cheese tortilla"],
+    "region": "MX",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 220,
+    "servingOptions": [
+      { "id": "pc", "label": "pc (220g)", "unit": "pc", "grams": 220, "defaultAmount": 1 },
+      { "id": "wedge", "label": "wedge (55g)", "unit": "wedge", "grams": 55, "defaultAmount": 2 },
+      { "id": "g", "label": "g", "unit": "g", "grams": 1, "defaultAmount": 100 }
+    ],
+    "nutrientsPerBasis": { "calories": 530, "protein": 30, "carbs": 38, "fat": 28, "fiber": 2.5 },
+    "micronutrientsPerBasis": { "sodiumMg": 980, "calciumMg": 360, "saturatedFatG": 13 },
+    "updatedAt": 1700000000000
+  },
+  {
+    "id": "curated:global-beef-empanada",
+    "source": "catalog",
+    "accuracyTier": 3,
+    "category": "Latin American Dishes",
+    "name": "Beef Empanada (Baked)",
+    "aliases": ["empanada de carne", "argentine empanada"],
+    "region": "AR",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 110,
+    "servingOptions": [
+      { "id": "pc", "label": "pc (110g)", "unit": "pc", "grams": 110, "defaultAmount": 1 },
+      { "id": "g", "label": "g", "unit": "g", "grams": 1, "defaultAmount": 100 }
+    ],
+    "nutrientsPerBasis": { "calories": 285, "protein": 11, "carbs": 29, "fat": 14, "fiber": 1.8 },
+    "micronutrientsPerBasis": { "sodiumMg": 460, "ironMg": 2.1 },
+    "updatedAt": 1700000000000
+  },
+  {
+    "id": "curated:global-feijoada",
+    "source": "catalog",
+    "accuracyTier": 3,
+    "category": "Latin American Dishes",
+    "name": "Feijoada (Brazilian Black Bean & Pork Stew)",
+    "aliases": ["brazilian feijoada", "black bean pork stew"],
+    "region": "BR",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "bowl",
+    "servingWeightGrams": 320,
+    "servingOptions": [
+      { "id": "bowl", "label": "bowl (320g)", "unit": "bowl", "grams": 320, "defaultAmount": 1 },
+      { "id": "cup", "label": "cup (240g)", "unit": "cup", "grams": 240, "defaultAmount": 1 },
+      { "id": "g", "label": "g", "unit": "g", "grams": 1, "defaultAmount": 100 }
+    ],
+    "nutrientsPerBasis": { "calories": 440, "protein": 28, "carbs": 34, "fat": 21, "fiber": 10 },
+    "micronutrientsPerBasis": { "sodiumMg": 1040, "ironMg": 4.6, "potassiumMg": 760 },
+    "updatedAt": 1700000000000
+  },
+  {
+    "id": "curated:global-pao-de-queijo",
+    "source": "catalog",
+    "accuracyTier": 3,
+    "category": "Latin American Dishes",
+    "name": "Pão de Queijo (Brazilian Cheese Bread)",
+    "aliases": ["pao de queijo", "brazilian cheese bun"],
+    "region": "BR",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 35,
+    "servingOptions": [
+      { "id": "pc", "label": "pc (35g)", "unit": "pc", "grams": 35, "defaultAmount": 2 },
+      { "id": "g", "label": "g", "unit": "g", "grams": 1, "defaultAmount": 100 }
+    ],
+    "nutrientsPerBasis": { "calories": 115, "protein": 3.5, "carbs": 13, "fat": 5.5, "fiber": 0.2 },
+    "micronutrientsPerBasis": { "sodiumMg": 165, "calciumMg": 75 },
+    "updatedAt": 1700000000000
+  },
+  {
+    "id": "curated:global-acai-bowl",
+    "source": "catalog",
+    "accuracyTier": 3,
+    "category": "Latin American Dishes",
+    "name": "Açaí Bowl (with Granola & Banana)",
+    "aliases": ["acai bowl", "acai na tigela"],
+    "region": "BR",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "bowl",
+    "servingWeightGrams": 350,
+    "servingOptions": [
+      { "id": "bowl", "label": "bowl (350g)", "unit": "bowl", "grams": 350, "defaultAmount": 1 },
+      { "id": "g", "label": "g", "unit": "g", "grams": 1, "defaultAmount": 100 }
+    ],
+    "nutrientsPerBasis": { "calories": 420, "protein": 7.5, "carbs": 68, "fat": 14, "fiber": 9.5 },
+    "micronutrientsPerBasis": { "sugarG": 38, "potassiumMg": 520, "calciumMg": 80 },
+    "updatedAt": 1700000000000
+  },
+  {
+    "id": "curated:global-ceviche",
+    "source": "catalog",
+    "accuracyTier": 3,
+    "category": "Latin American Dishes",
+    "name": "Peruvian Fish Ceviche",
+    "aliases": ["cebiche", "lime-cured fish ceviche"],
+    "region": "PE",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "bowl",
+    "servingWeightGrams": 220,
+    "servingOptions": [
+      { "id": "bowl", "label": "bowl (220g)", "unit": "bowl", "grams": 220, "defaultAmount": 1 },
+      { "id": "cup", "label": "cup (180g)", "unit": "cup", "grams": 180, "defaultAmount": 1 },
+      { "id": "g", "label": "g", "unit": "g", "grams": 1, "defaultAmount": 100 }
+    ],
+    "nutrientsPerBasis": { "calories": 190, "protein": 30, "carbs": 11, "fat": 2.5, "fiber": 1.5 },
+    "micronutrientsPerBasis": { "sodiumMg": 620, "potassiumMg": 540 },
+    "updatedAt": 1700000000000
+  },
+  {
+    "id": "curated:global-guacamole",
+    "source": "catalog",
+    "accuracyTier": 3,
+    "category": "Latin American Dishes",
+    "name": "Fresh Guacamole",
+    "aliases": ["avocado guacamole", "mexican guacamole"],
+    "region": "MX",
+    "basis": "per100g",
+    "servingSize": 100,
+    "servingUnit": "g",
+    "servingWeightGrams": 100,
+    "servingOptions": [
+      { "id": "tbsp", "label": "tbsp (15g)", "unit": "tbsp", "grams": 15, "defaultAmount": 2 },
+      { "id": "serving", "label": "serving (60g)", "unit": "serving", "grams": 60, "defaultAmount": 1 },
+      { "id": "g", "label": "g", "unit": "g", "grams": 1, "defaultAmount": 100 }
+    ],
+    "nutrientsPerBasis": { "calories": 155, "protein": 2.0, "carbs": 8.5, "fat": 14, "fiber": 6.5 },
+    "micronutrientsPerBasis": { "sodiumMg": 280, "potassiumMg": 460 },
+    "updatedAt": 1700000000000
+  }
+]

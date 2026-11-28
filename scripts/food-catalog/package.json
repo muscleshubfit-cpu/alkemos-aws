@@ -1,0 +1,24 @@
+{
+  "name": "alkemos-food-catalog-pipeline",
+  "version": "1.0.0",
+  "private": true,
+  "description": "F3-a — Alkemos food catalog CI build pipeline (GitHub Actions only; never on the production origin). Self-contained fork of the audited openCalory catalog build (MIT code, ODbL-1.0 aggregate data). See scripts/food-catalog/README.md.",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "bun run build.ts --tier=core",
+    "export": "bun run export-sql.ts",
+    "validate": "bun run validate.ts",
+    "audit": "cargo run --release --manifest-path tools/catalog-dedup/Cargo.toml -- audit --input out/food-catalog.db.gz --report out/catalog-audit-report.json",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@libsql/client": "^0.18.0",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.5",
+    "typescript": "^5.9.3"
+  }
+}

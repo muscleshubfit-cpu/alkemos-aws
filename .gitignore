@@ -222,3 +222,13 @@ scripts/db/__pycache__/
 #   hit the same /scripts/* blanket trap as db/ — first deploy of phase 452
 #   failed on MODULE_NOT_FOUND, exception added the same frame).
 !/scripts/precompress-static.mjs
+#   scripts/food-catalog/ → the F3-a food catalog CI build pipeline (owner order
+#   2026-11-28, the Wave-1 opening item of
+#   docs/opencalory-integration-review-2026-11-28/04-PHASED-PLAN-AR.md F3-أ):
+#   the forked catalog build + the six adapters + the Rust audit tool + the
+#   SQL export + the acceptance gate, invoked by food-catalog-build.yml on
+#   GitHub Actions ONLY (never the production origin); hit the same /scripts/*
+#   blanket trap as the family — exception added in the same frame. Its own
+#   scripts/food-catalog/.gitignore keeps out/ .cache/ node_modules/ ignored.
+!/scripts/food-catalog/
+!/scripts/food-catalog/**

@@ -1,0 +1,8718 @@
+[
+  {
+    "id": "staple:ph-mcdo-egg-mcmuffin",
+    "source": "staple",
+    "name": "Egg McMuffin",
+    "brand": "McDonald's",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 136,
+    "servingOptions": [
+      {
+        "id": "pc",
+        "label": "pc (136g)",
+        "unit": "pc",
+        "grams": 136,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 310,
+      "protein": 17,
+      "carbs": 30,
+      "fat": 13,
+      "fiber": 2
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 770,
+      "calciumMg": 250,
+      "ironMg": 2.5,
+      "potassiumMg": 210
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-mcdo-sausage-mcmuffin-egg",
+    "source": "staple",
+    "name": "Sausage McMuffin with Egg",
+    "brand": "McDonald's",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 162,
+    "servingOptions": [
+      {
+        "id": "pc",
+        "label": "pc (162g)",
+        "unit": "pc",
+        "grams": 162,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 480,
+      "protein": 20,
+      "carbs": 30,
+      "fat": 31,
+      "fiber": 2
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 830,
+      "calciumMg": 200,
+      "ironMg": 2.8,
+      "potassiumMg": 230
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-mcdo-hash-browns",
+    "source": "staple",
+    "name": "Hash Browns",
+    "brand": "McDonald's",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 56,
+    "servingOptions": [
+      {
+        "id": "pc",
+        "label": "pc (56g)",
+        "unit": "pc",
+        "grams": 56,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 140,
+      "protein": 1,
+      "carbs": 16,
+      "fat": 8,
+      "fiber": 1
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 290,
+      "potassiumMg": 210
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-mcdo-burger-mcdo",
+    "source": "staple",
+    "name": "Burger McDo",
+    "brand": "McDonald's",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 105,
+    "servingOptions": [
+      {
+        "id": "pc",
+        "label": "pc (105g)",
+        "unit": "pc",
+        "grams": 105,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 265,
+      "protein": 11,
+      "carbs": 32,
+      "fat": 10,
+      "fiber": 2
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 510
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-mcdo-cheeseburger",
+    "source": "staple",
+    "name": "Cheeseburger",
+    "brand": "McDonald's",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 114,
+    "servingOptions": [
+      {
+        "id": "pc",
+        "label": "pc (114g)",
+        "unit": "pc",
+        "grams": 114,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 300,
+      "protein": 15,
+      "carbs": 32,
+      "fat": 13,
+      "fiber": 2
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 720,
+      "calciumMg": 150,
+      "ironMg": 2.3
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-mcdo-big-mac",
+    "source": "staple",
+    "name": "Big Mac",
+    "brand": "McDonald's",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 212,
+    "servingOptions": [
+      {
+        "id": "pc",
+        "label": "pc (212g)",
+        "unit": "pc",
+        "grams": 212,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 550,
+      "protein": 25,
+      "carbs": 45,
+      "fat": 30,
+      "fiber": 3
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 1010,
+      "calciumMg": 130,
+      "ironMg": 4.2
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-mcdo-quarter-pounder",
+    "source": "staple",
+    "name": "Quarter Pounder with Cheese",
+    "brand": "McDonald's",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 198,
+    "servingOptions": [
+      {
+        "id": "pc",
+        "label": "pc (198g)",
+        "unit": "pc",
+        "grams": 198,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 520,
+      "protein": 30,
+      "carbs": 42,
+      "fat": 26,
+      "fiber": 2
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 1140,
+      "calciumMg": 210,
+      "ironMg": 4.5
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-mcdo-chicken-mcdo",
+    "source": "staple",
+    "name": "Chicken McDo (1 pc)",
+    "brand": "McDonald's",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 145,
+    "servingOptions": [
+      {
+        "id": "pc",
+        "label": "pc (145g)",
+        "unit": "pc",
+        "grams": 145,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 355,
+      "protein": 24,
+      "carbs": 14,
+      "fat": 22,
+      "fiber": 1
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 790
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-mcdo-crispy-chicken-fillet",
+    "source": "staple",
+    "name": "McCrispy Chicken Fillet",
+    "brand": "McDonald's",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 90,
+    "servingOptions": [
+      {
+        "id": "pc",
+        "label": "pc (90g)",
+        "unit": "pc",
+        "grams": 90,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 240,
+      "protein": 14,
+      "carbs": 16,
+      "fat": 13,
+      "fiber": 1
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 560
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-mcdo-mcspaghetti",
+    "source": "staple",
+    "name": "McSpaghetti",
+    "brand": "McDonald's",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "serving",
+    "servingWeightGrams": 230,
+    "servingOptions": [
+      {
+        "id": "serving",
+        "label": "serving (230g)",
+        "unit": "serving",
+        "grams": 230,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 345,
+      "protein": 11,
+      "carbs": 54,
+      "fat": 9,
+      "fiber": 2
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 790
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-mcdo-mcnuggets",
+    "source": "staple",
+    "name": "Chicken McNuggets",
+    "brand": "McDonald's",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 16,
+    "servingOptions": [
+      {
+        "id": "pc",
+        "label": "pc (16g)",
+        "unit": "pc",
+        "grams": 16,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 42,
+      "protein": 2.3,
+      "carbs": 2.5,
+      "fat": 2.5,
+      "fiber": 0.2
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 84
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-mcdo-fries-regular",
+    "source": "staple",
+    "name": "French Fries (Regular)",
+    "brand": "McDonald's",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "serving",
+    "servingWeightGrams": 75,
+    "servingOptions": [
+      {
+        "id": "serving",
+        "label": "serving (75g)",
+        "unit": "serving",
+        "grams": 75,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 230,
+      "protein": 3,
+      "carbs": 29,
+      "fat": 11,
+      "fiber": 3
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 160,
+      "potassiumMg": 420
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-jollibee-chickenjoy",
+    "source": "staple",
+    "name": "Chickenjoy (Original)",
+    "brand": "Jollibee",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 140,
+    "servingOptions": [
+      {
+        "id": "pc",
+        "label": "pc (140g)",
+        "unit": "pc",
+        "grams": 140,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 320,
+      "protein": 24,
+      "carbs": 12,
+      "fat": 19,
+      "fiber": 0.5
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 710
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-jollibee-spaghetti",
+    "source": "staple",
+    "name": "Jolly Spaghetti",
+    "brand": "Jollibee",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "serving",
+    "servingWeightGrams": 245,
+    "servingOptions": [
+      {
+        "id": "serving",
+        "label": "serving (245g)",
+        "unit": "serving",
+        "grams": 245,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 360,
+      "protein": 11,
+      "carbs": 58,
+      "fat": 9,
+      "fiber": 2.5
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 840
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-jollibee-yumburger",
+    "source": "staple",
+    "name": "Yumburger",
+    "brand": "Jollibee",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 100,
+    "servingOptions": [
+      {
+        "id": "pc",
+        "label": "pc (100g)",
+        "unit": "pc",
+        "grams": 100,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 270,
+      "protein": 11,
+      "carbs": 30,
+      "fat": 12,
+      "fiber": 1.5
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 490
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-jollibee-cheesy-yumburger",
+    "source": "staple",
+    "name": "Cheesy Yumburger",
+    "brand": "Jollibee",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 112,
+    "servingOptions": [
+      {
+        "id": "pc",
+        "label": "pc (112g)",
+        "unit": "pc",
+        "grams": 112,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 315,
+      "protein": 13,
+      "carbs": 31,
+      "fat": 15,
+      "fiber": 1.5
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 630,
+      "calciumMg": 90
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-jollibee-burger-steak",
+    "source": "staple",
+    "name": "Burger Steak Patty with Mushroom Gravy",
+    "brand": "Jollibee",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 95,
+    "servingOptions": [
+      {
+        "id": "pc",
+        "label": "pc (95g)",
+        "unit": "pc",
+        "grams": 95,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 195,
+      "protein": 11,
+      "carbs": 8,
+      "fat": 13,
+      "fiber": 0.5
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 520
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-jollibee-palabok",
+    "source": "staple",
+    "name": "Palabok Fiesta",
+    "brand": "Jollibee",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "serving",
+    "servingWeightGrams": 240,
+    "servingOptions": [
+      {
+        "id": "serving",
+        "label": "serving (240g)",
+        "unit": "serving",
+        "grams": 240,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 380,
+      "protein": 14,
+      "carbs": 56,
+      "fat": 11,
+      "fiber": 2
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 920
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-jollibee-peach-mango-pie",
+    "source": "staple",
+    "name": "Peach Mango Pie",
+    "brand": "Jollibee",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 85,
+    "servingOptions": [
+      {
+        "id": "pc",
+        "label": "pc (85g)",
+        "unit": "pc",
+        "grams": 85,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 240,
+      "protein": 2,
+      "carbs": 35,
+      "fat": 10,
+      "fiber": 1
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 180
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-jollibee-tuna-pie",
+    "source": "staple",
+    "name": "Tuna Pie",
+    "brand": "Jollibee",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 95,
+    "servingOptions": [
+      {
+        "id": "pc",
+        "label": "pc (95g)",
+        "unit": "pc",
+        "grams": 95,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 280,
+      "protein": 8,
+      "carbs": 29,
+      "fat": 15,
+      "fiber": 1.5
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 440
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-mang-inasal-paa",
+    "source": "staple",
+    "name": "Chicken Inasal Paa (Quarter Leg)",
+    "brand": "Mang Inasal",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 170,
+    "servingOptions": [
+      {
+        "id": "pc",
+        "label": "pc (170g)",
+        "unit": "pc",
+        "grams": 170,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 310,
+      "protein": 31,
+      "carbs": 5,
+      "fat": 18,
+      "fiber": 0
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 680
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-mang-inasal-pecho",
+    "source": "staple",
+    "name": "Chicken Inasal Pecho (Breast & Wing)",
+    "brand": "Mang Inasal",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 200,
+    "servingOptions": [
+      {
+        "id": "pc",
+        "label": "pc (200g)",
+        "unit": "pc",
+        "grams": 200,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 340,
+      "protein": 42,
+      "carbs": 5,
+      "fat": 16,
+      "fiber": 0
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 740
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-mang-inasal-pork-bbq",
+    "source": "staple",
+    "name": "Pork BBQ Skewer",
+    "brand": "Mang Inasal",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "stick",
+    "servingWeightGrams": 70,
+    "servingOptions": [
+      {
+        "id": "stick",
+        "label": "stick (70g)",
+        "unit": "stick",
+        "grams": 70,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 185,
+      "protein": 14,
+      "carbs": 9,
+      "fat": 10,
+      "fiber": 0
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 420
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-chowking-pork-chao-fan",
+    "source": "staple",
+    "name": "Pork Chao Fan",
+    "brand": "Chowking",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "bowl",
+    "servingWeightGrams": 270,
+    "servingOptions": [
+      {
+        "id": "bowl",
+        "label": "bowl (270g)",
+        "unit": "bowl",
+        "grams": 270,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 490,
+      "protein": 16,
+      "carbs": 74,
+      "fat": 14,
+      "fiber": 2
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 1050
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-chowking-beef-chao-fan",
+    "source": "staple",
+    "name": "Beef Chao Fan",
+    "brand": "Chowking",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "bowl",
+    "servingWeightGrams": 270,
+    "servingOptions": [
+      {
+        "id": "bowl",
+        "label": "bowl (270g)",
+        "unit": "bowl",
+        "grams": 270,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 510,
+      "protein": 18,
+      "carbs": 72,
+      "fat": 16,
+      "fiber": 2
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 1080
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-chowking-siomai",
+    "source": "staple",
+    "name": "Steamed Pork Siomai",
+    "brand": "Chowking",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 28,
+    "servingOptions": [
+      {
+        "id": "pc",
+        "label": "pc (28g)",
+        "unit": "pc",
+        "grams": 28,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 58,
+      "protein": 3.2,
+      "carbs": 4.2,
+      "fat": 3.1,
+      "fiber": 0.3
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 135
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-chowking-buchi",
+    "source": "staple",
+    "name": "Buchi (Sesame Ball)",
+    "brand": "Chowking",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 42,
+    "servingOptions": [
+      {
+        "id": "pc",
+        "label": "pc (42g)",
+        "unit": "pc",
+        "grams": 42,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 135,
+      "protein": 2,
+      "carbs": 21,
+      "fat": 4.8,
+      "fiber": 1
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 45
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-chowking-siopao-asado",
+    "source": "staple",
+    "name": "Chunky Asado Siopao",
+    "brand": "Chowking",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 130,
+    "servingOptions": [
+      {
+        "id": "pc",
+        "label": "pc (130g)",
+        "unit": "pc",
+        "grams": 130,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 310,
+      "protein": 11,
+      "carbs": 52,
+      "fat": 6.5,
+      "fiber": 2
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 560
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-chooks-roasted-chicken",
+    "source": "staple",
+    "name": "Oven Roasted Chicken (Juicy Liempo/Manok)",
+    "brand": "Chooks-to-Go",
+    "region": "PH",
+    "basis": "per100g",
+    "servingSize": 100,
+    "servingUnit": "g",
+    "servingOptions": [
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      },
+      {
+        "id": "serving",
+        "label": "serving (150g)",
+        "unit": "serving",
+        "grams": 150,
+        "defaultAmount": 1
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 215,
+      "protein": 24,
+      "carbs": 2,
+      "fat": 12,
+      "fiber": 0
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 460
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-rice-white-steamed",
+    "source": "staple",
+    "name": "Steamed White Rice (Kanin)",
+    "region": "PH",
+    "basis": "per100g",
+    "servingSize": 1,
+    "servingUnit": "cup",
+    "servingWeightGrams": 158,
+    "servingOptions": [
+      {
+        "id": "cup",
+        "label": "cup (158g)",
+        "unit": "cup",
+        "grams": 158,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 130,
+      "protein": 2.7,
+      "carbs": 28.2,
+      "fat": 0.3,
+      "fiber": 0.4
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 1,
+      "potassiumMg": 35,
+      "ironMg": 0.2
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-rice-sinangag",
+    "source": "staple",
+    "name": "Sinangag (Garlic Fried Rice)",
+    "region": "PH",
+    "basis": "per100g",
+    "servingSize": 1,
+    "servingUnit": "cup",
+    "servingWeightGrams": 166,
+    "servingOptions": [
+      {
+        "id": "cup",
+        "label": "cup (166g)",
+        "unit": "cup",
+        "grams": 166,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 165,
+      "protein": 2.9,
+      "carbs": 29,
+      "fat": 4.1,
+      "fiber": 0.5
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 210
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-rice-java",
+    "source": "staple",
+    "name": "Java Rice",
+    "region": "PH",
+    "basis": "per100g",
+    "servingSize": 1,
+    "servingUnit": "cup",
+    "servingWeightGrams": 165,
+    "servingOptions": [
+      {
+        "id": "cup",
+        "label": "cup (165g)",
+        "unit": "cup",
+        "grams": 165,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 172,
+      "protein": 2.8,
+      "carbs": 30,
+      "fat": 4.4,
+      "fiber": 0.5
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 260
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-rice-brown-cooked",
+    "source": "staple",
+    "name": "Steamed Brown Rice",
+    "region": "PH",
+    "basis": "per100g",
+    "servingSize": 1,
+    "servingUnit": "cup",
+    "servingWeightGrams": 195,
+    "servingOptions": [
+      {
+        "id": "cup",
+        "label": "cup (195g)",
+        "unit": "cup",
+        "grams": 195,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 112,
+      "protein": 2.6,
+      "carbs": 23.5,
+      "fat": 0.9,
+      "fiber": 1.8
+    },
+    "micronutrientsPerBasis": {
+      "magnesiumMg": 43,
+      "potassiumMg": 79
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-pandesal",
+    "source": "staple",
+    "name": "Pandesal",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 35,
+    "servingOptions": [
+      {
+        "id": "pc",
+        "label": "pc (35g)",
+        "unit": "pc",
+        "grams": 35,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 105,
+      "protein": 3.2,
+      "carbs": 19.5,
+      "fat": 1.5,
+      "fiber": 0.8
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 165
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-spanish-bread",
+    "source": "staple",
+    "name": "Spanish Bread",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 45,
+    "servingOptions": [
+      {
+        "id": "pc",
+        "label": "pc (45g)",
+        "unit": "pc",
+        "grams": 45,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 148,
+      "protein": 3.4,
+      "carbs": 24,
+      "fat": 4.2,
+      "fiber": 0.8
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 160
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-ensaymada",
+    "source": "staple",
+    "name": "Ensaymada (with Butter & Cheese)",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 75,
+    "servingOptions": [
+      {
+        "id": "pc",
+        "label": "pc (75g)",
+        "unit": "pc",
+        "grams": 75,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 270,
+      "protein": 5.5,
+      "carbs": 35,
+      "fat": 12,
+      "fiber": 1
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 230,
+      "calciumMg": 55
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-pan-de-coco",
+    "source": "staple",
+    "name": "Pan de Coco",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 55,
+    "servingOptions": [
+      {
+        "id": "pc",
+        "label": "pc (55g)",
+        "unit": "pc",
+        "grams": 55,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 175,
+      "protein": 3.5,
+      "carbs": 29,
+      "fat": 5,
+      "fiber": 1.6
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 140
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-boiled-egg",
+    "source": "staple",
+    "name": "Boiled Egg (Chicken, Large)",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 50,
+    "servingOptions": [
+      {
+        "id": "pc",
+        "label": "pc (50g)",
+        "unit": "pc",
+        "grams": 50,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 72,
+      "protein": 6.3,
+      "carbs": 0.4,
+      "fat": 5,
+      "fiber": 0
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 62,
+      "potassiumMg": 63,
+      "ironMg": 0.6,
+      "vitaminDMcg": 1.1
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-fried-egg",
+    "source": "staple",
+    "name": "Fried Egg (Sunny Side Up)",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 46,
+    "servingOptions": [
+      {
+        "id": "pc",
+        "label": "pc (46g)",
+        "unit": "pc",
+        "grams": 46,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 92,
+      "protein": 6.2,
+      "carbs": 0.4,
+      "fat": 7.1,
+      "fiber": 0
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 94,
+      "potassiumMg": 68,
+      "ironMg": 0.8
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-salted-egg",
+    "source": "staple",
+    "name": "Salted Duck Egg (Itlog na Maalat)",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 65,
+    "servingOptions": [
+      {
+        "id": "pc",
+        "label": "pc (65g)",
+        "unit": "pc",
+        "grams": 65,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 120,
+      "protein": 8.4,
+      "carbs": 0.9,
+      "fat": 9.2,
+      "fiber": 0
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 920,
+      "ironMg": 2.1,
+      "calciumMg": 42
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-balut",
+    "source": "staple",
+    "name": "Balut (Fertilized Duck Egg)",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 65,
+    "servingOptions": [
+      {
+        "id": "pc",
+        "label": "pc (65g)",
+        "unit": "pc",
+        "grams": 65,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 125,
+      "protein": 11.5,
+      "carbs": 1,
+      "fat": 8.2,
+      "fiber": 0
+    },
+    "micronutrientsPerBasis": {
+      "calciumMg": 75,
+      "ironMg": 2.4
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-chicken-adobo",
+    "source": "staple",
+    "name": "Chicken Adobo",
+    "region": "PH",
+    "basis": "per100g",
+    "servingSize": 1,
+    "servingUnit": "serving",
+    "servingWeightGrams": 150,
+    "servingOptions": [
+      {
+        "id": "serving",
+        "label": "serving (150g)",
+        "unit": "serving",
+        "grams": 150,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 195,
+      "protein": 18.5,
+      "carbs": 3.2,
+      "fat": 11.8,
+      "fiber": 0.1
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 680,
+      "potassiumMg": 240,
+      "ironMg": 1.3
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-pork-adobo",
+    "source": "staple",
+    "name": "Pork Adobo",
+    "region": "PH",
+    "basis": "per100g",
+    "servingSize": 1,
+    "servingUnit": "serving",
+    "servingWeightGrams": 150,
+    "servingOptions": [
+      {
+        "id": "serving",
+        "label": "serving (150g)",
+        "unit": "serving",
+        "grams": 150,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 285,
+      "protein": 16.5,
+      "carbs": 3.5,
+      "fat": 22.8,
+      "fiber": 0.1
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 710,
+      "potassiumMg": 235
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-sinigang-baboy",
+    "source": "staple",
+    "name": "Sinigang na Baboy (Pork Tamarind Soup)",
+    "region": "PH",
+    "basis": "per100g",
+    "servingSize": 1,
+    "servingUnit": "cup",
+    "servingWeightGrams": 240,
+    "servingOptions": [
+      {
+        "id": "cup",
+        "label": "cup (240g)",
+        "unit": "cup",
+        "grams": 240,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 88,
+      "protein": 6.4,
+      "carbs": 3.2,
+      "fat": 5.5,
+      "fiber": 0.8
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 390,
+      "potassiumMg": 195,
+      "vitaminCMg": 8
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-sinigang-bangus",
+    "source": "staple",
+    "name": "Sinigang na Bangus (Milkfish Soup)",
+    "region": "PH",
+    "basis": "per100g",
+    "servingSize": 1,
+    "servingUnit": "cup",
+    "servingWeightGrams": 240,
+    "servingOptions": [
+      {
+        "id": "cup",
+        "label": "cup (240g)",
+        "unit": "cup",
+        "grams": 240,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 76,
+      "protein": 7.8,
+      "carbs": 3.1,
+      "fat": 3.5,
+      "fiber": 0.8
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 380,
+      "potassiumMg": 215
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-tinolang-manok",
+    "source": "staple",
+    "name": "Tinolang Manok (Chicken Ginger Soup)",
+    "region": "PH",
+    "basis": "per100g",
+    "servingSize": 1,
+    "servingUnit": "cup",
+    "servingWeightGrams": 240,
+    "servingOptions": [
+      {
+        "id": "cup",
+        "label": "cup (240g)",
+        "unit": "cup",
+        "grams": 240,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 72,
+      "protein": 7.5,
+      "carbs": 2.4,
+      "fat": 3.4,
+      "fiber": 0.6
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 340,
+      "vitaminCMg": 11,
+      "vitaminAMcg": 85
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-pork-sisig",
+    "source": "staple",
+    "name": "Pork Sisig",
+    "region": "PH",
+    "basis": "per100g",
+    "servingSize": 1,
+    "servingUnit": "serving",
+    "servingWeightGrams": 150,
+    "servingOptions": [
+      {
+        "id": "serving",
+        "label": "serving (150g)",
+        "unit": "serving",
+        "grams": 150,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 295,
+      "protein": 15.2,
+      "carbs": 3.8,
+      "fat": 24.1,
+      "fiber": 0.3
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 590,
+      "ironMg": 1.6
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-lechon-kawali",
+    "source": "staple",
+    "name": "Lechon Kawali (Crispy Pork Belly)",
+    "region": "PH",
+    "basis": "per100g",
+    "servingSize": 1,
+    "servingUnit": "serving",
+    "servingWeightGrams": 120,
+    "servingOptions": [
+      {
+        "id": "serving",
+        "label": "serving (120g)",
+        "unit": "serving",
+        "grams": 120,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 395,
+      "protein": 17,
+      "carbs": 0.5,
+      "fat": 36,
+      "fiber": 0
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 520
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-kare-kare",
+    "source": "staple",
+    "name": "Kare-Kare (Beef Peanut Stew)",
+    "region": "PH",
+    "basis": "per100g",
+    "servingSize": 1,
+    "servingUnit": "cup",
+    "servingWeightGrams": 240,
+    "servingOptions": [
+      {
+        "id": "cup",
+        "label": "cup (240g)",
+        "unit": "cup",
+        "grams": 240,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 145,
+      "protein": 9.8,
+      "carbs": 6.4,
+      "fat": 8.9,
+      "fiber": 1.5
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 280,
+      "calciumMg": 42,
+      "ironMg": 1.6
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-bistek-tagalog",
+    "source": "staple",
+    "name": "Bistek Tagalog (Filipino Beef Steak)",
+    "region": "PH",
+    "basis": "per100g",
+    "servingSize": 1,
+    "servingUnit": "serving",
+    "servingWeightGrams": 150,
+    "servingOptions": [
+      {
+        "id": "serving",
+        "label": "serving (150g)",
+        "unit": "serving",
+        "grams": 150,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 210,
+      "protein": 21.5,
+      "carbs": 4.2,
+      "fat": 11.6,
+      "fiber": 0.4
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 690,
+      "ironMg": 2.4,
+      "zincMg": 4.1
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-bicol-express",
+    "source": "staple",
+    "name": "Bicol Express",
+    "region": "PH",
+    "basis": "per100g",
+    "servingSize": 1,
+    "servingUnit": "serving",
+    "servingWeightGrams": 150,
+    "servingOptions": [
+      {
+        "id": "serving",
+        "label": "serving (150g)",
+        "unit": "serving",
+        "grams": 150,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 265,
+      "protein": 11.5,
+      "carbs": 4.5,
+      "fat": 22.5,
+      "fiber": 0.8
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 510
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-pinakbet",
+    "source": "staple",
+    "name": "Pinakbet (Mixed Vegetables with Pork/Shrimp Paste)",
+    "region": "PH",
+    "basis": "per100g",
+    "servingSize": 1,
+    "servingUnit": "cup",
+    "servingWeightGrams": 180,
+    "servingOptions": [
+      {
+        "id": "cup",
+        "label": "cup (180g)",
+        "unit": "cup",
+        "grams": 180,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 78,
+      "protein": 4.2,
+      "carbs": 6.8,
+      "fat": 3.8,
+      "fiber": 2.1
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 390,
+      "vitaminAMcg": 180,
+      "vitaminCMg": 18
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-laing",
+    "source": "staple",
+    "name": "Laing (Taro Leaves in Coconut Milk)",
+    "region": "PH",
+    "basis": "per100g",
+    "servingSize": 1,
+    "servingUnit": "cup",
+    "servingWeightGrams": 180,
+    "servingOptions": [
+      {
+        "id": "cup",
+        "label": "cup (180g)",
+        "unit": "cup",
+        "grams": 180,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 158,
+      "protein": 4.4,
+      "carbs": 6.5,
+      "fat": 13.1,
+      "fiber": 2.8
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 350,
+      "calciumMg": 95,
+      "ironMg": 1.9
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-ginisang-munggo",
+    "source": "staple",
+    "name": "Ginisang Munggo (Sauteed Mung Bean Stew)",
+    "region": "PH",
+    "basis": "per100g",
+    "servingSize": 1,
+    "servingUnit": "cup",
+    "servingWeightGrams": 220,
+    "servingOptions": [
+      {
+        "id": "cup",
+        "label": "cup (220g)",
+        "unit": "cup",
+        "grams": 220,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 108,
+      "protein": 6.2,
+      "carbs": 13.5,
+      "fat": 3.2,
+      "fiber": 3.4
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 310,
+      "folateMcg": 82,
+      "ironMg": 1.5
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-tortang-talong",
+    "source": "staple",
+    "name": "Tortang Talong (Eggplant Omelette)",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 150,
+    "servingOptions": [
+      {
+        "id": "pc",
+        "label": "pc (150g)",
+        "unit": "pc",
+        "grams": 150,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 195,
+      "protein": 8.2,
+      "carbs": 7.5,
+      "fat": 14.8,
+      "fiber": 2.9
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 280,
+      "potassiumMg": 290
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-lumpiang-shanghai",
+    "source": "staple",
+    "name": "Lumpiang Shanghai (Pork Spring Roll)",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 25,
+    "servingOptions": [
+      {
+        "id": "pc",
+        "label": "pc (25g)",
+        "unit": "pc",
+        "grams": 25,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 68,
+      "protein": 2.8,
+      "carbs": 5.5,
+      "fat": 3.9,
+      "fiber": 0.4
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 115
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-lumpiang-togue",
+    "source": "staple",
+    "name": "Lumpiang Togue (Fried Bean Sprout Roll)",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 80,
+    "servingOptions": [
+      {
+        "id": "pc",
+        "label": "pc (80g)",
+        "unit": "pc",
+        "grams": 80,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 145,
+      "protein": 4.2,
+      "carbs": 16,
+      "fat": 7.1,
+      "fiber": 1.8
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 240
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-longganisa",
+    "source": "staple",
+    "name": "Longganisa (Pork Sausage, Cooked)",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 40,
+    "servingOptions": [
+      {
+        "id": "pc",
+        "label": "pc (40g)",
+        "unit": "pc",
+        "grams": 40,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 148,
+      "protein": 6.4,
+      "carbs": 5.8,
+      "fat": 11,
+      "fiber": 0
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 360
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-pork-tocino",
+    "source": "staple",
+    "name": "Pork Tocino (Cooked)",
+    "region": "PH",
+    "basis": "per100g",
+    "servingSize": 1,
+    "servingUnit": "serving",
+    "servingWeightGrams": 100,
+    "servingOptions": [
+      {
+        "id": "serving",
+        "label": "serving (100g)",
+        "unit": "serving",
+        "grams": 100,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 265,
+      "protein": 15.5,
+      "carbs": 18,
+      "fat": 14.5,
+      "fiber": 0
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 780
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-beef-tapa",
+    "source": "staple",
+    "name": "Beef Tapa (Cured Fried Beef)",
+    "region": "PH",
+    "basis": "per100g",
+    "servingSize": 1,
+    "servingUnit": "serving",
+    "servingWeightGrams": 100,
+    "servingOptions": [
+      {
+        "id": "serving",
+        "label": "serving (100g)",
+        "unit": "serving",
+        "grams": 100,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 240,
+      "protein": 24,
+      "carbs": 6.5,
+      "fat": 13,
+      "fiber": 0
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 840,
+      "ironMg": 2.7
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-daing-na-bangus",
+    "source": "staple",
+    "name": "Daing na Bangus (Fried Marinated Milkfish)",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 140,
+    "servingOptions": [
+      {
+        "id": "pc",
+        "label": "pc (140g)",
+        "unit": "pc",
+        "grams": 140,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 290,
+      "protein": 28,
+      "carbs": 2,
+      "fat": 19,
+      "fiber": 0
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 540,
+      "potassiumMg": 420,
+      "calciumMg": 60
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-fried-galunggong",
+    "source": "staple",
+    "name": "Fried Galunggong (Round Scad)",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 80,
+    "servingOptions": [
+      {
+        "id": "pc",
+        "label": "pc (80g)",
+        "unit": "pc",
+        "grams": 80,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 152,
+      "protein": 17.6,
+      "carbs": 0.5,
+      "fat": 8.4,
+      "fiber": 0
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 260,
+      "potassiumMg": 310,
+      "calciumMg": 52
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-fried-tilapia",
+    "source": "staple",
+    "name": "Fried Tilapia (Whole, Medium)",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 130,
+    "servingOptions": [
+      {
+        "id": "pc",
+        "label": "pc (130g)",
+        "unit": "pc",
+        "grams": 130,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 235,
+      "protein": 27.5,
+      "carbs": 1,
+      "fat": 13,
+      "fiber": 0
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 310,
+      "potassiumMg": 395
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-inihaw-liempo",
+    "source": "staple",
+    "name": "Inihaw na Liempo (Grilled Pork Belly)",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "slice",
+    "servingWeightGrams": 130,
+    "servingOptions": [
+      {
+        "id": "slice",
+        "label": "slice (130g)",
+        "unit": "slice",
+        "grams": 130,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 385,
+      "protein": 21,
+      "carbs": 4.5,
+      "fat": 31,
+      "fiber": 0
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 580
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-bulalo",
+    "source": "staple",
+    "name": "Bulalo (Beef Shank & Marrow Soup)",
+    "region": "PH",
+    "basis": "per100g",
+    "servingSize": 1,
+    "servingUnit": "cup",
+    "servingWeightGrams": 250,
+    "servingOptions": [
+      {
+        "id": "cup",
+        "label": "cup (250g)",
+        "unit": "cup",
+        "grams": 250,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 105,
+      "protein": 8.4,
+      "carbs": 2.8,
+      "fat": 6.6,
+      "fiber": 0.6
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 360,
+      "potassiumMg": 180
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-nilagang-baka",
+    "source": "staple",
+    "name": "Nilagang Baka (Boiled Beef Soup)",
+    "region": "PH",
+    "basis": "per100g",
+    "servingSize": 1,
+    "servingUnit": "cup",
+    "servingWeightGrams": 250,
+    "servingOptions": [
+      {
+        "id": "cup",
+        "label": "cup (250g)",
+        "unit": "cup",
+        "grams": 250,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 86,
+      "protein": 8.1,
+      "carbs": 3.5,
+      "fat": 4.3,
+      "fiber": 0.7
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 330,
+      "potassiumMg": 195
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-beef-caldereta",
+    "source": "staple",
+    "name": "Beef Caldereta",
+    "region": "PH",
+    "basis": "per100g",
+    "servingSize": 1,
+    "servingUnit": "serving",
+    "servingWeightGrams": 160,
+    "servingOptions": [
+      {
+        "id": "serving",
+        "label": "serving (160g)",
+        "unit": "serving",
+        "grams": 160,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 192,
+      "protein": 13.8,
+      "carbs": 7.2,
+      "fat": 11.8,
+      "fiber": 1.1
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 490,
+      "ironMg": 1.9
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-pork-menudo",
+    "source": "staple",
+    "name": "Pork Menudo",
+    "region": "PH",
+    "basis": "per100g",
+    "servingSize": 1,
+    "servingUnit": "serving",
+    "servingWeightGrams": 160,
+    "servingOptions": [
+      {
+        "id": "serving",
+        "label": "serving (160g)",
+        "unit": "serving",
+        "grams": 160,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 182,
+      "protein": 11.5,
+      "carbs": 8.4,
+      "fat": 11.2,
+      "fiber": 1.2
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 470,
+      "ironMg": 1.8
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-chicken-afritada",
+    "source": "staple",
+    "name": "Chicken Afritada",
+    "region": "PH",
+    "basis": "per100g",
+    "servingSize": 1,
+    "servingUnit": "serving",
+    "servingWeightGrams": 160,
+    "servingOptions": [
+      {
+        "id": "serving",
+        "label": "serving (160g)",
+        "unit": "serving",
+        "grams": 160,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 145,
+      "protein": 12.2,
+      "carbs": 7.6,
+      "fat": 7.1,
+      "fiber": 1.1
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 430
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-dinuguan",
+    "source": "staple",
+    "name": "Dinuguan (Pork Blood Stew)",
+    "region": "PH",
+    "basis": "per100g",
+    "servingSize": 1,
+    "servingUnit": "cup",
+    "servingWeightGrams": 200,
+    "servingOptions": [
+      {
+        "id": "cup",
+        "label": "cup (200g)",
+        "unit": "cup",
+        "grams": 200,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 148,
+      "protein": 11.2,
+      "carbs": 2.9,
+      "fat": 10.1,
+      "fiber": 0.2
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 460,
+      "ironMg": 7.8
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-pancit-bihon",
+    "source": "staple",
+    "name": "Pancit Bihon Guisado",
+    "region": "PH",
+    "basis": "per100g",
+    "servingSize": 1,
+    "servingUnit": "cup",
+    "servingWeightGrams": 170,
+    "servingOptions": [
+      {
+        "id": "cup",
+        "label": "cup (170g)",
+        "unit": "cup",
+        "grams": 170,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 152,
+      "protein": 5.4,
+      "carbs": 23.5,
+      "fat": 3.9,
+      "fiber": 1.3
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 420
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-pancit-canton-guisado",
+    "source": "staple",
+    "name": "Pancit Canton Guisado (Stir-Fried Noodles)",
+    "region": "PH",
+    "basis": "per100g",
+    "servingSize": 1,
+    "servingUnit": "cup",
+    "servingWeightGrams": 175,
+    "servingOptions": [
+      {
+        "id": "cup",
+        "label": "cup (175g)",
+        "unit": "cup",
+        "grams": 175,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 178,
+      "protein": 6.2,
+      "carbs": 24,
+      "fat": 6.2,
+      "fiber": 1.4
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 510
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-arroz-caldo",
+    "source": "staple",
+    "name": "Arroz Caldo (Chicken Rice Porridge)",
+    "region": "PH",
+    "basis": "per100g",
+    "servingSize": 1,
+    "servingUnit": "bowl",
+    "servingWeightGrams": 300,
+    "servingOptions": [
+      {
+        "id": "bowl",
+        "label": "bowl (300g)",
+        "unit": "bowl",
+        "grams": 300,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 74,
+      "protein": 3.6,
+      "carbs": 11.2,
+      "fat": 1.6,
+      "fiber": 0.3
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 280
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-champorado",
+    "source": "staple",
+    "name": "Champorado (Chocolate Rice Porridge)",
+    "region": "PH",
+    "basis": "per100g",
+    "servingSize": 1,
+    "servingUnit": "bowl",
+    "servingWeightGrams": 250,
+    "servingOptions": [
+      {
+        "id": "bowl",
+        "label": "bowl (250g)",
+        "unit": "bowl",
+        "grams": 250,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 112,
+      "protein": 2.4,
+      "carbs": 21.8,
+      "fat": 1.6,
+      "fiber": 1.1
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 35,
+      "ironMg": 0.9
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-taho",
+    "source": "staple",
+    "name": "Taho (Silken Tofu with Arnibal & Sago)",
+    "region": "PH",
+    "basis": "per100g",
+    "servingSize": 1,
+    "servingUnit": "cup",
+    "servingWeightGrams": 220,
+    "servingOptions": [
+      {
+        "id": "cup",
+        "label": "cup (220g)",
+        "unit": "cup",
+        "grams": 220,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 78,
+      "protein": 3.4,
+      "carbs": 12.6,
+      "fat": 1.5,
+      "fiber": 0.2
+    },
+    "micronutrientsPerBasis": {
+      "calciumMg": 45,
+      "sodiumMg": 12
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-halo-halo",
+    "source": "staple",
+    "name": "Halo-Halo (Regular)",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "serving",
+    "servingWeightGrams": 350,
+    "servingOptions": [
+      {
+        "id": "serving",
+        "label": "serving (350g)",
+        "unit": "serving",
+        "grams": 350,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 420,
+      "protein": 7.5,
+      "carbs": 76,
+      "fat": 9.5,
+      "fiber": 3.5
+    },
+    "micronutrientsPerBasis": {
+      "calciumMg": 140,
+      "sodiumMg": 160
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-turon",
+    "source": "staple",
+    "name": "Turon (Fried Saba Banana Spring Roll)",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 90,
+    "servingOptions": [
+      {
+        "id": "pc",
+        "label": "pc (90g)",
+        "unit": "pc",
+        "grams": 90,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 215,
+      "protein": 2.2,
+      "carbs": 35,
+      "fat": 7.5,
+      "fiber": 2.1
+    },
+    "micronutrientsPerBasis": {
+      "potassiumMg": 210,
+      "sodiumMg": 65
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-banana-cue",
+    "source": "staple",
+    "name": "Banana Cue (2 Saba Bananas on Stick)",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "stick",
+    "servingWeightGrams": 130,
+    "servingOptions": [
+      {
+        "id": "stick",
+        "label": "stick (130g)",
+        "unit": "stick",
+        "grams": 130,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 240,
+      "protein": 1.3,
+      "carbs": 47,
+      "fat": 5.5,
+      "fiber": 2.8
+    },
+    "micronutrientsPerBasis": {
+      "potassiumMg": 350
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-kamote-cue",
+    "source": "staple",
+    "name": "Kamote Cue (Sweet Potato Skewer)",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "stick",
+    "servingWeightGrams": 120,
+    "servingOptions": [
+      {
+        "id": "stick",
+        "label": "stick (120g)",
+        "unit": "stick",
+        "grams": 120,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 210,
+      "protein": 1.6,
+      "carbs": 41,
+      "fat": 4.8,
+      "fiber": 3.1
+    },
+    "micronutrientsPerBasis": {
+      "potassiumMg": 340,
+      "vitaminAMcg": 450
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-bibingka",
+    "source": "staple",
+    "name": "Bibingka (Baked Rice Cake)",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 140,
+    "servingOptions": [
+      {
+        "id": "pc",
+        "label": "pc (140g)",
+        "unit": "pc",
+        "grams": 140,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 340,
+      "protein": 7.5,
+      "carbs": 52,
+      "fat": 11.5,
+      "fiber": 1
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 340
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-puto",
+    "source": "staple",
+    "name": "Puto (Steamed Rice Cake)",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 35,
+    "servingOptions": [
+      {
+        "id": "pc",
+        "label": "pc (35g)",
+        "unit": "pc",
+        "grams": 35,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 82,
+      "protein": 1.6,
+      "carbs": 16.5,
+      "fat": 1.1,
+      "fiber": 0.2
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 65
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-suman",
+    "source": "staple",
+    "name": "Suman Malagkit (Sticky Rice Cake)",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 95,
+    "servingOptions": [
+      {
+        "id": "pc",
+        "label": "pc (95g)",
+        "unit": "pc",
+        "grams": 95,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 195,
+      "protein": 2.9,
+      "carbs": 35.5,
+      "fat": 4.6,
+      "fiber": 0.8
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 110
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-kwek-kwek",
+    "source": "staple",
+    "name": "Kwek-Kwek (Battered Fried Quail Egg)",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 25,
+    "servingOptions": [
+      {
+        "id": "pc",
+        "label": "pc (25g)",
+        "unit": "pc",
+        "grams": 25,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 58,
+      "protein": 2.1,
+      "carbs": 4.5,
+      "fat": 3.5,
+      "fiber": 0.1
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 85
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-fishball",
+    "source": "staple",
+    "name": "Fried Fishball",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 12,
+    "servingOptions": [
+      {
+        "id": "pc",
+        "label": "pc (12g)",
+        "unit": "pc",
+        "grams": 12,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 24,
+      "protein": 1.1,
+      "carbs": 2.8,
+      "fat": 0.9,
+      "fiber": 0
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 75
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-kikiam",
+    "source": "staple",
+    "name": "Fried Kikiam",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 20,
+    "servingOptions": [
+      {
+        "id": "pc",
+        "label": "pc (20g)",
+        "unit": "pc",
+        "grams": 20,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 48,
+      "protein": 2,
+      "carbs": 4.6,
+      "fat": 2.4,
+      "fiber": 0.1
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 120
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-lucky-me-pancit-canton-original",
+    "source": "staple",
+    "name": "Pancit Canton Instant Noodles (Original)",
+    "brand": "Lucky Me!",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pack",
+    "servingWeightGrams": 80,
+    "servingOptions": [
+      {
+        "id": "pack",
+        "label": "pack (80g)",
+        "unit": "pack",
+        "grams": 80,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 350,
+      "protein": 7,
+      "carbs": 52,
+      "fat": 13,
+      "fiber": 2
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 1040
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-lucky-me-pancit-canton-chilimansi",
+    "source": "staple",
+    "name": "Pancit Canton Instant Noodles (Chilimansi)",
+    "brand": "Lucky Me!",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pack",
+    "servingWeightGrams": 80,
+    "servingOptions": [
+      {
+        "id": "pack",
+        "label": "pack (80g)",
+        "unit": "pack",
+        "grams": 80,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 350,
+      "protein": 7,
+      "carbs": 51,
+      "fat": 13,
+      "fiber": 2
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 1090
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-lucky-me-pancit-canton-kalamansi",
+    "source": "staple",
+    "name": "Pancit Canton Instant Noodles (Kalamansi)",
+    "brand": "Lucky Me!",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pack",
+    "servingWeightGrams": 80,
+    "servingOptions": [
+      {
+        "id": "pack",
+        "label": "pack (80g)",
+        "unit": "pack",
+        "grams": 80,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 345,
+      "protein": 7,
+      "carbs": 51,
+      "fat": 13,
+      "fiber": 2
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 1020
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-century-tuna-oil",
+    "source": "staple",
+    "name": "Century Tuna Flakes in Vegetable Oil (180g Can)",
+    "brand": "Century Tuna",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "can",
+    "servingWeightGrams": 180,
+    "servingOptions": [
+      {
+        "id": "can",
+        "label": "can (180g)",
+        "unit": "can",
+        "grams": 180,
+        "defaultAmount": 1
+      },
+      {
+        "id": "serving",
+        "label": "serving (56g)",
+        "unit": "serving",
+        "grams": 56,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 270,
+      "protein": 27,
+      "carbs": 3,
+      "fat": 16.5,
+      "fiber": 0
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 780
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-century-tuna-hot-spicy",
+    "source": "staple",
+    "name": "Century Tuna Flakes Hot & Spicy (180g Can)",
+    "brand": "Century Tuna",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "can",
+    "servingWeightGrams": 180,
+    "servingOptions": [
+      {
+        "id": "can",
+        "label": "can (180g)",
+        "unit": "can",
+        "grams": 180,
+        "defaultAmount": 1
+      },
+      {
+        "id": "serving",
+        "label": "serving (56g)",
+        "unit": "serving",
+        "grams": 56,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 285,
+      "protein": 26,
+      "carbs": 4.5,
+      "fat": 18,
+      "fiber": 0
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 810
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-san-marino-corned-tuna",
+    "source": "staple",
+    "name": "San Marino Corned Tuna (180g Can)",
+    "brand": "San Marino",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "can",
+    "servingWeightGrams": 180,
+    "servingOptions": [
+      {
+        "id": "can",
+        "label": "can (180g)",
+        "unit": "can",
+        "grams": 180,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 315,
+      "protein": 24,
+      "carbs": 6,
+      "fat": 21,
+      "fiber": 0
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 760
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-purefoods-tj-hotdog",
+    "source": "staple",
+    "name": "Tender Juicy Hotdog (Regular)",
+    "brand": "Purefoods",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 45,
+    "servingOptions": [
+      {
+        "id": "pc",
+        "label": "pc (45g)",
+        "unit": "pc",
+        "grams": 45,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 120,
+      "protein": 5.2,
+      "carbs": 3.5,
+      "fat": 9.5,
+      "fiber": 0
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 390
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-purefoods-corned-beef",
+    "source": "staple",
+    "name": "Purefoods Corned Beef (150g Can)",
+    "brand": "Purefoods",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "can",
+    "servingWeightGrams": 150,
+    "servingOptions": [
+      {
+        "id": "can",
+        "label": "can (150g)",
+        "unit": "can",
+        "grams": 150,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 285,
+      "protein": 22.5,
+      "carbs": 4.5,
+      "fat": 19.5,
+      "fiber": 0
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 940,
+      "ironMg": 3
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-argentina-corned-beef",
+    "source": "staple",
+    "name": "Argentina Corned Beef (150g Can)",
+    "brand": "Argentina",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "can",
+    "servingWeightGrams": 150,
+    "servingOptions": [
+      {
+        "id": "can",
+        "label": "can (150g)",
+        "unit": "can",
+        "grams": 150,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 265,
+      "protein": 19.5,
+      "carbs": 6,
+      "fat": 18,
+      "fiber": 0
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 980
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-ligo-sardines",
+    "source": "staple",
+    "name": "Ligo Sardines in Tomato Sauce (155g Can)",
+    "brand": "Ligo",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "can",
+    "servingWeightGrams": 155,
+    "servingOptions": [
+      {
+        "id": "can",
+        "label": "can (155g)",
+        "unit": "can",
+        "grams": 155,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 220,
+      "protein": 21,
+      "carbs": 4,
+      "fat": 13,
+      "fiber": 0
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 720,
+      "calciumMg": 280
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-spam-classic",
+    "source": "staple",
+    "name": "SPAM Classic Luncheon Meat (1 Slice)",
+    "brand": "SPAM",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "slice",
+    "servingWeightGrams": 56,
+    "servingOptions": [
+      {
+        "id": "slice",
+        "label": "slice (56g)",
+        "unit": "slice",
+        "grams": 56,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 180,
+      "protein": 7,
+      "carbs": 1,
+      "fat": 16,
+      "fiber": 0
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 790
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-skyflakes",
+    "source": "staple",
+    "name": "SkyFlakes Crackers (1 Pack of 3)",
+    "brand": "M.Y. San",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pack",
+    "servingWeightGrams": 25,
+    "servingOptions": [
+      {
+        "id": "pack",
+        "label": "pack (25g)",
+        "unit": "pack",
+        "grams": 25,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 110,
+      "protein": 2.5,
+      "carbs": 18,
+      "fat": 3,
+      "fiber": 1
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 200
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-fita-crackers",
+    "source": "staple",
+    "name": "Fita Crackers (1 Pack)",
+    "brand": "M.Y. San",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pack",
+    "servingWeightGrams": 30,
+    "servingOptions": [
+      {
+        "id": "pack",
+        "label": "pack (30g)",
+        "unit": "pack",
+        "grams": 30,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 145,
+      "protein": 2.5,
+      "carbs": 20,
+      "fat": 6,
+      "fiber": 0.5
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 230
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-gardenia-white-bread",
+    "source": "staple",
+    "name": "Gardenia Classic White Bread",
+    "brand": "Gardenia",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "slice",
+    "servingWeightGrams": 28,
+    "servingOptions": [
+      {
+        "id": "slice",
+        "label": "slice (28g)",
+        "unit": "slice",
+        "grams": 28,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 73,
+      "protein": 2.4,
+      "carbs": 13.5,
+      "fat": 1,
+      "fiber": 0.6
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 125,
+      "ironMg": 0.9
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-gardenia-wheat-bread",
+    "source": "staple",
+    "name": "Gardenia High Fiber Whole Wheat Bread",
+    "brand": "Gardenia",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "slice",
+    "servingWeightGrams": 30,
+    "servingOptions": [
+      {
+        "id": "slice",
+        "label": "slice (30g)",
+        "unit": "slice",
+        "grams": 30,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 75,
+      "protein": 3,
+      "carbs": 12.5,
+      "fat": 1.1,
+      "fiber": 2.1
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 130,
+      "ironMg": 1
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-eden-cheese",
+    "source": "staple",
+    "name": "Eden Original Filled Cheese",
+    "brand": "Eden",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "slice",
+    "servingWeightGrams": 20,
+    "servingOptions": [
+      {
+        "id": "slice",
+        "label": "slice (20g)",
+        "unit": "slice",
+        "grams": 20,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 64,
+      "protein": 2.4,
+      "carbs": 2.6,
+      "fat": 4.9,
+      "fiber": 0
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 280,
+      "calciumMg": 90
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-yakult",
+    "source": "staple",
+    "name": "Yakult Probiotic Drink",
+    "brand": "Yakult",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "bottle",
+    "servingWeightGrams": 80,
+    "servingOptions": [
+      {
+        "id": "bottle",
+        "label": "bottle (80ml)",
+        "unit": "bottle",
+        "grams": 80,
+        "defaultAmount": 1
+      },
+      {
+        "id": "ml",
+        "label": "ml",
+        "unit": "ml",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 50,
+      "protein": 1,
+      "carbs": 12,
+      "fat": 0,
+      "fiber": 0
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 15
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-milo-sachet",
+    "source": "staple",
+    "name": "Milo Activ-Go Chocolate Malt Drink (24g Sachet)",
+    "brand": "Nestle",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "sachet",
+    "servingWeightGrams": 24,
+    "servingOptions": [
+      {
+        "id": "sachet",
+        "label": "sachet (24g)",
+        "unit": "sachet",
+        "grams": 24,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 101,
+      "protein": 2.7,
+      "carbs": 17.6,
+      "fat": 2.1,
+      "fiber": 0.9
+    },
+    "micronutrientsPerBasis": {
+      "calciumMg": 120,
+      "ironMg": 2.4,
+      "sodiumMg": 35
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-bear-brand-powder",
+    "source": "staple",
+    "name": "Bear Brand Fortified Powdered Milk (33g Sachet)",
+    "brand": "Nestle",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "sachet",
+    "servingWeightGrams": 33,
+    "servingOptions": [
+      {
+        "id": "sachet",
+        "label": "sachet (33g)",
+        "unit": "sachet",
+        "grams": 33,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 160,
+      "protein": 6.4,
+      "carbs": 15.8,
+      "fat": 7.8,
+      "fiber": 0
+    },
+    "micronutrientsPerBasis": {
+      "calciumMg": 250,
+      "ironMg": 3.5,
+      "zincMg": 2.1,
+      "vitaminCMg": 20
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-kopiko-brown",
+    "source": "staple",
+    "name": "Kopiko Brown Coffee 3-in-1 (27.5g Sachet)",
+    "brand": "Kopiko",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "sachet",
+    "servingWeightGrams": 27.5,
+    "servingOptions": [
+      {
+        "id": "sachet",
+        "label": "sachet (27.5g)",
+        "unit": "sachet",
+        "grams": 27.5,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 125,
+      "protein": 0.6,
+      "carbs": 21.5,
+      "fat": 4.1,
+      "fiber": 0
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 45
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-great-taste-white",
+    "source": "staple",
+    "name": "Great Taste White Coffee 3-in-1 (30g Sachet)",
+    "brand": "Great Taste",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "sachet",
+    "servingWeightGrams": 30,
+    "servingOptions": [
+      {
+        "id": "sachet",
+        "label": "sachet (30g)",
+        "unit": "sachet",
+        "grams": 30,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 135,
+      "protein": 1,
+      "carbs": 23,
+      "fat": 4.2,
+      "fiber": 0
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 60
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-c2-green-tea-apple",
+    "source": "staple",
+    "name": "C2 Cool & Clean Green Tea Apple (355ml Bottle)",
+    "brand": "URC",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "bottle",
+    "servingWeightGrams": 355,
+    "servingOptions": [
+      {
+        "id": "bottle",
+        "label": "bottle (355ml)",
+        "unit": "bottle",
+        "grams": 355,
+        "defaultAmount": 1
+      },
+      {
+        "id": "ml",
+        "label": "ml",
+        "unit": "ml",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 120,
+      "protein": 0,
+      "carbs": 30,
+      "fat": 0,
+      "fiber": 0
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 25
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-saba-banana",
+    "source": "staple",
+    "name": "Saba Banana (Boiled / Raw)",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 70,
+    "servingOptions": [
+      {
+        "id": "pc",
+        "label": "pc (70g)",
+        "unit": "pc",
+        "grams": 70,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 82,
+      "protein": 0.8,
+      "carbs": 21.1,
+      "fat": 0.2,
+      "fiber": 1.6
+    },
+    "micronutrientsPerBasis": {
+      "potassiumMg": 265,
+      "vitaminCMg": 12
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-lakatan-banana",
+    "source": "staple",
+    "name": "Lakatan Banana",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 90,
+    "servingOptions": [
+      {
+        "id": "pc",
+        "label": "pc (90g)",
+        "unit": "pc",
+        "grams": 90,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 92,
+      "protein": 1.1,
+      "carbs": 23.4,
+      "fat": 0.3,
+      "fiber": 2.1
+    },
+    "micronutrientsPerBasis": {
+      "potassiumMg": 325,
+      "vitaminCMg": 10
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-carabao-mango",
+    "source": "staple",
+    "name": "Philippine Carabao Mango (Ripe)",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 165,
+    "servingOptions": [
+      {
+        "id": "pc",
+        "label": "pc (165g)",
+        "unit": "pc",
+        "grams": 165,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 105,
+      "protein": 1.1,
+      "carbs": 25.4,
+      "fat": 0.5,
+      "fiber": 2.6
+    },
+    "micronutrientsPerBasis": {
+      "vitaminCMg": 60,
+      "vitaminAMcg": 89,
+      "potassiumMg": 277
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-calamansi",
+    "source": "staple",
+    "name": "Calamansi (Philippine Lime)",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 15,
+    "servingOptions": [
+      {
+        "id": "pc",
+        "label": "pc (15g)",
+        "unit": "pc",
+        "grams": 15,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 5,
+      "protein": 0.1,
+      "carbs": 1.3,
+      "fat": 0,
+      "fiber": 0.2
+    },
+    "micronutrientsPerBasis": {
+      "vitaminCMg": 6,
+      "potassiumMg": 22
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-kamote-boiled",
+    "source": "staple",
+    "name": "Kamote (Boiled Philippine Sweet Potato)",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 150,
+    "servingOptions": [
+      {
+        "id": "pc",
+        "label": "pc (150g)",
+        "unit": "pc",
+        "grams": 150,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 129,
+      "protein": 2.1,
+      "carbs": 29.8,
+      "fat": 0.2,
+      "fiber": 3.9
+    },
+    "micronutrientsPerBasis": {
+      "potassiumMg": 345,
+      "vitaminAMcg": 540,
+      "vitaminCMg": 19
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-kangkong-cooked",
+    "source": "staple",
+    "name": "Kangkong (Water Spinach, Boiled)",
+    "region": "PH",
+    "basis": "per100g",
+    "servingSize": 100,
+    "servingUnit": "g",
+    "nutrientsPerBasis": {
+      "calories": 22,
+      "protein": 2.4,
+      "carbs": 3.4,
+      "fat": 0.2,
+      "fiber": 2.1
+    },
+    "micronutrientsPerBasis": {
+      "ironMg": 1.9,
+      "calciumMg": 77,
+      "vitaminAMcg": 290,
+      "vitaminCMg": 32
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3,
+    "servingOptions": [
+      {
+        "id": "cup",
+        "label": "cup (98g)",
+        "unit": "cup",
+        "grams": 98,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ]
+  },
+  {
+    "id": "staple:ph-malunggay-leaves",
+    "source": "staple",
+    "name": "Malunggay (Moringa Leaves, Raw)",
+    "region": "PH",
+    "basis": "per100g",
+    "servingSize": 100,
+    "servingUnit": "g",
+    "nutrientsPerBasis": {
+      "calories": 64,
+      "protein": 9.4,
+      "carbs": 8.3,
+      "fat": 1.4,
+      "fiber": 2
+    },
+    "micronutrientsPerBasis": {
+      "calciumMg": 185,
+      "ironMg": 4,
+      "vitaminCMg": 51.7,
+      "vitaminAMcg": 378,
+      "potassiumMg": 337
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3,
+    "servingOptions": [
+      {
+        "id": "cup",
+        "label": "cup (21g)",
+        "unit": "cup",
+        "grams": 21,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ]
+  },
+  {
+    "id": "staple:ph-sitaw-boiled",
+    "source": "staple",
+    "name": "Sitaw (Yardlong Beans, Boiled)",
+    "region": "PH",
+    "basis": "per100g",
+    "servingSize": 100,
+    "servingUnit": "g",
+    "nutrientsPerBasis": {
+      "calories": 47,
+      "protein": 2.5,
+      "carbs": 8.4,
+      "fat": 0.1,
+      "fiber": 2.9
+    },
+    "micronutrientsPerBasis": {
+      "folateMcg": 45,
+      "vitaminCMg": 16,
+      "potassiumMg": 290
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3,
+    "servingOptions": [
+      {
+        "id": "cup",
+        "label": "cup (104g)",
+        "unit": "cup",
+        "grams": 104,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ]
+  },
+  {
+    "id": "staple:ph-kalabasa-boiled",
+    "source": "staple",
+    "name": "Kalabasa (Calabaza Squash, Boiled)",
+    "region": "PH",
+    "basis": "per100g",
+    "servingSize": 100,
+    "servingUnit": "g",
+    "nutrientsPerBasis": {
+      "calories": 34,
+      "protein": 1,
+      "carbs": 7.8,
+      "fat": 0.1,
+      "fiber": 1.6
+    },
+    "micronutrientsPerBasis": {
+      "vitaminAMcg": 280,
+      "potassiumMg": 280
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3,
+    "servingOptions": [
+      {
+        "id": "cup",
+        "label": "cup (205g)",
+        "unit": "cup",
+        "grams": 205,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ]
+  },
+  {
+    "id": "staple:ph-ampalaya-cooked",
+    "source": "staple",
+    "name": "Ampalaya (Bitter Melon, Cooked)",
+    "region": "PH",
+    "basis": "per100g",
+    "servingSize": 100,
+    "servingUnit": "g",
+    "nutrientsPerBasis": {
+      "calories": 19,
+      "protein": 0.8,
+      "carbs": 4.3,
+      "fat": 0.2,
+      "fiber": 2
+    },
+    "micronutrientsPerBasis": {
+      "vitaminCMg": 33,
+      "folateMcg": 51,
+      "potassiumMg": 319
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3,
+    "servingOptions": [
+      {
+        "id": "cup",
+        "label": "cup (124g)",
+        "unit": "cup",
+        "grams": 124,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ]
+  },
+  {
+    "id": "staple:ph-pechay-boiled",
+    "source": "staple",
+    "name": "Pechay Tagalog (Bok Choy, Boiled)",
+    "region": "PH",
+    "basis": "per100g",
+    "servingSize": 100,
+    "servingUnit": "g",
+    "nutrientsPerBasis": {
+      "calories": 14,
+      "protein": 1.6,
+      "carbs": 2,
+      "fat": 0.2,
+      "fiber": 1.1
+    },
+    "micronutrientsPerBasis": {
+      "calciumMg": 93,
+      "vitaminCMg": 26,
+      "vitaminAMcg": 212
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3,
+    "servingOptions": [
+      {
+        "id": "cup",
+        "label": "cup (170g)",
+        "unit": "cup",
+        "grams": 170,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ]
+  },
+  {
+    "id": "staple:ph-talong-grilled",
+    "source": "staple",
+    "name": "Talong (Philippine Eggplant, Grilled)",
+    "region": "PH",
+    "basis": "per100g",
+    "servingSize": 100,
+    "servingUnit": "g",
+    "nutrientsPerBasis": {
+      "calories": 35,
+      "protein": 0.8,
+      "carbs": 8.7,
+      "fat": 0.2,
+      "fiber": 2.5
+    },
+    "micronutrientsPerBasis": {
+      "potassiumMg": 123
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3,
+    "servingOptions": [
+      {
+        "id": "medium",
+        "label": "medium (120g)",
+        "unit": "medium",
+        "grams": 120,
+        "defaultAmount": 1
+      },
+      {
+        "id": "cup",
+        "label": "cup (99g)",
+        "unit": "cup",
+        "grams": 99,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ]
+  },
+  {
+    "id": "staple:ph-gabi-boiled",
+    "source": "staple",
+    "name": "Gabi (Taro Root, Boiled)",
+    "region": "PH",
+    "basis": "per100g",
+    "servingSize": 100,
+    "servingUnit": "g",
+    "nutrientsPerBasis": {
+      "calories": 142,
+      "protein": 0.5,
+      "carbs": 34.6,
+      "fat": 0.1,
+      "fiber": 5.1
+    },
+    "micronutrientsPerBasis": {
+      "potassiumMg": 484,
+      "magnesiumMg": 30
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3,
+    "servingOptions": [
+      {
+        "id": "cup",
+        "label": "cup (132g)",
+        "unit": "cup",
+        "grams": 132,
+        "defaultAmount": 1
+      },
+      {
+        "id": "medium",
+        "label": "medium (100g)",
+        "unit": "medium",
+        "grams": 100,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ]
+  },
+  {
+    "id": "staple:ph-papaya-ripe",
+    "source": "staple",
+    "name": "Papaya (Ripe)",
+    "region": "PH",
+    "basis": "per100g",
+    "servingSize": 100,
+    "servingUnit": "g",
+    "nutrientsPerBasis": {
+      "calories": 43,
+      "protein": 0.5,
+      "carbs": 10.8,
+      "fat": 0.3,
+      "fiber": 1.7
+    },
+    "micronutrientsPerBasis": {
+      "vitaminCMg": 61,
+      "potassiumMg": 182
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3,
+    "servingOptions": [
+      {
+        "id": "cup",
+        "label": "cup (145g)",
+        "unit": "cup",
+        "grams": 145,
+        "defaultAmount": 1
+      },
+      {
+        "id": "slice",
+        "label": "slice (100g)",
+        "unit": "slice",
+        "grams": 100,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ]
+  },
+  {
+    "id": "staple:ph-buko-juice",
+    "source": "staple",
+    "name": "Fresh Buko Juice (Young Coconut Water)",
+    "region": "PH",
+    "basis": "per100ml",
+    "servingSize": 1,
+    "servingUnit": "cup",
+    "servingWeightGrams": 240,
+    "servingOptions": [
+      {
+        "id": "cup",
+        "label": "cup (240ml)",
+        "unit": "cup",
+        "grams": 240,
+        "defaultAmount": 1
+      },
+      {
+        "id": "ml",
+        "label": "ml",
+        "unit": "ml",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 19,
+      "protein": 0.7,
+      "carbs": 3.7,
+      "fat": 0.2,
+      "fiber": 1.1
+    },
+    "micronutrientsPerBasis": {
+      "potassiumMg": 250,
+      "sodiumMg": 105,
+      "magnesiumMg": 25
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-buko-meat",
+    "source": "staple",
+    "name": "Fresh Buko Meat (Young Coconut Flesh)",
+    "region": "PH",
+    "basis": "per100g",
+    "servingSize": 100,
+    "servingUnit": "g",
+    "nutrientsPerBasis": {
+      "calories": 89,
+      "protein": 1.4,
+      "carbs": 5.5,
+      "fat": 6.9,
+      "fiber": 2.4
+    },
+    "micronutrientsPerBasis": {
+      "potassiumMg": 240
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3,
+    "servingOptions": [
+      {
+        "id": "cup",
+        "label": "cup (80g)",
+        "unit": "cup",
+        "grams": 80,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ]
+  },
+  {
+    "id": "staple:ph-atay-ng-manok-adobo",
+    "source": "staple",
+    "name": "Adobong Atay ng Manok (Chicken Liver Adobo)",
+    "region": "PH",
+    "basis": "per100g",
+    "servingSize": 1,
+    "servingUnit": "serving",
+    "servingWeightGrams": 120,
+    "servingOptions": [
+      {
+        "id": "serving",
+        "label": "serving (120g)",
+        "unit": "serving",
+        "grams": 120,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 175,
+      "protein": 22.4,
+      "carbs": 2.8,
+      "fat": 7.6,
+      "fiber": 0
+    },
+    "micronutrientsPerBasis": {
+      "ironMg": 10.5,
+      "vitaminAMcg": 3800,
+      "vitaminB12Mcg": 16,
+      "sodiumMg": 540
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-tokwa-fried",
+    "source": "staple",
+    "name": "Fried Tokwa (Firm Tofu)",
+    "region": "PH",
+    "basis": "per100g",
+    "servingSize": 100,
+    "servingUnit": "g",
+    "nutrientsPerBasis": {
+      "calories": 215,
+      "protein": 15.2,
+      "carbs": 3.4,
+      "fat": 15.4,
+      "fiber": 1.2
+    },
+    "micronutrientsPerBasis": {
+      "calciumMg": 290,
+      "ironMg": 2.3
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3,
+    "servingOptions": [
+      {
+        "id": "pc",
+        "label": "pc (60g)",
+        "unit": "pc",
+        "grams": 60,
+        "defaultAmount": 1
+      },
+      {
+        "id": "slice",
+        "label": "slice (30g)",
+        "unit": "slice",
+        "grams": 30,
+        "defaultAmount": 2
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ]
+  },
+  {
+    "id": "staple:ph-chicharon",
+    "source": "staple",
+    "name": "Pork Chicharon (Cracklings)",
+    "region": "PH",
+    "basis": "per100g",
+    "servingSize": 1,
+    "servingUnit": "pack",
+    "servingWeightGrams": 40,
+    "servingOptions": [
+      {
+        "id": "pack",
+        "label": "pack (40g)",
+        "unit": "pack",
+        "grams": 40,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 544,
+      "protein": 61.3,
+      "carbs": 0,
+      "fat": 31.3,
+      "fiber": 0
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 1810
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-kfc-original-chicken",
+    "source": "staple",
+    "name": "Original Recipe Fried Chicken",
+    "brand": "KFC",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 140,
+    "servingOptions": [
+      {
+        "id": "pc",
+        "label": "pc (140g)",
+        "unit": "pc",
+        "grams": 140,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 320,
+      "protein": 26,
+      "carbs": 10,
+      "fat": 19,
+      "fiber": 0.5
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 810
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-kfc-flavor-shots",
+    "source": "staple",
+    "name": "Chicken Flavor Shots",
+    "brand": "KFC",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "serving",
+    "servingWeightGrams": 95,
+    "servingOptions": [
+      {
+        "id": "serving",
+        "label": "serving (95g)",
+        "unit": "serving",
+        "grams": 95,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 285,
+      "protein": 16,
+      "carbs": 21,
+      "fat": 15,
+      "fiber": 1
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 690
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-kfc-mushroom-soup",
+    "source": "staple",
+    "name": "Cream of Mushroom Soup",
+    "brand": "KFC",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "cup",
+    "servingWeightGrams": 180,
+    "servingOptions": [
+      {
+        "id": "cup",
+        "label": "cup (180g)",
+        "unit": "cup",
+        "grams": 180,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 145,
+      "protein": 3,
+      "carbs": 16,
+      "fat": 7.5,
+      "fiber": 0.5
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 620
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-greenwich-hawaiian-pizza",
+    "source": "staple",
+    "name": "Hawaiian Overload Pizza (Regular Slice)",
+    "brand": "Greenwich",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "slice",
+    "servingWeightGrams": 95,
+    "servingOptions": [
+      {
+        "id": "slice",
+        "label": "slice (95g)",
+        "unit": "slice",
+        "grams": 95,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 235,
+      "protein": 10.5,
+      "carbs": 29,
+      "fat": 8.5,
+      "fiber": 1.5
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 490
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-greenwich-lasagna",
+    "source": "staple",
+    "name": "Lasagna Supreme (Solo)",
+    "brand": "Greenwich",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "serving",
+    "servingWeightGrams": 220,
+    "servingOptions": [
+      {
+        "id": "serving",
+        "label": "serving (220g)",
+        "unit": "serving",
+        "grams": 220,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 370,
+      "protein": 17,
+      "carbs": 39,
+      "fat": 16,
+      "fiber": 2
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 810
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-goldilocks-polvoron",
+    "source": "staple",
+    "name": "Classic Polvoron",
+    "brand": "Goldilocks",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 25,
+    "servingOptions": [
+      {
+        "id": "pc",
+        "label": "pc (25g)",
+        "unit": "pc",
+        "grams": 25,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 120,
+      "protein": 2,
+      "carbs": 15,
+      "fat": 5.5,
+      "fiber": 0
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 35
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-goldilocks-mamon",
+    "source": "staple",
+    "name": "Butter Mamon",
+    "brand": "Goldilocks",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 45,
+    "servingOptions": [
+      {
+        "id": "pc",
+        "label": "pc (45g)",
+        "unit": "pc",
+        "grams": 45,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 165,
+      "protein": 3.5,
+      "carbs": 21,
+      "fat": 7.5,
+      "fiber": 0.5
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 140
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-tapsilog",
+    "source": "staple",
+    "name": "Tapsilog (Beef Tapa, Sinangag & Fried Egg)",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "serving",
+    "servingWeightGrams": 320,
+    "servingOptions": [
+      {
+        "id": "serving",
+        "label": "serving (320g)",
+        "unit": "serving",
+        "grams": 320,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 610,
+      "protein": 33,
+      "carbs": 51,
+      "fat": 29,
+      "fiber": 1
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 1280,
+      "ironMg": 3.6
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-longsilog",
+    "source": "staple",
+    "name": "Longsilog (2 Longganisa, Sinangag & Fried Egg)",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "serving",
+    "servingWeightGrams": 300,
+    "servingOptions": [
+      {
+        "id": "serving",
+        "label": "serving (300g)",
+        "unit": "serving",
+        "grams": 300,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 660,
+      "protein": 24,
+      "carbs": 59,
+      "fat": 35,
+      "fiber": 1
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 1160
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-tocilog",
+    "source": "staple",
+    "name": "Tocilog (Pork Tocino, Sinangag & Fried Egg)",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "serving",
+    "servingWeightGrams": 320,
+    "servingOptions": [
+      {
+        "id": "serving",
+        "label": "serving (320g)",
+        "unit": "serving",
+        "grams": 320,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 635,
+      "protein": 26,
+      "carbs": 66,
+      "fat": 29,
+      "fiber": 1
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 1190
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-bangsilog",
+    "source": "staple",
+    "name": "Bangsilog (Daing na Bangus, Sinangag & Fried Egg)",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "serving",
+    "servingWeightGrams": 350,
+    "servingOptions": [
+      {
+        "id": "serving",
+        "label": "serving (350g)",
+        "unit": "serving",
+        "grams": 350,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 655,
+      "protein": 39,
+      "carbs": 50,
+      "fat": 33,
+      "fiber": 1
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 980,
+      "potassiumMg": 520
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-hotsilog",
+    "source": "staple",
+    "name": "Hotsilog (2 Hotdogs, Sinangag & Fried Egg)",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "serving",
+    "servingWeightGrams": 305,
+    "servingOptions": [
+      {
+        "id": "serving",
+        "label": "serving (305g)",
+        "unit": "serving",
+        "grams": 305,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 605,
+      "protein": 21,
+      "carbs": 56,
+      "fat": 33,
+      "fiber": 1
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 1220
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-chopsuey",
+    "source": "staple",
+    "name": "Filipino Chopsuey (Stir-Fried Mixed Vegetables)",
+    "region": "PH",
+    "basis": "per100g",
+    "servingSize": 1,
+    "servingUnit": "cup",
+    "servingWeightGrams": 180,
+    "servingOptions": [
+      {
+        "id": "cup",
+        "label": "cup (180g)",
+        "unit": "cup",
+        "grams": 180,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 68,
+      "protein": 4.5,
+      "carbs": 5.8,
+      "fat": 3.1,
+      "fiber": 1.9
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 360,
+      "vitaminCMg": 22,
+      "vitaminAMcg": 140
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-ginataang-kalabasa",
+    "source": "staple",
+    "name": "Ginataang Kalabasa at Sitaw",
+    "region": "PH",
+    "basis": "per100g",
+    "servingSize": 1,
+    "servingUnit": "cup",
+    "servingWeightGrams": 200,
+    "servingOptions": [
+      {
+        "id": "cup",
+        "label": "cup (200g)",
+        "unit": "cup",
+        "grams": 200,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 115,
+      "protein": 3.5,
+      "carbs": 7.5,
+      "fat": 8.2,
+      "fiber": 1.8
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 290,
+      "vitaminAMcg": 195
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-chicken-inasal-home",
+    "source": "staple",
+    "name": "Chicken Inasal (Grilled Marinated Thigh/Leg)",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 150,
+    "servingOptions": [
+      {
+        "id": "pc",
+        "label": "pc (150g)",
+        "unit": "pc",
+        "grams": 150,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 275,
+      "protein": 28,
+      "carbs": 4.5,
+      "fat": 15.5,
+      "fiber": 0
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 580
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-lechon-baboy",
+    "source": "staple",
+    "name": "Lechon Baboy (Roasted Whole Pig)",
+    "region": "PH",
+    "basis": "per100g",
+    "servingSize": 100,
+    "servingUnit": "g",
+    "nutrientsPerBasis": {
+      "calories": 355,
+      "protein": 19.5,
+      "carbs": 0.5,
+      "fat": 30.5,
+      "fiber": 0
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 490
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3,
+    "servingOptions": [
+      {
+        "id": "serving",
+        "label": "serving (150g)",
+        "unit": "serving",
+        "grams": 150,
+        "defaultAmount": 1
+      },
+      {
+        "id": "cup",
+        "label": "cup (140g)",
+        "unit": "cup",
+        "grams": 140,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ]
+  },
+  {
+    "id": "staple:ph-crispy-pata",
+    "source": "staple",
+    "name": "Crispy Pata (Deep-Fried Pork Knuckle)",
+    "region": "PH",
+    "basis": "per100g",
+    "servingSize": 100,
+    "servingUnit": "g",
+    "nutrientsPerBasis": {
+      "calories": 380,
+      "protein": 20,
+      "carbs": 0.5,
+      "fat": 33,
+      "fiber": 0
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 540
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3,
+    "servingOptions": [
+      {
+        "id": "serving",
+        "label": "serving (150g)",
+        "unit": "serving",
+        "grams": 150,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ]
+  },
+  {
+    "id": "staple:ph-pork-humba",
+    "source": "staple",
+    "name": "Pork Humba (Braised Pork Belly)",
+    "region": "PH",
+    "basis": "per100g",
+    "servingSize": 1,
+    "servingUnit": "serving",
+    "servingWeightGrams": 150,
+    "servingOptions": [
+      {
+        "id": "serving",
+        "label": "serving (150g)",
+        "unit": "serving",
+        "grams": 150,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 325,
+      "protein": 14,
+      "carbs": 9.5,
+      "fat": 25.5,
+      "fiber": 0.3
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 640
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-pork-binagoongan",
+    "source": "staple",
+    "name": "Pork Binagoongan",
+    "region": "PH",
+    "basis": "per100g",
+    "servingSize": 1,
+    "servingUnit": "serving",
+    "servingWeightGrams": 150,
+    "servingOptions": [
+      {
+        "id": "serving",
+        "label": "serving (150g)",
+        "unit": "serving",
+        "grams": 150,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 295,
+      "protein": 15.5,
+      "carbs": 4.2,
+      "fat": 24,
+      "fiber": 0.4
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 910
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-tortang-giniling",
+    "source": "staple",
+    "name": "Picadillo / Giniling (Ground Pork & Potatoes)",
+    "region": "PH",
+    "basis": "per100g",
+    "servingSize": 1,
+    "servingUnit": "cup",
+    "servingWeightGrams": 180,
+    "servingOptions": [
+      {
+        "id": "cup",
+        "label": "cup (180g)",
+        "unit": "cup",
+        "grams": 180,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 168,
+      "protein": 11.4,
+      "carbs": 8.2,
+      "fat": 9.8,
+      "fiber": 1.1
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 420
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-paksiw-na-bangus",
+    "source": "staple",
+    "name": "Paksiw na Bangus (Milkfish in Vinegar)",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 140,
+    "servingOptions": [
+      {
+        "id": "pc",
+        "label": "pc (140g)",
+        "unit": "pc",
+        "grams": 140,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 225,
+      "protein": 26,
+      "carbs": 2.5,
+      "fat": 12,
+      "fiber": 0.4
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 480,
+      "potassiumMg": 410
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-tinapa",
+    "source": "staple",
+    "name": "Tinapa (Smoked Galunggong / Fish)",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 75,
+    "servingOptions": [
+      {
+        "id": "pc",
+        "label": "pc (75g)",
+        "unit": "pc",
+        "grams": 75,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 142,
+      "protein": 22.5,
+      "carbs": 0,
+      "fat": 5.2,
+      "fiber": 0
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 650,
+      "potassiumMg": 280
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-tuyo",
+    "source": "staple",
+    "name": "Tuyo (Dried Salted Herring, Fried)",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 20,
+    "servingOptions": [
+      {
+        "id": "pc",
+        "label": "pc (20g)",
+        "unit": "pc",
+        "grams": 20,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 52,
+      "protein": 7.4,
+      "carbs": 0,
+      "fat": 2.4,
+      "fiber": 0
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 690,
+      "calciumMg": 95
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-sisig-tofu",
+    "source": "staple",
+    "name": "Sizzling Tofu Sisig",
+    "region": "PH",
+    "basis": "per100g",
+    "servingSize": 1,
+    "servingUnit": "serving",
+    "servingWeightGrams": 150,
+    "servingOptions": [
+      {
+        "id": "serving",
+        "label": "serving (150g)",
+        "unit": "serving",
+        "grams": 150,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 198,
+      "protein": 10.5,
+      "carbs": 6.2,
+      "fat": 14.5,
+      "fiber": 1.1
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 480,
+      "calciumMg": 160
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-bulgogi-mcdo-chicken-sandwich",
+    "source": "staple",
+    "name": "McChicken Sandwich",
+    "brand": "McDonald's",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 145,
+    "servingOptions": [
+      {
+        "id": "pc",
+        "label": "pc (145g)",
+        "unit": "pc",
+        "grams": 145,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 380,
+      "protein": 15,
+      "carbs": 40,
+      "fat": 18,
+      "fiber": 2
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 640
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-mcdo-apple-pie",
+    "source": "staple",
+    "name": "Apple Pie",
+    "brand": "McDonald's",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 85,
+    "servingOptions": [
+      {
+        "id": "pc",
+        "label": "pc (85g)",
+        "unit": "pc",
+        "grams": 85,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 240,
+      "protein": 2,
+      "carbs": 33,
+      "fat": 11,
+      "fiber": 2
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 170
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-mcdo-hot-fudge-sundae",
+    "source": "staple",
+    "name": "Hot Fudge Sundae",
+    "brand": "McDonald's",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "cup",
+    "servingWeightGrams": 170,
+    "servingOptions": [
+      {
+        "id": "cup",
+        "label": "cup (170g)",
+        "unit": "cup",
+        "grams": 170,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 310,
+      "protein": 7,
+      "carbs": 50,
+      "fat": 9,
+      "fiber": 1
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 180,
+      "calciumMg": 200
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-jollibee-champ",
+    "source": "staple",
+    "name": "Champ Burger",
+    "brand": "Jollibee",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 220,
+    "servingOptions": [
+      {
+        "id": "pc",
+        "label": "pc (220g)",
+        "unit": "pc",
+        "grams": 220,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 580,
+      "protein": 31,
+      "carbs": 42,
+      "fat": 31,
+      "fiber": 2.5
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 1040
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-jollibee-chicken-sandwich",
+    "source": "staple",
+    "name": "Spicy Chicken Sandwich",
+    "brand": "Jollibee",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 185,
+    "servingOptions": [
+      {
+        "id": "pc",
+        "label": "pc (185g)",
+        "unit": "pc",
+        "grams": 185,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 470,
+      "protein": 28,
+      "carbs": 40,
+      "fat": 22,
+      "fiber": 2
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 940
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-selecta-cornetto-classic",
+    "source": "staple",
+    "name": "Cornetto Classic Vanilla/Chocolate Cone",
+    "brand": "Selecta",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 72,
+    "servingOptions": [
+      {
+        "id": "pc",
+        "label": "pc (72g)",
+        "unit": "pc",
+        "grams": 72,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 210,
+      "protein": 3,
+      "carbs": 26,
+      "fat": 10,
+      "fiber": 0.5
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 60
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-rebisco-cream-crackers",
+    "source": "staple",
+    "name": "Rebisco Cream Crackers (1 Pack)",
+    "brand": "Rebisco",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pack",
+    "servingWeightGrams": 32,
+    "servingOptions": [
+      {
+        "id": "pack",
+        "label": "pack (32g)",
+        "unit": "pack",
+        "grams": 32,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 150,
+      "protein": 3,
+      "carbs": 21,
+      "fat": 6,
+      "fiber": 1
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 210
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-nissin-cup-noodles-beef",
+    "source": "staple",
+    "name": "Cup Noodles Beef (40g Cup)",
+    "brand": "Nissin",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "cup",
+    "servingWeightGrams": 40,
+    "servingOptions": [
+      {
+        "id": "cup",
+        "label": "cup (40g dry)",
+        "unit": "cup",
+        "grams": 40,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 180,
+      "protein": 4,
+      "carbs": 25,
+      "fat": 7,
+      "fiber": 1
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 820
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-nissin-cup-noodles-seafood",
+    "source": "staple",
+    "name": "Cup Noodles Seafood (40g Cup)",
+    "brand": "Nissin",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "cup",
+    "servingWeightGrams": 40,
+    "servingOptions": [
+      {
+        "id": "cup",
+        "label": "cup (40g dry)",
+        "unit": "cup",
+        "grams": 40,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 175,
+      "protein": 4,
+      "carbs": 25,
+      "fat": 6.5,
+      "fiber": 1
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 790
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-energen-chocolate",
+    "source": "staple",
+    "name": "Energen Cereal Drink Chocolate (40g Sachet)",
+    "brand": "Energen",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "sachet",
+    "servingWeightGrams": 40,
+    "servingOptions": [
+      {
+        "id": "sachet",
+        "label": "sachet (40g)",
+        "unit": "sachet",
+        "grams": 40,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 170,
+      "protein": 3,
+      "carbs": 30,
+      "fat": 4,
+      "fiber": 1.5
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 105,
+      "calciumMg": 100
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-oishi-prawn-crackers",
+    "source": "staple",
+    "name": "Oishi Prawn Crackers (Regular Pack)",
+    "brand": "Oishi",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pack",
+    "servingWeightGrams": 60,
+    "servingOptions": [
+      {
+        "id": "pack",
+        "label": "pack (60g)",
+        "unit": "pack",
+        "grams": 60,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 300,
+      "protein": 3,
+      "carbs": 42,
+      "fat": 13,
+      "fiber": 1
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 560
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-piattos-cheese",
+    "source": "staple",
+    "name": "Piattos Cheese Potato Crisps (40g Pack)",
+    "brand": "Jack 'n Jill",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pack",
+    "servingWeightGrams": 40,
+    "servingOptions": [
+      {
+        "id": "pack",
+        "label": "pack (40g)",
+        "unit": "pack",
+        "grams": 40,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 205,
+      "protein": 2,
+      "carbs": 25,
+      "fat": 11,
+      "fiber": 1
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 280
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-nova-multigrain",
+    "source": "staple",
+    "name": "Nova Country Cheddar Multigrain Chips (40g Pack)",
+    "brand": "Jack 'n Jill",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pack",
+    "servingWeightGrams": 40,
+    "servingOptions": [
+      {
+        "id": "pack",
+        "label": "pack (40g)",
+        "unit": "pack",
+        "grams": 40,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 195,
+      "protein": 2.5,
+      "carbs": 26,
+      "fat": 9,
+      "fiber": 2
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 260
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-lily-peanut-butter",
+    "source": "staple",
+    "name": "Lily's Classic Peanut Butter",
+    "brand": "Lily's",
+    "region": "PH",
+    "basis": "per100g",
+    "servingSize": 1,
+    "servingUnit": "tbsp",
+    "servingWeightGrams": 16,
+    "servingOptions": [
+      {
+        "id": "tbsp",
+        "label": "tbsp (16g)",
+        "unit": "tbsp",
+        "grams": 16,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 594,
+      "protein": 21.9,
+      "carbs": 25,
+      "fat": 46.9,
+      "fiber": 6.2
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 312
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-ladies-choice-mayo",
+    "source": "staple",
+    "name": "Lady's Choice Real Mayonnaise",
+    "brand": "Lady's Choice",
+    "region": "PH",
+    "basis": "per100g",
+    "servingSize": 1,
+    "servingUnit": "tbsp",
+    "servingWeightGrams": 15,
+    "servingOptions": [
+      {
+        "id": "tbsp",
+        "label": "tbsp (15g)",
+        "unit": "tbsp",
+        "grams": 15,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 670,
+      "protein": 1.3,
+      "carbs": 4.7,
+      "fat": 72,
+      "fiber": 0
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 580
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-maggi-savor-soy-sauce",
+    "source": "staple",
+    "name": "Soy Sauce (Toyo)",
+    "region": "PH",
+    "basis": "per100ml",
+    "servingSize": 1,
+    "servingUnit": "tbsp",
+    "servingWeightGrams": 15,
+    "servingOptions": [
+      {
+        "id": "tbsp",
+        "label": "tbsp (15ml)",
+        "unit": "tbsp",
+        "grams": 15,
+        "defaultAmount": 1
+      },
+      {
+        "id": "ml",
+        "label": "ml",
+        "unit": "ml",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 53,
+      "protein": 8.1,
+      "carbs": 4.9,
+      "fat": 0.1,
+      "fiber": 0.8
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 5493
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-patis",
+    "source": "staple",
+    "name": "Fish Sauce (Patis)",
+    "region": "PH",
+    "basis": "per100ml",
+    "servingSize": 1,
+    "servingUnit": "tbsp",
+    "servingWeightGrams": 15,
+    "servingOptions": [
+      {
+        "id": "tbsp",
+        "label": "tbsp (15ml)",
+        "unit": "tbsp",
+        "grams": 15,
+        "defaultAmount": 1
+      },
+      {
+        "id": "ml",
+        "label": "ml",
+        "unit": "ml",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 35,
+      "protein": 5.1,
+      "carbs": 3.6,
+      "fat": 0,
+      "fiber": 0
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 7850
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-ufc-banana-catsup",
+    "source": "staple",
+    "name": "UFC Tamis Anghang Banana Catsup",
+    "brand": "UFC",
+    "region": "PH",
+    "basis": "per100g",
+    "servingSize": 1,
+    "servingUnit": "tbsp",
+    "servingWeightGrams": 15,
+    "servingOptions": [
+      {
+        "id": "tbsp",
+        "label": "tbsp (15g)",
+        "unit": "tbsp",
+        "grams": 15,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 120,
+      "protein": 0.5,
+      "carbs": 29,
+      "fat": 0,
+      "fiber": 0.5
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 1100
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-mang-tomas",
+    "source": "staple",
+    "name": "Mang Tomas All-Around Sarsa (Lechon Sauce)",
+    "brand": "Mang Tomas",
+    "region": "PH",
+    "basis": "per100g",
+    "servingSize": 1,
+    "servingUnit": "tbsp",
+    "servingWeightGrams": 15,
+    "servingOptions": [
+      {
+        "id": "tbsp",
+        "label": "tbsp (15g)",
+        "unit": "tbsp",
+        "grams": 15,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 140,
+      "protein": 1.5,
+      "carbs": 32,
+      "fat": 0.5,
+      "fiber": 0.5
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 890
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-selecta-fortified-milk",
+    "source": "staple",
+    "name": "Selecta Fortified Full Cream Milk",
+    "brand": "Selecta",
+    "region": "PH",
+    "basis": "per100ml",
+    "servingSize": 1,
+    "servingUnit": "cup",
+    "servingWeightGrams": 240,
+    "servingOptions": [
+      {
+        "id": "cup",
+        "label": "cup (240ml)",
+        "unit": "cup",
+        "grams": 240,
+        "defaultAmount": 1
+      },
+      {
+        "id": "ml",
+        "label": "ml",
+        "unit": "ml",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 62,
+      "protein": 3.2,
+      "carbs": 4.8,
+      "fat": 3.3,
+      "fiber": 0
+    },
+    "micronutrientsPerBasis": {
+      "calciumMg": 120,
+      "sodiumMg": 45
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-vitamilk-double-choco",
+    "source": "staple",
+    "name": "Vitamilk Soymilk (Double Choco Shake, 300ml Bottle)",
+    "brand": "Vitamilk",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "bottle",
+    "servingWeightGrams": 300,
+    "servingOptions": [
+      {
+        "id": "bottle",
+        "label": "bottle (300ml)",
+        "unit": "bottle",
+        "grams": 300,
+        "defaultAmount": 1
+      },
+      {
+        "id": "ml",
+        "label": "ml",
+        "unit": "ml",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 210,
+      "protein": 8,
+      "carbs": 30,
+      "fat": 6,
+      "fiber": 1.5
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 150,
+      "calciumMg": 110
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-del-monte-pineapple-juice",
+    "source": "staple",
+    "name": "Del Monte 100% Pineapple Juice (240ml Can)",
+    "brand": "Del Monte",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "can",
+    "servingWeightGrams": 240,
+    "servingOptions": [
+      {
+        "id": "can",
+        "label": "can (240ml)",
+        "unit": "can",
+        "grams": 240,
+        "defaultAmount": 1
+      },
+      {
+        "id": "ml",
+        "label": "ml",
+        "unit": "ml",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 130,
+      "protein": 1,
+      "carbs": 31,
+      "fat": 0,
+      "fiber": 0.5
+    },
+    "micronutrientsPerBasis": {
+      "vitaminCMg": 60,
+      "potassiumMg": 310,
+      "sodiumMg": 10
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-pork-barbecue-skewer",
+    "source": "staple",
+    "name": "Street Style Pork BBQ Skewer",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "stick",
+    "servingWeightGrams": 65,
+    "servingOptions": [
+      {
+        "id": "stick",
+        "label": "stick (65g)",
+        "unit": "stick",
+        "grams": 65,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 175,
+      "protein": 13,
+      "carbs": 8.5,
+      "fat": 9.5,
+      "fiber": 0
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 390
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-isaw-manok",
+    "source": "staple",
+    "name": "Grilled Isaw (Chicken Intestine Skewer)",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "stick",
+    "servingWeightGrams": 40,
+    "servingOptions": [
+      {
+        "id": "stick",
+        "label": "stick (40g)",
+        "unit": "stick",
+        "grams": 40,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 85,
+      "protein": 6.5,
+      "carbs": 2.5,
+      "fat": 5.5,
+      "fiber": 0
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 210
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-tahong-steamed",
+    "source": "staple",
+    "name": "Steamed Tahong (Green Mussels, Meat Only)",
+    "region": "PH",
+    "basis": "per100g",
+    "servingSize": 100,
+    "servingUnit": "g",
+    "nutrientsPerBasis": {
+      "calories": 172,
+      "protein": 23.8,
+      "carbs": 7.4,
+      "fat": 4.5,
+      "fiber": 0
+    },
+    "micronutrientsPerBasis": {
+      "ironMg": 6.7,
+      "zincMg": 2.7,
+      "vitaminB12Mcg": 24,
+      "sodiumMg": 369
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3,
+    "servingOptions": [
+      {
+        "id": "cup",
+        "label": "cup (150g)",
+        "unit": "cup",
+        "grams": 150,
+        "defaultAmount": 1
+      },
+      {
+        "id": "serving",
+        "label": "serving (85g)",
+        "unit": "serving",
+        "grams": 85,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ]
+  },
+  {
+    "id": "staple:ph-leche-flan",
+    "source": "staple",
+    "name": "Leche Flan (Caramel Custard)",
+    "region": "PH",
+    "basis": "per100g",
+    "servingSize": 1,
+    "servingUnit": "slice",
+    "servingWeightGrams": 85,
+    "servingOptions": [
+      {
+        "id": "slice",
+        "label": "slice (85g)",
+        "unit": "slice",
+        "grams": 85,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 245,
+      "protein": 5.4,
+      "carbs": 36.5,
+      "fat": 8.6,
+      "fiber": 0
+    },
+    "micronutrientsPerBasis": {
+      "calciumMg": 105,
+      "sodiumMg": 75
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-buko-pandan",
+    "source": "staple",
+    "name": "Buko Pandan Salad",
+    "region": "PH",
+    "basis": "per100g",
+    "servingSize": 1,
+    "servingUnit": "cup",
+    "servingWeightGrams": 160,
+    "servingOptions": [
+      {
+        "id": "cup",
+        "label": "cup (160g)",
+        "unit": "cup",
+        "grams": 160,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 185,
+      "protein": 2.2,
+      "carbs": 21.5,
+      "fat": 10.2,
+      "fiber": 1.1
+    },
+    "micronutrientsPerBasis": {
+      "calciumMg": 58,
+      "sodiumMg": 42
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-starbucks-iced-americano-grande",
+    "source": "staple",
+    "name": "Iced Caffe Americano (Grande)",
+    "brand": "Starbucks",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "cup",
+    "servingWeightGrams": 473,
+    "servingOptions": [
+      {
+        "id": "cup",
+        "label": "cup (Grande 473ml)",
+        "unit": "cup",
+        "grams": 473,
+        "defaultAmount": 1
+      },
+      {
+        "id": "ml",
+        "label": "ml",
+        "unit": "ml",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 15,
+      "protein": 1,
+      "carbs": 2,
+      "fat": 0,
+      "fiber": 0
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 15
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-starbucks-iced-caramel-macchiato-grande",
+    "source": "staple",
+    "name": "Iced Caramel Macchiato (Grande)",
+    "brand": "Starbucks",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "cup",
+    "servingWeightGrams": 473,
+    "servingOptions": [
+      {
+        "id": "cup",
+        "label": "cup (Grande 473ml)",
+        "unit": "cup",
+        "grams": 473,
+        "defaultAmount": 1
+      },
+      {
+        "id": "ml",
+        "label": "ml",
+        "unit": "ml",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 250,
+      "protein": 10,
+      "carbs": 37,
+      "fat": 7,
+      "fiber": 0
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 150,
+      "calciumMg": 300
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-krispy-kreme-original-glazed",
+    "source": "staple",
+    "name": "Original Glazed Doughnut",
+    "brand": "Krispy Kreme",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 49,
+    "servingOptions": [
+      {
+        "id": "pc",
+        "label": "pc (49g)",
+        "unit": "pc",
+        "grams": 49,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 190,
+      "protein": 3,
+      "carbs": 22,
+      "fat": 11,
+      "fiber": 0
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 85
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-dunkin-boston-kreme",
+    "source": "staple",
+    "name": "Boston Kreme Donut",
+    "brand": "Dunkin'",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 75,
+    "servingOptions": [
+      {
+        "id": "pc",
+        "label": "pc (75g)",
+        "unit": "pc",
+        "grams": 75,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 270,
+      "protein": 4,
+      "carbs": 40,
+      "fat": 10,
+      "fiber": 1
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 310
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-dunkin-choco-butternut",
+    "source": "staple",
+    "name": "Choco Butternut Donut",
+    "brand": "Dunkin'",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 68,
+    "servingOptions": [
+      {
+        "id": "pc",
+        "label": "pc (68g)",
+        "unit": "pc",
+        "grams": 68,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 290,
+      "protein": 3.5,
+      "carbs": 36,
+      "fat": 14.5,
+      "fiber": 1
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 280
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-shakeys-mojos",
+    "source": "staple",
+    "name": "Mojo Potatoes (1 Serving)",
+    "brand": "Shakey's",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "serving",
+    "servingWeightGrams": 150,
+    "servingOptions": [
+      {
+        "id": "serving",
+        "label": "serving (150g)",
+        "unit": "serving",
+        "grams": 150,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 350,
+      "protein": 5,
+      "carbs": 42,
+      "fat": 18,
+      "fiber": 3
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 690
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-shakeys-bunch-of-lunch-chicken",
+    "source": "staple",
+    "name": "Chicken 'N' Mojos (1 pc Chicken)",
+    "brand": "Shakey's",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 135,
+    "servingOptions": [
+      {
+        "id": "pc",
+        "label": "pc (135g)",
+        "unit": "pc",
+        "grams": 135,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 310,
+      "protein": 23,
+      "carbs": 12,
+      "fat": 18,
+      "fiber": 0.5
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 680
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-maxs-fried-chicken",
+    "source": "staple",
+    "name": "Sarap-to-the-Bones Fried Chicken (Quarter)",
+    "brand": "Max's",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 180,
+    "servingOptions": [
+      {
+        "id": "pc",
+        "label": "pc (180g)",
+        "unit": "pc",
+        "grams": 180,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 345,
+      "protein": 36,
+      "carbs": 2,
+      "fat": 21,
+      "fiber": 0
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 610
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-bonchon-soy-garlic-drumstick",
+    "source": "staple",
+    "name": "Soy Garlic Crispy Chicken Drumstick",
+    "brand": "BonChon",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 115,
+    "servingOptions": [
+      {
+        "id": "pc",
+        "label": "pc (115g)",
+        "unit": "pc",
+        "grams": 115,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 260,
+      "protein": 19,
+      "carbs": 13,
+      "fat": 14,
+      "fiber": 0
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 680
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-24-chicken-jack-daniels",
+    "source": "staple",
+    "name": "Boneless Fried Chicken (Jack Daniels)",
+    "brand": "24 Chicken",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 65,
+    "servingOptions": [
+      {
+        "id": "pc",
+        "label": "pc (65g)",
+        "unit": "pc",
+        "grams": 65,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 165,
+      "protein": 11,
+      "carbs": 11,
+      "fat": 8.5,
+      "fiber": 0
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 340
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-24-chicken-yangnyeom",
+    "source": "staple",
+    "name": "Boneless Fried Chicken (Yangnyeom)",
+    "brand": "24 Chicken",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 65,
+    "servingOptions": [
+      {
+        "id": "pc",
+        "label": "pc (65g)",
+        "unit": "pc",
+        "grams": 65,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 170,
+      "protein": 11,
+      "carbs": 12,
+      "fat": 8.5,
+      "fiber": 0
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 360
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-potato-corner-mega",
+    "source": "staple",
+    "name": "Flavored Fries (Cheese / BBQ, Large)",
+    "brand": "Potato Corner",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "serving",
+    "servingWeightGrams": 110,
+    "servingOptions": [
+      {
+        "id": "serving",
+        "label": "serving (110g)",
+        "unit": "serving",
+        "grams": 110,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 350,
+      "protein": 4.5,
+      "carbs": 44,
+      "fat": 17,
+      "fiber": 3.5
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 620
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-zarks-jawbreaker",
+    "source": "staple",
+    "name": "Zark's Ultimate Burger",
+    "brand": "Zark's Burgers",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 260,
+    "servingOptions": [
+      {
+        "id": "pc",
+        "label": "pc (260g)",
+        "unit": "pc",
+        "grams": 260,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 680,
+      "protein": 36,
+      "carbs": 42,
+      "fat": 40,
+      "fiber": 2
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 1180
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-angel-burger",
+    "source": "staple",
+    "name": "Buy 1 Take 1 Beef Burger (1 Burger)",
+    "brand": "Angel's Burger",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 85,
+    "servingOptions": [
+      {
+        "id": "pc",
+        "label": "pc (85g)",
+        "unit": "pc",
+        "grams": 85,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 225,
+      "protein": 8.5,
+      "carbs": 27,
+      "fat": 9,
+      "fiber": 1
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 420
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-minute-burger-black-pepper",
+    "source": "staple",
+    "name": "Black Pepper Burger",
+    "brand": "Minute Burger",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 120,
+    "servingOptions": [
+      {
+        "id": "pc",
+        "label": "pc (120g)",
+        "unit": "pc",
+        "grams": 120,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 325,
+      "protein": 14,
+      "carbs": 31,
+      "fat": 16,
+      "fiber": 1.5
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 610
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-kutsinta",
+    "source": "staple",
+    "name": "Kutsinta (Steamed Brown Rice Cake)",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 40,
+    "servingOptions": [
+      {
+        "id": "pc",
+        "label": "pc (40g)",
+        "unit": "pc",
+        "grams": 40,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 76,
+      "protein": 0.9,
+      "carbs": 17.6,
+      "fat": 0.2,
+      "fiber": 0.2
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 28
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-sapin-sapin",
+    "source": "staple",
+    "name": "Sapin-Sapin (Layered Glutinous Rice Cake)",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "slice",
+    "servingWeightGrams": 90,
+    "servingOptions": [
+      {
+        "id": "slice",
+        "label": "slice (90g)",
+        "unit": "slice",
+        "grams": 90,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 195,
+      "protein": 2.1,
+      "carbs": 37,
+      "fat": 4.2,
+      "fiber": 0.6
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 65
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-biko",
+    "source": "staple",
+    "name": "Biko (Sweet Sticky Rice Cake)",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "slice",
+    "servingWeightGrams": 90,
+    "servingOptions": [
+      {
+        "id": "slice",
+        "label": "slice (90g)",
+        "unit": "slice",
+        "grams": 90,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 225,
+      "protein": 2.4,
+      "carbs": 42,
+      "fat": 5.4,
+      "fiber": 0.8
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 55
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-empanada-pork",
+    "source": "staple",
+    "name": "Filipino Pork Empanada",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 95,
+    "servingOptions": [
+      {
+        "id": "pc",
+        "label": "pc (95g)",
+        "unit": "pc",
+        "grams": 95,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 265,
+      "protein": 8.5,
+      "carbs": 29,
+      "fat": 13,
+      "fiber": 1.2
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 390
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-pandesal-cheese",
+    "source": "staple",
+    "name": "Cheese Pandesal",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 45,
+    "servingOptions": [
+      {
+        "id": "pc",
+        "label": "pc (45g)",
+        "unit": "pc",
+        "grams": 45,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 140,
+      "protein": 4.5,
+      "carbs": 21,
+      "fat": 4,
+      "fiber": 0.8
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 240,
+      "calciumMg": 55
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-monay",
+    "source": "staple",
+    "name": "Monay Bread",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 80,
+    "servingOptions": [
+      {
+        "id": "pc",
+        "label": "pc (80g)",
+        "unit": "pc",
+        "grams": 80,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 235,
+      "protein": 6.8,
+      "carbs": 44,
+      "fat": 3.4,
+      "fiber": 1.6
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 310
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-hopia-mongo",
+    "source": "staple",
+    "name": "Hopia Mongo (Mung Bean Pastry)",
+    "brand": "Eng Bee Tin",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 50,
+    "servingOptions": [
+      {
+        "id": "pc",
+        "label": "pc (50g)",
+        "unit": "pc",
+        "grams": 50,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 180,
+      "protein": 3.5,
+      "carbs": 27,
+      "fat": 6.5,
+      "fiber": 1.5
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 85
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-tahong-chips-crispy-dilis",
+    "source": "staple",
+    "name": "Crispy Fried Dilis (Anchovies)",
+    "region": "PH",
+    "basis": "per100g",
+    "servingSize": 100,
+    "servingUnit": "g",
+    "nutrientsPerBasis": {
+      "calories": 385,
+      "protein": 48,
+      "carbs": 6,
+      "fat": 18,
+      "fiber": 0
+    },
+    "micronutrientsPerBasis": {
+      "calciumMg": 890,
+      "sodiumMg": 1150,
+      "ironMg": 4.2
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3,
+    "servingOptions": [
+      {
+        "id": "serving",
+        "label": "serving (30g)",
+        "unit": "serving",
+        "grams": 30,
+        "defaultAmount": 1
+      },
+      {
+        "id": "tbsp",
+        "label": "tbsp (15g)",
+        "unit": "tbsp",
+        "grams": 15,
+        "defaultAmount": 2
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ]
+  },
+  {
+    "id": "staple:ph-sisig-bangus",
+    "source": "staple",
+    "name": "Bangus Sisig (Milkfish Sisig)",
+    "region": "PH",
+    "basis": "per100g",
+    "servingSize": 1,
+    "servingUnit": "serving",
+    "servingWeightGrams": 150,
+    "servingOptions": [
+      {
+        "id": "serving",
+        "label": "serving (150g)",
+        "unit": "serving",
+        "grams": 150,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 210,
+      "protein": 18.5,
+      "carbs": 4.2,
+      "fat": 13.1,
+      "fiber": 0.4
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 520,
+      "potassiumMg": 290
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-rellenong-bangus",
+    "source": "staple",
+    "name": "Rellenong Bangus (Stuffed Milkfish)",
+    "region": "PH",
+    "basis": "per100g",
+    "servingSize": 1,
+    "servingUnit": "slice",
+    "servingWeightGrams": 120,
+    "servingOptions": [
+      {
+        "id": "slice",
+        "label": "slice (120g)",
+        "unit": "slice",
+        "grams": 120,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 215,
+      "protein": 16.5,
+      "carbs": 9.8,
+      "fat": 12,
+      "fiber": 0.9
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 450
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-ginataang-tulingan",
+    "source": "staple",
+    "name": "Ginataang Tulingan (Mackerel Tuna in Coconut Milk)",
+    "region": "PH",
+    "basis": "per100g",
+    "servingSize": 1,
+    "servingUnit": "serving",
+    "servingWeightGrams": 150,
+    "servingOptions": [
+      {
+        "id": "serving",
+        "label": "serving (150g)",
+        "unit": "serving",
+        "grams": 150,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 205,
+      "protein": 18.2,
+      "carbs": 2.4,
+      "fat": 13.5,
+      "fiber": 0.2
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 460
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-pork-igado",
+    "source": "staple",
+    "name": "Pork Igado (Ilocano Pork & Liver Stew)",
+    "region": "PH",
+    "basis": "per100g",
+    "servingSize": 1,
+    "servingUnit": "serving",
+    "servingWeightGrams": 150,
+    "servingOptions": [
+      {
+        "id": "serving",
+        "label": "serving (150g)",
+        "unit": "serving",
+        "grams": 150,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 195,
+      "protein": 17.5,
+      "carbs": 5.5,
+      "fat": 11.2,
+      "fiber": 0.6
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 580,
+      "ironMg": 5.4,
+      "vitaminAMcg": 1850
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-beef-pares",
+    "source": "staple",
+    "name": "Beef Pares (Braised Sweet Soy Beef)",
+    "region": "PH",
+    "basis": "per100g",
+    "servingSize": 1,
+    "servingUnit": "cup",
+    "servingWeightGrams": 220,
+    "servingOptions": [
+      {
+        "id": "cup",
+        "label": "cup (220g)",
+        "unit": "cup",
+        "grams": 220,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 188,
+      "protein": 14.5,
+      "carbs": 7.8,
+      "fat": 10.8,
+      "fiber": 0.2
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 620,
+      "ironMg": 2
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-batchoy",
+    "source": "staple",
+    "name": "La Paz Batchoy (Pork Noodle Soup)",
+    "region": "PH",
+    "basis": "per100g",
+    "servingSize": 1,
+    "servingUnit": "bowl",
+    "servingWeightGrams": 400,
+    "servingOptions": [
+      {
+        "id": "bowl",
+        "label": "bowl (400g)",
+        "unit": "bowl",
+        "grams": 400,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 118,
+      "protein": 6.8,
+      "carbs": 12.2,
+      "fat": 4.6,
+      "fiber": 0.6
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 490
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-lomi",
+    "source": "staple",
+    "name": "Batangas Lomi (Thick Egg Noodle Soup)",
+    "region": "PH",
+    "basis": "per100g",
+    "servingSize": 1,
+    "servingUnit": "bowl",
+    "servingWeightGrams": 420,
+    "servingOptions": [
+      {
+        "id": "bowl",
+        "label": "bowl (420g)",
+        "unit": "bowl",
+        "grams": 420,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 124,
+      "protein": 6.5,
+      "carbs": 13.8,
+      "fat": 4.5,
+      "fiber": 0.6
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 510
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-pancit-malabon",
+    "source": "staple",
+    "name": "Pancit Malabon",
+    "region": "PH",
+    "basis": "per100g",
+    "servingSize": 1,
+    "servingUnit": "serving",
+    "servingWeightGrams": 240,
+    "servingOptions": [
+      {
+        "id": "serving",
+        "label": "serving (240g)",
+        "unit": "serving",
+        "grams": 240,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 168,
+      "protein": 6.4,
+      "carbs": 23,
+      "fat": 5.4,
+      "fiber": 1
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 430
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-goto",
+    "source": "staple",
+    "name": "Goto (Beef Tripe Rice Porridge)",
+    "region": "PH",
+    "basis": "per100g",
+    "servingSize": 1,
+    "servingUnit": "bowl",
+    "servingWeightGrams": 300,
+    "servingOptions": [
+      {
+        "id": "bowl",
+        "label": "bowl (300g)",
+        "unit": "bowl",
+        "grams": 300,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 72,
+      "protein": 4.1,
+      "carbs": 10.6,
+      "fat": 1.4,
+      "fiber": 0.3
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 295
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-chicken-sopas",
+    "source": "staple",
+    "name": "Creamy Chicken Sopas (Macaroni Soup)",
+    "region": "PH",
+    "basis": "per100g",
+    "servingSize": 1,
+    "servingUnit": "bowl",
+    "servingWeightGrams": 280,
+    "servingOptions": [
+      {
+        "id": "bowl",
+        "label": "bowl (280g)",
+        "unit": "bowl",
+        "grams": 280,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 92,
+      "protein": 4.2,
+      "carbs": 11.4,
+      "fat": 3.2,
+      "fiber": 0.7
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 320,
+      "calciumMg": 38
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-filipino-spaghetti",
+    "source": "staple",
+    "name": "Filipino Sweet-Style Spaghetti (Homemade)",
+    "region": "PH",
+    "basis": "per100g",
+    "servingSize": 1,
+    "servingUnit": "serving",
+    "servingWeightGrams": 250,
+    "servingOptions": [
+      {
+        "id": "serving",
+        "label": "serving (250g)",
+        "unit": "serving",
+        "grams": 250,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 155,
+      "protein": 5.2,
+      "carbs": 23.5,
+      "fat": 4.2,
+      "fiber": 1.2
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 390
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-chicken-macaroni-salad",
+    "source": "staple",
+    "name": "Filipino Chicken Macaroni Salad",
+    "region": "PH",
+    "basis": "per100g",
+    "servingSize": 1,
+    "servingUnit": "cup",
+    "servingWeightGrams": 160,
+    "servingOptions": [
+      {
+        "id": "cup",
+        "label": "cup (160g)",
+        "unit": "cup",
+        "grams": 160,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 215,
+      "protein": 6.2,
+      "carbs": 21.5,
+      "fat": 11.4,
+      "fiber": 0.9
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 320
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-ukoy-shrimp-fritter",
+    "source": "staple",
+    "name": "Okoy / Ukoy (Crispy Shrimp & Squash Fritter)",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 75,
+    "servingOptions": [
+      {
+        "id": "pc",
+        "label": "pc (75g)",
+        "unit": "pc",
+        "grams": 75,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 195,
+      "protein": 6.8,
+      "carbs": 18,
+      "fat": 10.5,
+      "fiber": 1.4
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 280
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-embutido",
+    "source": "staple",
+    "name": "Embutido (Filipino Pork Meatloaf, 1 Slice)",
+    "region": "PH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "slice",
+    "servingWeightGrams": 75,
+    "servingOptions": [
+      {
+        "id": "slice",
+        "label": "slice (75g)",
+        "unit": "slice",
+        "grams": 75,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 195,
+      "protein": 12.2,
+      "carbs": 7.5,
+      "fat": 12.8,
+      "fiber": 0.4
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 420
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-kilawing-tanigue",
+    "source": "staple",
+    "name": "Kinilaw na Tanigue (Filipino Fish Ceviche)",
+    "region": "PH",
+    "basis": "per100g",
+    "servingSize": 1,
+    "servingUnit": "serving",
+    "servingWeightGrams": 150,
+    "servingOptions": [
+      {
+        "id": "serving",
+        "label": "serving (150g)",
+        "unit": "serving",
+        "grams": 150,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 115,
+      "protein": 17.8,
+      "carbs": 2.9,
+      "fat": 3.4,
+      "fiber": 0.4
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 320,
+      "potassiumMg": 380
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-sinuglaw",
+    "source": "staple",
+    "name": "Sinuglaw (Grilled Pork Belly & Fish Kinilaw)",
+    "region": "PH",
+    "basis": "per100g",
+    "servingSize": 1,
+    "servingUnit": "serving",
+    "servingWeightGrams": 160,
+    "servingOptions": [
+      {
+        "id": "serving",
+        "label": "serving (160g)",
+        "unit": "serving",
+        "grams": 160,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 210,
+      "protein": 17,
+      "carbs": 3.2,
+      "fat": 14,
+      "fiber": 0.4
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 410
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-ensaladang-talong",
+    "source": "staple",
+    "name": "Ensaladang Talong (Grilled Eggplant Salad)",
+    "region": "PH",
+    "basis": "per100g",
+    "servingSize": 1,
+    "servingUnit": "cup",
+    "servingWeightGrams": 140,
+    "servingOptions": [
+      {
+        "id": "cup",
+        "label": "cup (140g)",
+        "unit": "cup",
+        "grams": 140,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 42,
+      "protein": 1.1,
+      "carbs": 8.4,
+      "fat": 0.4,
+      "fiber": 2.4
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 280,
+      "potassiumMg": 195
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-atchara",
+    "source": "staple",
+    "name": "Atchara (Pickled Green Papaya)",
+    "region": "PH",
+    "basis": "per100g",
+    "servingSize": 1,
+    "servingUnit": "tbsp",
+    "servingWeightGrams": 20,
+    "servingOptions": [
+      {
+        "id": "tbsp",
+        "label": "tbsp (20g)",
+        "unit": "tbsp",
+        "grams": 20,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 76,
+      "protein": 0.5,
+      "carbs": 18.5,
+      "fat": 0.1,
+      "fiber": 1.5
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 240,
+      "vitaminCMg": 24
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-whey-scoop-generic",
+    "source": "staple",
+    "name": "Whey Protein Isolate / Concentrate Powder",
+    "region": "GLOBAL",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "scoop",
+    "servingWeightGrams": 32,
+    "servingOptions": [
+      {
+        "id": "scoop",
+        "label": "scoop (32g)",
+        "unit": "scoop",
+        "grams": 32,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 120,
+      "protein": 24,
+      "carbs": 3,
+      "fat": 1.5,
+      "fiber": 0
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 130,
+      "calciumMg": 140
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-rolled-oats-serving",
+    "source": "staple",
+    "name": "Rolled Oats (Dry)",
+    "region": "GLOBAL",
+    "basis": "per100g",
+    "servingSize": 1,
+    "servingUnit": "cup",
+    "servingWeightGrams": 80,
+    "servingOptions": [
+      {
+        "id": "cup",
+        "label": "cup (80g)",
+        "unit": "cup",
+        "grams": 80,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 389,
+      "protein": 16.9,
+      "carbs": 66.3,
+      "fat": 6.9,
+      "fiber": 10.6
+    },
+    "micronutrientsPerBasis": {
+      "magnesiumMg": 177,
+      "ironMg": 4.7,
+      "zincMg": 4
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-chicken-breast-grilled",
+    "source": "staple",
+    "name": "Grilled Chicken Breast (Skinless, Boneless)",
+    "region": "GLOBAL",
+    "basis": "per100g",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 170,
+    "servingOptions": [
+      {
+        "id": "pc",
+        "label": "pc (170g)",
+        "unit": "pc",
+        "grams": 170,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 165,
+      "protein": 31,
+      "carbs": 0,
+      "fat": 3.6,
+      "fiber": 0
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 74,
+      "potassiumMg": 256
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  },
+  {
+    "id": "staple:ph-egg-whites",
+    "source": "staple",
+    "name": "Egg White (Large, Cooked)",
+    "region": "GLOBAL",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 33,
+    "servingOptions": [
+      {
+        "id": "pc",
+        "label": "pc (33g)",
+        "unit": "pc",
+        "grams": 33,
+        "defaultAmount": 1
+      },
+      {
+        "id": "g",
+        "label": "g",
+        "unit": "g",
+        "grams": 1,
+        "defaultAmount": 100
+      }
+    ],
+    "nutrientsPerBasis": {
+      "calories": 17,
+      "protein": 3.6,
+      "carbs": 0.2,
+      "fat": 0.1,
+      "fiber": 0
+    },
+    "micronutrientsPerBasis": {
+      "sodiumMg": 55,
+      "potassiumMg": 54
+    },
+    "updatedAt": 1700000000000,
+    "accuracyTier": 3
+  }
+]

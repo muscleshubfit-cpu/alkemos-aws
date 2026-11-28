@@ -238,6 +238,7 @@ src/
 - **مرآة الأنواع** `src/lib/supabase/types.ts` تتحدث في نفس الكوميت مع أي تغيير schema، وبوابة `scripts/migration_audit.py` تفشل أي انجراف (جدول/عمود فانتوم).
 - **قناة التطبيق على الإنتاج:** المطبّق المؤدَّى بالدفتر `scripts/db/apply_migrations.py` يعمل داخل مهمة النشر **قبل** حيازة الكود، وبوابة الحالة اليومية `migration-state-audit.yml` تتحقق من التطبيق — نجاح نشر الكود ليس دليلًا على تطبيق الميجريشنز. التفاصيل الحاكمة: [`docs/DB-MIGRATION-PIPELINE-2026-10-27.md`](./docs/DB-MIGRATION-PIPELINE-2026-10-27.md).
 - **الوكيل لا يطبّق ميجريشنز على الإنتاج بنفسه** — القناة هي خط المستودع؛ المسار اليدوي استثناء موثق (حسابات الاختبار بسياسة `docs/QA-TEST-ACCOUNTS-2026-10-26.md`، وملفات `RUN_ON_SUPABASE_*`/`VERIFY_*` القديمة).
+- **خط بناء قاعدة الأغذية (`scripts/food-catalog/`):** بند F3-أ من خطة مراجعة المصدر — خط CI مستقل بذاته (fork مكيّف من المحولات الست + أداة Rust) يبني الكتالوج من مصادر مفتوحة وينتج ملف SQL بيانات-فقط لجداول `food_catalog` القادمة (فريم F3-ب يملك الميجريشن وعقد الأعمدة الموثق بمسار الخط) — يعمل بGitHub Actions حصرًا (`.github/workflows/food-catalog-build.yml`) ولا يُشغل على الأصل أبدًا، ببوابة معايير قبول كاملة بسجلات تشغيل مرفوعة كartifacts — الدليل: `scripts/food-catalog/README.md`.
 - **Storage buckets:** `questionnaire-photos` · `progress-photos` · `receipts` · `avatars` (عام) · `coach-public` (عام) — التفاصيل في TECH_REFERENCE §1.5.
 
 ---

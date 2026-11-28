@@ -1,0 +1,721 @@
+[
+  {
+    "id": "curated:asian-tonkotsu-ramen",
+    "source": "catalog",
+    "accuracyTier": 3,
+    "category": "Japanese Dishes",
+    "name": "Tonkotsu Ramen",
+    "aliases": ["pork bone ramen", "hakata ramen", "豚骨ラーメン"],
+    "region": "JP",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "bowl",
+    "servingWeightGrams": 580,
+    "servingOptions": [
+      { "id": "bowl", "label": "bowl (580g)", "unit": "bowl", "grams": 580, "defaultAmount": 1 },
+      { "id": "g", "label": "g", "unit": "g", "grams": 1, "defaultAmount": 100 }
+    ],
+    "nutrientsPerBasis": { "calories": 640, "protein": 28, "carbs": 68, "fat": 28, "fiber": 3 },
+    "micronutrientsPerBasis": { "sodiumMg": 1950, "saturatedFatG": 9.5, "cholesterolMg": 75, "potassiumMg": 420 },
+    "updatedAt": 1700000000000
+  },
+  {
+    "id": "curated:asian-shoyu-ramen",
+    "source": "catalog",
+    "accuracyTier": 3,
+    "category": "Japanese Dishes",
+    "name": "Shoyu Ramen",
+    "aliases": ["soy sauce ramen", "tokyo ramen", "醤油ラーメン"],
+    "region": "JP",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "bowl",
+    "servingWeightGrams": 550,
+    "servingOptions": [
+      { "id": "bowl", "label": "bowl (550g)", "unit": "bowl", "grams": 550, "defaultAmount": 1 },
+      { "id": "g", "label": "g", "unit": "g", "grams": 1, "defaultAmount": 100 }
+    ],
+    "nutrientsPerBasis": { "calories": 480, "protein": 24, "carbs": 66, "fat": 13, "fiber": 3 },
+    "micronutrientsPerBasis": { "sodiumMg": 2100, "saturatedFatG": 4.2, "cholesterolMg": 55, "potassiumMg": 390 },
+    "updatedAt": 1700000000000
+  },
+  {
+    "id": "curated:asian-tonkatsu",
+    "source": "catalog",
+    "accuracyTier": 3,
+    "category": "Japanese Dishes",
+    "name": "Tonkatsu (Breaded Pork Cutlet)",
+    "aliases": ["pork katsu", "japanese pork cutlet", "とんかつ"],
+    "region": "JP",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 160,
+    "servingOptions": [
+      { "id": "pc", "label": "pc (160g)", "unit": "pc", "grams": 160, "defaultAmount": 1 },
+      { "id": "g", "label": "g", "unit": "g", "grams": 1, "defaultAmount": 100 }
+    ],
+    "nutrientsPerBasis": { "calories": 430, "protein": 26, "carbs": 24, "fat": 25, "fiber": 1.2 },
+    "micronutrientsPerBasis": { "sodiumMg": 520, "saturatedFatG": 7.5, "cholesterolMg": 85 },
+    "updatedAt": 1700000000000
+  },
+  {
+    "id": "curated:asian-gyudon",
+    "source": "catalog",
+    "accuracyTier": 3,
+    "category": "Japanese Dishes",
+    "name": "Gyudon (Beef Rice Bowl)",
+    "aliases": ["japanese beef bowl", "beef donburi", "牛丼"],
+    "region": "JP",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "bowl",
+    "servingWeightGrams": 400,
+    "servingOptions": [
+      { "id": "bowl", "label": "bowl (400g)", "unit": "bowl", "grams": 400, "defaultAmount": 1 },
+      { "id": "g", "label": "g", "unit": "g", "grams": 1, "defaultAmount": 100 }
+    ],
+    "nutrientsPerBasis": { "calories": 650, "protein": 24, "carbs": 88, "fat": 22, "fiber": 2.5 },
+    "micronutrientsPerBasis": { "sodiumMg": 1250, "saturatedFatG": 8.0, "ironMg": 3.1 },
+    "updatedAt": 1700000000000
+  },
+  {
+    "id": "curated:asian-katsudon",
+    "source": "catalog",
+    "accuracyTier": 3,
+    "category": "Japanese Dishes",
+    "name": "Katsudon (Pork Cutlet & Egg Rice Bowl)",
+    "aliases": ["katsu donburi", "pork katsu bowl", "カツ丼"],
+    "region": "JP",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "bowl",
+    "servingWeightGrams": 450,
+    "servingOptions": [
+      { "id": "bowl", "label": "bowl (450g)", "unit": "bowl", "grams": 450, "defaultAmount": 1 },
+      { "id": "g", "label": "g", "unit": "g", "grams": 1, "defaultAmount": 100 }
+    ],
+    "nutrientsPerBasis": { "calories": 820, "protein": 34, "carbs": 96, "fat": 32, "fiber": 2.5 },
+    "micronutrientsPerBasis": { "sodiumMg": 1480, "saturatedFatG": 9.5, "cholesterolMg": 210 },
+    "updatedAt": 1700000000000
+  },
+  {
+    "id": "curated:asian-salmon-nigiri",
+    "source": "catalog",
+    "accuracyTier": 3,
+    "category": "Japanese Dishes",
+    "name": "Salmon Nigiri Sushi",
+    "aliases": ["sake nigiri", "salmon sushi", "サーモン握り"],
+    "region": "JP",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 35,
+    "servingOptions": [
+      { "id": "pc", "label": "pc (35g)", "unit": "pc", "grams": 35, "defaultAmount": 2 },
+      { "id": "g", "label": "g", "unit": "g", "grams": 1, "defaultAmount": 100 }
+    ],
+    "nutrientsPerBasis": { "calories": 65, "protein": 4.2, "carbs": 8.0, "fat": 1.8, "fiber": 0.2 },
+    "micronutrientsPerBasis": { "sodiumMg": 95, "potassiumMg": 70 },
+    "updatedAt": 1700000000000
+  },
+  {
+    "id": "curated:asian-onigiri-salmon",
+    "source": "catalog",
+    "accuracyTier": 3,
+    "category": "Japanese Dishes",
+    "name": "Salmon Onigiri (Rice Ball)",
+    "aliases": ["sake onigiri", "omusubi", "鮭おにぎり"],
+    "region": "JP",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 115,
+    "servingOptions": [
+      { "id": "pc", "label": "pc (115g)", "unit": "pc", "grams": 115, "defaultAmount": 1 },
+      { "id": "g", "label": "g", "unit": "g", "grams": 1, "defaultAmount": 100 }
+    ],
+    "nutrientsPerBasis": { "calories": 185, "protein": 6.2, "carbs": 36, "fat": 1.6, "fiber": 0.6 },
+    "micronutrientsPerBasis": { "sodiumMg": 420, "potassiumMg": 95 },
+    "updatedAt": 1700000000000
+  },
+  {
+    "id": "curated:asian-miso-soup",
+    "source": "catalog",
+    "accuracyTier": 3,
+    "category": "Japanese Dishes",
+    "name": "Miso Soup with Tofu & Wakame",
+    "aliases": ["misoshiru", "味噌汁"],
+    "region": "JP",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "bowl",
+    "servingWeightGrams": 240,
+    "servingOptions": [
+      { "id": "bowl", "label": "bowl (240g)", "unit": "bowl", "grams": 240, "defaultAmount": 1 },
+      { "id": "cup", "label": "cup (240g)", "unit": "cup", "grams": 240, "defaultAmount": 1 },
+      { "id": "g", "label": "g", "unit": "g", "grams": 1, "defaultAmount": 100 }
+    ],
+    "nutrientsPerBasis": { "calories": 65, "protein": 4.5, "carbs": 7.0, "fat": 2.0, "fiber": 1.2 },
+    "micronutrientsPerBasis": { "sodiumMg": 880, "calciumMg": 55, "ironMg": 0.9 },
+    "updatedAt": 1700000000000
+  },
+  {
+    "id": "curated:asian-bibimbap",
+    "source": "catalog",
+    "accuracyTier": 3,
+    "category": "Korean Dishes",
+    "name": "Bibimbap (Korean Mixed Rice Bowl)",
+    "aliases": ["dolsot bibimbap", "korean rice bowl", "비빔밥"],
+    "region": "KR",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "bowl",
+    "servingWeightGrams": 450,
+    "servingOptions": [
+      { "id": "bowl", "label": "bowl (450g)", "unit": "bowl", "grams": 450, "defaultAmount": 1 },
+      { "id": "g", "label": "g", "unit": "g", "grams": 1, "defaultAmount": 100 }
+    ],
+    "nutrientsPerBasis": { "calories": 580, "protein": 24, "carbs": 82, "fat": 17, "fiber": 6.0 },
+    "micronutrientsPerBasis": { "sodiumMg": 1150, "potassiumMg": 620, "ironMg": 3.8, "calciumMg": 90 },
+    "updatedAt": 1700000000000
+  },
+  {
+    "id": "curated:asian-kimchi-jjigae",
+    "source": "catalog",
+    "accuracyTier": 3,
+    "category": "Korean Dishes",
+    "name": "Kimchi Jjigae (Kimchi Pork Stew)",
+    "aliases": ["kimchi stew", "kimchi soup", "김치찌개"],
+    "region": "KR",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "bowl",
+    "servingWeightGrams": 400,
+    "servingOptions": [
+      { "id": "bowl", "label": "bowl (400g)", "unit": "bowl", "grams": 400, "defaultAmount": 1 },
+      { "id": "cup", "label": "cup (250g)", "unit": "cup", "grams": 250, "defaultAmount": 1 },
+      { "id": "g", "label": "g", "unit": "g", "grams": 1, "defaultAmount": 100 }
+    ],
+    "nutrientsPerBasis": { "calories": 320, "protein": 22, "carbs": 14, "fat": 19, "fiber": 3.5 },
+    "micronutrientsPerBasis": { "sodiumMg": 1620, "potassiumMg": 540, "calciumMg": 110 },
+    "updatedAt": 1700000000000
+  },
+  {
+    "id": "curated:asian-bulgogi",
+    "source": "catalog",
+    "accuracyTier": 3,
+    "category": "Korean Dishes",
+    "name": "Beef Bulgogi (Korean Marinated Beef)",
+    "aliases": ["korean bbq beef", "so-bulgogi", "불고기"],
+    "region": "KR",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "serving",
+    "servingWeightGrams": 180,
+    "servingOptions": [
+      { "id": "serving", "label": "serving (180g)", "unit": "serving", "grams": 180, "defaultAmount": 1 },
+      { "id": "cup", "label": "cup (160g)", "unit": "cup", "grams": 160, "defaultAmount": 1 },
+      { "id": "g", "label": "g", "unit": "g", "grams": 1, "defaultAmount": 100 }
+    ],
+    "nutrientsPerBasis": { "calories": 340, "protein": 28, "carbs": 16, "fat": 18, "fiber": 1.0 },
+    "micronutrientsPerBasis": { "sodiumMg": 890, "sugarG": 12, "ironMg": 3.2 },
+    "updatedAt": 1700000000000
+  },
+  {
+    "id": "curated:asian-tteokbokki",
+    "source": "catalog",
+    "accuracyTier": 3,
+    "category": "Korean Dishes",
+    "name": "Tteokbokki (Spicy Rice Cakes)",
+    "aliases": ["topokki", "spicy korean rice cake", "떡볶이"],
+    "region": "KR",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "serving",
+    "servingWeightGrams": 250,
+    "servingOptions": [
+      { "id": "serving", "label": "serving (250g)", "unit": "serving", "grams": 250, "defaultAmount": 1 },
+      { "id": "bowl", "label": "bowl (300g)", "unit": "bowl", "grams": 300, "defaultAmount": 1 },
+      { "id": "g", "label": "g", "unit": "g", "grams": 1, "defaultAmount": 100 }
+    ],
+    "nutrientsPerBasis": { "calories": 380, "protein": 9.0, "carbs": 76, "fat": 4.2, "fiber": 2.5 },
+    "micronutrientsPerBasis": { "sodiumMg": 1180, "sugarG": 14 },
+    "updatedAt": 1700000000000
+  },
+  {
+    "id": "curated:asian-samgyeopsal",
+    "source": "catalog",
+    "accuracyTier": 3,
+    "category": "Korean Dishes",
+    "name": "Samgyeopsal (Grilled Pork Belly)",
+    "aliases": ["korean grilled pork belly", "삼겹살"],
+    "region": "KR",
+    "basis": "per100g",
+    "servingSize": 100,
+    "servingUnit": "g",
+    "servingWeightGrams": 100,
+    "servingOptions": [
+      { "id": "serving", "label": "serving (150g)", "unit": "serving", "grams": 150, "defaultAmount": 1 },
+      { "id": "strip", "label": "strip (35g)", "unit": "strip", "grams": 35, "defaultAmount": 3 },
+      { "id": "g", "label": "g", "unit": "g", "grams": 1, "defaultAmount": 100 }
+    ],
+    "nutrientsPerBasis": { "calories": 395, "protein": 18, "carbs": 0, "fat": 36, "fiber": 0 },
+    "micronutrientsPerBasis": { "sodiumMg": 65, "saturatedFatG": 13, "cholesterolMg": 78 },
+    "updatedAt": 1700000000000
+  },
+  {
+    "id": "curated:asian-pad-thai",
+    "source": "catalog",
+    "accuracyTier": 3,
+    "category": "Thai Dishes",
+    "name": "Pad Thai (Chicken or Shrimp Stir-Fried Noodles)",
+    "aliases": ["phat thai", "thai stir-fried rice noodles", "ผัดไทย"],
+    "region": "TH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "plate",
+    "servingWeightGrams": 350,
+    "servingOptions": [
+      { "id": "plate", "label": "plate (350g)", "unit": "plate", "grams": 350, "defaultAmount": 1 },
+      { "id": "cup", "label": "cup (175g)", "unit": "cup", "grams": 175, "defaultAmount": 1 },
+      { "id": "g", "label": "g", "unit": "g", "grams": 1, "defaultAmount": 100 }
+    ],
+    "nutrientsPerBasis": { "calories": 580, "protein": 24, "carbs": 74, "fat": 21, "fiber": 4.0 },
+    "micronutrientsPerBasis": { "sodiumMg": 1380, "sugarG": 16, "potassiumMg": 420 },
+    "updatedAt": 1700000000000
+  },
+  {
+    "id": "curated:asian-thai-green-curry",
+    "source": "catalog",
+    "accuracyTier": 3,
+    "category": "Thai Dishes",
+    "name": "Thai Green Curry with Chicken",
+    "aliases": ["gaeng keow wan", "kaeng khiao wan", "แกงเขียวหวาน"],
+    "region": "TH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "bowl",
+    "servingWeightGrams": 320,
+    "servingOptions": [
+      { "id": "bowl", "label": "bowl (320g)", "unit": "bowl", "grams": 320, "defaultAmount": 1 },
+      { "id": "cup", "label": "cup (240g)", "unit": "cup", "grams": 240, "defaultAmount": 1 },
+      { "id": "g", "label": "g", "unit": "g", "grams": 1, "defaultAmount": 100 }
+    ],
+    "nutrientsPerBasis": { "calories": 385, "protein": 24, "carbs": 14, "fat": 26, "fiber": 3.0 },
+    "micronutrientsPerBasis": { "sodiumMg": 980, "saturatedFatG": 17, "potassiumMg": 490 },
+    "updatedAt": 1700000000000
+  },
+  {
+    "id": "curated:asian-tom-yum-goong",
+    "source": "catalog",
+    "accuracyTier": 3,
+    "category": "Thai Dishes",
+    "name": "Tom Yum Goong (Spicy Shrimp Soup)",
+    "aliases": ["tom yam kung", "thai hot and sour soup", "ต้มยำกุ้ง"],
+    "region": "TH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "bowl",
+    "servingWeightGrams": 350,
+    "servingOptions": [
+      { "id": "bowl", "label": "bowl (350g)", "unit": "bowl", "grams": 350, "defaultAmount": 1 },
+      { "id": "cup", "label": "cup (240g)", "unit": "cup", "grams": 240, "defaultAmount": 1 },
+      { "id": "g", "label": "g", "unit": "g", "grams": 1, "defaultAmount": 100 }
+    ],
+    "nutrientsPerBasis": { "calories": 145, "protein": 18, "carbs": 9.0, "fat": 4.0, "fiber": 1.5 },
+    "micronutrientsPerBasis": { "sodiumMg": 1350, "cholesterolMg": 145, "potassiumMg": 360 },
+    "updatedAt": 1700000000000
+  },
+  {
+    "id": "curated:asian-pad-kra-pao",
+    "source": "catalog",
+    "accuracyTier": 3,
+    "category": "Thai Dishes",
+    "name": "Pad Kra Pao (Thai Basil Pork with Rice & Egg)",
+    "aliases": ["phat kaphrao", "thai basil stir fry", "ผัดกะเพรา"],
+    "region": "TH",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "plate",
+    "servingWeightGrams": 380,
+    "servingOptions": [
+      { "id": "plate", "label": "plate (380g)", "unit": "plate", "grams": 380, "defaultAmount": 1 },
+      { "id": "g", "label": "g", "unit": "g", "grams": 1, "defaultAmount": 100 }
+    ],
+    "nutrientsPerBasis": { "calories": 610, "protein": 28, "carbs": 68, "fat": 25, "fiber": 2.0 },
+    "micronutrientsPerBasis": { "sodiumMg": 1420, "cholesterolMg": 245 },
+    "updatedAt": 1700000000000
+  },
+  {
+    "id": "curated:asian-pho-bo",
+    "source": "catalog",
+    "accuracyTier": 3,
+    "category": "Vietnamese Dishes",
+    "name": "Pho Bo (Vietnamese Beef Noodle Soup)",
+    "aliases": ["beef pho", "phở bò"],
+    "region": "VN",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "bowl",
+    "servingWeightGrams": 620,
+    "servingOptions": [
+      { "id": "bowl", "label": "bowl (620g)", "unit": "bowl", "grams": 620, "defaultAmount": 1 },
+      { "id": "g", "label": "g", "unit": "g", "grams": 1, "defaultAmount": 100 }
+    ],
+    "nutrientsPerBasis": { "calories": 450, "protein": 30, "carbs": 60, "fat": 10, "fiber": 2.5 },
+    "micronutrientsPerBasis": { "sodiumMg": 1680, "ironMg": 3.5, "potassiumMg": 520 },
+    "updatedAt": 1700000000000
+  },
+  {
+    "id": "curated:asian-banh-mi",
+    "source": "catalog",
+    "accuracyTier": 3,
+    "category": "Vietnamese Dishes",
+    "name": "Banh Mi (Vietnamese Pork Sandwich)",
+    "aliases": ["banh mi thit", "vietnamese baguette sandwich", "bánh mì"],
+    "region": "VN",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 240,
+    "servingOptions": [
+      { "id": "pc", "label": "pc (240g)", "unit": "pc", "grams": 240, "defaultAmount": 1 },
+      { "id": "g", "label": "g", "unit": "g", "grams": 1, "defaultAmount": 100 }
+    ],
+    "nutrientsPerBasis": { "calories": 470, "protein": 22, "carbs": 56, "fat": 17, "fiber": 3.5 },
+    "micronutrientsPerBasis": { "sodiumMg": 1050, "sugarG": 8.0, "ironMg": 2.9 },
+    "updatedAt": 1700000000000
+  },
+  {
+    "id": "curated:asian-hainanese-chicken-rice",
+    "source": "catalog",
+    "accuracyTier": 3,
+    "category": "Southeast Asian Dishes",
+    "name": "Hainanese Chicken Rice",
+    "aliases": ["singapore chicken rice", "khao man gai", "海南鸡饭"],
+    "region": "SG",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "plate",
+    "servingWeightGrams": 380,
+    "servingOptions": [
+      { "id": "plate", "label": "plate (380g)", "unit": "plate", "grams": 380, "defaultAmount": 1 },
+      { "id": "g", "label": "g", "unit": "g", "grams": 1, "defaultAmount": 100 }
+    ],
+    "nutrientsPerBasis": { "calories": 605, "protein": 31, "carbs": 68, "fat": 23, "fiber": 1.5 },
+    "micronutrientsPerBasis": { "sodiumMg": 1220, "saturatedFatG": 6.5, "cholesterolMg": 95 },
+    "updatedAt": 1700000000000
+  },
+  {
+    "id": "curated:asian-char-kway-teow",
+    "source": "catalog",
+    "accuracyTier": 3,
+    "category": "Southeast Asian Dishes",
+    "name": "Char Kway Teow (Stir-Fried Flat Rice Noodles)",
+    "aliases": ["char kuey teow", "炒粿条"],
+    "region": "MY",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "plate",
+    "servingWeightGrams": 360,
+    "servingOptions": [
+      { "id": "plate", "label": "plate (360g)", "unit": "plate", "grams": 360, "defaultAmount": 1 },
+      { "id": "g", "label": "g", "unit": "g", "grams": 1, "defaultAmount": 100 }
+    ],
+    "nutrientsPerBasis": { "calories": 690, "protein": 22, "carbs": 80, "fat": 31, "fiber": 3.0 },
+    "micronutrientsPerBasis": { "sodiumMg": 1540, "saturatedFatG": 9.0, "cholesterolMg": 180 },
+    "updatedAt": 1700000000000
+  },
+  {
+    "id": "curated:asian-nasi-lemak",
+    "source": "catalog",
+    "accuracyTier": 3,
+    "category": "Southeast Asian Dishes",
+    "name": "Nasi Lemak (Coconut Rice with Sambal, Egg & Anchovies)",
+    "aliases": ["malaysian coconut rice", "nasi lemak bungkus"],
+    "region": "MY",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "plate",
+    "servingWeightGrams": 340,
+    "servingOptions": [
+      { "id": "plate", "label": "plate (340g)", "unit": "plate", "grams": 340, "defaultAmount": 1 },
+      { "id": "pack", "label": "pack (260g)", "unit": "pack", "grams": 260, "defaultAmount": 1 },
+      { "id": "g", "label": "g", "unit": "g", "grams": 1, "defaultAmount": 100 }
+    ],
+    "nutrientsPerBasis": { "calories": 620, "protein": 19, "carbs": 74, "fat": 27, "fiber": 4.0 },
+    "micronutrientsPerBasis": { "sodiumMg": 980, "saturatedFatG": 14, "calciumMg": 120 },
+    "updatedAt": 1700000000000
+  },
+  {
+    "id": "curated:asian-beef-rendang",
+    "source": "catalog",
+    "accuracyTier": 3,
+    "category": "Southeast Asian Dishes",
+    "name": "Beef Rendang (Spiced Coconut Braised Beef)",
+    "aliases": ["rendang daging", "indonesian beef rendang"],
+    "region": "ID",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "serving",
+    "servingWeightGrams": 180,
+    "servingOptions": [
+      { "id": "serving", "label": "serving (180g)", "unit": "serving", "grams": 180, "defaultAmount": 1 },
+      { "id": "cup", "label": "cup (200g)", "unit": "cup", "grams": 200, "defaultAmount": 1 },
+      { "id": "g", "label": "g", "unit": "g", "grams": 1, "defaultAmount": 100 }
+    ],
+    "nutrientsPerBasis": { "calories": 380, "protein": 28, "carbs": 9.0, "fat": 26, "fiber": 2.5 },
+    "micronutrientsPerBasis": { "sodiumMg": 680, "saturatedFatG": 15, "ironMg": 3.4 },
+    "updatedAt": 1700000000000
+  },
+  {
+    "id": "curated:asian-nasi-goreng",
+    "source": "catalog",
+    "accuracyTier": 3,
+    "category": "Southeast Asian Dishes",
+    "name": "Nasi Goreng (Indonesian Fried Rice)",
+    "aliases": ["indonesian fried rice", "nasi goreng ayam"],
+    "region": "ID",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "plate",
+    "servingWeightGrams": 350,
+    "servingOptions": [
+      { "id": "plate", "label": "plate (350g)", "unit": "plate", "grams": 350, "defaultAmount": 1 },
+      { "id": "cup", "label": "cup (175g)", "unit": "cup", "grams": 175, "defaultAmount": 1 },
+      { "id": "g", "label": "g", "unit": "g", "grams": 1, "defaultAmount": 100 }
+    ],
+    "nutrientsPerBasis": { "calories": 560, "protein": 19, "carbs": 74, "fat": 21, "fiber": 3.0 },
+    "micronutrientsPerBasis": { "sodiumMg": 1240, "cholesterolMg": 190 },
+    "updatedAt": 1700000000000
+  },
+  {
+    "id": "curated:asian-chicken-biryani",
+    "source": "catalog",
+    "accuracyTier": 3,
+    "category": "Indian Dishes",
+    "name": "Chicken Biryani",
+    "aliases": ["hyderabadi chicken biryani", "murgh biryani"],
+    "region": "IN",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "plate",
+    "servingWeightGrams": 380,
+    "servingOptions": [
+      { "id": "plate", "label": "plate (380g)", "unit": "plate", "grams": 380, "defaultAmount": 1 },
+      { "id": "cup", "label": "cup (200g)", "unit": "cup", "grams": 200, "defaultAmount": 1 },
+      { "id": "g", "label": "g", "unit": "g", "grams": 1, "defaultAmount": 100 }
+    ],
+    "nutrientsPerBasis": { "calories": 560, "protein": 28, "carbs": 68, "fat": 19, "fiber": 3.5 },
+    "micronutrientsPerBasis": { "sodiumMg": 920, "saturatedFatG": 5.5, "ironMg": 2.6 },
+    "updatedAt": 1700000000000
+  },
+  {
+    "id": "curated:asian-butter-chicken",
+    "source": "catalog",
+    "accuracyTier": 3,
+    "category": "Indian Dishes",
+    "name": "Butter Chicken (Murgh Makhani)",
+    "aliases": ["murgh makhani", "chicken makhani"],
+    "region": "IN",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "bowl",
+    "servingWeightGrams": 280,
+    "servingOptions": [
+      { "id": "bowl", "label": "bowl (280g)", "unit": "bowl", "grams": 280, "defaultAmount": 1 },
+      { "id": "cup", "label": "cup (240g)", "unit": "cup", "grams": 240, "defaultAmount": 1 },
+      { "id": "g", "label": "g", "unit": "g", "grams": 1, "defaultAmount": 100 }
+    ],
+    "nutrientsPerBasis": { "calories": 440, "protein": 30, "carbs": 14, "fat": 29, "fiber": 2.5 },
+    "micronutrientsPerBasis": { "sodiumMg": 860, "saturatedFatG": 14, "cholesterolMg": 110, "calciumMg": 95 },
+    "updatedAt": 1700000000000
+  },
+  {
+    "id": "curated:asian-dal-tadka",
+    "source": "catalog",
+    "accuracyTier": 3,
+    "category": "Indian Dishes",
+    "name": "Dal Tadka (Tempered Yellow Lentils)",
+    "aliases": ["yellow dal", "tadka dal", "lentil curry"],
+    "region": "IN",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "bowl",
+    "servingWeightGrams": 250,
+    "servingOptions": [
+      { "id": "bowl", "label": "bowl (250g)", "unit": "bowl", "grams": 250, "defaultAmount": 1 },
+      { "id": "cup", "label": "cup (220g)", "unit": "cup", "grams": 220, "defaultAmount": 1 },
+      { "id": "g", "label": "g", "unit": "g", "grams": 1, "defaultAmount": 100 }
+    ],
+    "nutrientsPerBasis": { "calories": 245, "protein": 13, "carbs": 32, "fat": 7.5, "fiber": 9.0 },
+    "micronutrientsPerBasis": { "sodiumMg": 560, "ironMg": 3.4, "potassiumMg": 480 },
+    "updatedAt": 1700000000000
+  },
+  {
+    "id": "curated:asian-naan-bread",
+    "source": "catalog",
+    "accuracyTier": 3,
+    "category": "Indian Dishes",
+    "name": "Plain Naan Flatbread",
+    "aliases": ["tandoori naan", "indian flatbread"],
+    "region": "IN",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 90,
+    "servingOptions": [
+      { "id": "pc", "label": "pc (90g)", "unit": "pc", "grams": 90, "defaultAmount": 1 },
+      { "id": "g", "label": "g", "unit": "g", "grams": 1, "defaultAmount": 100 }
+    ],
+    "nutrientsPerBasis": { "calories": 265, "protein": 8.0, "carbs": 46, "fat": 5.5, "fiber": 2.0 },
+    "micronutrientsPerBasis": { "sodiumMg": 420, "calciumMg": 55, "ironMg": 2.2 },
+    "updatedAt": 1700000000000
+  },
+  {
+    "id": "curated:asian-masala-dosa",
+    "source": "catalog",
+    "accuracyTier": 3,
+    "category": "Indian Dishes",
+    "name": "Masala Dosa (Crispy Fermented Crepe with Potato Filling)",
+    "aliases": ["south indian dosa", "potato masala dosa"],
+    "region": "IN",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 240,
+    "servingOptions": [
+      { "id": "pc", "label": "pc (240g)", "unit": "pc", "grams": 240, "defaultAmount": 1 },
+      { "id": "g", "label": "g", "unit": "g", "grams": 1, "defaultAmount": 100 }
+    ],
+    "nutrientsPerBasis": { "calories": 385, "protein": 9.0, "carbs": 58, "fat": 13, "fiber": 4.5 },
+    "micronutrientsPerBasis": { "sodiumMg": 620, "potassiumMg": 410, "ironMg": 2.4 },
+    "updatedAt": 1700000000000
+  },
+  {
+    "id": "curated:asian-paneer-tikka-masala",
+    "source": "catalog",
+    "accuracyTier": 3,
+    "category": "Indian Dishes",
+    "name": "Paneer Tikka Masala",
+    "aliases": ["paneer curry", "paneer butter masala"],
+    "region": "IN",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "bowl",
+    "servingWeightGrams": 260,
+    "servingOptions": [
+      { "id": "bowl", "label": "bowl (260g)", "unit": "bowl", "grams": 260, "defaultAmount": 1 },
+      { "id": "cup", "label": "cup (230g)", "unit": "cup", "grams": 230, "defaultAmount": 1 },
+      { "id": "g", "label": "g", "unit": "g", "grams": 1, "defaultAmount": 100 }
+    ],
+    "nutrientsPerBasis": { "calories": 395, "protein": 17, "carbs": 16, "fat": 29, "fiber": 3.0 },
+    "micronutrientsPerBasis": { "sodiumMg": 780, "calciumMg": 320, "saturatedFatG": 15 },
+    "updatedAt": 1700000000000
+  },
+  {
+    "id": "curated:asian-xiaolongbao",
+    "source": "catalog",
+    "accuracyTier": 3,
+    "category": "Chinese Dishes",
+    "name": "Xiaolongbao (Pork Soup Dumpling)",
+    "aliases": ["xlb", "soup dumpling", "shanghai soup dumpling", "小笼包"],
+    "region": "CN",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 30,
+    "servingOptions": [
+      { "id": "pc", "label": "pc (30g)", "unit": "pc", "grams": 30, "defaultAmount": 6 },
+      { "id": "order", "label": "order (6 pcs, 180g)", "unit": "order", "grams": 180, "defaultAmount": 1 },
+      { "id": "g", "label": "g", "unit": "g", "grams": 1, "defaultAmount": 100 }
+    ],
+    "nutrientsPerBasis": { "calories": 58, "protein": 3.0, "carbs": 6.5, "fat": 2.2, "fiber": 0.3 },
+    "micronutrientsPerBasis": { "sodiumMg": 115, "saturatedFatG": 0.8 },
+    "updatedAt": 1700000000000
+  },
+  {
+    "id": "curated:asian-dim-sum-siu-mai",
+    "source": "catalog",
+    "accuracyTier": 3,
+    "category": "Chinese Dishes",
+    "name": "Dim Sum Siu Mai (Steamed Pork & Shrimp Dumpling)",
+    "aliases": ["shumai", "siomai", "shaomai", "烧卖"],
+    "region": "CN",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "pc",
+    "servingWeightGrams": 32,
+    "servingOptions": [
+      { "id": "pc", "label": "pc (32g)", "unit": "pc", "grams": 32, "defaultAmount": 4 },
+      { "id": "order", "label": "order (4 pcs, 128g)", "unit": "order", "grams": 128, "defaultAmount": 1 },
+      { "id": "g", "label": "g", "unit": "g", "grams": 1, "defaultAmount": 100 }
+    ],
+    "nutrientsPerBasis": { "calories": 64, "protein": 4.2, "carbs": 5.5, "fat": 2.8, "fiber": 0.3 },
+    "micronutrientsPerBasis": { "sodiumMg": 140, "cholesterolMg": 22 },
+    "updatedAt": 1700000000000
+  },
+  {
+    "id": "curated:asian-mapo-tofu",
+    "source": "catalog",
+    "accuracyTier": 3,
+    "category": "Chinese Dishes",
+    "name": "Mapo Tofu (Sichuan Spicy Tofu & Pork)",
+    "aliases": ["sichuan mapo tofu", "麻婆豆腐"],
+    "region": "CN",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "bowl",
+    "servingWeightGrams": 260,
+    "servingOptions": [
+      { "id": "bowl", "label": "bowl (260g)", "unit": "bowl", "grams": 260, "defaultAmount": 1 },
+      { "id": "cup", "label": "cup (240g)", "unit": "cup", "grams": 240, "defaultAmount": 1 },
+      { "id": "g", "label": "g", "unit": "g", "grams": 1, "defaultAmount": 100 }
+    ],
+    "nutrientsPerBasis": { "calories": 310, "protein": 18, "carbs": 12, "fat": 21, "fiber": 2.5 },
+    "micronutrientsPerBasis": { "sodiumMg": 1120, "calciumMg": 240, "ironMg": 3.0 },
+    "updatedAt": 1700000000000
+  },
+  {
+    "id": "curated:asian-yangzhou-fried-rice",
+    "source": "catalog",
+    "accuracyTier": 3,
+    "category": "Chinese Dishes",
+    "name": "Yangzhou Fried Rice (Chinese Egg & Pork Fried Rice)",
+    "aliases": ["chinese fried rice", "yeung chow fried rice", "扬州炒饭"],
+    "region": "CN",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "bowl",
+    "servingWeightGrams": 300,
+    "servingOptions": [
+      { "id": "bowl", "label": "bowl (300g)", "unit": "bowl", "grams": 300, "defaultAmount": 1 },
+      { "id": "cup", "label": "cup (175g)", "unit": "cup", "grams": 175, "defaultAmount": 1 },
+      { "id": "g", "label": "g", "unit": "g", "grams": 1, "defaultAmount": 100 }
+    ],
+    "nutrientsPerBasis": { "calories": 510, "protein": 18, "carbs": 68, "fat": 18, "fiber": 2.2 },
+    "micronutrientsPerBasis": { "sodiumMg": 1080, "cholesterolMg": 145 },
+    "updatedAt": 1700000000000
+  },
+  {
+    "id": "curated:asian-bubble-milk-tea",
+    "source": "catalog",
+    "accuracyTier": 3,
+    "category": "Asian Beverages",
+    "name": "Bubble Milk Tea with Tapioca Pearls (Boba)",
+    "aliases": ["boba milk tea", "pearl milk tea", "milktea", "珍珠奶茶"],
+    "region": "TW",
+    "basis": "perServing",
+    "servingSize": 1,
+    "servingUnit": "cup",
+    "servingWeightGrams": 500,
+    "servingOptions": [
+      { "id": "cup", "label": "cup (500ml)", "unit": "cup", "grams": 500, "defaultAmount": 1 },
+      { "id": "ml", "label": "ml", "unit": "ml", "grams": 1, "defaultAmount": 100 }
+    ],
+    "nutrientsPerBasis": { "calories": 370, "protein": 3.5, "carbs": 68, "fat": 9.5, "fiber": 0.5 },
+    "micronutrientsPerBasis": { "sugarG": 44, "sodiumMg": 95, "calciumMg": 85 },
+    "updatedAt": 1700000000000
+  }
+]
