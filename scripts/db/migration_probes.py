@@ -740,6 +740,52 @@ PROBES: list[dict] = [
              "expect": 0},
         ],
     },
+    # 0123 — OPENCALORY-F3B-FOOD-CATALOG-IMPORT (Wave 1 item 2 of
+    # docs/opencalory-integration-review-2026-11-28/ — gate D-2 option أ):
+    # the ODbL-separated catalog tables. STRONG probes per the plan's
+    # criterion 5 (count + sample rows): the count probe proves the DATA
+    # import ran (the migration itself is schema-only — the import lands
+    # via .github/workflows/food-catalog-import.yml; an applied-but-
+    # unimported state is exactly the drift this catches). Threshold
+    # >100,000 rows: far above the not-imported state (0) and below the
+    # gate-passing rebuild floor (~104,290 = the 130,362 reference minus
+    # the 20% band), so any future legitimate re-import stays green.
+    # Sample rows measured from the actual imported artifact (run
+    # 46159717498, catalog v2026.11.28 — first sort-order id cnf:10 and
+    # the usda_branded barcode of usda:1105904): a probe that pins real
+    # rows, not just structure.
+    {
+        "file": "20261128180000_0123_food_catalog_foundation.sql",
+        "label": "0123 OPENCALORY-F3B-FOOD-CATALOG-IMPORT",
+        "strength": "strong",
+        "checks": [
+            {"type": "swagger_table", "table": "food_catalog"},
+            {"type": "swagger_table", "table": "food_catalog_aliases"},
+            {"type": "swagger_column", "table": "food_catalog",
+             "column": "search_rank"},
+            {"type": "swagger_column", "table": "food_catalog_aliases",
+             "column": "canonical_id"},
+            # count: the catalog data is live (>= 100,001 rows — the
+            # offset probe returns a row only past that threshold)
+            {"type": "rest_rows",
+             "path": ("/rest/v1/food_catalog?select=id&limit=1&offset=100000"),
+             "transform": "count_rows",
+             "expect": 1},
+            # sample row (id): first sort-order row of the imported
+            # artifact — a real CNF staple
+            {"type": "rest_rows",
+             "path": ("/rest/v1/food_catalog?select=id&id=eq.cnf:10"),
+             "transform": "count_rows",
+             "expect": 1},
+            # sample row (barcode): the partial unique index's lookup
+            # path on a real usda_branded product (usda:1105904)
+            {"type": "rest_rows",
+             "path": ("/rest/v1/food_catalog?select=id"
+                      "&barcode=eq.00027000612323"),
+             "transform": "count_rows",
+             "expect": 1},
+        ],
+    },
 ]# fmt on
 
 

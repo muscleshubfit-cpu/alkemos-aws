@@ -8929,3 +8929,19 @@ Stage Summary:
 - Push status: pushed — كوميت fix(store) واحد إلى main ببوابات النشر التلقائي؛ التحقق الحي يُغلق بكوميت توثيقي تالٍ (القياسات ببند الإغلاق أدناه)。
 - Commit SHA (optional, post-push): بقانون Phase 288 — git log هو السجل الموثوق。
 
+
+<!-- rotated 2026-11-28 by scripts/worklog_rotate.py (Phase 288, ARCH-REMEDIATION): 1 entries moved verbatim from worklog.md -->
+---
+Task ID: AFFILIATE-STORE-LINK-STORAGE-REMEDIATION-529R-F3-2026-11-27
+Agent: Main (Z User)
+Task: إغلاق إطار 529-أر — توثيق التحقق الحي بعد النشر (الكوميت 90e227c9 منشورًا حيًا) بقسم §5 من التقرير الحاكم + STATE。
+
+Work Log:
+- البوابات الخمس خضراء على 90e227c9 (Quality tsc/eslint/vitest · Deploy بتنشيط آمن وبطارية التحقق · docs-parity · stale-refs · migration-state) وbuild-info الحي مطابق (90e227c936f677750e015d8bb55162ad426cb7d7e بتاريخ 2026-11-27T12:41:03Z)。
+- القياسات الحية الموثقة بالتقرير §5: نفس عينة صفحات المنتجات الخمس (flipbelt/hydro-flask/renpho/nuun/yes4all) كلها 200 بوحدة شراء حاضرة — رابط شراء واحد بالضبط لكل صفحة والوسم مرة واحدة بالضبط بكل رابط وصفر وسوم أخرى + CTA وإفصاح OA حاضران (مطابقة حرفية لقياس الأساس قبل النشر — سلوك المتجر لم يتغير) · أسطح المتجر 200 · الخريطة 142 رابطًا/75 منتجًا · القاعدة بعد النشر 75/75 payload=NULL。
+
+Stage Summary:
+- معيار اكتمال أمر المالك مستوفى ومقيسًا (المعالجة منشورة حية والتحقق موثق) — التفصيل الكامل: docs/archive/AFFILIATE-STORE-LINK-STORAGE-REMEDIATION-529-2026-11-27.md §5。
+- Push status: pushed — كوميت توثيقي واحد docs: إلى main (one-task-one-commit)。
+- Commit SHA (optional, post-push): بقانون Phase 288 — الكوميت لا يحوي SHA خاصته؛ git log هو السجل الموثوق。
+

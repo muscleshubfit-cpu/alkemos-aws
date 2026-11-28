@@ -369,6 +369,17 @@ alkemos/
   Rust deep-audit of the package; every run uploads its artifacts and
   reports for the import frame. See
   [`scripts/food-catalog/README.md`](./scripts/food-catalog/README.md)
+- **Open food catalog tables (`food_catalog` + `food_catalog_aliases`,
+  migration 0123 — Wave-1 item F3-ب)** — the ODbL open catalog, SEPARATE from
+  the private Alkemos library by storage law (source rows verbatim; the
+  logical merge happens at the query layer, never inside storage). RLS:
+  public read, zero client write policies — the data lands through the
+  repo-owned import workflow ONLY
+  (`.github/workflows/food-catalog-import.yml`: artifact integrity
+  sha256-gate → migrations-first → single-transaction atomic import → live
+  verification against the artifact's own validated numbers + a table-size
+  cap). The data licenses + per-source attribution ledger:
+  [`LICENSES-DATA.md`](./LICENSES-DATA.md)
 - Daily automated JSON backups run to a **private** repository
   (`.github/workflows/db-backup.yml`) — user data never lands in this repo
 

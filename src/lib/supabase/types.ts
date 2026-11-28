@@ -2884,6 +2884,107 @@ export type Database = {
           { foreignKeyName: "affiliate_store_impression_events_product_id_fkey"; columns: ["product_id"]; isOneToOne: false; referencedRelation: "affiliate_store_products"; referencedColumns: ["id"] },
         ];
       };
+      // 0123 (OPENCALORY-F3B-FOOD-CATALOG-IMPORT) — the ODbL open food
+      // catalog, SEPARATE from the private library by storage law (D-2 /
+      // 05 §1.2): source rows verbatim, machine-written through the
+      // pipeline channel only (.github/workflows/food-catalog-import.yml
+      // — the F3-a CI artifact importer); public READ via RLS, zero
+      // client write policies. Columns = the F3-a export contract
+      // (scripts/food-catalog/export-sql.ts).
+      food_catalog: {
+        Row: {
+          id: string;
+          // normalized EAN-13; NULL for unbranded rows (outside the
+          // partial unique barcode index).
+          barcode: string | null;
+          source: string;
+          accuracy_tier: number;
+          region: string;
+          category: string;
+          name: string;
+          brand: string;
+          aliases: string;
+          // 'per100g' | 'serving' (the scaling basis of the macros).
+          basis: string;
+          serving_size: number;
+          serving_unit: string;
+          serving_weight_grams: number | null;
+          calories: number;
+          protein: number;
+          carbs: number;
+          fat: number;
+          fiber: number;
+          // JSON as TEXT = the F3-a contract (parse at the query layer).
+          micronutrients_json: string;
+          serving_options_json: string;
+          search_rank: number;
+        };
+        Insert: {
+          id: string;
+          barcode?: string | null;
+          source: string;
+          accuracy_tier: number;
+          region?: string;
+          category?: string;
+          name: string;
+          brand?: string;
+          aliases?: string;
+          basis: string;
+          serving_size: number;
+          serving_unit: string;
+          serving_weight_grams?: number | null;
+          calories: number;
+          protein: number;
+          carbs: number;
+          fat: number;
+          fiber: number;
+          micronutrients_json: string;
+          serving_options_json: string;
+          search_rank?: number;
+        };
+        Update: {
+          barcode?: string | null;
+          source?: string;
+          accuracy_tier?: number;
+          region?: string;
+          category?: string;
+          name?: string;
+          brand?: string;
+          aliases?: string;
+          basis?: string;
+          serving_size?: number;
+          serving_unit?: string;
+          serving_weight_grams?: number | null;
+          calories?: number;
+          protein?: number;
+          carbs?: number;
+          fat?: number;
+          fiber?: number;
+          micronutrients_json?: string;
+          serving_options_json?: string;
+          search_rank?: number;
+        };
+        Relationships: [];
+      };
+      // 0123 — legacy-id aliases into the catalog (kind 'id' from F3-a;
+      // 'barcode' rows arrive with the F3-d library merge).
+      food_catalog_aliases: {
+        Row: {
+          legacy_id: string;
+          canonical_id: string;
+          kind: string;
+        };
+        Insert: {
+          legacy_id: string;
+          canonical_id: string;
+          kind: string;
+        };
+        Update: {
+          canonical_id?: string;
+          kind?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {};
     Functions: {
@@ -3198,3 +3299,6 @@ export type AffiliateStoreFetchRun = Database["public"]["Tables"]["affiliate_sto
 export type AffiliateStoreLinkSuggestion = Database["public"]["Tables"]["affiliate_store_link_suggestions"]["Row"];
 export type AffiliateStoreInlineLink = Database["public"]["Tables"]["affiliate_store_inline_links"]["Row"];
 export type AffiliateStoreImpressionEvent = Database["public"]["Tables"]["affiliate_store_impression_events"]["Row"];
+// 0123 (OPENCALORY-F3B-FOOD-CATALOG-IMPORT) row types
+export type FoodCatalogItem = Database["public"]["Tables"]["food_catalog"]["Row"];
+export type FoodCatalogAlias = Database["public"]["Tables"]["food_catalog_aliases"]["Row"];
