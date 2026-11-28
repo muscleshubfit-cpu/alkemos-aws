@@ -24,7 +24,7 @@ recorded in `out/validation-report.json` (job artifact).
 |---|---|
 | `build.ts` | Adapted fork of the source's `scripts/build-food-catalog.ts` — six adapters → dedup → SQLite + manifest + build-report |
 | `adapters/` | The six converters (fork): `usda`, `opennutrition`, `national-tables` (CNF core), `menustat-opennosh` (cache-only), `off-foodrepo` (OFF stream + FoodRepo), `curated` |
-| `src/` | Forked engine modules: `dedup.ts`, `name-normalizer.ts`, `catalog-schema.ts`, `portion-enrichment.ts`, `scaling.ts`, `csv-food-parser.ts`, `usda-adapter.ts` (types/mappers), `types.ts`, `backup-schemas.ts` (Zod schemas extracted) |
+| `src/` | Forked engine modules: `dedup.ts`, `name-normalizer.ts`, `catalog-schema.ts`, `portion-enrichment.ts`, `scaling.ts`, `csv-food-parser.ts`, `usda-adapter.ts` (types/mappers), `types.ts`, `backup-schemas.ts` (Zod schemas extracted), `gate-core-sources.ts` (NEW 539: the pure approved-core-source liveness law the gate enforces) |
 | `data/curated/` | The forked curated packs (ODbL/CC0) |
 | `tools/catalog-dedup/` | The forked Rust audit/compact tool (verbatim) |
 | `export-sql.ts` | NEW: SQLite → importable data-only SQL (upserts) |
@@ -89,10 +89,24 @@ catalog built from that DDL.
 2. **Count check** — reference 130,362 foods (the source's v2026.11.25 core
    build — the audited four-source composition). Default hard band ±20%
    (`--max-deviation-pct`); the **actual deviation is always documented** in
-   `build-report.json` + `validation-report.json` + the job summary. With the
-   composition pinned, the band is meaningful: a failed/short source (e.g. the
-   OFF stream collapsing) breaches the floor, and the per-adapter contributions
-   in every run's report document the cause of each measured deviation.
+   `build-report.json` + `validation-report.json` + the job summary.
+   **Core-source liveness (539 hardening — owner order 2026-11-28):** the
+   band documents DRIFT; it must never MASK a dead source. Any of the four
+   approved core sources (`usda` · `national-tables` · `off-foodrepo` ·
+   `curated`) failing — its adapter throwing, silently contributing **0 raw
+   records** (the real failure mode of the OFF stream and the USDA
+   downloader: they log and return `[]`), or missing from the build report —
+   **fails the gate even when the total count stays inside the band** (a
+   smaller core source dying moves the total by only a few percent, well
+   inside ±20% — the measured masking hole this closes). The law lives in
+   `src/gate-core-sources.ts` and is pinned by the repo suite at
+   `src/lib/__tests__/food-catalog-gate-core-sources.test.ts` (runs in
+   quality-gate). **Documented exceptions (non-blocking, recorded in every
+   report):** the cache-only source (`menustat-opennosh` — contributes 0 on
+   a fresh runner by design) and the optional opt-in source
+   (`opennutrition` — contributed 0 to the reference build). The composition
+   itself is untouched by the check — it mirrors `build.ts`'s
+   DEFAULT_ADAPTERS law, never changes it.
 3. **Zero rows with critical missing data** — absent/non-finite calories or
    protein = 0 rows, checked on the compiled SQLite AND on the replayed SQL
    artifact.

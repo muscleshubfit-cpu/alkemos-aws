@@ -116,10 +116,25 @@ jobs:
           import json, os, pathlib
           v = json.loads(pathlib.Path("scripts/food-catalog/out/validation-report.json").read_text())
           b = json.loads(pathlib.Path("scripts/food-catalog/out/build-report.json").read_text())
+          # 539: core-source liveness — the band documents drift, it never
+          # masks a dead core source; exceptions are documented, non-blocking.
+          def _core_failures(v):
+              core = v.get("coreSourceHealth") or {}
+              return ", ".join(
+                  f"{x['id']} ({x['reason']})" for x in core.get("failures", [])
+              )
+          def _core_exceptions(v):
+              core = v.get("coreSourceHealth") or {}
+              return ", ".join(
+                  f"{e['id']}[{e['kind']}]: {e['rawRecords']} raw{' FAILED' if e.get('failed') else ''}"
+                  for e in core.get("exceptions", [])
+              ) or "none"
           lines = [
             "## Food catalog build (F3-a) — acceptance gate",
             "",
             f"- **Foods:** {v['actualFoodCount']} (reference {v['expectedReferenceCount']}; deviation {v['deviationPct']}% — band ±{v['maxDeviationPct']}%: {'MET' if v['deviationWithinBand'] else 'BREACHED'})",
+            f"- **Core sources:** {_core_failures(v) or 'all approved core sources alive (usda · national-tables · off-foodrepo · curated)'}",
+            f"- **Documented exceptions (non-blocking):** {_core_exceptions(v)}",
             f"- **Critical missing rows:** {v['criticalMissingRows']} (must be 0)",
             f"- **SQL artifact:** {v['sqlBytes'] / 1024 / 1024:.2f} MB (cap {v['sqlMaxBytes'] / 1024 / 1024:.0f} MB)",
             f"- **Replay idempotency:** pass1 {v['replayRowCounts']['pass1']} / pass2 {v['replayRowCounts']['pass2']} (duplicated {v['replayRowCounts']['duplicated']})",

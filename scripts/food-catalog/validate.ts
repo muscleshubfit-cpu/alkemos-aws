@@ -4,6 +4,10 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createClient } from '@libsql/client';
 import { FOOD_CATALOG_DDL, exportCatalogToSql } from './export-sql';
+import {
+  evaluateCoreSourceHealth,
+  type CoreSourceHealth,
+} from './src/gate-core-sources';
 
 /**
  * F3-a — acceptance-criteria gate for the catalog build pipeline.
@@ -21,6 +25,16 @@ import { FOOD_CATALOG_DDL, exportCatalogToSql } from './export-sql';
  *     (opennutrition contributed 0 to the reference build; its zip is
  *     reachable again and can add rows) — hence a generous default band
  *     (±20%) with the actual deviation always documented.
+ *     HARDENING (539, owner order 2026-11-28): the band DOCUMENTS drift —
+ *     it must never MASK a dead source. Any of the four approved core
+ *     sources (usda · national-tables · off-foodrepo · curated) failing —
+ *     thrown, silently contributing 0 raw records, or missing from the
+ *     build report — FAILS this gate even when the total count stays
+ *     inside the band (evaluateCoreSourceHealth, src/gate-core-sources.ts).
+ *     The documented exceptions survive: the cache-only source
+ *     (menustat-opennosh — 0 on a fresh runner by design) and the optional
+ *     opt-in source (opennutrition — 0 in the reference build) are recorded
+ *     in the report, never blocking.
  *  3. ZERO rows with critical missing data (calories/protein absent or
  *     non-finite) — checked on the compiled SQLite AND on the replayed
  *     SQL artifact.
@@ -49,6 +63,7 @@ interface ValidationReport {
   maxDeviationPct: number;
   deviationWithinBand: boolean;
   deviationCauses: string[];
+  coreSourceHealth: CoreSourceHealth;
   criticalMissingRows: number;
   criticalMissingCheck: 'sqlite+replay' | 'sqlite-only';
   sqlBytes: number;
@@ -192,6 +207,24 @@ async function main(): Promise<number> {
     'upstream sources drift between runs (OFF daily dump; adapter availability — the reference build itself had opennutrition contribute 0)'
   );
 
+  // --- Criterion 2 HARDENING (539): approved-core-source liveness ----
+  // The band above DOCUMENTS drift; it must never MASK a dead source.
+  // Any approved core source that threw (failed), silently contributed
+  // ZERO raw records (the real failure mode of the OFF stream and the
+  // USDA downloader — they log and return []), or is missing from the
+  // report (composition drift) fails the gate EVEN IF the total count
+  // is inside the band. Documented exceptions — the cache-only source
+  // (menustat-opennosh, 0 on a fresh runner by design) and the optional
+  // opt-in source (opennutrition, 0 in the reference build) — are
+  // recorded below, never blocking. Law + tests: src/gate-core-sources.ts
+  // + src/lib/__tests__/food-catalog-gate-core-sources.test.ts.
+  const coreSourceHealth = evaluateCoreSourceHealth(buildReport.adapterContributions);
+  for (const coreFailure of coreSourceHealth.failures) {
+    failures.push(
+      `CORE SOURCE FAILED: "${coreFailure.id}" (${coreFailure.reason}, rawRecords=${coreFailure.rawRecords}) — an approved core source contributed nothing; the ±${maxDeviationPct}% count band documents drift, it cannot mask a dead core source (see scripts/food-catalog/README.md)`
+    );
+  }
+
   // --- Criterion 3: zero critical-missing rows --------------------------
   const sqliteCriticalMissing = await countCriticalMissing(dbPath, 'foods');
   if (sqliteCriticalMissing !== 0) {
@@ -283,6 +316,7 @@ async function main(): Promise<number> {
     maxDeviationPct,
     deviationWithinBand,
     deviationCauses,
+    coreSourceHealth,
     criticalMissingRows: sqliteCriticalMissing + criticalMissingReplay,
     criticalMissingCheck: 'sqlite+replay',
     sqlBytes,
@@ -302,6 +336,13 @@ async function main(): Promise<number> {
   console.log('=== F3-a acceptance gate =================================');
   console.log(`Foods:            ${actualCount} (reference ${expectedCount}; deviation ${deviation >= 0 ? '+' : ''}${deviation} = ${deviationPct}% within ±${maxDeviationPct}% band: ${deviationWithinBand ? 'YES' : 'NO'})`);
   console.log(`Aliases:          ${aliasCount} legacy-id rows`);
+  const coreFailSummary =
+    coreSourceHealth.failures.map((f) => `${f.id}(${f.reason})`).join(', ') || 'all approved core sources alive';
+  const coreExceptionSummary = coreSourceHealth.exceptions
+    .map((e) => `${e.id}[${e.kind}: ${e.rawRecords} raw${e.failed ? ', failed' : ''}]`)
+    .join(' · ');
+  console.log(`Core sources:     ${coreFailSummary}`);
+  console.log(`  (exceptions:    ${coreExceptionSummary})`);
   console.log(`Critical missing: ${report.criticalMissingRows} (must be 0)`);
   console.log(`SQL artifact:     ${mb(sqlBytes)} MB (cap ${mb(sqlMaxBytes)} MB: ${sqlWithinSize ? 'OK' : 'FAIL'})`);
   console.log(`Replay pass1/pass2: ${pass1}/${pass2} (duplicated ${pass2 - pass1})`);
